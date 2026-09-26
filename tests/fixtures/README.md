@@ -4,13 +4,19 @@ All fixtures are **real** client data, reduced in size — nothing here is inven
 
 | Path | Origin |
 | --- | --- |
-| `db2/forever/<build>/*.csv` | wago.tools DB2 CSV exports of the given Forever build, filtered by `scripts/extract_fixtures.py --tree 1117` to the rows reachable from the Warrior talent tree (plus the 9-row class tables). Column names are canonical (`_Index` → `Index`). |
+| `db2/forever/<build>/<class-token>/*.csv` | wago.tools DB2 CSV exports of the given Forever build, filtered by `scripts/extract_fixtures.py --classes …` to the rows reachable from that class's talent tree (plus the shared class tables). One self-contained directory per class; column names are canonical (`_Index` → `Index`). Captured for both builds `1.60.1.69977` and `1.60.1.70009` × all nine classes. |
 | `wago/builds.json` | Subset of the real `GET https://wago.tools/api/builds` response (2026-09-27): 3 `5.5.0` + all five `1.60.1` builds of `wow_classic_beta` in a deliberately scrambled order, plus two `wow_classic_era` builds. |
 | `wago/*.csv` | Verbatim head rows of wago.tools CSV exports (wago column naming, quoted multi-line text). |
 
-Regenerate the DB2 subset after `python -m talent_data fetch --build <build>`:
+Each class fixture deliberately contains the rows of that class's known anomalies
+(Hunter mutual edge + mis-placed duplicates, Priest vacuous conds + duplicate, Rogue
+incomplete curve, Paladin/Warlock nudges, Druid pre-rename names in the 69977 build) —
+see `docs/forever-dataset.md` and `tests/unit/test_known_anomalies.py`.
+
+Regenerate the DB2 subsets after `python -m talent_data fetch --build <build>`:
 
 ```bash
-python scripts/extract_fixtures.py --build 1.60.1.69977 --tree 1117
-python scripts/extract_fixtures.py --build 1.60.1.70009 --tree 1117
+python scripts/extract_fixtures.py --build 1.60.1.69977 --classes all
+python scripts/extract_fixtures.py --build 1.60.1.70009 --classes all
+# or a subset: --classes warrior,druid
 ```
