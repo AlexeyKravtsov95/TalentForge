@@ -61,6 +61,35 @@ EDGE_PREREQUISITE_KINDS: dict[int, PrerequisiteKind] = {2: "sufficient", 3: "req
 # interpreted by M0 (as a "spend N points in node group G" gate).
 COND_TYPE_AVAILABLE = 0
 
+
+def _is_vacuous_cond(cond: t.TraitCond) -> bool:
+    """A *proven empty* condition: CondType Available with every constraint field zero.
+
+    Such a row cannot gate anything - no node group, node, entry, currency, spent amount,
+    level, quest, achievement, spec set, granted ranks or flags are set, so every possible
+    reading ("spend >= 0", "level >= 0", no quest, ...) is trivially satisfied.
+    ``TraitTreeID`` is deliberately ignored: real gates (e.g. Druid 50973) also carry it,
+    so it scopes a condition to its tree rather than constraining availability. Real
+    Forever examples: Priest cond 43478 (group 11608, whole Discipline tab) and Druid cond
+    50974 (next to the real gate 50973 on group 11329). Treating them as no-ops (instead
+    of "unresolved") is the only interpretation consistent with the row's content; see
+    docs/forever-dataset.md for the evidence.
+    """
+    return (
+        cond.cond_type == COND_TYPE_AVAILABLE
+        and cond.flags == 0
+        and cond.trait_node_group_id == 0
+        and cond.trait_node_id == 0
+        and cond.trait_currency_id == 0
+        and cond.spent_amount_required == 0
+        and cond.required_level == 0
+        and cond.granted_ranks == 0
+        and cond.quest_id == 0
+        and cond.achievement_id == 0
+        and cond.spec_set_id == 0
+    )
+
+
 # TraitDefinitionEffectPoints.OperationType whose curve we verified to hold the effect value
 # per rank (see docs: curve points match SpellEffect base points and tooltips). Every
 # effect-points row in Forever 1.60.1 builds uses this value; others are reported unresolved.
@@ -200,6 +229,8 @@ def _node_gates(ds: TraitDataSet, node_id: int, tree_nodes: set[int]) -> _Gates:
         cond = ds.conds.get(cond_id)
         if cond is None:
             raise NormalizationError(f"TraitNode {node_id} references unknown TraitCond {cond_id}")
+        if _is_vacuous_cond(cond):
+            continue
         counted = ds.group_members.get(cond.trait_node_group_id, set())
         if (
             cond.cond_type == COND_TYPE_AVAILABLE
