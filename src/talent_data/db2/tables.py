@@ -321,6 +321,10 @@ class TraitCond:
     trait_tree_id: int
     trait_node_group_id: int
     trait_node_id: int
+    # Constraint/functional fields (see _is_vacuous_cond/_is_pure_points_gate in the
+    # normalizer for the evidence that these are semantic, not dead columns):
+    trait_node_entry_id: int
+    trait_cond_account_element_id: int
     trait_currency_id: int
     spent_amount_required: int
     required_level: int
@@ -329,6 +333,10 @@ class TraitCond:
     achievement_id: int
     spec_set_id: int
     flags: int
+    # Presentation-only (SharedString::ID localization texts shown next to a gate, e.g.
+    # 911 = "Spend %d more point:points; to unlock this talent"); never constraints.
+    free_shared_string_id: int
+    spend_more_shared_string_id: int
 
     TABLE: ClassVar[str] = "TraitCond"
 
@@ -341,6 +349,8 @@ class TraitCond:
             _int(t, row, "TraitTreeID"),
             _int(t, row, "TraitNodeGroupID"),
             _int(t, row, "TraitNodeID"),
+            _int(t, row, "TraitNodeEntryID"),
+            _int(t, row, "TraitCondAccountElementID"),
             _int(t, row, "TraitCurrencyID"),
             _int(t, row, "SpentAmountRequired"),
             _int(t, row, "RequiredLevel"),
@@ -349,6 +359,8 @@ class TraitCond:
             _int(t, row, "AchievementID"),
             _int(t, row, "SpecSetID"),
             _int(t, row, "Flags"),
+            _int(t, row, "FreeSharedStringID"),
+            _int(t, row, "SpendMoreSharedStringID"),
         )
 
 

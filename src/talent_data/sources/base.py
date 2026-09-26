@@ -90,3 +90,69 @@ def latest_build(builds: Iterable[BuildInfo]) -> BuildInfo:
     if not ordered:
         raise SourceError("no builds available")
     return ordered[-1]
+
+
+# --------------------------------------------------------------------- build candidates
+#
+# "Latest detected build" and "latest build that may be published from" are different
+# notions. A background-download build (Battle.net ``is_bgdl``) is a *future* patch whose
+# data Blizzard starts distributing early; its DB2 tables are not necessarily the tables the
+# live game uses, and its ``created_at`` being newest must NOT make it production-ready.
+#
+# What the source metadata can and cannot tell us (observed 2026-09-27):
+#   * wago.tools exposes ``is_bgdl`` per build; all five Forever 1.60.1 builds have it
+#     false, while the retail ``wow`` product lists 12 builds with ``is_bgdl=true``
+#     (patch pre-downloads) - so the flag is actively used and meaningful;
+#   * wago.tools has NO field that says "this is the build the live realms run".
+# Therefore: "publishable" below only means "not a background download". It is a necessary
+# condition for treating a build as production data, not proof that the build is live.
+
+
+@dataclass(frozen=True)
+class BuildCandidate:
+    """A build considered as a dataset source, with the facts that gate publication.
+
+    ``background_download`` is tri-state: ``True``/``False`` as stated by the source,
+    ``None`` when the source did not say. ``None`` must never be read as "definitely not
+    a background download" - it is *unknown*, and an unknown build is not publishable
+    (see ``publishable``).
+    """
+
+    info: BuildInfo
+    background_download: bool | None
+
+    @property
+    def is_background_download(self) -> bool:
+        """Definitely a background download (only when the source explicitly said so)."""
+        return self.background_download is True
+
+    @property
+    def publishable(self) -> bool:
+        """Known not to be a background download. Unknown is NOT publishable."""
+        return self.background_download is False
+
+
+def classify_build(info: BuildInfo) -> BuildCandidate:
+    """Lift source-specific ``extra`` facts into the domain.
+
+    A source that does not provide ``is_bgdl`` yields ``background_download=None``
+    (unknown), which ``latest_publishable_build`` refuses - absence of the flag is not
+    evidence of publishability.
+    """
+    raw = info.extra.get("is_bgdl")
+    return BuildCandidate(info=info, background_download=None if raw is None else raw == "true")
+
+
+def publishable(candidates: Iterable[BuildCandidate]) -> list[BuildCandidate]:
+    """Candidates *known* not to be background downloads (see the note above)."""
+    return [c for c in candidates if c.publishable]
+
+
+def latest_publishable_build(candidates: Iterable[BuildCandidate]) -> BuildCandidate:
+    ordered = sorted(publishable(candidates), key=lambda c: (c.info.created_at, c.info.version))
+    if not ordered:
+        raise SourceError(
+            "no publishable builds available (background downloads and builds with "
+            "unknown background-download status are excluded)"
+        )
+    return ordered[-1]

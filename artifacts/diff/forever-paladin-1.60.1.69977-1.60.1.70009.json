@@ -1,0 +1,236 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 2,
+    "token": "PALADIN",
+    "name": "Paladin"
+  },
+  "fromBuild": "1.60.1.69977",
+  "toBuild": "1.60.1.70009",
+  "fromContentHash": "sha256:325a85cd4f198e4c638bcfc38f77814faa75f23bd757b5971b2b6c67a939b5a2",
+  "toContentHash": "sha256:91ca3aa09768de5f3c5674d7a70d3105a453abe99af7d760fd4a3c90defddfce",
+  "summary": {
+    "added": 0,
+    "removed": 2,
+    "changed": 6,
+    "changesByKind": {
+      "descriptionChanged": 4,
+      "effectBasePointsChanged": 3,
+      "effectRankValueChanged": 8,
+      "effectRemoved": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [
+    {
+      "nodeId": 105328,
+      "treeId": 1100,
+      "name": "Improved Holy Strike",
+      "spellId": 1310902,
+      "sectionIndex": 0,
+      "position": {
+        "x": 1020,
+        "y": 2130,
+        "row": 0,
+        "column": 0
+      },
+      "maxRank": 2,
+      "relatedNodeId": null
+    },
+    {
+      "nodeId": 110883,
+      "treeId": 1100,
+      "name": "Crusade",
+      "spellId": 1311083,
+      "sectionIndex": 2,
+      "position": {
+        "x": 10880,
+        "y": 3930,
+        "row": 3,
+        "column": 3
+      },
+      "maxRank": 2,
+      "relatedNodeId": null
+    }
+  ],
+  "changed": [
+    {
+      "nodeId": 105320,
+      "treeId": 1100,
+      "name": "Light's Vigil",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130014,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Applies Light's Vigil to the target for $1310909d. Your next Holy Shock cast on them triggers no cooldown and causes friendly targets to heal their party for $1310912s1, or enemy targets to suffer $1310914s1 Holy damage and refund $s2% of Light's Vigil's Mana cost.  You may only have $s3 Light's Vigil active per Paladin, per party.",
+          "new": "Applies Light's Vigil to the target for $1310909d. Your next Holy Shock cast on them triggers no cooldown and causes enemy targets to suffer $1310914s1 Holy damage and refund $s2% of Light's Vigil's Mana cost, or allied targets to heal their party for $1310912s1.  The Paladin may only have one Light's Vigil active per party."
+        },
+        {
+          "kind": "effectRemoved",
+          "entryId": 130014,
+          "effectIndex": 2,
+          "rank": null,
+          "old": {
+            "index": 2,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 1,
+            "unresolvedReason": null
+          },
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 105321,
+      "treeId": 1100,
+      "name": "Holy Power",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130015,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases the critical strike chance of your Holy Shock spell by ${$m2+$m1}%, and all other spells by $m1%.",
+          "new": "Increases the critical strike chance of your Holy Shock and Holy Strike spells by $m2%, and all other spells by $m1%."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130015,
+          "effectIndex": 1,
+          "rank": 1,
+          "old": 2,
+          "new": 3
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130015,
+          "effectIndex": 1,
+          "rank": 2,
+          "old": 4,
+          "new": 6
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130015,
+          "effectIndex": 1,
+          "rank": 3,
+          "old": 6,
+          "new": 9
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130015,
+          "effectIndex": 1,
+          "rank": 4,
+          "old": 8,
+          "new": 12
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130015,
+          "effectIndex": 1,
+          "rank": 5,
+          "old": 10,
+          "new": 15
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130015,
+          "effectIndex": 1,
+          "rank": null,
+          "old": 10,
+          "new": 15
+        }
+      ]
+    },
+    {
+      "nodeId": 105692,
+      "treeId": 1100,
+      "name": "Twist of Light",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130421,
+          "effectIndex": null,
+          "rank": null,
+          "old": "When you replace your Seal of Command, Seal of Righteousness, Seal of Fury, or Seal of Justice with a different Seal, gain an Echo. Your next melee attack applies the replaced Seal's effects, consuming the Echo.",
+          "new": "Reduces the Mana cost of your Seal spells by $s1%, and when you replace your Seal of Command, Seal of Righteousness, Seal of Fury, or Seal of Justice with a different Seal, gain an Echo of that Seal. Your next melee attack applies the replaced Seal's effects, consuming the Echo."
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130421,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 0,
+          "new": -20
+        }
+      ]
+    },
+    {
+      "nodeId": 105693,
+      "treeId": 1100,
+      "name": "Vengeance",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130422,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases your Physical and Holy damage dealt by $s1% for $20050d after landing a critical strike.  Stacks up to $20050u times.",
+          "new": "Increases your Physical and Holy damage dealt by $s1% for $20050d after landing a non-periodic critical strike.  Stacks up to $20050u times."
+        }
+      ]
+    },
+    {
+      "nodeId": 105697,
+      "treeId": 1100,
+      "name": "Two-Handed Weapon Specialization",
+      "changes": [
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130426,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 3,
+          "new": 2
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130426,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 6,
+          "new": 4
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130426,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 9,
+          "new": 6
+        }
+      ]
+    },
+    {
+      "nodeId": 105700,
+      "treeId": 1100,
+      "name": "Sacred Arbiter",
+      "changes": [
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130429,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 10,
+          "new": 20
+        }
+      ]
+    }
+  ]
+}

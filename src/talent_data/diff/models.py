@@ -1,4 +1,4 @@
-"""Machine-readable semantic diff contract (diff schema v1)."""
+"""Machine-readable semantic diff contracts (talent-diff schema v1, dataset-diff schema v1)."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ from pydantic.alias_generators import to_camel
 from talent_data.models.talents import ClassRef, Position
 
 DIFF_SCHEMA_VERSION: Literal[1] = 1
+DATASET_DIFF_SCHEMA_VERSION: Literal[1] = 1
 
 ChangeKind = Literal[
     # identity / naming
@@ -34,6 +35,39 @@ ChangeKind = Literal[
     "effectStatusChanged",
     "descriptionChanged",
 ]
+
+# Which change kinds a player would perceive as a talent change, and which are low-level
+# engineering noise. This boundary exists so a future patch-history UI can hide DB2 noise
+# without re-litigating it per change kind. Evidence for the classification (esp. why
+# effectBasePointsChanged is diagnostic) is in docs/data-pipeline.md "Diff noise".
+USER_VISIBLE_CHANGE_KINDS: frozenset[str] = frozenset(
+    {
+        "renamed",
+        "spellReplaced",
+        "entriesChanged",
+        "treeChanged",
+        "sectionChanged",
+        "positionChanged",
+        "typeChanged",
+        "maxRankChanged",
+        "prerequisitesChanged",
+        "unlockRequirementsChanged",
+        "unresolvedConditionsChanged",
+        "effectAdded",
+        "effectRemoved",
+        "effectRankValueChanged",
+        "effectStatusChanged",
+        "descriptionChanged",
+    }
+)
+DIAGNOSTIC_CHANGE_KINDS: frozenset[str] = frozenset(
+    {
+        "flagsChanged",  # raw TraitNode.Flags, meaning not resolved
+        "effectBasePointsChanged",  # informational SpellEffect base points; shifts when
+        # SpellEffect indexes are re-numbered between builds (observed: Warrior
+        # "Improved Slam" 1.60.1.70009 gained an inserted effect -> 5 false positives)
+    }
+)
 
 
 class _Model(BaseModel):
@@ -105,3 +139,37 @@ class DiffReport(_Model):
 
     def to_json(self) -> str:
         return self.model_dump_json(by_alias=True, indent=2) + "\n"
+
+
+# --------------------------------------------------------------------- dataset diff v1
+
+
+class DatasetClassDiff(_Model):
+    """One class's place in an all-class diff: a summary plus a pointer to the full,
+    unchanged talent-diff v1 document written next to the aggregate."""
+
+    class_: ClassRef = Field(alias="class")
+    file: str = Field(description="File name of the class's talent-diff v1 JSON")
+    summary: DiffSummary
+
+
+class DatasetDiffReport(_Model):
+    """Aggregate of one game's per-class diffs between two builds (dataset-diff schema v1).
+
+    The per-class details stay in individual talent-diff v1 documents; this schema only
+    indexes and totals them, so it can stay small and stable even for large diffs.
+    """
+
+    schema_version: Literal[1] = DATASET_DIFF_SCHEMA_VERSION
+    game: str
+    from_build: str
+    to_build: str
+    classes: list[DatasetClassDiff] = Field(description="Ordered by class id")
+    total: DiffSummary
+
+    def to_json(self) -> str:
+        return self.model_dump_json(by_alias=True, indent=2) + "\n"
+
+    @classmethod
+    def file_name(cls, game: str, old: str, new: str) -> str:
+        return f"{game}-all-{old}-{new}.json"

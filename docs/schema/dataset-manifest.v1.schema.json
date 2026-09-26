@@ -1,0 +1,112 @@
+{
+  "$defs": {
+    "ManifestClassEntry": {
+      "properties": {
+        "contentHash": {
+          "description": "contentHash of the class document: sha256 over its semantic payload. Changes whenever the class's talent data changes.",
+          "title": "Contenthash",
+          "type": "string"
+        },
+        "file": {
+          "description": "File name of the class document, relative to the manifest",
+          "title": "File",
+          "type": "string"
+        },
+        "token": {
+          "description": "Locale-independent class token, e.g. WARRIOR",
+          "title": "Token",
+          "type": "string"
+        },
+        "treeIds": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Treeids",
+          "type": "array"
+        },
+        "validation": {
+          "$ref": "#/$defs/ManifestValidation"
+        }
+      },
+      "required": [
+        "token",
+        "file",
+        "treeIds",
+        "contentHash",
+        "validation"
+      ],
+      "title": "ManifestClassEntry",
+      "type": "object"
+    },
+    "ManifestValidation": {
+      "properties": {
+        "errors": {
+          "description": "0 for every published class; a manifest is only written for an error-free batch",
+          "title": "Errors",
+          "type": "integer"
+        },
+        "warnings": {
+          "title": "Warnings",
+          "type": "integer"
+        },
+        "warningsByCode": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "description": "Warning count per stable issue code (see validation/issues.py)",
+          "title": "Warningsbycode",
+          "type": "object"
+        }
+      },
+      "required": [
+        "errors",
+        "warnings"
+      ],
+      "title": "ManifestValidation",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "classes": {
+      "description": "Ordered by class id - deterministic for a given build",
+      "items": {
+        "$ref": "#/$defs/ManifestClassEntry"
+      },
+      "title": "Classes",
+      "type": "array"
+    },
+    "clientBuild": {
+      "title": "Clientbuild",
+      "type": "string"
+    },
+    "game": {
+      "title": "Game",
+      "type": "string"
+    },
+    "generatedAt": {
+      "format": "date-time",
+      "title": "Generatedat",
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": 1,
+      "default": 1,
+      "title": "Schemaversion",
+      "type": "integer"
+    },
+    "source": {
+      "description": "Name of the DB2 source the dataset was built from",
+      "title": "Source",
+      "type": "string"
+    }
+  },
+  "required": [
+    "game",
+    "clientBuild",
+    "generatedAt",
+    "source",
+    "classes"
+  ],
+  "title": "DatasetManifest",
+  "type": "object"
+}

@@ -23,5 +23,10 @@ def normalized_path(game: str, version: ClientVersion, class_token: str) -> Path
     )
 
 
+def manifest_path(game: str, version: ClientVersion) -> Path:
+    """Dataset manifest of one build: data/normalized/<game>/<build>/manifest.json"""
+    return project_root() / "data" / "normalized" / game / str(version) / "manifest.json"
+
+
 def diff_path(game: str, class_token: str, old: ClientVersion, new: ClientVersion) -> Path:
     return project_root() / "artifacts" / "diff" / f"{game}-{class_token.lower()}-{old}-{new}.json"

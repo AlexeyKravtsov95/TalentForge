@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 5,
+    "token": "PRIEST",
+    "name": "Priest"
+  },
+  "fromBuild": "1.60.1.69977",
+  "toBuild": "1.60.1.70009",
+  "fromContentHash": "sha256:5af283580c3a4502afba547a52d2f671a00e2f54eec2cdac0954a102d722df85",
+  "toContentHash": "sha256:4103fbd3c199e3e2e101999fa2bf7b47642541d15dbc75cece1a4b99d66a569f",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 1,
+    "changesByKind": {
+      "descriptionChanged": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 105819,
+      "treeId": 1114,
+      "name": "Devouring Contagion",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130548,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Reduces the mana cost of your Devouring Plague by $s1%.\r\n\r\nTargets that die while Devouring Plague it is active spreads it, jumping to a nearby enemy within $s2 yards for the remaining duration.\r\n",
+          "new": "Reduces the mana cost of your Devouring Plague by $s1%.\r\n\r\nTargets that die while Devouring Plague is active spreads it, jumping to a nearby enemy within $s2 yards for the remaining duration.\r\n"
+        }
+      ]
+    }
+  ]
+}

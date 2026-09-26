@@ -1,0 +1,70 @@
+ID,NameSubtext_lang,Description_lang,AuraDescription_lang
+13705,,Improves your chance to hit by $s1%.,
+13712,,Increases your Dodge chance by $s1%.,
+13713,,Increases your Parry chance by $s1%.,
+13715,,Increases the damage done by your off-hand weapon by $s1%.,
+13732,,Reduces the Energy cost of your Sinister Strike ability by $s1.,
+13741,,Increases the duration of your Gouge ability by $/1000;S1 sec.,
+13742,,Reduces the cooldown of your Sprint and Evasion abilities by $m1%.,
+13743,,Gives a $m1% chance to remove all movement impairing effects when you activate your Sprint ability.,
+13750,,Increases your Energy regeneration rate by $s1% for $d.,Energy regeneration increased by $s1%.
+13754,,Gives your Kick ability a $m1% chance to Silence the target for $18425d.,
+13877,,Increases your melee attack speed by $s1% and your melee attacks strike an additional nearby opponent. Lasts $d.,Attack speed increased by $s1%.  Weapon attacks strike an additional nearby opponent.
+13958,,Reduces the chance enemies have to detect you while in Stealth mode as if you were ${$m1/5} $llevel:levels; higher.,
+13960,,"Gives your melee weapon attacks a benefit depending on the weapon.
+
+    |CFFFFFFFFAxe/Sword:|R Your successful
+    melee attacks have a $s3% chance
+    to trigger an extra attack on the 
+    target.
+
+    |CFFFFFFFFDagger/Fist:|R Increases your
+    critical strike chance by $s1%.
+
+    |CFFFFFFFFMace:|R Your attacks ignore $s2% of
+    your target's armor.",
+13975,,Reduces your speed penalty from your Stealth ability by $s1% and reduces its cooldown by $/1000;s2 sec.,
+13976,,"Gives you a $s1% chance to add an additional combo point to your target when using your Ambush, Garrote, or Cheap Shot ability.",
+13981,,Reduces the cooldown of your Vanish and Blind abilities by $/1000;S1 sec.,
+13983,,Gives you a $m1% chance to add a Combo Point to your target after Dodging an attack or fully resisting a spell.,
+14057,,"Increases the damage dealt by your Backstab, Garrote, Ambush, and Mutilate abilities by $s1%.",
+14079,,Increases the critical strike chance of your Ambush ability by $s1%.,
+14082,,"Reduces the Energy cost of your Cheap Shot and Garrote abilities by $m1, and your Garrote ability no longer requires you to be behind your target.",
+14084,,"Increases the radius of your Distract ability by $s1 yds, and further reduces the Stealth detection of distracted enemies as though they were an additional ${$m2/-5} $Llevel:levels; lower.",
+14113,,"Increases the chance to apply Poisons to your target by $m1%, and gives Poison applications a $m2% chance to not consume a charge.",
+14128,,"Increases the critical strike damage bonus of your Sinister Strike, Gouge, Backstab, Mutilate, Ghostly Strike, and Hemorrhage abilities by $s1%.",
+14138,,Increases your critical strike chance with all attacks and Poisons by $s1%.,
+14144,,"After killing a non-trivial enemy, gives you a $m1% increased critical strike chance on your next Sinister Strike, Backstab, Ambush, Mutilate, or Ghostly Strike. Lasts $14143d.",
+14156,,Gives your finishing moves a $m1% chance to add a Combo Point to your target.,
+14158,,Increases all damage dealt by $m1% against Humanoid and Giant targets.,
+14162,,Increases the damage done by your Eviscerate ability by $m1%.,
+14165,,Increases the duration of your Slice and Dice ability by $s1%.,
+14168,,"Reduces the Energy cost of your Expose Armor ability by $m1, and refunds $m2 Combo $LPoint:Points; when cast with $m3 Combo Points.",
+14171,,Causes your attacks to ignore $m1% of your target's Armor and increases the damage dealt by your Rupture ability by $m2%.,
+14174,,Enemies Stunned by your Kidney Shot ability take $s1% increased damage from your poisons and attacks.,
+14177,,"When activated, increases the critical strike chance of your next Sinister Strike, Backstab, Ambush, Eviscerate, or Mutilate by $s1%.","Critical strike chance of your next Sinister Strike, Backstab, Ambush, Eviscerate, or Mutilate increased by $s1%."
+14179,,Your finishing moves have a $m1% chance per Combo Point to restore $14181s1 Energy.,
+14183,,Adds $s1 Combo Points to your target. You must add to or use those combo points within $d or the combo points are lost.,$s1 additional Combo Points.
+14185,,"When activated, this ability immediately finishes the cooldown on your other Rogue abilities.",
+14186,,Your critical strikes from abilities that add Combo Points have a $m1% chance to add an additional Combo Point.,
+14251,,A strike that becomes active after parrying an opponent's attack.  This attack deals $s1% weapon damage and disarms the target for $19718d.,Disarmed.
+14278,,A strike that deals $s1% ($m4% if a Dagger is equipped in your Main Hand) weapon damage and increases your chance to dodge by $s2% for $d.  Awards $s3 combo $lpoint:points;.,Dodge chance increased by $s2%.
+14983,,Increases your maximum Energy by $s1.,
+16511,,An instant strike that deals $m4% weapon damage ($m5% if a Dagger is equipped) and causes the target to take $m3% increased Rupture damage from the Rogue. Lasts $d. Awards $s2 Combo $lPoint:Points;.,Taking $w3% increased Rupture damage from the caster.
+16513,,Increases the damage dealt by your poisons by $m1% and gives your poisons an additional $m3% chance to resist dispel effects.,
+18427,,"Increases the damage of your Sinister Strike, Backstab, and Eviscerate abilities by $s1%.",
+30894,,Increases your Stealth detection as if you were ${$m1/5} $llevel:levels; higher and reduces your chance to be hit by spells and ranged attacks by $m2%.,
+30919,,Reduces the chance for your attacks to be Dodged or Parried by $m1%.,
+462708,,Your Backstab has a $m1% chance to cause your next Ambush within $462707d to not require Stealth.,
+1224716,,"Increases the critical strike chance of your Backstab by $m1% and your Mutilate by $m3%, and gives Backstab a $m2% chance to add an additional Combo Point.",
+1224782,,Reduces the Energy cost of your Sap and Blind abilities by $m1%.,
+1310703,,"Finishing move that increases the damage of your Poisons by $m2% and your chance to apply Poisons by $m4%.  Lasts longer per combo point:
+   1 point  : 9 seconds
+   2 points: 12 seconds
+   3 points: 15 seconds
+   4 points: 18 seconds
+   5 points: 21 seconds",Poison damage increased by $w2% and chance to apply poisons increased by $w4%.
+1310707,Rank 1,Instantly attacks with both weapons for $1310706s2% weapon damage plus an additional ${$1310706m1*$1310706m2/100} with each weapon. Damage increased by $m4% against Poisoned targets. Awards $m1 Combo $LPoint:Points;.,
+1310711,,Reduces the Energy cost of your Eviscerate ability by $m1.,
+1310721,,"When your Rupture ability deals periodic damage, the Energy cost of your next Hemorrhage or Backstab ability within $1310723d is reduced by $1310723s1, stacking up to $1310723u times.",
+1310728,,"Your Sinister Strike, Ghostly Strike, and Hemorrhage abilities cause $m1% more damage against targets below $m2% health.",

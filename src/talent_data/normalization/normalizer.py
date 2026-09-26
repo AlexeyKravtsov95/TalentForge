@@ -57,9 +57,63 @@ NODE_TYPES = {0: "single", 1: "tiered", 2: "selection"}
 EDGE_VISUAL_ONLY = 0
 EDGE_PREREQUISITE_KINDS: dict[int, PrerequisiteKind] = {2: "sufficient", 3: "required"}
 
-# TraitCond.CondType 0 = Available (WoWDBDefs). Only this type, with no flags set, is
-# interpreted by M0 (as a "spend N points in node group G" gate).
+# TraitCond.CondType 0 = Available (WoWDBDefs: "0: Available, 1: Visible, 2: Granted,
+# 3: Increased, 4: DisplayError"). Only this type, with no flags set, is interpreted
+# (as a "spend N points in node group G" gate).
 COND_TYPE_AVAILABLE = 0
+
+
+def _is_pure_points_gate(cond: t.TraitCond) -> bool:
+    """True when the row expresses *exactly* "spend SpentAmountRequired of TraitCurrencyID
+    points in TraitNodeGroupID" and nothing else.
+
+    Any other functional field set (node, node entry, account element, level, granted
+    ranks, quest, achievement, spec set, flags) makes the condition shape something we
+    have not proven, so it must surface as unresolved rather than be silently flattened
+    into a plain points gate. Evidence that the extra fields are functional, not dead
+    columns (researched for M1 review, retail build 12.1.0.69933): ``TraitNodeEntryID``
+    is non-zero on 25 conditions (gating on one specific node entry) and
+    ``TraitCondAccountElementID`` on 413 (account-wide gating via the
+    TraitCondAccountElement table). ``TraitTreeID`` is excluded because real Forever
+    gates (e.g. Druid 50973) also carry it: it scopes a condition to its tree.
+    """
+    return (
+        cond.cond_type == COND_TYPE_AVAILABLE
+        and cond.flags == 0
+        and cond.trait_node_id == 0
+        and cond.trait_node_entry_id == 0
+        and cond.trait_cond_account_element_id == 0
+        and cond.required_level == 0
+        and cond.granted_ranks == 0
+        and cond.quest_id == 0
+        and cond.achievement_id == 0
+        and cond.spec_set_id == 0
+    )
+
+
+def _is_vacuous_cond(cond: t.TraitCond) -> bool:
+    """A *proven empty* condition: a pure-points-gate shape (see _is_pure_points_gate)
+    with every constraint field - including the group, currency and spent amount - zero.
+
+    Such a row cannot gate anything: every possible reading ("spend >= 0", "level >= 0",
+    no quest, ...) is trivially satisfied. ``FreeSharedStringID`` /
+    ``SpendMoreSharedStringID`` are deliberately NOT part of the judgement: they are
+    ``SharedString::ID`` localization texts rendered by the client next to a gate
+    (real 12.1.0 strings: 910 "This talent is granted to your specialization for free
+    and can't be unlearned", 911 "Spend %d more |4point:points; to unlock this talent"),
+    i.e. presentation, not condition semantics - proven by the FK target being a string
+    table and by real Forever gates carrying the same string ids as their vacuous
+    neighbours. Real Forever vacuous rows: Priest cond 43478 (group 11608, whole
+    Discipline tab) and Druid cond 50974 (next to the real gate 50973 on group 11329);
+    all their fields are zero. See docs/forever-dataset.md for the full evidence.
+    """
+    return (
+        _is_pure_points_gate(cond)
+        and cond.trait_node_group_id == 0
+        and cond.trait_currency_id == 0
+        and cond.spent_amount_required == 0
+    )
+
 
 # TraitDefinitionEffectPoints.OperationType whose curve we verified to hold the effect value
 # per rank (see docs: curve points match SpellEffect base points and tooltips). Every
@@ -200,17 +254,10 @@ def _node_gates(ds: TraitDataSet, node_id: int, tree_nodes: set[int]) -> _Gates:
         cond = ds.conds.get(cond_id)
         if cond is None:
             raise NormalizationError(f"TraitNode {node_id} references unknown TraitCond {cond_id}")
+        if _is_vacuous_cond(cond):
+            continue
         counted = ds.group_members.get(cond.trait_node_group_id, set())
-        if (
-            cond.cond_type == COND_TYPE_AVAILABLE
-            and cond.flags == 0
-            and cond.spent_amount_required > 0
-            and counted
-            and cond.required_level == 0
-            and cond.quest_id == 0
-            and cond.achievement_id == 0
-            and cond.spec_set_id == 0
-        ):
+        if _is_pure_points_gate(cond) and cond.spent_amount_required > 0 and counted:
             outside = counted - tree_nodes
             if outside:
                 raise NormalizationError(
@@ -223,6 +270,9 @@ def _node_gates(ds: TraitDataSet, node_id: int, tree_nodes: set[int]) -> _Gates:
                 )
             )
         else:
+            # Anything else (other CondType, flags, or a functional field we have not
+            # proven - node/entry/account-element/level/quest/achievement/spec-set
+            # references) is surfaced as an unresolved condition, never silently ignored.
             unresolved.append(cond_id)
     requirements.sort(key=lambda r: (r.required_points, r.counted_node_ids))
     return requirements, unresolved

@@ -1,0 +1,125 @@
+{
+  "$defs": {
+    "ClassRef": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "ChrClasses.ID",
+          "title": "Id",
+          "type": "integer"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "token": {
+          "description": "Locale-independent class token, e.g. WARRIOR",
+          "title": "Token",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "token",
+        "name"
+      ],
+      "title": "ClassRef",
+      "type": "object"
+    },
+    "DatasetClassDiff": {
+      "description": "One class's place in an all-class diff: a summary plus a pointer to the full,\nunchanged talent-diff v1 document written next to the aggregate.",
+      "properties": {
+        "class": {
+          "$ref": "#/$defs/ClassRef"
+        },
+        "file": {
+          "description": "File name of the class's talent-diff v1 JSON",
+          "title": "File",
+          "type": "string"
+        },
+        "summary": {
+          "$ref": "#/$defs/DiffSummary"
+        }
+      },
+      "required": [
+        "class",
+        "file",
+        "summary"
+      ],
+      "title": "DatasetClassDiff",
+      "type": "object"
+    },
+    "DiffSummary": {
+      "properties": {
+        "added": {
+          "title": "Added",
+          "type": "integer"
+        },
+        "changed": {
+          "title": "Changed",
+          "type": "integer"
+        },
+        "changesByKind": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "title": "Changesbykind",
+          "type": "object"
+        },
+        "removed": {
+          "title": "Removed",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "added",
+        "removed",
+        "changed",
+        "changesByKind"
+      ],
+      "title": "DiffSummary",
+      "type": "object"
+    }
+  },
+  "description": "Aggregate of one game's per-class diffs between two builds (dataset-diff schema v1).\n\nThe per-class details stay in individual talent-diff v1 documents; this schema only\nindexes and totals them, so it can stay small and stable even for large diffs.",
+  "properties": {
+    "classes": {
+      "description": "Ordered by class id",
+      "items": {
+        "$ref": "#/$defs/DatasetClassDiff"
+      },
+      "title": "Classes",
+      "type": "array"
+    },
+    "fromBuild": {
+      "title": "Frombuild",
+      "type": "string"
+    },
+    "game": {
+      "title": "Game",
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": 1,
+      "default": 1,
+      "title": "Schemaversion",
+      "type": "integer"
+    },
+    "toBuild": {
+      "title": "Tobuild",
+      "type": "string"
+    },
+    "total": {
+      "$ref": "#/$defs/DiffSummary"
+    }
+  },
+  "required": [
+    "game",
+    "fromBuild",
+    "toBuild",
+    "classes",
+    "total"
+  ],
+  "title": "DatasetDiffReport",
+  "type": "object"
+}

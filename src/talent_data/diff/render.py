@@ -4,9 +4,34 @@ from __future__ import annotations
 
 from typing import Any
 
-from talent_data.diff.models import Change, DiffReport, NodeRef
+from talent_data.diff.models import Change, DatasetDiffReport, DiffReport, NodeRef
 
 _TEXT_LIMIT = 160
+
+
+def render_dataset_text(aggregate: DatasetDiffReport, game_display: str) -> str:
+    """Compact all-class summary: one block per class plus a TOTAL block."""
+    lines = [
+        f"{game_display} (all classes)",
+        f"{aggregate.from_build} -> {aggregate.to_build}",
+        "",
+    ]
+    for entry in aggregate.classes:
+        s = entry.summary
+        lines.append(entry.class_.name)
+        lines.append(f"  added: {s.added}, removed: {s.removed}, changed: {s.changed}")
+        if s.changes_by_kind:
+            kinds = ", ".join(f"{k}={v}" for k, v in s.changes_by_kind.items())
+            lines.append(f"  ({kinds})")
+    total = aggregate.total
+    lines += [
+        "TOTAL",
+        f"  added: {total.added}, removed: {total.removed}, changed: {total.changed}",
+    ]
+    if total.changes_by_kind:
+        kinds = ", ".join(f"{k}={v}" for k, v in total.changes_by_kind.items())
+        lines.append(f"  ({kinds})")
+    return "\n".join(lines) + "\n"
 
 
 def render_text(report: DiffReport, game_display: str) -> str:

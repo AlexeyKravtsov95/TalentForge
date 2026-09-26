@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 3,
+    "token": "HUNTER",
+    "name": "Hunter"
+  },
+  "fromBuild": "1.60.1.69977",
+  "toBuild": "1.60.1.70009",
+  "fromContentHash": "sha256:d8c42bf5e5081a10f81e7aeb641633049158b8cddcabe12b8bcaf44e2b556f5a",
+  "toContentHash": "sha256:8ce355b3670712c9ea24522c2ec32112f8232f95d0435d433ebfb5b66d5633d5",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 1,
+    "changesByKind": {
+      "descriptionChanged": 1,
+      "effectAdded": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 104981,
+      "treeId": 1091,
+      "name": "Strider Kick",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129645,
+          "effectIndex": null,
+          "rank": null,
+          "old": "A powerful kick that deals $s2% melee weapon damage.",
+          "new": "A powerful kick that deals $s2% melee weapon damage and increases movement speed by $s3% for $d."
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 129645,
+          "effectIndex": 2,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 2,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 30,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    }
+  ]
+}

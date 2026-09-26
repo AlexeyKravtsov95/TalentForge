@@ -1,10 +1,14 @@
-"""Extract a small, real DB2 fixture set for one class tree from the local wago cache.
+"""Extract small, real DB2 fixture sets for class trees from the local wago cache.
 
-Keeps only the rows reachable from the class's TraitTree (nodes, entries, definitions,
-edges, gate groups/conditions, rank curves, spells), with canonical column names. The
-result is committed under tests/fixtures/db2/ so unit tests run offline on real client rows.
+For every requested class, keeps only the rows reachable from that class's TraitTree
+(nodes, entries, definitions, edges, gate groups/conditions, rank curves, spells), with
+canonical column names. The result is committed under
+``tests/fixtures/db2/<game>/<build>/<class-token>/`` so unit tests run offline on real
+client rows. Nothing is invented or hand-edited; each fixture is a strict subset of the
+wago.tools export of the named build.
 
-    python scripts/extract_fixtures.py --build 1.60.1.70009 --tree 1117
+    python scripts/extract_fixtures.py --build 1.60.1.70009 --classes all
+    python scripts/extract_fixtures.py --build 1.60.1.69977 --classes warrior,druid
 """
 
 from __future__ import annotations
@@ -14,7 +18,11 @@ import csv
 from collections.abc import Callable, Mapping
 from pathlib import Path
 
+from talent_data.db2 import tables as t
+from talent_data.db2.dataset import TraitDataSet
 from talent_data.db2.tables import TRAIT_TABLES
+from talent_data.normalization.class_resolution import resolve_class, trees_for_class
+from talent_data.sources.base import Db2Table
 from talent_data.sources.wago.source import WagoDb2Source
 from talent_data.versions import ClientVersion
 
@@ -23,26 +31,16 @@ ROOT = Path(__file__).resolve().parents[1]
 Row = Mapping[str, str]
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--game", default="forever")
-    parser.add_argument("--build", required=True)
-    parser.add_argument("--tree", type=int, required=True)
-    args = parser.parse_args()
-
-    src = ROOT / ".cache" / "wago" / args.game / args.build
-    dst = ROOT / "tests" / "fixtures" / "db2" / args.game / args.build
-    dst.mkdir(parents=True, exist_ok=True)
-
-    cache = WagoDb2Source(None, src.parent, offline=True)
-    version = ClientVersion.parse(args.build)
-    tables = {name: cache.load_table(version, name) for name in TRAIT_TABLES}
-
+def extract_class(
+    chr_class: t.ChrClass, dataset: TraitDataSet, tables: dict[str, Db2Table], game: str, build: str
+) -> Path:
     def ids(table: str, column: str, keep: Callable[[Row], bool]) -> set[str]:
         return {r[column] for r in tables[table].rows if keep(r)}
 
-    tree = str(args.tree)
-    nodes = ids("TraitNode", "ID", lambda r: r["TraitTreeID"] == tree)
+    tree_ids = trees_for_class(dataset, chr_class)
+    assert len(tree_ids) == 1, f"{chr_class.token}: expected one tree, got {tree_ids}"
+    tree = str(tree_ids[0])
+    nodes = ids("TraitNode", "ID", lambda r, tree=tree: r["TraitTreeID"] == tree)
     links = ids("TraitNodeXTraitNodeEntry", "ID", lambda r: r["TraitNodeID"] in nodes)
     entries = ids("TraitNodeXTraitNodeEntry", "TraitNodeEntryID", lambda r: r["ID"] in links)
     definitions = ids("TraitNodeEntry", "TraitDefinitionID", lambda r: r["ID"] in entries)
@@ -58,19 +56,23 @@ def main() -> None:
     conds |= ids("TraitNodeXTraitCond", "TraitCondID", lambda r: r["TraitNodeID"] in nodes)
     groups |= ids("TraitCond", "TraitNodeGroupID", lambda r: r["ID"] in conds)
     curves = ids(
-        "TraitDefinitionEffectPoints", "CurveID", lambda r: r["TraitDefinitionID"] in definitions
+        "TraitDefinitionEffectPoints",
+        "CurveID",
+        lambda r: r["TraitDefinitionID"] in definitions,
     )
     currencies = ids(
-        "TraitTreeXTraitCurrency", "TraitCurrencyID", lambda r: r["TraitTreeID"] == tree
+        "TraitTreeXTraitCurrency", "TraitCurrencyID", lambda r, tree=tree: r["TraitTreeID"] == tree
     )
+    # Both directions of class resolution need every skill line; ClassMask rows for
+    # those lines disambiguate which class the tree belongs to.
     skill_lines = ids("SkillLineXTraitTree", "SkillLineID", lambda r: True)
 
     keep: dict[str, Callable[[Row], bool]] = {
         "ChrClasses": lambda r: True,
         "SkillRaceClassInfo": lambda r: r["SkillID"] in skill_lines,
         "SkillLineXTraitTree": lambda r: True,
-        "TraitTree": lambda r: r["ID"] == tree,
-        "TraitTreeXTraitCurrency": lambda r: r["TraitTreeID"] == tree,
+        "TraitTree": lambda r, tree=tree: r["ID"] == tree,
+        "TraitTreeXTraitCurrency": lambda r, tree=tree: r["TraitTreeID"] == tree,
         "TraitCurrency": lambda r: r["ID"] in currencies,
         "TraitNode": lambda r: r["ID"] in nodes,
         "TraitNodeXTraitNodeEntry": lambda r: r["ID"] in links,
@@ -88,13 +90,38 @@ def main() -> None:
         "SpellName": lambda r: r["ID"] in spells,
         "SpellEffect": lambda r: r["SpellID"] in spells,
     }
+    dst = ROOT / "tests" / "fixtures" / "db2" / game / build / chr_class.token.lower()
+    dst.mkdir(parents=True, exist_ok=True)
+    total = 0
     for name, table in tables.items():
         rows = [r for r in table.rows if keep[name](r)]
+        total += len(rows)
         with (dst / f"{name}.csv").open("w", encoding="utf-8", newline="") as fh:
             writer = csv.writer(fh, lineterminator="\n")
             writer.writerow(table.columns)
             writer.writerows([r[c] for c in table.columns] for r in rows)
-        print(f"{name}: {len(rows)} rows")
+    print(f"{chr_class.token.lower()} (tree {tree}): {total} rows -> {dst}")
+    return dst
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--game", default="forever")
+    parser.add_argument("--build", required=True)
+    parser.add_argument("--classes", required=True, help="'all' or comma-separated class keys")
+    args = parser.parse_args()
+
+    cache = WagoDb2Source(None, ROOT / ".cache" / "wago" / args.game, offline=True)
+    version = ClientVersion.parse(args.build)
+    dataset = TraitDataSet.load(cache, version)
+    classes = (
+        sorted(dataset.classes.values(), key=lambda c: c.id)
+        if args.classes == "all"
+        else [resolve_class(dataset, key) for key in args.classes.split(",")]
+    )
+    tables = {name: cache.load_table(version, name) for name in TRAIT_TABLES}
+    for chr_class in classes:
+        extract_class(chr_class, dataset, tables, args.game, args.build)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 11,
+    "token": "DRUID",
+    "name": "Druid"
+  },
+  "fromBuild": "1.60.1.69977",
+  "toBuild": "1.60.1.70009",
+  "fromContentHash": "sha256:a598b226f93847adc80b5e8f41e9743416d164bf8a2e4db68c223213fbc2056a",
+  "toContentHash": "sha256:0105ee1c9a858d61a8c2c595f1a4701ba1e3cd2164d04c6b1d37d5ff2da18772",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 4,
+    "changesByKind": {
+      "descriptionChanged": 3,
+      "renamed": 2
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 104938,
+      "treeId": 1089,
+      "name": "Ferocity",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129598,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Reduces the cost of your Maul, Mangle, Swipe, Claw, and Rake abilities by $/10;s1 Rage or Energy.",
+          "new": "Reduces the cost of your Maul, Primal Bite, Swipe, Claw, and Rake abilities by $/10;s1 Rage or Energy."
+        }
+      ]
+    },
+    {
+      "nodeId": 104947,
+      "treeId": 1089,
+      "name": "Blood Frenzy",
+      "changes": [
+        {
+          "kind": "renamed",
+          "entryId": 129607,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Primal Fury",
+          "new": "Blood Frenzy"
+        }
+      ]
+    },
+    {
+      "nodeId": 104949,
+      "treeId": 1089,
+      "name": "Primal Bite",
+      "changes": [
+        {
+          "kind": "renamed",
+          "entryId": 129609,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Mangle",
+          "new": "Primal Bite"
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129609,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Mangle the target for $s2% normal damage plus $s1.",
+          "new": "Bite the target for $s2% normal damage plus $s1."
+        }
+      ]
+    },
+    {
+      "nodeId": 104956,
+      "treeId": 1089,
+      "name": "Berserk",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129616,
+          "effectIndex": null,
+          "rank": null,
+          "old": "$?a5487|a9634|a3025[|CFFFFFFFFReuires Cat Form, Bear Form, Dire Bear Form|R][|CFFFF2020Requires Cat Form, Bear Form, Dire Bear Form|R]\r\nCauses your Mangle ability to strike up to $s3 targets, removes its cooldown, and increases the critical strike chance of your Combo Point-generating abilities by $s1%. Clears and grants immunity to Fear effects for the duration. Lasts $d.",
+          "new": "$?a5487|a9634|a3025[|CFFFFFFFFReuires Cat Form, Bear Form, Dire Bear Form|R][|CFFFF2020Requires Cat Form, Bear Form, Dire Bear Form|R]\r\nCauses your Primal Bite ability to strike up to $s3 targets, removes its cooldown, and increases the critical strike chance of your Combo Point-generating abilities by $s1%. Clears and grants immunity to Fear effects for the duration. Lasts $d."
+        }
+      ]
+    }
+  ]
+}

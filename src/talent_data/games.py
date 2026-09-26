@@ -19,6 +19,11 @@ class GameConfig:
     # ``major.minor`` version branch that identifies this game inside those products. Needed
     # because a shared product (e.g. ``wow_classic_beta``) can host several game flavours.
     version_branch: str
+    # Class tokens (ChrClasses.Filename) of a *complete* dataset for this game - the
+    # product scope, verified against the client's ChrClasses of the supported builds.
+    # The normalizer itself stays data-driven; this is only the completeness expectation
+    # used to validate manifests (a dataset missing a class here is not publishable).
+    dataset_class_tokens: tuple[str, ...] = ()
 
 
 GAMES: dict[str, GameConfig] = {
@@ -28,6 +33,17 @@ GAMES: dict[str, GameConfig] = {
         # WoW: Forever beta currently ships through the Classic beta product.
         products=("wow_classic_beta",),
         version_branch="1.60",
+        dataset_class_tokens=(
+            "WARRIOR",
+            "PALADIN",
+            "HUNTER",
+            "ROGUE",
+            "PRIEST",
+            "SHAMAN",
+            "MAGE",
+            "WARLOCK",
+            "DRUID",
+        ),
     ),
 }
 
