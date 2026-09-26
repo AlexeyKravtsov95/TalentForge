@@ -1,0 +1,3926 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "clientBuild": "1.60.1.70009",
+  "class": {
+    "id": 8,
+    "token": "MAGE",
+    "name": "Mage"
+  },
+  "trees": [
+    {
+      "id": 1112,
+      "pointBudget": {
+        "currencyId": 3820,
+        "maxPoints": 51
+      },
+      "layout": {
+        "xStep": 600,
+        "yStep": 600
+      },
+      "sections": [
+        {
+          "index": 0,
+          "name": null,
+          "nodeIds": [
+            105798,
+            105799,
+            105800,
+            105801,
+            105802,
+            105803,
+            105804,
+            105805,
+            105806,
+            105807,
+            105808,
+            105809,
+            105810,
+            105811,
+            105812,
+            105813,
+            105814,
+            105815
+          ]
+        },
+        {
+          "index": 1,
+          "name": null,
+          "nodeIds": [
+            105781,
+            105782,
+            105783,
+            105784,
+            105785,
+            105786,
+            105787,
+            105788,
+            105789,
+            105790,
+            105791,
+            105792,
+            105793,
+            105794,
+            105795,
+            105796,
+            105797
+          ]
+        },
+        {
+          "index": 2,
+          "name": null,
+          "nodeIds": [
+            105762,
+            105763,
+            105764,
+            105765,
+            105766,
+            105767,
+            105768,
+            105769,
+            105770,
+            105771,
+            105772,
+            105773,
+            105774,
+            105775,
+            105776,
+            105777,
+            105778,
+            105779,
+            105780
+          ]
+        }
+      ],
+      "nodes": [
+        {
+          "id": 105815,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 2130,
+            "row": 0,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 6057,
+          "name": "Wand Specialization",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130544,
+              "definitionId": 135345,
+              "spellId": 6057,
+              "name": "Wand Specialization",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your damage with Wands by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 13
+                    },
+                    {
+                      "rank": 2,
+                      "value": 25
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 13,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105814,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 11222,
+          "name": "Arcane Focus",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130543,
+              "definitionId": 135344,
+              "spellId": 11222,
+              "name": "Arcane Focus",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Improves your chance to hit with Arcane spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 2,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105813,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 2130,
+            "row": 0,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 11237,
+          "name": "Improved Channeling",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130542,
+              "definitionId": 135343,
+              "spellId": 11237,
+              "name": "Improved Channeling",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Gives you a $m1% chance to avoid interruption caused by damage while channeling Arcane Missiles and a $m2% chance while casting Arcane Blast.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 20
+                    },
+                    {
+                      "rank": 2,
+                      "value": 40
+                    },
+                    {
+                      "rank": 3,
+                      "value": 60
+                    },
+                    {
+                      "rank": 4,
+                      "value": 80
+                    },
+                    {
+                      "rank": 5,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 14
+                    },
+                    {
+                      "rank": 2,
+                      "value": 28
+                    },
+                    {
+                      "rank": 3,
+                      "value": 42
+                    },
+                    {
+                      "rank": 4,
+                      "value": 56
+                    },
+                    {
+                      "rank": 5,
+                      "value": 70
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 14,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105812,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 2730,
+            "row": 1,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 11210,
+          "name": "Arcane Subtlety",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105813,
+                105814,
+                105815
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130541,
+              "definitionId": 135342,
+              "spellId": 11210,
+              "name": "Arcane Subtlety",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces your target's resistance to all your spells by $s2 and reduces the threat caused by your Arcane spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -15
+                    },
+                    {
+                      "rank": 2,
+                      "value": -30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -30,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -8
+                    },
+                    {
+                      "rank": 2,
+                      "value": -15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105811,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 29441,
+          "name": "Magic Absorption",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105813,
+                105814,
+                105815
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130540,
+              "definitionId": 135341,
+              "spellId": 29441,
+              "name": "Magic Absorption",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases all your resistances by $s2 and causes all spells you fully resist to restore $s1% of your total mana. Cannot trigger more often than 1 time per sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 2,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105810,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 11213,
+          "name": "Arcane Concentration",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105813,
+                105814,
+                105815
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130539,
+              "definitionId": 135340,
+              "spellId": 11213,
+              "name": "Arcane Concentration",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Gives you a $m1% chance of entering a Clearcasting state after any damage spell hits a target.  The Clearcasting state reduces the mana cost of your next damage spell by $/10;12536s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105809,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2820,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 28574,
+          "name": "Arcane Resilience",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105813,
+                105814,
+                105815
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130538,
+              "definitionId": 135339,
+              "spellId": 28574,
+              "name": "Arcane Resilience",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your Armor by an amount equal to $s1% of your Intellect.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 25
+                    },
+                    {
+                      "rank": 2,
+                      "value": 50
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 50,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105808,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 11247,
+          "name": "Arcane Geometry",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105809,
+                105810,
+                105811,
+                105812,
+                105813,
+                105814,
+                105815
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130537,
+              "definitionId": 135338,
+              "spellId": 11247,
+              "name": "Arcane Geometry",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the range of your Arcane spells by $m1 yards.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 6
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 6,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105807,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 11242,
+          "name": "Arcane Impact",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105809,
+                105810,
+                105811,
+                105812,
+                105813,
+                105814,
+                105815
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130536,
+              "definitionId": 135337,
+              "spellId": 11242,
+              "name": "Arcane Impact",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the critical strike chance of your Arcane spells by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 6,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105806,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2820,
+            "y": 3330,
+            "row": 2,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 400574,
+          "name": "Arcane Blast",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105809,
+                105810,
+                105811,
+                105812,
+                105813,
+                105814,
+                105815
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130535,
+              "definitionId": 135336,
+              "spellId": 400574,
+              "name": "Arcane Blast",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Blasts the target with energy, dealing $s1 Arcane damage. Each time you cast Arcane Blast, the damage of all your other spells is increased by $400573s1% and the mana cost of Arcane Blast is increased by $400573s2%. Effect stacks up to $400573u times and lasts $400573d or until any other damage spell is cast.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 54,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105805,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 11252,
+          "name": "Arcane Shielding",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105806,
+                105807,
+                105808,
+                105809,
+                105810,
+                105811,
+                105812,
+                105813,
+                105814,
+                105815
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130534,
+              "definitionId": 135335,
+              "spellId": 11252,
+              "name": "Arcane Shielding",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Decreases the Mana lost per point of damage taken when your Mana Shield spell is active by $m1% and increases the resistances granted by your Mage Armor spell by $m2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -17
+                    },
+                    {
+                      "rank": 2,
+                      "value": -33
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -33,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 25
+                    },
+                    {
+                      "rank": 2,
+                      "value": 50
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 50,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105804,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 11255,
+          "name": "Improved Counterspell",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105806,
+                105807,
+                105808,
+                105809,
+                105810,
+                105811,
+                105812,
+                105813,
+                105814,
+                105815
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130533,
+              "definitionId": 135334,
+              "spellId": 11255,
+              "name": "Improved Counterspell",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Your Counterspell also Silences the target for ${$m1/1000} sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2000
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 4000,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105803,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 18462,
+          "name": "Arcane Meditation",
+          "prerequisites": [
+            {
+              "nodeId": 105810,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105806,
+                105807,
+                105808,
+                105809,
+                105810,
+                105811,
+                105812,
+                105813,
+                105814,
+                105815
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130532,
+              "definitionId": 135333,
+              "spellId": 18462,
+              "name": "Arcane Meditation",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Allows $s1% of your Mana regeneration to continue while casting.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 17
+                    },
+                    {
+                      "rank": 2,
+                      "value": 33
+                    },
+                    {
+                      "rank": 3,
+                      "value": 50
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 50,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105802,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2820,
+            "y": 3930,
+            "row": 3,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 400588,
+          "name": "Missile Barrage",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105806,
+                105807,
+                105808,
+                105809,
+                105810,
+                105811,
+                105812,
+                105813,
+                105814,
+                105815
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130531,
+              "definitionId": 135332,
+              "spellId": 400588,
+              "name": "Missile Barrage",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Gives your Arcane Blast spell a $m1% chance, and your Fireball, Frostbolt, and Frostfire Bolt spells a ${$m1/2}% chance to reduce the channeled duration of your next Arcane Missiles spell by $400589s1%, reduce the Mana cost by $400589s3%, and missiles fire every ${$m2/10}.1 sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 40,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105801,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 12043,
+          "name": "Presence of Mind",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105802,
+                105803,
+                105804,
+                105805,
+                105806,
+                105807,
+                105808,
+                105809,
+                105810,
+                105811,
+                105812,
+                105813,
+                105814,
+                105815
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130530,
+              "definitionId": 135331,
+              "spellId": 12043,
+              "name": "Presence of Mind",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "When activated, your next Mage spell with a casting time less than 10 sec becomes an instant cast spell.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": -100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105800,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 4530,
+            "row": 4,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 11232,
+          "name": "Arcane Mind",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105802,
+                105803,
+                105804,
+                105805,
+                105806,
+                105807,
+                105808,
+                105809,
+                105810,
+                105811,
+                105812,
+                105813,
+                105814,
+                105815
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130529,
+              "definitionId": 135330,
+              "spellId": 11232,
+              "name": "Arcane Mind",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your Intellect by $m1% and increases the critical strike damage bonus of your Arcane spells by $m2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 20
+                    },
+                    {
+                      "rank": 2,
+                      "value": 40
+                    },
+                    {
+                      "rank": 3,
+                      "value": 60
+                    },
+                    {
+                      "rank": 4,
+                      "value": 80
+                    },
+                    {
+                      "rank": 5,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105799,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 15058,
+          "name": "Arcane Instability",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105800,
+                105801,
+                105802,
+                105803,
+                105804,
+                105805,
+                105806,
+                105807,
+                105808,
+                105809,
+                105810,
+                105811,
+                105812,
+                105813,
+                105814,
+                105815
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130528,
+              "definitionId": 135329,
+              "spellId": 15058,
+              "name": "Arcane Instability",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the damage done by your spells by $m1% and your critical strike chance by $m2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105798,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 12042,
+          "name": "Arcane Power",
+          "prerequisites": [
+            {
+              "nodeId": 105801,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105798,
+                105799,
+                105800,
+                105801,
+                105802,
+                105803,
+                105804,
+                105805,
+                105806,
+                105807,
+                105808,
+                105809,
+                105810,
+                105811,
+                105812,
+                105813,
+                105814,
+                105815
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130527,
+              "definitionId": 135328,
+              "spellId": 12042,
+              "name": "Arcane Power",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "For the next $d, your spells deal $s1% more damage while costing $s2% more mana to cast.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105797,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 2130,
+            "row": 0,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 11078,
+          "name": "Wake of Fire",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130526,
+              "definitionId": 135327,
+              "spellId": 11078,
+              "name": "Wake of Fire",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the cooldown of your Fire Blast spell by ${$s1/-1000} sec. Killing a non-trivial target increases the critical strike chance of your next Fire Blast cast within $1312934d by $m2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -1000
+                    },
+                    {
+                      "rank": 2,
+                      "value": -2000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -2000,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 25
+                    },
+                    {
+                      "rank": 2,
+                      "value": 50
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 50,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105796,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 18459,
+          "name": "Incineration",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130525,
+              "definitionId": 135326,
+              "spellId": 18459,
+              "name": "Incineration",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the critical strike chance of your Fire Blast, Ice Lance, Arcane Blast, and Scorch spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 6,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105795,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 2130,
+            "row": 0,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 11069,
+          "name": "Improved Fireball",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130524,
+              "definitionId": 135325,
+              "spellId": 11069,
+              "name": "Improved Fireball",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the casting time of your Fireball and Frostfire Bolt spells by $/1000;S1 sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -100
+                    },
+                    {
+                      "rank": 2,
+                      "value": -200
+                    },
+                    {
+                      "rank": 3,
+                      "value": -300
+                    },
+                    {
+                      "rank": 4,
+                      "value": -400
+                    },
+                    {
+                      "rank": 5,
+                      "value": -500
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -500,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105794,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 2730,
+            "row": 1,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 11119,
+          "name": "Ignite",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105795,
+                105796,
+                105797
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130523,
+              "definitionId": 135324,
+              "spellId": 11119,
+              "name": "Ignite",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Your critical strikes from Fire damage spells cause the target to burn for an additional $m1% of your spell's damage over $412538d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 8
+                    },
+                    {
+                      "rank": 2,
+                      "value": 16
+                    },
+                    {
+                      "rank": 3,
+                      "value": 24
+                    },
+                    {
+                      "rank": 4,
+                      "value": 32
+                    },
+                    {
+                      "rank": 5,
+                      "value": 40
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 40,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105793,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 11100,
+          "name": "Flame Throwing",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105795,
+                105796,
+                105797
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130522,
+              "definitionId": 135323,
+              "spellId": 11100,
+              "name": "Flame Throwing",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the range of your Fire spells by $s1 yards.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 6
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 6,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105792,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 11103,
+          "name": "Impact",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105795,
+                105796,
+                105797
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130521,
+              "definitionId": 135322,
+              "spellId": 11103,
+              "name": "Impact",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Gives your Fire spells a $m1% chance to stun the target for $12355d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 7
+                    },
+                    {
+                      "rank": 3,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105789,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 11083,
+          "name": "Burning Soul",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105792,
+                105793,
+                105794,
+                105795,
+                105796,
+                105797
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130518,
+              "definitionId": 135319,
+              "spellId": 11083,
+              "name": "Burning Soul",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Gives your Fire spells a $s1% chance to not lose casting time when you take damage and reduces the threat caused by your Fire spells by $s2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 23
+                    },
+                    {
+                      "rank": 2,
+                      "value": 47
+                    },
+                    {
+                      "rank": 3,
+                      "value": 70
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 70,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -10
+                    },
+                    {
+                      "rank": 2,
+                      "value": -20
+                    },
+                    {
+                      "rank": 3,
+                      "value": -30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105791,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 11108,
+          "name": "Improved Flamestrike",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105792,
+                105793,
+                105794,
+                105795,
+                105796,
+                105797
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130520,
+              "definitionId": 135321,
+              "spellId": 11108,
+              "name": "Improved Flamestrike",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the critical strike chance of your Flamestrike spell by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    },
+                    {
+                      "rank": 3,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105790,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 3330,
+            "row": 2,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 11366,
+          "name": "Pyroblast",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105792,
+                105793,
+                105794,
+                105795,
+                105796,
+                105797
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130519,
+              "definitionId": 135320,
+              "spellId": 11366,
+              "name": "Pyroblast",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Hurls an immense fiery boulder that causes $s1 Fire damage and an additional $o2 Fire damage over $d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 110,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 11,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105788,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 11095,
+          "name": "Improved Scorch",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105789,
+                105790,
+                105791,
+                105792,
+                105793,
+                105794,
+                105795,
+                105796,
+                105797
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130517,
+              "definitionId": 135318,
+              "spellId": 11095,
+              "name": "Improved Scorch",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Your Scorch spell has a $m1% chance to cause your target to be vulnerable to Fire damage. This vulnerability increases all Fire damage you deal to your target by $22959s1% and lasts $22959d, stacking up to $22959u times.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 33
+                    },
+                    {
+                      "rank": 2,
+                      "value": 67
+                    },
+                    {
+                      "rank": 3,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105787,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 11094,
+          "name": "Improved Fire Ward",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105789,
+                105790,
+                105791,
+                105792,
+                105793,
+                105794,
+                105795,
+                105796,
+                105797
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130516,
+              "definitionId": 135317,
+              "spellId": 11094,
+              "name": "Improved Fire Ward",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Causes your Fire Ward to have a $s1% chance to reflect Fire spells while active.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105786,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 400624,
+          "name": "Hot Streak",
+          "prerequisites": [
+            {
+              "nodeId": 105790,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105789,
+                105790,
+                105791,
+                105792,
+                105793,
+                105794,
+                105795,
+                105796,
+                105797
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130515,
+              "definitionId": 135316,
+              "spellId": 400624,
+              "name": "Hot Streak",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Your non-periodic critical strikes with Fireball, Frostfire Bolt, Fire Blast, and Scorch grant Hot Streak for $400625d. Hot Streak reduces the cast time of Pyroblast by $400625s1%, stacking up to $400625s2 times.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105785,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6820,
+            "y": 3930,
+            "row": 3,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 29074,
+          "name": "Master of Elements",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105789,
+                105790,
+                105791,
+                105792,
+                105793,
+                105794,
+                105795,
+                105796,
+                105797
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130514,
+              "definitionId": 135315,
+              "spellId": 29074,
+              "name": "Master of Elements",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Your Fire and Frost critical strikes will refund $s1% of their base mana cost.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    },
+                    {
+                      "rank": 3,
+                      "value": 30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105784,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 11115,
+          "name": "Critical Mass",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105785,
+                105786,
+                105787,
+                105788,
+                105789,
+                105790,
+                105791,
+                105792,
+                105793,
+                105794,
+                105795,
+                105796,
+                105797
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130513,
+              "definitionId": 135314,
+              "spellId": 11115,
+              "name": "Critical Mass",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the critical strike chance of your Fire spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 2,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105783,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 4530,
+            "row": 4,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 11113,
+          "name": "Blast Wave",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105785,
+                105786,
+                105787,
+                105788,
+                105789,
+                105790,
+                105791,
+                105792,
+                105793,
+                105794,
+                105795,
+                105796,
+                105797
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130512,
+              "definitionId": 135313,
+              "spellId": 11113,
+              "name": "Blast Wave",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "A wave of flame radiates outward from the caster, damaging all enemies caught within the blast for $s1 Fire damage, and Dazing them for $s2% reduced movement speed for $d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 163,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": -50,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105782,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 11124,
+          "name": "Fire Power",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105783,
+                105784,
+                105785,
+                105786,
+                105787,
+                105788,
+                105789,
+                105790,
+                105791,
+                105792,
+                105793,
+                105794,
+                105795,
+                105796,
+                105797
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130511,
+              "definitionId": 135312,
+              "spellId": 11124,
+              "name": "Fire Power",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the damage done by your Fire spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 2,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 2,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105781,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 11129,
+          "name": "Combustion",
+          "prerequisites": [
+            {
+              "nodeId": 105784,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105781,
+                105782,
+                105783,
+                105784,
+                105785,
+                105786,
+                105787,
+                105788,
+                105789,
+                105790,
+                105791,
+                105792,
+                105793,
+                105794,
+                105795,
+                105796,
+                105797
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130510,
+              "definitionId": 135311,
+              "spellId": 11129,
+              "name": "Combustion",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "When activated, this spell causes each of your Fire damage spell hits to increase your critical strike chance with Fire damage spells by $28682s1%.  This effect lasts until you have caused $n non-periodic critical strikes with Fire spells.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105780,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 2130,
+            "row": 0,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 11189,
+          "name": "Frost Warding",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130509,
+              "definitionId": 135310,
+              "spellId": 11189,
+              "name": "Frost Warding",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the Armor and resistance given by your Frost Armor and Ice Armor spells by $s1%. In addition, gives your Frost Ward a $s2% chance to reflect Frost spells and effects while active.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 15
+                    },
+                    {
+                      "rank": 2,
+                      "value": 30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105779,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 11070,
+          "name": "Improved Frostbolt",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130508,
+              "definitionId": 135309,
+              "spellId": 11070,
+              "name": "Improved Frostbolt",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the casting time of your Frostbolt spell by $/1000;S1 sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -100
+                    },
+                    {
+                      "rank": 2,
+                      "value": -200
+                    },
+                    {
+                      "rank": 3,
+                      "value": -300
+                    },
+                    {
+                      "rank": 4,
+                      "value": -400
+                    },
+                    {
+                      "rank": 5,
+                      "value": -500
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105778,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 2130,
+            "row": 0,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 29438,
+          "name": "Elemental Precision",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130507,
+              "definitionId": 135308,
+              "spellId": 29438,
+              "name": "Elemental Precision",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Improves your chance to hit with Frost and Fire spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 6,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105777,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 2730,
+            "row": 1,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 11207,
+          "name": "Ice Shards",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105778,
+                105779,
+                105780
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130506,
+              "definitionId": 135307,
+              "spellId": 11207,
+              "name": "Ice Shards",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the critical strike damage bonus of your Frost spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 20
+                    },
+                    {
+                      "rank": 2,
+                      "value": 40
+                    },
+                    {
+                      "rank": 3,
+                      "value": 60
+                    },
+                    {
+                      "rank": 4,
+                      "value": 80
+                    },
+                    {
+                      "rank": 5,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105776,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 11175,
+          "name": "Permafrost",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105778,
+                105779,
+                105780
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130505,
+              "definitionId": 135306,
+              "spellId": 11175,
+              "name": "Permafrost",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the duration of your Chill effects by $s1% and reduces the target's speed by an additional $s2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 11
+                    },
+                    {
+                      "rank": 2,
+                      "value": 22
+                    },
+                    {
+                      "rank": 3,
+                      "value": 33
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 33,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -3
+                    },
+                    {
+                      "rank": 2,
+                      "value": -7
+                    },
+                    {
+                      "rank": 3,
+                      "value": -10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105775,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 11165,
+          "name": "Improved Frost Nova",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105778,
+                105779,
+                105780
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130504,
+              "definitionId": 135305,
+              "spellId": 11165,
+              "name": "Improved Frost Nova",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the cooldown of your Frost Nova spell by $/1000;s1 sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -2000
+                    },
+                    {
+                      "rank": 2,
+                      "value": -4000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -4000,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105774,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10880,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 11071,
+          "name": "Frostbite",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105778,
+                105779,
+                105780
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130503,
+              "definitionId": 135304,
+              "spellId": 11071,
+              "name": "Frostbite",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Gives your Chill effects a $s1% chance to Freeze the target for $12494d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    },
+                    {
+                      "rank": 3,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105773,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 11151,
+          "name": "Piercing Ice",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105774,
+                105775,
+                105776,
+                105777,
+                105778,
+                105779,
+                105780
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130502,
+              "definitionId": 135303,
+              "spellId": 11151,
+              "name": "Piercing Ice",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the damage done by your Frost spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 2,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 2,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105772,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 11160,
+          "name": "Frost Channeling",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105774,
+                105775,
+                105776,
+                105777,
+                105778,
+                105779,
+                105780
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130501,
+              "definitionId": 135302,
+              "spellId": 11160,
+              "name": "Frost Channeling",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the mana cost of your Frost spells by $s1% and reduces the threat caused by your Frost spells by $s2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -5
+                    },
+                    {
+                      "rank": 2,
+                      "value": -10
+                    },
+                    {
+                      "rank": 3,
+                      "value": -15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -15,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    },
+                    {
+                      "rank": 3,
+                      "value": 30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105767,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 3330,
+            "row": 2,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 1312002,
+          "name": "Ice Lance",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105774,
+                105775,
+                105776,
+                105777,
+                105778,
+                105779,
+                105780
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130496,
+              "definitionId": 135297,
+              "spellId": 1312002,
+              "name": "Ice Lance",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Deals $s1 Frost damage to an enemy target. Deals $s2% increased damage to Frozen targets.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 28,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 300,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 3,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105771,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10880,
+            "y": 3330,
+            "row": 2,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 11185,
+          "name": "Improved Blizzard",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105774,
+                105775,
+                105776,
+                105777,
+                105778,
+                105779,
+                105780
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130500,
+              "definitionId": 135301,
+              "spellId": 11185,
+              "name": "Improved Blizzard",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Adds a Chill effect to your Blizzard spell. This effect lowers the target's movement speed by $m1% for $12484d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -15
+                    },
+                    {
+                      "rank": 2,
+                      "value": -25
+                    },
+                    {
+                      "rank": 3,
+                      "value": -40
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -40,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105770,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 16757,
+          "name": "Arctic Reach",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105767,
+                105771,
+                105772,
+                105773,
+                105774,
+                105775,
+                105776,
+                105777,
+                105778,
+                105779,
+                105780
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130499,
+              "definitionId": 135300,
+              "spellId": 16757,
+              "name": "Arctic Reach",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the range of your Frostbolt and Blizzard spells and the radius of your Frost Nova and Cone of Cold spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105769,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 11958,
+          "name": "Ice Block",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105767,
+                105771,
+                105772,
+                105773,
+                105774,
+                105775,
+                105776,
+                105777,
+                105778,
+                105779,
+                105780
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130498,
+              "definitionId": 135299,
+              "spellId": 11958,
+              "name": "Ice Block",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "You become encased in a block of ice, protecting you from all physical attacks and spells for $d, but during that time you cannot attack, move, or cast spells.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105768,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10880,
+            "y": 3930,
+            "row": 3,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 11170,
+          "name": "Shatter",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105767,
+                105771,
+                105772,
+                105773,
+                105774,
+                105775,
+                105776,
+                105777,
+                105778,
+                105779,
+                105780
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130497,
+              "definitionId": 135298,
+              "spellId": 11170,
+              "name": "Shatter",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the critical strike chance of all your spells against Frozen targets by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 17
+                    },
+                    {
+                      "rank": 2,
+                      "value": 33
+                    },
+                    {
+                      "rank": 3,
+                      "value": 50
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105765,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 4530,
+            "row": 4,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 11190,
+          "name": "Improved Cone of Cold",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105767,
+                105768,
+                105769,
+                105770,
+                105771,
+                105772,
+                105773,
+                105774,
+                105775,
+                105776,
+                105777,
+                105778,
+                105779,
+                105780
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130494,
+              "definitionId": 135295,
+              "spellId": 11190,
+              "name": "Improved Cone of Cold",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the damage dealt by your Cone of Cold spell by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 12
+                    },
+                    {
+                      "rank": 2,
+                      "value": 23
+                    },
+                    {
+                      "rank": 3,
+                      "value": 35
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105766,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 12472,
+          "name": "Cold Snap",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105767,
+                105768,
+                105769,
+                105770,
+                105771,
+                105772,
+                105773,
+                105774,
+                105775,
+                105776,
+                105777,
+                105778,
+                105779,
+                105780
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130495,
+              "definitionId": 135296,
+              "spellId": 12472,
+              "name": "Cold Snap",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Finishes the remaining cooldown on all your other Frost spells.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105764,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 4530,
+            "row": 4,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 400647,
+          "name": "Fingers of Frost",
+          "prerequisites": [
+            {
+              "nodeId": 105767,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105767,
+                105768,
+                105769,
+                105770,
+                105771,
+                105772,
+                105773,
+                105774,
+                105775,
+                105776,
+                105777,
+                105778,
+                105779,
+                105780
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130493,
+              "definitionId": 135294,
+              "spellId": 400647,
+              "name": "Fingers of Frost",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Gives your Chill effects a $s2% chance to grant you the Fingers of Frost effect, which treats your next $m1 $lspell:spells; cast as if the target were Frozen. Lasts $400669d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 2,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105763,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 11180,
+          "name": "Winter's Chill",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105764,
+                105765,
+                105766,
+                105767,
+                105768,
+                105769,
+                105770,
+                105771,
+                105772,
+                105773,
+                105774,
+                105775,
+                105776,
+                105777,
+                105778,
+                105779,
+                105780
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130492,
+              "definitionId": 135293,
+              "spellId": 11180,
+              "name": "Winter's Chill",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Gives your Frost damage spells a $m2% chance to apply the Winter's Chill effect, which increases the chance your Ice Lance and Frostbolt spells will critically hit the target by $12579s1% for $12579d. Stacks up to $s1 times.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 20
+                    },
+                    {
+                      "rank": 2,
+                      "value": 40
+                    },
+                    {
+                      "rank": 3,
+                      "value": 60
+                    },
+                    {
+                      "rank": 4,
+                      "value": 80
+                    },
+                    {
+                      "rank": 5,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105762,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 11426,
+          "name": "Ice Barrier",
+          "prerequisites": [
+            {
+              "nodeId": 105766,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105762,
+                105763,
+                105764,
+                105765,
+                105766,
+                105767,
+                105768,
+                105769,
+                105770,
+                105771,
+                105772,
+                105773,
+                105774,
+                105775,
+                105776,
+                105777,
+                105778,
+                105779,
+                105780
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130491,
+              "definitionId": 135292,
+              "spellId": 11426,
+              "name": "Ice Barrier",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Instantly shields you, absorbing $s1 damage. Lasts $d. While the shield holds, your spellcasts will not be interrupted or delayed from taking damage.\r\n",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 431,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "visualOnlyEdges": []
+    }
+  ],
+  "contentHash": "sha256:29fd95f62da2210850793a73e6f5cdb51b38e1d65e71c90569147b692ad94039",
+  "generatedAt": "2026-09-26T20:33:57Z",
+  "provenance": {
+    "source": "wago.tools",
+    "tables": [
+      "ChrClasses",
+      "SkillRaceClassInfo",
+      "SkillLineXTraitTree",
+      "TraitTree",
+      "TraitTreeXTraitCurrency",
+      "TraitCurrency",
+      "TraitNode",
+      "TraitNodeXTraitNodeEntry",
+      "TraitNodeEntry",
+      "TraitDefinition",
+      "TraitEdge",
+      "TraitNodeGroupXTraitNode",
+      "TraitNodeGroupXTraitCond",
+      "TraitNodeXTraitCond",
+      "TraitCond",
+      "TraitDefinitionEffectPoints",
+      "Curve",
+      "CurvePoint",
+      "Spell",
+      "SpellName",
+      "SpellEffect"
+    ]
+  }
+}

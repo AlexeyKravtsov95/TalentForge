@@ -1,0 +1,545 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 7,
+    "token": "SHAMAN",
+    "name": "Shaman"
+  },
+  "fromBuild": "1.60.1.69977",
+  "toBuild": "1.60.1.70009",
+  "fromContentHash": "sha256:e29145e45e888a3af8b1989a81341b89dd4d4f8f10c913b886d91c622ae22f6e",
+  "toContentHash": "sha256:c2944df5c660482c4cbbd14019866a51c0715bf09f162fa3172ec1b55e12c804",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 10,
+    "changesByKind": {
+      "descriptionChanged": 1,
+      "effectBasePointsChanged": 1,
+      "effectRemoved": 1,
+      "positionChanged": 2,
+      "prerequisitesChanged": 3,
+      "unlockRequirementsChanged": 8
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 104740,
+      "treeId": 1082,
+      "name": "Rage of the Farseer",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129400,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases your melee attack speed and spell casting speed by $s1% for $d.",
+          "new": "Increases your attack speed by $s1% for $d."
+        },
+        {
+          "kind": "effectRemoved",
+          "entryId": 129400,
+          "effectIndex": 2,
+          "rank": null,
+          "old": {
+            "index": 2,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 30,
+            "unresolvedReason": null
+          },
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 104758,
+      "treeId": 1082,
+      "name": "Lava Burst",
+      "changes": [
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 129418,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 113,
+          "new": 164
+        }
+      ]
+    },
+    {
+      "nodeId": 104759,
+      "treeId": 1082,
+      "name": "Lightning Overload",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104762,
+                104763,
+                104764,
+                104766,
+                104767,
+                104768,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104762,
+                104763,
+                104764,
+                104765,
+                104767,
+                104768,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 104760,
+      "treeId": 1082,
+      "name": "Earthbound",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104762,
+                104763,
+                104764,
+                104766,
+                104767,
+                104768,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104762,
+                104763,
+                104764,
+                104765,
+                104767,
+                104768,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 104761,
+      "treeId": 1082,
+      "name": "Elemental Reach",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104762,
+                104763,
+                104764,
+                104766,
+                104767,
+                104768,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104762,
+                104763,
+                104764,
+                104765,
+                104767,
+                104768,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 104762,
+      "treeId": 1082,
+      "name": "Call of Thunder",
+      "changes": [
+        {
+          "kind": "prerequisitesChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "nodeId": 104766,
+              "kind": "sufficient",
+              "name": "Elemental Fury"
+            }
+          ],
+          "new": [
+            {
+              "nodeId": 104765,
+              "kind": "sufficient",
+              "name": "Elemental Alacrity"
+            }
+          ]
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104766,
+                104767,
+                104768,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104765,
+                104767,
+                104768,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 104763,
+      "treeId": 1082,
+      "name": "Eye of the Storm",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104766,
+                104767,
+                104768,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104765,
+                104767,
+                104768,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 104764,
+      "treeId": 1082,
+      "name": "Improved Fire Nova",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104766,
+                104767,
+                104768,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104765,
+                104767,
+                104768,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 104765,
+      "treeId": 1082,
+      "name": "Elemental Alacrity",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 2220,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          },
+          "new": {
+            "x": 2220,
+            "y": 3330,
+            "row": 2,
+            "column": 2
+          }
+        },
+        {
+          "kind": "prerequisitesChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "nodeId": 104762,
+              "kind": "sufficient",
+              "name": "Call of Thunder"
+            }
+          ],
+          "new": []
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                104759,
+                104760,
+                104761,
+                104762,
+                104763,
+                104764,
+                104766,
+                104767,
+                104768,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104767,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 104766,
+      "treeId": 1082,
+      "name": "Elemental Fury",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 2220,
+            "y": 3330,
+            "row": 2,
+            "column": 2
+          },
+          "new": {
+            "x": 2220,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          }
+        },
+        {
+          "kind": "prerequisitesChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [],
+          "new": [
+            {
+              "nodeId": 104762,
+              "kind": "sufficient",
+              "name": "Call of Thunder"
+            }
+          ]
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104767,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                104759,
+                104760,
+                104761,
+                104762,
+                104763,
+                104764,
+                104765,
+                104767,
+                104768,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

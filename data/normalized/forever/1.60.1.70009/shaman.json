@@ -1,0 +1,3699 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "clientBuild": "1.60.1.70009",
+  "class": {
+    "id": 7,
+    "token": "SHAMAN",
+    "name": "Shaman"
+  },
+  "trees": [
+    {
+      "id": 1082,
+      "pointBudget": {
+        "currencyId": 3820,
+        "maxPoints": 51
+      },
+      "layout": {
+        "xStep": 600,
+        "yStep": 600
+      },
+      "sections": [
+        {
+          "index": 0,
+          "name": null,
+          "nodeIds": [
+            104758,
+            104759,
+            104760,
+            104761,
+            104762,
+            104763,
+            104764,
+            104765,
+            104766,
+            104767,
+            104768,
+            104769,
+            104770,
+            104771,
+            104772,
+            104773
+          ]
+        },
+        {
+          "index": 1,
+          "name": null,
+          "nodeIds": [
+            104740,
+            104741,
+            104742,
+            104743,
+            104744,
+            104745,
+            104746,
+            104747,
+            104748,
+            104749,
+            104750,
+            104751,
+            104752,
+            104753,
+            104754,
+            104755,
+            104756,
+            104757
+          ]
+        },
+        {
+          "index": 2,
+          "name": null,
+          "nodeIds": [
+            104724,
+            104725,
+            104726,
+            104727,
+            104728,
+            104729,
+            104730,
+            104731,
+            104732,
+            104733,
+            104734,
+            104735,
+            104736,
+            104737,
+            104738,
+            104739
+          ]
+        }
+      ],
+      "nodes": [
+        {
+          "id": 104773,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 16039,
+          "name": "Convection",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129433,
+              "definitionId": 134234,
+              "spellId": 16039,
+              "name": "Convection",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the mana cost of your Shock, Lightning Bolt, Lava Burst, and Chain Lightning spells by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -2
+                    },
+                    {
+                      "rank": 2,
+                      "value": -4
+                    },
+                    {
+                      "rank": 3,
+                      "value": -6
+                    },
+                    {
+                      "rank": 4,
+                      "value": -8
+                    },
+                    {
+                      "rank": 5,
+                      "value": -10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -2,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104772,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 2130,
+            "row": 0,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 16035,
+          "name": "Concussion",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129432,
+              "definitionId": 134233,
+              "spellId": 16035,
+              "name": "Concussion",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the damage done by your Lightning Bolt, Chain Lightning, and Earth Shock spells by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104771,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 2730,
+            "row": 1,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 28996,
+          "name": "Elemental Warding",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                104772,
+                104773
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129431,
+              "definitionId": 134232,
+              "spellId": 28996,
+              "name": "Elemental Warding",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces damage taken from Fire, Frost, and Nature effects by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -3
+                    },
+                    {
+                      "rank": 2,
+                      "value": -7
+                    },
+                    {
+                      "rank": 3,
+                      "value": -10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -4,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104767,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 16040,
+          "name": "Reverberation",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                104772,
+                104773
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129427,
+              "definitionId": 134228,
+              "spellId": 16040,
+              "name": "Reverberation",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the cooldown of your Shock spells by ${$m1/-1000}.1 sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -200
+                    },
+                    {
+                      "rank": 2,
+                      "value": -400
+                    },
+                    {
+                      "rank": 3,
+                      "value": -600
+                    },
+                    {
+                      "rank": 4,
+                      "value": -800
+                    },
+                    {
+                      "rank": 5,
+                      "value": -1000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -200,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104770,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 16038,
+          "name": "Call of Flame",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                104772,
+                104773
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129430,
+              "definitionId": 134231,
+              "spellId": 16038,
+              "name": "Call of Flame",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the damage done by your Fire Totems and by your Flame Shock, Fire Nova, and Lava Burst spells by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    },
+                    {
+                      "rank": 3,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    },
+                    {
+                      "rank": 3,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104769,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2820,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 30160,
+          "name": "Elemental Devastation",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                104772,
+                104773
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129429,
+              "definitionId": 134230,
+              "spellId": 30160,
+              "name": "Elemental Devastation",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Your offensive spell critical strikes will increase your chance to get a critical strike with melee attacks by $m1% for $30165d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 6
+                    },
+                    {
+                      "rank": 3,
+                      "value": 9
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104768,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 16164,
+          "name": "Elemental Focus",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104767,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129428,
+              "definitionId": 134229,
+              "spellId": 16164,
+              "name": "Elemental Focus",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Gives you a $h% chance to enter a Clearcasting state after casting any Fire, Frost, or Nature damage spell.  The Clearcasting state reduces the mana cost of your next damage spell by $16246s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104765,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 3330,
+            "row": 2,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 16578,
+          "name": "Elemental Alacrity",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104767,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129425,
+              "definitionId": 134226,
+              "spellId": 16578,
+              "name": "Elemental Alacrity",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the cast time of your Lightning Bolt, Chain Lightning, and Lava Burst spells by ${$m1/-1000}.2 sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -170
+                    },
+                    {
+                      "rank": 2,
+                      "value": -330
+                    },
+                    {
+                      "rank": 3,
+                      "value": -500
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -200,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104764,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 16086,
+          "name": "Improved Fire Nova",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104765,
+                104767,
+                104768,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129424,
+              "definitionId": 134225,
+              "spellId": 16086,
+              "name": "Improved Fire Nova",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the damage done by your Fire Nova spell by $m1% and reduces its cooldown by ${$m2/-1000} sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -2000
+                    },
+                    {
+                      "rank": 2,
+                      "value": -4000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -2000,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104763,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 29062,
+          "name": "Eye of the Storm",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104765,
+                104767,
+                104768,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129423,
+              "definitionId": 134224,
+              "spellId": 29062,
+              "name": "Eye of the Storm",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the pushback suffered from damaging attacks while casting Lightning Bolt, Chain Lightning, and Lava Burst by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 23
+                    },
+                    {
+                      "rank": 2,
+                      "value": 47
+                    },
+                    {
+                      "rank": 3,
+                      "value": 70
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 70,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104762,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 16120,
+          "name": "Call of Thunder",
+          "prerequisites": [
+            {
+              "nodeId": 104765,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104765,
+                104767,
+                104768,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129422,
+              "definitionId": 134223,
+              "spellId": 16120,
+              "name": "Call of Thunder",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the critical strike chance of your Lightning Bolt and Chain Lightning spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 3,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104761,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 4530,
+            "row": 4,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 28999,
+          "name": "Elemental Reach",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104762,
+                104763,
+                104764,
+                104765,
+                104767,
+                104768,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129421,
+              "definitionId": 134222,
+              "spellId": 28999,
+              "name": "Elemental Reach",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the range of your Lightning Bolt, Chain Lightning, Fire Nova, and Lava Burst spells by $m1 yards, and increases the range of your Flame Shock spell by $m2 yards.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 6
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 6,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 8
+                    },
+                    {
+                      "rank": 2,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104759,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 408438,
+          "name": "Lightning Overload",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104762,
+                104763,
+                104764,
+                104765,
+                104767,
+                104768,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129419,
+              "definitionId": 134220,
+              "spellId": 408438,
+              "name": "Lightning Overload",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Gives your Lightning Bolt and Chain Lightning spells a $m1% chance to cast a second, similar spell on the same target at no additional cost that causes half damage and no threat.\r\n",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 7
+                    },
+                    {
+                      "rank": 3,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104760,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2820,
+            "y": 4530,
+            "row": 4,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 1222988,
+          "name": "Earthbound",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104762,
+                104763,
+                104764,
+                104765,
+                104767,
+                104768,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129420,
+              "definitionId": 134221,
+              "spellId": 1222988,
+              "name": "Earthbound",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Your Earthbind Totem Immobilizes nearby targets for $1238289d when cast.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104766,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 16089,
+          "name": "Elemental Fury",
+          "prerequisites": [
+            {
+              "nodeId": 104762,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                104759,
+                104760,
+                104761,
+                104762,
+                104763,
+                104764,
+                104765,
+                104767,
+                104768,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129426,
+              "definitionId": 134227,
+              "spellId": 16089,
+              "name": "Elemental Fury",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the critical strike damage bonus of your Searing and Magma Totems and your Fire, Frost, and Nature spells by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 20
+                    },
+                    {
+                      "rank": 2,
+                      "value": 40
+                    },
+                    {
+                      "rank": 3,
+                      "value": 60
+                    },
+                    {
+                      "rank": 4,
+                      "value": 80
+                    },
+                    {
+                      "rank": 5,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104758,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 408490,
+          "name": "Lava Burst",
+          "prerequisites": [
+            {
+              "nodeId": 104759,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                104758,
+                104759,
+                104760,
+                104761,
+                104762,
+                104763,
+                104764,
+                104765,
+                104766,
+                104767,
+                104768,
+                104769,
+                104770,
+                104771,
+                104772,
+                104773
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129418,
+              "definitionId": 134219,
+              "spellId": 408490,
+              "name": "Lava Burst",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "You hurl molten lava at the target, dealing $s1 Fire damage. If your Flame Shock is on the target, Lava Burst deals $s2% increased damage.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 164,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104757,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 2130,
+            "row": 0,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 16043,
+          "name": "Earth's Grasp",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129417,
+              "definitionId": 134218,
+              "spellId": 16043,
+              "name": "Earth's Grasp",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the health of your Stoneclaw Totem by $m1% and the radius of your Earthbind Totem by $m2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 25
+                    },
+                    {
+                      "rank": 2,
+                      "value": 50
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 25,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104753,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 16255,
+          "name": "Thundering Strikes",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129413,
+              "definitionId": 134214,
+              "spellId": 16255,
+              "name": "Thundering Strikes",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Improves your chance to get a critical strike with all spells and attacks by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104756,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 2130,
+            "row": 0,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 17485,
+          "name": "Ancestral Knowledge",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129416,
+              "definitionId": 134217,
+              "spellId": 17485,
+              "name": "Ancestral Knowledge",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your Intellect by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104754,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 2730,
+            "row": 1,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 16258,
+          "name": "Guardian Totems",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                104753,
+                104756,
+                104757
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129414,
+              "definitionId": 134215,
+              "spellId": 16258,
+              "name": "Guardian Totems",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the amount of damage reduced by your Stoneskin Totem and Windwall Totem by $m1% and reduces the cooldown of your Grounding Totem by ${$m2/-1000} sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -1000
+                    },
+                    {
+                      "rank": 2,
+                      "value": -2000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -1000,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104755,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 415140,
+          "name": "Mental Dexterity",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                104753,
+                104756,
+                104757
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129415,
+              "definitionId": 134216,
+              "spellId": 415140,
+              "name": "Mental Dexterity",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your Attack Power by an amount equal to $m1% of your Intellect.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 33
+                    },
+                    {
+                      "rank": 2,
+                      "value": 67
+                    },
+                    {
+                      "rank": 3,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104752,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 16262,
+          "name": "Improved Ghost Wolf",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                104753,
+                104756,
+                104757
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129412,
+              "definitionId": 134213,
+              "spellId": 16262,
+              "name": "Improved Ghost Wolf",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the cast time of your Ghost Wolf spell by ${$m1/-1000}.1 sec, and Ghost Wolf may be used indoors.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -1000
+                    },
+                    {
+                      "rank": 2,
+                      "value": -3000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -3000,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 1238640,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 1282241,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104751,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6820,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 16261,
+          "name": "Improved Lightning Shield",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                104753,
+                104756,
+                104757
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129411,
+              "definitionId": 134212,
+              "spellId": 16261,
+              "name": "Improved Lightning Shield",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the damage done by your Lightning Shield orbs by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    },
+                    {
+                      "rank": 3,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104750,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 16266,
+          "name": "Elemental Weapons",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104751,
+                104752,
+                104753,
+                104754,
+                104755,
+                104756,
+                104757
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129410,
+              "definitionId": 134211,
+              "spellId": 16266,
+              "name": "Elemental Weapons",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the melee attack power bonus of your Rockbiter Weapon by $m1%, your Windfury Weapon effect by $m3% and increases the damage caused by your Flametongue Weapon and Frostbrand Weapon by $m2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 7
+                    },
+                    {
+                      "rank": 2,
+                      "value": 13
+                    },
+                    {
+                      "rank": 3,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 7,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    },
+                    {
+                      "rank": 3,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 13
+                    },
+                    {
+                      "rank": 2,
+                      "value": 27
+                    },
+                    {
+                      "rank": 3,
+                      "value": 40
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 13,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104749,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 3330,
+            "row": 2,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 1223030,
+          "name": "Shamanistic Focus",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104751,
+                104752,
+                104753,
+                104754,
+                104755,
+                104756,
+                104757
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129409,
+              "definitionId": 134210,
+              "spellId": 1223030,
+              "name": "Shamanistic Focus",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the mana cost of your Shock and Lightning Shield spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": -45,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104748,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6820,
+            "y": 3330,
+            "row": 2,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 16254,
+          "name": "Anticipation",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104751,
+                104752,
+                104753,
+                104754,
+                104755,
+                104756,
+                104757
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129408,
+              "definitionId": 134209,
+              "spellId": 16254,
+              "name": "Anticipation",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your chance to dodge by an additional $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104746,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 16252,
+          "name": "Toughness",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104748,
+                104749,
+                104750,
+                104751,
+                104752,
+                104753,
+                104754,
+                104755,
+                104756,
+                104757
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129406,
+              "definitionId": 134207,
+              "spellId": 16252,
+              "name": "Toughness",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your Stamina by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 2,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104747,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 16256,
+          "name": "Flurry",
+          "prerequisites": [
+            {
+              "nodeId": 104755,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104748,
+                104749,
+                104750,
+                104751,
+                104752,
+                104753,
+                104754,
+                104755,
+                104756,
+                104757
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129407,
+              "definitionId": 134208,
+              "spellId": 16256,
+              "name": "Flurry",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your attack speed by $m1% for your next $16257n swings after dealing a melee critical strike.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    },
+                    {
+                      "rank": 3,
+                      "value": 15
+                    },
+                    {
+                      "rank": 4,
+                      "value": 20
+                    },
+                    {
+                      "rank": 5,
+                      "value": 25
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104743,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 17364,
+          "name": "Stormstrike",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104748,
+                104749,
+                104750,
+                104751,
+                104752,
+                104753,
+                104754,
+                104755,
+                104756,
+                104757
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129403,
+              "definitionId": 134204,
+              "spellId": 17364,
+              "name": "Stormstrike",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Instantly strike for normal weapon damage and increase the damage you deal to the target with your next Lightning Bolt, Chain Lightning, or Earth Shock spell by $s2% for $d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104745,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 4530,
+            "row": 4,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 16268,
+          "name": "Spirit Weapons",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104743,
+                104746,
+                104747,
+                104748,
+                104749,
+                104750,
+                104751,
+                104752,
+                104753,
+                104754,
+                104755,
+                104756,
+                104757
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129405,
+              "definitionId": 134206,
+              "spellId": 16268,
+              "name": "Spirit Weapons",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Gives a chance to parry enemy melee attacks, reduces all threat generated by your attacks by $s1% while Rockbiter Weapon is not active, and increases all threat generated by $s3% while Rockbiter Weapon is active.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": -30,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 86,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104744,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 30812,
+          "name": "Mental Quickness",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104743,
+                104746,
+                104747,
+                104748,
+                104749,
+                104750,
+                104751,
+                104752,
+                104753,
+                104754,
+                104755,
+                104756,
+                104757
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129404,
+              "definitionId": 134205,
+              "spellId": 30812,
+              "name": "Mental Quickness",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your spell damage and healing by up to $m2% of your Intellect.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 15
+                    },
+                    {
+                      "rank": 2,
+                      "value": 30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 15
+                    },
+                    {
+                      "rank": 2,
+                      "value": 30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 15
+                    },
+                    {
+                      "rank": 2,
+                      "value": 30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": null,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104742,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 4530,
+            "row": 4,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 1223031,
+          "name": "Improved Stormstrike",
+          "prerequisites": [
+            {
+              "nodeId": 104743,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104743,
+                104746,
+                104747,
+                104748,
+                104749,
+                104750,
+                104751,
+                104752,
+                104753,
+                104754,
+                104755,
+                104756,
+                104757
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129402,
+              "definitionId": 134203,
+              "spellId": 1223031,
+              "name": "Improved Stormstrike",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "When you Stormstrike, you have a $m1% chance to gain $1238931s1% mana regeneration while casting spells for $1238931d, and Stormstrike's cooldown has a $m2% chance to reset each time you Dodge or Parry.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 50
+                    },
+                    {
+                      "rank": 2,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 50
+                    },
+                    {
+                      "rank": 2,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104741,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 408498,
+          "name": "Maelstrom Weapon",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                104742,
+                104743,
+                104744,
+                104745,
+                104746,
+                104747,
+                104748,
+                104749,
+                104750,
+                104751,
+                104752,
+                104753,
+                104754,
+                104755,
+                104756,
+                104757
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129401,
+              "definitionId": 134202,
+              "spellId": 408498,
+              "name": "Maelstrom Weapon",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "When you deal damage with a melee attack, you have a chance to reduce the cast time and Mana cost of your next Lightning Bolt spell by $m1%. Stacks up to $s3 times. Lasts $408505d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -4
+                    },
+                    {
+                      "rank": 2,
+                      "value": -8
+                    },
+                    {
+                      "rank": 3,
+                      "value": -12
+                    },
+                    {
+                      "rank": 4,
+                      "value": -16
+                    },
+                    {
+                      "rank": 5,
+                      "value": -20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 50,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104740,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 425336,
+          "name": "Rage of the Farseer",
+          "prerequisites": [
+            {
+              "nodeId": 104744,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                104740,
+                104741,
+                104742,
+                104743,
+                104744,
+                104745,
+                104746,
+                104747,
+                104748,
+                104749,
+                104750,
+                104751,
+                104752,
+                104753,
+                104754,
+                104755,
+                104756,
+                104757
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129400,
+              "definitionId": 134201,
+              "spellId": 425336,
+              "name": "Rage of the Farseer",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your attack speed by $s1% for $d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104739,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 16182,
+          "name": "Improved Healing Wave",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129399,
+              "definitionId": 134200,
+              "spellId": 16182,
+              "name": "Improved Healing Wave",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the casting time of your Healing Wave spell by ${$m1/-1000}.1 sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -100
+                    },
+                    {
+                      "rank": 2,
+                      "value": -200
+                    },
+                    {
+                      "rank": 3,
+                      "value": -300
+                    },
+                    {
+                      "rank": 4,
+                      "value": -400
+                    },
+                    {
+                      "rank": 5,
+                      "value": -500
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104729,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 2130,
+            "row": 0,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 16173,
+          "name": "Totemic Focus",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129389,
+              "definitionId": 134190,
+              "spellId": 16173,
+              "name": "Totemic Focus",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the Mana cost of your totems and any spells that summon or move them by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -5
+                    },
+                    {
+                      "rank": 2,
+                      "value": -10
+                    },
+                    {
+                      "rank": 3,
+                      "value": -15
+                    },
+                    {
+                      "rank": 4,
+                      "value": -20
+                    },
+                    {
+                      "rank": 5,
+                      "value": -25
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -5,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104734,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 2730,
+            "row": 1,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 1223033,
+          "name": "Mindfulness",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                104729,
+                104739
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129394,
+              "definitionId": 134195,
+              "spellId": 1223033,
+              "name": "Mindfulness",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Allows $m1% of your Mana regeneration to continue while casting.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 17
+                    },
+                    {
+                      "rank": 2,
+                      "value": 33
+                    },
+                    {
+                      "rank": 3,
+                      "value": 50
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104736,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 29187,
+          "name": "Natural Grace",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                104729,
+                104739
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129396,
+              "definitionId": 134197,
+              "spellId": 29187,
+              "name": "Natural Grace",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the threat generated by your spells by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -5
+                    },
+                    {
+                      "rank": 2,
+                      "value": -10
+                    },
+                    {
+                      "rank": 3,
+                      "value": -15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104735,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 16179,
+          "name": "Tidal Focus",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                104729,
+                104739
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129395,
+              "definitionId": 134196,
+              "spellId": 16179,
+              "name": "Tidal Focus",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the Mana cost of your healing spells by $m1% and improves your chance to hit by $m2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -1
+                    },
+                    {
+                      "rank": 2,
+                      "value": -2
+                    },
+                    {
+                      "rank": 3,
+                      "value": -3
+                    },
+                    {
+                      "rank": 4,
+                      "value": -4
+                    },
+                    {
+                      "rank": 5,
+                      "value": -5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -5,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104737,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10880,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 16184,
+          "name": "Improved Reincarnation",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                104729,
+                104739
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129397,
+              "definitionId": 134198,
+              "spellId": 16184,
+              "name": "Improved Reincarnation",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the cooldown of your Reincarnation spell by ${$m1/-60000} min, increases your maximum health by $m2%, and increases the amount of health and Mana you reincarnate with by an additional $m3%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -600000
+                    },
+                    {
+                      "rank": 2,
+                      "value": -1200000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -600000,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 4,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104731,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 16176,
+          "name": "Ancestral Healing",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104729,
+                104734,
+                104735,
+                104736,
+                104737,
+                104739
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129391,
+              "definitionId": 134192,
+              "spellId": 16176,
+              "name": "Ancestral Healing",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your target's armor value by $m1% for $16177d after getting a critical effect from one of your healing spells.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 8
+                    },
+                    {
+                      "rank": 2,
+                      "value": 17
+                    },
+                    {
+                      "rank": 3,
+                      "value": 25
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104733,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 16181,
+          "name": "Healing Focus",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104729,
+                104734,
+                104735,
+                104736,
+                104737,
+                104739
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129393,
+              "definitionId": 134194,
+              "spellId": 16181,
+              "name": "Healing Focus",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Gives you a $m1% chance to avoid interruption caused by damage while casting any healing spell.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 23
+                    },
+                    {
+                      "rank": 2,
+                      "value": 47
+                    },
+                    {
+                      "rank": 3,
+                      "value": 70
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 70,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104732,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 3330,
+            "row": 2,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 408510,
+          "name": "Water Shield",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104729,
+                104734,
+                104735,
+                104736,
+                104737,
+                104739
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129392,
+              "definitionId": 134193,
+              "spellId": 408510,
+              "name": "Water Shield",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "The caster is surrounded by $n globes of water. When a spell, melee, or ranged attack hits the caster or when one of the caster's healing spells gets a critical result, $408511s1% of maximum mana is restored to the caster, expending one water globe. Only one globe will activate every few seconds.  Lasts $d.\r\n\r\nOnly one Elemental Shield can be active on the Shaman at any one time.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104738,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 16194,
+          "name": "Tidal Mastery",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104729,
+                104731,
+                104732,
+                104733,
+                104734,
+                104735,
+                104736,
+                104737,
+                104739
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129398,
+              "definitionId": 134199,
+              "spellId": 16194,
+              "name": "Tidal Mastery",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the critical effect chance of your healing spells by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104730,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 16187,
+          "name": "Restorative Totems",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104729,
+                104731,
+                104732,
+                104733,
+                104734,
+                104735,
+                104736,
+                104737,
+                104739
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129390,
+              "definitionId": 134191,
+              "spellId": 16187,
+              "name": "Restorative Totems",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the effect of your Mana Spring Totem by $m1% and increases the effect of your Healing Stream Totem by $m2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    },
+                    {
+                      "rank": 3,
+                      "value": 15
+                    },
+                    {
+                      "rank": 4,
+                      "value": 20
+                    },
+                    {
+                      "rank": 5,
+                      "value": 25
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    },
+                    {
+                      "rank": 3,
+                      "value": 30
+                    },
+                    {
+                      "rank": 4,
+                      "value": 40
+                    },
+                    {
+                      "rank": 5,
+                      "value": 50
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104728,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 16190,
+          "name": "Mana Tide Totem",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104729,
+                104731,
+                104732,
+                104733,
+                104734,
+                104735,
+                104736,
+                104737,
+                104739
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129388,
+              "definitionId": 134189,
+              "spellId": 16190,
+              "name": "Mana Tide Totem",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Summons a Mana Tide Totem with $s1 health at the feet of the caster for ${$d-1} sec that restores $16191s1 mana every $16191t1 seconds to group members within $16191a1 yards.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104727,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 29206,
+          "name": "Healing Way",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104728,
+                104729,
+                104730,
+                104731,
+                104732,
+                104733,
+                104734,
+                104735,
+                104736,
+                104737,
+                104738,
+                104739
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129387,
+              "definitionId": 134188,
+              "spellId": 29206,
+              "name": "Healing Way",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the amount healed by your Healing Wave spell by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 8
+                    },
+                    {
+                      "rank": 2,
+                      "value": 17
+                    },
+                    {
+                      "rank": 3,
+                      "value": 25
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 33,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104726,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 4530,
+            "row": 4,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 16188,
+          "name": "Nature's Swiftness",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104728,
+                104729,
+                104730,
+                104731,
+                104732,
+                104733,
+                104734,
+                104735,
+                104736,
+                104737,
+                104738,
+                104739
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129386,
+              "definitionId": 134187,
+              "spellId": 16188,
+              "name": "Nature's Swiftness",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "When activated, your next Nature spell with a casting time less than 10 sec. becomes an instant cast spell.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": -100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104725,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 16178,
+          "name": "Purification",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                104726,
+                104727,
+                104728,
+                104729,
+                104730,
+                104731,
+                104732,
+                104733,
+                104734,
+                104735,
+                104736,
+                104737,
+                104738,
+                104739
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129385,
+              "definitionId": 134186,
+              "spellId": 16178,
+              "name": "Purification",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the effectiveness of your healing spells by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104724,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 408521,
+          "name": "Riptide",
+          "prerequisites": [
+            {
+              "nodeId": 104727,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                104724,
+                104725,
+                104726,
+                104727,
+                104728,
+                104729,
+                104730,
+                104731,
+                104732,
+                104733,
+                104734,
+                104735,
+                104736,
+                104737,
+                104738,
+                104739
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129384,
+              "definitionId": 134185,
+              "spellId": 408521,
+              "name": "Riptide",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Heals a friendly target for $s1, an additional $o2 over $d, and increases the effectiveness of your Chain Heal casts directly on that target by $s3%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 480,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 89,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 25,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "visualOnlyEdges": []
+    }
+  ],
+  "contentHash": "sha256:c2944df5c660482c4cbbd14019866a51c0715bf09f162fa3172ec1b55e12c804",
+  "generatedAt": "2026-09-26T20:33:57Z",
+  "provenance": {
+    "source": "wago.tools",
+    "tables": [
+      "ChrClasses",
+      "SkillRaceClassInfo",
+      "SkillLineXTraitTree",
+      "TraitTree",
+      "TraitTreeXTraitCurrency",
+      "TraitCurrency",
+      "TraitNode",
+      "TraitNodeXTraitNodeEntry",
+      "TraitNodeEntry",
+      "TraitDefinition",
+      "TraitEdge",
+      "TraitNodeGroupXTraitNode",
+      "TraitNodeGroupXTraitCond",
+      "TraitNodeXTraitCond",
+      "TraitCond",
+      "TraitDefinitionEffectPoints",
+      "Curve",
+      "CurvePoint",
+      "Spell",
+      "SpellName",
+      "SpellEffect"
+    ]
+  }
+}

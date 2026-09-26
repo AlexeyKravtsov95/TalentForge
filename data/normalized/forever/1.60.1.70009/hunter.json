@@ -1,0 +1,4044 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "clientBuild": "1.60.1.70009",
+  "class": {
+    "id": 3,
+    "token": "HUNTER",
+    "name": "Hunter"
+  },
+  "trees": [
+    {
+      "id": 1091,
+      "pointBudget": {
+        "currencyId": 3820,
+        "maxPoints": 51
+      },
+      "layout": {
+        "xStep": 600,
+        "yStep": 600
+      },
+      "sections": [
+        {
+          "index": 0,
+          "name": null,
+          "nodeIds": [
+            104960,
+            104961,
+            104962,
+            104963,
+            104964,
+            104965,
+            104966,
+            104967,
+            104968,
+            104969,
+            104970,
+            104972,
+            104973,
+            104974,
+            104975,
+            104976
+          ]
+        },
+        {
+          "index": 1,
+          "name": null,
+          "nodeIds": [
+            104997,
+            104998,
+            104999,
+            105000,
+            105001,
+            105002,
+            105003,
+            105004,
+            105005,
+            105006,
+            105007,
+            105008,
+            105009,
+            105011,
+            105012,
+            105013,
+            110870
+          ]
+        },
+        {
+          "index": 2,
+          "name": null,
+          "nodeIds": [
+            104981,
+            104982,
+            104983,
+            104984,
+            104985,
+            104986,
+            104987,
+            104988,
+            104989,
+            104990,
+            104991,
+            104992,
+            104993,
+            104994,
+            104995,
+            104996,
+            110859,
+            110860,
+            110861
+          ]
+        }
+      ],
+      "nodes": [
+        {
+          "id": 104960,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 19552,
+          "name": "Deadly Aspects",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129621,
+              "definitionId": 134422,
+              "spellId": 19552,
+              "name": "Deadly Aspects",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "While Aspect of the Hawk is active, Auto Shot has a $s1% chance of increasing ranged attack speed by $6150s1% for $6150d. While Aspect of the Beast is active, all melee auto attacks have a $s2% chance of increasing melee attack speed by $1299448s1% for $1299448d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104976,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 2130,
+            "row": 0,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 19583,
+          "name": "Endurance Training",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129637,
+              "definitionId": 134438,
+              "spellId": 19583,
+              "name": "Endurance Training",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the Health and Armor of your pets by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 6
+                    },
+                    {
+                      "rank": 3,
+                      "value": 9
+                    },
+                    {
+                      "rank": 4,
+                      "value": 12
+                    },
+                    {
+                      "rank": 5,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 6
+                    },
+                    {
+                      "rank": 3,
+                      "value": 9
+                    },
+                    {
+                      "rank": 4,
+                      "value": 12
+                    },
+                    {
+                      "rank": 5,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": null,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104975,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 2730,
+            "row": 1,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 1223755,
+          "name": "Focused Fire",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                104960,
+                104976
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129636,
+              "definitionId": 134437,
+              "spellId": 1223755,
+              "name": "Focused Fire",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases all damage you and your pet deal by $s1% while your pet is active.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 2,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104974,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 19549,
+          "name": "Improved Aspect of the Monkey",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                104960,
+                104976
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129635,
+              "definitionId": 134436,
+              "spellId": 19549,
+              "name": "Improved Aspect of the Monkey",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the Dodge bonus of your Aspect of the Monkey by $s1%. Additionally, your pet gains 50% of the effect of your Aspect of the Monkey ability.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 4,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 6
+                    },
+                    {
+                      "rank": 3,
+                      "value": 7
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 6,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104973,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 19559,
+          "name": "Pathfinding",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                104960,
+                104976
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129634,
+              "definitionId": 134435,
+              "spellId": 19559,
+              "name": "Pathfinding",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the speed bonus of your Aspect of the Cheetah and Aspect of the Pack by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 6
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 6,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104972,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2820,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 24443,
+          "name": "Improved Revive Pet",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                104960,
+                104976
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129633,
+              "definitionId": 134434,
+              "spellId": 24443,
+              "name": "Improved Revive Pet",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Revive Pet's casting time is reduced by $/1000;s1 sec, mana cost is reduced by $s2%, and increases the health your pet returns with by an additional $s3%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -3000
+                    },
+                    {
+                      "rank": 2,
+                      "value": -6000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -6000,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -20
+                    },
+                    {
+                      "rank": 2,
+                      "value": -40
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -40,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 15
+                    },
+                    {
+                      "rank": 2,
+                      "value": 30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104970,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 19596,
+          "name": "Bestial Swiftness",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104960,
+                104972,
+                104973,
+                104974,
+                104975,
+                104976
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129631,
+              "definitionId": 134432,
+              "spellId": 19596,
+              "name": "Bestial Swiftness",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the movement speed of your pets by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104969,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 3330,
+            "row": 2,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 19616,
+          "name": "Unleashed Fury",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104960,
+                104972,
+                104973,
+                104974,
+                104975,
+                104976
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129630,
+              "definitionId": 134431,
+              "spellId": 19616,
+              "name": "Unleashed Fury",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the damage done by your pets and hawks by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 6
+                    },
+                    {
+                      "rank": 3,
+                      "value": 9
+                    },
+                    {
+                      "rank": 4,
+                      "value": 12
+                    },
+                    {
+                      "rank": 5,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104968,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 19572,
+          "name": "Improved Mend Pet",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104960,
+                104969,
+                104970,
+                104972,
+                104973,
+                104974,
+                104975,
+                104976
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129629,
+              "definitionId": 134430,
+              "spellId": 19572,
+              "name": "Improved Mend Pet",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Gives your Mend Pet spell a $s1% chance of cleansing $24406s1 Curse, Disease, Magic, or Poison effect from your pet each time it heals and reduces the Mana cost by $s2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 15
+                    },
+                    {
+                      "rank": 2,
+                      "value": 50
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 50,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104967,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 19598,
+          "name": "Ferocity",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104960,
+                104969,
+                104970,
+                104972,
+                104973,
+                104974,
+                104975,
+                104976
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129628,
+              "definitionId": 134429,
+              "spellId": 19598,
+              "name": "Ferocity",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the critical strike chance of your pets and hawks by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 16,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104966,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2820,
+            "y": 3930,
+            "row": 3,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 1293241,
+          "name": "Summon Hawk",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104960,
+                104969,
+                104970,
+                104972,
+                104973,
+                104974,
+                104975,
+                104976
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129627,
+              "definitionId": 134428,
+              "spellId": 1293241,
+              "name": "Summon Hawk",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Command a hawk to dive-bomb your targeted enemy, dealing ${$s1+($rap*($s4/100))} Physical damage and continuing its assault for $1293248d. Only $s3 hawks can be active at once. Summon Hawk shares its cooldown with Arcane Shot.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 32,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 2,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 3,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104965,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 4530,
+            "row": 4,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 19578,
+          "name": "Spirit Bond",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104960,
+                104966,
+                104967,
+                104968,
+                104969,
+                104970,
+                104972,
+                104973,
+                104974,
+                104975,
+                104976
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129626,
+              "definitionId": 134427,
+              "spellId": 19578,
+              "name": "Spirit Bond",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "While your pet is active, you and your pet will regenerate $m1% of total health every $m2 sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 1
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104964,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 19577,
+          "name": "Intimidation",
+          "prerequisites": [
+            {
+              "nodeId": 104961,
+              "kind": "sufficient"
+            },
+            {
+              "nodeId": 104970,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104960,
+                104966,
+                104967,
+                104968,
+                104969,
+                104970,
+                104972,
+                104973,
+                104974,
+                104975,
+                104976
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129625,
+              "definitionId": 134426,
+              "spellId": 19577,
+              "name": "Intimidation",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Command your pet to Stun the target for $24394d on its next successful attack, which also gains $m2% increased critical strike chance. Generates high threat.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104963,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2820,
+            "y": 4530,
+            "row": 4,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 19590,
+          "name": "Bestial Discipline",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104960,
+                104966,
+                104967,
+                104968,
+                104969,
+                104970,
+                104972,
+                104973,
+                104974,
+                104975,
+                104976
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129624,
+              "definitionId": 134425,
+              "spellId": 19590,
+              "name": "Bestial Discipline",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the Focus regeneration of your pets by $s1% and allows $m2% of your Mana regeneration to continue while casting.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 25
+                    },
+                    {
+                      "rank": 2,
+                      "value": 50
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 50,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104962,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 19621,
+          "name": "Frenzy",
+          "prerequisites": [
+            {
+              "nodeId": 104967,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                104960,
+                104963,
+                104964,
+                104965,
+                104966,
+                104967,
+                104968,
+                104969,
+                104970,
+                104972,
+                104973,
+                104974,
+                104975,
+                104976
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129623,
+              "definitionId": 134424,
+              "spellId": 19621,
+              "name": "Frenzy",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Gives your pet a $s1% chance to gain a $19615s1% attack speed increase for $19615d after dealing a critical strike.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 20
+                    },
+                    {
+                      "rank": 2,
+                      "value": 40
+                    },
+                    {
+                      "rank": 3,
+                      "value": 60
+                    },
+                    {
+                      "rank": 4,
+                      "value": 80
+                    },
+                    {
+                      "rank": 5,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104961,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 19574,
+          "name": "Bestial Wrath",
+          "prerequisites": [
+            {
+              "nodeId": 104964,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                104960,
+                104961,
+                104962,
+                104963,
+                104964,
+                104965,
+                104966,
+                104967,
+                104968,
+                104969,
+                104970,
+                104972,
+                104973,
+                104974,
+                104975,
+                104976
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129622,
+              "definitionId": 134423,
+              "spellId": 19574,
+              "name": "Bestial Wrath",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Send your pet into a rage causing $s2% additional damage for $d.  While enraged, the beast does not feel pity or remorse or fear and it cannot be stopped unless killed.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 50,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 50,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 3,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 4,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 5,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 6,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 7,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 8,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 9,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 10,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 11,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 12,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105013,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 2130,
+            "row": 0,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 19498,
+          "name": "Hawk Eye",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129677,
+              "definitionId": 134478,
+              "spellId": 19498,
+              "name": "Hawk Eye",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the range of your ranged weapons by $s1 yards.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 6,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105012,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 19407,
+          "name": "Improved Concussive Shot",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129676,
+              "definitionId": 134477,
+              "spellId": 19407,
+              "name": "Improved Concussive Shot",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Gives your Concussive Shot a $m1% chance to stun the target for $19410d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 4
+                    },
+                    {
+                      "rank": 2,
+                      "value": 8
+                    },
+                    {
+                      "rank": 3,
+                      "value": 12
+                    },
+                    {
+                      "rank": 4,
+                      "value": 16
+                    },
+                    {
+                      "rank": 5,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105011,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 2130,
+            "row": 0,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 19426,
+          "name": "Lethal Attacks",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129675,
+              "definitionId": 134476,
+              "spellId": 19426,
+              "name": "Lethal Attacks",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your critical strike chance with all attacks by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 110870,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 2730,
+            "row": 1,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 8,
+          "maxRank": 3,
+          "spellId": 1310661,
+          "name": "Improved Stings",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105011,
+                105012,
+                105013
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 137868,
+              "definitionId": 142622,
+              "spellId": 1310661,
+              "name": "Improved Stings",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increased the damage of your Serpent Sting ability by $s1%, reduces the cooldown of your Viper Sting ability by ${$m2/-1000} sec, and increases the duration of your Scorpid Sting ability by ${$m3/1000} sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 6
+                    },
+                    {
+                      "rank": 2,
+                      "value": 13
+                    },
+                    {
+                      "rank": 3,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -2000
+                    },
+                    {
+                      "rank": 2,
+                      "value": -4000
+                    },
+                    {
+                      "rank": 3,
+                      "value": -6000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -6000,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 15000
+                    },
+                    {
+                      "rank": 2,
+                      "value": 30000
+                    },
+                    {
+                      "rank": 3,
+                      "value": 45000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 45000,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105009,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 19416,
+          "name": "Efficiency",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105011,
+                105012,
+                105013
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129673,
+              "definitionId": 134474,
+              "spellId": 19416,
+              "name": "Efficiency",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the Mana cost of your Shots, Stings, and melee abilities by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -3
+                    },
+                    {
+                      "rank": 2,
+                      "value": -6
+                    },
+                    {
+                      "rank": 3,
+                      "value": -9
+                    },
+                    {
+                      "rank": 4,
+                      "value": -12
+                    },
+                    {
+                      "rank": 5,
+                      "value": -15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105008,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 1223984,
+          "name": "Careful Aim",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105011,
+                105012,
+                105013
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129672,
+              "definitionId": 134473,
+              "spellId": 1223984,
+              "name": "Careful Aim",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your Attack Power by $s1% of your Intellect.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 20
+                    },
+                    {
+                      "rank": 2,
+                      "value": 40
+                    },
+                    {
+                      "rank": 3,
+                      "value": 60
+                    },
+                    {
+                      "rank": 4,
+                      "value": 80
+                    },
+                    {
+                      "rank": 5,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 20
+                    },
+                    {
+                      "rank": 2,
+                      "value": 40
+                    },
+                    {
+                      "rank": 3,
+                      "value": 60
+                    },
+                    {
+                      "rank": 4,
+                      "value": 80
+                    },
+                    {
+                      "rank": 5,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105005,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 415405,
+          "name": "Rapid Killing",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105008,
+                105009,
+                105011,
+                105012,
+                105013,
+                110870
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129669,
+              "definitionId": 134470,
+              "spellId": 415405,
+              "name": "Rapid Killing",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the cooldown on your Rapid Fire ability by ${$m1/-60000} min. In addition, when you kill a non-trivial enemy or it dies while afflicted by your Serpent Sting, you gain Rapid Killing, increasing the damage of your next Shot ability within $415407d by $m2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -60000
+                    },
+                    {
+                      "rank": 2,
+                      "value": -120000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -120000,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105006,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 19454,
+          "name": "Improved Arcane Shot",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105008,
+                105009,
+                105011,
+                105012,
+                105013,
+                110870
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129670,
+              "definitionId": 134471,
+              "spellId": 19454,
+              "name": "Improved Arcane Shot",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the cooldown of your Arcane Shot by $/1000;S1 sec. Does not affect the cooldown of abilities which share a cooldown with Arcane Shot.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -300
+                    },
+                    {
+                      "rank": 2,
+                      "value": -600
+                    },
+                    {
+                      "rank": 3,
+                      "value": -900
+                    },
+                    {
+                      "rank": 4,
+                      "value": -1200
+                    },
+                    {
+                      "rank": 5,
+                      "value": -1500
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -1500,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105007,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6820,
+            "y": 3330,
+            "row": 2,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 415370,
+          "name": "Lone Wolf",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105008,
+                105009,
+                105011,
+                105012,
+                105013,
+                110870
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129671,
+              "definitionId": 134472,
+              "spellId": 415370,
+              "name": "Lone Wolf",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "You deal $s2% increased damage with all attacks while you do not have an active pet.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105004,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 1299346,
+          "name": "Trueshot Aura",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105005,
+                105006,
+                105007,
+                105008,
+                105009,
+                105011,
+                105012,
+                105013,
+                110870
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129668,
+              "definitionId": 134469,
+              "spellId": 1299346,
+              "name": "Trueshot Aura",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the Ranged Attack Power of party members within $a1 yards by $s1. Lasts $d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105002,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 19485,
+          "name": "Mortal Shots",
+          "prerequisites": [
+            {
+              "nodeId": 105008,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105005,
+                105006,
+                105007,
+                105008,
+                105009,
+                105011,
+                105012,
+                105013,
+                110870
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129666,
+              "definitionId": 134467,
+              "spellId": 19485,
+              "name": "Mortal Shots",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the critical strike damage bonus on all ranged abilities by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 6
+                    },
+                    {
+                      "rank": 2,
+                      "value": 12
+                    },
+                    {
+                      "rank": 3,
+                      "value": 18
+                    },
+                    {
+                      "rank": 4,
+                      "value": 24
+                    },
+                    {
+                      "rank": 5,
+                      "value": 30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104999,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 4530,
+            "row": 4,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 1223987,
+          "name": "Rapid Recuperation",
+          "prerequisites": [
+            {
+              "nodeId": 105005,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105002,
+                105004,
+                105005,
+                105006,
+                105007,
+                105008,
+                105009,
+                105011,
+                105012,
+                105013,
+                110870
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129663,
+              "definitionId": 134464,
+              "spellId": 1223987,
+              "name": "Rapid Recuperation",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Hitting a target with your Serpent Sting ability grants you $s1% and consuming Rapid Killing grants you $s2% of your Mana regeneration while casting for the next $1242512d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 25
+                    },
+                    {
+                      "rank": 2,
+                      "value": 50
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 50,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 50
+                    },
+                    {
+                      "rank": 2,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105001,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 4530,
+            "row": 4,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 19461,
+          "name": "Barrage",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105002,
+                105004,
+                105005,
+                105006,
+                105007,
+                105008,
+                105009,
+                105011,
+                105012,
+                105013,
+                110870
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129665,
+              "definitionId": 134466,
+              "spellId": 19461,
+              "name": "Barrage",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the damage done by your Multi-Shot, Aimed Shot, and Volley abilities by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 7
+                    },
+                    {
+                      "rank": 3,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105000,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6820,
+            "y": 4530,
+            "row": 4,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 19503,
+          "name": "Scatter Shot",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105002,
+                105004,
+                105005,
+                105006,
+                105007,
+                105008,
+                105009,
+                105011,
+                105012,
+                105013,
+                110870
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129664,
+              "definitionId": 134465,
+              "spellId": 19503,
+              "name": "Scatter Shot",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "A short-range shot that deals $s1% weapon damage and disorients the target for $d.  Any damage caused will remove the effect.  Turns off your attack when used.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 50,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104998,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 19507,
+          "name": "Ranged Weapon Specialization",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                104999,
+                105000,
+                105001,
+                105002,
+                105004,
+                105005,
+                105006,
+                105007,
+                105008,
+                105009,
+                105011,
+                105012,
+                105013,
+                110870
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129662,
+              "definitionId": 134463,
+              "spellId": 19507,
+              "name": "Ranged Weapon Specialization",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the damage you deal with ranged weapons by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104997,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 1310687,
+          "name": "Sniper Shot",
+          "prerequisites": [
+            {
+              "nodeId": 105004,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                104997,
+                104998,
+                104999,
+                105000,
+                105001,
+                105002,
+                105003,
+                105004,
+                105005,
+                105006,
+                105007,
+                105008,
+                105009,
+                105011,
+                105012,
+                105013,
+                110870
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129661,
+              "definitionId": 134462,
+              "spellId": 1310687,
+              "name": "Sniper Shot",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "A steady snipe that increases ranged damage by $s1.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 160,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105003,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6820,
+            "y": 39300,
+            "row": 62,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 19464,
+          "name": "Improved Serpent Sting",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105005,
+                105006,
+                105007,
+                105008,
+                105009,
+                105011,
+                105012,
+                105013,
+                110870
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129667,
+              "definitionId": 134468,
+              "spellId": 19464,
+              "name": "Improved Serpent Sting",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the damage done by your Serpent Sting by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104996,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 24293,
+          "name": "Improved Tracking",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129660,
+              "definitionId": 134461,
+              "spellId": 24293,
+              "name": "Improved Tracking",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "While tracking Beasts, Demons, Dragonkin, Elementals, Giants, Humanoids, or Undead, all damage you deal to the tracked creature type is increased by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": null,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104995,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 2130,
+            "row": 0,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 19295,
+          "name": "Deflection",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129659,
+              "definitionId": 134460,
+              "spellId": 19295,
+              "name": "Deflection",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your Parry chance by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104994,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 2730,
+            "row": 1,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 19184,
+          "name": "Entrapment",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                104995,
+                104996
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129658,
+              "definitionId": 134459,
+              "spellId": 19184,
+              "name": "Entrapment",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "When your traps are triggered, all affected targets are Entrapped, preventing them from moving for ${$m1/1000} sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1000
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2000
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3000
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4000
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5000,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104993,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 19159,
+          "name": "Savage Strikes",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                104995,
+                104996
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129657,
+              "definitionId": 134458,
+              "spellId": 19159,
+              "name": "Savage Strikes",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the critical strike chance of all your melee abilities by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104992,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 19255,
+          "name": "Survivalist",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                104995,
+                104996
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129656,
+              "definitionId": 134457,
+              "spellId": 19255,
+              "name": "Survivalist",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your total Health by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104990,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10880,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 19228,
+          "name": "Improved Wing Clip",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                104995,
+                104996
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129654,
+              "definitionId": 134455,
+              "spellId": 19228,
+              "name": "Improved Wing Clip",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Gives your Wing Clip ability a $s1% chance to immobilize the target for $19229d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 7
+                    },
+                    {
+                      "rank": 2,
+                      "value": 13
+                    },
+                    {
+                      "rank": 3,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104991,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 19239,
+          "name": "Clever Traps",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104990,
+                104992,
+                104993,
+                104994,
+                104995,
+                104996
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129655,
+              "definitionId": 134456,
+              "spellId": 19239,
+              "name": "Clever Traps",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the duration of Freezing and Frost trap effects by $s1% and the damage of Immolation and Explosive trap effects by $s2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 15
+                    },
+                    {
+                      "rank": 2,
+                      "value": 30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 15
+                    },
+                    {
+                      "rank": 2,
+                      "value": 30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104987,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 19290,
+          "name": "Surefooted",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104990,
+                104992,
+                104993,
+                104994,
+                104995,
+                104996
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129651,
+              "definitionId": 134452,
+              "spellId": 19290,
+              "name": "Surefooted",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your hit chance by $m3% and reduces the duration of movement impairing effects on you by $m2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -10
+                    },
+                    {
+                      "rank": 2,
+                      "value": -20
+                    },
+                    {
+                      "rank": 3,
+                      "value": -30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -30,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -10
+                    },
+                    {
+                      "rank": 2,
+                      "value": -20
+                    },
+                    {
+                      "rank": 3,
+                      "value": -30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -30,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 3,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 3,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 3,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104986,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 3330,
+            "row": 2,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 19263,
+          "name": "Deterrence",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104990,
+                104992,
+                104993,
+                104994,
+                104995,
+                104996
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129650,
+              "definitionId": 134451,
+              "spellId": 19263,
+              "name": "Deterrence",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "When activated, increases your Dodge and Parry chance by $s1% for $d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 25,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 25,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104988,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 19376,
+          "name": "Survival Tactics",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104986,
+                104987,
+                104990,
+                104991,
+                104992,
+                104993,
+                104994,
+                104995,
+                104996
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129652,
+              "definitionId": 134453,
+              "spellId": 19376,
+              "name": "Survival Tactics",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your chance to hit with your Trap and Feign Death abilities by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 17,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 110861,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 8,
+          "maxRank": 5,
+          "spellId": 1310627,
+          "name": "Predator's Edge",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104986,
+                104987,
+                104990,
+                104991,
+                104992,
+                104993,
+                104994,
+                104995,
+                104996
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 137853,
+              "definitionId": 142607,
+              "spellId": 1310627,
+              "name": "Predator's Edge",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your melee critical strike damage by $s1% and your offhand weapon damage by $s2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 6
+                    },
+                    {
+                      "rank": 2,
+                      "value": 12
+                    },
+                    {
+                      "rank": 3,
+                      "value": 18
+                    },
+                    {
+                      "rank": 4,
+                      "value": 24
+                    },
+                    {
+                      "rank": 5,
+                      "value": 30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    },
+                    {
+                      "rank": 3,
+                      "value": 30
+                    },
+                    {
+                      "rank": 4,
+                      "value": 40
+                    },
+                    {
+                      "rank": 5,
+                      "value": 50
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 50,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104989,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 19306,
+          "name": "Counterattack",
+          "prerequisites": [
+            {
+              "nodeId": 104986,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104986,
+                104987,
+                104990,
+                104991,
+                104992,
+                104993,
+                104994,
+                104995,
+                104996
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129653,
+              "definitionId": 134454,
+              "spellId": 19306,
+              "name": "Counterattack",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "A strike that becomes active after parrying an opponent's attack. This attack deals $s2% weapon damage plus $m1 and immobilizes the target for $d. Counterattack cannot be blocked, dodged, or parried.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 26,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 50,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104983,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 4530,
+            "row": 4,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 440529,
+          "name": "Resourcefulness",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104986,
+                104987,
+                104988,
+                104989,
+                104990,
+                104991,
+                104992,
+                104993,
+                104994,
+                104995,
+                104996,
+                110861
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129647,
+              "definitionId": 134448,
+              "spellId": 440529,
+              "name": "Resourcefulness",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the mana cost of your Trap abilities and melee abilities by $s1%. In addition, your critical strikes have a $m3% chance to allow $1242688s1% of your Mana regeneration to continue while casting for $1242688d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -30
+                    },
+                    {
+                      "rank": 2,
+                      "value": -60
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -60,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -20
+                    },
+                    {
+                      "rank": 2,
+                      "value": -40
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 50
+                    },
+                    {
+                      "rank": 2,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": null,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104985,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 1310532,
+          "name": "Expose Prey",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104986,
+                104987,
+                104988,
+                104989,
+                104990,
+                104991,
+                104992,
+                104993,
+                104994,
+                104995,
+                104996,
+                110861
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129649,
+              "definitionId": 134450,
+              "spellId": 1310532,
+              "name": "Expose Prey",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Your attacks against targets with Hunter's Mark have a $s1% chance to activate your Mongoose Bite for $5302d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 110860,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 4530,
+            "row": 4,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 8,
+          "maxRank": 2,
+          "spellId": 1310496,
+          "name": "Survivalist's Discipline",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104986,
+                104987,
+                104988,
+                104989,
+                104990,
+                104991,
+                104992,
+                104993,
+                104994,
+                104995,
+                104996,
+                110861
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 137852,
+              "definitionId": 142606,
+              "spellId": 1310496,
+              "name": "Survivalist's Discipline",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the cooldown of your Trap and Deterrence abilities by $m%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -20
+                    },
+                    {
+                      "rank": 2,
+                      "value": -40
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -40,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104981,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10880,
+            "y": 4530,
+            "row": 4,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 1317257,
+          "name": "Strider Kick",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104986,
+                104987,
+                104988,
+                104989,
+                104990,
+                104991,
+                104992,
+                104993,
+                104994,
+                104995,
+                104996,
+                110861
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129645,
+              "definitionId": 134446,
+              "spellId": 1317257,
+              "name": "Strider Kick",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "A powerful kick that deals $s2% melee weapon damage and increases movement speed by $s3% for $d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 110859,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 8,
+          "maxRank": 5,
+          "spellId": 19168,
+          "name": "Lightning Reflexes",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                104981,
+                104983,
+                104985,
+                104986,
+                104987,
+                104988,
+                104989,
+                104990,
+                104991,
+                104992,
+                104993,
+                104994,
+                104995,
+                104996,
+                110860,
+                110861
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 137851,
+              "definitionId": 142605,
+              "spellId": 19168,
+              "name": "Lightning Reflexes",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your Agility by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104984,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 1310533,
+          "name": "Lacerating Strikes",
+          "prerequisites": [
+            {
+              "nodeId": 104985,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                104981,
+                104982,
+                104983,
+                104984,
+                104985,
+                104986,
+                104987,
+                104988,
+                104989,
+                104990,
+                104991,
+                104992,
+                104993,
+                104994,
+                104995,
+                104996,
+                110859,
+                110860,
+                110861
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129648,
+              "definitionId": 134449,
+              "spellId": 1310533,
+              "name": "Lacerating Strikes",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Your Mongoose Bite also causes the target to Bleed for damage over $1310536d equal to $s1% of the damage done by Mongoose Bite.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 40,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 104982,
+          "sectionIndex": 2,
+          "position": {
+            "x": 102800,
+            "y": 5740,
+            "row": 6,
+            "column": 156
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 19168,
+          "name": "Lightning Reflexes",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                104981,
+                104983,
+                104985,
+                104986,
+                104987,
+                104988,
+                104989,
+                104990,
+                104991,
+                104992,
+                104993,
+                104994,
+                104995,
+                104996,
+                110860,
+                110861
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 129646,
+              "definitionId": 134447,
+              "spellId": 19168,
+              "name": "Lightning Reflexes",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your Agility by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 6
+                    },
+                    {
+                      "rank": 3,
+                      "value": 9
+                    },
+                    {
+                      "rank": 4,
+                      "value": 12
+                    },
+                    {
+                      "rank": 5,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "visualOnlyEdges": []
+    }
+  ],
+  "contentHash": "sha256:8ce355b3670712c9ea24522c2ec32112f8232f95d0435d433ebfb5b66d5633d5",
+  "generatedAt": "2026-09-26T20:33:57Z",
+  "provenance": {
+    "source": "wago.tools",
+    "tables": [
+      "ChrClasses",
+      "SkillRaceClassInfo",
+      "SkillLineXTraitTree",
+      "TraitTree",
+      "TraitTreeXTraitCurrency",
+      "TraitCurrency",
+      "TraitNode",
+      "TraitNodeXTraitNodeEntry",
+      "TraitNodeEntry",
+      "TraitDefinition",
+      "TraitEdge",
+      "TraitNodeGroupXTraitNode",
+      "TraitNodeGroupXTraitCond",
+      "TraitNodeXTraitCond",
+      "TraitCond",
+      "TraitDefinitionEffectPoints",
+      "Curve",
+      "CurvePoint",
+      "Spell",
+      "SpellName",
+      "SpellEffect"
+    ]
+  }
+}

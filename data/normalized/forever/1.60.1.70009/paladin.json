@@ -1,0 +1,3639 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "clientBuild": "1.60.1.70009",
+  "class": {
+    "id": 2,
+    "token": "PALADIN",
+    "name": "Paladin"
+  },
+  "trees": [
+    {
+      "id": 1100,
+      "pointBudget": {
+        "currencyId": 3820,
+        "maxPoints": 51
+      },
+      "layout": {
+        "xStep": 600,
+        "yStep": 600
+      },
+      "sections": [
+        {
+          "index": 0,
+          "name": null,
+          "nodeIds": [
+            105320,
+            105321,
+            105323,
+            105324,
+            105325,
+            105327,
+            105329,
+            105330,
+            105331,
+            105332,
+            105333,
+            105334,
+            105335,
+            105639,
+            110871,
+            110872,
+            110873
+          ]
+        },
+        {
+          "index": 1,
+          "name": null,
+          "nodeIds": [
+            105625,
+            105626,
+            105627,
+            105628,
+            105629,
+            105630,
+            105632,
+            105633,
+            105634,
+            105636,
+            105637,
+            105638,
+            110874,
+            110875,
+            110878,
+            110879
+          ]
+        },
+        {
+          "index": 2,
+          "name": null,
+          "nodeIds": [
+            105692,
+            105693,
+            105694,
+            105696,
+            105697,
+            105698,
+            105699,
+            105700,
+            105701,
+            105702,
+            105703,
+            105704,
+            105705,
+            105706,
+            105707,
+            110880,
+            110882
+          ]
+        }
+      ],
+      "nodes": [
+        {
+          "id": 105639,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 20262,
+          "name": "Divine Strength",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130363,
+              "definitionId": 135164,
+              "spellId": 20262,
+              "name": "Divine Strength",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your Strength by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 2,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105332,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 2130,
+            "row": 0,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 20257,
+          "name": "Divine Intellect",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130026,
+              "definitionId": 134827,
+              "spellId": 20257,
+              "name": "Divine Intellect",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your total Intellect by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 2,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105333,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 2730,
+            "row": 1,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 20237,
+          "name": "Healing Light",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105332,
+                105639
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130027,
+              "definitionId": 134828,
+              "spellId": 20237,
+              "name": "Healing Light",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the amount healed by your Holy Light, Flash of Light, and Holy Shock spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 4
+                    },
+                    {
+                      "rank": 2,
+                      "value": 8
+                    },
+                    {
+                      "rank": 3,
+                      "value": 12
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 4,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105335,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 20205,
+          "name": "Spiritual Focus",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105332,
+                105639
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130029,
+              "definitionId": 134830,
+              "spellId": 20205,
+              "name": "Spiritual Focus",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Gives your Flash of Light, Holy Light, and Light's Vigil spells a $s1% chance to not lose casting time when you take damage.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 35
+                    },
+                    {
+                      "rank": 2,
+                      "value": 70
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 14,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105334,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 20224,
+          "name": "Improved Seals",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105332,
+                105639
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130028,
+              "definitionId": 134829,
+              "spellId": 20224,
+              "name": "Improved Seals",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the damage done by your Seals and Judgements by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    },
+                    {
+                      "rank": 3,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 3,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105331,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2820,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 9453,
+          "name": "Unyielding Faith",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105332,
+                105639
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130025,
+              "definitionId": 134826,
+              "spellId": 9453,
+              "name": "Unyielding Faith",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the duration of  Fear and Disorient effects on you by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -15
+                    },
+                    {
+                      "rank": 2,
+                      "value": -30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -30,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -15
+                    },
+                    {
+                      "rank": 2,
+                      "value": -30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105330,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 1310897,
+          "name": "Voice of Truth",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105331,
+                105332,
+                105333,
+                105334,
+                105335,
+                105639
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130024,
+              "definitionId": 134825,
+              "spellId": 1310897,
+              "name": "Voice of Truth",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Grants you immunity to Silence and Interrupt effects.  Lasts $d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 110871,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 1310899,
+          "name": "Reverence",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105331,
+                105332,
+                105333,
+                105334,
+                105335,
+                105639
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 137869,
+              "definitionId": 142623,
+              "spellId": 1310899,
+              "name": "Reverence",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Allows $s1% of your Mana regeneration to continue while casting.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    },
+                    {
+                      "rank": 3,
+                      "value": 30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105327,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 3330,
+            "row": 2,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 429144,
+          "name": "Purifying Power",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105331,
+                105332,
+                105333,
+                105334,
+                105335,
+                105639
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130021,
+              "definitionId": 134822,
+              "spellId": 429144,
+              "name": "Purifying Power",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the mana cost of your Cleanse and Purify spells by $m1% and reduces the cooldown of your Exorcism and Holy Wrath spells by $m2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -10
+                    },
+                    {
+                      "rank": 2,
+                      "value": -20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -20,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -17
+                    },
+                    {
+                      "rank": 2,
+                      "value": -33
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -50,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 110873,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 426065,
+          "name": "Infusion of Light",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105327,
+                105330,
+                105331,
+                105332,
+                105333,
+                105334,
+                105335,
+                105639,
+                110871
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 137871,
+              "definitionId": 142625,
+              "spellId": 426065,
+              "name": "Infusion of Light",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Your Holy Shock and Flash of Light critical hits reduce the cast time of your next Holy Light cast within $437063d by ${$m1/-1000}.1 sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -500
+                    },
+                    {
+                      "rank": 2,
+                      "value": -1000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -1000,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105329,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 20210,
+          "name": "Illumination",
+          "prerequisites": [
+            {
+              "nodeId": 110871,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105327,
+                105330,
+                105331,
+                105332,
+                105333,
+                105334,
+                105335,
+                105639,
+                110871
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130023,
+              "definitionId": 134824,
+              "spellId": 20210,
+              "name": "Illumination",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "After getting a critical effect from your Flash of Light, Holy Light, Light's Vigil, or Holy Shock heal spell you have a $m1% chance to gain Mana equal to $m3% of the base cost of the spell.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 20
+                    },
+                    {
+                      "rank": 2,
+                      "value": 40
+                    },
+                    {
+                      "rank": 3,
+                      "value": 60
+                    },
+                    {
+                      "rank": 4,
+                      "value": 80
+                    },
+                    {
+                      "rank": 5,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    },
+                    {
+                      "rank": 3,
+                      "value": 30
+                    },
+                    {
+                      "rank": 4,
+                      "value": 40
+                    },
+                    {
+                      "rank": 5,
+                      "value": 50
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 50,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 50,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 3,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105325,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 20216,
+          "name": "Divine Favor",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105327,
+                105330,
+                105331,
+                105332,
+                105333,
+                105334,
+                105335,
+                105639,
+                110871
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130019,
+              "definitionId": 134820,
+              "spellId": 20216,
+              "name": "Divine Favor",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "When activated, gives your next Flash of Light, Holy Light, or Holy Shock spell a $s1% critical effect chance.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105324,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 4530,
+            "row": 4,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 1310904,
+          "name": "Divine Precision",
+          "prerequisites": [
+            {
+              "nodeId": 105323,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105325,
+                105327,
+                105329,
+                105330,
+                105331,
+                105332,
+                105333,
+                105334,
+                105335,
+                105639,
+                110871,
+                110873
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130018,
+              "definitionId": 134819,
+              "spellId": 1310904,
+              "name": "Divine Precision",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Improves your chance to hit with Holy spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 6
+                    },
+                    {
+                      "rank": 2,
+                      "value": 12
+                    },
+                    {
+                      "rank": 3,
+                      "value": 18
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 18,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105323,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 1311606,
+          "name": "Holy Shock",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105325,
+                105327,
+                105329,
+                105330,
+                105331,
+                105332,
+                105333,
+                105334,
+                105335,
+                105639,
+                110871,
+                110873
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130017,
+              "definitionId": 134818,
+              "spellId": 1311606,
+              "name": "Holy Shock",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Blasts the target with Holy energy, causing $1311604s1 Holy damage to an enemy, or $1311605s1 healing to an ally.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 110872,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 4530,
+            "row": 4,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 1310905,
+          "name": "Consecrated Ground",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105325,
+                105327,
+                105329,
+                105330,
+                105331,
+                105332,
+                105333,
+                105334,
+                105335,
+                105639,
+                110871,
+                110873
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 137870,
+              "definitionId": 142624,
+              "spellId": 1310905,
+              "name": "Consecrated Ground",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Gives your Holy spells $m1% increased damage against the first $20924s3 enemies that enter your Consecration.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105321,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 5923,
+          "name": "Holy Power",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105323,
+                105324,
+                105325,
+                105327,
+                105329,
+                105330,
+                105331,
+                105332,
+                105333,
+                105334,
+                105335,
+                105639,
+                110871,
+                110872,
+                110873
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130015,
+              "definitionId": 134816,
+              "spellId": 5923,
+              "name": "Holy Power",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the critical strike chance of your Holy Shock and Holy Strike spells by $m2%, and all other spells by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 6
+                    },
+                    {
+                      "rank": 3,
+                      "value": 9
+                    },
+                    {
+                      "rank": 4,
+                      "value": 12
+                    },
+                    {
+                      "rank": 5,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105320,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 1310911,
+          "name": "Light's Vigil",
+          "prerequisites": [
+            {
+              "nodeId": 105323,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105320,
+                105321,
+                105323,
+                105324,
+                105325,
+                105327,
+                105329,
+                105330,
+                105331,
+                105332,
+                105333,
+                105334,
+                105335,
+                105639,
+                110871,
+                110872,
+                110873
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130014,
+              "definitionId": 134815,
+              "spellId": 1310911,
+              "name": "Light's Vigil",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Applies Light's Vigil to the target for $1310909d. Your next Holy Shock cast on them triggers no cooldown and causes enemy targets to suffer $1310914s1 Holy damage and refund $s2% of Light's Vigil's Mana cost, or allied targets to heal their party for $1310912s1.  The Paladin may only have one Light's Vigil active per party.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 75,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105630,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 20143,
+          "name": "Toughness",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130354,
+              "definitionId": 135155,
+              "spellId": 20143,
+              "name": "Toughness",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your armor value from items by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 2,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 2,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105626,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 2130,
+            "row": 0,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 20127,
+          "name": "Redoubt",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130350,
+              "definitionId": 135151,
+              "spellId": 20127,
+              "name": "Redoubt",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Damaging melee attacks against you have a $h% chance to increase your chance to block by $m1%.  Lasts $20128d or $20128n blocks.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 6
+                    },
+                    {
+                      "rank": 2,
+                      "value": 12
+                    },
+                    {
+                      "rank": 3,
+                      "value": 18
+                    },
+                    {
+                      "rank": 4,
+                      "value": 24
+                    },
+                    {
+                      "rank": 5,
+                      "value": 30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": null,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105638,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 2730,
+            "row": 1,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 20189,
+          "name": "Precision",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105626,
+                105630
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130362,
+              "definitionId": 135163,
+              "spellId": 20189,
+              "name": "Precision",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Improves your chance to hit by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105637,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 20174,
+          "name": "Guardian's Favor",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105626,
+                105630
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130361,
+              "definitionId": 135162,
+              "spellId": 20174,
+              "name": "Guardian's Favor",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the cooldown of your Blessing of Protection by $/60000;s1 min and increases the duration of your Blessing of Freedom by $/1000;s2 sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -60000
+                    },
+                    {
+                      "rank": 2,
+                      "value": -120000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -60000,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3000
+                    },
+                    {
+                      "rank": 2,
+                      "value": 6000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 3000,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105636,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6820,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 20096,
+          "name": "Anticipation",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105626,
+                105630
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130360,
+              "definitionId": 135161,
+              "spellId": 20096,
+              "name": "Anticipation",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your Defense Skill by $m1.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 4
+                    },
+                    {
+                      "rank": 2,
+                      "value": 8
+                    },
+                    {
+                      "rank": 3,
+                      "value": 12
+                    },
+                    {
+                      "rank": 4,
+                      "value": 16
+                    },
+                    {
+                      "rank": 5,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 110875,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5030,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 1314103,
+          "name": "Improved Seal of Fury",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105626,
+                105630,
+                105636,
+                105637,
+                105638
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 137873,
+              "definitionId": 142627,
+              "spellId": 1314103,
+              "name": "Improved Seal of Fury",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "When Seal of Fury's shield is fully absorbed, restore $m1 Mana, increased by $m2% per level the attacker is above you, up to ${$m2*$m3}%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 3,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105634,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 20468,
+          "name": "Improved Righteous Fury",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105626,
+                105630,
+                105636,
+                105637,
+                105638
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130358,
+              "definitionId": 135159,
+              "spellId": 20468,
+              "name": "Improved Righteous Fury",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "While Righteous Fury is active, all damage taken is reduced by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -2
+                    },
+                    {
+                      "rank": 2,
+                      "value": -4
+                    },
+                    {
+                      "rank": 3,
+                      "value": -6
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -6,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 110874,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 3330,
+            "row": 2,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 20150,
+          "name": "Shield Specialization",
+          "prerequisites": [
+            {
+              "nodeId": 105626,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105626,
+                105630,
+                105636,
+                105637,
+                105638
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 137872,
+              "definitionId": 142626,
+              "spellId": 20150,
+              "name": "Shield Specialization",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the amount of damage absorbed by your shield by $m1%, and gives your blocks a $m2% chance to restore $1310925m1% of your maximum Mana.  May only occur once every $proccooldown sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    },
+                    {
+                      "rank": 3,
+                      "value": 30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 33
+                    },
+                    {
+                      "rank": 2,
+                      "value": 66
+                    },
+                    {
+                      "rank": 3,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105632,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6820,
+            "y": 3330,
+            "row": 2,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 1224697,
+          "name": "Sacred Duty",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105626,
+                105630,
+                105636,
+                105637,
+                105638
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130356,
+              "definitionId": 135157,
+              "spellId": 1224697,
+              "name": "Sacred Duty",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your total Stamina by $s1% and reduces the cooldown of your Divine Shield, Divine Protection, and Templar's Bulwark spells by ${$m2/-1000} sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 4,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -30000
+                    },
+                    {
+                      "rank": 2,
+                      "value": -60000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -60000,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 110878,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5030,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 1310994,
+          "name": "Swift Judgement",
+          "prerequisites": [
+            {
+              "nodeId": 110875,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105626,
+                105630,
+                105632,
+                105634,
+                105636,
+                105637,
+                105638,
+                110874,
+                110875
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 137876,
+              "definitionId": 142630,
+              "spellId": 1310994,
+              "name": "Swift Judgement",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Finishes the remaining cooldown on your Judgement ability and reduces the Mana cost of your next Judgement by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": -100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105629,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 20196,
+          "name": "One-Handed Weapon Specialization",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105626,
+                105630,
+                105632,
+                105634,
+                105636,
+                105637,
+                105638,
+                110874,
+                110875
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130353,
+              "definitionId": 135154,
+              "spellId": 20196,
+              "name": "One-Handed Weapon Specialization",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the damage you deal with one-handed melee weapons by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 7
+                    },
+                    {
+                      "rank": 3,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 2,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105633,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 20487,
+          "name": "Improved Hammer of Justice",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105626,
+                105630,
+                105632,
+                105634,
+                105636,
+                105637,
+                105638,
+                110874,
+                110875
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130357,
+              "definitionId": 135158,
+              "spellId": 20487,
+              "name": "Improved Hammer of Justice",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Decreases the cooldown of your Hammer of Justice spell by $/1000;s1 sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -5000
+                    },
+                    {
+                      "rank": 2,
+                      "value": -10000
+                    },
+                    {
+                      "rank": 3,
+                      "value": -15000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -5000,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105625,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 1311015,
+          "name": "Templar's Bulwark",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105626,
+                105629,
+                105630,
+                105632,
+                105633,
+                105634,
+                105636,
+                105637,
+                105638,
+                110874,
+                110875,
+                110878
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130349,
+              "definitionId": 135150,
+              "spellId": 1311015,
+              "name": "Templar's Bulwark",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "When activated, this ability grants you an absorb shield equal to $s1% of your maximum health for $d.  Applies Forbearance for $25771d. Cannot be cast while Forbearance is active.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105627,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 4530,
+            "row": 4,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 20177,
+          "name": "Reckoning",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105626,
+                105629,
+                105630,
+                105632,
+                105633,
+                105634,
+                105636,
+                105637,
+                105638,
+                110874,
+                110875,
+                110878
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130351,
+              "definitionId": 135152,
+              "spellId": 20177,
+              "name": "Reckoning",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Gives you a $m1% chance to gain an extra attack after Blocking a melee attack and a ${$m1*2.5}% chance to gain an extra attack after being the victim of a non-periodic critical strike.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 8
+                    },
+                    {
+                      "rank": 2,
+                      "value": 16
+                    },
+                    {
+                      "rank": 3,
+                      "value": 24
+                    },
+                    {
+                      "rank": 4,
+                      "value": 32
+                    },
+                    {
+                      "rank": 5,
+                      "value": 40
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 110879,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 1311034,
+          "name": "Iron Creed",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105625,
+                105626,
+                105627,
+                105629,
+                105630,
+                105632,
+                105633,
+                105634,
+                105636,
+                105637,
+                105638,
+                110874,
+                110875,
+                110878
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 137877,
+              "definitionId": 142631,
+              "spellId": 1311034,
+              "name": "Iron Creed",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the threat generated by your Holy Strike ability $m1%. While Righteous Fury is active, Holy Strike also reduces your damage taken by $m2% for $1311033d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    },
+                    {
+                      "rank": 3,
+                      "value": 15
+                    },
+                    {
+                      "rank": 4,
+                      "value": 20
+                    },
+                    {
+                      "rank": 5,
+                      "value": 25
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105628,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 20925,
+          "name": "Holy Shield",
+          "prerequisites": [
+            {
+              "nodeId": 105625,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105625,
+                105626,
+                105627,
+                105628,
+                105629,
+                105630,
+                105632,
+                105633,
+                105634,
+                105636,
+                105637,
+                105638,
+                110874,
+                110875,
+                110878,
+                110879
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130352,
+              "definitionId": 135153,
+              "spellId": 20925,
+              "name": "Holy Shield",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Increases chance to block by $s1% for $d, and deals $s2 Holy damage for each attack blocked while active.  Damage caused by Holy Shield causes 20% additional threat. Each block expends a charge. $n charges.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 110,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105707,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 20060,
+          "name": "Deflection",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130436,
+              "definitionId": 135237,
+              "spellId": 20060,
+              "name": "Deflection",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your Parry chance by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105706,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 2130,
+            "row": 0,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 20101,
+          "name": "Benediction",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130435,
+              "definitionId": 135236,
+              "spellId": 20101,
+              "name": "Benediction",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the Mana cost of all instant cast spells and abilities by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -2
+                    },
+                    {
+                      "rank": 2,
+                      "value": -4
+                    },
+                    {
+                      "rank": 3,
+                      "value": -6
+                    },
+                    {
+                      "rank": 4,
+                      "value": -8
+                    },
+                    {
+                      "rank": 5,
+                      "value": -10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105705,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 2730,
+            "row": 1,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 25956,
+          "name": "Improved Judgement",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105706,
+                105707
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130434,
+              "definitionId": 135235,
+              "spellId": 25956,
+              "name": "Improved Judgement",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Decreases the cooldown of your Judgement ability by $/1000;s1 sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -1000
+                    },
+                    {
+                      "rank": 2,
+                      "value": -2000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -1000,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105704,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 1237268,
+          "name": "Holy Conduit",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105706,
+                105707
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130433,
+              "definitionId": 135234,
+              "spellId": 1237268,
+              "name": "Holy Conduit",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the mana cost of your Consecration, Holy Wrath, Exorcism, and Hammer of Wrath spells by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -20
+                    },
+                    {
+                      "rank": 2,
+                      "value": -40
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -40,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105703,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 20117,
+          "name": "Conviction",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105706,
+                105707
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130432,
+              "definitionId": 135233,
+              "spellId": 20117,
+              "name": "Conviction",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Improves your chance to get a critical strike with melee attacks by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105702,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 9452,
+          "name": "Vindication",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105703,
+                105704,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130431,
+              "definitionId": 135232,
+              "spellId": 9452,
+              "name": "Vindication",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Gives your damaging melee attacks a chance to reduce the target's Attack Power by ${$m1/-3*$440667m1}, and increase your Attack Power by $m1% for $440667d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105701,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 1311074,
+          "name": "Sanctified Judgement",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105703,
+                105704,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130430,
+              "definitionId": 135231,
+              "spellId": 1311074,
+              "name": "Sanctified Judgement",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Gives your Judgement ability a $m1% chance to return $m2% of the Mana cost of the judged seal.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 33
+                    },
+                    {
+                      "rank": 2,
+                      "value": 66
+                    },
+                    {
+                      "rank": 3,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 20
+                    },
+                    {
+                      "rank": 2,
+                      "value": 40
+                    },
+                    {
+                      "rank": 3,
+                      "value": 60
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 60,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105696,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 3330,
+            "row": 2,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 20375,
+          "name": "Seal of Command",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105703,
+                105704,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130425,
+              "definitionId": 135226,
+              "spellId": 20375,
+              "name": "Seal of Command",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Gives the Paladin a chance to deal additional Holy damage equal to $20424s1% of normal weapon damage.  Only one Seal can be active on the Paladin at any one time.  Lasts $d.\r\n\r\nUnleashing this Seal's energy will judge an enemy, instantly causing $/2;20467s1 Holy damage, $20467s1 if the target is stunned or incapacitated.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 20425,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105699,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10880,
+            "y": 3330,
+            "row": 2,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 26022,
+          "name": "Pursuit of Justice",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105703,
+                105704,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130428,
+              "definitionId": 135229,
+              "spellId": 26022,
+              "name": "Pursuit of Justice",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases movement speed and mounted movement speed by $s1%.  This does not stack with other movement speed increasing effects.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 8
+                    },
+                    {
+                      "rank": 2,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 8
+                    },
+                    {
+                      "rank": 2,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105698,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 9799,
+          "name": "Eye for an Eye",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105696,
+                105699,
+                105701,
+                105702,
+                105703,
+                105704,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130427,
+              "definitionId": 135228,
+              "spellId": 9799,
+              "name": "Eye for an Eye",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "All critical strikes against you cause $s1% of the damage taken to the attacker as well. The damage caused by Eye for an Eye will not exceed 50% of the Paladin's total health.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105700,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 1311087,
+          "name": "Sacred Arbiter",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105696,
+                105699,
+                105701,
+                105702,
+                105703,
+                105704,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130429,
+              "definitionId": 135230,
+              "spellId": 1311087,
+              "name": "Sacred Arbiter",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the damage of your Holy Strike ability by $m1% and causes it to refresh all Judgement effects on the target.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105697,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 4530,
+            "row": 4,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 20111,
+          "name": "Two-Handed Weapon Specialization",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105696,
+                105698,
+                105699,
+                105700,
+                105701,
+                105702,
+                105703,
+                105704,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130426,
+              "definitionId": 135227,
+              "spellId": 20111,
+              "name": "Two-Handed Weapon Specialization",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the damage you deal with two-handed melee weapons by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 2,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105693,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 20049,
+          "name": "Vengeance",
+          "prerequisites": [
+            {
+              "nodeId": 105701,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105696,
+                105698,
+                105699,
+                105700,
+                105701,
+                105702,
+                105703,
+                105704,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130422,
+              "definitionId": 135223,
+              "spellId": 20049,
+              "name": "Vengeance",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your Physical and Holy damage dealt by $s1% for $20050d after landing a non-periodic critical strike.  Stacks up to $20050u times.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105694,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 4530,
+            "row": 4,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 20066,
+          "name": "Repentance",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105696,
+                105698,
+                105699,
+                105700,
+                105701,
+                105702,
+                105703,
+                105704,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130423,
+              "definitionId": 135224,
+              "spellId": 20066,
+              "name": "Repentance",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Puts the enemy target in a state of meditation, incapacitating them for up to $d. Any damage caused will awaken the target. Only works against Humanoids.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 110882,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 5130,
+            "row": 5,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 1311084,
+          "name": "Champion of the Light",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105693,
+                105694,
+                105696,
+                105697,
+                105698,
+                105699,
+                105700,
+                105701,
+                105702,
+                105703,
+                105704,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 137880,
+              "definitionId": 142634,
+              "spellId": 1311084,
+              "name": "Champion of the Light",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your spell damage and healing by up to $m1% of your Intellect.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 33
+                    },
+                    {
+                      "rank": 2,
+                      "value": 66
+                    },
+                    {
+                      "rank": 3,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 110880,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 1311085,
+          "name": "Instrument of Law",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105693,
+                105694,
+                105696,
+                105697,
+                105698,
+                105699,
+                105700,
+                105701,
+                105702,
+                105703,
+                105704,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 137878,
+              "definitionId": 142632,
+              "spellId": 1311085,
+              "name": "Instrument of Law",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the cast time of your Hammer of Wrath by ${$m1/-1000}.1 sec, and reduces all threat you generate by $m2% while Righteous Fury is not active.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -500
+                    },
+                    {
+                      "rank": 2,
+                      "value": -1000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -1000,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105692,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 1310735,
+          "name": "Twist of Light",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105692,
+                105693,
+                105694,
+                105696,
+                105697,
+                105698,
+                105699,
+                105700,
+                105701,
+                105702,
+                105703,
+                105704,
+                105705,
+                105706,
+                105707,
+                110880,
+                110882
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130421,
+              "definitionId": 135222,
+              "spellId": 1310735,
+              "name": "Twist of Light",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the Mana cost of your Seal spells by $s1%, and when you replace your Seal of Command, Seal of Righteousness, Seal of Fury, or Seal of Justice with a different Seal, gain an Echo of that Seal. Your next melee attack applies the replaced Seal's effects, consuming the Echo.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": -20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "visualOnlyEdges": []
+    }
+  ],
+  "contentHash": "sha256:91ca3aa09768de5f3c5674d7a70d3105a453abe99af7d760fd4a3c90defddfce",
+  "generatedAt": "2026-09-26T20:33:57Z",
+  "provenance": {
+    "source": "wago.tools",
+    "tables": [
+      "ChrClasses",
+      "SkillRaceClassInfo",
+      "SkillLineXTraitTree",
+      "TraitTree",
+      "TraitTreeXTraitCurrency",
+      "TraitCurrency",
+      "TraitNode",
+      "TraitNodeXTraitNodeEntry",
+      "TraitNodeEntry",
+      "TraitDefinition",
+      "TraitEdge",
+      "TraitNodeGroupXTraitNode",
+      "TraitNodeGroupXTraitCond",
+      "TraitNodeXTraitCond",
+      "TraitCond",
+      "TraitDefinitionEffectPoints",
+      "Curve",
+      "CurvePoint",
+      "Spell",
+      "SpellName",
+      "SpellEffect"
+    ]
+  }
+}
