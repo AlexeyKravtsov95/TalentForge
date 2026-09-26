@@ -216,3 +216,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# talent_data (M0): raw DB2 downloads and in-flight files
+.cache/
+*.part
+*.tmp
