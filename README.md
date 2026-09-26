@@ -2,11 +2,12 @@
 
 Talent / build planner for World of Warcraft (future Kotlin Multiplatform mobile app).
 
-This repository contains the **data platform** — M0 proved the pipeline on Warrior, **M1
-(current)** makes it production-ready for *all nine* Forever classes: discover the latest
+This repository contains the **data platform** — M0 proved the pipeline on Warrior, M1
+makes it production-ready for *all nine* Forever classes: discover the latest
 *WoW: Forever* beta build, download its client DB2 tables, normalize every class talent
 tree into our own versioned JSON contract (plus a dataset manifest), and produce semantic
-diffs between builds — with no hand-maintained talent data.
+diffs between builds — with no hand-maintained talent data. **M2 (current)** adds the
+reference talent allocation engine on top of that dataset.
 
 ## Quick start
 
@@ -42,6 +43,35 @@ python -m talent_data manifest data/normalized/forever/1.60.1.70009/manifest.jso
 `--build latest` works for `fetch` / `normalize` / `diff`; `--offline` uses only the local
 cache. `python -m talent_data --help` lists all commands.
 
+## Allocation engine (M2)
+
+A headless reference engine (`talent_data.allocation`) answers whether a rank can be
+purchased or refunded, why not (stable reason codes), and whether any build is valid —
+on the normalized dataset, with every rule's evidence in
+[docs/talent-allocation-semantics.md](docs/talent-allocation-semantics.md).
+
+```python
+from pathlib import Path
+
+from talent_data.allocation import TalentAllocationEngine
+from talent_data.pipeline import read_document
+
+doc = read_document(Path("data/normalized/forever/1.60.1.70009/warrior.json"))
+engine = TalentAllocationEngine(doc)
+state = engine.empty_state()
+decision = engine.can_spend(state, 105950)  # Deep Wounds
+print(decision.allowed, decision.reason_codes)
+# False ('SUFFICIENT_PREREQUISITE_NOT_MET', 'TIER_GATE_NOT_MET')
+state = engine.spend(state, 105958).state  # Improved Heroic Strike 1/3
+print(engine.validate(state).valid, engine.remaining_points(state))  # True 50
+```
+
+```bash
+python -m talent_data allocation validate --game forever --build 1.60.1.70009 \
+  --class warrior --build-file my-build.json
+python -m talent_data allocation replay --all   # data/conformance/forever/1.60.1.70009/allocation.v1.json
+```
+
 ## Checks
 
 ```bash
@@ -64,11 +94,15 @@ src/talent_data/
   models/         normalized schema v1 + dataset manifest v1 (public contracts)
   validation/     structural validators + typed ValidationIssue model (severity, stable codes)
   diff/           semantic diff engine, diff schema v1 + dataset aggregate, noise classification, renderer
+  allocation/     M2 allocation engine (models, rules, engine) + conformance vector runner
   cli/            argparse CLI (python -m talent_data)
 data/normalized/  committed normalized documents + manifest per build (proof artifacts)
+data/conformance/ allocation conformance vectors (for the future Kotlin engine)
 artifacts/diff/   committed diff output (per class + aggregate)
-docs/             data-pipeline.md (how it works), forever-dataset.md (the dataset itself)
-tests/            unit (offline) + integration (network), real per-class DB2 fixtures
+docs/             data-pipeline.md (how it works), forever-dataset.md (the dataset itself),
+                  talent-allocation-semantics.md (allocation rules + evidence)
+tests/            unit (offline) + integration (network), real per-class DB2 fixtures,
+                  conformance/ (authored scenarios + generator)
 ```
 
 See [docs/data-pipeline.md](docs/data-pipeline.md) for data sources, DB2 relationships,
