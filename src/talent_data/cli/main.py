@@ -3,10 +3,15 @@
 builds list    --game forever
 builds latest  --game forever
 fetch          --game forever --build <version|latest>
-normalize      --game forever --build <version|latest> --class warrior
-diff           --game forever --class warrior --from <version> --to <version|latest>
+normalize      --game forever --build <version|latest> --class warrior|all|warrior,priest,...
+diff           --game forever --class warrior|all --from <version> --to <version|latest>
 validate       <normalized.json>
+manifest       <manifest.json>
 schema         [--out docs/schema]
+
+``--class all`` (M1) normalizes / diffs every class of the build, deterministically ordered
+by class id, and writes a dataset manifest (normalize). A batch that fails for any class
+names the class, prints its error, exits non-zero and publishes nothing.
 """
 
 from __future__ import annotations
@@ -22,23 +27,31 @@ from pydantic import BaseModel
 
 from talent_data import paths
 from talent_data.db2.tables import TRAIT_TABLES
-from talent_data.diff.models import DiffReport
-from talent_data.diff.render import render_text
+from talent_data.diff.models import DatasetDiffReport, DiffReport
+from talent_data.diff.render import render_dataset_text, render_text
 from talent_data.games import GAMES, GameConfig, get_game
+from talent_data.models.manifest import DatasetManifest
 from talent_data.models.talents import TalentDataDocument
 from talent_data.normalization.class_resolution import ClassResolutionError
 from talent_data.normalization.normalizer import NormalizationError
 from talent_data.pipeline import (
+    ALL_CLASSES,
     PipelineError,
     check_game_version,
     diff,
+    diff_batch,
     fetch_tables,
     find_latest_build,
     normalize,
+    normalize_batch,
+    parse_class_keys,
     read_document,
+    read_manifest,
+    write_batch,
     write_document,
+    write_json,
 )
-from talent_data.sources.base import SourceError
+from talent_data.sources.base import SourceError, classify_build
 from talent_data.sources.http import DownloadError, HttpClient
 from talent_data.sources.wago.source import WagoBuildSource, WagoDb2Source
 from talent_data.validation.validators import ValidationReport, validate_document
@@ -76,7 +89,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="python -m talent_data",
-        description="WoW talent data pipeline (M0: Forever / Warrior proof of concept)",
+        description="WoW talent data pipeline (M1: Forever, all nine classes)",
     )
     parser.add_argument("-v", "--verbose", action="store_true", help="debug logging")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -99,19 +112,26 @@ def _build_parser() -> argparse.ArgumentParser:
     fetch.add_argument("--force", action="store_true", help="re-download even if cached")
     fetch.set_defaults(handler=_cmd_fetch)
 
-    norm = sub.add_parser("normalize", help="build the normalized talent JSON for a class")
+    norm = sub.add_parser("normalize", help="build the normalized talent JSON for classes")
     game_arg(norm)
     norm.add_argument("--build", required=True, help="client version or 'latest'")
-    norm.add_argument("--class", dest="class_key", required=True, help="e.g. warrior")
+    norm.add_argument(
+        "--class",
+        dest="class_key",
+        required=True,
+        help=f"class key (e.g. warrior), '{ALL_CLASSES}', or a comma-separated list",
+    )
     norm.add_argument("--output", type=Path, help="default: data/normalized/<game>/<build>/")
     norm.add_argument(
         "--offline", action="store_true", help="use only the local DB2 cache, no network"
     )
     norm.set_defaults(handler=_cmd_normalize)
 
-    dif = sub.add_parser("diff", help="semantic diff of a class between two builds")
+    dif = sub.add_parser("diff", help="semantic diff of classes between two builds")
     game_arg(dif)
-    dif.add_argument("--class", dest="class_key", required=True)
+    dif.add_argument(
+        "--class", dest="class_key", required=True, help=f"class key or '{ALL_CLASSES}'"
+    )
     dif.add_argument("--from", dest="from_build", required=True)
     dif.add_argument("--to", dest="to_build", required=True, help="version or 'latest'")
     dif.add_argument("--json", dest="json_out", type=Path, help="default: artifacts/diff/...")
@@ -125,6 +145,10 @@ def _build_parser() -> argparse.ArgumentParser:
     val = sub.add_parser("validate", help="validate a normalized JSON document")
     val.add_argument("path", type=Path)
     val.set_defaults(handler=_cmd_validate)
+
+    man = sub.add_parser("manifest", help="validate a dataset manifest and its class documents")
+    man.add_argument("path", type=Path)
+    man.set_defaults(handler=_cmd_manifest)
     return parser
 
 
@@ -159,10 +183,10 @@ def _resolve_version(game: GameConfig, text: str, http: HttpClient | None) -> Cl
 
 
 def _print_report(report: ValidationReport) -> None:
-    for w in report.warnings:
-        print(f"  warning: {w}")
-    for e in report.errors:
-        print(f"  ERROR: {e}")
+    for issue in report.warnings:
+        print(f"  warning: {issue}")
+    for issue in report.errors:
+        print(f"  ERROR: {issue}")
 
 
 def _summary(doc: TalentDataDocument) -> str:
@@ -205,6 +229,40 @@ def _normalize_to_disk(
     return doc, path
 
 
+def _normalize_batch_to_disk(
+    game: GameConfig,
+    version: ClientVersion,
+    class_keys: Sequence[str] | None,
+    http: HttpClient | None,
+    offline: bool,
+) -> int:
+    source = _db2_source(game, http, offline)
+    batch = normalize_batch(source, game, version, class_keys=class_keys)
+    for r in batch.results:
+        if r.failure is not None or r.document is None or r.report is None:
+            failure = r.failure or "unknown normalization failure"
+            print(f"{game.display_name} {r.chr_class.name} @ {version}: FAILED")
+            print(f"  error: {failure}")
+            continue
+        doc = r.document
+        print(f"{game.display_name} {doc.class_.name} @ {version}: {len(doc.trees)} tree(s)")
+        print(_summary(doc))
+        _print_report(r.report)
+    if not batch.ok:
+        raise PipelineError(
+            f"batch normalize of {version} failed; nothing was written "
+            f"(failing classes above). {batch.describe_failures()}"
+        )
+    written = write_batch(batch, source_name=source.name)
+    manifest = read_manifest(paths.manifest_path(game.key, version))
+    print(f"wrote {len(written) - 1} class documents + {written[-1]}")
+    print(
+        f"dataset: {version}, {len(manifest.classes)} classes, 0 errors, "
+        f"{sum(c.validation.warnings for c in manifest.classes)} warnings"
+    )
+    return EXIT_OK
+
+
 # --------------------------------------------------------------------------- commands
 
 
@@ -213,7 +271,9 @@ def _cmd_builds_list(args: argparse.Namespace) -> int:
     with _http() as http:
         builds = WagoBuildSource(http).list_builds(game)
     for b in sorted(builds, key=lambda b: (b.created_at, b.version), reverse=True):
-        print(f"{b.version}  {b.created_at:%Y-%m-%d %H:%M:%S}  {b.product}")
+        bgdl = classify_build(b).is_background_download
+        suffix = "  [background-download]" if bgdl else ""
+        print(f"{b.version}  {b.created_at:%Y-%m-%d %H:%M:%S}  {b.product}{suffix}")
     return EXIT_OK
 
 
@@ -222,8 +282,15 @@ def _cmd_builds_latest(args: argparse.Namespace) -> int:
     with _http() as http:
         info = find_latest_build(WagoBuildSource(http), game)
     print(f"{game.display_name} latest build: {info.version}")
+    bgdl = classify_build(info).is_background_download
+    note = (
+        "background-download build: not publishable without human review"
+        if bgdl
+        else "not a background-download build ('latest' != proven live)"
+    )
     print(
-        f"  product={info.product} created_at={info.created_at:%Y-%m-%d %H:%M:%S}", file=sys.stderr
+        f"  product={info.product} created_at={info.created_at:%Y-%m-%d %H:%M:%S}; {note}",
+        file=sys.stderr,
     )
     return EXIT_OK
 
@@ -248,28 +315,41 @@ def _cmd_fetch(args: argparse.Namespace) -> int:
 
 def _cmd_normalize(args: argparse.Namespace) -> int:
     game = get_game(args.game)
+    class_keys = parse_class_keys(args.class_key)
+    if class_keys is None or len(class_keys) > 1:
+        if args.output is not None:
+            raise PipelineError("--output is only supported for a single class")
+        if args.offline:
+            version = _resolve_version(game, args.build, None)
+            return _normalize_batch_to_disk(game, version, class_keys, None, True)
+        with _http() as http:
+            version = _resolve_version(game, args.build, http)
+            return _normalize_batch_to_disk(game, version, class_keys, http, False)
     if args.offline:
         version = _resolve_version(game, args.build, None)
-        _normalize_to_disk(game, version, args.class_key, None, True, args.output)
+        _normalize_to_disk(game, version, class_keys[0], None, True, args.output)
         return EXIT_OK
     with _http() as http:
         version = _resolve_version(game, args.build, http)
-        _normalize_to_disk(game, version, args.class_key, http, False, args.output)
+        _normalize_to_disk(game, version, class_keys[0], http, False, args.output)
     return EXIT_OK
 
 
 def _cmd_diff(args: argparse.Namespace) -> int:
     game = get_game(args.game)
+    class_keys = parse_class_keys(args.class_key)
     http = None if args.offline else _http()
     try:
         old_v = _resolve_version(game, args.from_build, http)
         new_v = _resolve_version(game, args.to_build, http)
+        if class_keys is None:
+            return _diff_batch(game, old_v, new_v, http, args.offline, args.json_out)
         docs = []
         for version in (old_v, new_v):
-            existing = _existing_document(game, version, args.class_key)
+            existing = _existing_document(game, version, class_keys[0])
             if existing is None:
-                print(f"normalizing {args.class_key} @ {version} ...", file=sys.stderr)
-                existing, _ = _normalize_to_disk(game, version, args.class_key, http, args.offline)
+                print(f"normalizing {class_keys[0]} @ {version} ...", file=sys.stderr)
+                existing, _ = _normalize_to_disk(game, version, class_keys[0], http, args.offline)
             docs.append(existing)
     finally:
         if http is not None:
@@ -280,6 +360,50 @@ def _cmd_diff(args: argparse.Namespace) -> int:
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(report.to_json(), encoding="utf-8")
     print(f"\nJSON diff: {out}")
+    return EXIT_OK
+
+
+def _diff_batch(
+    game: GameConfig,
+    old_v: ClientVersion,
+    new_v: ClientVersion,
+    http: HttpClient | None,
+    offline: bool,
+    json_out: Path | None,
+) -> int:
+    old_docs: list[TalentDataDocument] = []
+    new_docs: list[TalentDataDocument] = []
+    for version, sink in ((old_v, old_docs), (new_v, new_docs)):
+        existing = _existing_batch(game, version)
+        if existing is not None:
+            sink.extend(existing)
+            continue
+        print(f"normalizing all classes @ {version} ...", file=sys.stderr)
+        source = _db2_source(game, http, offline)
+        batch = normalize_batch(source, game, version, class_keys=None)
+        for r in batch.results:
+            if r.failure is None and r.report is not None and r.report.ok:
+                continue
+            details = r.failure or "; ".join(str(i) for i in (r.report.errors if r.report else []))
+            raise PipelineError(
+                f"cannot diff: {r.chr_class.name} @ {version} failed to normalize: {details}"
+            )
+        write_batch(batch, source_name=source.name)
+        sink.extend(r.document for r in batch.results if r.document is not None)
+    reports, aggregate = diff_batch(old_docs, new_docs)
+    print(render_dataset_text(aggregate, game.display_name), end="")
+    for report in reports:
+        out = paths.diff_path(game.key, report.class_.token, old_v, new_v)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(report.to_json(), encoding="utf-8")
+    out = json_out or (
+        paths.project_root()
+        / "artifacts"
+        / "diff"
+        / DatasetDiffReport.file_name(game.key, str(old_v), str(new_v))
+    )
+    write_json(aggregate.to_json(), out)
+    print(f"\nJSON diffs: {len(reports)} class documents + aggregate {out}")
     return EXIT_OK
 
 
@@ -297,6 +421,22 @@ def _existing_document(
     return doc
 
 
+def _existing_batch(game: GameConfig, version: ClientVersion) -> list[TalentDataDocument] | None:
+    """All class documents of a build, if a complete, valid set is already on disk."""
+    mpath = paths.manifest_path(game.key, version)
+    if not mpath.is_file():
+        return None
+    manifest = read_manifest(mpath)
+    docs: list[TalentDataDocument] = []
+    for entry in manifest.classes:
+        doc = _existing_document(game, version, entry.token.lower())
+        if doc is None or doc.content_hash != entry.content_hash:
+            log.warning("existing %s dataset is stale/invalid; re-normalizing", version)
+            return None
+        docs.append(doc)
+    return docs
+
+
 def _cmd_schema(args: argparse.Namespace) -> int:
     for name, text in json_schemas().items():
         path = args.out / name
@@ -311,6 +451,8 @@ def json_schemas() -> dict[str, str]:
     return {
         "talent-data.v1.schema.json": _schema_text(TalentDataDocument),
         "talent-diff.v1.schema.json": _schema_text(DiffReport),
+        "dataset-manifest.v1.schema.json": _schema_text(DatasetManifest),
+        "dataset-diff.v1.schema.json": _schema_text(DatasetDiffReport),
     }
 
 
@@ -325,3 +467,28 @@ def _cmd_validate(args: argparse.Namespace) -> int:
     print(f"{args.path}: {len(report.errors)} error(s), {len(report.warnings)} warning(s)")
     _print_report(report)
     return EXIT_OK if report.ok else EXIT_FAILURE
+
+
+def _cmd_manifest(args: argparse.Namespace) -> int:
+    manifest = read_manifest(args.path)
+    print(f"{args.path}: {manifest.game} {manifest.client_build}, {len(manifest.classes)} classes")
+    failed = False
+    for entry in manifest.classes:
+        doc_path = args.path.parent / entry.file
+        try:
+            doc = read_document(doc_path)
+        except PipelineError as exc:
+            print(f"  ERROR: [{entry.token}] {exc}")
+            failed = True
+            continue
+        report = validate_document(doc)
+        status = "ok" if report.ok else "INVALID"
+        hash_ok = "hash ok" if doc.content_hash == entry.content_hash else "HASH MISMATCH"
+        codes = " ".join(f"{code}={n}" for code, n in entry.validation.warnings_by_code.items())
+        print(
+            f"  {entry.token}: {status}, {hash_ok}, {len(report.errors)} error(s), "
+            f"{len(report.warnings)} warning(s) {codes}"
+        )
+        if not report.ok or doc.content_hash != entry.content_hash:
+            failed = True
+    return EXIT_FAILURE if failed else EXIT_OK

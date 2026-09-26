@@ -90,3 +90,44 @@ def latest_build(builds: Iterable[BuildInfo]) -> BuildInfo:
     if not ordered:
         raise SourceError("no builds available")
     return ordered[-1]
+
+
+# --------------------------------------------------------------------- build candidates
+#
+# "Latest detected build" and "latest build that may be published from" are different
+# notions. A background-download build (Battle.net ``is_bgdl``) is a *future* patch whose
+# data Blizzard starts distributing early; its DB2 tables are not necessarily the tables the
+# live game uses, and its ``created_at`` being newest must NOT make it production-ready.
+#
+# What the source metadata can and cannot tell us (observed 2026-09-27):
+#   * wago.tools exposes ``is_bgdl`` per build; all five Forever 1.60.1 builds have it
+#     false, while the retail ``wow`` product lists 12 builds with ``is_bgdl=true``
+#     (patch pre-downloads) - so the flag is actively used and meaningful;
+#   * wago.tools has NO field that says "this is the build the live realms run".
+# Therefore: "publishable" below only means "not a background download". It is a necessary
+# condition for treating a build as production data, not proof that the build is live.
+
+
+@dataclass(frozen=True)
+class BuildCandidate:
+    """A build considered as a dataset source, with the facts that gate publication."""
+
+    info: BuildInfo
+    is_background_download: bool
+
+
+def classify_build(info: BuildInfo) -> BuildCandidate:
+    """Lift source-specific ``extra`` facts into the domain (unknown sources -> not bgdl)."""
+    return BuildCandidate(info=info, is_background_download=info.extra.get("is_bgdl") == "true")
+
+
+def publishable(candidates: Iterable[BuildCandidate]) -> list[BuildCandidate]:
+    """Candidates that are not background downloads (see the note above)."""
+    return [c for c in candidates if not c.is_background_download]
+
+
+def latest_publishable_build(candidates: Iterable[BuildCandidate]) -> BuildCandidate:
+    ordered = sorted(publishable(candidates), key=lambda c: (c.info.created_at, c.info.version))
+    if not ordered:
+        raise SourceError("no publishable (non-background-download) builds available")
+    return ordered[-1]
