@@ -1,0 +1,23 @@
+name: Live integration (wago.tools)
+
+# Manual only: hits the real wago.tools API and downloads ~16 MB of DB2 CSVs.
+# No secrets required. Run from the Actions tab when a live check is wanted.
+on:
+  workflow_dispatch:
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: pip install -e ".[dev]"
+
+      - name: Pytest integration tests
+        run: pytest -m integration
