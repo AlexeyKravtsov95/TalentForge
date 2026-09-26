@@ -1,4 +1,4 @@
-# Talent data pipeline (M0: Forever / Warrior)
+# Talent data pipeline (M1: Forever / all nine classes)
 
 This document describes how TalentForge turns World of Warcraft client data into a stable,
 versioned talent-tree contract, and how it detects semantic changes between client builds.
@@ -12,9 +12,10 @@ wago.tools /db2/<T>/csv ─► Db2Source ────► .cache/wago/forever/<bu
                         TraitDataSet (typed, indexed DB2 rows)
                                              │
                               normalizer ────► data/normalized/forever/<build>/<class>.json
-                              validators       (schema v1, contentHash)
-                                             │
+                              validators       (schema v1, contentHash) × 9 classes
+                                             │        + manifest.json (dataset index, v1)
                      diff engine + renderer ─► stdout + artifacts/diff/<game>-<class>-<a>-<b>.json
+                                              + artifacts/diff/<game>-all-<a>-<b>.json (aggregate)
 ```
 
 ## 1. Where builds come from
@@ -61,7 +62,12 @@ The **latest** build is the one with the greatest `created_at` (version as tie-b
 | 1.60.1.69876 | 2026-09-16 18:23:04 |
 
 `is_bgdl` (background-download build) is carried in `BuildInfo.extra` but not used for
-selection; none of the Forever builds had it set.
+selection; none of the Forever builds had it set. M1 makes the distinction explicit in
+the domain model (`classify_build` / `latest_publishable_build` in `sources/base.py`)
+and surfaces `[background-download]` in `builds list`: "latest detected" and "latest
+publishable" are different notions, and neither is proven "live" — wago.tools exposes no
+live marker, while the flag *is* actively used on the retail product (12 bgdl builds at
+the time of writing). See `docs/forever-dataset.md` for the full reasoning.
 
 ## 3. DB2 tables used
 
@@ -154,8 +160,12 @@ tree's nodes**; otherwise `sections` stays empty. Tab names do not exist in the 
 (`name: null`).
 
 Conditions that are not `CondType 0` + group + spent amount with no other constraint are kept
-as `unresolvedConditionIds` (e.g. Priest cond `43478`, Druid cond `50974`: CondType 0 with only
-`TraitTreeID` set).
+as `unresolvedConditionIds`. M1 additionally proves a class of conditions **vacuous**: a
+CondType-0 row whose every constraint field is zero (group, node, entry, currency, spent
+amount, level, quest, achievement, spec set, granted ranks, flags) cannot gate anything
+and is treated as a no-op — real examples are Priest cond `43478` (whole Discipline tab)
+and Druid cond `50974` (next to the real gate `50973`). The investigation is in
+`docs/forever-dataset.md`.
 
 ### Point budget
 
@@ -200,8 +210,12 @@ exposed (Last Stand: 1 rank, 3-point curve); missing ranks yield `"incomplete"`
 3. `TraitDataSet.load()` parses rows into typed records (`db2/tables.py`); any non-numeric
    value or missing column fails with table + column in the message; duplicate primary keys
    fail.
-4. `normalize_class()` resolves the class, builds trees, and computes `contentHash`.
-5. `validate_document()`; the CLI writes nothing if there is any error.
+4. `normalize_class()` resolves the class, builds trees, and computes `contentHash`;
+   `normalize_batch()` (M1) does this for every class of the build, in class-id order,
+   recording per-class failures instead of stopping at the first one.
+5. `validate_document()`; the CLI writes nothing if there is any error — and a batch writes
+   nothing (no class documents, no manifest) unless **every** class validated clean, so a
+   partially-valid dataset is never published.
 
 The normalizer and diff engine only see `Db2Table` / `TraitDataSet`; they do not know about
 wago.tools, HTTP or CSV. `sources/local.py` (a directory of CSVs) is a second implementation of
@@ -209,8 +223,14 @@ the same protocol, used by the tests.
 
 ## 6. Normalized schema (v1)
 
-JSON Schema: [`docs/schema/talent-data.v1.schema.json`](schema/talent-data.v1.schema.json)
-(generated from the Pydantic models; a test fails if it drifts from the code).
+JSON Schemas of all public contracts are committed and generated from the Pydantic models;
+a test fails if any committed schema drifts from the code (developers regenerate with
+`python -m talent_data schema`):
+
+* `talent-data.v1.schema.json` — one class document (below)
+* `dataset-manifest.v1.schema.json` — the per-build dataset index (§6c)
+* `talent-diff.v1.schema.json` — one class's semantic diff (§7)
+* `dataset-diff.v1.schema.json` — the all-class diff aggregate (§7)
 
 ```jsonc
 {
@@ -264,6 +284,44 @@ Design choices:
   byte-identical JSON apart from `generatedAt`. `contentHash` lets clients detect semantic
   changes without diffing.
 
+### 6b. Validation issues (M1 taxonomy)
+
+Validation findings are typed values (`validation/issues.py`), not text:
+
+```python
+ValidationIssue(
+    severity="warning",
+    code="OFF_GRID_NODE",
+    message="…",
+    tree_id=1091,
+    node_id=104982,
+    entry_id=None,
+    effect_index=None,
+)
+```
+
+* `severity` is `error` (must not be published) or `warning` (known data feature / pipeline
+  gap, surfaced, never hidden).
+* `code` is stable and machine-readable; automation branches on it, never on message text
+  (messages remain human-readable and may be reworded).
+* Warning codes observed in real data are registered in `KNOWN_WARNING_CODES`; a test pins
+  the exact per-class warning set of the fixture build, so an *unknown* code fails CI until
+  investigated. Each known code has an investigation entry and a regression test —
+  see `docs/forever-dataset.md`.
+
+Current warning codes: `OFF_GRID_NODE`, `DUPLICATE_SPELL_IDENTITY`,
+`SUFFICIENT_PREREQUISITE_CYCLE`, `INCOMPLETE_RANK_CURVE`, `UNRESOLVED_RANK_CURVE`,
+`SHARED_GRID_CELL`, `SECTIONS_UNRESOLVED` (plus `UNRESOLVED_CONDITION`, currently produced
+by no real Forever data).
+
+### 6c. Dataset manifest (M1)
+
+Every successful batch normalize writes `data/normalized/forever/<build>/manifest.json`
+(schema v1, `models/manifest.py`): build identity, class inventory (ordered by class id),
+per-class file name + tree ids + semantic `contentHash`, and validation counts with
+warnings broken down by code. It is the entry point a future mobile updater reads first;
+see `docs/forever-dataset.md` for an example and the write-only-if-all-classes-pass rule.
+
 ## 7. Semantic diff
 
 `diff/engine.py` compares two documents of the same game + class; `diff/render.py` prints the
@@ -286,27 +344,62 @@ developer view; the machine view follows
 Effects are matched by effect index because that is what tooltip placeholders refer to
 (`$s1` = index 0).
 
-## 8. Known limitations (M0)
+### Batch diff and diff noise (M1)
 
-* Only Warrior is the supported/tested class. The pipeline runs on all nine Forever classes
-  (see the PR for results) but their warnings have not been reviewed individually.
+`diff --class all` diffs every class and writes (a) one unchanged talent-diff v1 document
+per class and (b) a small aggregate following
+[`docs/schema/dataset-diff.v1.schema.json`](schema/dataset-diff.v1.schema.json) — per-class
+summaries plus a TOTAL, pointing at the per-class files. The aggregate adds no new
+semantics; it exists so consumers can scan a whole build-to-build move without opening
+nine documents.
+
+Which change kinds a player would perceive, and which are DB2 engineering noise, is a
+documented, machine-readable boundary (`USER_VISIBLE_CHANGE_KINDS` /
+`DIAGNOSTIC_CHANGE_KINDS` in `diff/models.py`; a test guarantees the two sets exactly
+partition all change kinds):
+
+* **User-visible**: node added/removed, `renamed`, `spellReplaced`, `maxRankChanged`,
+  `effectRankValueChanged`, `effectStatusChanged`, `effectAdded`/`effectRemoved`,
+  `descriptionChanged`, `positionChanged`, `sectionChanged`, `prerequisitesChanged`,
+  `unlockRequirementsChanged`, `typeChanged`, `treeChanged`, `entriesChanged`,
+  `unresolvedConditionsChanged`.
+* **Diagnostic**: `flagsChanged` (raw flag semantics unknown) and
+  `effectBasePointsChanged`. The latter is noisy because `SpellEffect` indexes can be
+  re-numbered between builds: when an effect is *inserted*, every following effect shifts
+  by one index, cascading into false "changed"/"added" entries (real case: Warrior
+  Improved Slam in 1.60.1.70009 — five false base-point changes and a phantom effect #7
+  "add", while the genuine change was effect #2 gaining rank values).
+
+The raw engineering diff is never filtered or deduplicated; the classification is
+information for future consumers (e.g. a mobile patch-history view must not present DB2
+noise as balance changes).
+
+## 8. Known limitations (M1)
+
+* All nine Forever classes normalize and validate (0 errors). The remaining 11 warnings on
+  1.60.1.70009 are investigated client-data features, each with a stable code and a
+  regression test — see `docs/forever-dataset.md` for the evidence and the full list of
+  unresolved semantics.
 * Tooltips are raw templates; `$s1`, `${$m1/-1000}.2`, `$12976d`, conditionals are not
   rendered. Per-rank numbers are available structurally for curve-backed effects only.
 * Tab names (Arms / Fury / Protection) are not present in the client data and are `null`.
 * `TraitEdge` semantics beyond the WoWDBDefs names are unverified: whether *sufficient* edges
   are OR-ed and *required* edges AND-ed, and whether a prerequisite must be fully ranked, is
   not encoded. Hunter 1.60.1.70009 contains a mutual pair of sufficient edges
-  (Bestial Wrath ⇄ Intimidation) — reported as a warning.
+  (Bestial Wrath ⇄ Intimidation) — preserved verbatim and reported as a warning.
 * `TraitNode.Flags` (e.g. `8` on one node per Warrior tab) and `NodeEntryType` are exposed raw;
   their meaning is unknown.
 * Only `TraitCond` "points spent in group" gates are interpreted; everything else is listed as
-  unresolved. Costs (`TraitCost`) are not modelled (1 point per rank is not asserted).
+  unresolved (all-zero *vacuous* conditions are proven no-ops). Costs (`TraitCost`) are not
+  modelled (1 point per rank is not asserted).
 * Only `TraitDefinitionEffectPoints.OperationType = 0` is interpreted.
 * Icons, spell ranks granted by talents, and localization (enUS only, as served by wago) are
   out of scope.
 * Builds whose DB2 layout wago.tools cannot name (1.60.1.69876 `TraitCurrency`) cannot be
   normalized through wago; a direct client extractor would be needed.
 * `created_at` timezone is undocumented; it is only used for ordering.
+* The manifest is a local file; CDN/network publishing and scheduled dataset releases are
+  out of scope for M1.
 
 ## 9. Reproducing locally
 
@@ -319,32 +412,28 @@ python -m talent_data builds latest --game forever        # Forever latest build
 python -m talent_data fetch --game forever --build 1.60.1.69977
 python -m talent_data fetch --game forever --build latest
 python -m talent_data normalize --game forever --build 1.60.1.70009 --class warrior
+python -m talent_data normalize --game forever --build latest --class all   # whole dataset + manifest
 python -m talent_data diff --game forever --class warrior --from 1.60.1.69977 --to 1.60.1.70009
-python -m talent_data validate data/normalized/forever/1.60.1.70009/warrior.json
+python -m talent_data diff --game forever --class all --from 1.60.1.69977 --to 1.60.1.70009
+python -m talent_data validate data/normalized/forever/1.60.1.70009/hunter.json
+python -m talent_data manifest data/normalized/forever/1.60.1.70009/manifest.json
 
-ruff check . && ruff format --check . && mypy && pytest          # offline
-pytest -m integration                                             # live wago.tools
+ruff check . && ruff format --check . && mypy && pytest          # offline (CI runs the same)
+pytest -m integration                                             # live wago.tools (manual workflow)
 ```
 
 Raw CSVs go to `.cache/wago/forever/<build>/` (git-ignored). Normalized documents go to
-`data/normalized/forever/<build>/<class>.json`; diffs to `artifacts/diff/`. Set
-`TALENT_DATA_ROOT` to use another root directory. Test fixtures are regenerated with
-`scripts/extract_fixtures.py` (see `tests/fixtures/README.md`).
+`data/normalized/forever/<build>/<class>.json` with `manifest.json` next to them; diffs to
+`artifacts/diff/`. Set `TALENT_DATA_ROOT` to use another root directory. Test fixtures are
+regenerated with `scripts/extract_fixtures.py --build <build> --classes all`
+(see `tests/fixtures/README.md`).
 
-## 10. Supporting all nine classes (next milestone)
+## 10. What M1 did not do
 
-The class → tree resolution, normalizer and diff are already class-agnostic (no Warrior
-constants in `src/`). To make the other eight classes first-class:
-
-1. Review each class's warnings: off-grid nodes (Paladin, Hunter, Priest, Warlock), the Hunter
-   mutual edge, duplicate spell ids (Hunter 19168, Priest 14889), unresolved gate conditions
-   (Priest 43478, Druid 50974), incomplete curves (Rogue Cutthroat).
-2. Confirm prerequisite semantics (sufficient vs required, rank requirement) and decide how
-   the contract encodes them.
-3. Add a fixture per class via `scripts/extract_fixtures.py` and golden assertions.
-4. Add a `normalize --class all` / `diff --class all` batch mode and one diff artifact per class.
-5. Decide on tab naming (a curated, versioned mapping outside client data, clearly marked as
-   such) if the product needs "Arms / Fury / Protection".
+Mobile clients, backend/network publishing of datasets, scheduled releases, further game
+flavours (Classic Era, TBC, …) and tooltip rendering are all out of scope — M1 is a
+data-platform milestone only. See `docs/forever-dataset.md` for the recommended next
+milestone.
 
 ## References
 
