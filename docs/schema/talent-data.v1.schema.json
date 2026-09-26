@@ -1,0 +1,625 @@
+{
+  "$defs": {
+    "ClassRef": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "ChrClasses.ID",
+          "title": "Id",
+          "type": "integer"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "token": {
+          "description": "Locale-independent class token, e.g. WARRIOR",
+          "title": "Token",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "token",
+        "name"
+      ],
+      "title": "ClassRef",
+      "type": "object"
+    },
+    "Effect": {
+      "additionalProperties": false,
+      "properties": {
+        "basePoints": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Spell's static base points for this effect (SpellEffect, default difficulty). Informational; NOT the per-rank value of multi-rank talents.",
+          "title": "Basepoints"
+        },
+        "index": {
+          "description": "Spell effect index; $s1 in tooltips is index 0",
+          "title": "Index",
+          "type": "integer"
+        },
+        "perRank": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/RankValue"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Value of this effect at each rank, from the trait rank curve. null when there is no curve (static effect) or it could not be interpreted.",
+          "title": "Perrank"
+        },
+        "perRankStatus": {
+          "description": "resolved: every rank 1..maxRank has a value; incomplete: curve misses ranks; none: no rank curve for this effect; unresolved: curve exists but its semantics are unknown (see unresolvedReason)",
+          "enum": [
+            "resolved",
+            "incomplete",
+            "none",
+            "unresolved"
+          ],
+          "title": "Perrankstatus",
+          "type": "string"
+        },
+        "unresolvedReason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unresolvedreason"
+        }
+      },
+      "required": [
+        "index",
+        "perRank",
+        "perRankStatus",
+        "basePoints"
+      ],
+      "title": "Effect",
+      "type": "object"
+    },
+    "Layout": {
+      "additionalProperties": false,
+      "properties": {
+        "xStep": {
+          "description": "Dominant horizontal node spacing in client units",
+          "title": "Xstep",
+          "type": "integer"
+        },
+        "yStep": {
+          "description": "Dominant vertical node spacing in client units",
+          "title": "Ystep",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "xStep",
+        "yStep"
+      ],
+      "title": "Layout",
+      "type": "object"
+    },
+    "PointBudget": {
+      "additionalProperties": false,
+      "properties": {
+        "currencyId": {
+          "title": "Currencyid",
+          "type": "integer"
+        },
+        "maxPoints": {
+          "description": "TraitCurrency.SourcedMax",
+          "title": "Maxpoints",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "currencyId",
+        "maxPoints"
+      ],
+      "title": "PointBudget",
+      "type": "object"
+    },
+    "Position": {
+      "additionalProperties": false,
+      "properties": {
+        "column": {
+          "description": "Derived: round((x - section min x) / tree.layout.xStep); the whole tree is one section when sections are unresolved",
+          "title": "Column",
+          "type": "integer"
+        },
+        "row": {
+          "description": "Derived: round((y - tree min y) / tree.layout.yStep)",
+          "title": "Row",
+          "type": "integer"
+        },
+        "x": {
+          "description": "Raw client layout X (TraitNode.PosX). Authoritative.",
+          "title": "X",
+          "type": "integer"
+        },
+        "y": {
+          "description": "Raw client layout Y (TraitNode.PosY). Authoritative.",
+          "title": "Y",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "row",
+        "column"
+      ],
+      "title": "Position",
+      "type": "object"
+    },
+    "Prerequisite": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "description": "TraitEdge.Type 2 = SufficientForAvailability, 3 = RequiredForAvailability",
+          "enum": [
+            "sufficient",
+            "required"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "nodeId": {
+          "title": "Nodeid",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "nodeId",
+        "kind"
+      ],
+      "title": "Prerequisite",
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "tables": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tables",
+          "type": "array"
+        }
+      },
+      "required": [
+        "source",
+        "tables"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "RankValue": {
+      "additionalProperties": false,
+      "properties": {
+        "rank": {
+          "title": "Rank",
+          "type": "integer"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "rank",
+        "value"
+      ],
+      "title": "RankValue",
+      "type": "object"
+    },
+    "Section": {
+      "additionalProperties": false,
+      "properties": {
+        "index": {
+          "title": "Index",
+          "type": "integer"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Not present in client data for Forever (null)",
+          "title": "Name"
+        },
+        "nodeIds": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Nodeids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "index",
+        "name",
+        "nodeIds"
+      ],
+      "title": "Section",
+      "type": "object"
+    },
+    "TalentEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "definitionId": {
+          "description": "TraitDefinition.ID",
+          "title": "Definitionid",
+          "type": "integer"
+        },
+        "descriptionTemplate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Raw Blizzard tooltip template (unrendered, e.g. '$s1%')",
+          "title": "Descriptiontemplate"
+        },
+        "effects": {
+          "items": {
+            "$ref": "#/$defs/Effect"
+          },
+          "title": "Effects",
+          "type": "array"
+        },
+        "entryType": {
+          "description": "TraitNodeEntry.NodeEntryType (raw, semantics TBD)",
+          "title": "Entrytype",
+          "type": "integer"
+        },
+        "id": {
+          "description": "TraitNodeEntry.ID",
+          "title": "Id",
+          "type": "integer"
+        },
+        "maxRank": {
+          "title": "Maxrank",
+          "type": "integer"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Name"
+        },
+        "spellId": {
+          "title": "Spellid",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "definitionId",
+        "spellId",
+        "name",
+        "maxRank",
+        "entryType",
+        "descriptionTemplate",
+        "effects"
+      ],
+      "title": "TalentEntry",
+      "type": "object"
+    },
+    "TalentNode": {
+      "additionalProperties": false,
+      "properties": {
+        "entries": {
+          "items": {
+            "$ref": "#/$defs/TalentEntry"
+          },
+          "title": "Entries",
+          "type": "array"
+        },
+        "flags": {
+          "description": "Raw TraitNode.Flags (semantics not resolved in M0)",
+          "title": "Flags",
+          "type": "integer"
+        },
+        "id": {
+          "description": "TraitNode.ID - stable identity across builds",
+          "title": "Id",
+          "type": "integer"
+        },
+        "maxRank": {
+          "title": "Maxrank",
+          "type": "integer"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Set when the node has exactly one entry",
+          "title": "Name"
+        },
+        "position": {
+          "$ref": "#/$defs/Position"
+        },
+        "prerequisites": {
+          "items": {
+            "$ref": "#/$defs/Prerequisite"
+          },
+          "title": "Prerequisites",
+          "type": "array"
+        },
+        "sectionIndex": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Sectionindex"
+        },
+        "spellId": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Set when the node has exactly one entry",
+          "title": "Spellid"
+        },
+        "type": {
+          "anyOf": [
+            {
+              "enum": [
+                "single",
+                "tiered",
+                "selection"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "TraitNode.Type; 'unknown:<n>' if unmapped",
+          "title": "Type"
+        },
+        "unlockRequirements": {
+          "items": {
+            "$ref": "#/$defs/UnlockRequirement"
+          },
+          "title": "Unlockrequirements",
+          "type": "array"
+        },
+        "unresolvedConditionIds": {
+          "description": "TraitCond IDs attached to this node that M0 cannot interpret",
+          "items": {
+            "type": "integer"
+          },
+          "title": "Unresolvedconditionids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "sectionIndex",
+        "position",
+        "type",
+        "flags",
+        "maxRank",
+        "spellId",
+        "name",
+        "prerequisites",
+        "unlockRequirements",
+        "unresolvedConditionIds",
+        "entries"
+      ],
+      "title": "TalentNode",
+      "type": "object"
+    },
+    "TalentTree": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "TraitTree.ID",
+          "title": "Id",
+          "type": "integer"
+        },
+        "layout": {
+          "$ref": "#/$defs/Layout"
+        },
+        "nodes": {
+          "items": {
+            "$ref": "#/$defs/TalentNode"
+          },
+          "title": "Nodes",
+          "type": "array"
+        },
+        "pointBudget": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PointBudget"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sections": {
+          "items": {
+            "$ref": "#/$defs/Section"
+          },
+          "title": "Sections",
+          "type": "array"
+        },
+        "visualOnlyEdges": {
+          "description": "TraitEdge.Type 0: drawn but no gameplay requirement",
+          "items": {
+            "$ref": "#/$defs/VisualEdge"
+          },
+          "title": "Visualonlyedges",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "pointBudget",
+        "layout",
+        "sections",
+        "nodes",
+        "visualOnlyEdges"
+      ],
+      "title": "TalentTree",
+      "type": "object"
+    },
+    "UnlockRequirement": {
+      "additionalProperties": false,
+      "properties": {
+        "countedNodeIds": {
+          "description": "Points spent in these nodes count toward required_points",
+          "items": {
+            "type": "integer"
+          },
+          "title": "Countednodeids",
+          "type": "array"
+        },
+        "kind": {
+          "const": "pointsSpent",
+          "default": "pointsSpent",
+          "title": "Kind",
+          "type": "string"
+        },
+        "requiredPoints": {
+          "title": "Requiredpoints",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "requiredPoints",
+        "countedNodeIds"
+      ],
+      "title": "UnlockRequirement",
+      "type": "object"
+    },
+    "VisualEdge": {
+      "additionalProperties": false,
+      "properties": {
+        "fromNodeId": {
+          "title": "Fromnodeid",
+          "type": "integer"
+        },
+        "toNodeId": {
+          "title": "Tonodeid",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "fromNodeId",
+        "toNodeId"
+      ],
+      "title": "VisualEdge",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "class": {
+      "$ref": "#/$defs/ClassRef"
+    },
+    "clientBuild": {
+      "title": "Clientbuild",
+      "type": "string"
+    },
+    "contentHash": {
+      "description": "sha256 of the semantic payload (everything except volatile metadata)",
+      "title": "Contenthash",
+      "type": "string"
+    },
+    "game": {
+      "title": "Game",
+      "type": "string"
+    },
+    "generatedAt": {
+      "format": "date-time",
+      "title": "Generatedat",
+      "type": "string"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "schemaVersion": {
+      "const": 1,
+      "default": 1,
+      "title": "Schemaversion",
+      "type": "integer"
+    },
+    "trees": {
+      "items": {
+        "$ref": "#/$defs/TalentTree"
+      },
+      "title": "Trees",
+      "type": "array"
+    }
+  },
+  "required": [
+    "game",
+    "clientBuild",
+    "class",
+    "trees",
+    "contentHash",
+    "generatedAt",
+    "provenance"
+  ],
+  "title": "TalentDataDocument",
+  "type": "object"
+}
