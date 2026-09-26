@@ -1,0 +1,178 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 1,
+    "token": "WARRIOR",
+    "name": "Warrior"
+  },
+  "fromBuild": "1.60.1.69977",
+  "toBuild": "1.60.1.70009",
+  "fromContentHash": "sha256:7938bd41ebbc1f19568a1c790d604ecee979419d68203149f7e6a686075dd3e0",
+  "toContentHash": "sha256:cab5b5103c6a8f7f4dd6cc70bd727f640e95a16d49e9619133cd21299844528e",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 2,
+    "changesByKind": {
+      "descriptionChanged": 2,
+      "effectAdded": 1,
+      "effectBasePointsChanged": 5,
+      "effectRankValueChanged": 7,
+      "effectStatusChanged": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 110524,
+      "treeId": 1117,
+      "name": "Bloodthrill",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 137214,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Your melee attacks against targets afflicted by your Rend have a $s1% chance to activate your Overpower ability for 1 attack on your current target. Lasts $1289681d.",
+          "new": "Your Main Hand melee attacks against enemies afflicted by your Rend have a $s1% chance to allow the use of your Overpower ability on the target. Lasts $1289681d."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137214,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 2,
+          "new": 4
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137214,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 4,
+          "new": 8
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137214,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 6,
+          "new": 12
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137214,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": 8,
+          "new": 16
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137214,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": 10,
+          "new": 20
+        }
+      ]
+    },
+    {
+      "nodeId": 110858,
+      "treeId": 1117,
+      "name": "Improved Slam",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 137850,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Reduces the global cooldown and cast time of your Slam ability by ${$m1/-1000}.2 sec. In addition, Slam no longer interrupts your melee swing time.",
+          "new": "Reduces the global cooldown and cast time of your Slam ability by ${$m1/-1000}.2 sec. In addition, Slam no longer interrupts or delays your melee swing and Slam's cooldown is reduced by ${$m3/-1000}.1 sec."
+        },
+        {
+          "kind": "effectStatusChanged",
+          "entryId": 137850,
+          "effectIndex": 2,
+          "rank": null,
+          "old": "none",
+          "new": "resolved"
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137850,
+          "effectIndex": 2,
+          "rank": 1,
+          "old": null,
+          "new": -1500
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137850,
+          "effectIndex": 2,
+          "rank": 2,
+          "old": null,
+          "new": -3000
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 137850,
+          "effectIndex": 2,
+          "rank": null,
+          "old": 1310196,
+          "new": -3000
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 137850,
+          "effectIndex": 3,
+          "rank": null,
+          "old": 1310197,
+          "new": 1310196
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 137850,
+          "effectIndex": 4,
+          "rank": null,
+          "old": 1310198,
+          "new": 1310197
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 137850,
+          "effectIndex": 5,
+          "rank": null,
+          "old": 1310199,
+          "new": 1310198
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 137850,
+          "effectIndex": 6,
+          "rank": null,
+          "old": 1310200,
+          "new": 1310199
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 137850,
+          "effectIndex": 7,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 7,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 1310200,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    }
+  ]
+}

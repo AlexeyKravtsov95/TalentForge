@@ -1,0 +1,394 @@
+{
+  "$defs": {
+    "Change": {
+      "properties": {
+        "effectIndex": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Effectindex"
+        },
+        "entryId": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entryid"
+        },
+        "kind": {
+          "enum": [
+            "renamed",
+            "spellReplaced",
+            "entriesChanged",
+            "treeChanged",
+            "sectionChanged",
+            "positionChanged",
+            "typeChanged",
+            "flagsChanged",
+            "maxRankChanged",
+            "prerequisitesChanged",
+            "unlockRequirementsChanged",
+            "unresolvedConditionsChanged",
+            "effectAdded",
+            "effectRemoved",
+            "effectRankValueChanged",
+            "effectBasePointsChanged",
+            "effectStatusChanged",
+            "descriptionChanged"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "new": {
+          "default": null,
+          "title": "New"
+        },
+        "old": {
+          "default": null,
+          "title": "Old"
+        },
+        "rank": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rank"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "Change",
+      "type": "object"
+    },
+    "ClassRef": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "ChrClasses.ID",
+          "title": "Id",
+          "type": "integer"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "token": {
+          "description": "Locale-independent class token, e.g. WARRIOR",
+          "title": "Token",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "token",
+        "name"
+      ],
+      "title": "ClassRef",
+      "type": "object"
+    },
+    "DiffSummary": {
+      "properties": {
+        "added": {
+          "title": "Added",
+          "type": "integer"
+        },
+        "changed": {
+          "title": "Changed",
+          "type": "integer"
+        },
+        "changesByKind": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "title": "Changesbykind",
+          "type": "object"
+        },
+        "removed": {
+          "title": "Removed",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "added",
+        "removed",
+        "changed",
+        "changesByKind"
+      ],
+      "title": "DiffSummary",
+      "type": "object"
+    },
+    "NodeChange": {
+      "properties": {
+        "changes": {
+          "items": {
+            "$ref": "#/$defs/Change"
+          },
+          "title": "Changes",
+          "type": "array"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Name"
+        },
+        "nodeId": {
+          "title": "Nodeid",
+          "type": "integer"
+        },
+        "treeId": {
+          "title": "Treeid",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "nodeId",
+        "treeId",
+        "name",
+        "changes"
+      ],
+      "title": "NodeChange",
+      "type": "object"
+    },
+    "NodeRef": {
+      "properties": {
+        "maxRank": {
+          "title": "Maxrank",
+          "type": "integer"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Name"
+        },
+        "nodeId": {
+          "title": "Nodeid",
+          "type": "integer"
+        },
+        "position": {
+          "$ref": "#/$defs/Position"
+        },
+        "relatedNodeId": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Hint only: a node on the other side with the same spellId. The diff never merges such pairs into a rename because node identity differs.",
+          "title": "Relatednodeid"
+        },
+        "sectionIndex": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Sectionindex"
+        },
+        "spellId": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Spellid"
+        },
+        "treeId": {
+          "title": "Treeid",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "nodeId",
+        "treeId",
+        "name",
+        "spellId",
+        "sectionIndex",
+        "position",
+        "maxRank"
+      ],
+      "title": "NodeRef",
+      "type": "object"
+    },
+    "Position": {
+      "additionalProperties": false,
+      "properties": {
+        "column": {
+          "description": "Derived: round((x - section min x) / tree.layout.xStep); the whole tree is one section when sections are unresolved",
+          "title": "Column",
+          "type": "integer"
+        },
+        "row": {
+          "description": "Derived: round((y - tree min y) / tree.layout.yStep)",
+          "title": "Row",
+          "type": "integer"
+        },
+        "x": {
+          "description": "Raw client layout X (TraitNode.PosX). Authoritative.",
+          "title": "X",
+          "type": "integer"
+        },
+        "y": {
+          "description": "Raw client layout Y (TraitNode.PosY). Authoritative.",
+          "title": "Y",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "row",
+        "column"
+      ],
+      "title": "Position",
+      "type": "object"
+    },
+    "TreeChange": {
+      "properties": {
+        "kind": {
+          "enum": [
+            "treeAdded",
+            "treeRemoved",
+            "pointBudgetChanged",
+            "sectionsChanged"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "new": {
+          "default": null,
+          "title": "New"
+        },
+        "old": {
+          "default": null,
+          "title": "Old"
+        },
+        "treeId": {
+          "title": "Treeid",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "treeId",
+        "kind"
+      ],
+      "title": "TreeChange",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "added": {
+      "items": {
+        "$ref": "#/$defs/NodeRef"
+      },
+      "title": "Added",
+      "type": "array"
+    },
+    "changed": {
+      "items": {
+        "$ref": "#/$defs/NodeChange"
+      },
+      "title": "Changed",
+      "type": "array"
+    },
+    "class": {
+      "$ref": "#/$defs/ClassRef"
+    },
+    "fromBuild": {
+      "title": "Frombuild",
+      "type": "string"
+    },
+    "fromContentHash": {
+      "title": "Fromcontenthash",
+      "type": "string"
+    },
+    "game": {
+      "title": "Game",
+      "type": "string"
+    },
+    "removed": {
+      "items": {
+        "$ref": "#/$defs/NodeRef"
+      },
+      "title": "Removed",
+      "type": "array"
+    },
+    "schemaVersion": {
+      "const": 1,
+      "default": 1,
+      "title": "Schemaversion",
+      "type": "integer"
+    },
+    "summary": {
+      "$ref": "#/$defs/DiffSummary"
+    },
+    "toBuild": {
+      "title": "Tobuild",
+      "type": "string"
+    },
+    "toContentHash": {
+      "title": "Tocontenthash",
+      "type": "string"
+    },
+    "treeChanges": {
+      "items": {
+        "$ref": "#/$defs/TreeChange"
+      },
+      "title": "Treechanges",
+      "type": "array"
+    }
+  },
+  "required": [
+    "game",
+    "class",
+    "fromBuild",
+    "toBuild",
+    "fromContentHash",
+    "toContentHash",
+    "summary",
+    "treeChanges",
+    "added",
+    "removed",
+    "changed"
+  ],
+  "title": "DiffReport",
+  "type": "object"
+}
