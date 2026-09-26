@@ -1,0 +1,75 @@
+{
+  "$defs": {
+    "NodeAllocation": {
+      "additionalProperties": false,
+      "description": "Purchased ranks of one node: which entry is selected and how many ranks it has.",
+      "properties": {
+        "entryId": {
+          "description": "TraitNodeEntry.ID of the selected entry of the node",
+          "title": "Entryid",
+          "type": "integer"
+        },
+        "nodeId": {
+          "description": "TraitNode.ID (TalentNode.id)",
+          "title": "Nodeid",
+          "type": "integer"
+        },
+        "rank": {
+          "description": "Purchased ranks of that entry (1..entry.maxRank when valid)",
+          "title": "Rank",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "nodeId",
+        "entryId",
+        "rank"
+      ],
+      "title": "NodeAllocation",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Portable build file (``allocation-build.v1``): a plan bound to a dataset identity.",
+  "properties": {
+    "allocations": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/NodeAllocation"
+      },
+      "title": "Allocations",
+      "type": "array"
+    },
+    "class": {
+      "description": "Class token, e.g. WARRIOR",
+      "title": "Class",
+      "type": "string"
+    },
+    "clientBuild": {
+      "title": "Clientbuild",
+      "type": "string"
+    },
+    "game": {
+      "title": "Game",
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": 1,
+      "default": 1,
+      "title": "Schemaversion",
+      "type": "integer"
+    },
+    "treeId": {
+      "title": "Treeid",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "game",
+    "clientBuild",
+    "class",
+    "treeId"
+  ],
+  "title": "BuildFile",
+  "type": "object"
+}

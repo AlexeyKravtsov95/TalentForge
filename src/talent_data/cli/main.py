@@ -8,6 +8,7 @@ diff           --game forever --class warrior|all --from <version> --to <version
 validate       <normalized.json>
 manifest       <manifest.json>
 schema         [--out docs/schema]
+allocation     validate|replay   (M2 allocation engine developer tools)
 
 ``--class all`` (M1) normalizes / diffs every class of the build, deterministically ordered
 by class id, and writes a dataset manifest (normalize). A batch that fails for any class
@@ -26,6 +27,9 @@ from pathlib import Path
 from pydantic import BaseModel
 
 from talent_data import paths
+from talent_data.allocation.conformance import ConformanceSuite
+from talent_data.allocation.models import BuildFile
+from talent_data.cli import allocation as allocation_cli
 from talent_data.db2.tables import TRAIT_TABLES
 from talent_data.diff.models import DatasetDiffReport, DiffReport
 from talent_data.diff.render import render_dataset_text, render_text
@@ -159,6 +163,8 @@ def _build_parser() -> argparse.ArgumentParser:
         help="also require the game's full class inventory (recommended for CI)",
     )
     man.set_defaults(handler=_cmd_manifest)
+
+    allocation_cli.register(sub)
     return parser
 
 
@@ -487,6 +493,8 @@ def json_schemas() -> dict[str, str]:
         "talent-diff.v1.schema.json": _schema_text(DiffReport),
         "dataset-manifest.v1.schema.json": _schema_text(DatasetManifest),
         "dataset-diff.v1.schema.json": _schema_text(DatasetDiffReport),
+        "allocation-build.v1.schema.json": _schema_text(BuildFile),
+        "allocation-conformance.v1.schema.json": _schema_text(ConformanceSuite),
     }
 
 

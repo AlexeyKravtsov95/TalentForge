@@ -1,0 +1,439 @@
+{
+  "$defs": {
+    "DatasetRef": {
+      "additionalProperties": false,
+      "properties": {
+        "class": {
+          "description": "Class token, e.g. WARRIOR",
+          "title": "Class",
+          "type": "string"
+        },
+        "contentHash": {
+          "description": "contentHash the document must have",
+          "title": "Contenthash",
+          "type": "string"
+        },
+        "file": {
+          "description": "Normalized document path, relative to the repository root",
+          "title": "File",
+          "type": "string"
+        }
+      },
+      "required": [
+        "class",
+        "file",
+        "contentHash"
+      ],
+      "title": "DatasetRef",
+      "type": "object"
+    },
+    "Expectation": {
+      "additionalProperties": false,
+      "properties": {
+        "issues": {
+          "description": "Issues in canonical order, no messages",
+          "items": {
+            "$ref": "#/$defs/ExpectedIssue"
+          },
+          "title": "Issues",
+          "type": "array"
+        },
+        "nodeRank": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "spend/refund: rank of nodeId after the step",
+          "title": "Noderank"
+        },
+        "ok": {
+          "description": "spend/refund: action allowed; validate: build valid",
+          "title": "Ok",
+          "type": "boolean"
+        },
+        "reasonCodes": {
+          "description": "Sorted, de-duplicated issue codes",
+          "items": {
+            "type": "string"
+          },
+          "title": "Reasoncodes",
+          "type": "array"
+        },
+        "remainingPoints": {
+          "description": "Points remaining after the step",
+          "title": "Remainingpoints",
+          "type": "integer"
+        },
+        "spentPoints": {
+          "description": "Points spent by the state after the step",
+          "title": "Spentpoints",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "ok",
+        "reasonCodes",
+        "issues",
+        "spentPoints",
+        "remainingPoints"
+      ],
+      "title": "Expectation",
+      "type": "object"
+    },
+    "ExpectedIssue": {
+      "additionalProperties": false,
+      "properties": {
+        "actual": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Actual"
+        },
+        "cause": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cause"
+        },
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "conditionId": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Conditionid"
+        },
+        "entryId": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entryid"
+        },
+        "nodeId": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Nodeid"
+        },
+        "relatedNodeIds": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Relatednodeids",
+          "type": "array"
+        },
+        "required": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Required"
+        }
+      },
+      "required": [
+        "code"
+      ],
+      "title": "ExpectedIssue",
+      "type": "object"
+    },
+    "Mutation": {
+      "additionalProperties": false,
+      "description": "A synthetic, explicit change applied to the real dataset before the scenario runs.\n\nop\n    ``addPrerequisite``   add edge ``prerequisiteNodeId -> nodeId`` of ``kind``\n    ``setNodeType``       set TalentNode.type to ``value`` (a string)\n    ``setNodeFlags``      set TalentNode.flags to ``value`` (an int)\n    ``setEntryType``      set the entryType of every entry of the node to ``value``\n    ``addUnresolvedCondition``  append ``value`` (a TraitCond id) to\n                          unresolvedConditionIds",
+      "properties": {
+        "kind": {
+          "anyOf": [
+            {
+              "enum": [
+                "sufficient",
+                "required"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Kind"
+        },
+        "nodeId": {
+          "title": "Nodeid",
+          "type": "integer"
+        },
+        "op": {
+          "enum": [
+            "addPrerequisite",
+            "setNodeType",
+            "setNodeFlags",
+            "setEntryType",
+            "addUnresolvedCondition"
+          ],
+          "title": "Op",
+          "type": "string"
+        },
+        "prerequisiteNodeId": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Prerequisitenodeid"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "required": [
+        "op",
+        "nodeId"
+      ],
+      "title": "Mutation",
+      "type": "object"
+    },
+    "NodeAllocation": {
+      "additionalProperties": false,
+      "description": "Purchased ranks of one node: which entry is selected and how many ranks it has.",
+      "properties": {
+        "entryId": {
+          "description": "TraitNodeEntry.ID of the selected entry of the node",
+          "title": "Entryid",
+          "type": "integer"
+        },
+        "nodeId": {
+          "description": "TraitNode.ID (TalentNode.id)",
+          "title": "Nodeid",
+          "type": "integer"
+        },
+        "rank": {
+          "description": "Purchased ranks of that entry (1..entry.maxRank when valid)",
+          "title": "Rank",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "nodeId",
+        "entryId",
+        "rank"
+      ],
+      "title": "NodeAllocation",
+      "type": "object"
+    },
+    "Scenario": {
+      "additionalProperties": false,
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "initial": {
+          "items": {
+            "$ref": "#/$defs/NodeAllocation"
+          },
+          "title": "Initial",
+          "type": "array"
+        },
+        "mutations": {
+          "items": {
+            "$ref": "#/$defs/Mutation"
+          },
+          "title": "Mutations",
+          "type": "array"
+        },
+        "pointLimit": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pointlimit"
+        },
+        "rules": {
+          "description": "Rule ids (docs/talent-allocation-semantics.md)",
+          "items": {
+            "type": "string"
+          },
+          "title": "Rules",
+          "type": "array"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/$defs/Step"
+          },
+          "title": "Steps",
+          "type": "array"
+        },
+        "synthetic": {
+          "description": "True when mutations change the real dataset",
+          "title": "Synthetic",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "class",
+        "description",
+        "rules",
+        "synthetic",
+        "steps"
+      ],
+      "title": "Scenario",
+      "type": "object"
+    },
+    "Step": {
+      "additionalProperties": false,
+      "properties": {
+        "entryId": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entryid"
+        },
+        "expect": {
+          "$ref": "#/$defs/Expectation"
+        },
+        "nodeId": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Nodeid"
+        },
+        "op": {
+          "enum": [
+            "spend",
+            "refund",
+            "validate"
+          ],
+          "title": "Op",
+          "type": "string"
+        }
+      },
+      "required": [
+        "op",
+        "expect"
+      ],
+      "title": "Step",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "clientBuild": {
+      "title": "Clientbuild",
+      "type": "string"
+    },
+    "datasets": {
+      "items": {
+        "$ref": "#/$defs/DatasetRef"
+      },
+      "title": "Datasets",
+      "type": "array"
+    },
+    "game": {
+      "title": "Game",
+      "type": "string"
+    },
+    "scenarios": {
+      "items": {
+        "$ref": "#/$defs/Scenario"
+      },
+      "title": "Scenarios",
+      "type": "array"
+    },
+    "schemaVersion": {
+      "const": 1,
+      "default": 1,
+      "title": "Schemaversion",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "game",
+    "clientBuild",
+    "datasets",
+    "scenarios"
+  ],
+  "title": "ConformanceSuite",
+  "type": "object"
+}

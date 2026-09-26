@@ -30,3 +30,8 @@ def manifest_path(game: str, version: ClientVersion) -> Path:
 
 def diff_path(game: str, class_token: str, old: ClientVersion, new: ClientVersion) -> Path:
     return project_root() / "artifacts" / "diff" / f"{game}-{class_token.lower()}-{old}-{new}.json"
+
+
+def conformance_path(game: str, version: ClientVersion) -> Path:
+    """Allocation conformance vectors: data/conformance/<game>/<build>/allocation.v1.json"""
+    return project_root() / "data" / "conformance" / game / str(version) / "allocation.v1.json"

@@ -1,0 +1,4996 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "clientBuild": "1.60.1.70009",
+  "datasets": [
+    {
+      "class": "DRUID",
+      "file": "data/normalized/forever/1.60.1.70009/druid.json",
+      "contentHash": "sha256:0105ee1c9a858d61a8c2c595f1a4701ba1e3cd2164d04c6b1d37d5ff2da18772"
+    },
+    {
+      "class": "HUNTER",
+      "file": "data/normalized/forever/1.60.1.70009/hunter.json",
+      "contentHash": "sha256:8ce355b3670712c9ea24522c2ec32112f8232f95d0435d433ebfb5b66d5633d5"
+    },
+    {
+      "class": "MAGE",
+      "file": "data/normalized/forever/1.60.1.70009/mage.json",
+      "contentHash": "sha256:29fd95f62da2210850793a73e6f5cdb51b38e1d65e71c90569147b692ad94039"
+    },
+    {
+      "class": "PALADIN",
+      "file": "data/normalized/forever/1.60.1.70009/paladin.json",
+      "contentHash": "sha256:91ca3aa09768de5f3c5674d7a70d3105a453abe99af7d760fd4a3c90defddfce"
+    },
+    {
+      "class": "PRIEST",
+      "file": "data/normalized/forever/1.60.1.70009/priest.json",
+      "contentHash": "sha256:4103fbd3c199e3e2e101999fa2bf7b47642541d15dbc75cece1a4b99d66a569f"
+    },
+    {
+      "class": "ROGUE",
+      "file": "data/normalized/forever/1.60.1.70009/rogue.json",
+      "contentHash": "sha256:689be2140e5ecbb43e5c452663ebfc4f8b5fda38d6755e858d5c119fb2e64312"
+    },
+    {
+      "class": "SHAMAN",
+      "file": "data/normalized/forever/1.60.1.70009/shaman.json",
+      "contentHash": "sha256:c2944df5c660482c4cbbd14019866a51c0715bf09f162fa3172ec1b55e12c804"
+    },
+    {
+      "class": "WARLOCK",
+      "file": "data/normalized/forever/1.60.1.70009/warlock.json",
+      "contentHash": "sha256:0bf67cfe81a6066be2932875db37c6a81271ae266b061a3ec6623b1930079235"
+    },
+    {
+      "class": "WARRIOR",
+      "file": "data/normalized/forever/1.60.1.70009/warrior.json",
+      "contentHash": "sha256:cab5b5103c6a8f7f4dd6cc70bd727f640e95a16d49e9619133cd21299844528e"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "warrior.basic_rank_purchase",
+      "class": "WARRIOR",
+      "description": "A row-0 talent is purchasable from an empty tree; one rank costs one point",
+      "rules": [
+        "RANK-1",
+        "COST-1",
+        "BUDGET-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [],
+      "steps": [
+        {
+          "op": "spend",
+          "nodeId": 105958,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 1,
+            "remainingPoints": 50,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105958,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 2,
+            "remainingPoints": 49,
+            "nodeRank": 2
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 2,
+            "remainingPoints": 49
+          }
+        }
+      ]
+    },
+    {
+      "id": "warrior.max_rank_rejection",
+      "class": "WARRIOR",
+      "description": "A rank beyond the entry's max rank is rejected; the state is unchanged",
+      "rules": [
+        "RANK-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 105958,
+          "entryId": 130688,
+          "rank": 2
+        }
+      ],
+      "steps": [
+        {
+          "op": "spend",
+          "nodeId": 105958,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 3,
+            "remainingPoints": 48,
+            "nodeRank": 3
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105958,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "MAX_RANK_REACHED"
+            ],
+            "issues": [
+              {
+                "code": "MAX_RANK_REACHED",
+                "nodeId": 105958,
+                "entryId": 130688,
+                "relatedNodeIds": [],
+                "required": 3,
+                "actual": 3
+              }
+            ],
+            "spentPoints": 3,
+            "remainingPoints": 48,
+            "nodeRank": 3
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 3,
+            "remainingPoints": 48
+          }
+        }
+      ]
+    },
+    {
+      "id": "warrior.point_budget_exhaustion",
+      "class": "WARRIOR",
+      "description": "With a configured usable budget of 3 points the 4th point is rejected",
+      "rules": [
+        "BUDGET-1",
+        "COST-1"
+      ],
+      "synthetic": false,
+      "pointLimit": 3,
+      "mutations": [],
+      "initial": [],
+      "steps": [
+        {
+          "op": "spend",
+          "nodeId": 105958,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 1,
+            "remainingPoints": 2,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105958,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 2,
+            "remainingPoints": 1,
+            "nodeRank": 2
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105958,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 3,
+            "remainingPoints": 0,
+            "nodeRank": 3
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105957,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "NO_POINTS_REMAINING"
+            ],
+            "issues": [
+              {
+                "code": "NO_POINTS_REMAINING",
+                "nodeId": 105957,
+                "relatedNodeIds": [],
+                "required": 1,
+                "actual": 0
+              }
+            ],
+            "spentPoints": 3,
+            "remainingPoints": 0,
+            "nodeRank": 0
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 3,
+            "remainingPoints": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "warrior.over_budget_import",
+      "class": "WARRIOR",
+      "description": "An imported build spending more than the usable budget is invalid",
+      "rules": [
+        "BUDGET-1",
+        "VALID-1"
+      ],
+      "synthetic": false,
+      "pointLimit": 4,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 105957,
+          "entryId": 130687,
+          "rank": 2
+        },
+        {
+          "nodeId": 105958,
+          "entryId": 130688,
+          "rank": 3
+        }
+      ],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "POINT_BUDGET_EXCEEDED"
+            ],
+            "issues": [
+              {
+                "code": "POINT_BUDGET_EXCEEDED",
+                "relatedNodeIds": [],
+                "required": 4,
+                "actual": 5
+              }
+            ],
+            "spentPoints": 5,
+            "remainingPoints": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "warrior.tier_gate_locked",
+      "class": "WARRIOR",
+      "description": "Row 1 needs 5 points spent in Arms row 0; 0 and 4 points are not enough",
+      "rules": [
+        "GATE-1",
+        "GATE-2"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [],
+      "steps": [
+        {
+          "op": "spend",
+          "nodeId": 105955,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "TIER_GATE_NOT_MET"
+            ],
+            "issues": [
+              {
+                "code": "TIER_GATE_NOT_MET",
+                "nodeId": 105955,
+                "relatedNodeIds": [],
+                "required": 5,
+                "actual": 0
+              }
+            ],
+            "spentPoints": 0,
+            "remainingPoints": 51,
+            "nodeRank": 0
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105958,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 1,
+            "remainingPoints": 50,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105958,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 2,
+            "remainingPoints": 49,
+            "nodeRank": 2
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105958,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 3,
+            "remainingPoints": 48,
+            "nodeRank": 3
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105957,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 4,
+            "remainingPoints": 47,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105955,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "TIER_GATE_NOT_MET"
+            ],
+            "issues": [
+              {
+                "code": "TIER_GATE_NOT_MET",
+                "nodeId": 105955,
+                "relatedNodeIds": [],
+                "required": 5,
+                "actual": 4
+              }
+            ],
+            "spentPoints": 4,
+            "remainingPoints": 47,
+            "nodeRank": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "warrior.tier_gate_unlocked",
+      "class": "WARRIOR",
+      "description": "The 5th point in Arms row 0 unlocks row 1",
+      "rules": [
+        "GATE-1",
+        "GATE-2"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 105957,
+          "entryId": 130687,
+          "rank": 1
+        },
+        {
+          "nodeId": 105958,
+          "entryId": 130688,
+          "rank": 3
+        }
+      ],
+      "steps": [
+        {
+          "op": "spend",
+          "nodeId": 105957,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 5,
+            "remainingPoints": 46,
+            "nodeRank": 2
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105955,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 6,
+            "remainingPoints": 45,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 6,
+            "remainingPoints": 45
+          }
+        }
+      ]
+    },
+    {
+      "id": "warrior.tier_gate_counts_only_its_group",
+      "class": "WARRIOR",
+      "description": "Points in another tab do not count toward an Arms gate",
+      "rules": [
+        "GATE-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 105938,
+          "entryId": 130668,
+          "rank": 5
+        }
+      ],
+      "steps": [
+        {
+          "op": "spend",
+          "nodeId": 105955,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "TIER_GATE_NOT_MET"
+            ],
+            "issues": [
+              {
+                "code": "TIER_GATE_NOT_MET",
+                "nodeId": 105955,
+                "relatedNodeIds": [],
+                "required": 5,
+                "actual": 0
+              }
+            ],
+            "spentPoints": 5,
+            "remainingPoints": 46,
+            "nodeRank": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "warrior.sufficient_prerequisite_requires_max_rank",
+      "class": "WARRIOR",
+      "description": "Deep Wounds needs Improved Rend fully ranked: 2/3 is not enough, 3/3 is",
+      "rules": [
+        "EDGE-ACTIVE",
+        "EDGE-SUF",
+        "GATE-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 105954,
+          "entryId": 130684,
+          "rank": 3
+        },
+        {
+          "nodeId": 105956,
+          "entryId": 130686,
+          "rank": 2
+        },
+        {
+          "nodeId": 105957,
+          "entryId": 130687,
+          "rank": 2
+        },
+        {
+          "nodeId": 105958,
+          "entryId": 130688,
+          "rank": 3
+        }
+      ],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 10,
+            "remainingPoints": 41
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105950,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "SUFFICIENT_PREREQUISITE_NOT_MET"
+            ],
+            "issues": [
+              {
+                "code": "SUFFICIENT_PREREQUISITE_NOT_MET",
+                "nodeId": 105950,
+                "relatedNodeIds": [
+                  105956
+                ]
+              }
+            ],
+            "spentPoints": 10,
+            "remainingPoints": 41,
+            "nodeRank": 0
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105956,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 11,
+            "remainingPoints": 40,
+            "nodeRank": 3
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105950,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 12,
+            "remainingPoints": 39,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 12,
+            "remainingPoints": 39
+          }
+        }
+      ]
+    },
+    {
+      "id": "warrior.refund_leaf_talent",
+      "class": "WARRIOR",
+      "description": "A rank nothing depends on can be refunded",
+      "rules": [
+        "REFUND-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 105950,
+          "entryId": 130680,
+          "rank": 1
+        },
+        {
+          "nodeId": 105954,
+          "entryId": 130684,
+          "rank": 3
+        },
+        {
+          "nodeId": 105956,
+          "entryId": 130686,
+          "rank": 3
+        },
+        {
+          "nodeId": 105957,
+          "entryId": 130687,
+          "rank": 2
+        },
+        {
+          "nodeId": 105958,
+          "entryId": 130688,
+          "rank": 3
+        }
+      ],
+      "steps": [
+        {
+          "op": "refund",
+          "nodeId": 105950,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 11,
+            "remainingPoints": 40,
+            "nodeRank": 0
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 11,
+            "remainingPoints": 40
+          }
+        }
+      ]
+    },
+    {
+      "id": "warrior.refund_prerequisite_with_active_dependent",
+      "class": "WARRIOR",
+      "description": "Improved Rend cannot drop below 3/3 while Deep Wounds is purchased (no cascade); refunds that keep every gate satisfied are allowed until a gate breaks",
+      "rules": [
+        "REFUND-1",
+        "EDGE-ACTIVE",
+        "GATE-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 105950,
+          "entryId": 130680,
+          "rank": 1
+        },
+        {
+          "nodeId": 105954,
+          "entryId": 130684,
+          "rank": 3
+        },
+        {
+          "nodeId": 105956,
+          "entryId": 130686,
+          "rank": 3
+        },
+        {
+          "nodeId": 105957,
+          "entryId": 130687,
+          "rank": 2
+        },
+        {
+          "nodeId": 105958,
+          "entryId": 130688,
+          "rank": 3
+        }
+      ],
+      "steps": [
+        {
+          "op": "refund",
+          "nodeId": 105956,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "DEPENDENT_NODE_WOULD_BREAK"
+            ],
+            "issues": [
+              {
+                "code": "DEPENDENT_NODE_WOULD_BREAK",
+                "nodeId": 105950,
+                "relatedNodeIds": [
+                  105956
+                ],
+                "cause": "SUFFICIENT_PREREQUISITE_NOT_MET"
+              }
+            ],
+            "spentPoints": 12,
+            "remainingPoints": 39,
+            "nodeRank": 3
+          }
+        },
+        {
+          "op": "refund",
+          "nodeId": 105958,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 11,
+            "remainingPoints": 40,
+            "nodeRank": 2
+          }
+        },
+        {
+          "op": "refund",
+          "nodeId": 105958,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "DEPENDENT_NODE_WOULD_BREAK"
+            ],
+            "issues": [
+              {
+                "code": "DEPENDENT_NODE_WOULD_BREAK",
+                "nodeId": 105950,
+                "relatedNodeIds": [
+                  105958
+                ],
+                "required": 10,
+                "actual": 9,
+                "cause": "TIER_GATE_NOT_MET"
+              }
+            ],
+            "spentPoints": 11,
+            "remainingPoints": 40,
+            "nodeRank": 2
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 11,
+            "remainingPoints": 40
+          }
+        }
+      ]
+    },
+    {
+      "id": "warrior.refund_breaking_tier_gate",
+      "class": "WARRIOR",
+      "description": "Refunding a row-0 point that a purchased row-1 talent's gate needs is rejected",
+      "rules": [
+        "REFUND-1",
+        "GATE-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 105955,
+          "entryId": 130685,
+          "rank": 1
+        },
+        {
+          "nodeId": 105957,
+          "entryId": 130687,
+          "rank": 2
+        },
+        {
+          "nodeId": 105958,
+          "entryId": 130688,
+          "rank": 3
+        }
+      ],
+      "steps": [
+        {
+          "op": "refund",
+          "nodeId": 105957,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "DEPENDENT_NODE_WOULD_BREAK"
+            ],
+            "issues": [
+              {
+                "code": "DEPENDENT_NODE_WOULD_BREAK",
+                "nodeId": 105955,
+                "relatedNodeIds": [
+                  105957
+                ],
+                "required": 5,
+                "actual": 4,
+                "cause": "TIER_GATE_NOT_MET"
+              }
+            ],
+            "spentPoints": 6,
+            "remainingPoints": 45,
+            "nodeRank": 2
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105957,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 7,
+            "remainingPoints": 44,
+            "nodeRank": 3
+          }
+        },
+        {
+          "op": "refund",
+          "nodeId": 105957,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 6,
+            "remainingPoints": 45,
+            "nodeRank": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "warrior.multi_rank_refund",
+      "class": "WARRIOR",
+      "description": "A 3-rank talent refunds one rank at a time down to 0; then nothing is left",
+      "rules": [
+        "REFUND-1",
+        "RANK-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 105958,
+          "entryId": 130688,
+          "rank": 3
+        }
+      ],
+      "steps": [
+        {
+          "op": "refund",
+          "nodeId": 105958,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 2,
+            "remainingPoints": 49,
+            "nodeRank": 2
+          }
+        },
+        {
+          "op": "refund",
+          "nodeId": 105958,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 1,
+            "remainingPoints": 50,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "refund",
+          "nodeId": 105958,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 0,
+            "remainingPoints": 51,
+            "nodeRank": 0
+          }
+        },
+        {
+          "op": "refund",
+          "nodeId": 105958,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "NOT_ALLOCATED"
+            ],
+            "issues": [
+              {
+                "code": "NOT_ALLOCATED",
+                "nodeId": 105958,
+                "relatedNodeIds": [],
+                "actual": 0
+              }
+            ],
+            "spentPoints": 0,
+            "remainingPoints": 51,
+            "nodeRank": 0
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 0,
+            "remainingPoints": 51
+          }
+        }
+      ]
+    },
+    {
+      "id": "warrior.capstone_gate_counts_points_before_purchase",
+      "class": "WARRIOR",
+      "description": "Mortal Strike's gate counts the whole Arms tab including itself, but is evaluated before the purchase: 29 other Arms points are not enough, 30 are (the capstone is the 31st point); an import with 29 + capstone is invalid",
+      "rules": [
+        "GATE-1",
+        "VALID-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 105945,
+          "entryId": 130675,
+          "rank": 1
+        },
+        {
+          "nodeId": 105947,
+          "entryId": 130677,
+          "rank": 2
+        },
+        {
+          "nodeId": 105948,
+          "entryId": 130678,
+          "rank": 3
+        },
+        {
+          "nodeId": 105949,
+          "entryId": 130679,
+          "rank": 1
+        },
+        {
+          "nodeId": 105950,
+          "entryId": 130680,
+          "rank": 3
+        },
+        {
+          "nodeId": 105951,
+          "entryId": 130681,
+          "rank": 1
+        },
+        {
+          "nodeId": 105952,
+          "entryId": 130682,
+          "rank": 2
+        },
+        {
+          "nodeId": 105954,
+          "entryId": 130684,
+          "rank": 5
+        },
+        {
+          "nodeId": 105955,
+          "entryId": 130685,
+          "rank": 2
+        },
+        {
+          "nodeId": 105956,
+          "entryId": 130686,
+          "rank": 3
+        },
+        {
+          "nodeId": 105957,
+          "entryId": 130687,
+          "rank": 5
+        },
+        {
+          "nodeId": 110524,
+          "entryId": 137214,
+          "rank": 1
+        }
+      ],
+      "steps": [
+        {
+          "op": "spend",
+          "nodeId": 105941,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "TIER_GATE_NOT_MET"
+            ],
+            "issues": [
+              {
+                "code": "TIER_GATE_NOT_MET",
+                "nodeId": 105941,
+                "relatedNodeIds": [],
+                "required": 30,
+                "actual": 29
+              }
+            ],
+            "spentPoints": 29,
+            "remainingPoints": 22,
+            "nodeRank": 0
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105938,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 30,
+            "remainingPoints": 21,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105941,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "TIER_GATE_NOT_MET"
+            ],
+            "issues": [
+              {
+                "code": "TIER_GATE_NOT_MET",
+                "nodeId": 105941,
+                "relatedNodeIds": [],
+                "required": 30,
+                "actual": 29
+              }
+            ],
+            "spentPoints": 30,
+            "remainingPoints": 21,
+            "nodeRank": 0
+          }
+        },
+        {
+          "op": "refund",
+          "nodeId": 105938,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 29,
+            "remainingPoints": 22,
+            "nodeRank": 0
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105958,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 30,
+            "remainingPoints": 21,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105941,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 31,
+            "remainingPoints": 20,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 31,
+            "remainingPoints": 20
+          }
+        }
+      ]
+    },
+    {
+      "id": "warrior.capstone_import_without_enough_points",
+      "class": "WARRIOR",
+      "description": "Imported: 29 other Arms points + Mortal Strike - not obtainable by any purchase order",
+      "rules": [
+        "GATE-1",
+        "VALID-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 105941,
+          "entryId": 130671,
+          "rank": 1
+        },
+        {
+          "nodeId": 105945,
+          "entryId": 130675,
+          "rank": 1
+        },
+        {
+          "nodeId": 105948,
+          "entryId": 130678,
+          "rank": 3
+        },
+        {
+          "nodeId": 105949,
+          "entryId": 130679,
+          "rank": 1
+        },
+        {
+          "nodeId": 105950,
+          "entryId": 130680,
+          "rank": 3
+        },
+        {
+          "nodeId": 105951,
+          "entryId": 130681,
+          "rank": 1
+        },
+        {
+          "nodeId": 105952,
+          "entryId": 130682,
+          "rank": 2
+        },
+        {
+          "nodeId": 105954,
+          "entryId": 130684,
+          "rank": 5
+        },
+        {
+          "nodeId": 105955,
+          "entryId": 130685,
+          "rank": 2
+        },
+        {
+          "nodeId": 105956,
+          "entryId": 130686,
+          "rank": 3
+        },
+        {
+          "nodeId": 105957,
+          "entryId": 130687,
+          "rank": 5
+        },
+        {
+          "nodeId": 105958,
+          "entryId": 130688,
+          "rank": 3
+        }
+      ],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "TIER_GATE_NOT_MET"
+            ],
+            "issues": [
+              {
+                "code": "TIER_GATE_NOT_MET",
+                "nodeId": 105941,
+                "relatedNodeIds": [],
+                "required": 30,
+                "actual": 29
+              }
+            ],
+            "spentPoints": 30,
+            "remainingPoints": 21
+          }
+        }
+      ]
+    },
+    {
+      "id": "warrior.invalid_imported_build",
+      "class": "WARRIOR",
+      "description": "Imported Deep Wounds with nothing else: gate and prerequisite both fail; actions on an invalid build are refused until it is fixed",
+      "rules": [
+        "VALID-1",
+        "STATE-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 105950,
+          "entryId": 130680,
+          "rank": 1
+        }
+      ],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "SUFFICIENT_PREREQUISITE_NOT_MET",
+              "TIER_GATE_NOT_MET"
+            ],
+            "issues": [
+              {
+                "code": "TIER_GATE_NOT_MET",
+                "nodeId": 105950,
+                "relatedNodeIds": [],
+                "required": 10,
+                "actual": 0
+              },
+              {
+                "code": "SUFFICIENT_PREREQUISITE_NOT_MET",
+                "nodeId": 105950,
+                "relatedNodeIds": [
+                  105956
+                ]
+              }
+            ],
+            "spentPoints": 1,
+            "remainingPoints": 50
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105958,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "INVALID_BUILD_STATE"
+            ],
+            "issues": [
+              {
+                "code": "INVALID_BUILD_STATE",
+                "relatedNodeIds": []
+              }
+            ],
+            "spentPoints": 1,
+            "remainingPoints": 50,
+            "nodeRank": 0
+          }
+        },
+        {
+          "op": "refund",
+          "nodeId": 105950,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "INVALID_BUILD_STATE"
+            ],
+            "issues": [
+              {
+                "code": "INVALID_BUILD_STATE",
+                "relatedNodeIds": []
+              }
+            ],
+            "spentPoints": 1,
+            "remainingPoints": 50,
+            "nodeRank": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "warrior.corrupt_import_ranks_and_duplicates",
+      "class": "WARRIOR",
+      "description": "Imported: a rank above max, a rank-0 allocation and a node listed twice",
+      "rules": [
+        "RANK-1",
+        "VALID-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 105958,
+          "entryId": 130688,
+          "rank": 4
+        },
+        {
+          "nodeId": 105956,
+          "entryId": 130686,
+          "rank": 0
+        },
+        {
+          "nodeId": 105957,
+          "entryId": 130687,
+          "rank": 1
+        },
+        {
+          "nodeId": 105957,
+          "entryId": 130687,
+          "rank": 2
+        }
+      ],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "DUPLICATE_ALLOCATION",
+              "RANK_OUT_OF_BOUNDS"
+            ],
+            "issues": [
+              {
+                "code": "DUPLICATE_ALLOCATION",
+                "nodeId": 105957,
+                "relatedNodeIds": []
+              },
+              {
+                "code": "RANK_OUT_OF_BOUNDS",
+                "nodeId": 105956,
+                "entryId": 130686,
+                "relatedNodeIds": [],
+                "required": 3,
+                "actual": 0
+              },
+              {
+                "code": "RANK_OUT_OF_BOUNDS",
+                "nodeId": 105958,
+                "entryId": 130688,
+                "relatedNodeIds": [],
+                "required": 3,
+                "actual": 4
+              }
+            ],
+            "spentPoints": 7,
+            "remainingPoints": 44
+          }
+        }
+      ]
+    },
+    {
+      "id": "warrior.unknown_node",
+      "class": "WARRIOR",
+      "description": "A node id that is not in the tree: rejected on spend and on import",
+      "rules": [
+        "ENTRY-1",
+        "VALID-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [],
+      "steps": [
+        {
+          "op": "spend",
+          "nodeId": 999999,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "UNKNOWN_NODE"
+            ],
+            "issues": [
+              {
+                "code": "UNKNOWN_NODE",
+                "nodeId": 999999,
+                "relatedNodeIds": []
+              }
+            ],
+            "spentPoints": 0,
+            "remainingPoints": 51,
+            "nodeRank": 0
+          }
+        },
+        {
+          "op": "refund",
+          "nodeId": 999999,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "UNKNOWN_NODE"
+            ],
+            "issues": [
+              {
+                "code": "UNKNOWN_NODE",
+                "nodeId": 999999,
+                "relatedNodeIds": []
+              }
+            ],
+            "spentPoints": 0,
+            "remainingPoints": 51,
+            "nodeRank": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "warrior.unknown_node_import",
+      "class": "WARRIOR",
+      "description": "An imported allocation of a node that is not in the tree",
+      "rules": [
+        "VALID-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 999999,
+          "entryId": 1,
+          "rank": 1
+        }
+      ],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "UNKNOWN_NODE"
+            ],
+            "issues": [
+              {
+                "code": "UNKNOWN_NODE",
+                "nodeId": 999999,
+                "relatedNodeIds": []
+              }
+            ],
+            "spentPoints": 1,
+            "remainingPoints": 50
+          }
+        }
+      ]
+    },
+    {
+      "id": "warrior.wrong_entry",
+      "class": "WARRIOR",
+      "description": "Spending with the entry of another node is rejected",
+      "rules": [
+        "ENTRY-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [],
+      "steps": [
+        {
+          "op": "spend",
+          "nodeId": 105958,
+          "entryId": 130687,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "INVALID_ENTRY"
+            ],
+            "issues": [
+              {
+                "code": "INVALID_ENTRY",
+                "nodeId": 105958,
+                "entryId": 130687,
+                "relatedNodeIds": []
+              }
+            ],
+            "spentPoints": 0,
+            "remainingPoints": 51,
+            "nodeRank": 0
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 0,
+            "remainingPoints": 51
+          }
+        }
+      ]
+    },
+    {
+      "id": "warrior.wrong_entry_import",
+      "class": "WARRIOR",
+      "description": "An imported allocation naming another node's entry",
+      "rules": [
+        "ENTRY-1",
+        "VALID-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 105958,
+          "entryId": 130687,
+          "rank": 1
+        }
+      ],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "INVALID_ENTRY"
+            ],
+            "issues": [
+              {
+                "code": "INVALID_ENTRY",
+                "nodeId": 105958,
+                "entryId": 130687,
+                "relatedNodeIds": []
+              }
+            ],
+            "spentPoints": 1,
+            "remainingPoints": 50
+          }
+        }
+      ]
+    },
+    {
+      "id": "druid.required_prerequisite",
+      "class": "DRUID",
+      "description": "Nature's Splendor has the only RequiredForAvailability edge of Forever: Nature's Majesty must be fully ranked (1/2 is not enough)",
+      "rules": [
+        "EDGE-REQ",
+        "EDGE-ACTIVE",
+        "GATE-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 104923,
+          "entryId": 129583,
+          "rank": 5
+        },
+        {
+          "nodeId": 104924,
+          "entryId": 129584,
+          "rank": 3
+        },
+        {
+          "nodeId": 104925,
+          "entryId": 129585,
+          "rank": 1
+        },
+        {
+          "nodeId": 104927,
+          "entryId": 129587,
+          "rank": 1
+        }
+      ],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 10,
+            "remainingPoints": 41
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 104928,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "REQUIRED_PREREQUISITE_NOT_MET"
+            ],
+            "issues": [
+              {
+                "code": "REQUIRED_PREREQUISITE_NOT_MET",
+                "nodeId": 104928,
+                "relatedNodeIds": [
+                  104927
+                ],
+                "required": 2,
+                "actual": 1
+              }
+            ],
+            "spentPoints": 10,
+            "remainingPoints": 41,
+            "nodeRank": 0
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 104927,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 11,
+            "remainingPoints": 40,
+            "nodeRank": 2
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 104928,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 12,
+            "remainingPoints": 39,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 12,
+            "remainingPoints": 39
+          }
+        },
+        {
+          "op": "refund",
+          "nodeId": 104927,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "DEPENDENT_NODE_WOULD_BREAK"
+            ],
+            "issues": [
+              {
+                "code": "DEPENDENT_NODE_WOULD_BREAK",
+                "nodeId": 104928,
+                "relatedNodeIds": [
+                  104927
+                ],
+                "required": 2,
+                "actual": 1,
+                "cause": "REQUIRED_PREREQUISITE_NOT_MET"
+              }
+            ],
+            "spentPoints": 12,
+            "remainingPoints": 39,
+            "nodeRank": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "hunter.multiple_sufficient_prerequisites_any",
+      "class": "HUNTER",
+      "description": "Intimidation has two SufficientForAvailability edges (Bestial Swiftness, Bestial Wrath); one fully ranked source is enough",
+      "rules": [
+        "EDGE-SUF",
+        "EDGE-ACTIVE",
+        "GATE-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 104960,
+          "entryId": 129621,
+          "rank": 5
+        },
+        {
+          "nodeId": 104969,
+          "entryId": 129630,
+          "rank": 1
+        },
+        {
+          "nodeId": 104972,
+          "entryId": 129633,
+          "rank": 2
+        },
+        {
+          "nodeId": 104973,
+          "entryId": 129634,
+          "rank": 2
+        },
+        {
+          "nodeId": 104974,
+          "entryId": 129635,
+          "rank": 3
+        },
+        {
+          "nodeId": 104975,
+          "entryId": 129636,
+          "rank": 2
+        },
+        {
+          "nodeId": 104976,
+          "entryId": 129637,
+          "rank": 5
+        }
+      ],
+      "steps": [
+        {
+          "op": "spend",
+          "nodeId": 104964,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "SUFFICIENT_PREREQUISITE_NOT_MET"
+            ],
+            "issues": [
+              {
+                "code": "SUFFICIENT_PREREQUISITE_NOT_MET",
+                "nodeId": 104964,
+                "relatedNodeIds": [
+                  104961,
+                  104970
+                ]
+              }
+            ],
+            "spentPoints": 20,
+            "remainingPoints": 31,
+            "nodeRank": 0
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 104970,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 21,
+            "remainingPoints": 30,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 104964,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 22,
+            "remainingPoints": 29,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 22,
+            "remainingPoints": 29
+          }
+        }
+      ]
+    },
+    {
+      "id": "hunter.mutual_sufficient_cycle",
+      "class": "HUNTER",
+      "description": "Bestial Wrath <-> Intimidation are mutual sufficient prerequisites: no deadlock (Bestial Swiftness roots the cycle), Bestial Wrath cannot be taken before Intimidation, and the root cannot be refunded - the cycle cannot support itself",
+      "rules": [
+        "EDGE-SUF",
+        "VALID-1",
+        "REFUND-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 104960,
+          "entryId": 129621,
+          "rank": 5
+        },
+        {
+          "nodeId": 104964,
+          "entryId": 129625,
+          "rank": 1
+        },
+        {
+          "nodeId": 104966,
+          "entryId": 129627,
+          "rank": 1
+        },
+        {
+          "nodeId": 104967,
+          "entryId": 129628,
+          "rank": 5
+        },
+        {
+          "nodeId": 104968,
+          "entryId": 129629,
+          "rank": 2
+        },
+        {
+          "nodeId": 104969,
+          "entryId": 129630,
+          "rank": 5
+        },
+        {
+          "nodeId": 104970,
+          "entryId": 129631,
+          "rank": 1
+        },
+        {
+          "nodeId": 104972,
+          "entryId": 129633,
+          "rank": 2
+        },
+        {
+          "nodeId": 104973,
+          "entryId": 129634,
+          "rank": 2
+        },
+        {
+          "nodeId": 104974,
+          "entryId": 129635,
+          "rank": 3
+        },
+        {
+          "nodeId": 104975,
+          "entryId": 129636,
+          "rank": 2
+        }
+      ],
+      "steps": [
+        {
+          "op": "spend",
+          "nodeId": 104961,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "TIER_GATE_NOT_MET"
+            ],
+            "issues": [
+              {
+                "code": "TIER_GATE_NOT_MET",
+                "nodeId": 104961,
+                "relatedNodeIds": [],
+                "required": 30,
+                "actual": 29
+              }
+            ],
+            "spentPoints": 29,
+            "remainingPoints": 22,
+            "nodeRank": 0
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 104976,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 30,
+            "remainingPoints": 21,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 104961,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 31,
+            "remainingPoints": 20,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 31,
+            "remainingPoints": 20
+          }
+        },
+        {
+          "op": "refund",
+          "nodeId": 104970,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "DEPENDENT_NODE_WOULD_BREAK"
+            ],
+            "issues": [
+              {
+                "code": "DEPENDENT_NODE_WOULD_BREAK",
+                "nodeId": 104961,
+                "relatedNodeIds": [
+                  104970
+                ],
+                "required": 30,
+                "actual": 28,
+                "cause": "TIER_GATE_NOT_MET"
+              },
+              {
+                "code": "DEPENDENT_NODE_WOULD_BREAK",
+                "nodeId": 104961,
+                "relatedNodeIds": [
+                  104970
+                ],
+                "cause": "SUFFICIENT_PREREQUISITE_NOT_MET"
+              },
+              {
+                "code": "DEPENDENT_NODE_WOULD_BREAK",
+                "nodeId": 104964,
+                "relatedNodeIds": [
+                  104970
+                ],
+                "cause": "SUFFICIENT_PREREQUISITE_NOT_MET"
+              }
+            ],
+            "spentPoints": 31,
+            "remainingPoints": 20,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "refund",
+          "nodeId": 104964,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "DEPENDENT_NODE_WOULD_BREAK"
+            ],
+            "issues": [
+              {
+                "code": "DEPENDENT_NODE_WOULD_BREAK",
+                "nodeId": 104961,
+                "relatedNodeIds": [
+                  104964
+                ],
+                "required": 30,
+                "actual": 29,
+                "cause": "TIER_GATE_NOT_MET"
+              },
+              {
+                "code": "DEPENDENT_NODE_WOULD_BREAK",
+                "nodeId": 104961,
+                "relatedNodeIds": [
+                  104964
+                ],
+                "cause": "SUFFICIENT_PREREQUISITE_NOT_MET"
+              }
+            ],
+            "spentPoints": 31,
+            "remainingPoints": 20,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "refund",
+          "nodeId": 104961,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 30,
+            "remainingPoints": 21,
+            "nodeRank": 0
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 30,
+            "remainingPoints": 21
+          }
+        }
+      ]
+    },
+    {
+      "id": "hunter.mutual_sufficient_cycle_before_root",
+      "class": "HUNTER",
+      "description": "With the tab gates met but no Bestial Swiftness, neither cycle member is purchasable (each only has the other as an active source)",
+      "rules": [
+        "EDGE-SUF"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 104960,
+          "entryId": 129621,
+          "rank": 5
+        },
+        {
+          "nodeId": 104967,
+          "entryId": 129628,
+          "rank": 4
+        },
+        {
+          "nodeId": 104968,
+          "entryId": 129629,
+          "rank": 2
+        },
+        {
+          "nodeId": 104969,
+          "entryId": 129630,
+          "rank": 5
+        },
+        {
+          "nodeId": 104972,
+          "entryId": 129633,
+          "rank": 2
+        },
+        {
+          "nodeId": 104973,
+          "entryId": 129634,
+          "rank": 2
+        },
+        {
+          "nodeId": 104974,
+          "entryId": 129635,
+          "rank": 3
+        },
+        {
+          "nodeId": 104975,
+          "entryId": 129636,
+          "rank": 2
+        },
+        {
+          "nodeId": 104976,
+          "entryId": 129637,
+          "rank": 5
+        }
+      ],
+      "steps": [
+        {
+          "op": "spend",
+          "nodeId": 104961,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "SUFFICIENT_PREREQUISITE_NOT_MET"
+            ],
+            "issues": [
+              {
+                "code": "SUFFICIENT_PREREQUISITE_NOT_MET",
+                "nodeId": 104961,
+                "relatedNodeIds": [
+                  104964
+                ]
+              }
+            ],
+            "spentPoints": 30,
+            "remainingPoints": 21,
+            "nodeRank": 0
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 104964,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "SUFFICIENT_PREREQUISITE_NOT_MET"
+            ],
+            "issues": [
+              {
+                "code": "SUFFICIENT_PREREQUISITE_NOT_MET",
+                "nodeId": 104964,
+                "relatedNodeIds": [
+                  104961,
+                  104970
+                ]
+              }
+            ],
+            "spentPoints": 30,
+            "remainingPoints": 21,
+            "nodeRank": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "hunter.mutual_sufficient_cycle_import_without_root",
+      "class": "HUNTER",
+      "description": "Imported Intimidation + Bestial Wrath without Bestial Swiftness: the two support each other statically but no purchase order reaches them -> invalid",
+      "rules": [
+        "EDGE-SUF",
+        "VALID-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 104960,
+          "entryId": 129621,
+          "rank": 5
+        },
+        {
+          "nodeId": 104961,
+          "entryId": 129622,
+          "rank": 1
+        },
+        {
+          "nodeId": 104964,
+          "entryId": 129625,
+          "rank": 1
+        },
+        {
+          "nodeId": 104967,
+          "entryId": 129628,
+          "rank": 4
+        },
+        {
+          "nodeId": 104968,
+          "entryId": 129629,
+          "rank": 2
+        },
+        {
+          "nodeId": 104969,
+          "entryId": 129630,
+          "rank": 5
+        },
+        {
+          "nodeId": 104972,
+          "entryId": 129633,
+          "rank": 2
+        },
+        {
+          "nodeId": 104973,
+          "entryId": 129634,
+          "rank": 2
+        },
+        {
+          "nodeId": 104974,
+          "entryId": 129635,
+          "rank": 3
+        },
+        {
+          "nodeId": 104975,
+          "entryId": 129636,
+          "rank": 2
+        },
+        {
+          "nodeId": 104976,
+          "entryId": 129637,
+          "rank": 5
+        }
+      ],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "SUFFICIENT_PREREQUISITE_NOT_MET"
+            ],
+            "issues": [
+              {
+                "code": "SUFFICIENT_PREREQUISITE_NOT_MET",
+                "nodeId": 104961,
+                "relatedNodeIds": [
+                  104964
+                ]
+              },
+              {
+                "code": "SUFFICIENT_PREREQUISITE_NOT_MET",
+                "nodeId": 104964,
+                "relatedNodeIds": [
+                  104961,
+                  104970
+                ]
+              }
+            ],
+            "spentPoints": 32,
+            "remainingPoints": 19
+          }
+        }
+      ]
+    },
+    {
+      "id": "rogue.unresolved_condition_fails_closed",
+      "class": "ROGUE",
+      "description": "Venom carries TraitCond 50984 (node + group + spend in one row), whose semantics are unresolved: never purchasable, even with every proven rule met",
+      "rules": [
+        "COND-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 105709,
+          "entryId": 130438,
+          "rank": 1
+        },
+        {
+          "nodeId": 105714,
+          "entryId": 130443,
+          "rank": 3
+        },
+        {
+          "nodeId": 105716,
+          "entryId": 130445,
+          "rank": 5
+        },
+        {
+          "nodeId": 105717,
+          "entryId": 130446,
+          "rank": 2
+        },
+        {
+          "nodeId": 105720,
+          "entryId": 130449,
+          "rank": 2
+        },
+        {
+          "nodeId": 105721,
+          "entryId": 130450,
+          "rank": 3
+        },
+        {
+          "nodeId": 105722,
+          "entryId": 130451,
+          "rank": 5
+        },
+        {
+          "nodeId": 105723,
+          "entryId": 130452,
+          "rank": 2
+        },
+        {
+          "nodeId": 105739,
+          "entryId": 130468,
+          "rank": 3
+        },
+        {
+          "nodeId": 105742,
+          "entryId": 130471,
+          "rank": 3
+        },
+        {
+          "nodeId": 105759,
+          "entryId": 130488,
+          "rank": 1
+        }
+      ],
+      "steps": [
+        {
+          "op": "spend",
+          "nodeId": 105712,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "UNRESOLVED_CONDITION"
+            ],
+            "issues": [
+              {
+                "code": "UNRESOLVED_CONDITION",
+                "nodeId": 105712,
+                "relatedNodeIds": [],
+                "conditionId": 50984
+              }
+            ],
+            "spentPoints": 30,
+            "remainingPoints": 21,
+            "nodeRank": 0
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 30,
+            "remainingPoints": 21
+          }
+        }
+      ]
+    },
+    {
+      "id": "rogue.unresolved_condition_import",
+      "class": "ROGUE",
+      "description": "An imported build containing Venom cannot be verified -> invalid",
+      "rules": [
+        "COND-1",
+        "VALID-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 105709,
+          "entryId": 130438,
+          "rank": 1
+        },
+        {
+          "nodeId": 105712,
+          "entryId": 130441,
+          "rank": 1
+        },
+        {
+          "nodeId": 105714,
+          "entryId": 130443,
+          "rank": 3
+        },
+        {
+          "nodeId": 105716,
+          "entryId": 130445,
+          "rank": 5
+        },
+        {
+          "nodeId": 105717,
+          "entryId": 130446,
+          "rank": 2
+        },
+        {
+          "nodeId": 105720,
+          "entryId": 130449,
+          "rank": 2
+        },
+        {
+          "nodeId": 105721,
+          "entryId": 130450,
+          "rank": 3
+        },
+        {
+          "nodeId": 105722,
+          "entryId": 130451,
+          "rank": 5
+        },
+        {
+          "nodeId": 105723,
+          "entryId": 130452,
+          "rank": 2
+        },
+        {
+          "nodeId": 105739,
+          "entryId": 130468,
+          "rank": 3
+        },
+        {
+          "nodeId": 105742,
+          "entryId": 130471,
+          "rank": 3
+        },
+        {
+          "nodeId": 105759,
+          "entryId": 130488,
+          "rank": 1
+        }
+      ],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "UNRESOLVED_CONDITION"
+            ],
+            "issues": [
+              {
+                "code": "UNRESOLVED_CONDITION",
+                "nodeId": 105712,
+                "relatedNodeIds": [],
+                "conditionId": 50984
+              }
+            ],
+            "spentPoints": 31,
+            "remainingPoints": 20
+          }
+        }
+      ]
+    },
+    {
+      "id": "synthetic.multiple_required_prerequisites_all",
+      "class": "WARRIOR",
+      "description": "SYNTHETIC (Forever has no node with two Required edges): Improved Overpower gets Required edges from Improved Heroic Strike and Improved Rend; both must be fully ranked",
+      "rules": [
+        "EDGE-REQ",
+        "EDGE-ACTIVE"
+      ],
+      "synthetic": true,
+      "mutations": [
+        {
+          "op": "addPrerequisite",
+          "nodeId": 105952,
+          "prerequisiteNodeId": 105958,
+          "kind": "required"
+        },
+        {
+          "op": "addPrerequisite",
+          "nodeId": 105952,
+          "prerequisiteNodeId": 105956,
+          "kind": "required"
+        }
+      ],
+      "initial": [
+        {
+          "nodeId": 105956,
+          "entryId": 130686,
+          "rank": 2
+        },
+        {
+          "nodeId": 105958,
+          "entryId": 130688,
+          "rank": 3
+        }
+      ],
+      "steps": [
+        {
+          "op": "spend",
+          "nodeId": 105952,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "REQUIRED_PREREQUISITE_NOT_MET"
+            ],
+            "issues": [
+              {
+                "code": "REQUIRED_PREREQUISITE_NOT_MET",
+                "nodeId": 105952,
+                "relatedNodeIds": [
+                  105956
+                ],
+                "required": 3,
+                "actual": 2
+              }
+            ],
+            "spentPoints": 5,
+            "remainingPoints": 46,
+            "nodeRank": 0
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105956,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 6,
+            "remainingPoints": 45,
+            "nodeRank": 3
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105952,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 7,
+            "remainingPoints": 44,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 7,
+            "remainingPoints": 44
+          }
+        }
+      ]
+    },
+    {
+      "id": "synthetic.mixed_required_and_sufficient_fail_closed",
+      "class": "WARRIOR",
+      "description": "SYNTHETIC: a node with both a Required and a Sufficient edge - the combination is not proven, so it is never purchasable",
+      "rules": [
+        "EDGE-MIX"
+      ],
+      "synthetic": true,
+      "mutations": [
+        {
+          "op": "addPrerequisite",
+          "nodeId": 105952,
+          "prerequisiteNodeId": 105958,
+          "kind": "required"
+        },
+        {
+          "op": "addPrerequisite",
+          "nodeId": 105952,
+          "prerequisiteNodeId": 105956,
+          "kind": "sufficient"
+        }
+      ],
+      "initial": [
+        {
+          "nodeId": 105956,
+          "entryId": 130686,
+          "rank": 3
+        },
+        {
+          "nodeId": 105958,
+          "entryId": 130688,
+          "rank": 3
+        }
+      ],
+      "steps": [
+        {
+          "op": "spend",
+          "nodeId": 105952,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "UNSUPPORTED_EDGE_COMBINATION"
+            ],
+            "issues": [
+              {
+                "code": "UNSUPPORTED_EDGE_COMBINATION",
+                "nodeId": 105952,
+                "relatedNodeIds": [
+                  105956,
+                  105958
+                ]
+              }
+            ],
+            "spentPoints": 6,
+            "remainingPoints": 45,
+            "nodeRank": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "synthetic.selection_node_fail_closed",
+      "class": "WARRIOR",
+      "description": "SYNTHETIC (Forever has no selection nodes): selection semantics are not verifiable on real data, so a selection node is never purchasable",
+      "rules": [
+        "NODE-1"
+      ],
+      "synthetic": true,
+      "mutations": [
+        {
+          "op": "setNodeType",
+          "nodeId": 105958,
+          "value": "selection"
+        }
+      ],
+      "initial": [],
+      "steps": [
+        {
+          "op": "spend",
+          "nodeId": 105958,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "UNSUPPORTED_NODE_TYPE"
+            ],
+            "issues": [
+              {
+                "code": "UNSUPPORTED_NODE_TYPE",
+                "nodeId": 105958,
+                "relatedNodeIds": []
+              }
+            ],
+            "spentPoints": 0,
+            "remainingPoints": 51,
+            "nodeRank": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "synthetic.never_purchasable_flag",
+      "class": "WARRIOR",
+      "description": "SYNTHETIC: TraitNodeFlag.NeverPurchasable (2) blocks purchase",
+      "rules": [
+        "NODE-1"
+      ],
+      "synthetic": true,
+      "mutations": [
+        {
+          "op": "setNodeFlags",
+          "nodeId": 105958,
+          "value": 2
+        }
+      ],
+      "initial": [],
+      "steps": [
+        {
+          "op": "spend",
+          "nodeId": 105958,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "NODE_NEVER_PURCHASABLE"
+            ],
+            "issues": [
+              {
+                "code": "NODE_NEVER_PURCHASABLE",
+                "nodeId": 105958,
+                "relatedNodeIds": [],
+                "actual": 2
+              }
+            ],
+            "spentPoints": 0,
+            "remainingPoints": 51,
+            "nodeRank": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "synthetic.unknown_node_flag_fail_closed",
+      "class": "WARRIOR",
+      "description": "SYNTHETIC: an unobserved TraitNode.Flags bit (ActiveAtFirstRank, 16) fails closed",
+      "rules": [
+        "NODE-1"
+      ],
+      "synthetic": true,
+      "mutations": [
+        {
+          "op": "setNodeFlags",
+          "nodeId": 105958,
+          "value": 16
+        }
+      ],
+      "initial": [],
+      "steps": [
+        {
+          "op": "spend",
+          "nodeId": 105958,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "UNSUPPORTED_NODE_FLAGS"
+            ],
+            "issues": [
+              {
+                "code": "UNSUPPORTED_NODE_FLAGS",
+                "nodeId": 105958,
+                "relatedNodeIds": [],
+                "actual": 16
+              }
+            ],
+            "spentPoints": 0,
+            "remainingPoints": 51,
+            "nodeRank": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "synthetic.editor_grid_flag_is_neutral",
+      "class": "WARRIOR",
+      "description": "SYNTHETIC: TestGridPositioned (8), observed on real Forever nodes, does not change allocation",
+      "rules": [
+        "NODE-1"
+      ],
+      "synthetic": true,
+      "mutations": [
+        {
+          "op": "setNodeFlags",
+          "nodeId": 105958,
+          "value": 8
+        }
+      ],
+      "initial": [],
+      "steps": [
+        {
+          "op": "spend",
+          "nodeId": 105958,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 1,
+            "remainingPoints": 50,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 1,
+            "remainingPoints": 50
+          }
+        }
+      ]
+    },
+    {
+      "id": "synthetic.unsupported_entry_type_fail_closed",
+      "class": "WARRIOR",
+      "description": "SYNTHETIC: an entry type other than SpendSquare (1) fails closed",
+      "rules": [
+        "NODE-1"
+      ],
+      "synthetic": true,
+      "mutations": [
+        {
+          "op": "setEntryType",
+          "nodeId": 105958,
+          "value": 0
+        }
+      ],
+      "initial": [],
+      "steps": [
+        {
+          "op": "spend",
+          "nodeId": 105958,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "UNSUPPORTED_ENTRY_TYPE"
+            ],
+            "issues": [
+              {
+                "code": "UNSUPPORTED_ENTRY_TYPE",
+                "nodeId": 105958,
+                "entryId": 130688,
+                "relatedNodeIds": [],
+                "actual": 0
+              }
+            ],
+            "spentPoints": 0,
+            "remainingPoints": 51,
+            "nodeRank": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "synthetic.unresolved_condition_blocks_dependents",
+      "class": "WARRIOR",
+      "description": "SYNTHETIC: an unresolved condition on a prerequisite makes it unpurchasable, so its dependents can never become available either",
+      "rules": [
+        "COND-1",
+        "EDGE-SUF"
+      ],
+      "synthetic": true,
+      "mutations": [
+        {
+          "op": "addUnresolvedCondition",
+          "nodeId": 105956,
+          "value": 1
+        }
+      ],
+      "initial": [
+        {
+          "nodeId": 105954,
+          "entryId": 130684,
+          "rank": 5
+        },
+        {
+          "nodeId": 105957,
+          "entryId": 130687,
+          "rank": 2
+        },
+        {
+          "nodeId": 105958,
+          "entryId": 130688,
+          "rank": 3
+        }
+      ],
+      "steps": [
+        {
+          "op": "spend",
+          "nodeId": 105956,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "UNRESOLVED_CONDITION"
+            ],
+            "issues": [
+              {
+                "code": "UNRESOLVED_CONDITION",
+                "nodeId": 105956,
+                "relatedNodeIds": [],
+                "conditionId": 1
+              }
+            ],
+            "spentPoints": 10,
+            "remainingPoints": 41,
+            "nodeRank": 0
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105950,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "SUFFICIENT_PREREQUISITE_NOT_MET"
+            ],
+            "issues": [
+              {
+                "code": "SUFFICIENT_PREREQUISITE_NOT_MET",
+                "nodeId": 105950,
+                "relatedNodeIds": [
+                  105956
+                ]
+              }
+            ],
+            "spentPoints": 10,
+            "remainingPoints": 41,
+            "nodeRank": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "warrior.smoke",
+      "class": "WARRIOR",
+      "description": "WARRIOR: the engine builds on the real dataset; the first row-0 talent of every tab is purchasable from an empty tree",
+      "rules": [
+        "BUDGET-1",
+        "RANK-1",
+        "COST-1",
+        "GATE-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 0,
+            "remainingPoints": 51
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105958,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 1,
+            "remainingPoints": 50,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105938,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 2,
+            "remainingPoints": 49,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105976,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 3,
+            "remainingPoints": 48,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 3,
+            "remainingPoints": 48
+          }
+        }
+      ]
+    },
+    {
+      "id": "warrior.golden_51_point_build",
+      "class": "WARRIOR",
+      "description": "WARRIOR: an algorithmically constructed 51-point build (every purchase passed the engine rules) validates; no further point can be spent; a refundable rank can be removed",
+      "rules": [
+        "VALID-1",
+        "BUDGET-1",
+        "REFUND-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 105938,
+          "entryId": 130668,
+          "rank": 4
+        },
+        {
+          "nodeId": 105941,
+          "entryId": 130671,
+          "rank": 1
+        },
+        {
+          "nodeId": 105942,
+          "entryId": 130672,
+          "rank": 3
+        },
+        {
+          "nodeId": 105944,
+          "entryId": 130674,
+          "rank": 5
+        },
+        {
+          "nodeId": 105945,
+          "entryId": 130675,
+          "rank": 1
+        },
+        {
+          "nodeId": 105947,
+          "entryId": 130677,
+          "rank": 2
+        },
+        {
+          "nodeId": 105948,
+          "entryId": 130678,
+          "rank": 3
+        },
+        {
+          "nodeId": 105949,
+          "entryId": 130679,
+          "rank": 1
+        },
+        {
+          "nodeId": 105950,
+          "entryId": 130680,
+          "rank": 3
+        },
+        {
+          "nodeId": 105951,
+          "entryId": 130681,
+          "rank": 1
+        },
+        {
+          "nodeId": 105952,
+          "entryId": 130682,
+          "rank": 2
+        },
+        {
+          "nodeId": 105954,
+          "entryId": 130684,
+          "rank": 5
+        },
+        {
+          "nodeId": 105955,
+          "entryId": 130685,
+          "rank": 2
+        },
+        {
+          "nodeId": 105956,
+          "entryId": 130686,
+          "rank": 3
+        },
+        {
+          "nodeId": 105957,
+          "entryId": 130687,
+          "rank": 5
+        },
+        {
+          "nodeId": 105958,
+          "entryId": 130688,
+          "rank": 3
+        },
+        {
+          "nodeId": 110524,
+          "entryId": 137214,
+          "rank": 5
+        },
+        {
+          "nodeId": 110858,
+          "entryId": 137850,
+          "rank": 2
+        }
+      ],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 51,
+            "remainingPoints": 0
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105958,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "MAX_RANK_REACHED",
+              "NO_POINTS_REMAINING"
+            ],
+            "issues": [
+              {
+                "code": "MAX_RANK_REACHED",
+                "nodeId": 105958,
+                "entryId": 130688,
+                "relatedNodeIds": [],
+                "required": 3,
+                "actual": 3
+              },
+              {
+                "code": "NO_POINTS_REMAINING",
+                "nodeId": 105958,
+                "relatedNodeIds": [],
+                "required": 1,
+                "actual": 0
+              }
+            ],
+            "spentPoints": 51,
+            "remainingPoints": 0,
+            "nodeRank": 3
+          }
+        },
+        {
+          "op": "refund",
+          "nodeId": 110858,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 50,
+            "remainingPoints": 1,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 50,
+            "remainingPoints": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "paladin.smoke",
+      "class": "PALADIN",
+      "description": "PALADIN: the engine builds on the real dataset; the first row-0 talent of every tab is purchasable from an empty tree",
+      "rules": [
+        "BUDGET-1",
+        "RANK-1",
+        "COST-1",
+        "GATE-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 0,
+            "remainingPoints": 51
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105639,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 1,
+            "remainingPoints": 50,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105630,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 2,
+            "remainingPoints": 49,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105707,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 3,
+            "remainingPoints": 48,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 3,
+            "remainingPoints": 48
+          }
+        }
+      ]
+    },
+    {
+      "id": "paladin.golden_51_point_build",
+      "class": "PALADIN",
+      "description": "PALADIN: an algorithmically constructed 51-point build (every purchase passed the engine rules) validates; no further point can be spent; a refundable rank can be removed",
+      "rules": [
+        "VALID-1",
+        "BUDGET-1",
+        "REFUND-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 105320,
+          "entryId": 130014,
+          "rank": 1
+        },
+        {
+          "nodeId": 105321,
+          "entryId": 130015,
+          "rank": 5
+        },
+        {
+          "nodeId": 105323,
+          "entryId": 130017,
+          "rank": 1
+        },
+        {
+          "nodeId": 105324,
+          "entryId": 130018,
+          "rank": 3
+        },
+        {
+          "nodeId": 105325,
+          "entryId": 130019,
+          "rank": 1
+        },
+        {
+          "nodeId": 105327,
+          "entryId": 130021,
+          "rank": 2
+        },
+        {
+          "nodeId": 105329,
+          "entryId": 130023,
+          "rank": 5
+        },
+        {
+          "nodeId": 105330,
+          "entryId": 130024,
+          "rank": 1
+        },
+        {
+          "nodeId": 105331,
+          "entryId": 130025,
+          "rank": 2
+        },
+        {
+          "nodeId": 105332,
+          "entryId": 130026,
+          "rank": 5
+        },
+        {
+          "nodeId": 105333,
+          "entryId": 130027,
+          "rank": 3
+        },
+        {
+          "nodeId": 105334,
+          "entryId": 130028,
+          "rank": 3
+        },
+        {
+          "nodeId": 105335,
+          "entryId": 130029,
+          "rank": 2
+        },
+        {
+          "nodeId": 105630,
+          "entryId": 130354,
+          "rank": 5
+        },
+        {
+          "nodeId": 105639,
+          "entryId": 130363,
+          "rank": 5
+        },
+        {
+          "nodeId": 110871,
+          "entryId": 137869,
+          "rank": 3
+        },
+        {
+          "nodeId": 110872,
+          "entryId": 137870,
+          "rank": 2
+        },
+        {
+          "nodeId": 110873,
+          "entryId": 137871,
+          "rank": 2
+        }
+      ],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 51,
+            "remainingPoints": 0
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105639,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "MAX_RANK_REACHED",
+              "NO_POINTS_REMAINING"
+            ],
+            "issues": [
+              {
+                "code": "MAX_RANK_REACHED",
+                "nodeId": 105639,
+                "entryId": 130363,
+                "relatedNodeIds": [],
+                "required": 5,
+                "actual": 5
+              },
+              {
+                "code": "NO_POINTS_REMAINING",
+                "nodeId": 105639,
+                "relatedNodeIds": [],
+                "required": 1,
+                "actual": 0
+              }
+            ],
+            "spentPoints": 51,
+            "remainingPoints": 0,
+            "nodeRank": 5
+          }
+        },
+        {
+          "op": "refund",
+          "nodeId": 110873,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 50,
+            "remainingPoints": 1,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 50,
+            "remainingPoints": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "hunter.smoke",
+      "class": "HUNTER",
+      "description": "HUNTER: the engine builds on the real dataset; the first row-0 talent of every tab is purchasable from an empty tree",
+      "rules": [
+        "BUDGET-1",
+        "RANK-1",
+        "COST-1",
+        "GATE-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 0,
+            "remainingPoints": 51
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 104960,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 1,
+            "remainingPoints": 50,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105013,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 2,
+            "remainingPoints": 49,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 104996,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 3,
+            "remainingPoints": 48,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 3,
+            "remainingPoints": 48
+          }
+        }
+      ]
+    },
+    {
+      "id": "hunter.golden_51_point_build",
+      "class": "HUNTER",
+      "description": "HUNTER: an algorithmically constructed 51-point build (every purchase passed the engine rules) validates; no further point can be spent; a refundable rank can be removed",
+      "rules": [
+        "VALID-1",
+        "BUDGET-1",
+        "REFUND-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 104960,
+          "entryId": 129621,
+          "rank": 5
+        },
+        {
+          "nodeId": 104961,
+          "entryId": 129622,
+          "rank": 1
+        },
+        {
+          "nodeId": 104962,
+          "entryId": 129623,
+          "rank": 5
+        },
+        {
+          "nodeId": 104963,
+          "entryId": 129624,
+          "rank": 2
+        },
+        {
+          "nodeId": 104964,
+          "entryId": 129625,
+          "rank": 1
+        },
+        {
+          "nodeId": 104965,
+          "entryId": 129626,
+          "rank": 2
+        },
+        {
+          "nodeId": 104966,
+          "entryId": 129627,
+          "rank": 1
+        },
+        {
+          "nodeId": 104967,
+          "entryId": 129628,
+          "rank": 5
+        },
+        {
+          "nodeId": 104968,
+          "entryId": 129629,
+          "rank": 2
+        },
+        {
+          "nodeId": 104969,
+          "entryId": 129630,
+          "rank": 5
+        },
+        {
+          "nodeId": 104970,
+          "entryId": 129631,
+          "rank": 1
+        },
+        {
+          "nodeId": 104972,
+          "entryId": 129633,
+          "rank": 2
+        },
+        {
+          "nodeId": 104973,
+          "entryId": 129634,
+          "rank": 2
+        },
+        {
+          "nodeId": 104974,
+          "entryId": 129635,
+          "rank": 3
+        },
+        {
+          "nodeId": 104975,
+          "entryId": 129636,
+          "rank": 2
+        },
+        {
+          "nodeId": 104976,
+          "entryId": 129637,
+          "rank": 5
+        },
+        {
+          "nodeId": 105012,
+          "entryId": 129676,
+          "rank": 4
+        },
+        {
+          "nodeId": 105013,
+          "entryId": 129677,
+          "rank": 3
+        }
+      ],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 51,
+            "remainingPoints": 0
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 104960,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "MAX_RANK_REACHED",
+              "NO_POINTS_REMAINING"
+            ],
+            "issues": [
+              {
+                "code": "MAX_RANK_REACHED",
+                "nodeId": 104960,
+                "entryId": 129621,
+                "relatedNodeIds": [],
+                "required": 5,
+                "actual": 5
+              },
+              {
+                "code": "NO_POINTS_REMAINING",
+                "nodeId": 104960,
+                "relatedNodeIds": [],
+                "required": 1,
+                "actual": 0
+              }
+            ],
+            "spentPoints": 51,
+            "remainingPoints": 0,
+            "nodeRank": 5
+          }
+        },
+        {
+          "op": "refund",
+          "nodeId": 105013,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 50,
+            "remainingPoints": 1,
+            "nodeRank": 2
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 50,
+            "remainingPoints": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "rogue.smoke",
+      "class": "ROGUE",
+      "description": "ROGUE: the engine builds on the real dataset; the first row-0 talent of every tab is purchasable from an empty tree",
+      "rules": [
+        "BUDGET-1",
+        "RANK-1",
+        "COST-1",
+        "GATE-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 0,
+            "remainingPoints": 51
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105742,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 1,
+            "remainingPoints": 50,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105708,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 2,
+            "remainingPoints": 49,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105756,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 3,
+            "remainingPoints": 48,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 3,
+            "remainingPoints": 48
+          }
+        }
+      ]
+    },
+    {
+      "id": "rogue.golden_51_point_build",
+      "class": "ROGUE",
+      "description": "ROGUE: an algorithmically constructed 51-point build (every purchase passed the engine rules) validates; no further point can be spent; a refundable rank can be removed",
+      "rules": [
+        "VALID-1",
+        "BUDGET-1",
+        "REFUND-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 105708,
+          "entryId": 130437,
+          "rank": 3
+        },
+        {
+          "nodeId": 105709,
+          "entryId": 130438,
+          "rank": 1
+        },
+        {
+          "nodeId": 105710,
+          "entryId": 130439,
+          "rank": 5
+        },
+        {
+          "nodeId": 105711,
+          "entryId": 130440,
+          "rank": 2
+        },
+        {
+          "nodeId": 105713,
+          "entryId": 130442,
+          "rank": 5
+        },
+        {
+          "nodeId": 105714,
+          "entryId": 130443,
+          "rank": 5
+        },
+        {
+          "nodeId": 105715,
+          "entryId": 130444,
+          "rank": 1
+        },
+        {
+          "nodeId": 105716,
+          "entryId": 130445,
+          "rank": 5
+        },
+        {
+          "nodeId": 105717,
+          "entryId": 130446,
+          "rank": 2
+        },
+        {
+          "nodeId": 105718,
+          "entryId": 130447,
+          "rank": 2
+        },
+        {
+          "nodeId": 105720,
+          "entryId": 130449,
+          "rank": 2
+        },
+        {
+          "nodeId": 105721,
+          "entryId": 130450,
+          "rank": 3
+        },
+        {
+          "nodeId": 105722,
+          "entryId": 130451,
+          "rank": 5
+        },
+        {
+          "nodeId": 105723,
+          "entryId": 130452,
+          "rank": 2
+        },
+        {
+          "nodeId": 105739,
+          "entryId": 130468,
+          "rank": 3
+        },
+        {
+          "nodeId": 105741,
+          "entryId": 130470,
+          "rank": 1
+        },
+        {
+          "nodeId": 105742,
+          "entryId": 130471,
+          "rank": 3
+        },
+        {
+          "nodeId": 105759,
+          "entryId": 130488,
+          "rank": 1
+        }
+      ],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 51,
+            "remainingPoints": 0
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105742,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "MAX_RANK_REACHED",
+              "NO_POINTS_REMAINING"
+            ],
+            "issues": [
+              {
+                "code": "MAX_RANK_REACHED",
+                "nodeId": 105742,
+                "entryId": 130471,
+                "relatedNodeIds": [],
+                "required": 3,
+                "actual": 3
+              },
+              {
+                "code": "NO_POINTS_REMAINING",
+                "nodeId": 105742,
+                "relatedNodeIds": [],
+                "required": 1,
+                "actual": 0
+              }
+            ],
+            "spentPoints": 51,
+            "remainingPoints": 0,
+            "nodeRank": 3
+          }
+        },
+        {
+          "op": "refund",
+          "nodeId": 105759,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 50,
+            "remainingPoints": 1,
+            "nodeRank": 0
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 50,
+            "remainingPoints": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "priest.smoke",
+      "class": "PRIEST",
+      "description": "PRIEST: the engine builds on the real dataset; the first row-0 talent of every tab is purchasable from an empty tree",
+      "rules": [
+        "BUDGET-1",
+        "RANK-1",
+        "COST-1",
+        "GATE-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 0,
+            "remainingPoints": 51
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 110853,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 1,
+            "remainingPoints": 50,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105867,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 2,
+            "remainingPoints": 49,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 110851,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 3,
+            "remainingPoints": 48,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 3,
+            "remainingPoints": 48
+          }
+        }
+      ]
+    },
+    {
+      "id": "priest.golden_51_point_build",
+      "class": "PRIEST",
+      "description": "PRIEST: an algorithmically constructed 51-point build (every purchase passed the engine rules) validates; no further point can be spent; a refundable rank can be removed",
+      "rules": [
+        "VALID-1",
+        "BUDGET-1",
+        "REFUND-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 105834,
+          "entryId": 130563,
+          "rank": 1
+        },
+        {
+          "nodeId": 105835,
+          "entryId": 130564,
+          "rank": 5
+        },
+        {
+          "nodeId": 105836,
+          "entryId": 130565,
+          "rank": 1
+        },
+        {
+          "nodeId": 105837,
+          "entryId": 130566,
+          "rank": 5
+        },
+        {
+          "nodeId": 105838,
+          "entryId": 130567,
+          "rank": 2
+        },
+        {
+          "nodeId": 105839,
+          "entryId": 130568,
+          "rank": 1
+        },
+        {
+          "nodeId": 105840,
+          "entryId": 130569,
+          "rank": 3
+        },
+        {
+          "nodeId": 105841,
+          "entryId": 130570,
+          "rank": 3
+        },
+        {
+          "nodeId": 105842,
+          "entryId": 130571,
+          "rank": 3
+        },
+        {
+          "nodeId": 105843,
+          "entryId": 130572,
+          "rank": 3
+        },
+        {
+          "nodeId": 105844,
+          "entryId": 130573,
+          "rank": 1
+        },
+        {
+          "nodeId": 105845,
+          "entryId": 130574,
+          "rank": 2
+        },
+        {
+          "nodeId": 105846,
+          "entryId": 130575,
+          "rank": 3
+        },
+        {
+          "nodeId": 105848,
+          "entryId": 130577,
+          "rank": 3
+        },
+        {
+          "nodeId": 105849,
+          "entryId": 130578,
+          "rank": 5
+        },
+        {
+          "nodeId": 105850,
+          "entryId": 130579,
+          "rank": 2
+        },
+        {
+          "nodeId": 110852,
+          "entryId": 137844,
+          "rank": 3
+        },
+        {
+          "nodeId": 110853,
+          "entryId": 137845,
+          "rank": 5
+        }
+      ],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 51,
+            "remainingPoints": 0
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 110853,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "MAX_RANK_REACHED",
+              "NO_POINTS_REMAINING"
+            ],
+            "issues": [
+              {
+                "code": "MAX_RANK_REACHED",
+                "nodeId": 110853,
+                "entryId": 137845,
+                "relatedNodeIds": [],
+                "required": 5,
+                "actual": 5
+              },
+              {
+                "code": "NO_POINTS_REMAINING",
+                "nodeId": 110853,
+                "relatedNodeIds": [],
+                "required": 1,
+                "actual": 0
+              }
+            ],
+            "spentPoints": 51,
+            "remainingPoints": 0,
+            "nodeRank": 5
+          }
+        },
+        {
+          "op": "refund",
+          "nodeId": 110853,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 50,
+            "remainingPoints": 1,
+            "nodeRank": 4
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 50,
+            "remainingPoints": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "shaman.smoke",
+      "class": "SHAMAN",
+      "description": "SHAMAN: the engine builds on the real dataset; the first row-0 talent of every tab is purchasable from an empty tree",
+      "rules": [
+        "BUDGET-1",
+        "RANK-1",
+        "COST-1",
+        "GATE-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 0,
+            "remainingPoints": 51
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 104773,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 1,
+            "remainingPoints": 50,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 104757,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 2,
+            "remainingPoints": 49,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 104739,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 3,
+            "remainingPoints": 48,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 3,
+            "remainingPoints": 48
+          }
+        }
+      ]
+    },
+    {
+      "id": "shaman.golden_51_point_build",
+      "class": "SHAMAN",
+      "description": "SHAMAN: an algorithmically constructed 51-point build (every purchase passed the engine rules) validates; no further point can be spent; a refundable rank can be removed",
+      "rules": [
+        "VALID-1",
+        "BUDGET-1",
+        "REFUND-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 104753,
+          "entryId": 129413,
+          "rank": 3
+        },
+        {
+          "nodeId": 104757,
+          "entryId": 129417,
+          "rank": 2
+        },
+        {
+          "nodeId": 104758,
+          "entryId": 129418,
+          "rank": 1
+        },
+        {
+          "nodeId": 104759,
+          "entryId": 129419,
+          "rank": 3
+        },
+        {
+          "nodeId": 104760,
+          "entryId": 129420,
+          "rank": 1
+        },
+        {
+          "nodeId": 104761,
+          "entryId": 129421,
+          "rank": 2
+        },
+        {
+          "nodeId": 104762,
+          "entryId": 129422,
+          "rank": 1
+        },
+        {
+          "nodeId": 104763,
+          "entryId": 129423,
+          "rank": 3
+        },
+        {
+          "nodeId": 104764,
+          "entryId": 129424,
+          "rank": 2
+        },
+        {
+          "nodeId": 104765,
+          "entryId": 129425,
+          "rank": 3
+        },
+        {
+          "nodeId": 104766,
+          "entryId": 129426,
+          "rank": 5
+        },
+        {
+          "nodeId": 104767,
+          "entryId": 129427,
+          "rank": 5
+        },
+        {
+          "nodeId": 104768,
+          "entryId": 129428,
+          "rank": 1
+        },
+        {
+          "nodeId": 104769,
+          "entryId": 129429,
+          "rank": 3
+        },
+        {
+          "nodeId": 104770,
+          "entryId": 129430,
+          "rank": 3
+        },
+        {
+          "nodeId": 104771,
+          "entryId": 129431,
+          "rank": 3
+        },
+        {
+          "nodeId": 104772,
+          "entryId": 129432,
+          "rank": 5
+        },
+        {
+          "nodeId": 104773,
+          "entryId": 129433,
+          "rank": 5
+        }
+      ],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 51,
+            "remainingPoints": 0
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 104773,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "MAX_RANK_REACHED",
+              "NO_POINTS_REMAINING"
+            ],
+            "issues": [
+              {
+                "code": "MAX_RANK_REACHED",
+                "nodeId": 104773,
+                "entryId": 129433,
+                "relatedNodeIds": [],
+                "required": 5,
+                "actual": 5
+              },
+              {
+                "code": "NO_POINTS_REMAINING",
+                "nodeId": 104773,
+                "relatedNodeIds": [],
+                "required": 1,
+                "actual": 0
+              }
+            ],
+            "spentPoints": 51,
+            "remainingPoints": 0,
+            "nodeRank": 5
+          }
+        },
+        {
+          "op": "refund",
+          "nodeId": 104773,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 50,
+            "remainingPoints": 1,
+            "nodeRank": 4
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 50,
+            "remainingPoints": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "mage.smoke",
+      "class": "MAGE",
+      "description": "MAGE: the engine builds on the real dataset; the first row-0 talent of every tab is purchasable from an empty tree",
+      "rules": [
+        "BUDGET-1",
+        "RANK-1",
+        "COST-1",
+        "GATE-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 0,
+            "remainingPoints": 51
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105815,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 1,
+            "remainingPoints": 50,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105797,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 2,
+            "remainingPoints": 49,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105780,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 3,
+            "remainingPoints": 48,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 3,
+            "remainingPoints": 48
+          }
+        }
+      ]
+    },
+    {
+      "id": "mage.golden_51_point_build",
+      "class": "MAGE",
+      "description": "MAGE: an algorithmically constructed 51-point build (every purchase passed the engine rules) validates; no further point can be spent; a refundable rank can be removed",
+      "rules": [
+        "VALID-1",
+        "BUDGET-1",
+        "REFUND-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 105796,
+          "entryId": 130525,
+          "rank": 2
+        },
+        {
+          "nodeId": 105797,
+          "entryId": 130526,
+          "rank": 2
+        },
+        {
+          "nodeId": 105798,
+          "entryId": 130527,
+          "rank": 1
+        },
+        {
+          "nodeId": 105799,
+          "entryId": 130528,
+          "rank": 3
+        },
+        {
+          "nodeId": 105800,
+          "entryId": 130529,
+          "rank": 5
+        },
+        {
+          "nodeId": 105801,
+          "entryId": 130530,
+          "rank": 1
+        },
+        {
+          "nodeId": 105802,
+          "entryId": 130531,
+          "rank": 1
+        },
+        {
+          "nodeId": 105803,
+          "entryId": 130532,
+          "rank": 3
+        },
+        {
+          "nodeId": 105804,
+          "entryId": 130533,
+          "rank": 2
+        },
+        {
+          "nodeId": 105805,
+          "entryId": 130534,
+          "rank": 2
+        },
+        {
+          "nodeId": 105806,
+          "entryId": 130535,
+          "rank": 1
+        },
+        {
+          "nodeId": 105807,
+          "entryId": 130536,
+          "rank": 3
+        },
+        {
+          "nodeId": 105808,
+          "entryId": 130537,
+          "rank": 2
+        },
+        {
+          "nodeId": 105809,
+          "entryId": 130538,
+          "rank": 2
+        },
+        {
+          "nodeId": 105810,
+          "entryId": 130539,
+          "rank": 5
+        },
+        {
+          "nodeId": 105811,
+          "entryId": 130540,
+          "rank": 2
+        },
+        {
+          "nodeId": 105812,
+          "entryId": 130541,
+          "rank": 2
+        },
+        {
+          "nodeId": 105813,
+          "entryId": 130542,
+          "rank": 5
+        },
+        {
+          "nodeId": 105814,
+          "entryId": 130543,
+          "rank": 5
+        },
+        {
+          "nodeId": 105815,
+          "entryId": 130544,
+          "rank": 2
+        }
+      ],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 51,
+            "remainingPoints": 0
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105815,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "MAX_RANK_REACHED",
+              "NO_POINTS_REMAINING"
+            ],
+            "issues": [
+              {
+                "code": "MAX_RANK_REACHED",
+                "nodeId": 105815,
+                "entryId": 130544,
+                "relatedNodeIds": [],
+                "required": 2,
+                "actual": 2
+              },
+              {
+                "code": "NO_POINTS_REMAINING",
+                "nodeId": 105815,
+                "relatedNodeIds": [],
+                "required": 1,
+                "actual": 0
+              }
+            ],
+            "spentPoints": 51,
+            "remainingPoints": 0,
+            "nodeRank": 2
+          }
+        },
+        {
+          "op": "refund",
+          "nodeId": 105815,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 50,
+            "remainingPoints": 1,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 50,
+            "remainingPoints": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "warlock.smoke",
+      "class": "WARLOCK",
+      "description": "WARLOCK: the engine builds on the real dataset; the first row-0 talent of every tab is purchasable from an empty tree",
+      "rules": [
+        "BUDGET-1",
+        "RANK-1",
+        "COST-1",
+        "GATE-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 0,
+            "remainingPoints": 51
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105921,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 1,
+            "remainingPoints": 50,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105905,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 2,
+            "remainingPoints": 49,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105881,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 3,
+            "remainingPoints": 48,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 3,
+            "remainingPoints": 48
+          }
+        }
+      ]
+    },
+    {
+      "id": "warlock.golden_51_point_build",
+      "class": "WARLOCK",
+      "description": "WARLOCK: an algorithmically constructed 51-point build (every purchase passed the engine rules) validates; no further point can be spent; a refundable rank can be removed",
+      "rules": [
+        "VALID-1",
+        "BUDGET-1",
+        "REFUND-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 105905,
+          "entryId": 130635,
+          "rank": 2
+        },
+        {
+          "nodeId": 105907,
+          "entryId": 130637,
+          "rank": 1
+        },
+        {
+          "nodeId": 105908,
+          "entryId": 130638,
+          "rank": 3
+        },
+        {
+          "nodeId": 105909,
+          "entryId": 130639,
+          "rank": 1
+        },
+        {
+          "nodeId": 105910,
+          "entryId": 130640,
+          "rank": 5
+        },
+        {
+          "nodeId": 105911,
+          "entryId": 130641,
+          "rank": 3
+        },
+        {
+          "nodeId": 105912,
+          "entryId": 130642,
+          "rank": 1
+        },
+        {
+          "nodeId": 105914,
+          "entryId": 130644,
+          "rank": 2
+        },
+        {
+          "nodeId": 105917,
+          "entryId": 130647,
+          "rank": 3
+        },
+        {
+          "nodeId": 105918,
+          "entryId": 130648,
+          "rank": 3
+        },
+        {
+          "nodeId": 105919,
+          "entryId": 130649,
+          "rank": 2
+        },
+        {
+          "nodeId": 105920,
+          "entryId": 130650,
+          "rank": 3
+        },
+        {
+          "nodeId": 105922,
+          "entryId": 130652,
+          "rank": 2
+        },
+        {
+          "nodeId": 105923,
+          "entryId": 130653,
+          "rank": 5
+        },
+        {
+          "nodeId": 105924,
+          "entryId": 130654,
+          "rank": 5
+        },
+        {
+          "nodeId": 105925,
+          "entryId": 130655,
+          "rank": 5
+        },
+        {
+          "nodeId": 110876,
+          "entryId": 137874,
+          "rank": 5
+        }
+      ],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 51,
+            "remainingPoints": 0
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 105921,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "NO_POINTS_REMAINING"
+            ],
+            "issues": [
+              {
+                "code": "NO_POINTS_REMAINING",
+                "nodeId": 105921,
+                "relatedNodeIds": [],
+                "required": 1,
+                "actual": 0
+              }
+            ],
+            "spentPoints": 51,
+            "remainingPoints": 0,
+            "nodeRank": 0
+          }
+        },
+        {
+          "op": "refund",
+          "nodeId": 110876,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 50,
+            "remainingPoints": 1,
+            "nodeRank": 4
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 50,
+            "remainingPoints": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "druid.smoke",
+      "class": "DRUID",
+      "description": "DRUID: the engine builds on the real dataset; the first row-0 talent of every tab is purchasable from an empty tree",
+      "rules": [
+        "BUDGET-1",
+        "RANK-1",
+        "COST-1",
+        "GATE-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 0,
+            "remainingPoints": 51
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 104923,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 1,
+            "remainingPoints": 50,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 104938,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 2,
+            "remainingPoints": 49,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 104957,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 3,
+            "remainingPoints": 48,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 3,
+            "remainingPoints": 48
+          }
+        }
+      ]
+    },
+    {
+      "id": "druid.golden_51_point_build",
+      "class": "DRUID",
+      "description": "DRUID: an algorithmically constructed 51-point build (every purchase passed the engine rules) validates; no further point can be spent; a refundable rank can be removed",
+      "rules": [
+        "VALID-1",
+        "BUDGET-1",
+        "REFUND-1"
+      ],
+      "synthetic": false,
+      "mutations": [],
+      "initial": [
+        {
+          "nodeId": 104923,
+          "entryId": 129583,
+          "rank": 5
+        },
+        {
+          "nodeId": 104924,
+          "entryId": 129584,
+          "rank": 5
+        },
+        {
+          "nodeId": 104925,
+          "entryId": 129585,
+          "rank": 3
+        },
+        {
+          "nodeId": 104926,
+          "entryId": 129586,
+          "rank": 3
+        },
+        {
+          "nodeId": 104927,
+          "entryId": 129587,
+          "rank": 2
+        },
+        {
+          "nodeId": 104928,
+          "entryId": 129588,
+          "rank": 1
+        },
+        {
+          "nodeId": 104929,
+          "entryId": 129589,
+          "rank": 2
+        },
+        {
+          "nodeId": 104930,
+          "entryId": 129590,
+          "rank": 1
+        },
+        {
+          "nodeId": 104931,
+          "entryId": 129591,
+          "rank": 2
+        },
+        {
+          "nodeId": 104932,
+          "entryId": 129592,
+          "rank": 5
+        },
+        {
+          "nodeId": 104933,
+          "entryId": 129593,
+          "rank": 5
+        },
+        {
+          "nodeId": 104934,
+          "entryId": 129594,
+          "rank": 1
+        },
+        {
+          "nodeId": 104935,
+          "entryId": 129595,
+          "rank": 3
+        },
+        {
+          "nodeId": 104936,
+          "entryId": 129596,
+          "rank": 5
+        },
+        {
+          "nodeId": 104937,
+          "entryId": 129597,
+          "rank": 1
+        },
+        {
+          "nodeId": 104938,
+          "entryId": 129598,
+          "rank": 5
+        },
+        {
+          "nodeId": 110844,
+          "entryId": 137836,
+          "rank": 2
+        }
+      ],
+      "steps": [
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 51,
+            "remainingPoints": 0
+          }
+        },
+        {
+          "op": "spend",
+          "nodeId": 104923,
+          "expect": {
+            "ok": false,
+            "reasonCodes": [
+              "MAX_RANK_REACHED",
+              "NO_POINTS_REMAINING"
+            ],
+            "issues": [
+              {
+                "code": "MAX_RANK_REACHED",
+                "nodeId": 104923,
+                "entryId": 129583,
+                "relatedNodeIds": [],
+                "required": 5,
+                "actual": 5
+              },
+              {
+                "code": "NO_POINTS_REMAINING",
+                "nodeId": 104923,
+                "relatedNodeIds": [],
+                "required": 1,
+                "actual": 0
+              }
+            ],
+            "spentPoints": 51,
+            "remainingPoints": 0,
+            "nodeRank": 5
+          }
+        },
+        {
+          "op": "refund",
+          "nodeId": 110844,
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 50,
+            "remainingPoints": 1,
+            "nodeRank": 1
+          }
+        },
+        {
+          "op": "validate",
+          "expect": {
+            "ok": true,
+            "reasonCodes": [],
+            "issues": [],
+            "spentPoints": 50,
+            "remainingPoints": 1
+          }
+        }
+      ]
+    }
+  ]
+}
