@@ -22,7 +22,7 @@ python -m talent_data builds latest --game forever
 python -m talent_data fetch --game forever --build 1.60.1.70009
 python -m talent_data normalize --game forever --build latest --class all
 # -> data/normalized/forever/1.60.1.70009/{warrior..druid}.json + manifest.json
-#    9 classes, 0 errors, 11 investigated warnings (see docs/forever-dataset.md)
+#    9 classes, 0 errors, 12 investigated warnings (see docs/forever-dataset.md)
 
 python -m talent_data diff --game forever --class all \
   --from 1.60.1.69977 --to 1.60.1.70009

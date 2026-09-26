@@ -47,6 +47,7 @@ from talent_data.pipeline import (
     parse_class_keys,
     read_document,
     read_manifest,
+    validate_manifest_against_documents,
     write_batch,
     write_document,
     write_json,
@@ -148,6 +149,15 @@ def _build_parser() -> argparse.ArgumentParser:
 
     man = sub.add_parser("manifest", help="validate a dataset manifest and its class documents")
     man.add_argument("path", type=Path)
+    man.add_argument("--game", help="expected game key (default: trust the manifest's own claim)")
+    man.add_argument(
+        "--build", help="expected client build (default: trust the manifest's own claim)"
+    )
+    man.add_argument(
+        "--expect-complete",
+        action="store_true",
+        help="also require the game's full class inventory (recommended for CI)",
+    )
     man.set_defaults(handler=_cmd_manifest)
     return parser
 
@@ -271,8 +281,8 @@ def _cmd_builds_list(args: argparse.Namespace) -> int:
     with _http() as http:
         builds = WagoBuildSource(http).list_builds(game)
     for b in sorted(builds, key=lambda b: (b.created_at, b.version), reverse=True):
-        bgdl = classify_build(b).is_background_download
-        suffix = "  [background-download]" if bgdl else ""
+        state = classify_build(b).background_download
+        suffix = {True: "  [background-download]", False: "", None: "  [bgdl unknown]"}[state]
         print(f"{b.version}  {b.created_at:%Y-%m-%d %H:%M:%S}  {b.product}{suffix}")
     return EXIT_OK
 
@@ -282,12 +292,12 @@ def _cmd_builds_latest(args: argparse.Namespace) -> int:
     with _http() as http:
         info = find_latest_build(WagoBuildSource(http), game)
     print(f"{game.display_name} latest build: {info.version}")
-    bgdl = classify_build(info).is_background_download
-    note = (
-        "background-download build: not publishable without human review"
-        if bgdl
-        else "not a background-download build ('latest' != proven live)"
-    )
+    state = classify_build(info).background_download
+    note = {
+        True: "background-download build: not publishable without human review",
+        False: "not a background-download build ('latest' != proven live)",
+        None: "background-download status unknown: not publishable without human review",
+    }[state]
     print(
         f"  product={info.product} created_at={info.created_at:%Y-%m-%d %H:%M:%S}; {note}",
         file=sys.stderr,
@@ -422,19 +432,43 @@ def _existing_document(
 
 
 def _existing_batch(game: GameConfig, version: ClientVersion) -> list[TalentDataDocument] | None:
-    """All class documents of a build, if a complete, valid set is already on disk."""
+    """All class documents of a build, if a complete, consistent dataset is on disk.
+
+    The manifest is never trusted blindly: it must validate against every document it
+    indexes (game, build, class identity, tree ids, content hashes, live validation
+    reports) and cover the game's complete class inventory. Any problem - partial,
+    stale or corrupt - means "no usable dataset": the caller re-normalizes when raw
+    data / network is available, or fails with a clear error otherwise.
+    """
     mpath = paths.manifest_path(game.key, version)
     if not mpath.is_file():
         return None
-    manifest = read_manifest(mpath)
-    docs: list[TalentDataDocument] = []
+    try:
+        manifest = read_manifest(mpath)
+    except PipelineError as exc:
+        log.warning("%s: %s; re-normalizing", mpath, exc)
+        return None
+    docs: dict[str, TalentDataDocument] = {}
     for entry in manifest.classes:
-        doc = _existing_document(game, version, entry.token.lower())
-        if doc is None or doc.content_hash != entry.content_hash:
-            log.warning("existing %s dataset is stale/invalid; re-normalizing", version)
+        path = mpath.parent / entry.file
+        try:
+            docs[entry.token] = read_document(path)
+        except PipelineError as exc:
+            log.warning("%s: %s; re-normalizing", path, exc)
             return None
-        docs.append(doc)
-    return docs
+    problems = validate_manifest_against_documents(
+        manifest,
+        docs,
+        expected_game=game.key,
+        expected_build=str(version),
+        expected_class_tokens=game.dataset_class_tokens,
+    )
+    if problems:
+        for problem in problems:
+            log.warning("existing %s dataset: %s", version, problem)
+        log.warning("existing %s dataset is incomplete/inconsistent; re-normalizing", version)
+        return None
+    return [docs[entry.token] for entry in manifest.classes]
 
 
 def _cmd_schema(args: argparse.Namespace) -> int:
@@ -472,23 +506,34 @@ def _cmd_validate(args: argparse.Namespace) -> int:
 def _cmd_manifest(args: argparse.Namespace) -> int:
     manifest = read_manifest(args.path)
     print(f"{args.path}: {manifest.game} {manifest.client_build}, {len(manifest.classes)} classes")
+    docs: dict[str, TalentDataDocument] = {}
     failed = False
     for entry in manifest.classes:
         doc_path = args.path.parent / entry.file
         try:
-            doc = read_document(doc_path)
+            docs[entry.token] = read_document(doc_path)
         except PipelineError as exc:
             print(f"  ERROR: [{entry.token}] {exc}")
             failed = True
-            continue
-        report = validate_document(doc)
-        status = "ok" if report.ok else "INVALID"
-        hash_ok = "hash ok" if doc.content_hash == entry.content_hash else "HASH MISMATCH"
-        codes = " ".join(f"{code}={n}" for code, n in entry.validation.warnings_by_code.items())
-        print(
-            f"  {entry.token}: {status}, {hash_ok}, {len(report.errors)} error(s), "
-            f"{len(report.warnings)} warning(s) {codes}"
-        )
-        if not report.ok or doc.content_hash != entry.content_hash:
-            failed = True
+    # full integrity check: identity, uniqueness, completeness, hashes, live validation
+    problems = validate_manifest_against_documents(
+        manifest,
+        docs,
+        expected_game=args.game,
+        expected_build=args.build,
+        expected_class_tokens=(
+            get_game(manifest.game).dataset_class_tokens if args.expect_complete else None
+        ),
+    )
+    for problem in problems:
+        print(f"  ERROR: {problem}")
+    if problems:
+        failed = True
+    if not failed:
+        for entry in manifest.classes:
+            codes = " ".join(f"{code}={n}" for code, n in entry.validation.warnings_by_code.items())
+            print(
+                f"  {entry.token}: ok, hash ok, {entry.validation.errors} error(s), "
+                f"{entry.validation.warnings} warning(s) {codes}"
+            )
     return EXIT_FAILURE if failed else EXIT_OK

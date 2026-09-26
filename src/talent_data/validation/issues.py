@@ -30,6 +30,9 @@ KNOWN_WARNING_CODES: dict[str, str] = {
     "INCOMPLETE_RANK_CURVE": "rank curve covers fewer ranks than MaxRanks (observed on Rogue "
     "Cutthroat; the client data itself is incomplete)",
     "UNRESOLVED_RANK_CURVE": "a rank curve exists but its semantics are not interpreted",
+    "UNRESOLVED_CONDITION": "a TraitCond whose semantics the pipeline cannot prove (observed "
+    "on Rogue: cond 50984 combines a node reference with a group/spend gate; unknown "
+    "combinations are surfaced, never silently flattened or dropped)",
     "SHARED_GRID_CELL": "two nodes map to the same derived grid cell",
     "SECTIONS_UNRESOLVED": "talent tabs could not be derived from the gate groups",
 }
@@ -60,10 +63,6 @@ KNOWN_ERROR_CODES: frozenset[str] = frozenset(
         "CONTENT_HASH_MISMATCH",
     }
 )
-
-# Produced by real data but *resolved* by the normalizer since M1 (vacuous TraitCond rows);
-# kept here so a regression to "unresolved" is visible if the rule is ever loosened.
-UNRESOLVED_CONDITION = "UNRESOLVED_CONDITION"
 
 
 @dataclass(frozen=True)

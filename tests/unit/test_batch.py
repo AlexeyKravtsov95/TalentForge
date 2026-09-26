@@ -20,21 +20,17 @@ from talent_data.pipeline import (
     parse_class_keys,
     write_batch,
 )
-from talent_data.sources.base import BuildInfo, classify_build, latest_publishable_build
+from talent_data.sources.base import (
+    BuildInfo,
+    SourceError,
+    classify_build,
+    latest_publishable_build,
+)
 from talent_data.sources.local import LocalCsvDb2Source
 from tests.conftest import ALL_CLASSES, normalize_fixture_class
 from tests.helpers import DB2_FIXTURES, NEW_BUILD, OLD_BUILD
-from tests.unit.test_cli import _merge_class_fixtures
 
 GAME = get_game("forever")
-
-
-@pytest.fixture(scope="module")
-def merged_source(tmp_path_factory: pytest.TempPathFactory) -> LocalCsvDb2Source:
-    root = tmp_path_factory.mktemp("merged")
-    for build in (OLD_BUILD, NEW_BUILD):
-        _merge_class_fixtures(DB2_FIXTURES / str(build), root / str(build))
-    return LocalCsvDb2Source(root)
 
 
 @pytest.fixture(scope="module")
@@ -205,11 +201,44 @@ def _build(version: str, created: str, bgdl: bool = False) -> BuildInfo:
     )
 
 
+def _build_without_bgdl(version: str, created: str) -> BuildInfo:
+    """A source that does not provide is_bgdl at all (possible for future sources)."""
+    from talent_data.versions import ClientVersion
+
+    return BuildInfo(
+        version=ClientVersion.parse(version),
+        product="wow_classic_beta",
+        created_at=datetime.strptime(created, "%Y-%m-%d %H:%M:%S"),
+        extra={},
+    )
+
+
 def test_background_download_builds_are_classified() -> None:
     candidate = classify_build(_build("1.60.1.70009", "2026-09-24 22:02:03"))
     assert not candidate.is_background_download
     bgdl = classify_build(_build("12.0.7.67808", "2026-06-15 22:45:02", bgdl=True))
     assert bgdl.is_background_download
+
+
+def test_missing_bgdl_flag_is_unknown_not_false() -> None:
+    """Absence of is_bgdl must not be read as 'definitely not a background download'."""
+    candidate = classify_build(_build_without_bgdl("1.60.1.70009", "2026-09-24 22:02:03"))
+    assert candidate.background_download is None
+    assert not candidate.is_background_download  # not *definitely* bgdl...
+    assert not candidate.publishable  # ...but also not publishable: unknown != safe
+
+
+def test_unknown_bgdl_build_is_not_publishable() -> None:
+    """A source that never says is_bgdl yields no publishable candidate, and the newest
+    unknown build must not win by created_at."""
+    candidates = [
+        classify_build(_build("1.60.1.69977", "2026-09-23 00:35:05")),
+        classify_build(_build_without_bgdl("1.60.2.70100", "2026-09-26 10:00:00")),
+    ]
+    assert str(latest_publishable_build(candidates).info.version) == "1.60.1.69977"
+    only_unknown = [classify_build(_build_without_bgdl("1.60.2.70100", "2026-09-26 10:00:00"))]
+    with pytest.raises(SourceError, match="unknown background-download status"):
+        latest_publishable_build(only_unknown)
 
 
 def test_latest_publishable_build_excludes_background_downloads() -> None:

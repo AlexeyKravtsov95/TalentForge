@@ -26,16 +26,16 @@ published in class-id order. `--class` also accepts a comma-separated subset
 | Warrior | 1 | 1117 | 53 | 3 | 51 | 0 | — |
 | Paladin | 2 | 1100 | 50 | 3 | 51 | 0 | 2 × OFF_GRID_NODE |
 | Hunter | 3 | 1091 | 52 | 3 | 51 | 0 | 2 × OFF_GRID_NODE, 1 × DUPLICATE_SPELL_IDENTITY, 1 × SUFFICIENT_PREREQUISITE_CYCLE |
-| Rogue | 4 | 1111 | 53 | 3 | 51 | 0 | 1 × INCOMPLETE_RANK_CURVE |
+| Rogue | 4 | 1111 | 53 | 3 | 51 | 0 | 1 × INCOMPLETE_RANK_CURVE, 1 × UNRESOLVED_CONDITION |
 | Priest | 5 | 1114 | 54 | 3 | 51 | 0 | 1 × OFF_GRID_NODE, 1 × DUPLICATE_SPELL_IDENTITY |
 | Shaman | 7 | 1082 | 50 | 3 | 51 | 0 | — |
 | Mage | 8 | 1112 | 54 | 3 | 51 | 0 | — |
 | Warlock | 9 | 1116 | 52 | 3 | 51 | 0 | 2 × OFF_GRID_NODE |
 | Druid | 11 | 1089 | 51 | 3 | 51 | 0 | — |
 
-Total: 469 nodes, 0 errors, 11 warnings — every warning below is investigated, has a
+Total: 469 nodes, 0 errors, 12 warnings — every warning below is investigated, has a
 stable machine-readable code and a regression test
-(`tests/unit/test_known_anomalies.py`). The same 11 warnings appear on 1.60.1.69977.
+(`tests/unit/test_known_anomalies.py`). The same 12 warnings appear on 1.60.1.69977.
 **Unknown warning codes are not normal**: a test pins the exact per-class warning set, so
 a new code from Blizzard data fails CI until it is investigated and added to this
 document (or the pipeline is fixed).
@@ -124,18 +124,49 @@ M0 reported 20 of these (18 Priest + 2 Druid nodes). Investigation of the raw ro
   gate 50973 ("spend 10 points in group 12700", currency 3820) *plus* cond **50974** —
   again all-zero except `TraitTreeID=1089`.
 
-A row with no group, node, entry, currency, spent amount, level, quest, achievement,
-spec set, granted ranks or flags cannot gate anything — every possible reading
-("spend ≥ 0", "level ≥ 0", "no quest required", …) is trivially satisfied. `TraitTreeID`
-is ignored in this judgement because the *real* gates (e.g. 50973) also carry it: it
-scopes a condition to its tree, it does not constrain availability.
+A row with no group, node, node entry, account element, currency, spent amount, level,
+quest, achievement, spec set, granted ranks or flags cannot gate anything — every
+possible reading ("spend ≥ 0", "level ≥ 0", "no quest required", …) is trivially
+satisfied. Conclusion: these conditions are **provably vacuous** — authoring leftovers.
+M1 treats them as no-ops: they no longer appear in `unresolvedConditionIds` and no
+longer warn. The real gates on the same groups are unaffected (regression-tested:
+Penance still requires 20 points in 14 nodes, Druid roots 10 points in 6 nodes). If
+Blizzard ever populates such a row, it stops being all-zero and is either interpreted
+or reported as UNRESOLVED_CONDITION again — nothing can be silently ignored.
 
-Conclusion: these conditions are **provably vacuous** — authoring leftovers. M1 treats
-them as no-ops: they no longer appear in `unresolvedConditionIds` and no longer warn.
-The real gates on the same groups are unaffected (regression-tested: Penance still
-requires 20 points in 14 nodes, Druid roots 10 points in 6 nodes). If Blizzard ever
-populates such a row, it stops being all-zero and is either interpreted or reported as
-UNRESOLVED_CONDITION again — nothing can be silently ignored.
+#### TraitCond field semantics (M1 review research)
+
+The vacuous/pure-gate classification considers *every* `TraitCond` column. Evidence
+per field (WoWDBDefs definitions + real rows of Forever 1.60.1.70009 ×172 and retail
+12.1.0.69933 ×10 962):
+
+| Field | Semantics | Evidence | Used in vacuous judgement |
+| --- | --- | --- | --- |
+| `TraitNodeGroupID`, `TraitCurrencyID`, `SpentAmountRequired` | the points gate itself | all real Forever gates | yes (must be 0) |
+| `TraitNodeID` | constraint on a specific node | Forever: cond 50984 references node 105709 | yes (must be 0) |
+| `TraitNodeEntryID` | constraint on a specific node *entry* | functional in retail: 25 conditions (13 distinct entries) reference one | yes (must be 0) |
+| `TraitCondAccountElementID` | account-wide gating via `TraitCondAccountElement` | functional in retail: 413 conditions reference account elements | yes (must be 0) |
+| `RequiredLevel`, `GrantedRanks`, `QuestID`, `AchievementID`, `SpecSetID`, `Flags` | level / free ranks / quest / achievement / spec restrictions; Flags documented as "&1: IsGate, &2: IsAlwaysMet, &4: IsSufficient" | WoWDBDefs | yes (must be 0) |
+| `TraitTreeID` | scoping reference, not a constraint | real gates (e.g. 50973) also carry it | no (ignored) |
+| `FreeSharedStringID`, `SpendMoreSharedStringID` | **presentation-only**: `SharedString::ID` localization texts rendered next to a gate — retail string 910 = "This talent is granted to your specialization for free and can't be unlearned", 911 = "Spend %d more \|4point:points; to unlock this talent", 1217 = "Reach level %d to increase rank" | FK target is a string table; real Forever gates and vacuous rows carry the same string ids (the vacuous rows carry none) | no (ignored, documented) |
+
+The same table governs the *interpretation* path: a condition is flattened into a plain
+"spend N points in group G" unlock requirement **only** when it has exactly that shape
+(`CondType=0`, no flags, and every other functional field zero). Anything else surfaces
+as UNRESOLVED_CONDITION instead of being silently flattened — which is what Rogue cond
+50984 exposed (below).
+
+### UNRESOLVED_CONDITION — Rogue cond 50984 (found by the M1 review fix)
+
+Rogue cond 50984 (attached directly to node 105712 "Venom" via `TraitNodeXTraitCond`)
+combines **three** constraints: `TraitNodeID=105709` (Mutilate), group 11576 (3 nodes)
+and `SpentAmountRequired=1` with currency 3820. Until the review fix, the normalizer
+silently dropped the node reference and flattened the row into a "spend 1 point in 3
+nodes" unlock requirement on Venom. How a node reference combines with a group/spend
+gate is not documented anywhere (WoWDBDefs documents only the column names), so since
+the fix the condition is exposed verbatim as `unresolvedConditionIds: [50984]` on Venom
+with an `UNRESOLVED_CONDITION` warning; the fabricated gate is gone from the document
+(the real 30-point capstone gate remains). Identical on both captured builds.
 
 ### Diff noise (all-class diff evidence)
 
@@ -188,10 +219,17 @@ successful batch normalize):
 ```
 
 A manifest is only written when **all** classes of the build validated with zero errors;
-a failing batch writes nothing (no partial datasets). `python -m talent_data manifest
-<path>` re-verifies a manifest against the class documents on disk (hash + validation).
-A future mobile updater can therefore trust: build identity, class inventory, per-class
-file, semantic content hash, and validation status — without loading every document.
+a failing batch writes nothing (no partial datasets). Reading one back is never a matter
+of trust: `pipeline.validate_manifest_against_documents` (used by both `diff --class
+all` reuse and the `manifest` command) re-checks every invariant — game and build
+identity, unique class tokens and file names, the complete class inventory of the game
+(from `GameConfig.dataset_class_tokens`, not JSON order), and per class: document game /
+build / class token, tree ids, semantic content hash, live 0-error validation, warning
+count and per-code counts. A partial, stale or corrupt manifest is rejected, triggering
+re-normalization (or a clear failure when no raw data is available); the `manifest`
+command exits non-zero on any mismatch. A future mobile updater can therefore trust:
+build identity, class inventory, per-class file, semantic content hash, and validation
+status — without loading every document.
 
 ## Build candidates: latest ≠ publishable ≠ live
 
@@ -203,13 +241,18 @@ by Battle.net and meaningful.
 M1 domain model (`talent_data.sources.base`):
 
 * `classify_build(info) -> BuildCandidate` — lifts the source-specific flag into the
-  domain;
+  domain as a **tri-state**: `background_download` is `True`/`False` as stated by the
+  source, or `None` (**unknown**) when the source does not provide `is_bgdl` at all.
+  Unknown must never be read as "definitely not a background download": an unknown
+  build is *not* publishable (backward-compatible for Wago, which always provides the
+  flag);
 * `latest_build(builds)` — **latest detected** (what `--build latest` uses, unchanged
   from M0);
-* `latest_publishable_build(candidates)` — latest **non-background-download** build. A
-  background-download build has the newest `created_at` exactly when it must *not* be
-  treated as production data, so "latest" and "latest publishable" diverge precisely
-  when it matters.
+* `latest_publishable_build(candidates)` — latest build **known** not to be a
+  background download. A background-download build has the newest `created_at` exactly
+  when it must *not* be treated as production data, so "latest" and "latest publishable"
+  diverge precisely when it matters; a candidate set with only unknown/flagged builds
+  raises instead of guessing.
 
 wago.tools has no field that identifies the build the live realms run, so "publishable"
 is only a necessary condition, never proof of "live". The pipeline surfaces
@@ -239,6 +282,9 @@ python scripts/extract_fixtures.py --build 1.60.1.70009 --classes all
 * Sufficient-edge combination semantics (OR vs AND) — see above; preserved verbatim.
 * Whether a sufficient/required prerequisite must be *fully ranked* is not encoded.
 * `TraitNode.Flags` and `TraitNodeEntry.NodeEntryType` remain raw.
+* How a `TraitNodeID` reference combines with a group/spend gate in one condition
+  (Rogue cond 50984 on Venom) is unknown; the row is preserved verbatim as an
+  unresolved condition.
 * Costs (`TraitCost`) are not modelled; 1 point per rank is not asserted.
 * Tab names (Arms/Fury/Protection…) do not exist in client data; `section.name` is null.
 * Tooltips stay raw templates; per-rank numbers exist for curve-backed effects only.

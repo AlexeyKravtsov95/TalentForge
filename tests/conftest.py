@@ -83,3 +83,18 @@ def warrior_old(dataset_old: TraitDataSet) -> TalentDataDocument:
 def class_docs() -> dict[str, TalentDataDocument]:
     """All nine classes normalized from the NEW_BUILD fixtures (deterministic output)."""
     return {key: normalize_fixture_class(key, NEW_BUILD) for key in ALL_CLASSES}
+
+
+@pytest.fixture(scope="session")
+def merged_source(tmp_path_factory: pytest.TempPathFactory) -> LocalCsvDb2Source:
+    """A flat per-build table set merged from the per-class fixtures of all classes.
+
+    Shared class tables are identical across class fixtures and tree tables are
+    row-disjoint, so the union is a valid whole-build table set for offline tests.
+    """
+    from tests.unit.test_cli import _merge_class_fixtures
+
+    root = tmp_path_factory.mktemp("merged")
+    for build in (OLD_BUILD, NEW_BUILD):
+        _merge_class_fixtures(DB2_FIXTURES / str(build), root / str(build))
+    return LocalCsvDb2Source(root)

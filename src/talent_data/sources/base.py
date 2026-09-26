@@ -110,24 +110,49 @@ def latest_build(builds: Iterable[BuildInfo]) -> BuildInfo:
 
 @dataclass(frozen=True)
 class BuildCandidate:
-    """A build considered as a dataset source, with the facts that gate publication."""
+    """A build considered as a dataset source, with the facts that gate publication.
+
+    ``background_download`` is tri-state: ``True``/``False`` as stated by the source,
+    ``None`` when the source did not say. ``None`` must never be read as "definitely not
+    a background download" - it is *unknown*, and an unknown build is not publishable
+    (see ``publishable``).
+    """
 
     info: BuildInfo
-    is_background_download: bool
+    background_download: bool | None
+
+    @property
+    def is_background_download(self) -> bool:
+        """Definitely a background download (only when the source explicitly said so)."""
+        return self.background_download is True
+
+    @property
+    def publishable(self) -> bool:
+        """Known not to be a background download. Unknown is NOT publishable."""
+        return self.background_download is False
 
 
 def classify_build(info: BuildInfo) -> BuildCandidate:
-    """Lift source-specific ``extra`` facts into the domain (unknown sources -> not bgdl)."""
-    return BuildCandidate(info=info, is_background_download=info.extra.get("is_bgdl") == "true")
+    """Lift source-specific ``extra`` facts into the domain.
+
+    A source that does not provide ``is_bgdl`` yields ``background_download=None``
+    (unknown), which ``latest_publishable_build`` refuses - absence of the flag is not
+    evidence of publishability.
+    """
+    raw = info.extra.get("is_bgdl")
+    return BuildCandidate(info=info, background_download=None if raw is None else raw == "true")
 
 
 def publishable(candidates: Iterable[BuildCandidate]) -> list[BuildCandidate]:
-    """Candidates that are not background downloads (see the note above)."""
-    return [c for c in candidates if not c.is_background_download]
+    """Candidates *known* not to be background downloads (see the note above)."""
+    return [c for c in candidates if c.publishable]
 
 
 def latest_publishable_build(candidates: Iterable[BuildCandidate]) -> BuildCandidate:
     ordered = sorted(publishable(candidates), key=lambda c: (c.info.created_at, c.info.version))
     if not ordered:
-        raise SourceError("no publishable (non-background-download) builds available")
+        raise SourceError(
+            "no publishable builds available (background downloads and builds with "
+            "unknown background-download status are excluded)"
+        )
     return ordered[-1]

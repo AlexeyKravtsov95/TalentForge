@@ -9,6 +9,11 @@ in real data fails that test and must be investigated before being accepted.
 
 from __future__ import annotations
 
+import dataclasses
+
+import pytest
+
+from talent_data.db2 import tables as t
 from talent_data.diff.engine import diff_documents
 from talent_data.models.talents import TalentDataDocument
 from talent_data.validation.issues import KNOWN_WARNING_CODES
@@ -26,7 +31,7 @@ EXPECTED_WARNINGS = {
         "DUPLICATE_SPELL_IDENTITY": 1,
         "SUFFICIENT_PREREQUISITE_CYCLE": 1,
     },
-    "rogue": {"INCOMPLETE_RANK_CURVE": 1},
+    "rogue": {"INCOMPLETE_RANK_CURVE": 1, "UNRESOLVED_CONDITION": 1},
     "priest": {"OFF_GRID_NODE": 1, "DUPLICATE_SPELL_IDENTITY": 1},
     "shaman": {},
     "mage": {},
@@ -162,6 +167,199 @@ def test_priest_vacuous_trait_conditions_are_noops(
     assert [(r.required_points, len(r.counted_node_ids)) for r in penance.unlock_requirements] == [
         (20, 14)
     ]
+
+
+# ------------------------------------------------------------------ condition classification
+#
+# The vacuous/pure-gate classification must consider EVERY functional TraitCond field.
+# Field semantics researched for the M1 review (WoWDBDefs + real rows):
+#   * TraitNodeEntryID, TraitCondAccountElementID: functional constraints - retail
+#     12.1.0.69933 uses them on 25 / 413 conditions respectively;
+#   * FreeSharedStringID / SpendMoreSharedStringID: presentation-only - SharedString
+#     localization texts (911 = "Spend %d more |4point:points; to unlock this talent"),
+#     carried by real gates and vacuous rows alike;
+#   * TraitTreeID: scoping reference (real gates carry it too).
+
+
+@pytest.fixture(scope="module")
+def real_conds() -> dict[int, t.TraitCond]:
+    """Real typed rows: 43478 (vacuous), 50973 (pure points gate), 50984 (node+group)."""
+    from tests.conftest import load_dataset
+
+    priest = load_dataset("priest", NEW_BUILD).conds
+    druid = load_dataset("druid", NEW_BUILD).conds
+    rogue = load_dataset("rogue", NEW_BUILD).conds
+    return {"vacuous": priest[43478], "gate": druid[50973], "node_gate": rogue[50984]}
+
+
+@pytest.mark.parametrize(
+    "field",
+    [
+        "trait_node_group_id",
+        "trait_node_id",
+        "trait_node_entry_id",
+        "trait_cond_account_element_id",
+        "trait_currency_id",
+        "spent_amount_required",
+        "required_level",
+        "granted_ranks",
+        "quest_id",
+        "achievement_id",
+        "spec_set_id",
+        "flags",
+    ],
+)
+def test_any_functional_field_blocks_vacuous_classification(field: str) -> None:
+    """A condition is only provably vacuous when EVERY functional field is zero - any
+    non-zero value means the row could constrain something and must not be a no-op."""
+    from talent_data.normalization.normalizer import _is_vacuous_cond
+
+    vacuous = t.TraitCond(
+        id=99999,
+        cond_type=0,
+        trait_tree_id=0,
+        trait_node_group_id=0,
+        trait_node_id=0,
+        trait_node_entry_id=0,
+        trait_cond_account_element_id=0,
+        trait_currency_id=0,
+        spent_amount_required=0,
+        required_level=0,
+        granted_ranks=0,
+        quest_id=0,
+        achievement_id=0,
+        spec_set_id=0,
+        flags=0,
+        free_shared_string_id=0,
+        spend_more_shared_string_id=0,
+    )
+    assert _is_vacuous_cond(vacuous)
+    value = 3 if field != "cond_type" else 1
+    assert not _is_vacuous_cond(dataclasses.replace(vacuous, **{field: value}))
+
+
+def test_non_available_cond_type_is_never_vacuous() -> None:
+    """Visible/Granted/Increased/DisplayError conditions are not availability no-ops;
+    they must surface as unresolved when attached, not be dropped."""
+    from talent_data.normalization.normalizer import _is_vacuous_cond
+
+    vacuous = t.TraitCond(
+        id=99999,
+        cond_type=1,
+        trait_tree_id=0,
+        trait_node_group_id=0,
+        trait_node_id=0,
+        trait_node_entry_id=0,
+        trait_cond_account_element_id=0,
+        trait_currency_id=0,
+        spent_amount_required=0,
+        required_level=0,
+        granted_ranks=0,
+        quest_id=0,
+        achievement_id=0,
+        spec_set_id=0,
+        flags=0,
+        free_shared_string_id=0,
+        spend_more_shared_string_id=0,
+    )
+    assert not _is_vacuous_cond(vacuous)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [("free_shared_string_id", 910), ("spend_more_shared_string_id", 911)],
+)
+def test_presentation_string_fields_do_not_block_vacuous_classification(
+    field: str, value: int
+) -> None:
+    """SharedString references are proven presentation-only (localization texts rendered
+    next to a gate, present on real gates and vacuous rows alike), so they are not
+    constraints. If this ever changes, the vacuous classification must be tightened."""
+    from talent_data.normalization.normalizer import _is_vacuous_cond
+
+    vacuous = t.TraitCond(
+        id=99999,
+        cond_type=0,
+        trait_tree_id=0,
+        trait_node_group_id=0,
+        trait_node_id=0,
+        trait_node_entry_id=0,
+        trait_cond_account_element_id=0,
+        trait_currency_id=0,
+        spent_amount_required=0,
+        required_level=0,
+        granted_ranks=0,
+        quest_id=0,
+        achievement_id=0,
+        spec_set_id=0,
+        flags=0,
+        free_shared_string_id=0,
+        spend_more_shared_string_id=0,
+    )
+    assert _is_vacuous_cond(dataclasses.replace(vacuous, **{field: value}))
+
+
+def test_real_vacuous_and_gate_rows_classify_as_researched(
+    real_conds: dict[str, t.TraitCond],
+) -> None:
+    """The three real row shapes land in exactly the researched buckets."""
+    from talent_data.normalization.normalizer import _is_pure_points_gate, _is_vacuous_cond
+
+    vacuous, gate, node_gate = real_conds["vacuous"], real_conds["gate"], real_conds["node_gate"]
+    # 43478: all-zero row (incl. the string fields and tree-scoping id)
+    assert (vacuous.trait_node_entry_id, vacuous.trait_cond_account_element_id) == (0, 0)
+    assert _is_vacuous_cond(vacuous)
+    # 50973 (Druid): exactly 'spend 10 of currency 3820 in group 12700' -> a pure gate
+    assert _is_pure_points_gate(gate) and not _is_vacuous_cond(gate)
+    assert (gate.trait_node_group_id, gate.spent_amount_required, gate.trait_currency_id) == (
+        12700,
+        10,
+        3820,
+    )
+    # 50984 (Rogue): group+spend AND a TraitNodeID reference -> NOT a pure gate
+    assert not _is_pure_points_gate(node_gate) and not _is_vacuous_cond(node_gate)
+    assert (node_gate.trait_node_id, node_gate.trait_node_group_id) == (105709, 11576)
+
+
+def test_cond_with_entry_or_account_reference_surfaces_as_unresolved() -> None:
+    """End-to-end: if a real vacuous row ever gained a node-entry or account-element
+    reference (both functional in retail), it must stop being a no-op and surface as an
+    unresolved condition - never be silently ignored or flattened into a gate."""
+    from talent_data.normalization.normalizer import normalize_class
+    from tests.conftest import load_dataset
+
+    for field in ("trait_node_entry_id", "trait_cond_account_element_id"):
+        dataset = load_dataset("priest", NEW_BUILD)
+        cond = dataset.conds[43478]
+        dataset.conds[43478] = dataclasses.replace(cond, **{field: 123})
+        doc = normalize_class(dataset, game="forever", class_key="priest", source_name="fixture")
+        affected = [n for n in doc.trees[0].nodes if n.unresolved_condition_ids]
+        assert len(affected) == 18, field  # the whole Discipline-tab group carries the cond
+        assert all(43478 in n.unresolved_condition_ids for n in affected), field
+
+
+def test_rogue_venom_cond_50984_is_unresolved_not_flattened(
+    class_docs: dict[str, TalentDataDocument],
+) -> None:
+    """Real regression from the stricter shape check: Rogue cond 50984 attaches to node
+    105712 (Venom) and combines a TraitNodeID reference (105709 Mutilate) with a
+    group/1-point spend. How these combine is not documented anywhere, so since the M1
+    review fix the condition is UNRESOLVED_CONDITION - previously the node reference was
+    silently dropped and the row flattened into a plain '1 pt in 3 nodes' gate."""
+    tree = class_docs["rogue"].trees[0]
+    venom = next(n for n in tree.nodes if n.id == 105712)
+    assert venom.name == "Venom"
+    assert venom.unresolved_condition_ids == [50984]
+    # the fabricated 'spend 1 in 3 nodes' gate is gone; the real capstone gate remains
+    assert [(r.required_points, len(r.counted_node_ids)) for r in venom.unlock_requirements] == [
+        (30, 17)
+    ]
+    issues = [
+        i
+        for i in validate_document(class_docs["rogue"]).warnings
+        if i.code == "UNRESOLVED_CONDITION"
+    ]
+    assert len(issues) == 1 and issues[0].node_id == 105712
 
 
 # --------------------------------------------------------------------------- Druid

@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 import logging
 from collections import Counter
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -255,6 +255,108 @@ def write_batch(batch: BatchResult, *, source_name: str) -> list[Path]:
     return written
 
 
+# --------------------------------------------------------------------------- manifest integrity
+
+
+def validate_manifest_against_documents(
+    manifest: DatasetManifest,
+    documents: Mapping[str, TalentDataDocument],
+    *,
+    expected_game: str | None = None,
+    expected_build: str | None = None,
+    expected_class_tokens: Iterable[str] | None = None,
+) -> list[str]:
+    """Check a manifest against the class documents it claims to index.
+
+    Returns a list of problems; an empty list means the manifest is consistent with the
+    documents and complete for the expected game. Every check is a hard invariant - a
+    partial, stale or corrupt manifest produces at least one problem and must never be
+    accepted as a valid dataset (the caller then re-normalizes or fails loudly).
+
+    Checked:
+      * manifest game / client build match the expectation (when given);
+      * class tokens and file names are unique;
+      * the manifest covers the complete class inventory of the game (when expected
+        tokens are given; order in the JSON is irrelevant, identity is);
+      * every document exists, matches the manifest's game/build/class token, has the
+        announced tree ids and contentHash, validates with 0 errors, and has exactly the
+        announced warning count and per-code counts.
+    """
+    problems: list[str] = []
+    add = problems.append
+
+    if expected_game is not None and manifest.game != expected_game:
+        add(f"manifest game {manifest.game!r} != expected {expected_game!r}")
+    if expected_build is not None and manifest.client_build != expected_build:
+        add(f"manifest clientBuild {manifest.client_build!r} != expected {expected_build!r}")
+
+    tokens = [c.token for c in manifest.classes]
+    files = [c.file for c in manifest.classes]
+    for token, count in sorted(Counter(tokens).items()):
+        if count > 1:
+            add(f"class token {token} appears {count} times in the manifest")
+    for file, count in sorted(Counter(files).items()):
+        if count > 1:
+            add(f"file {file} referenced by {count} manifest entries")
+    if expected_class_tokens is not None:
+        expected = set(expected_class_tokens)
+        listed = set(tokens)
+        if listed != expected:
+            missing = sorted(expected - listed)
+            unknown = sorted(listed - expected)
+            add(
+                f"manifest class inventory incomplete/mismatched: "
+                f"missing {missing}, unexpected {unknown}"
+            )
+
+    for entry in manifest.classes:
+        doc = documents.get(entry.token)
+        if doc is None:
+            add(f"{entry.token}: class document not provided")
+            continue
+        where = f"{entry.token} ({entry.file})"
+        if doc.game != manifest.game:
+            add(f"{where}: document game {doc.game!r} != manifest {manifest.game!r}")
+        if doc.client_build != manifest.client_build:
+            add(
+                f"{where}: document clientBuild {doc.client_build!r} "
+                f"!= manifest {manifest.client_build!r}"
+            )
+        if doc.class_.token != entry.token:
+            add(f"{where}: document is for class {doc.class_.token}, manifest says {entry.token}")
+        doc_tree_ids = [tree.id for tree in doc.trees]
+        if entry.tree_ids != doc_tree_ids:
+            add(f"{where}: treeIds {entry.tree_ids} != document {doc_tree_ids}")
+        if entry.content_hash != doc.content_hash:
+            add(
+                f"{where}: contentHash {entry.content_hash} != document {doc.content_hash} "
+                "(stale or tampered)"
+            )
+        report = validate_document(doc)
+        if not report.ok:
+            add(f"{where}: document has {len(report.errors)} validation error(s)")
+        warning_codes = Counter(i.code for i in report.warnings)
+        if entry.validation.errors != len(report.errors):
+            add(
+                f"{where}: manifest errors {entry.validation.errors} != actual {len(report.errors)}"
+            )
+        if entry.validation.warnings != len(report.warnings):
+            add(
+                f"{where}: manifest warnings {entry.validation.warnings} "
+                f"!= actual {len(report.warnings)}"
+            )
+        if entry.validation.warnings_by_code != dict(sorted(warning_codes.items())):
+            add(
+                f"{where}: manifest warningsByCode {entry.validation.warnings_by_code} "
+                f"!= actual {dict(sorted(warning_codes.items()))}"
+            )
+
+    extra_docs = sorted(set(documents) - set(tokens))
+    if extra_docs:
+        add(f"documents for classes not in the manifest: {extra_docs}")
+    return problems
+
+
 # --------------------------------------------------------------------------- storage
 
 
@@ -375,6 +477,7 @@ __all__ = [
     "parse_class_keys",
     "read_document",
     "read_manifest",
+    "validate_manifest_against_documents",
     "write_batch",
     "write_document",
     "write_json",

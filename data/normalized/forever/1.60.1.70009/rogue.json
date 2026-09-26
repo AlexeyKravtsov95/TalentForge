@@ -1246,15 +1246,6 @@
           "unlockRequirements": [
             {
               "kind": "pointsSpent",
-              "requiredPoints": 1,
-              "countedNodeIds": [
-                105709,
-                105711,
-                105718
-              ]
-            },
-            {
-              "kind": "pointsSpent",
               "requiredPoints": 30,
               "countedNodeIds": [
                 105709,
@@ -1277,7 +1268,9 @@
               ]
             }
           ],
-          "unresolvedConditionIds": [],
+          "unresolvedConditionIds": [
+            50984
+          ],
           "entries": [
             {
               "id": 130441,
@@ -3893,8 +3886,8 @@
       "visualOnlyEdges": []
     }
   ],
-  "contentHash": "sha256:7c1a4c12a4c14183afe778339c186e95e2ef319f95b1f1a1c9e4e6118f694046",
-  "generatedAt": "2026-09-26T20:33:57Z",
+  "contentHash": "sha256:689be2140e5ecbb43e5c452663ebfc4f8b5fda38d6755e858d5c119fb2e64312",
+  "generatedAt": "2026-09-26T20:59:08Z",
   "provenance": {
     "source": "wago.tools",
     "tables": [

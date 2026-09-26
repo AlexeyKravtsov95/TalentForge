@@ -67,7 +67,10 @@ the domain model (`classify_build` / `latest_publishable_build` in `sources/base
 and surfaces `[background-download]` in `builds list`: "latest detected" and "latest
 publishable" are different notions, and neither is proven "live" — wago.tools exposes no
 live marker, while the flag *is* actively used on the retail product (12 bgdl builds at
-the time of writing). See `docs/forever-dataset.md` for the full reasoning.
+the time of writing). The flag is modelled as a **tri-state** (`True` / `False` /
+`None`=unknown): a source that does not provide it yields an *unknown* build, which is
+not publishable — absence of the flag is not evidence of publishability. See
+`docs/forever-dataset.md` for the full reasoning.
 
 ## 3. DB2 tables used
 
@@ -161,11 +164,17 @@ tree's nodes**; otherwise `sections` stays empty. Tab names do not exist in the 
 
 Conditions that are not `CondType 0` + group + spent amount with no other constraint are kept
 as `unresolvedConditionIds`. M1 additionally proves a class of conditions **vacuous**: a
-CondType-0 row whose every constraint field is zero (group, node, entry, currency, spent
-amount, level, quest, achievement, spec set, granted ranks, flags) cannot gate anything
-and is treated as a no-op — real examples are Priest cond `43478` (whole Discipline tab)
-and Druid cond `50974` (next to the real gate `50973`). The investigation is in
-`docs/forever-dataset.md`.
+CondType-0 row whose every constraint field is zero (group, node, node entry, account
+element, currency, spent amount, level, quest, achievement, spec set, granted ranks,
+flags) cannot gate anything and is treated as a no-op — real examples are Priest cond
+`43478` (whole Discipline tab) and Druid cond `50974` (next to the real gate `50973`).
+The interpretation path is equally strict: a condition is flattened into a plain
+"spend N points in group G" gate **only** when it has exactly that shape — any other
+functional field set (e.g. a `TraitNodeID` reference, as in Rogue cond `50984`) surfaces
+as an unresolved condition instead of being silently dropped. `FreeSharedStringID` /
+`SpendMoreSharedStringID` are presentation-only (SharedString localization texts) and
+`TraitTreeID` is a scoping reference; neither constrains availability. The full
+field-by-field evidence is in `docs/forever-dataset.md`.
 
 ### Point budget
 

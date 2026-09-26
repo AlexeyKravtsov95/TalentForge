@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "game": "forever",
   "clientBuild": "1.60.1.69977",
-  "generatedAt": "2026-09-26T20:34:01Z",
+  "generatedAt": "2026-09-26T20:56:54Z",
   "source": "wago.tools",
   "classes": [
     {
@@ -56,12 +56,13 @@
       "treeIds": [
         1111
       ],
-      "contentHash": "sha256:a84cbaec5531d96d733d83fb1e4073af4f171fa147b140e396fe008f80603a5b",
+      "contentHash": "sha256:be73ea6f37388ea1f9bc011f05074b40dd45d86ab1fa70bfa7606f132bf6cd48",
       "validation": {
         "errors": 0,
-        "warnings": 1,
+        "warnings": 2,
         "warningsByCode": {
-          "INCOMPLETE_RANK_CURVE": 1
+          "INCOMPLETE_RANK_CURVE": 1,
+          "UNRESOLVED_CONDITION": 1
         }
       }
     },
