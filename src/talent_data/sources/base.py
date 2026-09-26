@@ -1,0 +1,92 @@
+"""Source/domain boundary.
+
+Everything the domain (normalizer, diff, validation) needs from the outside world goes
+through these two protocols. Today they are implemented by :mod:`talent_data.sources.wago`;
+a Blizzard CDN/TACT extractor or another mirror only has to implement the same protocols.
+
+The DB2 contract is intentionally *table-shaped*: a source returns a :class:`Db2Table` whose
+column names follow the community DB2 definitions (WoWDBDefs naming, e.g. ``TraitNodeID``).
+How those rows were transported (CSV over HTTP, a local client extraction, ...) is invisible
+to the domain.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Iterable, Iterator, Mapping
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Protocol
+
+from talent_data.games import GameConfig
+from talent_data.versions import ClientVersion
+
+
+class SourceError(RuntimeError):
+    """A source could not provide the requested data."""
+
+
+@dataclass(frozen=True)
+class BuildInfo:
+    version: ClientVersion
+    product: str
+    # When the source first saw / published the build. Used to pick the *latest* build
+    # explicitly instead of trusting list order.
+    created_at: datetime
+    # Source-specific extra facts worth surfacing to humans (e.g. build config hash).
+    extra: Mapping[str, str] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class Db2Table:
+    name: str
+    columns: tuple[str, ...]
+    rows: tuple[Mapping[str, str], ...]
+
+    def __iter__(self) -> Iterator[Mapping[str, str]]:
+        return iter(self.rows)
+
+    def __len__(self) -> int:
+        return len(self.rows)
+
+    def require_columns(self, required: Iterable[str]) -> None:
+        missing = [c for c in required if c not in self.columns]
+        if missing:
+            raise SourceError(
+                f"DB2 table {self.name} is missing expected columns {missing}; "
+                f"available: {list(self.columns)}"
+            )
+
+
+class BuildSource(Protocol):
+    """Discovers client builds for a game."""
+
+    name: str
+
+    def list_builds(self, game: GameConfig) -> list[BuildInfo]:
+        """All known builds of ``game`` (any order)."""
+        ...
+
+
+class Db2Source(Protocol):
+    """Provides DB2 tables for a concrete client build."""
+
+    name: str
+
+    def ensure_table(self, version: ClientVersion, table: str) -> None:
+        """Make ``table`` locally available (download/cache) without loading it."""
+        ...
+
+    def load_table(self, version: ClientVersion, table: str) -> Db2Table:
+        """Return the full table for ``version`` (fetching it first if needed)."""
+        ...
+
+
+def latest_build(builds: Iterable[BuildInfo]) -> BuildInfo:
+    """Pick the latest build explicitly by ``created_at``; version breaks ties.
+
+    The input order is never trusted.
+    """
+    ordered = sorted(builds, key=lambda b: (b.created_at, b.version))
+    if not ordered:
+        raise SourceError("no builds available")
+    return ordered[-1]
