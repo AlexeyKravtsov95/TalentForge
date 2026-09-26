@@ -63,6 +63,9 @@ def extract_class(
     currencies = ids(
         "TraitTreeXTraitCurrency", "TraitCurrencyID", lambda r, tree=tree: r["TraitTreeID"] == tree
     )
+    cost_ids = ids(
+        "TraitTreeXTraitCost", "TraitCostID", lambda r, tree=tree: r["TraitTreeID"] == tree
+    )
     # Both directions of class resolution need every skill line; ClassMask rows for
     # those lines disambiguate which class the tree belongs to.
     skill_lines = ids("SkillLineXTraitTree", "SkillLineID", lambda r: True)
@@ -74,6 +77,8 @@ def extract_class(
         "TraitTree": lambda r, tree=tree: r["ID"] == tree,
         "TraitTreeXTraitCurrency": lambda r, tree=tree: r["TraitTreeID"] == tree,
         "TraitCurrency": lambda r: r["ID"] in currencies,
+        "TraitTreeXTraitCost": lambda r, tree=tree: r["TraitTreeID"] == tree,
+        "TraitCost": lambda r: r["ID"] in cost_ids,
         "TraitNode": lambda r: r["ID"] in nodes,
         "TraitNodeXTraitNodeEntry": lambda r: r["ID"] in links,
         "TraitNodeEntry": lambda r: r["ID"] in entries,

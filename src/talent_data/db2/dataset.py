@@ -26,6 +26,8 @@ class TraitDataSet:
     trees: dict[int, t.TraitTree]
     tree_currencies: dict[int, list[t.TraitTreeXTraitCurrency]]
     currencies: dict[int, t.TraitCurrency]
+    tree_costs: dict[int, list[t.TraitTreeXTraitCost]]  # by TraitTreeID
+    costs: dict[int, t.TraitCost]
     nodes_by_tree: dict[int, list[t.TraitNode]]
     node_entry_links: dict[int, list[t.TraitNodeXTraitNodeEntry]]  # by TraitNodeID
     entries: dict[int, t.TraitNodeEntry]
@@ -64,6 +66,10 @@ class TraitDataSet:
         tree_currencies: dict[int, list[t.TraitTreeXTraitCurrency]] = defaultdict(list)
         for currency_link in rows(t.TraitTreeXTraitCurrency):
             tree_currencies[currency_link.trait_tree_id].append(currency_link)
+
+        tree_costs: dict[int, list[t.TraitTreeXTraitCost]] = defaultdict(list)
+        for cost_link in rows(t.TraitTreeXTraitCost):
+            tree_costs[cost_link.trait_tree_id].append(cost_link)
 
         nodes_by_tree: dict[int, list[t.TraitNode]] = defaultdict(list)
         all_nodes = rows(t.TraitNode)
@@ -115,6 +121,8 @@ class TraitDataSet:
             trees=unique(rows(t.TraitTree), "id", "TraitTree"),
             tree_currencies=dict(tree_currencies),
             currencies=unique(rows(t.TraitCurrency), "id", "TraitCurrency"),
+            tree_costs=dict(tree_costs),
+            costs=unique(rows(t.TraitCost), "id", "TraitCost"),
             nodes_by_tree=dict(nodes_by_tree),
             node_entry_links=dict(node_entry_links),
             entries=unique(rows(t.TraitNodeEntry), "id", "TraitNodeEntry"),

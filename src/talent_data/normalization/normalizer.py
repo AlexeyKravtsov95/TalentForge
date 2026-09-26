@@ -168,8 +168,12 @@ def _build_tree(ds: TraitDataSet, tree_id: int) -> TalentTree:
     if not raw_nodes:
         raise NormalizationError(f"TraitTree {tree_id} has no TraitNode rows")
     node_ids = {n.id for n in raw_nodes}
+    _check_no_sub_trees(ds, raw_nodes)
 
-    gates = {n.id: _node_gates(ds, n.id, node_ids) for n in raw_nodes}
+    point_budget = _point_budget(ds, tree_id)
+    _check_rank_cost_invariant(ds, tree_id, point_budget)
+    budget_currency = point_budget.currency_id if point_budget else None
+    gates = {n.id: _node_gates(ds, n.id, node_ids, budget_currency) for n in raw_nodes}
     sections = _resolve_sections(ds, raw_nodes, gates)
     section_of = {nid: s.index for s in sections for nid in s.node_ids}
 
@@ -214,7 +218,7 @@ def _build_tree(ds: TraitDataSet, tree_id: int) -> TalentTree:
     )
     return TalentTree(
         id=tree_id,
-        point_budget=_point_budget(ds, tree_id),
+        point_budget=point_budget,
         layout=Layout(x_step=next(iter(grid.columns.values())).step, y_step=grid.rows.step),
         sections=sections,
         nodes=nodes,
@@ -238,12 +242,84 @@ def _point_budget(ds: TraitDataSet, tree_id: int) -> PointBudget | None:
     return PointBudget(currency_id=currency.id, max_points=currency.sourced_max)
 
 
+# --------------------------------------------------------------------------- costs
+
+# The only rank price the v1 contract can express: every purchased rank of every node costs
+# exactly this many units of the tree's point-budget currency (see _check_rank_cost_invariant
+# and docs/talent-allocation-semantics.md, "Cost semantics").
+RANK_COST_POINTS = 1
+
+
+def _check_rank_cost_invariant(
+    ds: TraitDataSet, tree_id: int, point_budget: PointBudget | None
+) -> None:
+    """Prove - do not assume - that one purchased rank costs exactly one talent point.
+
+    The client prices a rank as the sum of the TraitCost rows linked to the node's tree
+    (TraitTreeXTraitCost), node groups, node and entry (C_Traits.GetNodeCost returns that
+    list). The group/node/entry link tables (TraitNodeGroupXTraitCost, TraitNodeXTraitCost,
+    TraitNodeEntryXTraitCost) do not exist in Forever 1.60.1 builds (wago.tools: "Table not
+    found"; pinned by the live integration test), so the tree link is the whole price.
+    Schema v1 has no cost field, so anything but "exactly one TraitCost, Amount 1, in the
+    budget currency, no cost curve" is a contract violation and stops normalization.
+    """
+    links = sorted(ds.tree_costs.get(tree_id, []), key=lambda link: link.id)
+    if point_budget is None:
+        if links:
+            raise NormalizationError(
+                f"TraitTree {tree_id} has rank costs but no point budget currency"
+            )
+        return
+    if len(links) != 1:
+        raise NormalizationError(
+            f"TraitTree {tree_id} has {len(links)} TraitTreeXTraitCost rows; the v1 contract "
+            f"requires exactly one (every rank costs {RANK_COST_POINTS} budget point)"
+        )
+    cost = ds.costs.get(links[0].trait_cost_id)
+    if cost is None:
+        raise NormalizationError(
+            f"TraitTree {tree_id} references unknown TraitCost {links[0].trait_cost_id}"
+        )
+    if (cost.amount, cost.trait_currency_id, cost.curve_id) != (
+        RANK_COST_POINTS,
+        point_budget.currency_id,
+        0,
+    ):
+        raise NormalizationError(
+            f"TraitTree {tree_id}: TraitCost {cost.id} is Amount={cost.amount} "
+            f"TraitCurrencyID={cost.trait_currency_id} CurveID={cost.curve_id}; the v1 contract "
+            f"only supports Amount={RANK_COST_POINTS} of the budget currency "
+            f"{point_budget.currency_id} without a cost curve - extend the schema first"
+        )
+
+
+def _check_no_sub_trees(ds: TraitDataSet, raw_nodes: list[t.TraitNode]) -> None:
+    """Sub-trees (hero talents: TraitSubTree, SubTreeSelection nodes) do not exist in
+    Forever (the TraitSubTree table is absent). A node or entry pointing at one would carry
+    activation semantics the v1 contract cannot express."""
+    for node in raw_nodes:
+        if node.trait_sub_tree_id:
+            raise NormalizationError(
+                f"TraitNode {node.id} belongs to TraitSubTree {node.trait_sub_tree_id}; "
+                "sub-trees are not supported by the v1 contract"
+            )
+        for link in ds.node_entry_links.get(node.id, []):
+            entry = ds.entries.get(link.trait_node_entry_id)
+            if entry is not None and entry.trait_sub_tree_id:
+                raise NormalizationError(
+                    f"TraitNodeEntry {entry.id} activates TraitSubTree "
+                    f"{entry.trait_sub_tree_id}; sub-trees are not supported by the v1 contract"
+                )
+
+
 # --------------------------------------------------------------------------- gates / sections
 
 _Gates = tuple[list[UnlockRequirement], list[int]]
 
 
-def _node_gates(ds: TraitDataSet, node_id: int, tree_nodes: set[int]) -> _Gates:
+def _node_gates(
+    ds: TraitDataSet, node_id: int, tree_nodes: set[int], budget_currency: int | None
+) -> _Gates:
     cond_ids: set[int] = set(ds.node_conds.get(node_id, []))
     for group_id in ds.node_groups.get(node_id, []):
         cond_ids.update(ds.group_conds.get(group_id, []))
@@ -257,7 +333,16 @@ def _node_gates(ds: TraitDataSet, node_id: int, tree_nodes: set[int]) -> _Gates:
         if _is_vacuous_cond(cond):
             continue
         counted = ds.group_members.get(cond.trait_node_group_id, set())
-        if _is_pure_points_gate(cond) and cond.spent_amount_required > 0 and counted:
+        # The gate compares *currency spent* in the group (GetGroupCurrencyInfo "spent",
+        # SharedString 911 "Spend %d more points in %s Talents"). v1 has no currency field on
+        # UnlockRequirement, so only gates in the tree's own point currency are expressible.
+        if (
+            _is_pure_points_gate(cond)
+            and cond.spent_amount_required > 0
+            and counted
+            and budget_currency is not None
+            and cond.trait_currency_id == budget_currency
+        ):
             outside = counted - tree_nodes
             if outside:
                 raise NormalizationError(

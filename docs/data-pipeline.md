@@ -82,6 +82,7 @@ Downloaded per build with `GET https://wago.tools/db2/<Table>/csv?build=<version
 | class → tree | `ChrClasses`, `SkillRaceClassInfo`, `SkillLineXTraitTree` |
 | tree structure | `TraitTree`, `TraitNode`, `TraitNodeXTraitNodeEntry`, `TraitNodeEntry`, `TraitDefinition`, `TraitEdge` |
 | point budget | `TraitTreeXTraitCurrency`, `TraitCurrency` |
+| rank cost (M2, invariant check) | `TraitTreeXTraitCost`, `TraitCost` |
 | tier gates | `TraitNodeGroupXTraitNode`, `TraitNodeGroupXTraitCond`, `TraitNodeXTraitCond`, `TraitCond` |
 | per-rank values | `TraitDefinitionEffectPoints`, `Curve`, `CurvePoint` |
 | spells | `Spell` (tooltip template), `SpellName`, `SpellEffect` |
@@ -89,7 +90,8 @@ Downloaded per build with `GET https://wago.tools/db2/<Table>/csv?build=<version
 About 7.9 MB of CSV per build (SpellEffect, Spell, SpellName and CurvePoint dominate).
 Tables that **do not exist** in Forever builds (wago.tools answers 404):
 `TraitTreeLoadout`, `TraitTreeLoadoutEntry`, `TraitSubTree`, `TraitNodeEntryXTraitCond`,
-`TraitNodeGroupXTraitCost`.
+`TraitNodeGroupXTraitCost`, `TraitNodeXTraitCost`, `TraitNodeEntryXTraitCost` (the last three are
+pinned by the live integration test: the "1 point per rank" invariant relies on them).
 
 CSV transport details handled only inside the wago adapter: reserved column names are
 prefixed with `_` (`_Index` → `Index`), array columns are flattened as `Name_0`, `Name_1`, and

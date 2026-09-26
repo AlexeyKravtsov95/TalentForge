@@ -11,7 +11,7 @@ from talent_data.pipeline import (
     normalize_batch,
     parse_class_keys,
 )
-from talent_data.sources.base import classify_build
+from talent_data.sources.base import SourceError, classify_build
 from talent_data.sources.http import HttpClient
 from talent_data.sources.wago.source import WagoBuildSource, WagoDb2Source
 
@@ -59,3 +59,18 @@ def test_all_nine_classes_normalize_from_real_client_data(http: HttpClient, tmp_
         assert tree.point_budget is not None and tree.point_budget.max_points > 0
         assert all(n.max_rank > 0 for n in tree.nodes)
         assert any(n.prerequisites for n in tree.nodes)
+
+
+# Rank prices can also be attached per node group, node or entry. These link tables do not
+# exist in Forever 1.60.1 clients; the normalizer's "1 point per rank" invariant
+# (TraitTreeXTraitCost only) relies on that, so a build that ships one must fail here.
+ABSENT_COST_TABLES = ("TraitNodeGroupXTraitCost", "TraitNodeXTraitCost", "TraitNodeEntryXTraitCost")
+
+
+@pytest.mark.parametrize("table", ABSENT_COST_TABLES)
+def test_latest_build_has_no_node_level_cost_tables(http: HttpClient, tmp_path, table: str) -> None:
+    game = get_game("forever")
+    version = find_latest_build(WagoBuildSource(http), game).version
+    source = WagoDb2Source(http, tmp_path)
+    with pytest.raises(SourceError, match="Table not found"):
+        source.ensure_table(version, table)
