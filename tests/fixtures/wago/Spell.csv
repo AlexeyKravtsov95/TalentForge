@@ -1,0 +1,14 @@
+ID,NameSubtext_lang,Description_lang,AuraDescription_lang
+12282,,Reduces the cost of your Heroic Strike ability by $/10;s1 Rage.,
+1290261,,"Gives your melee weapon attacks a benefit depending on the weapon.
+
+    |CFFFFFFFFAxe/Polearm:|R Increases your
+    critical strike chance by $s1%.
+
+    |CFFFFFFFFMace/Staff:|R Your attacks ignore
+    $s2% of your target's armor.
+
+    |CFFFFFFFFSword:|R Your successful melee 
+    attacks have a $s3% chance to 
+    trigger an extra attack on the 
+    target.",
