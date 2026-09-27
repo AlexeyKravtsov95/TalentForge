@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+from talent_data.db2.tables import RANK_COST_EXTENSION_TABLES
 from talent_data.games import get_game
 from talent_data.pipeline import (
     fetch_tables,
@@ -11,7 +12,7 @@ from talent_data.pipeline import (
     normalize_batch,
     parse_class_keys,
 )
-from talent_data.sources.base import SourceError, classify_build
+from talent_data.sources.base import TableStatus, classify_build
 from talent_data.sources.http import HttpClient
 from talent_data.sources.wago.source import WagoBuildSource, WagoDb2Source
 
@@ -29,8 +30,11 @@ def test_latest_forever_build_is_discovered(http: HttpClient) -> None:
     info = find_latest_build(WagoBuildSource(http), game)
     assert info.version.branch == "1.60"
     assert info.product == "wow_classic_beta"
-    # a bgdl build would be surfaced, never silently treated as publishable
-    assert not classify_build(info).is_background_download
+    # tri-state: the source must *state* that the build is not a background download -
+    # an unknown flag (None) is not evidence of a publishable build
+    candidate = classify_build(info)
+    assert candidate.background_download is False
+    assert candidate.publishable is True
 
 
 def test_all_nine_classes_normalize_from_real_client_data(http: HttpClient, tmp_path) -> None:
@@ -61,16 +65,15 @@ def test_all_nine_classes_normalize_from_real_client_data(http: HttpClient, tmp_
         assert any(n.prerequisites for n in tree.nodes)
 
 
-# Rank prices can also be attached per node group, node or entry. These link tables do not
-# exist in Forever 1.60.1 clients; the normalizer's "1 point per rank" invariant
-# (TraitTreeXTraitCost only) relies on that, so a build that ships one must fail here.
-ABSENT_COST_TABLES = ("TraitNodeGroupXTraitCost", "TraitNodeXTraitCost", "TraitNodeEntryXTraitCost")
+# Rank prices can also be attached per node group, node or entry. The production pipeline
+# proves their absence itself (Db2Source.table_status + the normalizer gate); this live test
+# is an additional check that the latest build still answers "absent" through that same
+# production probe, not the only safety barrier.
 
 
-@pytest.mark.parametrize("table", ABSENT_COST_TABLES)
+@pytest.mark.parametrize("table", RANK_COST_EXTENSION_TABLES)
 def test_latest_build_has_no_node_level_cost_tables(http: HttpClient, tmp_path, table: str) -> None:
     game = get_game("forever")
     version = find_latest_build(WagoBuildSource(http), game).version
-    source = WagoDb2Source(http, tmp_path)
-    with pytest.raises(SourceError, match="Table not found"):
-        source.ensure_table(version, table)
+    availability = WagoDb2Source(http, tmp_path).table_status(version, table)
+    assert availability.status is TableStatus.ABSENT, availability.evidence

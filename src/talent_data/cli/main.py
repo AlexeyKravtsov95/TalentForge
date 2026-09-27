@@ -49,6 +49,7 @@ from talent_data.pipeline import (
     normalize,
     normalize_batch,
     parse_class_keys,
+    probe_table_status,
     read_document,
     read_manifest,
     validate_manifest_against_documents,
@@ -56,7 +57,8 @@ from talent_data.pipeline import (
     write_document,
     write_json,
 )
-from talent_data.sources.base import SourceError, classify_build
+from talent_data.sources.base import SourceError, TableStatus, classify_build
+from talent_data.sources.capabilities import snapshot_path
 from talent_data.sources.http import DownloadError, HttpClient
 from talent_data.sources.wago.source import WagoBuildSource, WagoDb2Source
 from talent_data.validation.validators import ValidationReport, validate_document
@@ -321,11 +323,23 @@ def _cmd_fetch(args: argparse.Namespace) -> int:
                 source.table_path(version, table).with_name(f"{table}.csv.meta.json").unlink(
                     missing_ok=True
                 )
+            # re-prove absences too: drop the recorded snapshot of this build
+            snapshot_path(source.table_path(version, "x").parent).unlink(missing_ok=True)
         fetched = fetch_tables(source, version, progress=lambda t: print(f"  {t}"))
+        statuses = probe_table_status(source, version)
     print(
         f"fetched {len(fetched)} DB2 tables for {version} into "
         f"{paths.raw_cache_dir('wago', game.key) / str(version)}"
     )
+    for availability in statuses:
+        print(f"  must be absent: {availability.table}: {availability.status.value}")
+    if any(a.status is not TableStatus.ABSENT for a in statuses):
+        print(
+            "error: a table talent-data.v1 requires to be absent is present or could not be "
+            "proven absent; normalization of this build will fail closed",
+            file=sys.stderr,
+        )
+        return EXIT_FAILURE
     return EXIT_OK
 
 

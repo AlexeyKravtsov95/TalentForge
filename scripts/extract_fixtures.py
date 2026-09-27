@@ -20,9 +20,10 @@ from pathlib import Path
 
 from talent_data.db2 import tables as t
 from talent_data.db2.dataset import TraitDataSet
-from talent_data.db2.tables import TRAIT_TABLES
+from talent_data.db2.tables import MUST_BE_ABSENT_TABLES, TRAIT_TABLES
 from talent_data.normalization.class_resolution import resolve_class, trees_for_class
-from talent_data.sources.base import Db2Table
+from talent_data.sources.base import Db2Table, TableAvailability, TableStatus
+from talent_data.sources.capabilities import record_absent, snapshot_path
 from talent_data.sources.wago.source import WagoDb2Source
 from talent_data.versions import ClientVersion
 
@@ -32,7 +33,12 @@ Row = Mapping[str, str]
 
 
 def extract_class(
-    chr_class: t.ChrClass, dataset: TraitDataSet, tables: dict[str, Db2Table], game: str, build: str
+    chr_class: t.ChrClass,
+    dataset: TraitDataSet,
+    tables: dict[str, Db2Table],
+    game: str,
+    build: str,
+    statuses: Mapping[str, TableAvailability],
 ) -> Path:
     def ids(table: str, column: str, keep: Callable[[Row], bool]) -> set[str]:
         return {r[column] for r in tables[table].rows if keep(r)}
@@ -105,6 +111,18 @@ def extract_class(
             writer = csv.writer(fh, lineterminator="\n")
             writer.writerow(table.columns)
             writer.writerows([r[c] for c in table.columns] for r in rows)
+    # Table-availability snapshot: absence cannot be shown by a missing file, so the
+    # proven-absent tables of the build are recorded next to the fixture tables.
+    snapshot = snapshot_path(dst)
+    snapshot.unlink(missing_ok=True)
+    for name in MUST_BE_ABSENT_TABLES:
+        availability = statuses[name]
+        if availability.status is not TableStatus.ABSENT:
+            raise SystemExit(
+                f"{name} is {availability.status} for {build} ({availability.evidence}); "
+                "fixtures can only be extracted for builds that prove its absence"
+            )
+        record_absent(dst, name, availability.evidence)
     print(f"{chr_class.token.lower()} (tree {tree}): {total} rows -> {dst}")
     return dst
 
@@ -125,8 +143,9 @@ def main() -> None:
         else [resolve_class(dataset, key) for key in args.classes.split(",")]
     )
     tables = {name: cache.load_table(version, name) for name in TRAIT_TABLES}
+    statuses = {name: cache.table_status(version, name) for name in MUST_BE_ABSENT_TABLES}
     for chr_class in classes:
-        extract_class(chr_class, dataset, tables, args.game, args.build)
+        extract_class(chr_class, dataset, tables, args.game, args.build, statuses)
 
 
 if __name__ == "__main__":

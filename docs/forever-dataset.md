@@ -288,8 +288,9 @@ python scripts/extract_fixtures.py --build 1.60.1.70009 --classes all
   (Rogue cond 50984 on Venom) is unknown; the row is preserved verbatim as an
   unresolved condition.
 * Costs: **M2** fetches `TraitCost` / `TraitTreeXTraitCost` and the normalizer *checks*
-  that every rank costs exactly 1 point of the tree currency (it fails otherwise); still no
-  cost field in schema v1.
+  that every rank costs exactly 1 point of the tree currency (it fails otherwise), after
+  the source proves the per-group/node/entry cost tables absent (present or unknown fails
+  closed); still no cost field in schema v1.
 * Tab names (Arms/Fury/Protection…) do not exist in client data; `section.name` is null.
 * Tooltips stay raw templates; per-rank numbers exist for curve-backed effects only.
 * Whether the mis-placed duplicate nodes (Hunter/Priest) are drawn by the client is

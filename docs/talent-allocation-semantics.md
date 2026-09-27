@@ -5,6 +5,14 @@ allocation rule the reference engine implements, the evidence it rests on, how c
 we are, and what the engine does where the evidence stops. It is also the handoff contract
 for the future Kotlin Multiplatform engine.
 
+> **Status of the contract: M2 reference hypothesis, not frozen.** The edge rules
+> (EDGE-ACTIVE, EDGE-SUF) rest on the client's C++ evaluator, which is not inspectable;
+> the Forever Lua UI only *consumes* its results (`edgeInfo.isActive`,
+> `nodeInfo.meetsEdgeRequirements`). They require client verification before the Kotlin
+> contract is frozen. **M3 MUST NOT start until at least E1 and E2 (§13) are
+> client-observed**; E3 and E6 should be observed as well. `allocation.v1` stays the
+> reference vector set for M2 but is not declared final for M3 until then.
+
 **Baseline:** WoW: Forever client build **1.60.1.70009** (latest detected on 2026-09-27;
 no newer Forever build existed when M2 started or finished). The previous captured build
 1.60.1.69977 has an identical allocation structure (same costs, edge/condition/node
@@ -16,6 +24,7 @@ Confidence scale used below:
 | --- | --- |
 | **Proven** | Stated by client data or the client's own generated API/UI code for this exact build, no interpretation needed. |
 | **High** | Several independent sources agree (client UI code of this build + client data + reverse-engineered references), and the alternative reading contradicts shipped data. Not observed live in the client. |
+| **High — hypothesis** | As High, but the deciding computation happens in client C++ that no available source shows; the evidence is how the UI *presents* its results. Implemented as the M2 reference hypothesis; **requires client verification before the Kotlin contract is frozen.** |
 | **Unresolved** | Not provable from the available sources → the engine fails closed. |
 
 ## 1. Sources examined
@@ -80,15 +89,15 @@ In the order of the source-of-truth hierarchy.
 
 | Rule | Evidence | Confidence | Implementation decision | Known limitation |
 | --- | --- | --- | --- | --- |
-| **COST-1** every purchased rank costs exactly 1 point of the tree's point currency | DB2: each of the 9 class trees has exactly one `TraitTreeXTraitCost` → `TraitCost` `Amount=1`, `TraitCurrencyID=3820`, `CurveID=0` (both builds); the group/node/entry cost link tables do not exist in the client; API `GetNodeCost` returns a list of `TraitCurrencyCost`; TrinityCore sums group+entry+node+tree costs × rank | Proven | Normalizer **checks** the invariant and refuses to produce a v1 document otherwise (`RANK_COST_POINTS`); live integration test fails if a node-level cost table appears | The offline pipeline cannot see a table it does not fetch; the absence of node-level cost tables is guarded by `pytest -m integration` |
+| **COST-1** every purchased rank costs exactly 1 point of the tree's point currency | DB2: each of the 9 class trees has exactly one `TraitTreeXTraitCost` → `TraitCost` `Amount=1`, `TraitCurrencyID=3820`, `CurveID=0` (both builds); the group/node/entry cost link tables are *proven absent* for both builds (wago.tools' definitive `{"errors": "Table not found."}`, recorded per build); API `GetNodeCost` returns a list of `TraitCurrencyCost`; TrinityCore sums group+entry+node+tree costs × rank | Proven | Normalizer **checks** the tree cost and refuses to produce a v1 document unless every per-group/node/entry cost table is proven absent by the source (`Db2Source.table_status`: present or unknown → fail closed) | Absence evidence is wago.tools' answer for the build (the best available origin; §7) |
 | **BUDGET-1** usable points = `TraitCurrency.SourcedMax` (51), or a lower configured limit | DB2: currency 3820 `Type=2` (TraitSourced), `SourcedMax=51`; `TraitCurrencySource`: 51 rows "Level 10…60" (+1) plus 5 "Talented Rank N (Level 5…9)" rows gated by the Legacy tree 1188 node "Talented" → earlier points, same cap; API `GetMaxAvailableTraitCurrency(…, limitBySourcedMax)` | Proven | `point_budget` = dataset max, `point_limit` (0…max) for callers; no levelling logic | Level-based budgets are the Leveling Planner milestone |
 | **RANK-1** 0 ≤ ranks ≤ entry `MaxRanks`; one entry per node | DB2 `TraitNodeEntry.MaxRanks`; every Forever node has exactly one entry | Proven | `MAX_RANK_REACHED`, `RANK_OUT_OF_BOUNDS`, `DUPLICATE_ALLOCATION` | — |
 | **GATE-1** an unlock requirement is met when the points *already spent* in its counted nodes ≥ `requiredPoints`; evaluated before the purchase | DB2: 162 gate conditions `CondType=0 Flags=0 group+currency 3820+SpentAmountRequired` carrying `SpendMoreSharedStringID=911` = "Spend %d more point(s) in %s Talents"; API `GetGroupCurrencyInfo` → per-group `spent` (Camelot shows it per tab); `NodeOpFailureReason.NotEnoughCurrencySpent`; the 27 capstone gates (30 points, whole tab) include the capstone itself — the capstone is the tab's 31st point | Proven (quantity), High (evaluated before the purchase; a condition checked by `CanPurchaseRank` on the current config) | Counted on the current state before adding the rank; validation by reachability (VALID-1) | — |
 | **GATE-2** gates count *currency spent* (= purchased ranks × COST-1); granted/increased ranks do not count | `TraitCond.TraitCurrencyID`/`SpentAmountRequired`, `GetGroupCurrencyInfo().spent`; free ranks cost nothing; TrinityCore spends `Amount × Rank` (purchased only). No `Granted`/`Increased` condition exists in Forever class trees | Proven for Forever (no free ranks exist) | Points spent = purchased ranks; gates in another currency are left unresolved by the normalizer | Granted/increased ranks would need contract support |
 | **GATE-3** all conditions of a node must hold (AND) | `TraitCondFlag.IsSufficient` (4) documented as "any nodes using this condition are considered fulfilled if the condition is met" — the only OR mechanism; every Forever condition has `Flags=0` | Proven | All unlock requirements checked | — |
-| **EDGE-ACTIVE** a prerequisite edge is active iff its source node is **fully ranked** (same for Required and Sufficient) | UI code of this build: "The edge only shows in red if the start is satisfied (or "Maxed")" (`SharedTalentEdgeTemplates.lua` l. 58/123; `IsMaxed` = `activeRank >= maxRanks`); TrinityCore `isNodeFullyFilled` (`Rank + GrantedRanks == MaxRanks`) for both edge kinds; classic talent semantics (`TOOLTIP_TALENT_PREREQ` "Requires %d points in %s" still in the Forever GlobalStrings); 37 of 70 Forever prerequisite edges start at a multi-rank talent | High | `edge_active`: source ranks ≥ source max rank | Not observed live (§13 E1) |
+| **EDGE-ACTIVE** a prerequisite edge is active iff its source node is **fully ranked** (same for Required and Sufficient) | The decision itself is made by client C++ (`TraitOutEdgeInfo.isActive`, `TraitNodeInfo.meetsEdgeRequirements`), which is not available. Indirect evidence: UI code of this build *visualises* a satisfied source as "Maxed" — "The edge only shows in red if the start is satisfied (or "Maxed")" (`SharedTalentEdgeTemplates.lua` l. 58/123; `IsMaxed` = `activeRank >= maxRanks`); TrinityCore `isNodeFullyFilled` (`Rank + GrantedRanks == MaxRanks`) for both edge kinds; classic talent semantics (`TOOLTIP_TALENT_PREREQ` "Requires %d points in %s" still in the Forever GlobalStrings); 37 of 70 Forever prerequisite edges start at a multi-rank talent | High — hypothesis | `edge_active`: source ranks ≥ source max rank (M2 reference hypothesis) | **Requires client verification (§13 E1) before the Kotlin contract is frozen** |
 | **EDGE-REQ** all `RequiredForAvailability` edges must be active | Enum name; base UI shows "Requires all preceding talents" exactly when every incoming edge is Required (`SharedTalentFrame.lua` l. 1980–2011); TrinityCore returns failure on the first inactive Required parent; Forever has exactly one Required edge (Druid Nature's Majesty → Nature's Splendor), where ANY = ALL | High (multi-edge case: synthetic only) | `REQUIRED_PREREQUISITE_NOT_MET` per inactive source | Two Required edges on one node never occur in Forever; covered by a synthetic scenario |
-| **EDGE-SUF** at least one `SufficientForAvailability` edge must be active | Enum name; `isSufficient` vocabulary of the API; base UI treats any non-Required incoming edge as "not all required"; TrinityCore `hasAnyParentTrait`; Hunter: under ALL, Intimidation (needs Bestial Swiftness **and** Bestial Wrath) and Bestial Wrath (needs Intimidation) would be permanently unobtainable in a shipped tree | High | `SUFFICIENT_PREREQUISITE_NOT_MET` when no source is active | Not observed live (§13 E2); see the Camelot tooltip note in §4 |
+| **EDGE-SUF** at least one `SufficientForAvailability` edge must be active | Enum name; `isSufficient` vocabulary of the API; base UI treats any non-Required incoming edge as "not all required"; TrinityCore `hasAnyParentTrait`; Hunter: under ALL, Intimidation (needs Bestial Swiftness **and** Bestial Wrath) and Bestial Wrath (needs Intimidation) would be permanently unobtainable in a shipped tree. The evaluation itself (`meetsEdgeRequirements`) is client C++ | High — hypothesis | `SUFFICIENT_PREREQUISITE_NOT_MET` when no source is active (M2 reference hypothesis) | **Requires client verification (§13 E2) before the Kotlin contract is frozen**; see the Camelot tooltip note in §4 |
 | **EDGE-MIX** a node with both Required and Sufficient incoming edges | Not present in Forever (tested); readings differ: TrinityCore = "all required AND any parent", an alternative = "all required AND any sufficient" | Unresolved | `UNSUPPORTED_EDGE_COMBINATION`, never purchasable | Fail closed until a real node exists and is verified |
 | **COND-1** a condition whose semantics are not proven blocks the node | Rogue cond 50984 (§6) | — | `UNRESOLVED_CONDITION` on spend and validate, even when every proven rule is met | Rogue Venom is unplannable |
 | **NODE-1** only proven node shapes are allocatable | Forever: all 469 nodes `Type=0` (Single), 1 entry, `NodeEntryType=1` (SpendSquare), `Flags` ∈ {0, 8 = TestGridPositioned (editor flag, never read by the UI code)}; `TraitNodeFlag.NeverPurchasable` = 2 exists in the API | Proven (inventory) | Supported: `single`, entry type 1, flag 8. `NeverPurchasable` → `NODE_NEVER_PURCHASABLE`; any other type/entry type/flag → `UNSUPPORTED_*` | Selection/tiered/sub-tree semantics not modelled (not in Forever) |
@@ -155,9 +164,11 @@ Example: a node with Required A, Required B, Sufficient C, Sufficient D is never
 purchasable by this engine; for A, B only it needs A and B active; for C, D only it needs C
 or D active.
 
-**Active edge = fully ranked source**, identical for both kinds (EDGE-ACTIVE). Deep Wounds
-with Improved Rend 2/3 is unavailable; at 3/3 it is available
-(`warrior.sufficient_prerequisite_requires_max_rank`).
+**Active edge = fully ranked source**, identical for both kinds (EDGE-ACTIVE) — the M2
+reference hypothesis. Deep Wounds with Improved Rend 2/3 is unavailable; at 3/3 it is
+available (`warrior.sufficient_prerequisite_requires_max_rank`). The client computes
+`isActive` / `meetsEdgeRequirements` in C++; the Lua UI only colours edges from those
+results, so this rule is not proven until E1 is client-observed.
 
 **Camelot tooltip note (counter-evidence considered).** The Forever override
 `ShouldAddEdgeRequirementsToTooltip` shows the red line "Requires all preceding talents"
@@ -252,9 +263,29 @@ The client price of a rank is the sum of the costs linked to the node's groups, 
 node and tree (API `GetNodeCost`; same composition in TrinityCore). Forever has only the
 tree link. **Invariant (checked, not assumed):** `normalizer._check_rank_cost_invariant`
 requires exactly one tree cost, `Amount=1`, in the budget currency, `CurveID=0`; anything
-else stops normalization with a message asking for a schema extension. Tests:
-`tests/unit/test_cost_invariant.py` (all 9 classes × 2 builds, plus mutated costs) and the
-live `test_latest_build_has_no_node_level_cost_tables`. Because the invariant is part of
+else stops normalization with a message asking for a schema extension.
+
+**The other cost links are proven absent in the production pipeline, not assumed.**
+`TraitNodeGroupXTraitCost`, `TraitNodeXTraitCost`, `TraitNodeEntryXTraitCost`
+(`db2.tables.RANK_COST_EXTENSION_TABLES`) are probed through the source-neutral
+`Db2Source.table_status(version, table)`, which answers `present` / `absent` / `unknown`:
+
+* wago.tools: `present` if the CSV is cached or downloads; `absent` only on the definitive
+  HTTP 4xx JSON body `{"errors": "Table not found."}` for a known build (an unknown build
+  gets an HTML error page instead) — recorded with its evidence in the build's
+  `_table_status.json`; network errors, 5xx, other 4xx → `unknown`. Offline: cache and
+  recorded snapshot only, otherwise `unknown`.
+* local CSV directories (fixtures, future extractors): CSV present → `present`; absence only
+  if recorded in the directory's `_table_status.json`; a missing file proves nothing.
+
+`TraitDataSet.load` records the three statuses; the normalizer refuses to publish unless
+all three are `absent`. `present` — even an empty table, even one without rows for this
+tree — fails with "build X introduces T … extend cost modeling/schema before publishing";
+`unknown` fails with "cannot prove that T is absent". `fetch` probes them and exits
+non-zero if any is not proven absent; the committed fixtures carry the snapshot of both
+captured builds. Tests: `tests/unit/test_cost_invariant.py`,
+`tests/unit/test_table_status.py`; the live `test_latest_build_has_no_node_level_cost_tables`
+is an additional check through the same production probe. Because the invariant is part of
 the v1 contract's production rule, **`talent-data.v1` is unchanged** (no field added;
 content hashes of all 18 committed documents are identical — only the volatile
 `provenance.tables` list names the two new tables).
@@ -399,10 +430,31 @@ Forever) + a smoke and a golden 51-point scenario for each of the nine classes.
   `python -m tests.conformance.generate`; replay: `python -m talent_data allocation replay --all`.
 * Golden builds are **engine-constructed** (greedy purchase in section/row/column order,
   skipping M1 `OFF_GRID_NODE` anomalies), not client-observed; each validates at 51/51.
+* **Not frozen for M3.** The vectors encode the M2 reference hypothesis for EDGE-ACTIVE and
+  EDGE-SUF. They become the Kotlin acceptance contract only after E1 and E2 are
+  client-observed (§13); if an observation contradicts a rule, the engine, the affected
+  scenarios and this document change first.
 
 ## 13. Kotlin handoff and in-game verification
 
-The KMP engine must reproduce, on `talent-data.v1` documents:
+### Milestone gate
+
+**M3 MUST NOT start until at least E1 and E2 below are client-observed.** E3 and E6 should
+be observed too. No result has been observed yet (no client was available in M2); nothing
+in this repository claims otherwise. Record each observation (build, character/class,
+exact state, API output) in this document and turn it into a conformance scenario; a
+contradicting result blocks M3 until the engine and vectors are corrected.
+
+| Check | Gate |
+| --- | --- |
+| E1 (EDGE-ACTIVE) | **required** before M3 |
+| E2 (EDGE-SUF, Hunter cycle) | **required** before M3 |
+| E3 (gate before purchase), E6 (refund) | strongly recommended before M3 |
+| E4 (Rogue 50984), E5 (cost), E7 (budget) | recommended; E4 unblocks Venom |
+
+### Contract the KMP engine must reproduce (once the gate is passed)
+
+On `talent-data.v1` documents:
 
 1. constants: rank cost 1 point of `pointBudget.currencyId`; budget = `maxPoints` or a
    configured lower limit; supported node type `single`, entry type 1, neutral node flag 8;
@@ -444,8 +496,11 @@ In-game checks that would turn the High rules into Proven (run on a Forever char
   OFF_GRID anomalies. Golden builds avoid them.
 * Validity is reachability; it may be stricter than the client for plans reachable only
   through staged refunds (§8).
+* Caches fetched before this check existed have no `_table_status.json`: offline
+  normalization of them fails closed until `fetch` is re-run online.
 * `CannotRefund` is not part of the v1 document; a mobile UI must know that in-game
   refunds need a trainer reset (candidate for a future contract revision).
 * `required`/`actual` numbers in validation issues are computed at the purchase-closure
   fixpoint (the explanation), not as raw totals of the imported build.
-* The absence of node-level cost tables is verified by the live integration test only.
+* Absence of the per-group/node/entry cost tables is wago.tools' statement for the build
+  (the best available origin); a different extractor would record its own evidence.

@@ -15,7 +15,7 @@ from pathlib import Path
 
 from talent_data.db2 import tables as t
 from talent_data.db2.dataset import TraitDataSet
-from talent_data.db2.tables import TRAIT_TABLES
+from talent_data.db2.tables import MUST_BE_ABSENT_TABLES, TRAIT_TABLES
 from talent_data.diff.engine import diff_documents
 from talent_data.diff.models import DatasetClassDiff, DatasetDiffReport, DiffReport, DiffSummary
 from talent_data.games import GameConfig
@@ -31,7 +31,14 @@ from talent_data.normalization.class_resolution import (
 )
 from talent_data.normalization.normalizer import normalize_class
 from talent_data.paths import manifest_path, normalized_path
-from talent_data.sources.base import BuildInfo, BuildSource, Db2Source, SourceError, latest_build
+from talent_data.sources.base import (
+    BuildInfo,
+    BuildSource,
+    Db2Source,
+    SourceError,
+    TableAvailability,
+    latest_build,
+)
 from talent_data.validation.validators import ValidationReport, validate_document
 from talent_data.versions import ClientVersion
 
@@ -75,6 +82,16 @@ def fetch_tables(
         if progress:
             progress(table)
     return fetched
+
+
+def probe_table_status(
+    source: Db2Source,
+    version: ClientVersion,
+    tables: Iterable[str] = MUST_BE_ABSENT_TABLES,
+) -> list[TableAvailability]:
+    """Prove presence/absence of the tables a contract requires to be absent. Online
+    sources record proven absence next to the cache, so a later offline run can use it."""
+    return [source.table_status(version, table) for table in tables]
 
 
 @dataclass(frozen=True)
@@ -475,6 +492,7 @@ __all__ = [
     "normalize_batch",
     "normalize_from_dataset",
     "parse_class_keys",
+    "probe_table_status",
     "read_document",
     "read_manifest",
     "validate_manifest_against_documents",

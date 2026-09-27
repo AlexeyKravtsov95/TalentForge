@@ -17,13 +17,21 @@ CSV specifics handled here (and nowhere else):
 from __future__ import annotations
 
 import csv
+import json
 import logging
 from pathlib import Path
 
 from pydantic import ValidationError
 
 from talent_data.games import GameConfig
-from talent_data.sources.base import BuildInfo, Db2Table, SourceError
+from talent_data.sources.base import (
+    BuildInfo,
+    Db2Table,
+    SourceError,
+    TableAvailability,
+    TableStatus,
+)
+from talent_data.sources.capabilities import read_snapshot, record_absent, snapshot_path
 from talent_data.sources.csvio import read_csv_table
 from talent_data.sources.http import DownloadError, HttpClient, is_valid_cache_entry
 from talent_data.sources.wago.models import WagoBuildIndex
@@ -127,6 +135,59 @@ class WagoDb2Source:
     def load_table(self, version: ClientVersion, table: str) -> Db2Table:
         self.ensure_table(version, table)
         return read_csv_table(self.table_path(version, table), table, rename=_canonical_column)
+
+    def table_status(self, version: ClientVersion, table: str) -> TableAvailability:
+        """PRESENT when the table is (or can now be) cached; ABSENT only on wago.tools'
+        definitive answer for a *known* build - an HTTP 4xx JSON body
+        ``{"errors": "Table not found."}`` - which is then recorded in the build's
+        ``_table_status.json``. Unknown builds (wago answers with an HTML error page),
+        network failures, 5xx and anything else are UNKNOWN. Offline, only the cache and
+        the recorded snapshot count."""
+        directory = self._cache_root / str(version)
+        if is_valid_cache_entry(self.table_path(version, table)):
+            if table in read_snapshot(directory):
+                raise SourceError(
+                    f"{table} for {version} is cached but {snapshot_path(directory)} records "
+                    "it absent"
+                )
+            return TableAvailability(table, TableStatus.PRESENT, f"{self.name}: cached CSV")
+        recorded = read_snapshot(directory).get(table)
+        if recorded is not None:
+            return recorded
+        if self._offline or self._http is None:
+            return TableAvailability(
+                table,
+                TableStatus.UNKNOWN,
+                f"{self.name} (offline): {table} not cached and no absence recorded in "
+                f"{snapshot_path(directory)}; run `python -m talent_data fetch --build "
+                f"{version}` online",
+            )
+        try:
+            self.ensure_table(version, table)
+        except SourceError as exc:
+            cause = exc.__cause__
+            if isinstance(cause, DownloadError) and _is_table_not_found(cause):
+                evidence = (
+                    f"{self.name}: GET /db2/{table}/csv?build={version} -> HTTP "
+                    f'{cause.status_code} {{"errors": "Table not found."}}'
+                )
+                return record_absent(directory, table, evidence)
+            return TableAvailability(table, TableStatus.UNKNOWN, f"{self.name}: {exc}")
+        return TableAvailability(table, TableStatus.PRESENT, f"{self.name}: downloaded CSV")
+
+
+def _is_table_not_found(error: DownloadError) -> bool:
+    """wago.tools' definitive "no such DB2 table in this build" answer. An unknown build
+    gets an HTML error page instead, so this cannot be confused with a missing build."""
+    if error.status_code not in (400, 404) or error.body is None:
+        return False
+    if "json" not in (error.content_type or ""):
+        return False
+    try:
+        payload = json.loads(error.body)
+    except ValueError:
+        return False
+    return bool(payload == {"errors": "Table not found."})
 
 
 def _canonical_column(name: str) -> str:

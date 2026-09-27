@@ -47,6 +47,7 @@ from talent_data.models.talents import (
 )
 from talent_data.normalization.class_resolution import resolve_class, trees_for_class
 from talent_data.normalization.grid import fit_grid
+from talent_data.sources.base import TableStatus
 
 # TraitNode.Type values, as documented in WoWDBDefs (TraitNode.dbd).
 NODE_TYPES = {0: "single", 1: "tiered", 2: "selection"}
@@ -257,12 +258,12 @@ def _check_rank_cost_invariant(
 
     The client prices a rank as the sum of the TraitCost rows linked to the node's tree
     (TraitTreeXTraitCost), node groups, node and entry (C_Traits.GetNodeCost returns that
-    list). The group/node/entry link tables (TraitNodeGroupXTraitCost, TraitNodeXTraitCost,
-    TraitNodeEntryXTraitCost) do not exist in Forever 1.60.1 builds (wago.tools: "Table not
-    found"; pinned by the live integration test), so the tree link is the whole price.
+    list). The tree link is the whole price only if the group/node/entry link tables are
+    *proven absent* for this build by the source (_check_no_rank_cost_extensions).
     Schema v1 has no cost field, so anything but "exactly one TraitCost, Amount 1, in the
     budget currency, no cost curve" is a contract violation and stops normalization.
     """
+    _check_no_rank_cost_extensions(ds)
     links = sorted(ds.tree_costs.get(tree_id, []), key=lambda link: link.id)
     if point_budget is None:
         if links:
@@ -291,6 +292,32 @@ def _check_rank_cost_invariant(
             f"only supports Amount={RANK_COST_POINTS} of the budget currency "
             f"{point_budget.currency_id} without a cost curve - extend the schema first"
         )
+
+
+def _check_no_rank_cost_extensions(ds: TraitDataSet) -> None:
+    """Fail closed unless every per-group/node/entry cost table is proven absent.
+
+    PRESENT (even if empty, even if this class tree has no rows in it): a cost mechanic
+    talent-data.v1 cannot express - its schema/semantics must be reviewed first.
+    UNKNOWN: the source could not prove absence (offline without a recorded snapshot,
+    network failure, ...) - absence is never assumed.
+    """
+    for table in t.RANK_COST_EXTENSION_TABLES:
+        availability = ds.table_status.get(table)
+        status = availability.status if availability else TableStatus.UNKNOWN
+        evidence = availability.evidence if availability else "not probed"
+        if status is TableStatus.PRESENT:
+            raise NormalizationError(
+                f"build {ds.version} introduces {table} ({evidence}). talent-data.v1 cannot "
+                "prove uniform one-point rank costs; extend cost modeling/schema before "
+                "publishing this dataset"
+            )
+        if status is not TableStatus.ABSENT:
+            raise NormalizationError(
+                f"build {ds.version}: cannot prove that {table} is absent ({evidence}). "
+                "talent-data.v1 requires proven absence of per-group/node/entry rank costs; "
+                "refusing to assume one-point rank costs"
+            )
 
 
 def _check_no_sub_trees(ds: TraitDataSet, raw_nodes: list[t.TraitNode]) -> None:

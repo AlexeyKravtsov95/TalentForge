@@ -49,6 +49,20 @@ TRAIT_TABLES: tuple[str, ...] = (
 )
 
 
+# Tables that price a rank per node group / node / entry. talent-data.v1 has no cost field
+# and relies on "every rank costs exactly one point" (TraitTreeXTraitCost only), so these
+# must be *proven absent* for every build the pipeline publishes; presence - even empty -
+# or an unknown status stops normalization until the cost model is extended.
+RANK_COST_EXTENSION_TABLES: tuple[str, ...] = (
+    "TraitNodeGroupXTraitCost",
+    "TraitNodeXTraitCost",
+    "TraitNodeEntryXTraitCost",
+)
+
+# Every table whose absence a contract relies on; probed by `fetch` and by dataset loading.
+MUST_BE_ABSENT_TABLES: tuple[str, ...] = RANK_COST_EXTENSION_TABLES
+
+
 def _int(table: str, row: Mapping[str, str], column: str) -> int:
     raw = row.get(column)
     if raw is None:

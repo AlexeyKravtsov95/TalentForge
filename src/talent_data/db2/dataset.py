@@ -7,7 +7,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 
 from talent_data.db2 import tables as t
-from talent_data.sources.base import Db2Source, SourceError
+from talent_data.sources.base import Db2Source, SourceError, TableAvailability
 from talent_data.versions import ClientVersion
 
 log = logging.getLogger(__name__)
@@ -44,6 +44,9 @@ class TraitDataSet:
     spells: dict[int, t.Spell]
     spell_names: dict[int, str]
     spell_effects: dict[int, list[t.SpellEffect]]  # by SpellID, default difficulty only
+    # Availability of the tables whose absence the contract relies on (present / absent /
+    # unknown, as proven by the source) - see tables.MUST_BE_ABSENT_TABLES.
+    table_status: dict[str, TableAvailability]
 
     @classmethod
     def load(cls, source: Db2Source, version: ClientVersion) -> TraitDataSet:
@@ -139,6 +142,9 @@ class TraitDataSet:
             spells=unique(rows(t.Spell), "id", "Spell"),
             spell_names=spell_names,
             spell_effects=dict(spell_effects),
+            table_status={
+                name: source.table_status(version, name) for name in t.MUST_BE_ABSENT_TABLES
+            },
         )
         log.debug("loaded trait dataset for %s", version)
         return dataset
