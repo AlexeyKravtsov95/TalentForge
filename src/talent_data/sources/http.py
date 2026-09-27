@@ -35,7 +35,25 @@ RETRYABLE_STATUS = frozenset({408, 425, 429, 500, 502, 503, 504})
 
 
 class DownloadError(RuntimeError):
-    """Raised when a resource cannot be fetched or fails validation."""
+    """Raised when a resource cannot be fetched or fails validation.
+
+    For HTTP error responses the structured fields are set, so callers can tell a
+    definitive server answer (e.g. "this table does not exist") from a transport problem
+    without parsing the message.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        status_code: int | None = None,
+        content_type: str | None = None,
+        body: str | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.status_code = status_code
+        self.content_type = content_type
+        self.body = body
 
 
 @dataclass(frozen=True)
@@ -193,8 +211,13 @@ def _raise_for_status(response: httpx.Response) -> None:
         excerpt = response.text[:200].replace("\n", " ")
     message = f"GET {response.request.url} -> HTTP {response.status_code} {excerpt}".strip()
     if response.status_code in RETRYABLE_STATUS:
-        raise _Retryable(message)
-    raise DownloadError(message)
+        raise _Retryable(message, status_code=response.status_code)
+    raise DownloadError(
+        message,
+        status_code=response.status_code,
+        content_type=content_type,
+        body=None if "html" in content_type else response.text[:2000],
+    )
 
 
 def _meta_path(dest: Path) -> Path:

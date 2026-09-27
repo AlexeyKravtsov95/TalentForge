@@ -5,6 +5,7 @@ All fixtures are **real** client data, reduced in size — nothing here is inven
 | Path | Origin |
 | --- | --- |
 | `db2/forever/<build>/<class-token>/*.csv` | wago.tools DB2 CSV exports of the given Forever build, filtered by `scripts/extract_fixtures.py --classes …` to the rows reachable from that class's talent tree (plus the shared class tables). One self-contained directory per class; column names are canonical (`_Index` → `Index`). Captured for both builds `1.60.1.69977` and `1.60.1.70009` × all nine classes. |
+| `db2/forever/<build>/<class-token>/_table_status.json` | Table-availability snapshot of the build: the tables the v1 contract requires to be absent (`TraitNodeGroupXTraitCost`, `TraitNodeXTraitCost`, `TraitNodeEntryXTraitCost`), each recorded `absent` with wago.tools' evidence (`{"errors": "Table not found."}` for that build). Copied from the cache by `extract_fixtures.py`, which refuses builds that do not prove the absence. A missing file never means "absent". |
 | `wago/builds.json` | Subset of the real `GET https://wago.tools/api/builds` response (2026-09-27): 3 `5.5.0` + all five `1.60.1` builds of `wow_classic_beta` in a deliberately scrambled order, plus two `wow_classic_era` builds. |
 | `wago/*.csv` | Verbatim head rows of wago.tools CSV exports (wago column naming, quoted multi-line text). |
 

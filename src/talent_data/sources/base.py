@@ -15,6 +15,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass, field
 from datetime import datetime
+from enum import StrEnum
 from typing import Protocol
 
 from talent_data.games import GameConfig
@@ -67,10 +68,39 @@ class BuildSource(Protocol):
         ...
 
 
+class TableStatus(StrEnum):
+    """Whether a DB2 table exists in a client build, *as far as the source can prove*.
+
+    ``UNKNOWN`` is a first-class answer (network failure, no recorded evidence, ...) and must
+    never be treated as ``ABSENT``: consumers that rely on a table being absent fail closed.
+    """
+
+    PRESENT = "present"
+    ABSENT = "absent"
+    UNKNOWN = "unknown"
+
+
+@dataclass(frozen=True)
+class TableAvailability:
+    table: str
+    status: TableStatus
+    evidence: str  # human-readable provenance of the answer (never parsed)
+
+
 class Db2Source(Protocol):
     """Provides DB2 tables for a concrete client build."""
 
     name: str
+
+    def table_status(self, version: ClientVersion, table: str) -> TableAvailability:
+        """Prove presence or absence of ``table`` in ``version`` (or answer UNKNOWN).
+
+        Used for tables whose *absence* a contract relies on (see
+        ``talent_data.db2.tables.MUST_BE_ABSENT_TABLES``). A source may probe remotely and
+        record the answer; it must only answer ABSENT on a definitive statement of the
+        data origin, never because a lookup failed.
+        """
+        ...
 
     def ensure_table(self, version: ClientVersion, table: str) -> None:
         """Make ``table`` locally available (download/cache) without loading it."""

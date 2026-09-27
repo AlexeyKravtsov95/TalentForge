@@ -4014,7 +4014,7 @@
     }
   ],
   "contentHash": "sha256:8ce355b3670712c9ea24522c2ec32112f8232f95d0435d433ebfb5b66d5633d5",
-  "generatedAt": "2026-09-26T20:59:08Z",
+  "generatedAt": "2026-09-26T21:23:14Z",
   "provenance": {
     "source": "wago.tools",
     "tables": [
@@ -4024,6 +4024,8 @@
       "TraitTree",
       "TraitTreeXTraitCurrency",
       "TraitCurrency",
+      "TraitTreeXTraitCost",
+      "TraitCost",
       "TraitNode",
       "TraitNodeXTraitNodeEntry",
       "TraitNodeEntry",

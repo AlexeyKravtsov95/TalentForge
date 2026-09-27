@@ -11,6 +11,7 @@ import pytest
 
 from talent_data.cli.main import json_schemas, main
 from talent_data.pipeline import read_document
+from talent_data.sources.capabilities import SNAPSHOT_FILE
 from talent_data.validation.validators import validate_document
 from tests.conftest import ALL_CLASSES
 from tests.helpers import DB2_FIXTURES, NEW_BUILD, OLD_BUILD
@@ -58,6 +59,10 @@ def _merge_class_fixtures(build_dir: Path, dst: Path) -> None:
             writer = csv.writer(fh, lineterminator="\n")
             writer.writerow(header)
             writer.writerows(rows)
+    # the table-availability snapshot is build-wide: identical in every class dir
+    snapshots = {(build_dir / c / SNAPSHOT_FILE).read_bytes() for c in ALL_CLASSES}
+    assert len(snapshots) == 1, f"{build_dir}: class snapshots differ"
+    (dst / SNAPSHOT_FILE).write_bytes(snapshots.pop())
 
 
 @pytest.fixture

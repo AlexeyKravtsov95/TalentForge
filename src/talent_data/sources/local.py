@@ -8,7 +8,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from talent_data.sources.base import Db2Table, SourceError
+from talent_data.sources.base import Db2Table, SourceError, TableAvailability
+from talent_data.sources.capabilities import status_from_files
 from talent_data.sources.csvio import read_csv_table
 from talent_data.versions import ClientVersion
 
@@ -32,3 +33,9 @@ class LocalCsvDb2Source:
     def load_table(self, version: ClientVersion, table: str) -> Db2Table:
         self.ensure_table(version, table)
         return read_csv_table(self._path(version, table), table)
+
+    def table_status(self, version: ClientVersion, table: str) -> TableAvailability:
+        """CSV present -> PRESENT; absence only if recorded in the directory's
+        ``_table_status.json`` snapshot; otherwise UNKNOWN (a missing file proves nothing)."""
+        path = self._path(version, table)
+        return status_from_files(path.parent, table, path, self.name)

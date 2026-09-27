@@ -8,6 +8,7 @@ diff           --game forever --class warrior|all --from <version> --to <version
 validate       <normalized.json>
 manifest       <manifest.json>
 schema         [--out docs/schema]
+allocation     validate|replay   (M2 allocation engine developer tools)
 
 ``--class all`` (M1) normalizes / diffs every class of the build, deterministically ordered
 by class id, and writes a dataset manifest (normalize). A batch that fails for any class
@@ -26,6 +27,9 @@ from pathlib import Path
 from pydantic import BaseModel
 
 from talent_data import paths
+from talent_data.allocation.conformance import ConformanceSuite
+from talent_data.allocation.models import BuildFile
+from talent_data.cli import allocation as allocation_cli
 from talent_data.db2.tables import TRAIT_TABLES
 from talent_data.diff.models import DatasetDiffReport, DiffReport
 from talent_data.diff.render import render_dataset_text, render_text
@@ -45,6 +49,7 @@ from talent_data.pipeline import (
     normalize,
     normalize_batch,
     parse_class_keys,
+    probe_table_status,
     read_document,
     read_manifest,
     validate_manifest_against_documents,
@@ -52,7 +57,8 @@ from talent_data.pipeline import (
     write_document,
     write_json,
 )
-from talent_data.sources.base import SourceError, classify_build
+from talent_data.sources.base import SourceError, TableStatus, classify_build
+from talent_data.sources.capabilities import snapshot_path
 from talent_data.sources.http import DownloadError, HttpClient
 from talent_data.sources.wago.source import WagoBuildSource, WagoDb2Source
 from talent_data.validation.validators import ValidationReport, validate_document
@@ -159,6 +165,8 @@ def _build_parser() -> argparse.ArgumentParser:
         help="also require the game's full class inventory (recommended for CI)",
     )
     man.set_defaults(handler=_cmd_manifest)
+
+    allocation_cli.register(sub)
     return parser
 
 
@@ -315,11 +323,23 @@ def _cmd_fetch(args: argparse.Namespace) -> int:
                 source.table_path(version, table).with_name(f"{table}.csv.meta.json").unlink(
                     missing_ok=True
                 )
+            # re-prove absences too: drop the recorded snapshot of this build
+            snapshot_path(source.table_path(version, "x").parent).unlink(missing_ok=True)
         fetched = fetch_tables(source, version, progress=lambda t: print(f"  {t}"))
+        statuses = probe_table_status(source, version)
     print(
         f"fetched {len(fetched)} DB2 tables for {version} into "
         f"{paths.raw_cache_dir('wago', game.key) / str(version)}"
     )
+    for availability in statuses:
+        print(f"  must be absent: {availability.table}: {availability.status.value}")
+    if any(a.status is not TableStatus.ABSENT for a in statuses):
+        print(
+            "error: a table talent-data.v1 requires to be absent is present or could not be "
+            "proven absent; normalization of this build will fail closed",
+            file=sys.stderr,
+        )
+        return EXIT_FAILURE
     return EXIT_OK
 
 
@@ -487,6 +507,8 @@ def json_schemas() -> dict[str, str]:
         "talent-diff.v1.schema.json": _schema_text(DiffReport),
         "dataset-manifest.v1.schema.json": _schema_text(DatasetManifest),
         "dataset-diff.v1.schema.json": _schema_text(DatasetDiffReport),
+        "allocation-build.v1.schema.json": _schema_text(BuildFile),
+        "allocation-conformance.v1.schema.json": _schema_text(ConformanceSuite),
     }
 
 

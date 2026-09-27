@@ -279,13 +279,18 @@ python scripts/extract_fixtures.py --build 1.60.1.70009 --classes all
 
 ## Known unresolved semantics (unchanged or newly scoped in M1)
 
-* Sufficient-edge combination semantics (OR vs AND) — see above; preserved verbatim.
-* Whether a sufficient/required prerequisite must be *fully ranked* is not encoded.
+* Sufficient-edge combination semantics (OR vs AND) — preserved verbatim in the contract;
+  **M2** established ANY (OR) for Sufficient and ALL for Required edges, and that a
+  prerequisite must be *fully ranked* (High confidence, see
+  [talent-allocation-semantics.md](talent-allocation-semantics.md)).
 * `TraitNode.Flags` and `TraitNodeEntry.NodeEntryType` remain raw.
 * How a `TraitNodeID` reference combines with a group/spend gate in one condition
   (Rogue cond 50984 on Venom) is unknown; the row is preserved verbatim as an
   unresolved condition.
-* Costs (`TraitCost`) are not modelled; 1 point per rank is not asserted.
+* Costs: **M2** fetches `TraitCost` / `TraitTreeXTraitCost` and the normalizer *checks*
+  that every rank costs exactly 1 point of the tree currency (it fails otherwise), after
+  the source proves the per-group/node/entry cost tables absent (present or unknown fails
+  closed); still no cost field in schema v1.
 * Tab names (Arms/Fury/Protection…) do not exist in client data; `section.name` is null.
 * Tooltips stay raw templates; per-rank numbers exist for curve-backed effects only.
 * Whether the mis-placed duplicate nodes (Hunter/Priest) are drawn by the client is

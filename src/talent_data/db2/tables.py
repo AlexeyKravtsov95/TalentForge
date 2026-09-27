@@ -25,6 +25,9 @@ TRAIT_TABLES: tuple[str, ...] = (
     "TraitTree",
     "TraitTreeXTraitCurrency",
     "TraitCurrency",
+    # rank costs (M2: the "every rank costs 1 point" invariant is checked, not assumed)
+    "TraitTreeXTraitCost",
+    "TraitCost",
     "TraitNode",
     "TraitNodeXTraitNodeEntry",
     "TraitNodeEntry",
@@ -44,6 +47,20 @@ TRAIT_TABLES: tuple[str, ...] = (
     "SpellName",
     "SpellEffect",
 )
+
+
+# Tables that price a rank per node group / node / entry. talent-data.v1 has no cost field
+# and relies on "every rank costs exactly one point" (TraitTreeXTraitCost only), so these
+# must be *proven absent* for every build the pipeline publishes; presence - even empty -
+# or an unknown status stops normalization until the cost model is extended.
+RANK_COST_EXTENSION_TABLES: tuple[str, ...] = (
+    "TraitNodeGroupXTraitCost",
+    "TraitNodeXTraitCost",
+    "TraitNodeEntryXTraitCost",
+)
+
+# Every table whose absence a contract relies on; probed by `fetch` and by dataset loading.
+MUST_BE_ABSENT_TABLES: tuple[str, ...] = RANK_COST_EXTENSION_TABLES
 
 
 def _int(table: str, row: Mapping[str, str], column: str) -> int:
@@ -166,6 +183,42 @@ class TraitCurrency:
 
 
 @dataclass(frozen=True)
+class TraitTreeXTraitCost:
+    id: int
+    trait_tree_id: int
+    trait_cost_id: int
+
+    TABLE: ClassVar[str] = "TraitTreeXTraitCost"
+
+    @classmethod
+    def parse(cls, row: Mapping[str, str]) -> Self:
+        t = cls.TABLE
+        return cls(_int(t, row, "ID"), _int(t, row, "TraitTreeID"), _int(t, row, "TraitCostID"))
+
+
+@dataclass(frozen=True)
+class TraitCost:
+    """A price in one trait currency (WoWDBDefs TraitCost; API: TraitCurrencyCost)."""
+
+    id: int
+    amount: int
+    trait_currency_id: int
+    curve_id: int
+
+    TABLE: ClassVar[str] = "TraitCost"
+
+    @classmethod
+    def parse(cls, row: Mapping[str, str]) -> Self:
+        t = cls.TABLE
+        return cls(
+            _int(t, row, "ID"),
+            _int(t, row, "Amount"),
+            _int(t, row, "TraitCurrencyID"),
+            _int(t, row, "CurveID"),
+        )
+
+
+@dataclass(frozen=True)
 class TraitNode:
     id: int
     trait_tree_id: int
@@ -173,6 +226,7 @@ class TraitNode:
     pos_y: int
     type: int
     flags: int
+    trait_sub_tree_id: int
 
     TABLE: ClassVar[str] = "TraitNode"
 
@@ -186,6 +240,7 @@ class TraitNode:
             _int(t, row, "PosY"),
             _int(t, row, "Type"),
             _int(t, row, "Flags"),
+            _int(t, row, "TraitSubTreeID"),
         )
 
 
@@ -215,6 +270,7 @@ class TraitNodeEntry:
     trait_definition_id: int
     max_ranks: int
     node_entry_type: int
+    trait_sub_tree_id: int
 
     TABLE: ClassVar[str] = "TraitNodeEntry"
 
@@ -226,6 +282,7 @@ class TraitNodeEntry:
             _int(t, row, "TraitDefinitionID"),
             _int(t, row, "MaxRanks"),
             _int(t, row, "NodeEntryType"),
+            _int(t, row, "TraitSubTreeID"),
         )
 
 

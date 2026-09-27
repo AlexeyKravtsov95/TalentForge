@@ -82,6 +82,7 @@ Downloaded per build with `GET https://wago.tools/db2/<Table>/csv?build=<version
 | class → tree | `ChrClasses`, `SkillRaceClassInfo`, `SkillLineXTraitTree` |
 | tree structure | `TraitTree`, `TraitNode`, `TraitNodeXTraitNodeEntry`, `TraitNodeEntry`, `TraitDefinition`, `TraitEdge` |
 | point budget | `TraitTreeXTraitCurrency`, `TraitCurrency` |
+| rank cost (M2, invariant check) | `TraitTreeXTraitCost`, `TraitCost` |
 | tier gates | `TraitNodeGroupXTraitNode`, `TraitNodeGroupXTraitCond`, `TraitNodeXTraitCond`, `TraitCond` |
 | per-rank values | `TraitDefinitionEffectPoints`, `Curve`, `CurvePoint` |
 | spells | `Spell` (tooltip template), `SpellName`, `SpellEffect` |
@@ -89,7 +90,17 @@ Downloaded per build with `GET https://wago.tools/db2/<Table>/csv?build=<version
 About 7.9 MB of CSV per build (SpellEffect, Spell, SpellName and CurvePoint dominate).
 Tables that **do not exist** in Forever builds (wago.tools answers 404):
 `TraitTreeLoadout`, `TraitTreeLoadoutEntry`, `TraitSubTree`, `TraitNodeEntryXTraitCond`,
-`TraitNodeGroupXTraitCost`.
+`TraitNodeGroupXTraitCost`, `TraitNodeXTraitCost`, `TraitNodeEntryXTraitCost`.
+
+The last three must be **proven absent** for every published build (the v1 "1 point per
+rank" invariant relies on it; `db2.tables.MUST_BE_ABSENT_TABLES`). `Db2Source.table_status`
+answers `present` / `absent` / `unknown`; wago.tools' definitive
+`{"errors": "Table not found."}` (HTTP 4xx JSON; an unknown build gets an HTML page
+instead) is recorded as evidence in `.cache/wago/<game>/<build>/_table_status.json`, and
+the committed fixtures carry the same snapshot. `fetch` probes these tables and exits
+non-zero unless all are proven absent; normalization fails closed on `present` or
+`unknown` (see docs/talent-allocation-semantics.md §7). A cache fetched before this check
+has no snapshot: re-run `fetch` online.
 
 CSV transport details handled only inside the wago adapter: reserved column names are
 prefixed with `_` (`_Index` → `Index`), array columns are flattened as `Name_0`, `Name_1`, and
