@@ -226,8 +226,38 @@ class TalentTreeUiModelTest {
         assertEquals("AM", nodeMonogram("Anger Management", 1))
         assertEquals("DE", nodeMonogram("Deflection", 1))
         assertEquals("EN", nodeMonogram("Enrage", 1))
+        assertEquals("T", nodeMonogram("T", 1))
         assertEquals("105958", nodeMonogram(null, 105958))
         assertEquals("105958", nodeMonogram("   ", 105958))
+    }
+
+    @Test
+    fun monogramWordCardinalityDoesNotDependOnStringIdentity() {
+        // Two equal-value words are two words: the first and last initials are
+        // used (RR), never the single-word "first two letters" branch (RE).
+        // split() creates distinct String instances, so an identity-based
+        // `first !== last` check would be free to take either branch.
+        assertEquals("RR", nodeMonogram("Rend Rend", 1))
+        assertEquals("RR", nodeMonogram("Improved Rend Rend", 1))
+        // still two distinct words with equal first letters
+        assertEquals("MM", nodeMonogram("Mortal Mangle", 1))
+        // a genuine single word keeps contributing its first two letters
+        assertEquals("RE", nodeMonogram("Rend", 1))
+        assertEquals("EN", nodeMonogram("Enrage", 1))
+    }
+
+    @Test
+    fun realWarriorMonogramsAreUnchanged() = runTest {
+        val model = buildWarriorModel()
+        val byName = model.nodes.associate { it.name to it.monogram }
+
+        assertEquals("HS", byName.getValue("Improved Heroic Strike"))
+        assertEquals("RE", byName.getValue("Improved Rend"))
+        assertEquals("DW", byName.getValue("Deep Wounds"))
+        assertEquals("MS", byName.getValue("Mortal Strike"))
+        assertEquals("TM", byName.getValue("Improved Tactical Mastery"))
+        assertEquals("AM", byName.getValue("Anger Management"))
+        assertEquals("DE", byName.getValue("Deflection"))
     }
 
     @Test

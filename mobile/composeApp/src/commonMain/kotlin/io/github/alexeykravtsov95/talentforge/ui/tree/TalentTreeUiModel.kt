@@ -267,7 +267,13 @@ fun nodeMonogram(name: String?, nodeId: Int): String {
     val last = keyWords.last()
     return buildString {
         append(first.first())
-        if (first !== last) append(last.first()) else if (first.length > 1) append(first[1])
+        // Cardinality by word count, never by String identity: two
+        // equal-value words are still two words.
+        if (keyWords.size > 1) {
+            append(last.first())
+        } else if (first.length > 1) {
+            append(first[1])
+        }
     }.uppercase()
 }
 
