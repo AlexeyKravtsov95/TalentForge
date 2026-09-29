@@ -72,9 +72,11 @@ fun TalentTreeUiFailure.describe(): String = when (this) {
             "the dataset contains multiple talent trees (${error.treeIds.joinToString()}), " +
                 "which this screen does not present yet"
 
+        TalentTreeUiBuildError.EmptyTree -> "the talent tree contains no nodes"
+        is TalentTreeUiBuildError.DuplicateNodeId ->
+            "the talent tree contains duplicate node id ${error.nodeId}"
         is TalentTreeUiBuildError.InvalidLayout ->
             "the talent tree layout is not renderable (xStep=${error.xStep})"
-
         is TalentTreeUiBuildError.DanglingEdgeReference ->
             "a ${error.kind.name.lowercase()} connector references a missing node " +
                 "(${error.fromNodeId} → ${error.toNodeId})"

@@ -81,6 +81,19 @@ sealed interface TalentTreeUiBuildError {
      */
     data class MultipleTrees(val treeIds: List<Int>) : TalentTreeUiBuildError
 
+    /**
+     * The contract does not require a non-empty `nodes` array; a tree without
+     * nodes has no renderable geometry (bounds would be invalid sentinels).
+     */
+    data object EmptyTree : TalentTreeUiBuildError
+
+    /**
+     * The contract does not guarantee unique node ids; duplicates would break
+     * the id-keyed node composables and edge resolution. Presentation
+     * precondition only — this is not a general dataset validator.
+     */
+    data class DuplicateNodeId(val nodeId: Int) : TalentTreeUiBuildError
+
     /** A published layout with a non-positive step cannot define a grid mapping. */
     data class InvalidLayout(val xStep: Int) : TalentTreeUiBuildError
 
@@ -124,6 +137,19 @@ fun buildTreeUiModel(tree: TalentTree): TalentTreeUiBuildResult {
         return TalentTreeUiBuildResult.Failed(TalentTreeUiBuildError.InvalidLayout(xStep))
     }
 
+    // Presentation preconditions checked before any geometry exists, so a
+    // contract-shaped but unrenderable tree becomes a typed Failed state —
+    // never sentinel bounds or an unchecked crash. Not a dataset validator.
+    if (tree.nodes.isEmpty()) {
+        return TalentTreeUiBuildResult.Failed(TalentTreeUiBuildError.EmptyTree)
+    }
+    val seenIds = HashSet<Int>(tree.nodes.size)
+    for (node in tree.nodes) {
+        if (!seenIds.add(node.id)) {
+            return TalentTreeUiBuildResult.Failed(TalentTreeUiBuildError.DuplicateNodeId(node.id))
+        }
+    }
+
     val factor = TalentTreeCanvasMetrics.GRID_STEP_DP / xStep
     val nodesById = HashMap<Int, TalentTreeNodeUiModel>(tree.nodes.size)
 
@@ -137,8 +163,7 @@ fun buildTreeUiModel(tree: TalentTree): TalentTreeUiBuildResult {
             centerX = node.position.x * factor,
             centerY = node.position.y * factor,
         )
-        val existing = nodesById.put(node.id, uiNode)
-        check(existing == null) { "duplicate node id in tree: ${node.id}" }
+        nodesById.put(node.id, uiNode)
         uiNode
     }
 

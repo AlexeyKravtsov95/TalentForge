@@ -66,6 +66,16 @@ class TalentTreeUiModelTest {
     }
 
     @Test
+    fun realWarriorBaselineStaysReadyWithUniqueNodeIds() = runTest {
+        val result = buildTalentTreeUiModel(loadWarriorDocument())
+
+        assertIs<TalentTreeUiBuildResult.Ready>(result)
+        assertEquals(53, result.model.nodes.size)
+        val ids = result.model.nodes.map { it.id }
+        assertEquals(ids.size, ids.toSet().size)
+    }
+
+    @Test
     fun everyRenderedNodeHasAUniqueId() = runTest {
         val model = buildWarriorModel()
 
@@ -255,6 +265,77 @@ class TalentTreeUiModelTest {
             buildTalentTreeUiModel(syntheticDocument(listOf(brokenTree))),
         )
         assertIs<TalentTreeUiBuildError.InvalidLayout>(failure.error)
+    }
+
+    @Test
+    fun treeWithZeroNodesFailsClosedWithEmptyTree() {
+        val emptyTree = TalentTree(
+            id = 1,
+            pointBudget = null,
+            layout = TalentLayout(xStep = 600, yStep = 600),
+            sections = emptyList(),
+            nodes = emptyList(),
+            visualOnlyEdges = emptyList(),
+        )
+
+        val failure = assertIs<TalentTreeUiBuildResult.Failed>(
+            buildTalentTreeUiModel(syntheticDocument(emptyTree)),
+        )
+        val error = assertIs<TalentTreeUiBuildError.EmptyTree>(failure.error)
+        assertEquals(TalentTreeUiBuildError.EmptyTree, error)
+    }
+
+    @Test
+    fun treeWithDuplicateNodeIdsFailsClosedWithTheDuplicate() {
+        val duplicateTree = tree(
+            id = 1,
+            nodes = listOf(
+                node(id = 10, x = 0, y = 0),
+                node(id = 11, x = 600, y = 0),
+                node(id = 10, x = 1200, y = 0),
+            ),
+        )
+
+        val failure = assertIs<TalentTreeUiBuildResult.Failed>(
+            buildTalentTreeUiModel(syntheticDocument(duplicateTree)),
+        )
+        val error = assertIs<TalentTreeUiBuildError.DuplicateNodeId>(failure.error)
+        assertEquals(10, error.nodeId)
+    }
+
+    @Test
+    fun duplicateNodeIdsFailClosedEvenWhenTheTreeIsOtherwiseValid() {
+        // the duplicate is the last node: proves detection happens before any
+        // Ready result can escape, regardless of position
+        val duplicateTree = tree(
+            id = 1,
+            nodes = listOf(
+                node(id = 20, x = 0, y = 0),
+                node(id = 20, x = 600, y = 600),
+            ),
+        )
+        val result = buildTalentTreeUiModel(syntheticDocument(duplicateTree))
+        assertIs<TalentTreeUiBuildResult.Failed>(result)
+    }
+
+    @Test
+    fun emptyAndDuplicateFailuresNeverProduceBounds() {
+        val emptyResult = buildTalentTreeUiModel(
+            syntheticDocument(
+                tree(id = 1, nodes = emptyList()),
+            ),
+        )
+        assertIs<TalentTreeUiBuildResult.Failed>(emptyResult)
+
+        val duplicateResult = buildTalentTreeUiModel(
+            syntheticDocument(
+                tree(
+                    id = 1,
+                    nodes = listOf(node(id = 1, x = 0, y = 0), node(id = 1, x = 1, y = 1)),
+                ),
+            ),
+        )
+        assertIs<TalentTreeUiBuildResult.Failed>(duplicateResult)
     }
 
     // ---- synthetic contract helpers -------------------------------------------------
