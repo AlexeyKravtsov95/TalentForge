@@ -106,6 +106,23 @@ class BundledRepositoryTest {
     }
 
     @Test
+    fun unreadableAssetFailsWithTypeAssetUnreadable() = runTest {
+        val repository = BundledTalentDatasetRepository(
+            object : DatasetAssetSource {
+                override suspend fun read(path: String): ByteArray {
+                    if (path.endsWith("manifest.json")) {
+                        throw AssetReadException(path, IllegalStateException("disk on fire"))
+                    }
+                    throw AssetNotFoundException(path)
+                }
+            },
+        )
+        val error = assertIs<DatasetOutcome.Failed>(repository.manifest(BUNDLE_70009)).error
+        val unreadable = assertIs<DatasetLoadError.AssetUnreadable>(error)
+        assertTrue("disk on fire" in unreadable.detail)
+    }
+
+    @Test
     fun unknownClassFailsWithTypeClassEntryMissing() = runTest {
         val repository = tamperedBundle { }
         val outcome = repository.document(WARRIOR_70009.copy(classToken = ClassToken("MONK")))

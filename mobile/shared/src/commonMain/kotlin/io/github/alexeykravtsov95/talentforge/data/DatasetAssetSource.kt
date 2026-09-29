@@ -11,14 +11,25 @@ interface DatasetAssetSource {
      * dataset root).
      *
      * @throws AssetSourceException when the asset cannot be read; subclasses
-     * carry the concrete reason (e.g. [AssetNotFoundException]).
+     * carry the concrete reason ([AssetNotFoundException] for missing assets,
+     * [AssetReadException] for other read failures).
      */
     suspend fun read(path: String): ByteArray
 }
 
 /** Base type for asset access failures surfaced by a [DatasetAssetSource]. */
-sealed class AssetSourceException(message: String) : Exception(message)
+sealed class AssetSourceException(message: String, cause: Throwable? = null) :
+    Exception(message, cause)
 
 /** The requested asset does not exist in the source. */
 class AssetNotFoundException(val path: String) :
     AssetSourceException("dataset asset not found: $path")
+
+/** The asset exists but could not be read (I/O error, corrupt packaging, …). */
+class AssetReadException(
+    val path: String,
+    cause: Throwable? = null,
+) : AssetSourceException(
+    "failed to read dataset asset: $path" + (cause?.let { ": ${it.message}" } ?: ""),
+    cause,
+)

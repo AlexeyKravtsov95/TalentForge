@@ -38,8 +38,10 @@ class BundledTalentDatasetRepository(
     override suspend fun manifest(bundle: DatasetBundleId): DatasetOutcome<DatasetManifest> {
         val manifestPath = "${bundle.datasetPath()}/$MANIFEST_FILE"
 
-        val bytes = assets.readOrNull(manifestPath)
-            ?: return DatasetOutcome.Failed(DatasetLoadError.AssetMissing(manifestPath))
+        val bytes = when (val asset = assets.readAsset(manifestPath)) {
+            is DatasetOutcome.Loaded -> asset.value
+            is DatasetOutcome.Failed -> return asset
+        }
 
         val outcome = parse(manifestPath, ContractKind.DATASET_MANIFEST) {
             TalentDataContract.decodeDatasetManifest(bytes)
@@ -91,8 +93,10 @@ class BundledTalentDatasetRepository(
             )
 
         val documentPath = "${bundle.datasetPath()}/${entry.file}"
-        val bytes = assets.readOrNull(documentPath)
-            ?: return DatasetOutcome.Failed(DatasetLoadError.AssetMissing(documentPath))
+        val bytes = when (val asset = assets.readAsset(documentPath)) {
+            is DatasetOutcome.Loaded -> asset.value
+            is DatasetOutcome.Failed -> return asset
+        }
 
         val document = when (
             val outcome = parse(documentPath, ContractKind.TALENT_DATA) {
@@ -171,13 +175,22 @@ class BundledTalentDatasetRepository(
     }
 }
 
-private suspend fun DatasetAssetSource.readOrNull(path: String): ByteArray? =
+/**
+ * Reads an asset, translating the asset source's exception contract into the
+ * typed [DatasetLoadError] hierarchy: a missing asset and an unreadable asset
+ * stay distinct failure types.
+ */
+private suspend fun DatasetAssetSource.readAsset(path: String): DatasetOutcome<ByteArray> =
     try {
-        read(path)
+        DatasetOutcome.Loaded(read(path))
     } catch (e: CancellationException) {
         throw e
-    } catch (e: AssetSourceException) {
-        null
+    } catch (e: AssetNotFoundException) {
+        DatasetOutcome.Failed(DatasetLoadError.AssetMissing(path))
+    } catch (e: AssetReadException) {
+        DatasetOutcome.Failed(
+            DatasetLoadError.AssetUnreadable(path = path, detail = e.message ?: "read failure"),
+        )
     }
 
 private inline fun <T> parse(

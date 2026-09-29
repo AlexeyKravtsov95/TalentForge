@@ -110,7 +110,11 @@ The schemas are closed contracts; M3A is a consumer and never changes them.
 - `isLenient = false` — structural type mismatches (objects where strings are
   expected, decimals where integers are expected, non-numeric strings) fail;
 - Kotlin defaults exist **only** where the JSON schema itself declares one;
-  required fields cannot be silently invented;
+  required fields cannot be silently invented. Every property listed in a
+  schema's `required` array is mandatory on the wire even when it is nullable
+  (`spellId`, `name`, `perRank`, `pointBudget`, …) or normally empty
+  (`prerequisites`, `effects`, `visualOnlyEdges`, `countedNodeIds`,
+  `reasonCodes`, `issues`) — omitting any of them fails deserialization;
 - an unsupported `schemaVersion` raises `UnsupportedContractVersionException`
   and surfaces as `DatasetLoadError.UnsupportedSchemaVersion`.
 
@@ -154,10 +158,13 @@ load, `BundledTalentDatasetRepository` verifies:
 - the document's tree ids match the manifest entry.
 
 Failures are the typed sealed hierarchy `DatasetLoadError`
-(`AssetMissing`, `InvalidJson`, `UnsupportedSchemaVersion`,
+(`AssetMissing`, `AssetUnreadable`, `InvalidJson`, `UnsupportedSchemaVersion`,
 `ManifestUnavailable`, `ClassEntryMissing`, `GameMismatch`, `BuildMismatch`,
 `ClassMismatch`, `ContentHashMismatch`, `TreeIdsMismatch`) returned inside
-`DatasetOutcome`; program logic never parses exception messages.
+`DatasetOutcome`; program logic never parses exception messages. A missing
+resource and a resource that exists but cannot be read are distinct failures,
+mirrored by `AssetNotFoundException` / `AssetReadException` at the asset-source
+boundary.
 
 ## Conformance strategy (parse-only in M3A)
 

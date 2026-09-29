@@ -16,6 +16,9 @@ sealed interface DatasetLoadError {
     /** The asset was not found in the underlying [DatasetAssetSource]. */
     data class AssetMissing(val path: String) : DatasetLoadError
 
+    /** The asset exists but could not be read by the [DatasetAssetSource]. */
+    data class AssetUnreadable(val path: String, val detail: String) : DatasetLoadError
+
     /** The payload is not valid JSON for the contract (drift or corruption). */
     data class InvalidJson(val path: String, val detail: String) : DatasetLoadError
 
@@ -85,6 +88,7 @@ sealed interface DatasetLoadError {
 /** Human-readable rendering used by smoke/debug UIs only. */
 fun DatasetLoadError.describe(): String = when (this) {
     is DatasetLoadError.AssetMissing -> "missing dataset asset: $path"
+    is DatasetLoadError.AssetUnreadable -> "unreadable dataset asset at $path: $detail"
     is DatasetLoadError.InvalidJson -> "invalid dataset JSON at $path: $detail"
     is DatasetLoadError.UnsupportedSchemaVersion ->
         "unsupported schema version $actualVersion for ${contract.contractName} at $path " +

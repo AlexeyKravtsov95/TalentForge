@@ -1,9 +1,11 @@
 package io.github.alexeykravtsov95.talentforge.ui.assets
 
 import io.github.alexeykravtsov95.talentforge.data.AssetNotFoundException
+import io.github.alexeykravtsov95.talentforge.data.AssetReadException
 import io.github.alexeykravtsov95.talentforge.data.DatasetAssetSource
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
 import kotlin.coroutines.cancellation.CancellationException
+import org.jetbrains.compose.resources.MissingResourceException
 
 /**
  * [DatasetAssetSource] over the standard Compose Multiplatform resource
@@ -17,7 +19,9 @@ class ComposeResourceDatasetAssetSource : DatasetAssetSource {
         Res.readBytes("files/$path")
     } catch (e: CancellationException) {
         throw e
-    } catch (e: Exception) {
+    } catch (e: MissingResourceException) {
         throw AssetNotFoundException(path)
+    } catch (e: Exception) {
+        throw AssetReadException(path, e)
     }
 }
