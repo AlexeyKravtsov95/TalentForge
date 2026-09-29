@@ -1,5 +1,6 @@
 package io.github.alexeykravtsov95.talentforge.allocation
 
+import io.github.alexeykravtsov95.talentforge.data.allocation.NodeAllocation
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -40,6 +41,30 @@ class BuildStateTest {
         assertEquals(1, state.rankOf(3))
         assertEquals(0, state.rankOf(9))
         assertEquals(0, state.rankOf(2))
+    }
+
+    @Test
+    fun mutatingTheExposedAllocationsCannotChangeTheState() {
+        val state = BuildState.of(
+            1,
+            listOf(SyntheticTrees.allocation(2, 1), SyntheticTrees.allocation(1, 3)),
+        )
+        assertEquals(listOf(1, 2), state.allocations.map { it.nodeId })
+
+        // mutate whatever the getter returned — through a MutableList cast
+        // whenever the runtime collection is castable
+        @Suppress("UNCHECKED_CAST")
+        val exposed = state.allocations as? MutableList<NodeAllocation>
+        if (exposed != null) {
+            exposed.clear()
+            exposed += SyntheticTrees.allocation(9, 9)
+        }
+
+        assertEquals(listOf(1, 2), state.allocations.map { it.nodeId })
+        assertEquals(2, state.allocations.size)
+        assertEquals(3, state.rankOf(1))
+        assertEquals(1, state.rankOf(2))
+        assertEquals(0, state.rankOf(9))
     }
 
     @Test

@@ -11,16 +11,17 @@ import io.github.alexeykravtsov95.talentforge.data.allocation.NodeAllocation
  * *reported* by [TalentAllocationEngine.validate] instead of being rejected
  * before anyone can explain what is wrong with it.
  *
- * Ownership and order: every construction path snapshots the input collection
- * into a list owned by the state and stores it in canonical (node id, entry id,
- * rank) order — exactly like the reference, whose pydantic validator sorts on
- * every construction. A state therefore never aliases a caller-owned (possibly
- * mutable) collection, and an out-of-canonical-order state cannot exist:
- * [allocationFor]/[rankOf] resolve the *first* allocation of a node and
- * validation treats later duplicates as `DUPLICATE_ALLOCATION`. There is no
- * data-class `copy()`: [empty], [of] and [withAllocation] are the transition
- * API. The exposed [allocations] list is read-only by contract — never mutate
- * it through a cast.
+ * Ownership and order: the state owns its allocation storage. The constructor
+ * argument is snapshotted and canonicalized into a private backing list (node
+ * id, entry id, rank) — exactly like the reference, whose pydantic validator
+ * sorts every construction. [allocations] returns a fresh copy of that backing
+ * on every access, so no collection reachable from outside the class — neither
+ * the constructor argument nor anything obtained from [allocations] — can
+ * mutate an existing state, not even through a runtime cast or platform
+ * interop. There is no data-class `copy()`: [empty], [of] and [withAllocation]
+ * are the transition API. [allocationFor]/[rankOf] resolve the *first*
+ * allocation of a node and validation treats later duplicates as
+ * `DUPLICATE_ALLOCATION`.
  */
 class BuildState(
     val treeId: Int,
@@ -28,15 +29,24 @@ class BuildState(
 ) {
 
     /**
-     * Canonical snapshot of the constructor argument: `sortedWith` always
-     * returns a fresh list, so no caller alias is retained.
+     * Canonical (node id, entry id, rank) snapshot of the constructor
+     * argument. Private: `sortedWith` always returns a fresh list, so no
+     * caller alias is retained, and the backing is never handed out.
      */
-    val allocations: List<NodeAllocation> =
+    private val backing: List<NodeAllocation> =
         allocations.sortedWith(ALLOCATIONS_CANONICAL_ORDER)
+
+    /**
+     * The allocations in canonical (node id, entry id, rank) order — a fresh
+     * copy on every access, so mutating a returned collection cannot change
+     * this state.
+     */
+    val allocations: List<NodeAllocation>
+        get() = backing.toList()
 
     /** New state where [nodeId] holds [rank] ranks of [entryId] (rank 0 removes it). */
     fun withAllocation(nodeId: Int, entryId: Int, rank: Int): BuildState {
-        val kept = allocations.filterTo(mutableListOf()) { it.nodeId != nodeId }
+        val kept = backing.filterTo(mutableListOf()) { it.nodeId != nodeId }
         if (rank > 0) {
             kept += NodeAllocation(nodeId = nodeId, entryId = entryId, rank = rank)
         }
@@ -45,20 +55,20 @@ class BuildState(
 
     /** The first allocation of [nodeId] (a valid state has at most one). */
     fun allocationFor(nodeId: Int): NodeAllocation? =
-        allocations.firstOrNull { it.nodeId == nodeId }
+        backing.firstOrNull { it.nodeId == nodeId }
 
     fun rankOf(nodeId: Int): Int = allocationFor(nodeId)?.rank ?: 0
 
     /** Node id -> purchased rank; like the reference, a later duplicate wins. */
-    fun ranks(): Map<Int, Int> = allocations.associate { it.nodeId to it.rank }
+    fun ranks(): Map<Int, Int> = backing.associate { it.nodeId to it.rank }
 
     override fun equals(other: Any?): Boolean =
-        other is BuildState && other.treeId == treeId && other.allocations == allocations
+        other is BuildState && other.treeId == treeId && other.backing == backing
 
-    override fun hashCode(): Int = 31 * treeId + allocations.hashCode()
+    override fun hashCode(): Int = 31 * treeId + backing.hashCode()
 
     override fun toString(): String =
-        "BuildState(tree=$treeId, ${allocations.joinToString { "${it.nodeId}:${it.rank}" }})"
+        "BuildState(tree=$treeId, ${backing.joinToString { "${it.nodeId}:${it.rank}" }})"
 
     companion object {
         private val ALLOCATIONS_CANONICAL_ORDER =
