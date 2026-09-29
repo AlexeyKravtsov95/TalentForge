@@ -11,22 +11,28 @@ import io.github.alexeykravtsov95.talentforge.data.allocation.NodeAllocation
  * *reported* by [TalentAllocationEngine.validate] instead of being rejected
  * before anyone can explain what is wrong with it.
  *
- * Allocations are kept in canonical order (node id, entry id, rank), matching
- * the reference: [allocationFor]/[rankOf] resolve the *first* allocation of a
- * node and validation treats later duplicates as `DUPLICATE_ALLOCATION`. All
- * construction paths canonicalize; the [init] check fails closed if a state was
- * built out of order (e.g. via `copy`).
+ * Ownership and order: every construction path snapshots the input collection
+ * into a list owned by the state and stores it in canonical (node id, entry id,
+ * rank) order — exactly like the reference, whose pydantic validator sorts on
+ * every construction. A state therefore never aliases a caller-owned (possibly
+ * mutable) collection, and an out-of-canonical-order state cannot exist:
+ * [allocationFor]/[rankOf] resolve the *first* allocation of a node and
+ * validation treats later duplicates as `DUPLICATE_ALLOCATION`. There is no
+ * data-class `copy()`: [empty], [of] and [withAllocation] are the transition
+ * API. The exposed [allocations] list is read-only by contract — never mutate
+ * it through a cast.
  */
-data class BuildState(
+class BuildState(
     val treeId: Int,
-    val allocations: List<NodeAllocation>,
+    allocations: List<NodeAllocation>,
 ) {
-    init {
-        require(allocations.inCanonicalOrder()) {
-            "BuildState allocations must be in canonical (node, entry, rank) order — " +
-                "build states through empty()/of()/withAllocation()"
-        }
-    }
+
+    /**
+     * Canonical snapshot of the constructor argument: `sortedWith` always
+     * returns a fresh list, so no caller alias is retained.
+     */
+    val allocations: List<NodeAllocation> =
+        allocations.sortedWith(ALLOCATIONS_CANONICAL_ORDER)
 
     /** New state where [nodeId] holds [rank] ranks of [entryId] (rank 0 removes it). */
     fun withAllocation(nodeId: Int, entryId: Int, rank: Int): BuildState {
@@ -34,7 +40,7 @@ data class BuildState(
         if (rank > 0) {
             kept += NodeAllocation(nodeId = nodeId, entryId = entryId, rank = rank)
         }
-        return of(treeId, kept)
+        return BuildState(treeId, kept)
     }
 
     /** The first allocation of [nodeId] (a valid state has at most one). */
@@ -46,22 +52,23 @@ data class BuildState(
     /** Node id -> purchased rank; like the reference, a later duplicate wins. */
     fun ranks(): Map<Int, Int> = allocations.associate { it.nodeId to it.rank }
 
+    override fun equals(other: Any?): Boolean =
+        other is BuildState && other.treeId == treeId && other.allocations == allocations
+
+    override fun hashCode(): Int = 31 * treeId + allocations.hashCode()
+
     override fun toString(): String =
         "BuildState(tree=$treeId, ${allocations.joinToString { "${it.nodeId}:${it.rank}" }})"
 
     companion object {
-        fun empty(treeId: Int): BuildState = BuildState(treeId, emptyList())
-
-        /** Builds a state from arbitrary allocations, canonicalizing their order. */
-        fun of(treeId: Int, allocations: List<NodeAllocation>): BuildState =
-            BuildState(treeId, allocations.sortedWith(ALLOCATIONS_CANONICAL_ORDER))
-
         private val ALLOCATIONS_CANONICAL_ORDER =
             compareBy<NodeAllocation>({ it.nodeId }, { it.entryId }, { it.rank })
 
-        private fun List<NodeAllocation>.inCanonicalOrder(): Boolean =
-            asSequence().zipWithNext { a, b -> ALLOCATIONS_CANONICAL_ORDER.compare(a, b) <= 0 }
-                .all { it }
+        fun empty(treeId: Int): BuildState = BuildState(treeId, emptyList())
+
+        /** Builds a state from arbitrary allocations; the input is snapshotted and canonicalized. */
+        fun of(treeId: Int, allocations: List<NodeAllocation>): BuildState =
+            BuildState(treeId, allocations)
     }
 }
 
