@@ -41,11 +41,11 @@ data class Provenance(
 @Serializable
 data class TalentTree(
     val id: Int,
-    val pointBudget: PointBudget? = null,
+    val pointBudget: PointBudget?,
     val layout: TalentLayout,
     val sections: List<TalentSection>,
     val nodes: List<TalentNode>,
-    val visualOnlyEdges: List<VisualOnlyEdge> = emptyList(),
+    val visualOnlyEdges: List<VisualOnlyEdge>,
 )
 
 /** TraitCurrency-backed spendable budget of a tree. */
@@ -66,7 +66,7 @@ data class TalentLayout(
 @Serializable
 data class TalentSection(
     val index: Int,
-    val name: String? = null,
+    val name: String?,
     val nodeIds: List<Int>,
 )
 

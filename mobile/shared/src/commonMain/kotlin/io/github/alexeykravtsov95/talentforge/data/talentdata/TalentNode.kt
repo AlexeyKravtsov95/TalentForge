@@ -7,16 +7,16 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TalentNode(
     val id: Int,
-    val sectionIndex: Int? = null,
+    val sectionIndex: Int?,
     val position: TalentPosition,
     val type: TalentNodeType,
     val flags: Int,
     val maxRank: Int,
-    val spellId: Int? = null,
-    val name: String? = null,
-    val prerequisites: List<Prerequisite> = emptyList(),
-    val unlockRequirements: List<UnlockRequirement> = emptyList(),
-    val unresolvedConditionIds: List<Int> = emptyList(),
+    val spellId: Int?,
+    val name: String?,
+    val prerequisites: List<Prerequisite>,
+    val unlockRequirements: List<UnlockRequirement>,
+    val unresolvedConditionIds: List<Int>,
     val entries: List<TalentEntry>,
 )
 
@@ -63,7 +63,8 @@ enum class PrerequisiteKind {
 
 /**
  * Unlock gate of a node: points spent among [countedNodeIds] must reach
- * [requiredPoints]. The contract currently publishes a single kind.
+ * [requiredPoints]. The contract currently publishes a single kind
+ * (schema-defaulted to `pointsSpent`).
  */
 @Serializable
 data class UnlockRequirement(

@@ -21,7 +21,7 @@ class ContractParsingSmokeTest {
 
     @Test
     fun parsesMinimalTalentDataDocument() {
-        val document = TalentDataContract.decodeTalentDataDocument(MINIMAL_DOCUMENT_JSON.encodeToByteArray())
+        val document = TalentDataContract.decodeTalentDataDocument(ContractFixtures.minimalDocumentJson.encodeToByteArray())
 
         assertEquals(TalentDataContract.SUPPORTED_VERSION, document.schemaVersion)
         assertEquals(GameId("forever"), document.game)
@@ -43,7 +43,7 @@ class ContractParsingSmokeTest {
 
     @Test
     fun rejectsUnknownProperty() {
-        val drifted = MINIMAL_DOCUMENT_JSON.replace(
+        val drifted = ContractFixtures.minimalDocumentJson.replace(
             "\"schemaVersion\": 1,",
             "\"schemaVersion\": 1, \"futureField\": true,",
         )
@@ -54,7 +54,7 @@ class ContractParsingSmokeTest {
 
     @Test
     fun rejectsUnknownEnumValue() {
-        val drifted = MINIMAL_DOCUMENT_JSON.replace("\"perRankStatus\": \"resolved\"", "\"perRankStatus\": \"bogus\"")
+        val drifted = ContractFixtures.minimalDocumentJson.replace("\"perRankStatus\": \"resolved\"", "\"perRankStatus\": \"bogus\"")
         assertFailsWith<SerializationException> {
             TalentDataContract.decodeTalentDataDocument(drifted.encodeToByteArray())
         }
@@ -62,7 +62,7 @@ class ContractParsingSmokeTest {
 
     @Test
     fun rejectsMissingRequiredField() {
-        val drifted = MINIMAL_DOCUMENT_JSON.replace("\"maxRank\": 3,", "")
+        val drifted = ContractFixtures.minimalDocumentJson.replace("\"maxRank\": 3,", "")
         assertFailsWith<SerializationException> {
             TalentDataContract.decodeTalentDataDocument(drifted.encodeToByteArray())
         }
@@ -74,10 +74,10 @@ class ContractParsingSmokeTest {
         // integer field and must fail. (A quoted numeric literal such as "3"
         // is accepted by kotlinx.serialization for Int targets by design.)
         for (drifted in listOf(
-            MINIMAL_DOCUMENT_JSON.replace("\"maxRank\": 3", "\"maxRank\": \"three\""),
-            MINIMAL_DOCUMENT_JSON.replace("\"maxRank\": 3", "\"maxRank\": 3.5"),
-            MINIMAL_DOCUMENT_JSON.replace("\"maxRank\": 3", "\"maxRank\": {}"),
-            MINIMAL_DOCUMENT_JSON.replace("\"game\": \"forever\"", "\"game\": 7"),
+            ContractFixtures.minimalDocumentJson.replace("\"maxRank\": 3", "\"maxRank\": \"three\""),
+            ContractFixtures.minimalDocumentJson.replace("\"maxRank\": 3", "\"maxRank\": 3.5"),
+            ContractFixtures.minimalDocumentJson.replace("\"maxRank\": 3", "\"maxRank\": {}"),
+            ContractFixtures.minimalDocumentJson.replace("\"game\": \"forever\"", "\"game\": 7"),
         )) {
             assertFailsWith<SerializationException> {
                 TalentDataContract.decodeTalentDataDocument(drifted.encodeToByteArray())
@@ -87,7 +87,7 @@ class ContractParsingSmokeTest {
 
     @Test
     fun rejectsUnsupportedSchemaVersion() {
-        val drifted = MINIMAL_DOCUMENT_JSON.replace("\"schemaVersion\": 1", "\"schemaVersion\": 2")
+        val drifted = ContractFixtures.minimalDocumentJson.replace("\"schemaVersion\": 1", "\"schemaVersion\": 2")
         val error = assertFailsWith<UnsupportedContractVersionException> {
             TalentDataContract.decodeTalentDataDocument(drifted.encodeToByteArray())
         }
@@ -98,14 +98,14 @@ class ContractParsingSmokeTest {
 
     @Test
     fun preservesUnmappedNodeTypeVerbatim() {
-        val drifted = MINIMAL_DOCUMENT_JSON.replace("\"type\": \"single\"", "\"type\": \"unknown:99\"")
+        val drifted = ContractFixtures.minimalDocumentJson.replace("\"type\": \"single\"", "\"type\": \"unknown:99\"")
         val document = TalentDataContract.decodeTalentDataDocument(drifted.encodeToByteArray())
         assertEquals(TalentNodeType.Unknown("unknown:99"), document.trees.single().nodes.single().type)
     }
 
     @Test
     fun parsesAndRoundTripsBuildFile() {
-        val build = TalentDataContract.decodeAllocationBuildFile(BUILD_FILE_JSON.encodeToByteArray())
+        val build = TalentDataContract.decodeAllocationBuildFile(ContractFixtures.minimalBuildFileJson.encodeToByteArray())
         assertEquals(ClassToken("WARRIOR"), build.classToken)
         assertEquals(1117, build.treeId)
         assertEquals(1, build.allocations.size)
@@ -118,7 +118,7 @@ class ContractParsingSmokeTest {
 
     @Test
     fun parsesConformanceSuite() {
-        val suite = TalentDataContract.decodeConformanceSuite(CONFORMANCE_JSON.encodeToByteArray())
+        val suite = TalentDataContract.decodeConformanceSuite(ContractFixtures.minimalConformanceJson.encodeToByteArray())
         assertEquals(1, suite.scenarios.size)
         assertEquals(1, suite.totalSteps)
         assertEquals(GameId("forever"), suite.game)
@@ -127,117 +127,9 @@ class ContractParsingSmokeTest {
 
     @Test
     fun rejectsBuildFileWithUnknownVersion() {
-        val drifted = BUILD_FILE_JSON.replace("\"schemaVersion\": 1", "\"schemaVersion\": 3")
+        val drifted = ContractFixtures.minimalBuildFileJson.replace("\"schemaVersion\": 1", "\"schemaVersion\": 3")
         assertFailsWith<UnsupportedContractVersionException> {
             TalentDataContract.decodeAllocationBuildFile(drifted.encodeToByteArray())
         }
     }
 }
-
-private val MINIMAL_DOCUMENT_JSON = """
-{
-  "schemaVersion": 1,
-  "game": "forever",
-  "clientBuild": "1.60.1.70009",
-  "class": { "id": 1, "token": "WARRIOR", "name": "Warrior" },
-  "trees": [
-    {
-      "id": 1117,
-      "pointBudget": { "currencyId": 3820, "maxPoints": 51 },
-      "layout": { "xStep": 600, "yStep": 600 },
-      "sections": [ { "index": 0, "name": null, "nodeIds": [105958] } ],
-      "nodes": [
-        {
-          "id": 105958,
-          "sectionIndex": 0,
-          "position": { "x": 1020, "y": 2130, "row": 0, "column": 0 },
-          "type": "single",
-          "flags": 0,
-          "maxRank": 3,
-          "spellId": 12282,
-          "name": "Improved Heroic Strike",
-          "prerequisites": [ { "nodeId": 1, "kind": "sufficient" } ],
-          "unlockRequirements": [ { "requiredPoints": 5, "countedNodeIds": [1, 2] } ],
-          "unresolvedConditionIds": [],
-          "entries": [
-            {
-              "id": 130688,
-              "definitionId": 135489,
-              "spellId": 12282,
-              "name": "Improved Heroic Strike",
-              "maxRank": 3,
-              "entryType": 1,
-              "descriptionTemplate": null,
-              "effects": [
-                {
-                  "index": 0,
-                  "perRank": [ { "rank": 1, "value": -10 } ],
-                  "perRankStatus": "resolved",
-                  "basePoints": -10,
-                  "unresolvedReason": null
-                }
-              ]
-            }
-          ]
-        }
-      ],
-      "visualOnlyEdges": [ { "fromNodeId": 1, "toNodeId": 2 } ]
-    }
-  ],
-  "contentHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
-  "generatedAt": "2026-01-01T00:00:00Z",
-  "provenance": { "source": "wago.tools", "tables": ["TraitNode"] }
-}
-""".trimIndent()
-
-private val BUILD_FILE_JSON = """
-{
-  "schemaVersion": 1,
-  "game": "forever",
-  "clientBuild": "1.60.1.70009",
-  "class": "WARRIOR",
-  "treeId": 1117,
-  "allocations": [ { "nodeId": 105958, "entryId": 130688, "rank": 3 } ]
-}
-""".trimIndent()
-
-private val CONFORMANCE_JSON = """
-{
-  "schemaVersion": 1,
-  "game": "forever",
-  "clientBuild": "1.60.1.70009",
-  "datasets": [
-    {
-      "class": "WARRIOR",
-      "file": "data/normalized/forever/1.60.1.70009/warrior.json",
-      "contentHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
-    }
-  ],
-  "scenarios": [
-    {
-      "id": "warrior.smoke",
-      "class": "WARRIOR",
-      "description": "smoke",
-      "rules": ["RANK-1"],
-      "synthetic": false,
-      "mutations": [],
-      "initial": [],
-      "steps": [
-        {
-          "op": "spend",
-          "nodeId": 105958,
-          "entryId": 130688,
-          "expect": {
-            "ok": true,
-            "reasonCodes": [],
-            "issues": [],
-            "spentPoints": 1,
-            "remainingPoints": 50,
-            "nodeRank": 1
-          }
-        }
-      ]
-    }
-  ]
-}
-""".trimIndent()

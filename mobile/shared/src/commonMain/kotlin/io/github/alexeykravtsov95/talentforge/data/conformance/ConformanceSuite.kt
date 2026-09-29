@@ -164,6 +164,7 @@ data class Expectation(
     val nodeRank: Int? = null,
 )
 
+
 /** Expected issue in canonical order, without messages. */
 @Serializable
 data class ExpectedIssue(

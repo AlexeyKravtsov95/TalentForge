@@ -11,6 +11,7 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.JsonUnquotedLiteral
 
 /** One selectable entry (TraitNodeEntry) of a node. */
 @Serializable
@@ -18,20 +19,20 @@ data class TalentEntry(
     val id: Int,
     val definitionId: Int,
     val spellId: Int,
-    val name: String? = null,
+    val name: String?,
     val maxRank: Int,
     val entryType: Int,
-    val descriptionTemplate: String? = null,
-    val effects: List<TalentEffect> = emptyList(),
+    val descriptionTemplate: String?,
+    val effects: List<TalentEffect>,
 )
 
 /** One spell effect attached to an entry, with its per-rank value curve. */
 @Serializable
 data class TalentEffect(
     val index: Int,
-    val perRank: List<RankValue>? = null,
+    val perRank: List<RankValue>?,
     val perRankStatus: PerRankStatus,
-    val basePoints: NumberValue? = null,
+    val basePoints: NumberValue?,
     val unresolvedReason: String? = null,
 )
 
@@ -89,11 +90,14 @@ internal object NumberValueSerializer : KSerializer<NumberValue> {
     override fun serialize(encoder: Encoder, value: NumberValue) {
         val jsonEncoder = encoder as? JsonEncoder
             ?: throw SerializationException("NumberValue supports only JSON")
-        val literal = when (value) {
-            is NumberValue.Integral -> value.value.toString()
-            is NumberValue.Decimal -> value.literal
+        // Numbers must stay numbers on the wire: Integral serializes as a JSON
+        // number via its Long value; Decimal re-emits its preserved literal
+        // unquoted (e.g. "1.50" or "1.2e3") so the exact wire form round-trips.
+        val primitive = when (value) {
+            is NumberValue.Integral -> JsonPrimitive(value.value)
+            is NumberValue.Decimal -> JsonUnquotedLiteral(value.literal)
         }
-        jsonEncoder.encodeJsonElement(JsonPrimitive(literal))
+        jsonEncoder.encodeJsonElement(primitive)
     }
 
     private fun Decoder.decodeJsonPrimitive(): JsonPrimitive {
@@ -104,7 +108,10 @@ internal object NumberValueSerializer : KSerializer<NumberValue> {
             ?: throw SerializationException("expected a JSON number primitive, got $element")
     }
 
-    /** Accepts `1.5`, `-2`, `1e3`; rejects `1.`, `--1`, `1.2.3`, `1e`, `0x1f`. */
+    /**
+     * Accepts the JSON number grammar subset the schema permits: `1.5`, `-2`,
+     * `1e3`, `2.5E-4`; rejects `1.`, `--1`, `1.2.3`, `1e`, `0x1f`.
+     */
     private fun String.isStrictDecimalLiteral(): Boolean {
         if (isEmpty()) return false
         val body = when {
@@ -116,8 +123,11 @@ internal object NumberValueSerializer : KSerializer<NumberValue> {
         val exponentSplit = body.split('e', 'E')
         if (exponentSplit.size > 2) return false
         val mantissa = exponentSplit[0]
-        if (exponentSplit.size == 2 && exponentSplit[1].isEmpty()) return false
-        if (exponentSplit.size == 2 && !exponentSplit[1].all { it in '0'..'9' }) return false
+        val exponent = exponentSplit.getOrNull(1)
+        if (exponent != null) {
+            val exponentDigits = exponent.removePrefix("-").removePrefix("+")
+            if (exponentDigits.isEmpty() || !exponentDigits.all { it in '0'..'9' }) return false
+        }
         val dotParts = mantissa.split('.')
         if (dotParts.size > 2 || dotParts.any { it.isEmpty() }) return false
         return dotParts.joinToString("").all { it in '0'..'9' }
