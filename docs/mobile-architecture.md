@@ -31,7 +31,8 @@ Pure Kotlin Multiplatform library — **no Compose, no platform types**. Contain
   implementation with manifest/document integrity checks and typed
   `DatasetLoadError` failures;
 - `DatasetAssetSource` abstraction (bytes in, nothing platform-specific out);
-- the future M3B allocation engine will live here.
+- the M3B allocation engine and conformance executor in the `allocation`
+  package (see "Conformance strategy" below).
 
 Targets: Android, iOS arm64, iOS simulator arm64, JVM (fast contract tests).
 
@@ -167,7 +168,7 @@ resource and a resource that exists but cannot be read are distinct failures,
 mirrored by `AssetNotFoundException` / `AssetReadException` at the asset-source
 boundary.
 
-## Conformance strategy (parse-only in M3A)
+## Conformance strategy (M3A parsing, M3B execution)
 
 M3A implements the full serialization contract for
 `allocation-conformance.v1` and `allocation-build.v1`, and proves it by
@@ -175,20 +176,59 @@ loading the committed baseline: 53 scenarios / 177 steps, with every
 referenced dataset identity and content hash resolving to the baseline
 documents.
 
-**Executing the scenarios is intentionally absent.** The M2 rules
-`EDGE-ACTIVE` and `EDGE-SUF` are still High-confidence-but-unverified against
-the live Forever client, so M3A must not freeze allocation semantics into
-Kotlin. There is no fake runner, no expected-result shortcut and no ignored
-test — loading and structural validation only.
+**M3A parsed only.** The M2 rules `EDGE-ACTIVE` and `EDGE-SUF` are still
+High-confidence-but-unverified against the live Forever client, so M3A did not
+freeze allocation semantics into Kotlin: loading and structural validation
+only, with no fake runner, no expected-result shortcut and no ignored test.
+M3B then implemented the documented reference semantics provisionally and
+executes the suite (below).
 
-### How M3B plugs in
+### How M3B plugged in
 
-M3B will add a `TalentAllocationEngine` inside `shared` (consuming the same
-`TalentDataDocument` models), plus a conformance executor that feeds
-`ConformanceScenario.initial`/`mutations`/`steps` through the engine and
-compares against `Expectation`. No module, model or packaging change is
-required: the contract loaders, dataset repository, resource pipeline and
-tests added in M3A already expose everything the executor needs.
+M3B added the `TalentAllocationEngine` inside `shared` under
+`io.github.alexeykravtsov95.talentforge.allocation` — a domain package beside
+the `data.*` contract packages, consuming the existing `data.talentdata`,
+`data.allocation` and `data.conformance` models without duplicating them:
+`BuildState` reuses the wire `NodeAllocation`, and the conformance executor
+consumes the M3A `ConformanceSuite` model directly.
+
+`AllocationConformance` is the executor: it applies a scenario's mutations to
+an isolated copy of the referenced document (immutable value types — the
+canonical parsed instance is never modified), builds the engine with the
+scenario's `pointLimit`, replays `initial`/`steps` through the real engine and
+compares each step against the `Expectation` (`ok`, sorted `reasonCodes`, the
+ordered structural `issues`, `spentPoints`, `remainingPoints`, `nodeRank`;
+never messages). The acceptance test `AllocationConformanceReplayTest` (JVM)
+executes the committed baseline — 53 scenarios / 177 steps — and must pass
+exactly. Focused engine tests run in `commonTest` (synthetic structures, also
+executed on the iOS simulator) and `jvmTest` (real committed Forever
+structures).
+
+The engine ports the Python M2 reference semantics one-to-one, including the
+greedy purchase closure behind `validate` (VALID-1), the `canSpend` issue
+collection order and the canonical issue ordering (code declaration order,
+then `nodeId`, `entryId`, `relatedNodeIds`, `conditionId`, `cause`). Two
+deliberate consumer-side differences, documented on the code:
+
+- the engine constructor validates the allocation-relevant structural
+  invariants of a document (duplicate tree/node/entry ids, nodes without
+  entries, invalid max ranks, dangling/self prerequisites, unlock
+  requirements counting unknown nodes, dangling visual edges, required
+  prerequisite cycles) but not the Python pipeline's layout-grid, section,
+  position and spell/name data-quality checks — those stay pipeline concerns;
+- the Python canonical content-hash algorithm is not part of the consumer
+  contract and is never recomputed in Kotlin: published hashes are verified
+  against the manifest by `BundledTalentDatasetRepository`, and the
+  conformance mutations keep the unmutated document's hash on their in-memory
+  copy (the Python runner re-hashes because its full-document validator
+  recomputes it).
+
+**EDGE-ACTIVE and EDGE-SUF remain High — hypothesis.** Passing the 53/177
+replay proves parity with the Python reference engine, not agreement with the
+live client; the edge contract is not final until E1/E2 are client-observed
+(docs/talent-allocation-semantics.md §13). No level-derived point limits are
+calculated — a runtime budget (e.g. the level-20 `maxQuantity = 11`) is
+caller-supplied `pointLimit` territory.
 
 ## Design source of truth
 
@@ -208,8 +248,9 @@ python3 scripts/sync_mobile_datasets.py
 
 # tests (JVM)
 cd mobile
-./gradlew :shared:jvmTest              # contract + repository + conformance tests
-./gradlew :composeApp:desktopTest      # bundled baseline, drift, design tokens
+./gradlew :shared:jvmTest               # contract + repository + allocation + conformance replay
+./gradlew :shared:iosSimulatorArm64Test # common allocation tests on the iOS simulator
+./gradlew :composeApp:desktopTest       # bundled baseline, drift, design tokens
 
 # Android
 ./gradlew :composeApp:assembleDebug    # -> composeApp/build/outputs/apk/debug/
