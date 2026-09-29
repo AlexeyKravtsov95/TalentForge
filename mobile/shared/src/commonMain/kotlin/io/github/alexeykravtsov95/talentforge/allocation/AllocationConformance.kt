@@ -188,24 +188,34 @@ object AllocationConformance {
         )
     }
 
-    private fun requireMutationInt(mutation: ConformanceMutation): Int =
-        when (val value = mutation.value) {
-            is MutationValue.IntegralValue -> value.value.toInt()
-            else -> throw IllegalArgumentException(
+    private fun requireMutationInt(mutation: ConformanceMutation): Int {
+        val value = mutation.value
+        if (value !is MutationValue.IntegralValue) {
+            throw IllegalArgumentException(
                 "${mutation.op.name} needs an integer value, got $value",
             )
         }
+        // Fail closed on out-of-range integers: toInt() would silently wrap a
+        // Long outside the Int range (2147483648L -> -2147483648).
+        if (value.value !in Int.MIN_VALUE.toLong()..Int.MAX_VALUE.toLong()) {
+            throw IllegalArgumentException(
+                "${mutation.op.name} needs a 32-bit integer value, got ${value.value} " +
+                    "(outside the Int range)",
+            )
+        }
+        return value.value.toInt()
+    }
 
     /**
-     * The reference stores whatever string the value carries (`str(value)`, so
-     * an integer becomes its decimal form); only `setNodeType` consumes it.
+     * The reference stores whatever string the value carries (`str(value)`):
+     * a string stays as-is, an integer becomes its decimal form, and null
+     * becomes "None" (Python `str(None)`) — which the engine then reports as
+     * an unsupported node type, never a crash.
      */
     private fun mutationText(mutation: ConformanceMutation): String =
         when (val value = mutation.value) {
             is MutationValue.TextValue -> value.value
             is MutationValue.IntegralValue -> value.value.toString()
-            null -> throw IllegalArgumentException(
-                "${mutation.op.name} needs a value, got none",
-            )
+            null -> "None"
         }
 }
