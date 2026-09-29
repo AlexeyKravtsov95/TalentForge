@@ -53,12 +53,19 @@ Compose Multiplatform application/UI host. Depends on `shared`. Contains:
     no allocation semantics and duplicates no contract hierarchy. One uniform
     factor maps client units to dp (one `layout.xStep` = 76 dp, the B3 portrait
     column pitch), preserving the client's relative geometry without
-    distortion;
+    distortion. Fail-closed presentation preconditions return typed build
+    errors instead of crashing or emitting sentinel geometry: no tree,
+    multiple trees, no nodes, duplicate node ids, invalid layout step,
+    dangling edge references;
   - `TalentTreeViewport` — the single world→screen transform (`dp·scale +
     offset`) with pure helpers for world↔screen, pan, focal-point zoom
     clamped to the B3 0.8–2.2× bounds, and the deterministic initial
     transform. `TalentTreeViewportState` holds it (saveable — no reset across
-    recomposition/rotation) and `nodeAt` hit-tests the B3 56×56 dp targets;
+    recomposition/rotation). Hit testing runs in **screen space**: the
+    effective target is `max(56 dp · scale, orientation minimum)` so zooming
+    out never shrinks the physically tappable area below the B3 usable
+    minimums (56 dp portrait, 48 dp landscape) — node visuals are untouched
+    by this;
   - `TalentTreeCanvas` — connectors drawn behind nodes under one shared
     transform, nodes as keyed composables carrying the real names in their
     accessibility semantics, and the B3 gesture arbitration: tap node =
