@@ -70,11 +70,11 @@ class ContractParsingSmokeTest {
 
     @Test
     fun rejectsWrongFieldType() {
-        // Non-numeric strings, decimals and objects are incompatible with the
-        // integer field and must fail. (A quoted numeric literal such as "3"
-        // is accepted by kotlinx.serialization for Int targets by design.)
+        // Non-numeric strings, quoted numeric literals, decimals and objects
+        // are all incompatible with the integer field and must fail.
         for (drifted in listOf(
             ContractFixtures.minimalDocumentJson.replace("\"maxRank\": 3", "\"maxRank\": \"three\""),
+            ContractFixtures.minimalDocumentJson.replace("\"maxRank\": 3", "\"maxRank\": \"3\""),
             ContractFixtures.minimalDocumentJson.replace("\"maxRank\": 3", "\"maxRank\": 3.5"),
             ContractFixtures.minimalDocumentJson.replace("\"maxRank\": 3", "\"maxRank\": {}"),
             ContractFixtures.minimalDocumentJson.replace("\"game\": \"forever\"", "\"game\": 7"),

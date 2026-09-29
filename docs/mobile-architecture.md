@@ -116,13 +116,14 @@ The schemas are closed contracts; M3A is a consumer and never changes them.
   (`prerequisites`, `effects`, `visualOnlyEdges`, `countedNodeIds`,
   `reasonCodes`, `issues`) — omitting any of them fails deserialization;
 - an unsupported `schemaVersion` raises `UnsupportedContractVersionException`
-  and surfaces as `DatasetLoadError.UnsupportedSchemaVersion`.
-
-One documented kotlinx.serialization behaviour: a *quoted numeric literal*
-(`"maxRank": "3"`) is accepted for an integer field by design of the library.
-It preserves the value exactly and never invents data; the strictness tests
-cover genuinely incompatible types. The contract files published by the
-pipeline never contain quoted numbers.
+  and surfaces as `DatasetLoadError.UnsupportedSchemaVersion`;
+- quoted numeric literals (`"maxRank": "3"`) are rejected wherever the schema
+  requires a JSON number. kotlinx.serialization accepts them by design, so
+  every contract read is followed by a centralized wire-form check that
+  compares the payload against the canonical re-encoding of the decoded
+  model: at every position the model serializes as a number, the payload must
+  carry an unquoted numeric primitive. Legitimate numeric *strings* (schema
+  type string, e.g. `clientBuild`) are unaffected.
 
 Open string unions the schema explicitly allows are modelled faithfully:
 `TalentNode.type` keeps unmapped values verbatim as `TalentNodeType.Unknown`

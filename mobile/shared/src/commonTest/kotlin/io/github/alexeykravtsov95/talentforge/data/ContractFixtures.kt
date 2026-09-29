@@ -74,6 +74,25 @@ internal object ContractFixtures {
     }
     """.trimIndent()
 
+    val minimalManifestJson: String = """
+    {
+      "schemaVersion": 1,
+      "game": "forever",
+      "clientBuild": "1.60.1.70009",
+      "generatedAt": "2026-01-01T00:00:00Z",
+      "source": "wago.tools",
+      "classes": [
+        {
+          "token": "WARRIOR",
+          "file": "warrior.json",
+          "treeIds": [1117],
+          "contentHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+          "validation": { "errors": 0, "warnings": 0, "warningsByCode": {} }
+        }
+      ]
+    }
+    """.trimIndent()
+
     val minimalConformanceJson: String = """
     {
       "schemaVersion": 1,
