@@ -1,0 +1,96 @@
+name: mobile-ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - "mobile/**"
+      - "data/normalized/**"
+      - "data/conformance/**"
+      - "docs/schema/**"
+      - "scripts/sync_mobile_datasets.py"
+      - ".github/workflows/mobile-ci.yml"
+
+concurrency:
+  group: mobile-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  mobile-linux:
+    name: Mobile (Linux) — contracts, drift, Android
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Dataset drift check (bundled == canonical)
+        run: python3 scripts/sync_mobile_datasets.py --check
+
+      - name: Shared JVM contract tests (18 documents, 2 manifests, conformance, repository)
+        working-directory: mobile
+        run: ./gradlew :shared:jvmTest --console=plain
+
+      - name: ComposeApp desktop tests (bundled baseline, drift, design tokens)
+        working-directory: mobile
+        run: ./gradlew :composeApp:desktopTest --console=plain
+
+      - name: Android debug build
+        working-directory: mobile
+        run: ./gradlew :composeApp:assembleDebug --console=plain
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: composeApp-debug-apk
+          path: mobile/composeApp/build/outputs/apk/debug/composeApp-debug.apk
+
+  mobile-macos:
+    name: Mobile (macOS) — iOS
+    runs-on: macos-latest
+    env:
+      ANDROID_HOME: /Users/runner/Library/Android/sdk
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Shared iOS compilation and simulator tests
+        working-directory: mobile
+        run: ./gradlew :shared:compileKotlinIosArm64 :shared:compileKotlinIosSimulatorArm64 :shared:iosSimulatorArm64Test --console=plain
+
+      - name: Link Compose iOS frameworks (device + simulator)
+        working-directory: mobile
+        run: ./gradlew :composeApp:linkDebugFrameworkIosArm64 :composeApp:linkDebugFrameworkIosSimulatorArm64 --console=plain
+
+      - name: Build iosApp for simulator
+        working-directory: mobile/iosApp
+        run: |
+          xcodebuild -project iosApp.xcodeproj -scheme iosApp -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO ARCHS=arm64 build

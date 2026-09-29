@@ -6,8 +6,9 @@ This repository contains the **data platform** — M0 proved the pipeline on War
 makes it production-ready for *all nine* Forever classes: discover the latest
 *WoW: Forever* beta build, download its client DB2 tables, normalize every class talent
 tree into our own versioned JSON contract (plus a dataset manifest), and produce semantic
-diffs between builds — with no hand-maintained talent data. **M2 (current)** adds the
-reference talent allocation engine on top of that dataset.
+diffs between builds — with no hand-maintained talent data. **M2** adds the reference
+talent allocation engine on top of that dataset, and **M3A** starts the Kotlin
+Multiplatform mobile client (see [Mobile](#mobile) below).
 
 ## Quick start
 
@@ -83,6 +84,23 @@ pytest -m integration   # live wago.tools (also a manual GitHub Actions workflow
 
 CI (`.github/workflows/ci.yml`) runs exactly these four steps on every push/PR; a second
 manual workflow runs the live integration tests.
+
+## Mobile
+
+**M3A** adds the Kotlin Multiplatform foundation under `mobile/` (shared contract
+models + dataset repository, Compose Multiplatform smoke host, thin iOS host). It is a
+pure consumer of the committed JSON contracts — no allocation semantics yet.
+
+```bash
+python3 scripts/sync_mobile_datasets.py --check   # bundled data == canonical data
+cd mobile
+./gradlew :shared:jvmTest :composeApp:desktopTest # contract/repository/conformance tests
+./gradlew :composeApp:assembleDebug               # Android debug APK
+```
+
+iOS: `./gradlew :composeApp:linkDebugFrameworkIosArm64` and the `iosApp/` Xcode project.
+Details, version stack and design-source precedence: [docs/mobile-architecture.md](docs/mobile-architecture.md).
+Mobile CI lives in `.github/workflows/mobile-ci.yml` (Linux + macOS jobs).
 
 ## Layout
 

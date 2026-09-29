@@ -1,0 +1,3941 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "clientBuild": "1.60.1.70009",
+  "class": {
+    "id": 5,
+    "token": "PRIEST",
+    "name": "Priest"
+  },
+  "trees": [
+    {
+      "id": 1114,
+      "pointBudget": {
+        "currencyId": 3820,
+        "maxPoints": 51
+      },
+      "layout": {
+        "xStep": 600,
+        "yStep": 600
+      },
+      "sections": [
+        {
+          "index": 0,
+          "name": null,
+          "nodeIds": [
+            105834,
+            105835,
+            105836,
+            105837,
+            105838,
+            105839,
+            105840,
+            105841,
+            105842,
+            105843,
+            105844,
+            105845,
+            105846,
+            105848,
+            105849,
+            105850,
+            110852,
+            110853
+          ]
+        },
+        {
+          "index": 1,
+          "name": null,
+          "nodeIds": [
+            105851,
+            105852,
+            105853,
+            105854,
+            105855,
+            105856,
+            105857,
+            105858,
+            105859,
+            105860,
+            105861,
+            105862,
+            105863,
+            105864,
+            105865,
+            105866,
+            105867,
+            110855
+          ]
+        },
+        {
+          "index": 2,
+          "name": null,
+          "nodeIds": [
+            105817,
+            105818,
+            105819,
+            105820,
+            105821,
+            105823,
+            105824,
+            105825,
+            105826,
+            105827,
+            105828,
+            105829,
+            105830,
+            105831,
+            105832,
+            105833,
+            110851,
+            110854
+          ]
+        }
+      ],
+      "nodes": [
+        {
+          "id": 110853,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 2130,
+            "row": 0,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 8,
+          "maxRank": 5,
+          "spellId": 1309969,
+          "name": "Power in Light",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 137845,
+              "definitionId": 142599,
+              "spellId": 1309969,
+              "name": "Power in Light",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Your Smite and Penance spells deal $m1% increased damage to targets afflicted with your Holy Fire.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105850,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 14524,
+          "name": "Wand Specialization",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130579,
+              "definitionId": 135380,
+              "spellId": 14524,
+              "name": "Wand Specialization",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your damage with Wands by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 13
+                    },
+                    {
+                      "rank": 2,
+                      "value": 25
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 25,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105849,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 2130,
+            "row": 0,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 1225132,
+          "name": "Twin Disciplines",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130578,
+              "definitionId": 135379,
+              "spellId": 1225132,
+              "name": "Twin Disciplines",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the damage and healing of your instant cast spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": null,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105848,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 2730,
+            "row": 1,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 14523,
+          "name": "Silent Resolve",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105849,
+                105850,
+                110853
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130577,
+              "definitionId": 135378,
+              "spellId": 14523,
+              "name": "Silent Resolve",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the threat generated by your Holy spells by $s1% and reduces the duration of Stun, Fear, and Silence effects inflicted on you by $m2%.\r\n",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -10
+                    },
+                    {
+                      "rank": 2,
+                      "value": -20
+                    },
+                    {
+                      "rank": 3,
+                      "value": -30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -30,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -5
+                    },
+                    {
+                      "rank": 2,
+                      "value": -10
+                    },
+                    {
+                      "rank": 3,
+                      "value": -15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -15,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -5
+                    },
+                    {
+                      "rank": 2,
+                      "value": -10
+                    },
+                    {
+                      "rank": 3,
+                      "value": -15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -15,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 3,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -5
+                    },
+                    {
+                      "rank": 2,
+                      "value": -10
+                    },
+                    {
+                      "rank": 3,
+                      "value": -15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 110852,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 8,
+          "maxRank": 3,
+          "spellId": 1309957,
+          "name": "Holy Precision",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105849,
+                105850,
+                110853
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 137844,
+              "definitionId": 142598,
+              "spellId": 1309957,
+              "name": "Holy Precision",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Improves your chance to hit with Holy spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 6
+                    },
+                    {
+                      "rank": 2,
+                      "value": 12
+                    },
+                    {
+                      "rank": 3,
+                      "value": 18
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 18,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105846,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 14748,
+          "name": "Improved Power Word: Shield",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105849,
+                105850,
+                110853
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130575,
+              "definitionId": 135376,
+              "spellId": 14748,
+              "name": "Improved Power Word: Shield",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the damage absorbed by your Power Word: Shield by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 7
+                    },
+                    {
+                      "rank": 2,
+                      "value": 14
+                    },
+                    {
+                      "rank": 3,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105845,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2820,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 14531,
+          "name": "Martyrdom",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105849,
+                105850,
+                110853
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130574,
+              "definitionId": 135375,
+              "spellId": 14531,
+              "name": "Martyrdom",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Gives you a $m1% chance to gain Focused Casting for $27828d after being the victim of a melee or ranged critical strike. The Focused Casting effect prevents you from losing casting time when taking damage and increases your resistance to Interrupt effects by $27828s2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 50
+                    },
+                    {
+                      "rank": 2,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105842,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 14520,
+          "name": "Mental Agility",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130571,
+              "definitionId": 135372,
+              "spellId": 14520,
+              "name": "Mental Agility",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the mana cost of your Smite, Holy Fire, and instant cast spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -3
+                    },
+                    {
+                      "rank": 2,
+                      "value": -7
+                    },
+                    {
+                      "rank": 3,
+                      "value": -10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105844,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 14751,
+          "name": "Inner Focus",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130573,
+              "definitionId": 135374,
+              "spellId": 14751,
+              "name": "Inner Focus",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "When activated, reduces the Mana cost of your next spell by $s1% and increases its critical effect chance by $s2% if it is capable of a critical effect.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": -100,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 25,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105843,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2820,
+            "y": 3330,
+            "row": 2,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 14521,
+          "name": "Meditation",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130572,
+              "definitionId": 135373,
+              "spellId": 14521,
+              "name": "Meditation",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Allows $s1% of your Mana regeneration to continue while casting.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 17
+                    },
+                    {
+                      "rank": 2,
+                      "value": 33
+                    },
+                    {
+                      "rank": 3,
+                      "value": 50
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 50,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105841,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 14747,
+          "name": "Improved Inner Fire",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105842,
+                105843,
+                105844,
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130570,
+              "definitionId": 135371,
+              "spellId": 14747,
+              "name": "Improved Inner Fire",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the Armor bonus of your Inner Fire spell by $s1% and increases its total charges by $m2.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 15
+                    },
+                    {
+                      "rank": 2,
+                      "value": 30
+                    },
+                    {
+                      "rank": 3,
+                      "value": 45
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 45,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 4
+                    },
+                    {
+                      "rank": 2,
+                      "value": 8
+                    },
+                    {
+                      "rank": 3,
+                      "value": 12
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 12,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105837,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 18551,
+          "name": "Mental Strength",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105842,
+                105843,
+                105844,
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130566,
+              "definitionId": 135367,
+              "spellId": 18551,
+              "name": "Mental Strength",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your total Intellect by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 6
+                    },
+                    {
+                      "rank": 3,
+                      "value": 9
+                    },
+                    {
+                      "rank": 4,
+                      "value": 12
+                    },
+                    {
+                      "rank": 5,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105839,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 402000,
+          "name": "Soul Warding",
+          "prerequisites": [
+            {
+              "nodeId": 105846,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105842,
+                105843,
+                105844,
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130568,
+              "definitionId": 135369,
+              "spellId": 402000,
+              "name": "Soul Warding",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the cooldown on your Power Word: Shield spell by ${$m1/-1000} sec and reduces its mana cost by $s2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": -4000,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": -15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105838,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2820,
+            "y": 3930,
+            "row": 3,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 14750,
+          "name": "Improved Mana Burn",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105842,
+                105843,
+                105844,
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130567,
+              "definitionId": 135368,
+              "spellId": 14750,
+              "name": "Improved Mana Burn",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the casting time of your Mana Burn spell by ${$m1/-1000}.1 sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -500
+                    },
+                    {
+                      "rank": 2,
+                      "value": -1000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -1000,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105834,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 402174,
+          "name": "Penance",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105837,
+                105838,
+                105839,
+                105841,
+                105842,
+                105843,
+                105844,
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130563,
+              "definitionId": 135364,
+              "spellId": 402174,
+              "name": "Penance",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Launches a volley of holy light at the target, causing $402284s1 Holy damage to an enemy, or $402289s1 healing to an ally, instantly and every $402261t2 sec for $402261d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105835,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 4530,
+            "row": 4,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 425280,
+          "name": "Renewed Hope",
+          "prerequisites": [
+            {
+              "nodeId": 105839,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105837,
+                105838,
+                105839,
+                105841,
+                105842,
+                105843,
+                105844,
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130564,
+              "definitionId": 135365,
+              "spellId": 425280,
+              "name": "Renewed Hope",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Your heals from Flash Heal, Binding Heal, Lesser Heal, Heal, Greater Heal, and Penance gain $m1% increased critical strike chance when cast on targets with Weakened Soul, and reduce the remaining duration of Weakened Soul on their target by ${$m2/-1000} sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -1000
+                    },
+                    {
+                      "rank": 2,
+                      "value": -2000
+                    },
+                    {
+                      "rank": 3,
+                      "value": -3000
+                    },
+                    {
+                      "rank": 4,
+                      "value": -4000
+                    },
+                    {
+                      "rank": 5,
+                      "value": -5000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -5000,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105840,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 431622,
+          "name": "Divine Aegis",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105834,
+                105835,
+                105837,
+                105838,
+                105839,
+                105841,
+                105842,
+                105843,
+                105844,
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130569,
+              "definitionId": 135370,
+              "spellId": 431622,
+              "name": "Divine Aegis",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Your critical heals create a protective shield on the target, absorbing $s1% of the amount healed. Lasts $431624d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    },
+                    {
+                      "rank": 3,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105836,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 10060,
+          "name": "Power Infusion",
+          "prerequisites": [
+            {
+              "nodeId": 105834,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105834,
+                105835,
+                105836,
+                105837,
+                105838,
+                105839,
+                105840,
+                105841,
+                105842,
+                105843,
+                105844,
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130565,
+              "definitionId": 135366,
+              "spellId": 10060,
+              "name": "Power Infusion",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Infuses the target with power, increasing their spell damage and healing done by $s2% for $d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105867,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 2130,
+            "row": 0,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 14913,
+          "name": "Twilight Focus",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130596,
+              "definitionId": 135397,
+              "spellId": 14913,
+              "name": "Twilight Focus",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Gives you a $s1% chance to avoid interruption caused by damage while casting any spell.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 23
+                    },
+                    {
+                      "rank": 2,
+                      "value": 47
+                    },
+                    {
+                      "rank": 3,
+                      "value": 70
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 70,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105866,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 14908,
+          "name": "Improved Renew",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130595,
+              "definitionId": 135396,
+              "spellId": 14908,
+              "name": "Improved Renew",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the amount healed by your Renew spell by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    },
+                    {
+                      "rank": 3,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 110855,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 2130,
+            "row": 0,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 8,
+          "maxRank": 5,
+          "spellId": 14889,
+          "name": "Holy Specialization",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 137847,
+              "definitionId": 142601,
+              "spellId": 14889,
+              "name": "Holy Specialization",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the critical effect chance of your Holy spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105864,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 27900,
+          "name": "Spell Warding",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105866,
+                105867,
+                110855
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130593,
+              "definitionId": 135394,
+              "spellId": 27900,
+              "name": "Spell Warding",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces all spell damage taken by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -2
+                    },
+                    {
+                      "rank": 2,
+                      "value": -4
+                    },
+                    {
+                      "rank": 3,
+                      "value": -6
+                    },
+                    {
+                      "rank": 4,
+                      "value": -8
+                    },
+                    {
+                      "rank": 5,
+                      "value": -10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105863,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 18530,
+          "name": "Divine Fury",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105866,
+                105867,
+                110855
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130592,
+              "definitionId": 135393,
+              "spellId": 18530,
+              "name": "Divine Fury",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the casting time of your Smite, Holy Fire, Heal, and Greater Heal spells by $/1000;S1 sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -100
+                    },
+                    {
+                      "rank": 2,
+                      "value": -200
+                    },
+                    {
+                      "rank": 3,
+                      "value": -300
+                    },
+                    {
+                      "rank": 4,
+                      "value": -400
+                    },
+                    {
+                      "rank": 5,
+                      "value": -500
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -500,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105862,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 15237,
+          "name": "Holy Nova",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105863,
+                105864,
+                105866,
+                105867,
+                110855
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130591,
+              "definitionId": 135392,
+              "spellId": 15237,
+              "name": "Holy Nova",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Causes an explosion of holy light around the caster, causing $s1 Holy damage to all enemy targets within $a1 yards and healing all party members within $23455a1 yards for $23455s1. These effects cause no threat.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 27,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105861,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 27811,
+          "name": "Blessed Recovery",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105863,
+                105864,
+                105866,
+                105867,
+                110855
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130590,
+              "definitionId": 135391,
+              "spellId": 27811,
+              "name": "Blessed Recovery",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "After being struck by a melee or ranged critical hit, or suffering more than $m2% of your maximum Health from a single attack, heal $s1% of the damage taken over $27813d. Refreshing this effect carries over any remaining healing.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 8
+                    },
+                    {
+                      "rank": 2,
+                      "value": 17
+                    },
+                    {
+                      "rank": 3,
+                      "value": 25
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 8,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105860,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6820,
+            "y": 3330,
+            "row": 2,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 14892,
+          "name": "Inspiration",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105863,
+                105864,
+                105866,
+                105867,
+                110855
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130589,
+              "definitionId": 135390,
+              "spellId": 14892,
+              "name": "Inspiration",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Your non-periodic critical heals increase your target's Armor by $m1% for $14893d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 8
+                    },
+                    {
+                      "rank": 2,
+                      "value": 17
+                    },
+                    {
+                      "rank": 3,
+                      "value": 25
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105859,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 27789,
+          "name": "Holy Reach",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105860,
+                105861,
+                105862,
+                105863,
+                105864,
+                105866,
+                105867,
+                110855
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130588,
+              "definitionId": 135389,
+              "spellId": 27789,
+              "name": "Holy Reach",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the range of your Smite and Holy Fire spells and the radius of your Prayer of Healing and Holy Nova spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105858,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 14912,
+          "name": "Improved Healing",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105860,
+                105861,
+                105862,
+                105863,
+                105864,
+                105866,
+                105867,
+                110855
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130587,
+              "definitionId": 135388,
+              "spellId": 14912,
+              "name": "Improved Healing",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the Mana cost of your Lesser Heal, Heal, Greater Heal, Penance, and Prayer of Mending spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -5
+                    },
+                    {
+                      "rank": 2,
+                      "value": -10
+                    },
+                    {
+                      "rank": 3,
+                      "value": -15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105857,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 14909,
+          "name": "Searing Light",
+          "prerequisites": [
+            {
+              "nodeId": 105863,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105860,
+                105861,
+                105862,
+                105863,
+                105864,
+                105866,
+                105867,
+                110855
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130586,
+              "definitionId": 135387,
+              "spellId": 14909,
+              "name": "Searing Light",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your Holy damage done by $m1%, and gives a $m2% chance each time your Holy Fire spell deals periodic damage for your next Holy Nova to cost no Mana.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105856,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6820,
+            "y": 3930,
+            "row": 3,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 401937,
+          "name": "Binding Heal",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105860,
+                105861,
+                105862,
+                105863,
+                105864,
+                105866,
+                105867,
+                110855
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130585,
+              "definitionId": 135386,
+              "spellId": 401937,
+              "name": "Binding Heal",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Heals a friendly target and the caster for $s1. Low threat.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 247,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 247,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105855,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 4530,
+            "row": 4,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 1317006,
+          "name": "Litany of Light",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105856,
+                105857,
+                105858,
+                105859,
+                105860,
+                105861,
+                105862,
+                105863,
+                105864,
+                105866,
+                105867,
+                110855
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130584,
+              "definitionId": 135385,
+              "spellId": 1317006,
+              "name": "Litany of Light",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "When you cast a healing spell, gain Mana equal to $m1% of the base cost of the spell if your previous heal was a different spell.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105854,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 20711,
+          "name": "Spirit of Redemption",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105856,
+                105857,
+                105858,
+                105859,
+                105860,
+                105861,
+                105862,
+                105863,
+                105864,
+                105866,
+                105867,
+                110855
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130583,
+              "definitionId": 135384,
+              "spellId": 20711,
+              "name": "Spirit of Redemption",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Upon death, the priest becomes the Spirit of Redemption for $27827d.  The Spirit of Redemption cannot move, attack, be attacked or targeted by any spells or effects.  While in this form the priest can cast any healing spell free of cost.  When the effect ends, the priest dies.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105853,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 4530,
+            "row": 4,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 14901,
+          "name": "Spiritual Guidance",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105856,
+                105857,
+                105858,
+                105859,
+                105860,
+                105861,
+                105862,
+                105863,
+                105864,
+                105866,
+                105867,
+                110855
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130582,
+              "definitionId": 135383,
+              "spellId": 14901,
+              "name": "Spiritual Guidance",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your spell healing by up to $s2% of your total Spirit and your spell damage by up to $s1% of your total Spirit.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 3
+                    },
+                    {
+                      "rank": 3,
+                      "value": 5
+                    },
+                    {
+                      "rank": 4,
+                      "value": 6
+                    },
+                    {
+                      "rank": 5,
+                      "value": 8
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 8,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    },
+                    {
+                      "rank": 3,
+                      "value": 15
+                    },
+                    {
+                      "rank": 4,
+                      "value": 20
+                    },
+                    {
+                      "rank": 5,
+                      "value": 25
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 25,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105852,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 14898,
+          "name": "Spiritual Healing",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105853,
+                105854,
+                105855,
+                105856,
+                105857,
+                105858,
+                105859,
+                105860,
+                105861,
+                105862,
+                105863,
+                105864,
+                105866,
+                105867,
+                110855
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130581,
+              "definitionId": 135382,
+              "spellId": 14898,
+              "name": "Spiritual Healing",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the amount healed by your spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 7
+                    },
+                    {
+                      "rank": 3,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 2,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 7
+                    },
+                    {
+                      "rank": 3,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 2,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105851,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 401859,
+          "name": "Prayer of Mending",
+          "prerequisites": [
+            {
+              "nodeId": 105854,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105851,
+                105852,
+                105853,
+                105854,
+                105855,
+                105856,
+                105857,
+                105858,
+                105859,
+                105860,
+                105861,
+                105862,
+                105863,
+                105864,
+                105865,
+                105866,
+                105867,
+                110855
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130580,
+              "definitionId": 135381,
+              "spellId": 401859,
+              "name": "Prayer of Mending",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Places a spell on the target that heals them for ${($m1+($bh*$bc))*$<mult>} the next time they take damage or receive non-periodic healing. When the heal occurs, Prayer of Mending jumps to a party or raid member within $401880a1 yards. Jumps up to $s2 times and lasts $401877d after each jump. This spell can only be placed on one target at a time per caster.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 172,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105865,
+          "sectionIndex": 1,
+          "position": {
+            "x": 9280,
+            "y": 21300,
+            "row": 32,
+            "column": 7
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 14889,
+          "name": "Holy Specialization",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130594,
+              "definitionId": 135395,
+              "spellId": 14889,
+              "name": "Holy Specialization",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the critical effect chance of your Holy spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": null,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 110851,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 2130,
+            "row": 0,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 8,
+          "maxRank": 5,
+          "spellId": 15260,
+          "name": "Shadow Focus",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 137843,
+              "definitionId": 142597,
+              "spellId": 15260,
+              "name": "Shadow Focus",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Improves your chance to hit with Shadow spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105832,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 15326,
+          "name": "Blackout",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130561,
+              "definitionId": 135362,
+              "spellId": 15326,
+              "name": "Blackout",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Gives your Shadow damage spells a $m1% chance to stun the target for $15269d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105833,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 2130,
+            "row": 0,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 15270,
+          "name": "Spirit Tap",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130562,
+              "definitionId": 135363,
+              "spellId": 15270,
+              "name": "Spirit Tap",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Gives you a $m1% chance to gain a $15271s1% bonus to your Spirit for $15271d after killing a non-trivial target. For the duration, your Mana will regenerate at a $15271s2% of normal rate while casting.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 20
+                    },
+                    {
+                      "rank": 2,
+                      "value": 40
+                    },
+                    {
+                      "rank": 3,
+                      "value": 60
+                    },
+                    {
+                      "rank": 4,
+                      "value": 80
+                    },
+                    {
+                      "rank": 5,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105831,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 2730,
+            "row": 1,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 15318,
+          "name": "Shadow Affinity",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105832,
+                105833,
+                110851
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130560,
+              "definitionId": 135361,
+              "spellId": 15318,
+              "name": "Shadow Affinity",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the threat generated by your Shadow spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -10
+                    },
+                    {
+                      "rank": 2,
+                      "value": -20
+                    },
+                    {
+                      "rank": 3,
+                      "value": -30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -8,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105830,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 15275,
+          "name": "Improved Shadow Word: Pain",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105832,
+                105833,
+                110851
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130559,
+              "definitionId": 135360,
+              "spellId": 15275,
+              "name": "Improved Shadow Word: Pain",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the duration of your Shadow Word: Pain spell by ${$s1/1000} sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3000
+                    },
+                    {
+                      "rank": 2,
+                      "value": 6000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 6000,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105829,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10880,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 17322,
+          "name": "Shadow Reach",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105832,
+                105833,
+                110851
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130558,
+              "definitionId": 135359,
+              "spellId": 17322,
+              "name": "Shadow Reach",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the range of your offensive Shadow spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105827,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 15273,
+          "name": "Improved Mind Blast",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105829,
+                105830,
+                105831,
+                105832,
+                105833,
+                110851
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130556,
+              "definitionId": 135357,
+              "spellId": 15273,
+              "name": "Improved Mind Blast",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the cooldown of your Mind Blast spell by $/1000;S1 sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -500
+                    },
+                    {
+                      "rank": 2,
+                      "value": -1000
+                    },
+                    {
+                      "rank": 3,
+                      "value": -1500
+                    },
+                    {
+                      "rank": 4,
+                      "value": -2000
+                    },
+                    {
+                      "rank": 5,
+                      "value": -2500
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -2500,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105828,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 15392,
+          "name": "Improved Psychic Scream",
+          "prerequisites": [
+            {
+              "nodeId": 105832,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105829,
+                105830,
+                105831,
+                105832,
+                105833,
+                110851
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130557,
+              "definitionId": 135358,
+              "spellId": 15392,
+              "name": "Improved Psychic Scream",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the cooldown of your Psychic Scream spell by $/1000;s1 sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -2000
+                    },
+                    {
+                      "rank": 2,
+                      "value": -4000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -4000,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105826,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 3330,
+            "row": 2,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 15407,
+          "name": "Mind Flay",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105829,
+                105830,
+                105831,
+                105832,
+                105833,
+                110851
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130555,
+              "definitionId": 135356,
+              "spellId": 15407,
+              "name": "Mind Flay",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Assault the target's mind with Shadow energy, causing $o1 Shadow damage over $d  and slowing their movement speed by $m2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 21,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": -50,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105825,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10880,
+            "y": 3330,
+            "row": 2,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 1225139,
+          "name": "Improved Mind Flay",
+          "prerequisites": [
+            {
+              "nodeId": 105826,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105829,
+                105830,
+                105831,
+                105832,
+                105833,
+                110851
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130554,
+              "definitionId": 135355,
+              "spellId": 1225139,
+              "name": "Improved Mind Flay",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Your Mind Flay now deals $s1% more damage, gains $s2 yards increased range, but slows the target's movement speed by ${$s4-($m3)}%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 15
+                    },
+                    {
+                      "rank": 2,
+                      "value": 30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -30,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 3,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 50,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105823,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 15274,
+          "name": "Improved Fade",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105825,
+                105826,
+                105827,
+                105828,
+                105829,
+                105830,
+                105831,
+                105832,
+                105833,
+                110851
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130552,
+              "definitionId": 135353,
+              "spellId": 15274,
+              "name": "Improved Fade",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Decreases the cooldown of your Fade ability by $/1000;s1 sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -3000
+                    },
+                    {
+                      "rank": 2,
+                      "value": -6000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -6000,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105820,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 15286,
+          "name": "Vampiric Embrace",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105825,
+                105826,
+                105827,
+                105828,
+                105829,
+                105830,
+                105831,
+                105832,
+                105833,
+                110851
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130549,
+              "definitionId": 135350,
+              "spellId": 15286,
+              "name": "Vampiric Embrace",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Afflicts your target with Shadow energy that causes all party members to be healed for $s1% of any Shadow spell damage you deal for $d. Vampiric Embrace also grants a chance for your Spirit Tap talent to trigger when enemies afflicted by it die.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105821,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 15257,
+          "name": "Shadow Weaving",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105825,
+                105826,
+                105827,
+                105828,
+                105829,
+                105830,
+                105831,
+                105832,
+                105833,
+                110851
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130550,
+              "definitionId": 135351,
+              "spellId": 15257,
+              "name": "Shadow Weaving",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Your Shadow damage spells have a $s1% chance to increase the Shadow damage you deal by $15258s1% for $15258d, stacking up to $15258u times.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 33
+                    },
+                    {
+                      "rank": 2,
+                      "value": 67
+                    },
+                    {
+                      "rank": 3,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105824,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 4530,
+            "row": 4,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 15487,
+          "name": "Silence",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105820,
+                105821,
+                105823,
+                105825,
+                105826,
+                105827,
+                105828,
+                105829,
+                105830,
+                105831,
+                105832,
+                105833,
+                110851
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130553,
+              "definitionId": 135354,
+              "spellId": 15487,
+              "name": "Silence",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Silences the target, preventing them from casting spells for $d and interrupting their spellcasts for $1241057d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105819,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 4530,
+            "row": 4,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 1309950,
+          "name": "Devouring Contagion",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105820,
+                105821,
+                105823,
+                105825,
+                105826,
+                105827,
+                105828,
+                105829,
+                105830,
+                105831,
+                105832,
+                105833,
+                110851
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130548,
+              "definitionId": 135349,
+              "spellId": 1309950,
+              "name": "Devouring Contagion",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the mana cost of your Devouring Plague by $s1%.\r\n\r\nTargets that die while Devouring Plague is active spreads it, jumping to a nearby enemy within $s2 yards for the remaining duration.\r\n",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -25
+                    },
+                    {
+                      "rank": 2,
+                      "value": -50
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -50,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 110854,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 5130,
+            "row": 5,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 8,
+          "maxRank": 2,
+          "spellId": 1310076,
+          "name": "Early Demise",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105819,
+                105820,
+                105821,
+                105823,
+                105824,
+                105825,
+                105826,
+                105827,
+                105828,
+                105829,
+                105830,
+                105831,
+                105832,
+                105833,
+                110851
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 137846,
+              "definitionId": 142600,
+              "spellId": 1310076,
+              "name": "Early Demise",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases Shadow Word: Death's critical strike chance on targets at or below $s2% health by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 15
+                    },
+                    {
+                      "rank": 2,
+                      "value": 30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105818,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 15259,
+          "name": "Darkness",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105819,
+                105820,
+                105821,
+                105823,
+                105824,
+                105825,
+                105826,
+                105827,
+                105828,
+                105829,
+                105830,
+                105831,
+                105832,
+                105833,
+                110851
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130547,
+              "definitionId": 135348,
+              "spellId": 15259,
+              "name": "Darkness",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your Shadow damage done by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105817,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 15473,
+          "name": "Shadowform",
+          "prerequisites": [
+            {
+              "nodeId": 105820,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105817,
+                105818,
+                105819,
+                105820,
+                105821,
+                105823,
+                105824,
+                105825,
+                105826,
+                105827,
+                105828,
+                105829,
+                105830,
+                105831,
+                105832,
+                105833,
+                110851,
+                110854
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130546,
+              "definitionId": 135347,
+              "spellId": 15473,
+              "name": "Shadowform",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Assume Shadowform, increasing your Shadow damage by $s2%, reducing the Mana cost of all Shadow spells by $m4%, increasing the critical strike damage bonus of your Shadow spells by $m5%, and reducing Physical damage taken by you by $s3%. However, you may not cast healing spells while in this form.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": -15,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 3,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": -50,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 4,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "visualOnlyEdges": []
+    }
+  ],
+  "contentHash": "sha256:4103fbd3c199e3e2e101999fa2bf7b47642541d15dbc75cece1a4b99d66a569f",
+  "generatedAt": "2026-09-26T21:23:14Z",
+  "provenance": {
+    "source": "wago.tools",
+    "tables": [
+      "ChrClasses",
+      "SkillRaceClassInfo",
+      "SkillLineXTraitTree",
+      "TraitTree",
+      "TraitTreeXTraitCurrency",
+      "TraitCurrency",
+      "TraitTreeXTraitCost",
+      "TraitCost",
+      "TraitNode",
+      "TraitNodeXTraitNodeEntry",
+      "TraitNodeEntry",
+      "TraitDefinition",
+      "TraitEdge",
+      "TraitNodeGroupXTraitNode",
+      "TraitNodeGroupXTraitCond",
+      "TraitNodeXTraitCond",
+      "TraitCond",
+      "TraitDefinitionEffectPoints",
+      "Curve",
+      "CurvePoint",
+      "Spell",
+      "SpellName",
+      "SpellEffect"
+    ]
+  }
+}
