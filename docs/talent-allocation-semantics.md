@@ -8,10 +8,11 @@ for the future Kotlin Multiplatform engine.
 > **Status of the contract: M2 reference hypothesis, not frozen.** The edge rules
 > (EDGE-ACTIVE, EDGE-SUF) rest on the client's C++ evaluator, which is not inspectable;
 > the Forever Lua UI only *consumes* its results (`edgeInfo.isActive`,
-> `nodeInfo.meetsEdgeRequirements`). They require client verification before the Kotlin
-> contract is frozen. **M3 MUST NOT start until at least E1 and E2 (§13) are
-> client-observed**; E3 and E6 should be observed as well. `allocation.v1` stays the
-> reference vector set for M2 but is not declared final for M3 until then.
+> `nodeInfo.meetsEdgeRequirements`). They remain High-confidence hypotheses until E1 and
+> E2 (§13) are client-observed. M3A (KMP foundation, no allocation semantics) was completed
+> without them; M3B may implement and test these semantics **provisionally**, including
+> replaying `allocation.v1`, but the allocation contract is not final for the edge rules
+> until E1 and E2 are observed (§13, milestone policy).
 
 **Baseline:** WoW: Forever client build **1.60.1.70009** (latest detected on 2026-09-27;
 no newer Forever build existed when M2 started or finished). The previous captured build
@@ -92,7 +93,7 @@ In the order of the source-of-truth hierarchy.
 
 | Rule | Evidence | Confidence | Implementation decision | Known limitation |
 | --- | --- | --- | --- | --- |
-| **COST-1** every purchased rank costs exactly 1 point of the tree's point currency | DB2: each of the 9 class trees has exactly one `TraitTreeXTraitCost` → `TraitCost` `Amount=1`, `TraitCurrencyID=3820`, `CurveID=0` (both builds); the group/node/entry cost link tables are *proven absent* for both builds (wago.tools' definitive `{"errors": "Table not found."}`, recorded per build); API `GetNodeCost` returns a list of `TraitCurrencyCost`; TrinityCore sums group+entry+node+tree costs × rank; **live client (§15 L2):** `GetNodeCost` on a Paladin node (tree 1100) returned exactly one cost, currency 3820, amount 1 | Proven | Normalizer **checks** the tree cost and refuses to produce a v1 document unless every per-group/node/entry cost table is proven absent by the source (`Db2Source.table_status`: present or unknown → fail closed) | Absence evidence is wago.tools' answer for the build (the best available origin; §7) |
+| **COST-1** every purchased rank costs exactly 1 point of the tree's point currency | DB2: each of the 9 class trees has exactly one `TraitTreeXTraitCost` → `TraitCost` `Amount=1`, `TraitCurrencyID=3820`, `CurveID=0` (both builds); the group/node/entry cost link tables are *proven absent* for both builds (wago.tools' definitive `{"errors": "Table not found."}`, recorded per build); API `GetNodeCost` returns a list of `TraitCurrencyCost`; TrinityCore sums group+entry+node+tree costs × rank; **live client (§15 L2):** `GetNodeCost` on a Paladin node (tree 1100) emitted a single cost line (index 1): currency 3820, amount 1 | Proven | Normalizer **checks** the tree cost and refuses to produce a v1 document unless every per-group/node/entry cost table is proven absent by the source (`Db2Source.table_status`: present or unknown → fail closed) | Absence evidence is wago.tools' answer for the build (the best available origin; §7) |
 | **BUDGET-1** usable points = `TraitCurrency.SourcedMax` (51), or a lower configured limit | DB2: currency 3820 `Type=2` (TraitSourced), `SourcedMax=51`; `TraitCurrencySource`: 51 rows "Level 10…60" (+1) plus 5 "Talented Rank N (Level 5…9)" rows gated by the Legacy tree 1188 node "Talented" → earlier points, same cap; API `GetMaxAvailableTraitCurrency(…, limitBySourcedMax)`; **live client (§15 L7):** at level 20 `GetTreeCurrencyInfo` reports `maxQuantity = 11` — a runtime level limit below the dataset maximum, which stays 51 | Proven | `point_budget` = dataset max, `point_limit` (0…max) for callers; no levelling logic | Level-based budgets are the Leveling Planner milestone |
 | **RANK-1** 0 ≤ ranks ≤ entry `MaxRanks`; one entry per node | DB2 `TraitNodeEntry.MaxRanks`; every Forever node has exactly one entry | Proven | `MAX_RANK_REACHED`, `RANK_OUT_OF_BOUNDS`, `DUPLICATE_ALLOCATION` | — |
 | **GATE-1** an unlock requirement is met when the points *already spent* in its counted nodes ≥ `requiredPoints`; evaluated before the purchase | DB2: 162 gate conditions `CondType=0 Flags=0 group+currency 3820+SpentAmountRequired` carrying `SpendMoreSharedStringID=911` = "Spend %d more point(s) in %s Talents"; API `GetGroupCurrencyInfo` → per-group `spent` (Camelot shows it per tab); `NodeOpFailureReason.NotEnoughCurrencySpent`; the 27 capstone gates (30 points, whole tab) include the capstone itself — the capstone is the tab's 31st point; **live client (§15 L5/L6, Paladin analogue, not E3):** a 5-point-gated row-1 node without prerequisite edges is unavailable with 4 points in its tab and available with 7 | Proven (quantity), High (evaluated before the purchase; a condition checked by `CanPurchaseRank` on the current config) | Counted on the current state before adding the rank; validation by reachability (VALID-1) | — |
@@ -273,8 +274,9 @@ requires exactly one tree cost, `Amount=1`, in the budget currency, `CurveID=0`;
 else stops normalization with a message asking for a schema extension.
 
 **Live client (§15 L2):** `C_Traits.GetNodeCost` on Paladin Deflection (105707, tree 1100)
-returned one `TraitCurrencyCost` `{ID = 3820, amount = 1}` — the client's own composition of
-all cost links agrees with the invariant for this tree and build.
+emitted a single `TraitCurrencyCost` line (`ipairs` index 1) `{ID = 3820, amount = 1}` — the
+client's own composition of all cost links agrees with the invariant for this tree and
+build.
 
 **The other cost links are proven absent in the production pipeline, not assumed.**
 `TraitNodeGroupXTraitCost`, `TraitNodeXTraitCost`, `TraitNodeEntryXTraitCost`
@@ -443,31 +445,54 @@ Forever) + a smoke and a golden 51-point scenario for each of the nine classes.
   `python -m tests.conformance.generate`; replay: `python -m talent_data allocation replay --all`.
 * Golden builds are **engine-constructed** (greedy purchase in section/row/column order,
   skipping M1 `OFF_GRID_NODE` anomalies), not client-observed; each validates at 51/51.
-* **Not frozen for M3.** The vectors encode the M2 reference hypothesis for EDGE-ACTIVE and
-  EDGE-SUF. They become the Kotlin acceptance contract only after E1 and E2 are
-  client-observed (§13); if an observation contradicts a rule, the engine, the affected
-  scenarios and this document change first.
+* **Provisional for the edge rules.** The vectors encode the M2 reference hypothesis for
+  EDGE-ACTIVE and EDGE-SUF. A Kotlin executor (M3B) replays them as its acceptance suite,
+  but passing them does not make those rules client-proven, and they are not the final
+  contract for the edge semantics until E1 and E2 are client-observed (§13). If an
+  observation contradicts a rule, the Python reference rule, the affected scenarios, this
+  document and the Kotlin implementation are reconciled (§13).
 
 ## 13. Kotlin handoff and in-game verification
 
-### Milestone gate
+### Milestone policy
 
-**M3 MUST NOT start until at least E1 and E2 below are client-observed.** E3 and E6 should
-be observed too. E1 and E2 have **not** been observed. §15 records a first set of live
-observations (Paladin, level 20); none executes E1–E7 exactly as prescribed — they are
-partial or Paladin analogues of E3, E5, E6 and E7 — and they leave EDGE-ACTIVE, EDGE-SUF and
-Rogue 50984 at their current confidence. Record each observation (build, character/class,
-exact state, API output) in this document and turn it into a conformance scenario; a
-contradicting result blocks M3 until the engine and vectors are corrected.
+E1 and E2 have **not** been observed. §15 records a first set of live observations
+(Paladin, level 20); none executes E1–E7 exactly as prescribed — they are partial or
+Paladin analogues of E3, E5, E6 and E7 — and they leave EDGE-ACTIVE, EDGE-SUF and Rogue
+50984 at their current confidence.
 
-| Check | Gate |
+The M2 gate ("M3 MUST NOT start until at least E1 and E2 are client-observed") is
+superseded by:
+
+* **M3A (KMP foundation)** does not execute allocation semantics; it was completed and
+  merged without E1/E2.
+* **M3B (Kotlin allocation engine)** may implement the M2 reference semantics of this
+  document *provisionally* and test them, including replaying the conformance suite
+  exactly (contract below).
+* **EDGE-ACTIVE and EDGE-SUF remain High — hypothesis.** A Kotlin executor that passes the
+  conformance suite shows agreement with the Python reference, not with the client; it
+  must not upgrade either rule to client-proven.
+* **Not final for the edge rules.** The production/frozen allocation contract must not be
+  treated as final for EDGE-ACTIVE and EDGE-SUF until E1 and E2 are client-observed. E3
+  and E6, executed as prescribed, should be observed as well.
+* **Contradiction.** A future live observation that contradicts a rule requires the Python
+  reference semantics, the conformance vectors, this document and the Kotlin
+  implementation to be reconciled: evidence and the Python rule first, then the reviewed
+  vectors, then Kotlin — never Kotlin patched to match stale vectors.
+
+Record each observation (build, character/class, exact state, API output) in this
+document. Update the conformance suite when an observation changes or directly exercises
+an engine-contract expectation; evidence that does not change the contract may remain
+evidence-only.
+
+| Check | Needed for |
 | --- | --- |
-| E1 (EDGE-ACTIVE) | **required** before M3 |
-| E2 (EDGE-SUF, Hunter cycle) | **required** before M3 |
-| E3 (gate before purchase), E6 (refund) | strongly recommended before M3 |
+| E1 (EDGE-ACTIVE) | **required** before the edge semantics are treated as final (not a blocker for provisional M3B) |
+| E2 (EDGE-SUF, Hunter cycle) | **required** before the edge semantics are treated as final (not a blocker for provisional M3B) |
+| E3 (gate before purchase), E6 (refund) | strongly recommended before the contract is frozen |
 | E4 (Rogue 50984), E5 (cost), E7 (budget) | recommended; E4 unblocks Venom |
 
-### Contract the KMP engine must reproduce (once the gate is passed)
+### Contract the KMP engine must reproduce (provisional for EDGE-ACTIVE / EDGE-SUF until E1/E2)
 
 On `talent-data.v1` documents:
 
@@ -484,10 +509,15 @@ On `talent-data.v1` documents:
    `conditionId`, `cause`; `reasonCodes` = sorted distinct codes; points never negative;
 7. **pass every step of the conformance suite exactly** (messages excluded).
 
-Client API mapping (§15 L8): `canSpend(...).allowed` corresponds to the UI-level purchase
-check (eligibility **and** affordability). The client's `TraitNodeInfo.canPurchaseRank` /
-`C_Traits.CanPurchaseRank` is eligibility only (observed `true` with 0 currency left); a
-Kotlin/UI layer must not present it as "the user has enough points".
+Client API mapping (§15 L8). The raw client `TraitNodeInfo.canPurchaseRank` /
+`C_Traits.CanPurchaseRank` excludes affordability (observed `true` with 0 currency left);
+the Blizzard UI adds `CanAfford()`. `canSpend` combines the structural rules with the
+engine's *configured planning budget*. Only when the engine is configured with a
+`point_limit` equal to the relevant runtime budget (and a state mirroring the character's
+ranks) is `canSpend(...).allowed` analogous to the UI-level eligibility + affordability
+decision; with the default dataset `maxPoints = 51` it is planner availability, not
+necessarily what the current (e.g. level-20) character can buy in game. A Kotlin/UI layer
+must not present client-style `canPurchaseRank` as "the user has enough points".
 
 In-game checks that would turn the High rules into Proven (run on a Forever character,
 `/run` or a scratch addon; `c = C_ClassTalents.GetActiveConfigID()`):
@@ -554,23 +584,24 @@ Evidence classes, kept apart:
 
 | # | Call | Observed | Exact output | Bears on |
 | --- | --- | --- | --- | --- |
-| L1 | `C_Traits.GetTreeInfo(c, 1100).cannotRefund` | `true` | not recorded verbatim | REFUND-1 game state (§8) |
-| L2 | `C_Traits.GetNodeCost(c, 105707)` — Deflection (Retribution row 0, max 5) | one `TraitCurrencyCost`: `ID = 3820`, `amount = 1` | `COST 1 3820 1` | COST-1 (§7) |
+| L1 | `C_Traits.GetTreeInfo(c, 1100).cannotRefund` | `true` | `TREE 2589343 true` | REFUND-1 game state (§8) |
+| L2 | `C_Traits.GetNodeCost(c, 105707)` — Deflection (Retribution row 0, max 5) | `TraitCurrencyCost` at `ipairs` index 1: `ID = 3820`, `amount = 1`; no other line emitted | `COST 1 3820 1` | COST-1 (§7) |
 | L3 | `C_Traits.GetNodeInfo(c, 105707)` — Deflection, committed 5/5 | `activeRank = 5`, `canRefundRank = false`, `ranksPurchased = 5`, `ranksIncreased = 0` | `REFUND 5 False 5 0` | REFUND-1 game state (§8) |
 | L4 | `GetNodeInfo(c, 105626)` Redoubt (Protection row 0, max 5); `GetNodeInfo(c, 110874)` Shield Specialization (Protection row 2; one Sufficient edge from Redoubt; 10-point Protection gate) | Redoubt `activeRank = 0`, `maxRanks = 5`; Shield Specialization `meetsEdgeRequirements = false`, `isAvailable = false`, `canPurchaseRank = false` | `RED 0 5 SHIELD false false false` | baseline only (see below) |
 | L5 | `GetNodeInfo(c, 105333)` Healing Light (Holy row 1; 5-point Holy gate; no prerequisite edge); 4 Holy points spent | `activeRank = 0`, `meetsEdgeRequirements = true`, `isAvailable = false`, `canPurchaseRank = false` | not recorded verbatim | GATE-1 (§5) |
-| L6 | `GetNodeInfo(c, 105703)` Conviction (Retribution row 1; 5-point Retribution gate; no prerequisite edge); 7 Retribution points spent | `activeRank = 0`, `meetsEdgeRequirements = true`, `isAvailable = true`, `canPurchaseRank = true` | not recorded verbatim | GATE-1 (§5) |
-| L7 | `C_Traits.GetTreeCurrencyInfo(c, 1100, false)` | one entry: `traitCurrencyID = 3820`, `quantity = 0`, `maxQuantity = 11`, `spent = 11`, `spentInTree = 11` | `CUR 1 3820 0 11 11 11` | BUDGET-1 (§2) |
-| L8 | `GetNodeInfo(c, 105703).canPurchaseRank`; `C_Traits.CanPurchaseRank(c, 105703, 130432)` (Conviction, entry 130432) — with L7 `quantity = 0` | both `true` | not recorded verbatim | eligibility vs affordability (below) |
+| L6 | `GetNodeInfo(c, 105703)` Conviction (Retribution row 1; 5-point Retribution gate; no prerequisite edge); 7 Retribution points spent | `activeRank = 0`, `meetsEdgeRequirements = true`, `isAvailable = true`, `canPurchaseRank = true` | `RET7 0 true true true` | GATE-1 (§5); L8 |
+| L7 | `C_Traits.GetTreeCurrencyInfo(c, 1100, false)` | entry at `ipairs` index 1: `traitCurrencyID = 3820`, `quantity = 0`, `maxQuantity = 11`, `spent = 11`, `spentInTree = 11`; no other line emitted | `CUR 1 3820 0 11 11 11` | BUDGET-1 (§2) |
+| L8 | `GetNodeInfo(c, 105703).canPurchaseRank`; `C_Traits.CanPurchaseRank(c, 105703, 130432)` (Conviction, entry 130432) — with L7 `quantity = 0` | both `true` | `CAN BUY true` (the `C_Traits.CanPurchaseRank` call); `nodeInfo.canPurchaseRank` is the last field of L6's line | eligibility vs affordability (below) |
 
-In the verbatim lines the first number after `COST` / `CUR` is the length of the returned
-list (one cost, one currency entry).
+The first number after `COST` / `CUR` is the `ipairs` index, not a list length. In the
+captured output only index 1 was emitted. L5 was confirmed at the time, but its printed
+line was not preserved.
 
 **Cost (L2).** Direct client evidence for COST-1 on tree 1100 of this build: a Deflection
-rank costs exactly 1 point of currency 3820, and the client's own cost composition
-(group + node + entry + tree links) adds nothing else. COST-1 was already Proven from DB2
+rank costs 1 point of currency 3820, and the client's own cost composition
+(group + node + entry + tree links) emitted no further cost line. COST-1 was already Proven from DB2
 (§7); L2 is an independent confirmation from the client. E5 names "any node", so its
-expected result is observed here on a Paladin node; the Warrior node written in E5 was
+expected values are observed here on a Paladin node; the Warrior node written in E5 was
 not queried, and the other eight trees rest on the DB2 evidence alone.
 
 **Committed-tree refund (L1, L3).** The client reports tree 1100 as non-refundable and
@@ -593,8 +624,9 @@ edge, where ANY = ALL). It is recorded only as a baseline.
 `meetsEdgeRequirements = true` for both, so the gate is isolated from edge rules. With 4
 Holy points (so at most 4 in its counted row-0 nodes) the 5-point-gated Healing Light is
 unavailable; with 7 Retribution points (Deflection 5/5 is one of Conviction's two counted
-row-0 nodes) the 5-point-gated Conviction is available and purchasable. The 11 points spent tree-wide
-did not unlock Healing Light, consistent with a per-tab count. This is live support for
+row-0 nodes) the 5-point-gated Conviction is available and structurally purchase-eligible
+(`canPurchaseRank = true`; with `quantity = 0` it was not affordable — see L8). The 11 points
+spent tree-wide did not unlock Healing Light, consistent with a per-tab count. This is live support for
 GATE-1's quantity reading (points spent in the counted nodes ≥ `requiredPoints`). It does
 not establish that the gate is evaluated before the purchase, the capstone self-count, or
 any threshold other than 5: E3 (Warrior, 29 → 30 Arms points) was not performed and there
@@ -611,8 +643,9 @@ Planner scope). 11 is consistent with the DB2 `TraitCurrencySource` rows "Level 
 checked. E7 (level 60, `maxQuantity = 51`) was not observed; L7 does not substitute for it.
 
 **Purchase eligibility vs affordability (L8; client + UI source).** With `quantity = 0`
-the client still reports Conviction purchasable through both `GetNodeInfo(...).canPurchaseRank`
-and `C_Traits.CanPurchaseRank`. The Blizzard UI of this build (`Gethe/wow-ui-source`
+the client still reports Conviction as purchase-eligible through both
+`GetNodeInfo(...).canPurchaseRank` and `C_Traits.CanPurchaseRank` — although a rank could not
+actually be bought. The Blizzard UI of this build (`Gethe/wow-ui-source`
 `bd2470ae`, §1.2) adds affordability on its own side:
 `TalentButtonSpendMixin:CanPurchaseRank()` returns
 `nodeInfo.canPurchaseRank and self:CanAfford()` plus inspect/lock checks
@@ -627,10 +660,14 @@ l. 1805–1807; currencies from `C_Traits.GetTreeCurrencyInfo`, l. 1359). Theref
 * actual purchase availability in the UI = eligibility **and** affordability (tree
   currency `quantity` ≥ the `GetNodeCost` amount);
 * the reference engine already models both separately: rule issues (gates, edges, max
-  rank, fail-closed) and `NO_POINTS_REMAINING` (budget or `point_limit` exhausted) are
-  independent issues of `can_spend`, whose `allowed` needs neither. `can_spend(...).allowed`
-  therefore corresponds to the UI-level check, not to raw `canPurchaseRank`. No engine or
-  conformance change follows;
+  rank, fail-closed) and `NO_POINTS_REMAINING` (configured budget or `point_limit`
+  exhausted) are independent issues of `can_spend`, whose `allowed` needs neither. It
+  combines structural rules with the engine's *configured planning budget*: only with a
+  `point_limit` matching the relevant runtime budget (here 11, with the state mirroring
+  the character's ranks) is `can_spend(...).allowed` analogous to the UI-level decision
+  (eligibility and affordability). With the default dataset `maxPoints = 51` it is planner
+  availability, not necessarily what this level-20 character can buy in game. Either way
+  it is not raw `canPurchaseRank`. No engine or conformance change follows;
 * for future Kotlin/UI code: `canPurchaseRank = true` must not be read as "the user
   currently has enough talent currency"; eligibility and remaining points stay distinct
   states and reasons.
@@ -643,11 +680,12 @@ l. 1805–1807; currencies from `C_Traits.GetTreeCurrencyInfo`, l. 1359). Theref
 | EDGE-SUF (E2) | High — hypothesis. No Paladin node has more than one Sufficient prerequisite (§3), and no Hunter was used for the E2 check. |
 | Rogue cond 50984 (E4) | Unresolved; not observed. Venom stays `UNRESOLVED_CONDITION`. |
 | E3 | Not performed as prescribed; L5/L6 are a Paladin 5-point-gate analogue on two different tabs, not a 29 → 30 transition. |
-| E5 | Expected result observed on a Paladin node (L2). |
+| E5 | Expected values (currency 3820, amount 1) observed on a Paladin node, as a single emitted line (L2); the Warrior node named in E5 was not queried. |
 | E6 | Partial Paladin analogue (L1, L3: committed ranks only); staged refund not observed. |
 | E7 | Not observed; L7 is a level-20 runtime value. |
 
 No observation contradicts a conformance scenario (L2 agrees with COST-1, L5/L6 with
 GATE-1, L7 with the budget/limit split, L8 with the separate `NO_POINTS_REMAINING`), so
-`allocation.v1` is unchanged. These observations are not yet encoded as client-observed
-conformance scenarios.
+`allocation.v1` is unchanged. None changes an engine-contract expectation, and the rules
+they touch are already exercised by existing scenarios, so they remain evidence-only
+(§13 milestone policy).
