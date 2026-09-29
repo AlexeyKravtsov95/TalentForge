@@ -153,7 +153,14 @@ class TalentTreeViewportTest {
     }
 }
 
-/** Hit-testing of the B3 56 × 56 dp node targets. */
+/**
+ * Screen-space hit-testing of the node touch targets.
+ *
+ * B3 freezes usable screen targets (56 dp portrait, 48 dp landscape). The
+ * world-space 56 dp target may grow with zoom-in, but zooming out must never
+ * shrink the physically tappable area below the orientation minimum — visual
+ * node size and interaction target are deliberately separate concerns.
+ */
 class TalentTreeHitTestTest {
 
     private fun twoNodeModel(): TalentTreeUiModel {
@@ -173,26 +180,92 @@ class TalentTreeHitTestTest {
         )
     }
 
-    @Test
-    fun nodeCentreAndTargetAreaHit() {
-        val model = twoNodeModel()
-
-        assertEquals(1, model.nodeAt(Offset(100f, 100f)))
-        assertEquals(1, model.nodeAt(Offset(100f + 27.9f, 100f + 27.9f)), "inside the 56dp target")
-        assertEquals(2, model.nodeAt(Offset(176f, 100f)))
+    private fun hit(
+        model: TalentTreeUiModel,
+        viewport: TalentTreeViewport,
+        minimumTargetDp: Float,
+        dxFromNodeScreenCentre: Float = 0f,
+        dyFromNodeScreenCentre: Float = 0f,
+    ): Int? {
+        val nodeScreen = viewport.worldToScreen(Offset(100f, 100f))
+        return model.nodeAtScreen(
+            Offset(nodeScreen.x + dxFromNodeScreenCentre, nodeScreen.y + dyFromNodeScreenCentre),
+            viewport,
+            minimumTargetDp,
+        )
     }
 
     @Test
-    fun outsideEveryTargetIsNull() {
+    fun portraitAtIdentityScaleKeepsThe56dpTarget() {
         val model = twoNodeModel()
+        val viewport = TalentTreeViewport(1f, Offset.Zero)
 
-        assertNull(model.nodeAt(Offset(100f + 28.1f, 100f + 28.1f)), "just outside the target")
-        assertNull(model.nodeAt(Offset(0f, 0f)))
-        assertNull(model.nodeAt(Offset(1_000f, 1_000f)))
+        assertEquals(1, hit(model, viewport, 56f, dxFromNodeScreenCentre = 27.9f))
+        assertEquals(1, hit(model, viewport, 56f, dxFromNodeScreenCentre = -27.9f))
+        assertEquals(1, hit(model, viewport, 56f, dyFromNodeScreenCentre = 27.9f))
+        assertNull(hit(model, viewport, 56f, dxFromNodeScreenCentre = 28.1f), "outside the target")
     }
 
     @Test
-    fun nearestNodeWinsWhenTargetsOverlap() {
+    fun portraitZoomedOutKeepsAtLeast56dpOnScreen() {
+        val model = twoNodeModel()
+        val viewport = TalentTreeViewport(0.8f, Offset(-40f, 20f))
+
+        // 56 dp world * 0.8 = 44.8 dp screen — the floor must restore 56 dp
+        assertEquals(
+            56f,
+            effectiveNodeTargetDp(viewport, TalentTreeCanvasMetrics.NODE_TARGET_MIN_PORTRAIT_DP),
+            1e-3f,
+        )
+
+        // 27.5 dp from the node's screen centre: inside a 56 dp screen target,
+        // far outside the shrunken 44.8 dp one
+        assertEquals(1, hit(model, viewport, 56f, dxFromNodeScreenCentre = 27.5f))
+        assertEquals(1, hit(model, viewport, 56f, dyFromNodeScreenCentre = 27.5f))
+        assertNull(hit(model, viewport, 56f, dxFromNodeScreenCentre = 28.5f), "still bounded")
+    }
+
+    @Test
+    fun landscapeInitialScaleKeepsAtLeast48dpOnScreen() {
+        val model = twoNodeModel()
+        val landscapeInitial = TalentTreeCanvasMetrics.INITIAL_SCALE_LANDSCAPE
+        val viewport = TalentTreeViewport(landscapeInitial, Offset(10f, -5f))
+        val minimum = TalentTreeCanvasMetrics.NODE_TARGET_MIN_LANDSCAPE_DP
+
+        // 56 dp world * 62/76 ≈ 45.7 dp screen — below the 48 dp landscape floor
+        assertEquals(minimum, effectiveNodeTargetDp(viewport, minimum), 1e-3f)
+
+        assertEquals(1, hit(model, viewport, minimum, dxFromNodeScreenCentre = 23.5f))
+        assertEquals(1, hit(model, viewport, minimum, dyFromNodeScreenCentre = 23.5f))
+        assertNull(hit(model, viewport, minimum, dxFromNodeScreenCentre = 24.5f), "still bounded")
+    }
+
+    @Test
+    fun zoomInGrowsTheScreenTargetBeyondTheMinimum() {
+        val model = twoNodeModel()
+        val viewport = TalentTreeViewport(2f, Offset.Zero)
+
+        // 56 dp world * 2 = 112 dp screen
+        assertEquals(112f, effectiveNodeTargetDp(viewport, 56f), 1e-3f)
+
+        assertEquals(1, hit(model, viewport, 56f, dxFromNodeScreenCentre = 55f), "grown target")
+        assertNull(hit(model, viewport, 56f, dxFromNodeScreenCentre = 57f), "still bounded")
+    }
+
+    @Test
+    fun outsideEveryEffectiveTargetIsNull() {
+        val model = twoNodeModel()
+        val viewport = TalentTreeViewport(1f, Offset.Zero)
+
+        assertNull(model.nodeAtScreen(Offset(0f, 0f), viewport, 56f))
+        assertNull(model.nodeAtScreen(Offset(1_000f, 1_000f), viewport, 56f))
+        // between the two columns: 38 dp from each centre at a 28 dp half-target
+        val midpoint = viewport.worldToScreen(Offset(138f, 100f))
+        assertNull(model.nodeAtScreen(midpoint, viewport, 56f))
+    }
+
+    @Test
+    fun nearestNodeWinsWhenEffectiveTargetsOverlap() {
         val base = TalentTreeNodeUiModel(
             id = 10, name = "A", monogram = "AA", maxRank = 1, sectionIndex = 0,
             centerX = 0f, centerY = 0f,
@@ -207,26 +280,46 @@ class TalentTreeHitTestTest {
             edges = emptyList(),
             bounds = TalentTreeBounds(-24f, -24f, 64f, 24f),
         )
+        val viewport = TalentTreeViewport(1f, Offset.Zero)
 
-        // point between both centres: belongs to the closer node
-        assertEquals(10, model.nodeAt(Offset(15f, 0f)))
-        assertEquals(11, model.nodeAt(Offset(25f, 0f)))
-    }
-
-    @Test
-    fun nonFiniteWorldPositionHitsNothing() {
-        assertNull(twoNodeModel().nodeAt(Offset(Float.NaN, 100f)))
-        assertNull(twoNodeModel().nodeAt(Offset(100f, Float.POSITIVE_INFINITY)))
-    }
-
-    @Test
-    fun screenVariantMatchesWorldVariant() {
-        val model = twoNodeModel()
-        val viewport = TalentTreeViewport(2f, Offset(-50f, 30f))
-
+        // point between both centres: both 56 dp targets contain it, closer wins
+        assertEquals(10, model.nodeAtScreen(Offset(15f, 0f), viewport, 56f))
+        assertEquals(11, model.nodeAtScreen(Offset(25f, 0f), viewport, 56f))
+        // deterministic across repeated queries
         assertEquals(
-            model.nodeAt(viewport.screenToWorld(Offset(150f, 230f))),
-            model.nodeAtScreen(Offset(150f, 230f), viewport),
+            model.nodeAtScreen(Offset(20f, 0f), viewport, 56f),
+            model.nodeAtScreen(Offset(20f, 0f), viewport, 56f),
         )
+    }
+
+    @Test
+    fun nonFiniteScreenPositionHitsNothing() {
+        val model = twoNodeModel()
+        val viewport = TalentTreeViewport(1f, Offset.Zero)
+
+        assertNull(model.nodeAtScreen(Offset(Float.NaN, 100f), viewport, 56f))
+        assertNull(
+            model.nodeAtScreen(
+                Offset(100f, Float.POSITIVE_INFINITY),
+                viewport,
+                56f,
+            ),
+        )
+    }
+
+    @Test
+    fun effectiveTargetIsStableUnderPanning() {
+        val model = twoNodeModel()
+        // panning must not change hit results: offsets shift node and query alike
+        val identity = TalentTreeViewport(1f, Offset.Zero)
+        val panned = TalentTreeViewport(1f, Offset(123.5f, -321f))
+
+        for (dx in listOf(-27.5f, -10f, 0f, 10f, 27.5f)) {
+            assertEquals(
+                hit(model, identity, 56f, dxFromNodeScreenCentre = dx),
+                hit(model, panned, 56f, dxFromNodeScreenCentre = dx),
+                "pan must not alter relative hit testing (dx=$dx)",
+            )
+        }
     }
 }

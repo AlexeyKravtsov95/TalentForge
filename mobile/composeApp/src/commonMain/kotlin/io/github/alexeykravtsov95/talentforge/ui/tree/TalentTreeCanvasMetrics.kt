@@ -29,8 +29,18 @@ object TalentTreeCanvasMetrics {
     /** B3 06: "NODE 48 dp visual." */
     const val NODE_VISUAL_DP: Float = 48f
 
-    /** B3 06: "TARGET 56 × 56 dp, centred on the node." */
+    /** B3 06: "TARGET 56 × 56 dp, centred on the node." (world-space size, portrait 1×.) */
     const val NODE_TARGET_DP: Float = 56f
+
+    /** B3 06: portrait target 56 dp — the screen-space floor while zoomed out. */
+    const val NODE_TARGET_MIN_PORTRAIT_DP: Float = 56f
+
+    /** B3 05/08: "Landscape: node 38, target 48 dp" — the landscape screen-space floor. */
+    const val NODE_TARGET_MIN_LANDSCAPE_DP: Float = 48f
+
+    /** Screen-space floor of the usable touch target for the current orientation. */
+    fun minimumNodeTargetDp(landscape: Boolean): Float =
+        if (landscape) NODE_TARGET_MIN_LANDSCAPE_DP else NODE_TARGET_MIN_PORTRAIT_DP
 
     /** UX/UI spec section G: radius medium 12 — "buttons, fields, nodes, rows". */
     const val NODE_CORNER_RADIUS_DP: Float = 12f

@@ -28,6 +28,14 @@ class TalentTreeViewportState(initial: TalentTreeViewport?) {
     var canvasSize: Size by mutableStateOf(Size.Zero)
         private set
 
+    /**
+     * Whether the canvas is at least as wide as it is tall — the same
+     * predicate that picks the landscape initial scale, reused for the
+     * orientation-dependent screen-space touch-target minimum.
+     */
+    val isLandscape: Boolean
+        get() = canvasSize.width >= canvasSize.height
+
     /** Applies the first deterministic transform for [bounds]; later calls are no-ops. */
     fun initializeOnce(bounds: TalentTreeBounds) {
         if (viewport != null || canvasSize == Size.Zero) return

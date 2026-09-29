@@ -78,11 +78,14 @@ class TalentTreeCanvasInteractionTest {
         model = assertIs<TalentTreeUiBuildResult.Ready>(buildTalentTreeUiModel(document)).model
     }
 
-    private fun composeCanvas() {
+    private fun composeCanvas(
+        width: androidx.compose.ui.unit.Dp = canvasWidth,
+        height: androidx.compose.ui.unit.Dp = canvasHeight,
+    ) {
         composeRule.setContent {
             TalentForgeTheme {
                 CompositionLocalProvider(LocalDensity provides Density(1f)) {
-                    Box(Modifier.size(canvasWidth, canvasHeight)) {
+                    Box(Modifier.size(width, height)) {
                         TalentTreeCanvas(
                             model = model,
                             viewportState = viewportState,
@@ -207,9 +210,9 @@ class TalentTreeCanvasInteractionTest {
             )
             pinch(
                 start0 = centre - Offset(60f, 0f),
-                end0 = centre - Offset(300f, 0f),
+                end0 = centre - Offset(150f, 0f),
                 start1 = centre + Offset(60f, 0f),
-                end1 = centre + Offset(300f, 0f),
+                end1 = centre + Offset(150f, 0f),
                 durationMillis = 600,
             )
         }
@@ -241,5 +244,76 @@ class TalentTreeCanvasInteractionTest {
 
         assertEquals(before, model, "selection/pan must not rebuild or mutate the tree model")
         assertEquals(node.id, selectedNodeId)
+    }
+
+    @Test
+    fun zoomedOutPortraitStillSelectsThroughTheFull56dpScreenTarget() {
+        viewportState = TalentTreeViewportState(initial = null)
+        selectedNodeId = null
+        composeCanvas()
+
+        // pinch inward past the floor: ratio 1/3 clamps to the 0.8 minimum
+        // (all positions stay inside the canvas)
+        composeRule.onRoot().performTouchInput {
+            val centre = Offset(
+                dpToPx(canvasWidth.value) / 2f,
+                dpToPx(canvasHeight.value) / 2f,
+            )
+            pinch(
+                start0 = centre - Offset(120f, 0f),
+                end0 = centre - Offset(40f, 0f),
+                start1 = centre + Offset(120f, 0f),
+                end1 = centre + Offset(40f, 0f),
+                durationMillis = 600,
+            )
+        }
+        composeRule.waitForIdle()
+        assertEquals(
+            TalentTreeCanvasMetrics.ZOOM_MIN,
+            assertNotNull(viewportState.viewport).scale,
+            1e-3f,
+            "pinch must reach the 0.8 floor",
+        )
+
+        // 27.5 dp from the node's screen centre: inside the 56 dp screen floor,
+        // outside the shrunken 44.8 dp world-scaled target (density 1: px == dp)
+        val node = nodeById("Improved Rend")
+        val centre = screenPxOf(node.centerX, node.centerY)
+        composeRule.onRoot().performTouchInput { click(centre + Offset(27.5f, 0f)) }
+        composeRule.waitForIdle()
+
+        assertEquals(node.id, selectedNodeId, "56 dp screen target must survive zooming out")
+    }
+
+    @Test
+    fun landscapeInitialScaleStillSelectsThroughThe48dpScreenTarget() {
+        viewportState = TalentTreeViewportState(initial = null)
+        selectedNodeId = null
+        composeCanvas(width = 760.dp, height = 360.dp)
+        composeRule.waitForIdle()
+
+        val viewport = assertNotNull(viewportState.viewport)
+        assertEquals(
+            TalentTreeCanvasMetrics.INITIAL_SCALE_LANDSCAPE,
+            viewport.scale,
+            1e-3f,
+            "landscape canvas starts at the B3 landscape scale",
+        )
+        assertTrue(viewportState.isLandscape, "canvas wider than tall reports landscape")
+
+        // 23.5 dp from the node's screen centre: inside the 48 dp landscape
+        // floor, outside the ~45.7 dp world-scaled target (density 1: px == dp)
+        val node = nodeById("Improved Rend")
+        val centre = screenPxOf(node.centerX, node.centerY)
+        composeRule.onRoot().performTouchInput { click(centre + Offset(23.5f, 0f)) }
+        composeRule.waitForIdle()
+        assertEquals(node.id, selectedNodeId, "48 dp screen target at the landscape initial scale")
+
+        // 24.5 dp is beyond the floor: empty canvas, selection cleared
+        composeRule.onNodeWithContentDescription("Improved Rend").performClick()
+        composeRule.waitForIdle()
+        composeRule.onRoot().performTouchInput { click(centre + Offset(24.5f, 0f)) }
+        composeRule.waitForIdle()
+        assertNull(selectedNodeId, "outside the effective target the canvas is empty")
     }
 }

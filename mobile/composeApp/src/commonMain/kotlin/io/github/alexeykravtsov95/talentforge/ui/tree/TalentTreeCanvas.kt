@@ -203,7 +203,11 @@ private suspend fun PointerInputScope.talentTreeGestures(
 
     fun hitTest(position: Offset): Int? {
         val viewport = viewportState.viewport ?: return null
-        return model.nodeAtScreen(screenPxToDp(position), viewport)
+        // Screen-space target: never below the B3 orientation minimum
+        // (56 dp portrait / 48 dp landscape) even when zoomed out.
+        val minimumTarget =
+            TalentTreeCanvasMetrics.minimumNodeTargetDp(viewportState.isLandscape)
+        return model.nodeAtScreen(screenPxToDp(position), viewport, minimumTarget)
     }
 
     awaitEachGesture {

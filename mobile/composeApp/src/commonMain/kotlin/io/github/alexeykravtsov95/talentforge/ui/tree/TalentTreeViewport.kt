@@ -2,6 +2,7 @@ package io.github.alexeykravtsov95.talentforge.ui.tree
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import kotlin.math.abs
 
 /**
  * The single world→screen transform of the Talent Tree canvas.
@@ -94,18 +95,37 @@ data class TalentTreeViewport(
 }
 
 /**
- * Hit-tests a world position against the node touch targets (B3: 56 × 56 dp
- * centred on the node, non-overlapping on the grid). Returns the closest node
- * id whose target contains [world], or null for empty canvas.
+ * Effective touch-target side in **screen dp** for [viewport], never smaller
+ * than the orientation's B3 minimum ([minimumTargetDp]).
+ *
+ * Hit testing happens in screen space: the world-space 56 dp target scales
+ * with zoom-in (it may grow), but zooming out must not shrink the physically
+ * tappable area below the applicable minimum (56 dp portrait / 48 dp
+ * landscape, B3 05–06). Node *visuals* are untouched by this — only the
+ * interaction target is guaranteed.
  */
-fun TalentTreeUiModel.nodeAt(world: Offset): Int? {
-    if (!world.x.isFinite() || !world.y.isFinite()) return null
-    val halfTarget = TalentTreeCanvasMetrics.NODE_TARGET_DP / 2f
+fun effectiveNodeTargetDp(viewport: TalentTreeViewport, minimumTargetDp: Float): Float =
+    maxOf(TalentTreeCanvasMetrics.NODE_TARGET_DP * viewport.scale, minimumTargetDp)
+
+/**
+ * Hit-tests a screen position (dp) against the node touch targets in screen
+ * space, using [effectiveNodeTargetDp] with the orientation's minimum. The
+ * closest node whose effective target contains [screen] wins (deterministic);
+ * null means empty canvas.
+ */
+fun TalentTreeUiModel.nodeAtScreen(
+    screen: Offset,
+    viewport: TalentTreeViewport,
+    minimumTargetDp: Float,
+): Int? {
+    if (!screen.x.isFinite() || !screen.y.isFinite()) return null
+    val halfTarget = effectiveNodeTargetDp(viewport, minimumTargetDp) / 2f
     var bestId: Int? = null
     var bestDistance = Float.MAX_VALUE
     for (node in nodes) {
-        val dx = kotlin.math.abs(world.x - node.centerX)
-        val dy = kotlin.math.abs(world.y - node.centerY)
+        val nodeScreen = viewport.worldToScreen(Offset(node.centerX, node.centerY))
+        val dx = abs(screen.x - nodeScreen.x)
+        val dy = abs(screen.y - nodeScreen.y)
         if (dx <= halfTarget && dy <= halfTarget) {
             val distance = dx * dx + dy * dy
             if (distance < bestDistance) {
@@ -116,7 +136,3 @@ fun TalentTreeUiModel.nodeAt(world: Offset): Int? {
     }
     return bestId
 }
-
-/** Screen-dp convenience variant of [nodeAt]. */
-fun TalentTreeUiModel.nodeAtScreen(screen: Offset, viewport: TalentTreeViewport): Int? =
-    nodeAt(viewport.screenToWorld(screen))
