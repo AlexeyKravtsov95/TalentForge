@@ -88,8 +88,10 @@ manual workflow runs the live integration tests.
 ## Mobile
 
 **M3A** adds the Kotlin Multiplatform foundation under `mobile/` (shared contract
-models + dataset repository, Compose Multiplatform smoke host, thin iOS host). It is a
-pure consumer of the committed JSON contracts — no allocation semantics yet.
+models + dataset repository, Compose Multiplatform smoke host, thin iOS host), and
+**M3B** adds the Kotlin allocation engine to `shared`: a one-to-one port of the M2
+reference semantics that replays the committed conformance suite (53 scenarios /
+177 steps) in Kotlin.
 
 ```bash
 python3 scripts/sync_mobile_datasets.py --check   # bundled data == canonical data
