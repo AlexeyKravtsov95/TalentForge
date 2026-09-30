@@ -80,6 +80,8 @@ fun TalentTreeCanvas(
     selectedNodeId: Int?,
     showGuide: TalentShowGuide?,
     guideToken: Int,
+    purchaseNodeId: Int? = null,
+    purchaseToken: Int = 0,
     onNodeSelected: (Int) -> Unit,
     onSelectionCleared: () -> Unit,
     modifier: Modifier = Modifier,
@@ -293,6 +295,7 @@ fun TalentTreeCanvas(
                                 selected = nodeIsSelected,
                                 showOrigin = showGuide?.originNodeId == node.id,
                                 pulseToken = if (showGuide?.targetNodeId == node.id) guideToken else 0,
+                                purchaseToken = if (purchaseNodeId == node.id) purchaseToken else 0,
                             )
                         }
                     }

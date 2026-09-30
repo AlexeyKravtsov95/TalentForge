@@ -5,9 +5,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -45,19 +46,25 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTypography
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
 /**
- * The M4.2 production screen: the read-only Talent Tree plus the adaptive
- * Talent Inspector.
+ * The M4.3 production screen: the Talent Tree as an interactive **local build
+ * editor**.
  *
  * The screen loads exactly the bundled baseline Forever Warrior document
  * through `BundledTalentDatasetRepository` (no JSON in composables), shows
- * explicit Loading / Ready / Failed states, and drives every allocation-state
- * visual through the real M3B `TalentAllocationEngine` over an immutable
- * `engine.emptyState()` build. It stays READ ONLY: taps select, Show
- * navigates one prerequisite hop, and nothing spends, refunds or persists —
- * mutation UI belongs to M4.3.
+ * explicit Loading / Ready / Failed states, and owns the in-memory editing
+ * session ([TalentBuildEditingState]): which immutable [BuildState] is
+ * current, plus undo/redo history. Every mutation — +, −, Max, Reset — goes
+ * through the real M3B `TalentAllocationEngine` (`spend`/`refund`/
+ * `emptyState`); nothing else ever touches ranks. Node taps still only
+ * select; Show still navigates exactly one prerequisite hop and never spends.
+ *
+ * After every successful mutation the whole M4.2 presentation (node states,
+ * rank chips, counters, connectors, tier meters) is recomputed from
+ * `engine + current BuildState` — no UI state is patched by hand.
  */
 sealed interface TalentTreeUiState {
     data object Loading : TalentTreeUiState
@@ -67,6 +74,12 @@ sealed interface TalentTreeUiState {
         val gameDisplayName: String,
         val model: TalentTreeUiModel,
         val engine: TalentAllocationEngine,
+        /**
+         * The **initial** build the editing session starts from. Production
+         * always passes the engine's empty state; tests may inject a prepared
+         * build. The live build is the editing session's `current`, never
+         * this field.
+         */
         val buildState: BuildState,
     ) : TalentTreeUiState
 
@@ -106,11 +119,28 @@ fun TalentTreeUiFailure.describe(): String = when (this) {
     }
 }
 
+/** One successful purchase's node feedback (the token restarts the glow/pop). */
+private data class TalentPurchaseFeedback(
+    val nodeId: Int,
+    val token: Int,
+)
+
+/** One denied action's temporary state-line reason (B3 07: 2.6 s). */
+private data class TalentBlockedNotice(
+    val nodeId: Int,
+    val reason: String,
+    val token: Int,
+)
+
+/** B3 07: the blocked-action reason shows in the state line for 2.6 s. */
+private const val BLOCKED_REASON_MS: Long = 2600
+
 /**
- * Renders [state]. Selection lives here as plain UI state (rememberSaveable):
- * it is independent of the tree data, which is never rebuilt on selection.
- * The Show guide ([TalentShowGuide]) and the expanded-inspector flag are pure
- * presentation state; the immutable [BuildState] is never touched.
+ * Renders [state]. Selection, the Show guide, inspector expansion and the
+ * build-editing session live here as plain UI state (the session is
+ * `rememberSaveable`-survived: current build + both histories persist across
+ * recomposition and configuration change; only allocation triples are
+ * serialized, never the engine). The [BuildState]s themselves stay immutable.
  */
 @Composable
 fun TalentTreeScreen(
@@ -133,124 +163,280 @@ fun TalentTreeScreen(
     // region — the system inset is outside its height. Hosts draw edge to
     // edge (Android enableEdgeToEdge / SwiftUI ignoresSafeArea), so this one
     // padding is the single place insets are applied on every platform.
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
             .background(colors.background)
             .windowInsetsPadding(WindowInsets.safeDrawing),
     ) {
         when (val current = state) {
-            TalentTreeUiState.Loading -> {
+            TalentTreeUiState.Loading -> Column(Modifier.fillMaxSize()) {
                 TreeHeader(title = "TalentForge")
                 StatusPane(primary = "Loading talent data…", primaryColor = colors.textSecondary)
             }
 
-            is TalentTreeUiState.Ready -> {
-                // Read-only projection of the engine + immutable build state
-                // (pure mapping; M4.3 re-runs it when ranks actually change).
-                val presentation = remember(current.engine, current.buildState) {
-                    buildTalentTreePresentation(current.engine, current.buildState)
-                }
-                val facts = remember(current.engine) { talentNodeFacts(current.engine) }
-                val selectedPresentation = selectedNodeId?.let { presentation.nodes[it] }
-                val guideOriginName = showGuide
-                    ?.takeIf { it.targetNodeId == selectedNodeId }
-                    ?.originNodeId
-                    ?.let { facts.nameOf(it) }
-                val inspectorContent = selectedPresentation?.let {
-                    buildTalentInspectorContent(
-                        presentation = it,
-                        tree = presentation,
-                        facts = facts,
-                        guideOriginName = guideOriginName,
-                    )
-                }
+            is TalentTreeUiState.Ready -> ReadyTalentTreeScreen(
+                current = current,
+                selectedNodeId = selectedNodeId,
+                onSelectedNodeIdChange = { selectedNodeId = it },
+                inspectorExpanded = inspectorExpanded,
+                onInspectorExpandedChange = { inspectorExpanded = it },
+                showGuide = showGuide,
+                onShowGuideChange = { showGuide = it },
+                guideToken = guideToken,
+                onGuideTokenAdvance = { guideToken += 1 },
+                viewportState = viewportState,
+            )
 
-                TreeHeader(
-                    title = "${current.classDisplayName} · ${current.gameDisplayName}",
-                    pointsText = "${presentation.spentPoints} / ${presentation.pointBudget}",
+            is TalentTreeUiState.Failed -> Column(Modifier.fillMaxSize()) {
+                TreeHeader(title = "TalentForge")
+                StatusPane(
+                    primary = "Talent data failed to load",
+                    primaryColor = colors.danger,
+                    detail = current.failure.describe(),
+                )
+            }
+        }
+    }
+}
+
+/**
+ * The Ready workspace: header (title · undo · redo · x / 51 · ⋯), the
+ * adaptive canvas/inspector layouts, the editing session that drives them,
+ * and the ⋯ / reset overlays over the whole workspace.
+ */
+@Composable
+private fun ReadyTalentTreeScreen(
+    current: TalentTreeUiState.Ready,
+    selectedNodeId: Int?,
+    onSelectedNodeIdChange: (Int?) -> Unit,
+    inspectorExpanded: Boolean,
+    onInspectorExpandedChange: (Boolean) -> Unit,
+    showGuide: TalentShowGuide?,
+    onShowGuideChange: (TalentShowGuide?) -> Unit,
+    guideToken: Int,
+    onGuideTokenAdvance: () -> Unit,
+    viewportState: TalentTreeViewportState,
+    modifier: Modifier = Modifier,
+) {
+    // The editing session: which immutable BuildState is current + history.
+    // Keyed by the engine, saved as allocation triples only (never the
+    // engine); restored across recomposition and configuration change.
+    var editing by rememberSaveable(current.engine, stateSaver = TalentBuildEditingState.Saver) {
+        mutableStateOf(TalentBuildEditingState(current.buildState))
+    }
+
+    // Feedback state (transient by design — animations and notices, not build
+    // history; they die with the process rather than being serialized).
+    var purchaseFeedback by remember { mutableStateOf<TalentPurchaseFeedback?>(null) }
+    var blockedNotice by remember { mutableStateOf<TalentBlockedNotice?>(null) }
+    var feedbackToken by remember { mutableStateOf(0) }
+    var buildActionsOpen by rememberSaveable { mutableStateOf(false) }
+    var resetNotice by remember { mutableStateOf<TalentResetNotice?>(null) }
+    var resetNoticeToken by remember { mutableStateOf(0) }
+
+    // The one source of allocation truth for every visual: engine + current.
+    val presentation = remember(current.engine, editing.current) {
+        buildTalentTreePresentation(current.engine, editing.current)
+    }
+    val facts = remember(current.engine) { talentNodeFacts(current.engine) }
+    val selectedPresentation = selectedNodeId?.let { presentation.nodes[it] }
+    val selectedActions = selectedPresentation?.let {
+        buildTalentNodeActions(current.engine, editing.current, it)
+    }
+    val guideOriginName = showGuide
+        ?.takeIf { it.targetNodeId == selectedNodeId }
+        ?.originNodeId
+        ?.let { facts.nameOf(it) }
+    // B3 04 state 07 / UX/UI spec G: a disabled control is always paired with
+    // its reason, in the steady state — a correctly disabled button can never
+    // be clicked to produce a denial, so the explanation is derived up front
+    // from the same typed issues that disabled it.
+    val disabledActionReason = selectedActions?.disabledActionExplanation(
+        facts = facts,
+        spentPoints = presentation.spentPoints,
+        pointBudget = presentation.pointBudget,
+    )
+    val selectedBlockedReason = blockedNotice
+        ?.takeIf { it.nodeId == selectedNodeId }
+        ?.reason
+        ?: disabledActionReason
+    val inspectorContent = selectedPresentation?.let {
+        buildTalentInspectorContent(
+            presentation = it,
+            tree = presentation,
+            facts = facts,
+            guideOriginName = guideOriginName,
+            blockedReason = selectedBlockedReason,
+        )
+    }
+
+    // B3 07: "A blocked refund shows its reason in the state line for 2.6 s."
+    LaunchedEffect(blockedNotice) {
+        if (blockedNotice != null) {
+            delay(BLOCKED_REASON_MS)
+            blockedNotice = null
+        }
+    }
+
+    /**
+     * Applies one editing result. The engine result is authoritative even
+     * though the buttons were enabled/disabled from the same decisions: a
+     * denied action changes nothing (state, history, counters) and only shows
+     * its reason in the state line; a successful mutation clears the
+     * temporary Show guide (documented conservative choice — the guide
+     * explains *why a rank cannot be spent yet*, which a mutation may
+     * change) while keeping the selected node, the viewport and the
+     * inspector layout untouched.
+     */
+    fun applyEdit(result: TalentBuildEditResult, purchasedNodeId: Int? = null) {
+        if (result.changed) {
+            editing = result.editing
+            onShowGuideChange(null)
+            blockedNotice = null
+            // The reset notice promises "Undo restores what Reset cleared" —
+            // that is true only while Reset is still the LATEST successful
+            // history operation. Any later successful mutation (spend/refund/
+            // Max) would make its generic Undo revert the wrong action, so
+            // the notice goes; a denied action leaves it (history unchanged).
+            resetNotice = null
+            if (purchasedNodeId != null) {
+                feedbackToken += 1
+                purchaseFeedback = TalentPurchaseFeedback(purchasedNodeId, feedbackToken)
+            }
+        } else {
+            val nodeId = purchasedNodeId ?: selectedNodeId ?: return
+            feedbackToken += 1
+            blockedNotice = TalentBlockedNotice(
+                nodeId = nodeId,
+                reason = blockedActionReason(result.issues, facts),
+                token = feedbackToken,
+            )
+        }
+    }
+
+    /** Undo/redo touch ONLY the BuildState — never selection, pan, zoom or inspector layout. */
+    fun performUndo() {
+        val undone = editing.undo() ?: return
+        editing = undone
+        blockedNotice = null
+        resetNotice = null
+    }
+
+    fun performRedo() {
+        val redone = editing.redo() ?: return
+        editing = redone
+        blockedNotice = null
+        resetNotice = null
+    }
+
+    val onSpendRank: (Int) -> Unit = { nodeId ->
+        applyEdit(editing.spend(current.engine, nodeId), purchasedNodeId = nodeId)
+    }
+    val onRefundRank: (Int) -> Unit = { nodeId ->
+        applyEdit(editing.refund(current.engine, nodeId))
+    }
+    val onMaxRank: (Int) -> Unit = { nodeId ->
+        applyEdit(editing.spendToMax(current.engine, nodeId), purchasedNodeId = nodeId)
+    }
+
+    Box(modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize()) {
+            TalentTreeHeaderBar(
+                title = "${current.classDisplayName} · ${current.gameDisplayName}",
+                pointsText = "${presentation.spentPoints} / ${presentation.pointBudget}",
+                canUndo = editing.canUndo,
+                canRedo = editing.canRedo,
+                onUndo = ::performUndo,
+                onRedo = ::performRedo,
+                onOpenBuildActions = { buildActionsOpen = true },
+            )
+
+            BoxWithConstraints(Modifier.fillMaxSize()) {
+                val layoutClass = talentTreeLayoutClass(maxWidth.value, maxHeight.value)
+                // Captured before the nested layout lambdas: the scope's
+                // constraints are only implicitly available at this level.
+                val areaHeight = maxHeight
+                // B3 06/UX spec 03-04: the expanded sheet occupies its
+                // preferred 448 dp height, capped at the available height
+                // minus 96 dp. This is the sheet's ACTUAL geometry (and
+                // therefore exactly the covered canvas region the expand
+                // focus uses — never a mismatched estimate).
+                val expandedSheetHeight = minOf(
+                    TalentInspectorMetrics.EXPANDED_SHEET_PREFERRED_DP,
+                    areaHeight - TalentInspectorMetrics.SHEET_BOTTOM_CLEARANCE_DP,
                 )
 
-                BoxWithConstraints(Modifier.fillMaxSize()) {
-                    val layoutClass = talentTreeLayoutClass(maxWidth.value, maxHeight.value)
-                    // Captured before the nested layout lambdas: the scope's
-                    // constraints are only implicitly available at this level.
-                    val areaHeight = maxHeight
-                    // B3 06/UX spec 03-04: the expanded sheet occupies its
-                    // preferred 448 dp height, capped at the available height
-                    // minus 96 dp. This is the sheet's ACTUAL geometry (and
-                    // therefore exactly the covered canvas region the expand
-                    // focus uses — never a mismatched estimate).
-                    val expandedSheetHeight = minOf(
-                        TalentInspectorMetrics.EXPANDED_SHEET_PREFERRED_DP,
-                        areaHeight - TalentInspectorMetrics.SHEET_BOTTOM_CLEARANCE_DP,
+                /**
+                 * Pans (animated by the canvas) so the selected node is fully
+                 * visible in the canvas area not covered by the inspector.
+                 * No-op when it already is (B3: "the canvas stays still").
+                 * [reveal] selects the B3 08 minimal-pan mode used by
+                 * inspector layout changes; Show keeps the B3 07 centring.
+                 */
+                fun focusSelectedNode(
+                    coveredRightDp: Float = 0f,
+                    coveredBottomDp: Float = 0f,
+                    reveal: Boolean = false,
+                ) {
+                    val target = selectedNodeId ?: return
+                    val canvas = viewportState.canvasSize
+                    if (canvas == Size.Zero) return
+                    val node = current.model.nodes.firstOrNull { it.id == target } ?: return
+                    viewportState.requestFocus(
+                        world = Offset(node.centerX, node.centerY),
+                        visibleSize = Size(
+                            (canvas.width - coveredRightDp).coerceAtLeast(0f),
+                            (canvas.height - coveredBottomDp).coerceAtLeast(0f),
+                        ),
+                        mode = if (reveal) TalentTreeFocusMode.REVEAL else TalentTreeFocusMode.CENTRE,
                     )
+                }
 
-                    /**
-                     * Pans (animated by the canvas) so the selected node is fully
-                     * visible in the canvas area not covered by the inspector.
-                     * No-op when it already is (B3: "the canvas stays still").
-                     * [reveal] selects the B3 08 minimal-pan mode used by
-                     * inspector layout changes; Show keeps the B3 07 centring.
-                     */
-                    fun focusSelectedNode(
-                        coveredRightDp: Float = 0f,
-                        coveredBottomDp: Float = 0f,
-                        reveal: Boolean = false,
-                    ) {
-                        val target = selectedNodeId ?: return
-                        val canvas = viewportState.canvasSize
-                        if (canvas == Size.Zero) return
-                        val node = current.model.nodes.firstOrNull { it.id == target } ?: return
-                        viewportState.requestFocus(
-                            world = Offset(node.centerX, node.centerY),
-                            visibleSize = Size(
-                                (canvas.width - coveredRightDp).coerceAtLeast(0f),
-                                (canvas.height - coveredBottomDp).coerceAtLeast(0f),
-                            ),
-                            mode = if (reveal) TalentTreeFocusMode.REVEAL else TalentTreeFocusMode.CENTRE,
+                /** B3: a plain selection clears any active Show guide. */
+                val onNodeSelected: (Int) -> Unit = { nodeId ->
+                    onShowGuideChange(null)
+                    onInspectorExpandedChange(false)
+                    // B3 05: when the side panel opens it takes 300 dp of the
+                    // canvas; the tree pans only if the panel would cover the
+                    // node. Later selections keep the (already smaller) canvas.
+                    val panelOpening = selectedNodeId == null
+                    onSelectedNodeIdChange(nodeId)
+                    if (layoutClass == TalentTreeLayoutClass.LANDSCAPE && panelOpening) {
+                        focusSelectedNode(
+                            coveredRightDp = TalentInspectorMetrics.LANDSCAPE_PANEL_WIDTH_DP.value,
+                            reveal = true,
                         )
                     }
-
-                    /** B3: a plain selection clears any active Show guide. */
-                    val onNodeSelected: (Int) -> Unit = { nodeId ->
-                        showGuide = null
-                        inspectorExpanded = false
-                        // B3 05: when the side panel opens it takes 300 dp of the
-                        // canvas; the tree pans only if the panel would cover the
-                        // node. Later selections keep the (already smaller) canvas.
-                        val panelOpening = selectedNodeId == null
-                        selectedNodeId = nodeId
-                        if (layoutClass == TalentTreeLayoutClass.LANDSCAPE && panelOpening) {
-                            focusSelectedNode(
-                                coveredRightDp = TalentInspectorMetrics.LANDSCAPE_PANEL_WIDTH_DP.value,
-                                reveal = true,
-                            )
+                }
+                val onSelectionCleared: () -> Unit = {
+                    onShowGuideChange(null)
+                    onInspectorExpandedChange(false)
+                    onSelectedNodeIdChange(null)
+                }
+                /** B3 07: Show selects the direct prerequisite (one hop, never spends). */
+                val onShowPrerequisite: (Int) -> Unit = { prerequisiteId ->
+                    val originId = selectedNodeId
+                    if (originId != null && originId != prerequisiteId) {
+                        onShowGuideChange(
+                            TalentShowGuide(originNodeId = originId, targetNodeId = prerequisiteId),
+                        )
+                        onGuideTokenAdvance()
+                        onInspectorExpandedChange(false)
+                        onSelectedNodeIdChange(prerequisiteId)
+                        val coveredBottom = if (layoutClass == TalentTreeLayoutClass.PORTRAIT) {
+                            TalentInspectorMetrics.COMPACT_INSET_DP.value * 2f +
+                                TalentInspectorMetrics.COMPACT_HEIGHT_DP.value
+                        } else {
+                            0f
                         }
+                        focusSelectedNode(coveredBottomDp = coveredBottom)
                     }
-                    val onSelectionCleared: () -> Unit = {
-                        showGuide = null
-                        inspectorExpanded = false
-                        selectedNodeId = null
-                    }
-                    /** B3 07: Show selects the direct prerequisite (one hop, never spends). */
-                    val onShowPrerequisite: (Int) -> Unit = { prerequisiteId ->
-                        val originId = selectedNodeId
-                        if (originId != null && originId != prerequisiteId) {
-                            showGuide = TalentShowGuide(originNodeId = originId, targetNodeId = prerequisiteId)
-                            guideToken += 1
-                            inspectorExpanded = false
-                            selectedNodeId = prerequisiteId
-                            val coveredBottom = if (layoutClass == TalentTreeLayoutClass.PORTRAIT) {
-                                TalentInspectorMetrics.COMPACT_INSET_DP.value * 2f +
-                                    TalentInspectorMetrics.COMPACT_HEIGHT_DP.value
-                            } else {
-                                0f
-                            }
-                            focusSelectedNode(coveredBottomDp = coveredBottom)
-                        }
-                    }
+                }
 
+                // The workspace below the header, with the reset notice as its
+                // one floating overlay.
+                Box(Modifier.fillMaxSize()) {
                     when (layoutClass) {
                         TalentTreeLayoutClass.TABLET -> Row(Modifier.fillMaxSize()) {
                             TalentTreeCanvas(
@@ -261,13 +447,19 @@ fun TalentTreeScreen(
                                 selectedNodeId = selectedNodeId,
                                 showGuide = showGuide,
                                 guideToken = guideToken,
+                                purchaseNodeId = purchaseFeedback?.nodeId,
+                                purchaseToken = purchaseFeedback?.token ?: 0,
                                 onNodeSelected = onNodeSelected,
                                 onSelectionCleared = onSelectionCleared,
                                 modifier = Modifier.weight(1f),
                             )
                             TalentInspectorPersistentPanel(
                                 content = inspectorContent,
+                                actions = selectedActions,
                                 onShowPrerequisite = onShowPrerequisite,
+                                onSpendRank = onSpendRank,
+                                onRefundRank = onRefundRank,
+                                onMaxRank = onMaxRank,
                             )
                         }
 
@@ -280,6 +472,8 @@ fun TalentTreeScreen(
                                 selectedNodeId = selectedNodeId,
                                 showGuide = showGuide,
                                 guideToken = guideToken,
+                                purchaseNodeId = purchaseFeedback?.nodeId,
+                                purchaseToken = purchaseFeedback?.token ?: 0,
                                 onNodeSelected = onNodeSelected,
                                 onSelectionCleared = onSelectionCleared,
                                 modifier = Modifier.weight(1f),
@@ -287,8 +481,12 @@ fun TalentTreeScreen(
                             if (inspectorContent != null) {
                                 TalentInspectorSidePanel(
                                     content = inspectorContent,
+                                    actions = selectedActions,
                                     onDeselect = onSelectionCleared,
                                     onShowPrerequisite = onShowPrerequisite,
+                                    onSpendRank = onSpendRank,
+                                    onRefundRank = onRefundRank,
+                                    onMaxRank = onMaxRank,
                                 )
                             }
                         }
@@ -302,6 +500,8 @@ fun TalentTreeScreen(
                                 selectedNodeId = selectedNodeId,
                                 showGuide = showGuide,
                                 guideToken = guideToken,
+                                purchaseNodeId = purchaseFeedback?.nodeId,
+                                purchaseToken = purchaseFeedback?.token ?: 0,
                                 onNodeSelected = onNodeSelected,
                                 onSelectionCleared = onSelectionCleared,
                                 modifier = Modifier.fillMaxSize(),
@@ -310,17 +510,25 @@ fun TalentTreeScreen(
                                 if (inspectorExpanded && inspectorContent != null) {
                                     TalentInspectorExpandedSheet(
                                         content = inspectorContent,
+                                        actions = selectedActions,
                                         height = expandedSheetHeight,
-                                        onCollapse = { inspectorExpanded = false },
+                                        onCollapse = { onInspectorExpandedChange(false) },
                                         onDeselect = onSelectionCleared,
                                         onShowPrerequisite = onShowPrerequisite,
+                                        onSpendRank = onSpendRank,
+                                        onRefundRank = onRefundRank,
+                                        onMaxRank = onMaxRank,
                                     )
                                 } else {
                                     TalentInspectorCompactBar(
                                         content = inspectorContent,
+                                        actions = selectedActions,
+                                        onSpendRank = onSpendRank,
+                                        onRefundRank = onRefundRank,
                                         onToggleExpanded = {
-                                            inspectorExpanded = !inspectorExpanded
-                                            if (inspectorExpanded) {
+                                            val expanding = !inspectorExpanded
+                                            onInspectorExpandedChange(expanding)
+                                            if (expanding) {
                                                 // B3 08: "Expanding pans the canvas the
                                                 // minimum amount needed, and only when
                                                 // the node would be covered" — the covered
@@ -337,16 +545,75 @@ fun TalentTreeScreen(
                             }
                         }
                     }
+
+                    // The reset notice floats at the TOP of the canvas region —
+                    // the spec's notice model (UX/UI spec 07 places snackbars
+                    // "at the top"; 01 ADAPT 3 floats notices "over the top of
+                    // the canvas"). Anchored here, below the header and inset
+                    // from any side inspector by its REAL width, it can never
+                    // rest over the compact bar, the expanded sheet, the
+                    // side/persistent panel or any − / + / Max / Show control,
+                    // in every layout, without device-specific coordinates.
+                    val sideInspectorWidth = when (layoutClass) {
+                        TalentTreeLayoutClass.TABLET -> TalentInspectorMetrics.TABLET_PANEL_WIDTH_DP
+                        TalentTreeLayoutClass.LANDSCAPE ->
+                            if (inspectorContent != null) {
+                                TalentInspectorMetrics.LANDSCAPE_PANEL_WIDTH_DP
+                            } else {
+                                0.dp
+                            }
+
+                        TalentTreeLayoutClass.PORTRAIT -> 0.dp
+                    }
+                    TalentResetSnackbar(
+                        notice = resetNotice,
+                        onUndo = {
+                            performUndo()
+                            resetNotice = null
+                        },
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .fillMaxWidth()
+                            .padding(end = sideInspectorWidth)
+                            .padding(
+                                top = TalentForgeSpacing.rowGap,
+                                start = TalentForgeSpacing.screenX,
+                                end = TalentForgeSpacing.screenX,
+                            ),
+                    )
                 }
             }
+        }
 
-            is TalentTreeUiState.Failed -> {
-                TreeHeader(title = "TalentForge")
-                StatusPane(
-                    primary = "Talent data failed to load",
-                    primaryColor = colors.danger,
-                    detail = current.failure.describe(),
-                )
+        // M4.3 modal overlay over the whole workspace (header included): the
+        // ⋯ build-actions sheet. The reset notice is NOT here — it floats at
+        // the top of the canvas region inside the layout above, where it can
+        // never cover the inspector or its actions.
+        TalentBuildActionsSheet(
+            visible = buildActionsOpen,
+            onDismiss = { buildActionsOpen = false },
+            onResetTalents = {
+                // UX/UI spec 03 §4: no confirmation — Reset is recoverable
+                // through the SAME history mechanism (one atomic entry).
+                val cleared = current.engine.spentPoints(editing.current)
+                val result = editing.reset(current.engine)
+                if (result.changed) {
+                    editing = result.editing
+                    onShowGuideChange(null)
+                    blockedNotice = null
+                    resetNoticeToken += 1
+                    resetNotice = TalentResetNotice(pointsCleared = cleared, id = resetNoticeToken)
+                }
+                buildActionsOpen = false
+            },
+        )
+        // Auto-dismiss of the reset snackbar (implementation-safe 4 s; the
+        // design sources freeze no duration for it, unlike B3's 2.6 s blocked
+        // reason line).
+        LaunchedEffect(resetNotice?.id) {
+            if (resetNotice != null) {
+                delay(TalentBuildOverlayMetrics.RESET_SNACKBAR_MS.toLong())
+                resetNotice = null
             }
         }
     }
@@ -370,8 +637,8 @@ private val TalentShowGuideSaver = mapSaver<TalentShowGuide?>(
 
 /**
  * Self-loading entry used by the app hosts: loads the bundled baseline
- * Forever Warrior document and maps it to the UI model + read-only engine
- * session off the main thread.
+ * Forever Warrior document and maps it to the UI model + engine session off
+ * the main thread.
  */
 @Composable
 fun WarriorTalentTreeScreen(modifier: Modifier = Modifier) {
@@ -381,7 +648,7 @@ fun WarriorTalentTreeScreen(modifier: Modifier = Modifier) {
     TalentTreeScreen(state = state, modifier = modifier)
 }
 
-/** Identity of the single dataset M4.2 launches into. */
+/** Identity of the single dataset M4.2/M4.3 launches into. */
 private val BASELINE_GAME = GameId("forever")
 private const val BASELINE_CLIENT_BUILD = "1.60.1.70009"
 private val BASELINE_CLASS = ClassToken("WARRIOR")
@@ -396,7 +663,7 @@ internal suspend fun loadBaselineWarriorTreeState(): TalentTreeUiState {
     }
 }
 
-/** Builds the Ready session (UI model + read-only engine over an empty build) from a loaded document. */
+/** Builds the Ready session (UI model + engine over the session's initial build) from a loaded document. */
 internal fun loadWarriorTreeState(document: TalentDataDocument): TalentTreeUiState {
     val engine = try {
         TalentAllocationEngine(document)
@@ -419,10 +686,9 @@ internal fun loadWarriorTreeState(document: TalentDataDocument): TalentTreeUiSta
 }
 
 /**
- * Minimal context row (B3 header: 44 dp, single line). The full B3 header
- * (undo/redo, spec row) is allocation-mutation UI and intentionally absent in
- * M4.2; the real read-only point counter (engine `spentPoints`/`pointBudget`)
- * is the one allocation fact the header shows.
+ * Minimal context row for the Loading/Failed panes (B3 header: 44 dp, single
+ * line). The interactive header — undo/redo, points, ⋯ — exists only in the
+ * Ready workspace ([TalentTreeHeaderBar]).
  */
 @Composable
 private fun TreeHeader(

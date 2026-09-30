@@ -77,12 +77,18 @@ fun talentNodeFacts(engine: io.github.alexeykravtsov95.talentforge.allocation.Ta
  * @param facts published names/max ranks of the tree's nodes.
  * @param guideOriginName while a Show guide is active (the user navigated from
  *   this node), the target's state line appends the B3 "needed for" suffix.
+ * @param blockedReason the explanation of a disabled rank control (B3 04
+ *   state 07: "+ is shown disabled and the state line explains why"; B3 07:
+ *   "A blocked refund shows its reason in the state line"), or the transient
+ *   reason after a denied mutation call. While present it replaces the state
+ *   line entirely.
  */
 fun buildTalentInspectorContent(
     presentation: TalentNodePresentation,
     tree: TalentTreePresentation,
     facts: TalentTreeNodeFacts,
     guideOriginName: String? = null,
+    blockedReason: String? = null,
 ): TalentInspectorContent {
     val name = facts.nameOf(presentation.nodeId)
 
@@ -100,10 +106,13 @@ fun buildTalentInspectorContent(
         TalentNodeState.UNAVAILABLE -> "Unavailable"
     }
     // B3 05: after Show, the target's state line reads "Available · needed for <origin>".
-    val stateLine = if (guideOriginName != null && baseStateLine.isNotEmpty()) {
-        "$baseStateLine · needed for $guideOriginName"
-    } else {
-        baseStateLine
+    // B3 07: a blocked action's reason takes the state line while it shows.
+    val stateLine = when {
+        blockedReason != null -> blockedReason
+        guideOriginName != null && baseStateLine.isNotEmpty() ->
+            "$baseStateLine · needed for $guideOriginName"
+
+        else -> baseStateLine
     }
 
     return TalentInspectorContent(

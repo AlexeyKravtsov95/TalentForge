@@ -97,6 +97,8 @@ class TalentTreeCanvasInteractionTest {
                             selectedNodeId = selectedNodeId,
                             showGuide = null,
                             guideToken = 0,
+                            purchaseNodeId = null,
+                            purchaseToken = 0,
                             onNodeSelected = { selectedNodeId = it },
                             onSelectionCleared = { selectedNodeId = null },
                         )
