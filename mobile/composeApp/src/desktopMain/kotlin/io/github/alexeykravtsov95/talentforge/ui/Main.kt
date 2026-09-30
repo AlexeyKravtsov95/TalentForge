@@ -4,6 +4,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import io.github.alexeykravtsov95.talentforge.ui.library.DesktopBuildLibraryStorage
 
 fun main() = application {
     Window(
@@ -11,6 +12,6 @@ fun main() = application {
         state = rememberWindowState(width = 420.dp, height = 780.dp),
         onCloseRequest = ::exitApplication,
     ) {
-        App()
+        App(storage = DesktopBuildLibraryStorage())
     }
 }
