@@ -94,6 +94,7 @@ class TalentTreeCanvasInteractionTest {
                             presentation = presentation,
                             viewportState = viewportState,
                             layoutClass = talentTreeLayoutClass(width.value, height.value),
+                            accent = io.github.alexeykravtsov95.talentforge.ui.theme.WarriorClassAccent.color,
                             selectedNodeId = selectedNodeId,
                             showGuide = null,
                             guideToken = 0,

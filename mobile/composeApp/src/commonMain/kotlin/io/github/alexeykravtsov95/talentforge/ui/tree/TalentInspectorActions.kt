@@ -60,6 +60,7 @@ object TalentInspectorActionMetrics {
 fun TalentInspectorCompactActions(
     talentName: String,
     actions: TalentNodeActions,
+    accent: androidx.compose.ui.graphics.Color,
     onSpend: (Int) -> Unit,
     onRefund: (Int) -> Unit,
     modifier: Modifier = Modifier,
@@ -86,6 +87,7 @@ fun TalentInspectorCompactActions(
             SpendButton(
                 talentName = talentName,
                 enabled = actions.canSpend,
+                accent = accent,
                 onClick = { onSpend(actions.nodeId) },
             )
         }
@@ -102,6 +104,7 @@ fun TalentInspectorCompactActions(
 fun TalentInspectorRankActions(
     talentName: String,
     actions: TalentNodeActions,
+    accent: androidx.compose.ui.graphics.Color,
     onSpend: (Int) -> Unit,
     onRefund: (Int) -> Unit,
     onMax: (Int) -> Unit,
@@ -123,6 +126,7 @@ fun TalentInspectorRankActions(
             SpendButton(
                 talentName = talentName,
                 enabled = actions.canSpend,
+                accent = accent,
                 onClick = { onSpend(actions.nodeId) },
             )
         }
@@ -150,11 +154,12 @@ fun TalentInspectorRankActions(
 fun SpendButton(
     talentName: String,
     enabled: Boolean,
+    accent: androidx.compose.ui.graphics.Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val colors = talentForgeColors()
-    val background = if (enabled) colors.accentClassWarrior else colors.surfaceInteractive
+    val background = if (enabled) accent else colors.surfaceInteractive
     val glyphColor = if (enabled) colors.background else colors.disabled
     Box(
         modifier = modifier

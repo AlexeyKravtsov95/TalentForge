@@ -77,6 +77,7 @@ fun TalentTreeCanvas(
     presentation: TalentTreePresentation,
     viewportState: TalentTreeViewportState,
     layoutClass: TalentTreeLayoutClass,
+    accent: androidx.compose.ui.graphics.Color,
     selectedNodeId: Int?,
     showGuide: TalentShowGuide?,
     guideToken: Int,
@@ -292,6 +293,7 @@ fun TalentTreeCanvas(
                             TalentNodeFallbackVisual(
                                 node = node,
                                 presentation = nodePresentation,
+                                accent = accent,
                                 selected = nodeIsSelected,
                                 showOrigin = showGuide?.originNodeId == node.id,
                                 pulseToken = if (showGuide?.targetNodeId == node.id) guideToken else 0,

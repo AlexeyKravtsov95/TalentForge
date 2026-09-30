@@ -66,6 +66,31 @@ data class ClassAccent(val color: androidx.compose.ui.graphics.Color)
 val WarriorClassAccent: ClassAccent = ClassAccent(TalentForgeColors.accentClassWarrior)
 
 /**
+ * The documented **neutral fallback** for classes whose accent is not frozen by
+ * any committed design source or dataset field: the `textSecondary` neutral
+ * grey (oklch(0.74 0.01 260) — chroma 0.01 is effectively hueless, so it claims
+ * no class hue and collides with no semantic token: danger/warning stay
+ * reserved, focus stays the neutral white selection ring).
+ *
+ * M5.1 renders every non-Warrior class with this accent. It is a presentation
+ * fact, deliberately replaceable when the spec freezes real per-class accents;
+ * no class colour is ever invented from memory or external sources, and the
+ * dataset schema stays colour-free.
+ */
+val UnfrozenClassAccent: ClassAccent = ClassAccent(TalentForgeColors.textSecondary)
+
+/**
+ * The one class-accent policy: Warrior uses its spec-frozen accent; every
+ * other class uses [UnfrozenClassAccent] until a committed source freezes its
+ * real accent. Callers must never read `accentClassWarrior` directly — that
+ * token is semantically *the Warrior accent*, not a generic accent default.
+ */
+fun classAccentFor(classToken: io.github.alexeykravtsov95.talentforge.data.ClassToken): ClassAccent =
+    if (classToken.value == WARRIOR_TOKEN) WarriorClassAccent else UnfrozenClassAccent
+
+private const val WARRIOR_TOKEN = "WARRIOR"
+
+/**
  * OKLCH → sRGB conversion (Björn Ottosson's OKLab matrices), shared by the
  * token-verification test. Kept next to the tokens so drift between spec and
  * constants is caught mechanically.

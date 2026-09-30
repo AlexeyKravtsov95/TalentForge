@@ -46,6 +46,12 @@ object TalentForgeTypography {
         fontWeight = FontWeight.Medium,
     )
 
+    /** Meta: 12.5 / 16 · 400 (spec G "Meta Warrior · Forever · 2 h ago"). */
+    val meta: TextStyle = TextStyle(
+        fontSize = 12.5.sp,
+        lineHeight = 16.sp,
+    )
+
     /** Numeric: mono 17 · 600 (tabular). */
     val value: TextStyle = TextStyle(
         fontSize = 17.sp,

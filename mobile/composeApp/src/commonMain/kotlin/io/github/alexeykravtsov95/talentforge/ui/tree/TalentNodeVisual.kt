@@ -74,6 +74,7 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
 fun TalentNodeFallbackVisual(
     node: TalentTreeNodeUiModel,
     presentation: TalentNodePresentation,
+    accent: Color,
     selected: Boolean,
     showOrigin: Boolean,
     pulseToken: Int,
@@ -145,7 +146,9 @@ fun TalentNodeFallbackVisual(
         }
     }
 
-    val accent = colors.accentClassWarrior
+    // The class accent is an explicit input since M5.1 (Warrior keeps its
+    // spec-frozen accent; other classes receive the documented neutral
+    // fallback) — never a theme lookup: the Warrior token is Warrior-only.
     val bodyColor = colors.background
     // B3 01: "Border = can I reach it" — solid (reachable), dashed (locked),
     // dimmed solid (reachable but no points left). Colour stays neutral: the
