@@ -76,9 +76,13 @@ android {
 }
 
 // Opt-in screenshot evidence: `./gradlew :composeApp:desktopTest \
-//     -Dtalentforge.m41.screenshots=<dir>` — skipped by default.
+//     -Dtalentforge.m41.screenshots=<dir>` (M4.1) or
+//     -Dtalentforge.m42.screenshots=<dir>` (M4.2) — skipped by default.
 tasks.named<Test>("desktopTest") {
     System.getProperty("talentforge.m41.screenshots")?.let {
         systemProperty("talentforge.m41.screenshots", it)
+    }
+    System.getProperty("talentforge.m42.screenshots")?.let {
+        systemProperty("talentforge.m42.screenshots", it)
     }
 }

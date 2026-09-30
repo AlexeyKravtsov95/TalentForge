@@ -1,7 +1,7 @@
-# Mobile architecture (M3A foundation, M4.1 production tree screen)
+# Mobile architecture (M3A foundation, M4.1–M4.2 production tree screen)
 
 This document describes the Kotlin Multiplatform foundation introduced by M3A
-and the M4.1 production read-only Talent Tree screen: module boundaries,
+and the M4.1/M4.2 production read-only Talent Tree screen: module boundaries,
 dataset flow, strict JSON policy, conformance strategy and local build
 commands. It is the orientation map for later milestones — none should require
 restructuring what is described here.
@@ -41,7 +41,7 @@ Targets: Android, iOS arm64, iOS simulator arm64, JVM (fast contract tests).
 Compose Multiplatform application/UI host. Depends on `shared`. Contains:
 
 - `App` — thin entry that hosts the production screen below;
-- `ui/tree` — the **M4.1 production read-only Talent Tree screen**: the bundled
+- `ui/tree` — the **M4.1/M4.2 production read-only Talent Tree screen**: the bundled
   baseline Forever Warrior document is loaded through
   `BundledTalentDatasetRepository` (no JSON in composables) into explicit
   Loading/Ready/Failed states, and rendered as a pannable, pinch-zoomable
@@ -78,7 +78,52 @@ Compose Multiplatform application/UI host. Depends on `shared`. Contains:
     from the real node name (leading "Improved" dropped; first letters of the
     first and last remaining word — "HS" Heroic Strike, "RE" Rend). No
     networking, no scraped art, no schema invention; a future icon renderer
-    replaces this file's content without touching geometry or gestures;
+    replaces this file's content without touching geometry or gestures.
+    M4.2 layers the B3 node-state language over the fallback shape (see
+    `TalentNodePresentation` below): solid/dashed/dimmed borders, accent
+    tint/fill + double rim for invested ranks, glyph chips (padlock =
+    tier-locked, ↑ = prerequisite-locked) and the 15 dp rank chip derived from
+    the real BuildState, with the neutral selection ring layered **above**
+    any state;
+  - `TalentNodePresentation` — the **M4.2 read-only allocation-state
+    projection**: a pure mapping of `TalentAllocationEngine.canSpend` over an
+    immutable `BuildState` (the production build is `engine.emptyState()`;
+    the mapper accepts any state so M4.3 reuses it when ranks change). It
+    never calls `spend`/`refund` (a desktop test scans production sources to
+    enforce this). The engine's full ordered issue set is preserved per node
+    (a node can be prerequisite- *and* tier-locked at once); the single
+    `state` field is documented UI-only precedence (fail-closed →
+    partial/maxed → prerequisite → tier → no-points), not allocation
+    semantics. `TalentInspectorContent` builds the inspector copy from
+    published names/max-ranks and structured issue values only — no invented
+    spell descriptions, effect prose or spec names (the dataset publishes no
+    section names, so the B3 tier line reads "Spend N more points in this
+    tree" without "in Arms");
+  - `TalentInspector` — the **M4.2 adaptive inspector**, one content model in
+    three presentations: portrait 64 dp compact bar (14 dp inset, grows at
+    large text) expanding into the B3 448 dp sheet — it *occupies*
+    min(448 dp, available height − 96 dp), scrolls internally at large text
+    sizes and pins its actions to the bottom; because that is the sheet's
+    actual geometry, the expand focus covers exactly this height (never a
+    mismatched estimate) and pans the minimum amount needed (B3 08);
+    landscape 300 dp side panel
+    laid out **beside** the canvas (never painted under it — the tree pans
+    only if the panel would cover the node); tablet (840 dp+) persistent
+    380 dp inspector with a minimal empty prompt (the spec freezes the
+    behaviour, not the prompt wording — the line is documented
+    implementation-safe). All read-only: `Show` is the only action, offered
+    only when the engine reports exactly one unmet prerequisite source
+    (multi-source cases fail safe with no action rather than inventing a
+    preference);
+  - prerequisite navigation (B3 07): `Show` selects the direct prerequisite
+    (one hop, never spends), the viewport centres the target only when it is
+    not fully visible outside the inspector-covered area (300 ms ease-out,
+    scale untouched, transform always finite — `TalentTreeViewport.focusedOn`
+    is pure and unit-tested), the target pulses once for 900 ms, the origin
+    keeps a dashed ring, the guided edge turns bright at 3 dp while other
+    connectors fade to 18%, and the target's state line appends the B3
+    "needed for <origin>" suffix. The next selection, a deselect or a spec
+    change clears the guide;
 
 - `ui/theme` — design tokens frozen by `TalentForge_UX_UI_Spec_v1.pdf`
   section G: colour (OKLCH-derived sRGB constants), spacing, radius, motion
@@ -101,6 +146,20 @@ spend/refund UI, inspector, persistence, Home screen, class picker or
 navigation is exposed — those belong to later milestones. The M3A aggregate
 smoke host was removed with its screen; the repository/resource pipeline it
 proved remains covered by the desktop tests.
+
+M4.2 extends the same screen with the **adaptive Talent Inspector and the
+read-only allocation-state presentation** described above. System UI follows
+one cross-platform rule: the hosts draw edge to edge (Android
+`enableEdgeToEdge` with transparent light-icon bars; SwiftUI
+`ignoresSafeArea`), the TalentForge background paints to the physical window
+edges, and the screen insets its *content* exactly once via
+`WindowInsets.safeDrawing` — no hardcoded bar heights, no double padding on
+iOS. The canvas is a real viewport (`clipToBounds`): nothing it draws can
+escape into the header, the inspector or a neighbouring panel. It remains strictly
+**read-only**: the screen holds one immutable `engine.emptyState()` build, the
+engine is only queried (`canSpend`/`validate`/`spentPoints`/
+`remainingPoints`), `Show` is pure navigation, and no spend/refund/undo
+controls exist anywhere. BuildState mutation arrives in M4.3.
 
 ### `iosApp`
 
@@ -291,11 +350,15 @@ python3 scripts/sync_mobile_datasets.py
 cd mobile
 ./gradlew :shared:jvmTest               # contract + repository + allocation + conformance replay
 ./gradlew :shared:iosSimulatorArm64Test # common allocation tests on the iOS simulator
-./gradlew :composeApp:desktopTest       # bundled baseline, drift, design tokens, tree UI model/viewport/interaction
+./gradlew :composeApp:desktopTest       # bundled baseline, drift, design tokens, tree UI model/viewport/interaction/inspector
 
 # opt-in M4.1 screenshot evidence from the real screen (skipped without the property)
 ./gradlew :composeApp:desktopTest --tests "*TalentTreeScreenshotTest*" \
     -Dtalentforge.m41.screenshots=<output-dir>
+
+# opt-in M4.2 inspector screenshot evidence (same mechanism)
+./gradlew :composeApp:desktopTest --tests "*TalentTreeM42ScreenshotTest*" \
+    -Dtalentforge.m42.screenshots=<output-dir>
 
 # Android
 ./gradlew :composeApp:assembleDebug    # -> composeApp/build/outputs/apk/debug/
