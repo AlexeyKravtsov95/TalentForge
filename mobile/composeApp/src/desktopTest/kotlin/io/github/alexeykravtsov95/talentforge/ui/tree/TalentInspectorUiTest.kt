@@ -255,17 +255,18 @@ class TalentInspectorUiTest {
     }
 
     @Test
-    fun noSpendRefundOrUndoControlsExistAnywhere() {
+    fun lockedNodeOffersNoPurchaseActionWhileShowRemains() {
+        // M4.3: with interactive allocation existing, a prerequisite-locked
+        // node still offers Show only — no + that pretends the talent could
+        // be purchased.
         compose(readyState)
         composeRule.onNodeWithContentDescription("Deep Wounds").performClick()
         composeRule.waitForIdle()
 
+        composeRule.onNodeWithText("Show").assertExists()
         composeRule.onAllNodes(hasText("+", substring = true)).assertCountEquals(0)
         composeRule.onAllNodes(hasText("−", substring = true)).assertCountEquals(0)
         composeRule.onAllNodes(hasText("Max", substring = true)).assertCountEquals(0)
-        composeRule.onAllNodes(hasText("Undo", substring = true)).assertCountEquals(0)
-        composeRule.onAllNodes(hasText("Redo", substring = true)).assertCountEquals(0)
-        composeRule.onAllNodes(hasText("Reset", substring = true)).assertCountEquals(0)
     }
 
     @Test

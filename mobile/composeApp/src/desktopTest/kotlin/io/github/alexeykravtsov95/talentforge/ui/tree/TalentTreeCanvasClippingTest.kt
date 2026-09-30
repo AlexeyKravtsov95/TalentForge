@@ -88,6 +88,8 @@ class TalentTreeCanvasClippingTest {
                                     selectedNodeId = null,
                                     showGuide = null,
                                     guideToken = 0,
+                                    purchaseNodeId = null,
+                                    purchaseToken = 0,
                                     onNodeSelected = {},
                                     onSelectionCleared = {},
                                     modifier = Modifier.weight(1f),

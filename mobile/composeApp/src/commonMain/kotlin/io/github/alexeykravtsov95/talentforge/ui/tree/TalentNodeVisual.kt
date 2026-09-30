@@ -2,7 +2,9 @@ package io.github.alexeykravtsov95.talentforge.ui.tree
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -35,6 +37,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeMotion
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeRadius
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
 
@@ -74,6 +77,7 @@ fun TalentNodeFallbackVisual(
     selected: Boolean,
     showOrigin: Boolean,
     pulseToken: Int,
+    purchaseToken: Int,
     modifier: Modifier = Modifier,
 ) {
     val colors = talentForgeColors()
@@ -106,6 +110,37 @@ fun TalentNodeFallbackVisual(
                     durationMillis = TalentInspectorMetrics.SHOW_PULSE_MS,
                     easing = LinearOutSlowInEasing,
                 ),
+            )
+        }
+    }
+
+    // UX/UI spec G motion (from B3 08): "Talent purchase 260 · 180 ms —
+    // accent glow 260 ms; rank chip pops to 1.2× (180 ms spring)". One-shot
+    // per purchase token on the node that just gained a rank.
+    val glowProgress = remember { Animatable(1f) }
+    LaunchedEffect(purchaseToken) {
+        if (purchaseToken > 0) {
+            glowProgress.snapTo(0f)
+            glowProgress.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(durationMillis = TalentForgeMotion.TALENT_PURCHASE_GLOW_MS),
+            )
+        }
+    }
+    val chipPop = remember { Animatable(1f) }
+    LaunchedEffect(purchaseToken) {
+        if (purchaseToken > 0) {
+            chipPop.snapTo(1f)
+            chipPop.animateTo(
+                targetValue = 1.2f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium,
+                ),
+            )
+            chipPop.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(durationMillis = TalentForgeMotion.TALENT_PURCHASE_RANK_POP_MS),
             )
         }
     }
@@ -155,6 +190,20 @@ fun TalentNodeFallbackVisual(
                             progress = pulse,
                             color = colors.focus,
                         )
+                    },
+            )
+        }
+
+        // One-shot purchase glow (UX/UI spec G): a 260 ms accent halo on the
+        // node that just gained a rank. The class accent is *invested points*
+        // semantics, which a fresh rank literally is.
+        val glow = glowProgress.value
+        if (purchaseToken > 0 && glow < 1f) {
+            Box(
+                Modifier
+                    .matchParentSize()
+                    .drawBehind {
+                        drawPurchaseGlow(progress = glow, color = accent)
                     },
             )
         }
@@ -244,8 +293,14 @@ fun TalentNodeFallbackVisual(
 
         // Rank chip (B3 06): 15 dp tall, overlapping the node's bottom edge by
         // 8 dp; content and treatment come from the real rank/max-rank and
-        // lock state — never hardcoded.
-        RankChip(state = state, rankText = presentation.rankText, accent = accent)
+        // lock state — never hardcoded. On purchase it pops to 1.2× (UX/UI
+        // spec G, 180 ms spring).
+        RankChip(
+            state = state,
+            rankText = presentation.rankText,
+            accent = accent,
+            popScale = chipPop.value,
+        )
     }
 }
 
@@ -255,6 +310,7 @@ private fun BoxScope.RankChip(
     state: TalentNodeState,
     rankText: String,
     accent: Color,
+    popScale: Float = 1f,
 ) {
     if (state == TalentNodeState.UNAVAILABLE) return
     val colors = talentForgeColors()
@@ -277,6 +333,11 @@ private fun BoxScope.RankChip(
         modifier = Modifier
             .align(Alignment.BottomCenter)
             .offset(y = bottomOffset)
+            .graphicsLayer {
+                scaleX = popScale
+                scaleY = popScale
+                transformOrigin = TransformOrigin.Center
+            }
             .height(TalentInspectorMetrics.RANK_CHIP_HEIGHT_DP)
             .then(
                 if (chipBackground == Color.Transparent) {
@@ -363,6 +424,30 @@ private fun DrawScope.drawShowPulse(progress: Float, color: Color) {
         style = Stroke(width = TalentTreeCanvasMetrics.SELECTION_RING_WIDTH_DP.dp.toPx()),
     )
 }
+
+/**
+ * One-shot purchase glow (UX/UI spec G: "accent glow 260 ms"): a soft accent
+ * border that fades as the purchase lands.
+ */
+private fun DrawScope.drawPurchaseGlow(progress: Float, color: Color) {
+    val alpha = (1f - progress).coerceIn(0f, 1f) * 0.85f
+    if (alpha <= 0f) return
+    val strokeWidth = 3.dp.toPx() + 2.dp.toPx() * progress
+    val inset = ringStrokeInset(strokeWidth)
+    drawRoundRect(
+        color = color.copy(alpha = alpha),
+        topLeft = Offset(inset, inset),
+        size = Size(size.width - 2 * inset, size.height - 2 * inset),
+        cornerRadius = CornerRadius(
+            (TalentTreeCanvasMetrics.NODE_CORNER_RADIUS_DP +
+                TalentTreeCanvasMetrics.SELECTION_RING_GAP_DP).dp.toPx(),
+        ),
+        style = Stroke(width = strokeWidth),
+    )
+}
+
+/** Inset keeping a stroke of [width] inside the node container's bounds. */
+private fun ringStrokeInset(width: Float): Float = width / 2f
 
 /** Dashed rounded-rectangle stroke (Compose has no dashed border modifier). */
 private fun DrawScope.drawDashedRoundedRectStroke(

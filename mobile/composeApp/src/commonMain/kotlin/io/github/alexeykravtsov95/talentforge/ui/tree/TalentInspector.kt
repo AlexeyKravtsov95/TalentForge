@@ -47,9 +47,9 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
 
 /**
- * The M4.2 adaptive Talent Inspector — three presentations of the same real
- * content ([TalentInspectorContent]), all strictly read-only (no +/−, no
- * purchase/refund, no fake placeholders):
+ * The M4.2/M4.3 adaptive Talent Inspector — three presentations of the same
+ * real content ([TalentInspectorContent]), driven by the engine-backed action
+ * projection ([TalentNodeActions]):
  *
  * - portrait compact bar (B3 03/06: 64 dp + 14 dp inset, grows at large text),
  *   expanded by tapping the name or the chevron into the sheet (B3 04/08:
@@ -60,13 +60,20 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
  * - tablet persistent panel (UX/UI spec 03/13: 380 dp, always open, minimal
  *   empty prompt until a selection exists).
  *
- * Content is intentionally sparse: only facts the dataset/engine publish.
+ * M4.3 adds the explicit rank actions to every variant (B3 07: compact
+ * "Available [+], Partial [− +], Maxed [− ✓], Prerequisite [Show], Tier [lock
+ * meter], No points [− if ranked, + disabled]"; full detail adds the
+ * `− + Rank Max` row). Spending/refunding happens only here — a node tap
+ * never spends.
  */
 
 /** Portrait: the compact bottom inspector; `content == null` hides it entirely. */
 @Composable
 fun TalentInspectorCompactBar(
     content: TalentInspectorContent?,
+    actions: TalentNodeActions? = null,
+    onSpendRank: (Int) -> Unit = {},
+    onRefundRank: (Int) -> Unit = {},
     onToggleExpanded: () -> Unit,
     onShowPrerequisite: (Int) -> Unit,
     modifier: Modifier = Modifier,
@@ -124,8 +131,19 @@ fun TalentInspectorCompactBar(
                         }
                         InspectorReasonLines(content = content, compact = true)
                     }
-                    content.showAction?.let { action ->
-                        ShowButton(action = action, onClick = { onShowPrerequisite(action.prerequisiteNodeId) })
+                    // B3 07 compact action set: prerequisite lock keeps Show
+                    // as the only action; rank states show −/+ (or −/✓).
+                    if (content.showAction != null && actions?.offersRankControls != true) {
+                        content.showAction?.let { action ->
+                            ShowButton(action = action, onClick = { onShowPrerequisite(action.prerequisiteNodeId) })
+                        }
+                    } else if (actions != null && actions.offersRankControls) {
+                        TalentInspectorCompactActions(
+                            talentName = content.name,
+                            actions = actions,
+                            onSpend = onSpendRank,
+                            onRefund = onRefundRank,
+                        )
                     }
                     ChevronButton(expanded = false, onToggle = onToggleExpanded)
                 }
@@ -158,10 +176,14 @@ fun TalentInspectorCompactBar(
 @Composable
 fun TalentInspectorExpandedSheet(
     content: TalentInspectorContent,
+    actions: TalentNodeActions? = null,
     height: Dp,
     onCollapse: () -> Unit,
     onDeselect: () -> Unit,
     onShowPrerequisite: (Int) -> Unit,
+    onSpendRank: (Int) -> Unit = {},
+    onRefundRank: (Int) -> Unit = {},
+    onMaxRank: (Int) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -205,7 +227,19 @@ fun TalentInspectorExpandedSheet(
                 showActionInline = false,
             )
         }
-        // UX/UI spec 04: the sheet's actions are pinned at the bottom.
+        // UX/UI spec 04: the sheet's actions are pinned at the bottom — the
+        // full-detail `− + Rank Max` row (B3 04/08) and, when the node is
+        // prerequisite-locked, its single Show action.
+        if (actions != null && actions.offersRankControls) {
+            TalentInspectorRankActions(
+                talentName = content.name,
+                actions = actions,
+                onSpend = onSpendRank,
+                onRefund = onRefundRank,
+                onMax = onMaxRank,
+                modifier = Modifier.padding(vertical = TalentForgeSpacing.inline),
+            )
+        }
         content.showAction?.let { action ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -224,8 +258,12 @@ fun TalentInspectorExpandedSheet(
 @Composable
 fun TalentInspectorSidePanel(
     content: TalentInspectorContent,
+    actions: TalentNodeActions? = null,
     onDeselect: () -> Unit,
     onShowPrerequisite: (Int) -> Unit,
+    onSpendRank: (Int) -> Unit = {},
+    onRefundRank: (Int) -> Unit = {},
+    onMaxRank: (Int) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -256,6 +294,16 @@ fun TalentInspectorSidePanel(
         ) {
             InspectorDetail(content = content, onShowPrerequisite = onShowPrerequisite)
         }
+        if (actions != null && actions.offersRankControls) {
+            TalentInspectorRankActions(
+                talentName = content.name,
+                actions = actions,
+                onSpend = onSpendRank,
+                onRefund = onRefundRank,
+                onMax = onMaxRank,
+                modifier = Modifier.padding(vertical = TalentForgeSpacing.inline),
+            )
+        }
     }
 }
 
@@ -267,7 +315,11 @@ fun TalentInspectorSidePanel(
 @Composable
 fun TalentInspectorPersistentPanel(
     content: TalentInspectorContent?,
+    actions: TalentNodeActions? = null,
     onShowPrerequisite: (Int) -> Unit,
+    onSpendRank: (Int) -> Unit = {},
+    onRefundRank: (Int) -> Unit = {},
+    onMaxRank: (Int) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -303,6 +355,16 @@ fun TalentInspectorPersistentPanel(
                     .verticalScroll(rememberScrollState()),
             ) {
                 InspectorDetail(content = content, onShowPrerequisite = onShowPrerequisite)
+            }
+            if (actions != null && actions.offersRankControls) {
+                TalentInspectorRankActions(
+                    talentName = content.name,
+                    actions = actions,
+                    onSpend = onSpendRank,
+                    onRefund = onRefundRank,
+                    onMax = onMaxRank,
+                    modifier = Modifier.padding(vertical = TalentForgeSpacing.inline),
+                )
             }
         }
     }
