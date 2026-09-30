@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsNotSelected
@@ -47,16 +49,29 @@ class TalentInspectorUiTest {
         readyState = runBlocking { loadBaselineWarriorTreeState() } as TalentTreeUiState.Ready
     }
 
-    private fun compose(state: TalentTreeUiState, width: Dp = 360.dp, height: Dp = 760.dp) {
+    private fun compose(
+        state: TalentTreeUiState,
+        width: Dp = 360.dp,
+        height: Dp = 760.dp,
+    ): TalentTreeViewportState {
+        val viewportState = TalentTreeViewportState(initial = null)
         composeRule.setContent {
             TalentForgeTheme {
                 CompositionLocalProvider(LocalDensity provides Density(1f)) {
                     Box(Modifier.size(width, height)) {
-                        TalentTreeScreen(state)
+                        TalentTreeScreen(state, viewportState = viewportState)
                     }
                 }
             }
         }
+        composeRule.waitForIdle()
+        return viewportState
+    }
+
+    /** Advances the 300 ms focus animation to its end. */
+    private fun settleFocusAnimation() {
+        composeRule.waitForIdle()
+        composeRule.mainClock.advanceTimeBy((TalentInspectorMetrics.SHOW_PAN_MS + 200).toLong())
         composeRule.waitForIdle()
     }
 
@@ -268,4 +283,88 @@ class TalentInspectorUiTest {
         composeRule.onNodeWithText("Requires Improved Rend 3/3").assertExists()
         assertNotNull(readyState.buildState)
     }
+
+    // ------------------------------------------------------------------ expanded-inspector focus geometry (review fix)
+
+    @Test
+    fun expandingWithTheNodeAboveTheRealSheetLeavesTheViewportUntouched() {
+        val viewportState = compose(readyState)
+
+        // Improved Rend sits in the visible band above the 448 dp sheet.
+        composeRule.onNodeWithContentDescription("Improved Rend").performClick()
+        settleFocusAnimation()
+        val beforeExpand = assertNotNull(viewportState.viewport)
+
+        composeRule.onNodeWithText("Improved Rend").performClick() // name area expands
+        settleFocusAnimation()
+
+        assertEquals(
+            beforeExpand,
+            viewportState.viewport,
+            "B3: the canvas stays still when the node is fully visible above the real sheet",
+        )
+    }
+
+    @Test
+    fun expandingOverACoveredNodePansOnlyTheMinimumAmountNeeded() {
+        val viewportState = compose(readyState)
+
+        // Improved Hamstring lies inside the region the real 448 dp sheet
+        // covers at the initial viewport.
+        composeRule.onNodeWithContentDescription("Improved Hamstring").performClick()
+        settleFocusAnimation()
+        val beforeExpand = assertNotNull(viewportState.viewport)
+
+        composeRule.onNodeWithText("Improved Hamstring").performClick() // expand
+        settleFocusAnimation()
+
+        val after = assertNotNull(viewportState.viewport)
+        assertEquals(beforeExpand.scale, after.scale, "the scale is never touched")
+        assertTrue(after.offset.x.isFinite() && after.offset.y.isFinite())
+
+        // B3 08 minimal pan: only the covered vertical axis moves, by exactly
+        // the amount that brings the node into the visible (uncovered) band.
+        val canvas = viewportState.canvasSize
+        val node = assertNotNull(readyState.model.nodes.firstOrNull { it.name == "Improved Hamstring" })
+        val sheetHeight = minOf(
+            TalentInspectorMetrics.EXPANDED_SHEET_PREFERRED_DP.value,
+            canvas.height - TalentInspectorMetrics.SHEET_BOTTOM_CLEARANCE_DP.value,
+        )
+        val expected = beforeExpand.panToReveal(
+            Offset(node.centerX, node.centerY),
+            Size(canvas.width, canvas.height - sheetHeight),
+        )
+        assertEquals(expected, after, "the pan must be the minimum reveal, not a centring")
+        assertTrue(beforeExpand.offset.x == after.offset.x, "the horizontal axis does not move")
+
+        // and the node is now fully visible above the sheet
+        val screen = after.worldToScreen(Offset(node.centerX, node.centerY))
+        val clearance = TalentInspectorMetrics.FOCUS_CLEARANCE_DP
+        assertTrue(screen.y >= clearance - 0.5f && screen.y <= canvas.height - sheetHeight - clearance + 0.5f)
+    }
+
+    @Test
+    fun collapsingTheInspectorNeverMovesTheViewport() {
+        val viewportState = compose(readyState)
+
+        composeRule.onNodeWithContentDescription("Improved Hamstring").performClick()
+        composeRule.onNodeWithText("Improved Hamstring").performClick() // expand
+        settleFocusAnimation()
+
+        composeRule.onNodeWithText("×").performClick() // deselect
+        composeRule.onNodeWithContentDescription("Deep Wounds").performClick()
+        composeRule.onNodeWithText("Deep Wounds").performClick() // expand again
+        settleFocusAnimation()
+        val beforeCollapse = assertNotNull(viewportState.viewport)
+
+        composeRule.onNodeWithContentDescription("Deep Wounds").performClick() // collapse via chevron/name
+        settleFocusAnimation()
+
+        assertEquals(
+            beforeCollapse,
+            viewportState.viewport,
+            "B3 08: collapsing never moves the canvas",
+        )
+    }
 }
+

@@ -101,8 +101,12 @@ Compose Multiplatform application/UI host. Depends on `shared`. Contains:
     tree" without "in Arms");
   - `TalentInspector` — the **M4.2 adaptive inspector**, one content model in
     three presentations: portrait 64 dp compact bar (14 dp inset, grows at
-    large text) expanding into the 448 dp-preferred sheet capped at available
-    height minus 96 dp with internal scrolling; landscape 300 dp side panel
+    large text) expanding into the B3 448 dp sheet — it *occupies*
+    min(448 dp, available height − 96 dp), scrolls internally at large text
+    sizes and pins its actions to the bottom; because that is the sheet's
+    actual geometry, the expand focus covers exactly this height (never a
+    mismatched estimate) and pans the minimum amount needed (B3 08);
+    landscape 300 dp side panel
     laid out **beside** the canvas (never painted under it — the tree pans
     only if the panel would cover the node); tablet (840 dp+) persistent
     380 dp inspector with a minimal empty prompt (the spec freezes the
@@ -144,7 +148,14 @@ smoke host was removed with its screen; the repository/resource pipeline it
 proved remains covered by the desktop tests.
 
 M4.2 extends the same screen with the **adaptive Talent Inspector and the
-read-only allocation-state presentation** described above. It remains strictly
+read-only allocation-state presentation** described above. System UI follows
+one cross-platform rule: the hosts draw edge to edge (Android
+`enableEdgeToEdge` with transparent light-icon bars; SwiftUI
+`ignoresSafeArea`), the TalentForge background paints to the physical window
+edges, and the screen insets its *content* exactly once via
+`WindowInsets.safeDrawing` — no hardcoded bar heights, no double padding on
+iOS. The canvas is a real viewport (`clipToBounds`): nothing it draws can
+escape into the header, the inspector or a neighbouring panel. It remains strictly
 **read-only**: the screen holds one immutable `engine.emptyState()` build, the
 engine is only queried (`canSpend`/`validate`/`spentPoints`/
 `remainingPoints`), `Show` is pure navigation, and no spend/refund/undo
