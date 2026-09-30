@@ -5,12 +5,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -113,6 +116,7 @@ fun TalentTreeUiFailure.describe(): String = when (this) {
 fun TalentTreeScreen(
     state: TalentTreeUiState,
     modifier: Modifier = Modifier,
+    viewportState: TalentTreeViewportState = rememberTalentTreeViewportState(),
 ) {
     val colors = talentForgeColors()
     var selectedNodeId by rememberSaveable { mutableStateOf<Int?>(null) }
@@ -121,9 +125,20 @@ fun TalentTreeScreen(
         mutableStateOf<TalentShowGuide?>(null)
     }
     var guideToken by remember { mutableStateOf(0) }
-    val viewportState = rememberTalentTreeViewportState()
 
-    Column(modifier = modifier.fillMaxSize().background(colors.background)) {
+    // System-UI rule: the TalentForge background paints to the physical
+    // window edges (background modifier first), and only the *content* is
+    // inset by the safe drawing areas (status bar, navigation/gesture bar,
+    // display cutouts). The 44 dp header stays a component inside the safe
+    // region — the system inset is outside its height. Hosts draw edge to
+    // edge (Android enableEdgeToEdge / SwiftUI ignoresSafeArea), so this one
+    // padding is the single place insets are applied on every platform.
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(colors.background)
+            .windowInsetsPadding(WindowInsets.safeDrawing),
+    ) {
         when (val current = state) {
             TalentTreeUiState.Loading -> {
                 TreeHeader(title = "TalentForge")
@@ -161,7 +176,12 @@ fun TalentTreeScreen(
                     // Captured before the nested layout lambdas: the scope's
                     // constraints are only implicitly available at this level.
                     val areaHeight = maxHeight
-                    val expandedSheetCap = minOf(
+                    // B3 06/UX spec 03-04: the expanded sheet occupies its
+                    // preferred 448 dp height, capped at the available height
+                    // minus 96 dp. This is the sheet's ACTUAL geometry (and
+                    // therefore exactly the covered canvas region the expand
+                    // focus uses — never a mismatched estimate).
+                    val expandedSheetHeight = minOf(
                         TalentInspectorMetrics.EXPANDED_SHEET_PREFERRED_DP,
                         areaHeight - TalentInspectorMetrics.SHEET_BOTTOM_CLEARANCE_DP,
                     )
@@ -170,8 +190,14 @@ fun TalentTreeScreen(
                      * Pans (animated by the canvas) so the selected node is fully
                      * visible in the canvas area not covered by the inspector.
                      * No-op when it already is (B3: "the canvas stays still").
+                     * [reveal] selects the B3 08 minimal-pan mode used by
+                     * inspector layout changes; Show keeps the B3 07 centring.
                      */
-                    fun focusSelectedNode(coveredRightDp: Float = 0f, coveredBottomDp: Float = 0f) {
+                    fun focusSelectedNode(
+                        coveredRightDp: Float = 0f,
+                        coveredBottomDp: Float = 0f,
+                        reveal: Boolean = false,
+                    ) {
                         val target = selectedNodeId ?: return
                         val canvas = viewportState.canvasSize
                         if (canvas == Size.Zero) return
@@ -182,6 +208,7 @@ fun TalentTreeScreen(
                                 (canvas.width - coveredRightDp).coerceAtLeast(0f),
                                 (canvas.height - coveredBottomDp).coerceAtLeast(0f),
                             ),
+                            mode = if (reveal) TalentTreeFocusMode.REVEAL else TalentTreeFocusMode.CENTRE,
                         )
                     }
 
@@ -197,6 +224,7 @@ fun TalentTreeScreen(
                         if (layoutClass == TalentTreeLayoutClass.LANDSCAPE && panelOpening) {
                             focusSelectedNode(
                                 coveredRightDp = TalentInspectorMetrics.LANDSCAPE_PANEL_WIDTH_DP.value,
+                                reveal = true,
                             )
                         }
                     }
@@ -282,7 +310,7 @@ fun TalentTreeScreen(
                                 if (inspectorExpanded && inspectorContent != null) {
                                     TalentInspectorExpandedSheet(
                                         content = inspectorContent,
-                                        heightCap = expandedSheetCap,
+                                        height = expandedSheetHeight,
                                         onCollapse = { inspectorExpanded = false },
                                         onDeselect = onSelectionCleared,
                                         onShowPrerequisite = onShowPrerequisite,
@@ -294,10 +322,12 @@ fun TalentTreeScreen(
                                             inspectorExpanded = !inspectorExpanded
                                             if (inspectorExpanded) {
                                                 // B3 08: "Expanding pans the canvas the
-                                                // minimum amount needed, and only when the
-                                                // node would be covered."
+                                                // minimum amount needed, and only when
+                                                // the node would be covered" — the covered
+                                                // region is the sheet's actual height.
                                                 focusSelectedNode(
-                                                    coveredBottomDp = expandedSheetCap.value,
+                                                    coveredBottomDp = expandedSheetHeight.value,
+                                                    reveal = true,
                                                 )
                                             }
                                         },

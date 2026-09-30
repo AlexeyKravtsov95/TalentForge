@@ -144,11 +144,21 @@ fun TalentInspectorCompactBar(
     }
 }
 
-/** Portrait: the expanded sheet over the canvas (B3 04/08). */
+/**
+ * Portrait: the expanded sheet over the canvas (B3 04/06/08, UX/UI spec 03–04).
+ *
+ * The sheet **occupies** its preferred height — min(448 dp, available − 96 dp)
+ * — rather than wrapping its (deliberately sparse) content: B3 freezes the
+ * sheet as a 448 dp surface, the detail scrolls inside it at large text sizes,
+ * and the actions pin to the bottom (UX/UI spec 04). Because [height] is the
+ * sheet's actual geometry, the caller uses exactly this value as the covered
+ * canvas region for the expand focus — covered height can never diverge from
+ * the real one.
+ */
 @Composable
 fun TalentInspectorExpandedSheet(
     content: TalentInspectorContent,
-    heightCap: Dp,
+    height: Dp,
     onCollapse: () -> Unit,
     onDeselect: () -> Unit,
     onShowPrerequisite: (Int) -> Unit,
@@ -157,11 +167,7 @@ fun TalentInspectorExpandedSheet(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            // UX/UI spec 04: "448 dp is the preferred height … capped at the
-            // available height minus 96 dp … and scrolls internally". The M4.2
-            // content is sparse by design, so the cap is an upper bound, not
-            // an inflated fixed height.
-            .heightIn(max = heightCap)
+            .height(height)
             .background(
                 talentForgeColors().surfaceElevated,
                 RoundedCornerShape(topStart = TalentForgeRadius.sheet, topEnd = TalentForgeRadius.sheet),
@@ -190,13 +196,26 @@ fun TalentInspectorExpandedSheet(
         }
         Column(
             Modifier
-                .weight(1f, fill = false)
+                .weight(1f)
                 .verticalScroll(rememberScrollState()),
         ) {
-            InspectorDetail(content = content, onShowPrerequisite = onShowPrerequisite)
+            InspectorDetail(
+                content = content,
+                onShowPrerequisite = onShowPrerequisite,
+                showActionInline = false,
+            )
         }
-        if (content.showAction != null) {
-            Spacer(Modifier.height(TalentForgeSpacing.inline))
+        // UX/UI spec 04: the sheet's actions are pinned at the bottom.
+        content.showAction?.let { action ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(vertical = TalentForgeSpacing.inline),
+            ) {
+                ShowButton(
+                    action = action,
+                    onClick = { onShowPrerequisite(action.prerequisiteNodeId) },
+                )
+            }
         }
     }
 }
@@ -296,6 +315,7 @@ fun TalentInspectorPersistentPanel(
 private fun InspectorDetail(
     content: TalentInspectorContent,
     onShowPrerequisite: (Int) -> Unit,
+    showActionInline: Boolean = true,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline)) {
         BasicText(
@@ -323,8 +343,10 @@ private fun InspectorDetail(
         for (gate in content.tierMeters) {
             TierMeter(gate = gate, modifier = Modifier.fillMaxWidth())
         }
-        content.showAction?.let { action ->
-            ShowButton(action = action, onClick = { onShowPrerequisite(action.prerequisiteNodeId) })
+        if (showActionInline) {
+            content.showAction?.let { action ->
+                ShowButton(action = action, onClick = { onShowPrerequisite(action.prerequisiteNodeId) })
+            }
         }
     }
 }
