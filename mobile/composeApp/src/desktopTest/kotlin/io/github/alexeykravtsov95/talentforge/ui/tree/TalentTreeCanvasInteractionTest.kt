@@ -51,6 +51,7 @@ class TalentTreeCanvasInteractionTest {
     val composeRule = createComposeRule()
 
     private lateinit var model: TalentTreeUiModel
+    private lateinit var presentation: TalentTreePresentation
     private lateinit var viewportState: TalentTreeViewportState
     private var selectedNodeId: Int? = null
 
@@ -76,6 +77,8 @@ class TalentTreeCanvasInteractionTest {
         }
         val document = assertIs<DatasetOutcome.Loaded<TalentDataDocument>>(outcome).value
         model = assertIs<TalentTreeUiBuildResult.Ready>(buildTalentTreeUiModel(document)).model
+        val engine = io.github.alexeykravtsov95.talentforge.allocation.TalentAllocationEngine(document)
+        presentation = buildTalentTreePresentation(engine, engine.emptyState())
     }
 
     private fun composeCanvas(
@@ -88,8 +91,12 @@ class TalentTreeCanvasInteractionTest {
                     Box(Modifier.size(width, height)) {
                         TalentTreeCanvas(
                             model = model,
+                            presentation = presentation,
                             viewportState = viewportState,
+                            layoutClass = talentTreeLayoutClass(width.value, height.value),
                             selectedNodeId = selectedNodeId,
+                            showGuide = null,
+                            guideToken = 0,
                             onNodeSelected = { selectedNodeId = it },
                             onSelectionCleared = { selectedNodeId = null },
                         )

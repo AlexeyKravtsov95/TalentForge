@@ -11,6 +11,7 @@ import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.hasTextExactly
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -25,6 +26,7 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 
@@ -101,10 +103,22 @@ class TalentTreeScreenUiTest {
 
         composeRule.onNodeWithContentDescription("Deep Wounds").assertIsSelected()
 
-        // Read-only contract: no rank chip, no spent counter, no +/- control exists
-        composeRule.onAllNodes(hasText("/", substring = true)).assertCountEquals(0)
+        // Read-only M4.2 contract: rank chips derive from the real BuildState
+        // (one "0/3" per shown maxRank-3 node + the inspector's rank line),
+        // but no spend/refund control exists anywhere.
+        val shownChips = run {
+            val presentation = buildTalentTreePresentation(readyState.engine, readyState.buildState)
+            val hiddenByGlyph = setOf(
+                TalentNodeState.TIER_LOCKED,
+                TalentNodeState.PREREQUISITE_LOCKED,
+                TalentNodeState.UNAVAILABLE,
+            )
+            presentation.nodes.values.count { it.rankText == "0/3" && it.state !in hiddenByGlyph }
+        }
+        composeRule.onAllNodes(hasTextExactly("0/3")).assertCountEquals(shownChips)
         composeRule.onAllNodes(hasText("+", substring = true)).assertCountEquals(0)
         composeRule.onAllNodes(hasText("−", substring = true)).assertCountEquals(0)
+        assertTrue(readyState.buildState.allocations.isEmpty(), "the build state stays empty")
     }
 
     @Test

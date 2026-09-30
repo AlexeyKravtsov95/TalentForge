@@ -69,17 +69,27 @@ data class TalentTreeViewport(
          * and the content is vertically centred when it fits (otherwise
          * top-aligned at the margin). Portrait starts at 1×; landscape starts at
          * the B3 landscape grid ratio (see
-         * [TalentTreeCanvasMetrics.INITIAL_SCALE_LANDSCAPE]).
+         * [TalentTreeCanvasMetrics.INITIAL_SCALE_LANDSCAPE]); tablet starts at
+         * the UX/UI spec 13 node ratio (56 dp nodes — see
+         * [TalentInspectorMetrics.INITIAL_SCALE_TABLET]).
          */
         fun initialFor(
             bounds: TalentTreeBounds,
             canvasSize: Size,
             landscape: Boolean,
+        ): TalentTreeViewport = initialFor(bounds, canvasSize,
+            if (landscape) TalentTreeLayoutClass.LANDSCAPE else TalentTreeLayoutClass.PORTRAIT)
+
+        /** Layout-class-aware variant of [initialFor] (M4.2). */
+        fun initialFor(
+            bounds: TalentTreeBounds,
+            canvasSize: Size,
+            layoutClass: TalentTreeLayoutClass,
         ): TalentTreeViewport {
-            val scale = if (landscape) {
-                TalentTreeCanvasMetrics.INITIAL_SCALE_LANDSCAPE
-            } else {
-                TalentTreeCanvasMetrics.INITIAL_SCALE_PORTRAIT
+            val scale = when (layoutClass) {
+                TalentTreeLayoutClass.PORTRAIT -> TalentTreeCanvasMetrics.INITIAL_SCALE_PORTRAIT
+                TalentTreeLayoutClass.LANDSCAPE -> TalentTreeCanvasMetrics.INITIAL_SCALE_LANDSCAPE
+                TalentTreeLayoutClass.TABLET -> TalentInspectorMetrics.INITIAL_SCALE_TABLET
             }
             val margin = TalentTreeCanvasMetrics.CANVAS_START_MARGIN_DP
             val offsetX = margin - bounds.minX * scale
@@ -92,6 +102,41 @@ data class TalentTreeViewport(
             return TalentTreeViewport(scale, Offset(offsetX, offsetY))
         }
     }
+
+    /**
+     * B3 07 (prerequisite navigation): the transform that makes [world] fully
+     * visible inside [visibleSize] — the canvas area **not** covered by the
+     * inspector. Returns `this` unchanged when the node is already fully
+     * visible ("The canvas stays still if the target is fully visible above
+     * the inspector"); otherwise the node is centred in the visible region
+     * with the scale untouched ("otherwise the target is centred").
+     *
+     * Pure: the result is always finite (constructor-checked) and normal
+     * pan/zoom continues from it.
+     */
+    fun focusedOn(world: Offset, visibleSize: Size): TalentTreeViewport {
+        if (!world.x.isFinite() || !world.y.isFinite()) return this
+        if (visibleSize.width.isFinite() && visibleSize.height.isFinite() &&
+            (visibleSize.width <= 0f || visibleSize.height <= 0f)
+        ) {
+            return this
+        }
+        val clearance = TalentInspectorMetrics.FOCUS_CLEARANCE_DP
+        val screen = worldToScreen(world)
+        val fullyVisible =
+            screen.x >= clearance &&
+                screen.x <= visibleSize.width - clearance &&
+                screen.y >= clearance &&
+                screen.y <= visibleSize.height - clearance
+        if (fullyVisible) return this
+        return TalentTreeViewport(
+            scale = scale,
+            offset = Offset(
+                visibleSize.width / 2f - world.x * scale,
+                visibleSize.height / 2f - world.y * scale,
+            ),
+        )
+    }
 }
 
 /**
@@ -101,11 +146,18 @@ data class TalentTreeViewport(
  * Hit testing happens in screen space: the world-space 56 dp target scales
  * with zoom-in (it may grow), but zooming out must not shrink the physically
  * tappable area below the applicable minimum (56 dp portrait / 48 dp
- * landscape, B3 05–06). Node *visuals* are untouched by this — only the
- * interaction target is guaranteed.
+ * landscape, B3 05–06; 68 dp tablet, UX/UI spec 13). Node *visuals* are
+ * untouched by this — only the interaction target is guaranteed.
  */
 fun effectiveNodeTargetDp(viewport: TalentTreeViewport, minimumTargetDp: Float): Float =
     maxOf(TalentTreeCanvasMetrics.NODE_TARGET_DP * viewport.scale, minimumTargetDp)
+
+/** Screen-space floor of the usable touch target for the layout class. */
+fun minimumNodeTargetDp(layoutClass: TalentTreeLayoutClass): Float = when (layoutClass) {
+    TalentTreeLayoutClass.PORTRAIT -> TalentTreeCanvasMetrics.NODE_TARGET_MIN_PORTRAIT_DP
+    TalentTreeLayoutClass.LANDSCAPE -> TalentTreeCanvasMetrics.NODE_TARGET_MIN_LANDSCAPE_DP
+    TalentTreeLayoutClass.TABLET -> TalentInspectorMetrics.TABLET_NODE_TARGET_DP
+}
 
 /**
  * Hit-tests a screen position (dp) against the node touch targets in screen

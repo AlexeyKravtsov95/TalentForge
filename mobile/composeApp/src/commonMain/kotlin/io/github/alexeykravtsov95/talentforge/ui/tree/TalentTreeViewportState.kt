@@ -16,7 +16,10 @@ import androidx.compose.ui.geometry.Size
  * The transform survives recomposition and configuration change (it is saved
  * and restored), and once initialized it is never reset — pan/zoom state made
  * by the user persists. Initialization happens exactly once, when both the
- * tree bounds and a non-empty canvas size are known.
+ * tree bounds and a non-empty canvas size are known. M4.2 adds the
+ * inspector-driven Show focus request ([requestFocus]): a one-shot ask that
+ * the canvas animates to (never a viewport reset — normal pan/zoom continues
+ * from the result).
  */
 class TalentTreeViewportState(initial: TalentTreeViewport?) {
 
@@ -29,9 +32,16 @@ class TalentTreeViewportState(initial: TalentTreeViewport?) {
         private set
 
     /**
-     * Whether the canvas is at least as wide as it is tall — the same
-     * predicate that picks the landscape initial scale, reused for the
-     * orientation-dependent screen-space touch-target minimum.
+     * The presentation layout class of the current arrangement (set by the
+     * screen each composition; drives the initial scale and the screen-space
+     * touch-target floor). Not saved: it is recomputed from the constraints
+     * after a configuration change, and the initialized transform is kept.
+     */
+    var layoutClass: TalentTreeLayoutClass by mutableStateOf(TalentTreeLayoutClass.PORTRAIT)
+
+    /**
+     * Whether the canvas is at least as wide as it is tall — the M4.1
+     * predicate kept for the portrait/landscape distinction.
      */
     val isLandscape: Boolean
         get() = canvasSize.width >= canvasSize.height
@@ -39,8 +49,7 @@ class TalentTreeViewportState(initial: TalentTreeViewport?) {
     /** Applies the first deterministic transform for [bounds]; later calls are no-ops. */
     fun initializeOnce(bounds: TalentTreeBounds) {
         if (viewport != null || canvasSize == Size.Zero) return
-        val landscape = canvasSize.width >= canvasSize.height
-        viewport = TalentTreeViewport.initialFor(bounds, canvasSize, landscape)
+        viewport = TalentTreeViewport.initialFor(bounds, canvasSize, layoutClass)
     }
 
     /** Called from the canvas's size change callback (input in px). */
@@ -65,6 +74,29 @@ class TalentTreeViewportState(initial: TalentTreeViewport?) {
         viewport = transform
     }
 
+    // ------------------------------------------------------------------ Show focus (M4.2)
+
+    /**
+     * One-shot focus request of the inspector's Show action: make [world]
+     * (the prerequisite node's real canvas position) visible inside
+     * [visibleSize] — the canvas area not covered by the inspector.
+     */
+    fun requestFocus(world: Offset, visibleSize: Size) {
+        if (!world.x.isFinite() || !world.y.isFinite()) return
+        if (visibleSize.width.isFinite() && visibleSize.height.isFinite() &&
+            (visibleSize.width <= 0f || visibleSize.height <= 0f)
+        ) {
+            return
+        }
+        focusRequest = TalentTreeFocusRequest(world = world, visibleSize = visibleSize, id = nextFocusId++)
+    }
+
+    /** Current pending focus request; consumed by the canvas animation. */
+    var focusRequest: TalentTreeFocusRequest? by mutableStateOf(null)
+        private set
+
+    private var nextFocusId: Int = 0
+
     companion object {
         private const val SAVED_UNINITIALIZED = 0f
         private const val SAVED_INITIALIZED = 1f
@@ -86,6 +118,13 @@ class TalentTreeViewportState(initial: TalentTreeViewport?) {
         )
     }
 }
+
+/** Immutable payload of [TalentTreeViewportState.requestFocus]; [id] changes per request. */
+data class TalentTreeFocusRequest(
+    val world: Offset,
+    val visibleSize: Size,
+    val id: Int,
+)
 
 /** Creates a [TalentTreeViewportState] whose transform survives recomposition and rotation. */
 @Composable
