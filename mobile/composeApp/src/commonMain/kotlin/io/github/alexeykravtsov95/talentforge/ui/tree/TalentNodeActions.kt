@@ -110,3 +110,54 @@ fun blockedActionReason(
         else -> "Action not available"
     }
 }
+
+/**
+ * The steady-state explanation of a **disabled** rank control, derived up
+ * front from the same typed engine issues that disabled it — a correctly
+ * disabled control can never be clicked to produce a denial, so the reason
+ * must not depend on a denied call (B3 04 state 07: "+ is shown disabled and
+ * the state line explains why"; UX/UI spec G: a blocked action is "always
+ * paired with a reason").
+ *
+ * `null` when every offered control is enabled — B3 03/04 give actionable
+ * nodes their plain state lines, and a false denial reason must never appear
+ * next to a working control.
+ *
+ * Precedence mirrors what the inspector renders: a disabled `+` explains
+ * itself first. A maxed node renders the non-interactive ✓ badge instead of a
+ * spend button ("Max rank reached" is the badge's own accessibility label),
+ * so its blocked `−` explains instead. Locked nodes offer `Show` / the tier
+ * meter rather than rank controls and keep their own B3 05/06 reason lines,
+ * which is why [TalentNodeActions.offersRankControls] gates the spend branch.
+ */
+fun TalentNodeActions.disabledActionExplanation(
+    facts: TalentTreeNodeFacts,
+    spentPoints: Int,
+    pointBudget: Int,
+): String? = when {
+    offersRankControls && !isMaxed && !canSpend ->
+        spendExplanation(facts, spentPoints, pointBudget)
+
+    rank > 0 && !canRefund -> blockedActionReason(refundIssues, facts)
+    else -> null
+}
+
+/**
+ * B3 04 state 07 freezes the no-points wording — "No talent points left ·
+ * 51/51 spent" — so the exhausted budget carries its live count; every other
+ * spend denial keeps its [blockedActionReason] copy.
+ */
+private fun TalentNodeActions.spendExplanation(
+    facts: TalentTreeNodeFacts,
+    spentPoints: Int,
+    pointBudget: Int,
+): String {
+    val code = spendIssues.firstOrNull()?.code
+    return if (code == AllocationIssueCode.NO_POINTS_REMAINING ||
+        code == AllocationIssueCode.POINT_BUDGET_EXCEEDED
+    ) {
+        "No talent points left · $spentPoints/$pointBudget spent"
+    } else {
+        blockedActionReason(spendIssues, facts)
+    }
+}
