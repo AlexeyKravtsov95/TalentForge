@@ -88,7 +88,9 @@ class TalentTreeScreenUiTest {
         compose(readyState)
 
         composeRule.onNodeWithText("Warrior · Forever").assertExists()
-        composeRule.onAllNodes(anyContentDescription()).assertCountEquals(readyState.model.nodes.size)
+        // every tree node + the three M4.3 header controls (undo, redo, ⋯)
+        composeRule.onAllNodes(anyContentDescription())
+            .assertCountEquals(readyState.model.nodes.size + 3)
     }
 
     @Test
