@@ -248,9 +248,19 @@ private fun ReadyTalentTreeScreen(
         ?.takeIf { it.targetNodeId == selectedNodeId }
         ?.originNodeId
         ?.let { facts.nameOf(it) }
+    // B3 04 state 07 / UX/UI spec G: a disabled control is always paired with
+    // its reason, in the steady state — a correctly disabled button can never
+    // be clicked to produce a denial, so the explanation is derived up front
+    // from the same typed issues that disabled it.
+    val disabledActionReason = selectedActions?.disabledActionExplanation(
+        facts = facts,
+        spentPoints = presentation.spentPoints,
+        pointBudget = presentation.pointBudget,
+    )
     val selectedBlockedReason = blockedNotice
         ?.takeIf { it.nodeId == selectedNodeId }
         ?.reason
+        ?: disabledActionReason
     val inspectorContent = selectedPresentation?.let {
         buildTalentInspectorContent(
             presentation = it,
@@ -284,6 +294,12 @@ private fun ReadyTalentTreeScreen(
             editing = result.editing
             onShowGuideChange(null)
             blockedNotice = null
+            // The reset notice promises "Undo restores what Reset cleared" —
+            // that is true only while Reset is still the LATEST successful
+            // history operation. Any later successful mutation (spend/refund/
+            // Max) would make its generic Undo revert the wrong action, so
+            // the notice goes; a denied action leaves it (history unchanged).
+            resetNotice = null
             if (purchasedNodeId != null) {
                 feedbackToken += 1
                 purchaseFeedback = TalentPurchaseFeedback(purchasedNodeId, feedbackToken)
@@ -418,119 +434,161 @@ private fun ReadyTalentTreeScreen(
                     }
                 }
 
-                when (layoutClass) {
-                    TalentTreeLayoutClass.TABLET -> Row(Modifier.fillMaxSize()) {
-                        TalentTreeCanvas(
-                            model = current.model,
-                            presentation = presentation,
-                            viewportState = viewportState,
-                            layoutClass = layoutClass,
-                            selectedNodeId = selectedNodeId,
-                            showGuide = showGuide,
-                            guideToken = guideToken,
-                            purchaseNodeId = purchaseFeedback?.nodeId,
-                            purchaseToken = purchaseFeedback?.token ?: 0,
-                            onNodeSelected = onNodeSelected,
-                            onSelectionCleared = onSelectionCleared,
-                            modifier = Modifier.weight(1f),
-                        )
-                        TalentInspectorPersistentPanel(
-                            content = inspectorContent,
-                            actions = selectedActions,
-                            onShowPrerequisite = onShowPrerequisite,
-                            onSpendRank = onSpendRank,
-                            onRefundRank = onRefundRank,
-                            onMaxRank = onMaxRank,
-                        )
-                    }
-
-                    TalentTreeLayoutClass.LANDSCAPE -> Row(Modifier.fillMaxSize()) {
-                        TalentTreeCanvas(
-                            model = current.model,
-                            presentation = presentation,
-                            viewportState = viewportState,
-                            layoutClass = layoutClass,
-                            selectedNodeId = selectedNodeId,
-                            showGuide = showGuide,
-                            guideToken = guideToken,
-                            purchaseNodeId = purchaseFeedback?.nodeId,
-                            purchaseToken = purchaseFeedback?.token ?: 0,
-                            onNodeSelected = onNodeSelected,
-                            onSelectionCleared = onSelectionCleared,
-                            modifier = Modifier.weight(1f),
-                        )
-                        if (inspectorContent != null) {
-                            TalentInspectorSidePanel(
+                // The workspace below the header, with the reset notice as its
+                // one floating overlay.
+                Box(Modifier.fillMaxSize()) {
+                    when (layoutClass) {
+                        TalentTreeLayoutClass.TABLET -> Row(Modifier.fillMaxSize()) {
+                            TalentTreeCanvas(
+                                model = current.model,
+                                presentation = presentation,
+                                viewportState = viewportState,
+                                layoutClass = layoutClass,
+                                selectedNodeId = selectedNodeId,
+                                showGuide = showGuide,
+                                guideToken = guideToken,
+                                purchaseNodeId = purchaseFeedback?.nodeId,
+                                purchaseToken = purchaseFeedback?.token ?: 0,
+                                onNodeSelected = onNodeSelected,
+                                onSelectionCleared = onSelectionCleared,
+                                modifier = Modifier.weight(1f),
+                            )
+                            TalentInspectorPersistentPanel(
                                 content = inspectorContent,
                                 actions = selectedActions,
-                                onDeselect = onSelectionCleared,
                                 onShowPrerequisite = onShowPrerequisite,
                                 onSpendRank = onSpendRank,
                                 onRefundRank = onRefundRank,
                                 onMaxRank = onMaxRank,
                             )
                         }
-                    }
 
-                    TalentTreeLayoutClass.PORTRAIT -> Box(Modifier.fillMaxSize()) {
-                        TalentTreeCanvas(
-                            model = current.model,
-                            presentation = presentation,
-                            viewportState = viewportState,
-                            layoutClass = layoutClass,
-                            selectedNodeId = selectedNodeId,
-                            showGuide = showGuide,
-                            guideToken = guideToken,
-                            purchaseNodeId = purchaseFeedback?.nodeId,
-                            purchaseToken = purchaseFeedback?.token ?: 0,
-                            onNodeSelected = onNodeSelected,
-                            onSelectionCleared = onSelectionCleared,
-                            modifier = Modifier.fillMaxSize(),
-                        )
-                        Column(Modifier.align(Alignment.BottomCenter)) {
-                            if (inspectorExpanded && inspectorContent != null) {
-                                TalentInspectorExpandedSheet(
+                        TalentTreeLayoutClass.LANDSCAPE -> Row(Modifier.fillMaxSize()) {
+                            TalentTreeCanvas(
+                                model = current.model,
+                                presentation = presentation,
+                                viewportState = viewportState,
+                                layoutClass = layoutClass,
+                                selectedNodeId = selectedNodeId,
+                                showGuide = showGuide,
+                                guideToken = guideToken,
+                                purchaseNodeId = purchaseFeedback?.nodeId,
+                                purchaseToken = purchaseFeedback?.token ?: 0,
+                                onNodeSelected = onNodeSelected,
+                                onSelectionCleared = onSelectionCleared,
+                                modifier = Modifier.weight(1f),
+                            )
+                            if (inspectorContent != null) {
+                                TalentInspectorSidePanel(
                                     content = inspectorContent,
                                     actions = selectedActions,
-                                    height = expandedSheetHeight,
-                                    onCollapse = { onInspectorExpandedChange(false) },
                                     onDeselect = onSelectionCleared,
                                     onShowPrerequisite = onShowPrerequisite,
                                     onSpendRank = onSpendRank,
                                     onRefundRank = onRefundRank,
                                     onMaxRank = onMaxRank,
                                 )
-                            } else {
-                                TalentInspectorCompactBar(
-                                    content = inspectorContent,
-                                    actions = selectedActions,
-                                    onSpendRank = onSpendRank,
-                                    onRefundRank = onRefundRank,
-                                    onToggleExpanded = {
-                                        val expanding = !inspectorExpanded
-                                        onInspectorExpandedChange(expanding)
-                                        if (expanding) {
-                                            // B3 08: "Expanding pans the canvas the
-                                            // minimum amount needed, and only when
-                                            // the node would be covered" — the covered
-                                            // region is the sheet's actual height.
-                                            focusSelectedNode(
-                                                coveredBottomDp = expandedSheetHeight.value,
-                                                reveal = true,
-                                            )
-                                        }
-                                    },
-                                    onShowPrerequisite = onShowPrerequisite,
-                                )
+                            }
+                        }
+
+                        TalentTreeLayoutClass.PORTRAIT -> Box(Modifier.fillMaxSize()) {
+                            TalentTreeCanvas(
+                                model = current.model,
+                                presentation = presentation,
+                                viewportState = viewportState,
+                                layoutClass = layoutClass,
+                                selectedNodeId = selectedNodeId,
+                                showGuide = showGuide,
+                                guideToken = guideToken,
+                                purchaseNodeId = purchaseFeedback?.nodeId,
+                                purchaseToken = purchaseFeedback?.token ?: 0,
+                                onNodeSelected = onNodeSelected,
+                                onSelectionCleared = onSelectionCleared,
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                            Column(Modifier.align(Alignment.BottomCenter)) {
+                                if (inspectorExpanded && inspectorContent != null) {
+                                    TalentInspectorExpandedSheet(
+                                        content = inspectorContent,
+                                        actions = selectedActions,
+                                        height = expandedSheetHeight,
+                                        onCollapse = { onInspectorExpandedChange(false) },
+                                        onDeselect = onSelectionCleared,
+                                        onShowPrerequisite = onShowPrerequisite,
+                                        onSpendRank = onSpendRank,
+                                        onRefundRank = onRefundRank,
+                                        onMaxRank = onMaxRank,
+                                    )
+                                } else {
+                                    TalentInspectorCompactBar(
+                                        content = inspectorContent,
+                                        actions = selectedActions,
+                                        onSpendRank = onSpendRank,
+                                        onRefundRank = onRefundRank,
+                                        onToggleExpanded = {
+                                            val expanding = !inspectorExpanded
+                                            onInspectorExpandedChange(expanding)
+                                            if (expanding) {
+                                                // B3 08: "Expanding pans the canvas the
+                                                // minimum amount needed, and only when
+                                                // the node would be covered" — the covered
+                                                // region is the sheet's actual height.
+                                                focusSelectedNode(
+                                                    coveredBottomDp = expandedSheetHeight.value,
+                                                    reveal = true,
+                                                )
+                                            }
+                                        },
+                                        onShowPrerequisite = onShowPrerequisite,
+                                    )
+                                }
                             }
                         }
                     }
+
+                    // The reset notice floats at the TOP of the canvas region —
+                    // the spec's notice model (UX/UI spec 07 places snackbars
+                    // "at the top"; 01 ADAPT 3 floats notices "over the top of
+                    // the canvas"). Anchored here, below the header and inset
+                    // from any side inspector by its REAL width, it can never
+                    // rest over the compact bar, the expanded sheet, the
+                    // side/persistent panel or any − / + / Max / Show control,
+                    // in every layout, without device-specific coordinates.
+                    val sideInspectorWidth = when (layoutClass) {
+                        TalentTreeLayoutClass.TABLET -> TalentInspectorMetrics.TABLET_PANEL_WIDTH_DP
+                        TalentTreeLayoutClass.LANDSCAPE ->
+                            if (inspectorContent != null) {
+                                TalentInspectorMetrics.LANDSCAPE_PANEL_WIDTH_DP
+                            } else {
+                                0.dp
+                            }
+
+                        TalentTreeLayoutClass.PORTRAIT -> 0.dp
+                    }
+                    TalentResetSnackbar(
+                        notice = resetNotice,
+                        onUndo = {
+                            performUndo()
+                            resetNotice = null
+                        },
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .fillMaxWidth()
+                            .padding(end = sideInspectorWidth)
+                            .padding(
+                                top = TalentForgeSpacing.rowGap,
+                                start = TalentForgeSpacing.screenX,
+                                end = TalentForgeSpacing.screenX,
+                            ),
+                    )
                 }
             }
         }
 
-        // M4.3 overlays over the whole workspace (header included): the ⋯
-        // build-actions sheet and the recoverable-reset feedback.
+        // M4.3 modal overlay over the whole workspace (header included): the
+        // ⋯ build-actions sheet. The reset notice is NOT here — it floats at
+        // the top of the canvas region inside the layout above, where it can
+        // never cover the inspector or its actions.
         TalentBuildActionsSheet(
             visible = buildActionsOpen,
             onDismiss = { buildActionsOpen = false },
@@ -548,20 +606,6 @@ private fun ReadyTalentTreeScreen(
                 }
                 buildActionsOpen = false
             },
-        )
-        TalentResetSnackbar(
-            notice = resetNotice,
-            onUndo = {
-                performUndo()
-                resetNotice = null
-            },
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(
-                    start = TalentForgeSpacing.screenX,
-                    end = TalentForgeSpacing.screenX,
-                    bottom = TalentInspectorMetrics.COMPACT_INSET_DP,
-                ),
         )
         // Auto-dismiss of the reset snackbar (implementation-safe 4 s; the
         // design sources freeze no duration for it, unlike B3's 2.6 s blocked

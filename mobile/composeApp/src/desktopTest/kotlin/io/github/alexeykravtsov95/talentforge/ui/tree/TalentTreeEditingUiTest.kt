@@ -7,7 +7,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasNoClickAction
 import androidx.compose.ui.test.assertIsNotEnabled
@@ -216,11 +218,52 @@ class TalentTreeEditingUiTest {
 
         composeRule.onNodeWithText("+").assertExists()
         composeRule.onNodeWithText("+").assertIsNotEnabled()
-        // B3 04 state 07: "the state line explains why. Refund still works on
-        // any talent with ranks." — an unranked talent offers no −.
+        // B3 04 state 07: "+ is shown disabled and the state line explains
+        // why" — the frozen wording carries the live budget count.
+        composeRule.onNodeWithText("No talent points left · 51/51 spent").assertExists()
+        // B3 04 state 07: "Refund still works on any talent with ranks." —
+        // an unranked talent offers no −.
         if (rankOf(full, noPoints) == 0) {
             composeRule.onNodeWithText("−").assertDoesNotExist()
         }
+    }
+
+    @Test
+    fun partialTalentAtTheFullBudgetKeepsItsStateAndExplainsTheDisabledPlus() {
+        val full = readyState.copy(buildState = fullBudgetBuild())
+        val viewportState = compose(full)
+
+        // the greedy fill leaves exactly one talent mid-rank at 51/51: its
+        // visual state stays PARTIAL ("In progress" is NOT the no-points
+        // state — the UI precedence is deliberate), so the disabled + must
+        // explain itself (B3 04 state 07).
+        val partial = partialTalentName(full)
+        focusNodeIntoView(partial, viewportState)
+        select(partial)
+
+        composeRule.onNodeWithText("+").assertExists()
+        composeRule.onNodeWithText("+").assertIsNotEnabled()
+        composeRule.onNodeWithText("−").assertExists() // "Refund still works on any talent with ranks."
+        composeRule.onNodeWithText("No talent points left · 51/51 spent").assertExists()
+    }
+
+    @Test
+    fun enabledActionsNeverShowADenialReason() {
+        compose(readyState)
+        select("Improved Rend")
+
+        // available + enabled: the plain B3 state line, never a false reason
+        composeRule.onNode(hasTextExactly("Improved Rend", "0/3", "Available")).assertExists()
+        composeRule.onNodeWithText("No talent points left · 51/51 spent").assertDoesNotExist()
+        composeRule.onNodeWithText("Needed by Deep Wounds").assertDoesNotExist()
+
+        composeRule.onNodeWithText("+").performClick()
+        composeRule.waitForIdle()
+
+        // partial with both actions enabled: still the plain state line
+        composeRule.onNode(hasTextExactly("Improved Rend", "1/3", "In progress")).assertExists()
+        composeRule.onNodeWithText("No talent points left · 51/51 spent").assertDoesNotExist()
+        composeRule.onNodeWithText("Needed by Deep Wounds").assertDoesNotExist()
     }
 
     /** Pans the canvas so [name]'s node is actually visible before tapping it. */
@@ -256,6 +299,20 @@ class TalentTreeEditingUiTest {
         composeRule.onNodeWithText("−").assertExists()
         composeRule.onNodeWithText("−").assertIsNotEnabled()
         composeRule.onNodeWithText("+").assertDoesNotExist() // maxed: check badge instead
+        // B3 07: a blocked refund shows its reason in the state line. A
+        // disabled control can never be clicked into a denial, so the reason
+        // must already be there — derived from the engine's typed issue, with
+        // the real dependent's name.
+        composeRule.onNode(hasTextExactly("Improved Rend", "3/3", "Needed by Deep Wounds"))
+            .assertExists()
+        // no hidden trigger either: expanding the inspector and reading the
+        // full row still cannot alter the build while the refund is blocked
+        composeRule.onNode(hasTextExactly("Improved Rend", "3/3", "Needed by Deep Wounds"))
+            .performClick() // expands the sheet
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Max").assertExists()
+        composeRule.onNodeWithText("−").assertIsNotEnabled()
+        composeRule.onNodeWithText("11 / 51").assertExists()
     }
 
     @Test
@@ -400,6 +457,137 @@ class TalentTreeEditingUiTest {
     }
 
     @Test
+    fun aLaterSuccessfulMutationInvalidatesTheResetNotice() {
+        compose(readyState)
+        spend("Improved Rend") // 1/51, still selected
+
+        composeRule.onNodeWithContentDescription("open build actions").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Reset talents").performClick()
+        composeRule.waitForIdle()
+
+        // singular count copy: "1 point cleared", never "1 points cleared"
+        composeRule.onNodeWithText("Talents reset · 1 point cleared").assertExists()
+        composeRule.onNodeWithText("Talents reset · 1 points cleared").assertDoesNotExist()
+
+        // a successful spend is a NEW latest history operation: the notice's
+        // "Undo" would now revert the wrong action, so it must be gone
+        composeRule.onNodeWithText("+").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("1 / 51").assertExists()
+        composeRule.onNodeWithText("Talents reset · 1 point cleared").assertDoesNotExist()
+
+        // the normal header Undo undoes the SPEND (back to the post-reset
+        // empty build), proving the notice was dismissed rather than left to
+        // promise the wrong undo
+        composeRule.onNodeWithContentDescription("Undo talent change").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("0 / 51").assertExists()
+        composeRule.onNode(hasTextExactly("Improved Rend", "0/3", "Available")).assertExists()
+    }
+
+    @Test
+    fun nonMutationInteractionsKeepTheResetNotice() {
+        compose(readyState)
+        spend("Improved Rend")
+        composeRule.onNodeWithContentDescription("open build actions").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Reset talents").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Talents reset · 1 point cleared").assertExists()
+
+        // selection changes, expansion and Show navigation touch no history,
+        // so the reset notice (whose Undo still reverts exactly the reset)
+        // stays valid — only a later SUCCESSFUL mutation dismisses it.
+        select("Deflection")
+        composeRule.onNodeWithText("Talents reset · 1 point cleared").assertExists()
+        composeRule.onNodeWithText("Deflection").performClick() // expand
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Talents reset · 1 point cleared").assertExists()
+        composeRule.onNodeWithText("×").performClick() // deselect
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Talents reset · 1 point cleared").assertExists()
+    }
+
+    // ------------------------------------------------------------------ reset feedback placement
+
+    @Test
+    fun resetFeedbackNeverCoversTheCompactInspector() {
+        compose(readyState)
+        spend("Improved Rend")
+
+        composeRule.onNodeWithContentDescription("open build actions").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Reset talents").performClick()
+        composeRule.waitForIdle()
+
+        val notice = boundsOf(composeRule.onNodeWithText("Talents reset · 1 point cleared"))
+        val inspector = boundsOf(
+            composeRule.onNode(hasTextExactly("Improved Rend", "0/3", "Available")),
+        )
+        assertTrue(
+            notice.bottom <= inspector.top,
+            "the floating notice (bottom=${notice.bottom}) must sit fully above the " +
+                "compact inspector (top=${inspector.top})",
+        )
+        // the inspector's + stays visible and actionable under the notice
+        composeRule.onNodeWithText("+").assertExists()
+        composeRule.onNodeWithText("+").assertIsEnabled()
+    }
+
+    @Test
+    fun resetFeedbackLeavesTheExpandedSheetFullyUsable() {
+        compose(readyState)
+        select("Improved Rend")
+        composeRule.onNodeWithText("Improved Rend").performClick() // expand the sheet
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("+").performClick() // 1/51 through the sheet's own row
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithContentDescription("open build actions").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Reset talents").performClick()
+        composeRule.waitForIdle()
+
+        val notice = boundsOf(composeRule.onNodeWithText("Talents reset · 1 point cleared"))
+        val maxControl = boundsOf(composeRule.onNodeWithText("Max"))
+        assertTrue(
+            notice.bottom <= maxControl.top,
+            "the floating notice (bottom=${notice.bottom}) must not reach the sheet's " +
+                "action row (top=${maxControl.top})",
+        )
+        // the whole − + Rank Max row stays interactive
+        composeRule.onNodeWithText("−").assertExists()
+        composeRule.onNodeWithText("+").assertIsEnabled()
+        composeRule.onNodeWithText("Max").assertIsEnabled()
+    }
+
+    @Test
+    fun resetFeedbackWithNoSelectionFloatsAtTheTopOfTheCanvas() {
+        compose(readyState)
+        spend("Improved Rend")
+        // deselect through the expanded sheet's × (compact portrait has no ×)
+        composeRule.onNodeWithText("Improved Rend").performClick() // expand
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("×").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNode(hasTextExactly("Improved Rend", "1/3", "In progress")).assertDoesNotExist()
+
+        composeRule.onNodeWithContentDescription("open build actions").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Reset talents").performClick()
+        composeRule.waitForIdle()
+
+        // no inspector exists to collide with; the notice floats over the top
+        // of the canvas (density 1 in this test: header 44 + 12 gap)
+        val notice = boundsOf(composeRule.onNodeWithText("Talents reset · 1 point cleared"))
+        assertTrue(
+            notice.top < 120f,
+            "with nothing selected the notice stays at the top of the canvas (top=${notice.top})",
+        )
+    }
+
+    @Test
     fun resetOnAnEmptyBuildCreatesNoHistoryAndNoFeedback() {
         compose(readyState)
 
@@ -538,6 +726,30 @@ class TalentTreeEditingUiTest {
         return facts.nameOf(node.nodeId)
     }
 
+    /** The mid-rank talent a greedy 51/51 fill leaves behind (engine-spent, never hand-written). */
+    private fun partialTalentName(state: TalentTreeUiState.Ready): String {
+        val presentation = buildTalentTreePresentation(state.engine, state.buildState)
+        val facts = talentNodeFacts(state.engine)
+        val node = assertNotNull(
+            presentation.nodes.values.firstOrNull {
+                it.rank in 1 until it.maxRank
+            },
+            "the greedy 51/51 fill must leave exactly one partial talent",
+        )
+        return facts.nameOf(node.nodeId)
+    }
+
     private fun rankOf(state: TalentTreeUiState.Ready, name: String): Int =
         state.buildState.rankOf(nodeIdOf(name))
+
+    /** Root-space bounds of one interaction's node (tests run at density 1: px == dp). */
+    private fun boundsOf(interaction: SemanticsNodeInteraction): Rect =
+        interaction.fetchSemanticsNode().let { node ->
+            Rect(
+                left = node.positionInRoot.x,
+                top = node.positionInRoot.y,
+                right = node.positionInRoot.x + node.size.width,
+                bottom = node.positionInRoot.y + node.size.height,
+            )
+        }
 }

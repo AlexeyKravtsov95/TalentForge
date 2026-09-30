@@ -144,26 +144,42 @@ Compose Multiplatform application/UI host. Depends on `shared`. Contains:
     (`AllocationRoutingEnforcementTest`) scans production sources: no
     `BuildState.withAllocation` calls from production code, and
     `engine.spend(`/`engine.refund(` appear only in this file — rank
-    arithmetic and refund dependency rules are never reimplemented in the UI;
+    arithmetic and refund dependency rules are never reimplemented in the UI.
+    The `rememberSaveable` form is a flat list of `IntArray`s parsed by a
+    **total fail-closed deserializer**: any malformed payload (truncation,
+    bad counts, trailing data, overflow-sized counts) returns `null` and the
+    session restarts empty — a corrupt save can never throw, hang or restore
+    a wrong build;
   - `TalentNodeActions` — the **action legality projection**: derives
     `canSpend`/`canRefund` (plus the engine's denial reasons) for the
     *selected* node from `canSpend`/`canRefund` queries — deliberately
     independent from the visual `TalentNodeState`, because presentation state
     and action legality answer different questions (a MAXED node still offers
     refund; an AVAILABLE node at 0 remaining points shows a disabled +).
-    `blockedActionReason` maps structured issue codes to user copy
-    ("Needed by …", "Requires … first", "No talent points left") — never
-    guessed game semantics;
+    `disabledActionExplanation` turns the same typed issues into the
+    steady-state state-line reason a disabled control needs (B3 04 state 07
+    freezes "No talent points left · x/y spent"; a dependent-blocked refund
+    reads "Needed by <real name>") — a disabled button can never be clicked
+    into a denial, so the reason must not depend on one, and enabled controls
+    never show a false reason. `blockedActionReason` keeps mapping issue
+    codes to copy for the transient post-denial path — never guessed game
+    semantics;
   - `TalentInspectorActions` + `TalentTreeHeaderBar` + `TalentBuildOverlays`
     — the M4.3 controls per B3: explicit `−`/`+` (compact inspector), the
     expanded `− + Rank Max` row (expanded sheet, landscape side panel, tablet
     persistent panel), the header bar with undo/redo and the overflow
     (`⋯`) opening the "Reset talents" sheet in the warning colour, and the
-    reset snackbar ("Talents reset · N points cleared" + focus-coloured
-    *Undo*, auto-dismiss 4 s). Denied actions render disabled with the reason
-    in the state line; a successful spend plays the B3 purchase feedback
-    (260 ms node glow + 180 ms rank-chip pop) driven by a monotonic token so
-    recomposition can never replay it;
+    reset notice ("Talents reset · N point(s) cleared" + focus-coloured
+    *Undo*, auto-dismiss 4 s). The notice floats at the **top of the canvas
+    region** — the spec's notice model (UX/UI 07 places snackbars "at the
+    top"; 01 ADAPT 3 floats notices "over the top of the canvas"), inset
+    from any side inspector by its real width — so it can never cover the
+    compact bar, the expanded sheet or any action control in any layout, and
+    it is valid only while Reset is still the latest successful history
+    operation: any later successful mutation dismisses it (undo/redo already
+    did), because its Undo promise is otherwise false. A successful spend
+    plays the B3 purchase feedback (260 ms node glow + 180 ms rank-chip pop)
+    driven by a monotonic token so recomposition can never replay it;
 
 - `ui/theme` — design tokens frozen by `TalentForge_UX_UI_Spec_v1.pdf`
   section G: colour (OKLCH-derived sRGB constants), spacing, radius, motion

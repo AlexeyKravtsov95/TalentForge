@@ -43,7 +43,13 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
  *   build-management milestone and are not shown as dead placeholders.
  * - **Reset feedback** (UX/UI spec 03 §4 / E.3): `Talents reset · N points
  *   cleared` + `Undo` — the same history mechanism the header Undo uses, never
- *   a separate reset backup.
+ *   a separate reset backup. Placement follows the spec's notice model: the
+ *   UX/UI spec places snackbars "at the top" (07: "The copy appears at the top
+ *   … the snackbar offers Rename") and floats notices "over the top of the
+ *   canvas" (01 ADAPT 3), so the reset notice floats at the top of the canvas
+ *   region — anchored by the caller, inset from any side inspector — and can
+ *   never cover the compact bar, the expanded sheet, the side/persistent
+ *   panel or their action controls in any layout.
  */
 object TalentBuildOverlayMetrics {
 
@@ -152,8 +158,14 @@ data class TalentResetNotice(
 
 /**
  * The recoverable-reset snackbar: `Talents reset · N points cleared` + Undo
- * (UX/UI spec 03 §4). The Undo action goes through the SAME history mechanism
- * as the header Undo — there is no separate one-off reset backup.
+ * (UX/UI spec 03 §4; the N placeholder is pluralized normally — no design
+ * source freezes a literal count string). The Undo action goes through the
+ * SAME history mechanism as the header Undo — there is no separate one-off
+ * reset backup.
+ *
+ * The caller anchors it at the **top** of the canvas region (see
+ * [TalentBuildOverlayMetrics]): it slides down from the top edge, never from
+ * the bottom, so its motion and its resting place agree.
  */
 @Composable
 fun TalentResetSnackbar(
@@ -163,41 +175,44 @@ fun TalentResetSnackbar(
 ) {
     AnimatedVisibility(
         visible = notice != null,
-        enter = slideInVertically(tween(TalentBuildOverlayMetrics.SHEET_IN_MS)) { it / 2 } +
+        enter = slideInVertically(tween(TalentBuildOverlayMetrics.SHEET_IN_MS)) { -it / 2 } +
             fadeIn(tween(TalentBuildOverlayMetrics.SHEET_IN_MS)),
-        exit = slideOutVertically(tween(TalentBuildOverlayMetrics.SHEET_OUT_MS)) { it / 2 } +
+        exit = slideOutVertically(tween(TalentBuildOverlayMetrics.SHEET_OUT_MS)) { -it / 2 } +
             fadeOut(tween(TalentBuildOverlayMetrics.SHEET_OUT_MS)),
         modifier = modifier,
     ) {
         val colors = talentForgeColors()
-        Row(
-            modifier = Modifier
-                .background(colors.surfaceElevated, RoundedCornerShape(TalentForgeRadius.medium))
-                .padding(
-                    start = TalentForgeSpacing.rowGap,
-                    top = TalentForgeSpacing.inline,
-                    bottom = TalentForgeSpacing.inline,
-                    end = TalentForgeSpacing.hairline,
-                ),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
-        ) {
-            BasicText(
-                text = "Talents reset · ${notice?.pointsCleared ?: 0} points cleared",
-                style = OverlayActionStyle.copy(color = colors.textPrimary),
-                modifier = Modifier.weight(1f, fill = false),
-            )
-            BasicText(
-                text = "Undo",
-                style = OverlayUndoStyle.copy(color = colors.focus),
+        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+            val cleared = notice?.pointsCleared ?: 0
+            Row(
                 modifier = Modifier
-                    .clickable(
-                        role = Role.Button,
-                        onClickLabel = "Undo talent change",
-                        onClick = onUndo,
-                    )
-                    .padding(horizontal = TalentForgeSpacing.inline, vertical = TalentForgeSpacing.inline),
-            )
+                    .background(colors.surfaceElevated, RoundedCornerShape(TalentForgeRadius.medium))
+                    .padding(
+                        start = TalentForgeSpacing.rowGap,
+                        top = TalentForgeSpacing.inline,
+                        bottom = TalentForgeSpacing.inline,
+                        end = TalentForgeSpacing.hairline,
+                    ),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
+            ) {
+                BasicText(
+                    text = "Talents reset · $cleared " +
+                        (if (cleared == 1) "point" else "points") + " cleared",
+                    style = OverlayActionStyle.copy(color = colors.textPrimary),
+                )
+                BasicText(
+                    text = "Undo",
+                    style = OverlayUndoStyle.copy(color = colors.focus),
+                    modifier = Modifier
+                        .clickable(
+                            role = Role.Button,
+                            onClickLabel = "Undo talent change",
+                            onClick = onUndo,
+                        )
+                        .padding(horizontal = TalentForgeSpacing.inline, vertical = TalentForgeSpacing.inline),
+                )
+            }
         }
     }
 }
