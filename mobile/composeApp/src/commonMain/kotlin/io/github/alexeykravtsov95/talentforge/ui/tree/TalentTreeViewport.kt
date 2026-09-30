@@ -137,6 +137,41 @@ data class TalentTreeViewport(
             ),
         )
     }
+
+    /**
+     * B3 08 (inspector layout): "pans the canvas the minimum amount needed,
+     * and only when the node would be covered" — the smallest offset change
+     * that brings [world] fully inside [visibleSize] with the Show clearance
+     * (each axis moves only when it is out of bounds, unlike the centring
+     * [focusedOn] used by Show). Returns `this` unchanged when already fully
+     * visible; the scale is never touched and the result is finite.
+     */
+    fun panToReveal(world: Offset, visibleSize: Size): TalentTreeViewport {
+        if (!world.x.isFinite() || !world.y.isFinite()) return this
+        if (!visibleSize.width.isFinite() || !visibleSize.height.isFinite() ||
+            visibleSize.width <= 0f || visibleSize.height <= 0f
+        ) {
+            return this
+        }
+        val clearance = TalentInspectorMetrics.FOCUS_CLEARANCE_DP
+        // A region smaller than twice the clearance cannot satisfy both
+        // bounds; clamp so the target ends up on the (clamped) nearer bound.
+        val maxVisibleX = maxOf(clearance, visibleSize.width - clearance)
+        val maxVisibleY = maxOf(clearance, visibleSize.height - clearance)
+        val screen = worldToScreen(world)
+        val dx = when {
+            screen.x < clearance -> clearance - screen.x
+            screen.x > maxVisibleX -> maxVisibleX - screen.x
+            else -> 0f
+        }
+        val dy = when {
+            screen.y < clearance -> clearance - screen.y
+            screen.y > maxVisibleY -> maxVisibleY - screen.y
+            else -> 0f
+        }
+        if (dx == 0f && dy == 0f) return this
+        return TalentTreeViewport(scale = scale, offset = Offset(offset.x + dx, offset.y + dy))
+    }
 }
 
 /**

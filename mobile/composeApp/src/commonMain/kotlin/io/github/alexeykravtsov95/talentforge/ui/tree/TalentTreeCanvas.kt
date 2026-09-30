@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -91,11 +92,16 @@ fun TalentTreeCanvas(
         viewportState.initializeOnce(model.bounds)
     }
 
-    // B3 07: "otherwise the target is centred (300 ms ease-out)".
+    // B3 07: "otherwise the target is centred (300 ms ease-out)"; B3 08 reveal
+    // requests pan the minimum amount needed. Both keep the scale and always
+    // produce a finite transform.
     LaunchedEffect(viewportState.focusRequest) {
         val request = viewportState.focusRequest ?: return@LaunchedEffect
         val current = viewportState.viewport ?: return@LaunchedEffect
-        val target = current.focusedOn(request.world, request.visibleSize)
+        val target = when (request.mode) {
+            TalentTreeFocusMode.CENTRE -> current.focusedOn(request.world, request.visibleSize)
+            TalentTreeFocusMode.REVEAL -> current.panToReveal(request.world, request.visibleSize)
+        }
         if (target == current) return@LaunchedEffect
         val start = current.offset
         val end = target.offset
@@ -122,6 +128,11 @@ fun TalentTreeCanvas(
     Box(
         modifier = modifier
             .fillMaxSize()
+            // A real viewport: everything the canvas draws — connectors, the
+            // transformed node layer, rings and pulses — stays inside its own
+            // bounds and can never paint into the header, the inspector or a
+            // neighbouring panel. Pointer input was already bounds-restricted.
+            .clipToBounds()
             .onSizeChanged { size ->
                 viewportState.onCanvasSizeChanged(
                     sizePx = Size(size.width.toFloat(), size.height.toFloat()),

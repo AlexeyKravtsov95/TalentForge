@@ -77,18 +77,27 @@ class TalentTreeViewportState(initial: TalentTreeViewport?) {
     // ------------------------------------------------------------------ Show focus (M4.2)
 
     /**
-     * One-shot focus request of the inspector's Show action: make [world]
+     * One-shot focus request of the inspector-driven Show action: make [world]
      * (the prerequisite node's real canvas position) visible inside
      * [visibleSize] — the canvas area not covered by the inspector.
      */
-    fun requestFocus(world: Offset, visibleSize: Size) {
+    fun requestFocus(
+        world: Offset,
+        visibleSize: Size,
+        mode: TalentTreeFocusMode = TalentTreeFocusMode.CENTRE,
+    ) {
         if (!world.x.isFinite() || !world.y.isFinite()) return
         if (visibleSize.width.isFinite() && visibleSize.height.isFinite() &&
             (visibleSize.width <= 0f || visibleSize.height <= 0f)
         ) {
             return
         }
-        focusRequest = TalentTreeFocusRequest(world = world, visibleSize = visibleSize, id = nextFocusId++)
+        focusRequest = TalentTreeFocusRequest(
+            world = world,
+            visibleSize = visibleSize,
+            id = nextFocusId++,
+            mode = mode,
+        )
     }
 
     /** Current pending focus request; consumed by the canvas animation. */
@@ -119,11 +128,20 @@ class TalentTreeViewportState(initial: TalentTreeViewport?) {
     }
 }
 
+/**
+ * How a focus request resolves the target transform:
+ * - [CENTRE] — B3 07 (Show): "otherwise the target is centred";
+ * - [REVEAL] — B3 08 (inspector layout): "pans the canvas the minimum amount
+ *   needed", each axis moving only when out of the visible region.
+ */
+enum class TalentTreeFocusMode { CENTRE, REVEAL }
+
 /** Immutable payload of [TalentTreeViewportState.requestFocus]; [id] changes per request. */
 data class TalentTreeFocusRequest(
     val world: Offset,
     val visibleSize: Size,
     val id: Int,
+    val mode: TalentTreeFocusMode = TalentTreeFocusMode.CENTRE,
 )
 
 /** Creates a [TalentTreeViewportState] whose transform survives recomposition and rotation. */
