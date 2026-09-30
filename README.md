@@ -102,13 +102,21 @@ expanded sheet, landscape side panel, tablet persistent panel, prerequisite
 rank controls in every inspector variant, real `TalentAllocationEngine`
 spend/refund transitions with live tier/prerequisite/counter updates, undo /
 redo, and Reset Talents with an undoable one-step clear (node tap still only
-selects; every mutation routes through the engine; the build is in-memory
-only — persistence arrives in a later milestone).
+selects; every mutation routes through the engine). **M5.1** turns the app
+into a local multi-build application: a versioned app-private build library
+(platform storage injected per host — SharedPreferences / NSUserDefaults /
+java.util.prefs; the public `allocation-build.v1` contract unchanged), Home as
+the root with Continue / recents / All Builds / New Build, all nine bundled
+Forever classes, drafts created and persisted the moment a class is picked,
+autosave of every successful mutation through one observer path, fail-closed
+build reopening (no silent migration), and the generic dataset-bound editor
+with the class accent as an explicit input (Warrior keeps its frozen accent;
+other classes use a documented neutral fallback).
 
 ```bash
 python3 scripts/sync_mobile_datasets.py --check   # bundled data == canonical data
 cd mobile
-./gradlew :shared:jvmTest :composeApp:desktopTest # contract/repository/conformance + tree UI tests
+./gradlew :shared:jvmTest :composeApp:desktopTest # contract/repository/conformance + tree UI + build library tests
 ./gradlew :composeApp:assembleDebug               # Android debug APK
 ```
 

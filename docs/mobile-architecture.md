@@ -1,11 +1,13 @@
-# Mobile architecture (M3A foundation, M4.1–M4.3 production tree screen)
+# Mobile architecture (M3A foundation, M4.1–M4.3 tree screen, M5.1 local build library)
 
-This document describes the Kotlin Multiplatform foundation introduced by M3A
-and the M4.1–M4.3 production Talent Tree screen (read-only rendering since
-M4.1, adaptive inspector since M4.2, interactive allocation since M4.3): module
-boundaries, dataset flow, strict JSON policy, conformance strategy and local
-build commands. It is the orientation map for later milestones — none should
-require restructuring what is described here.
+This document describes the Kotlin Multiplatform foundation introduced by M3A,
+the M4.1–M4.3 production Talent Tree screen (read-only rendering since M4.1,
+adaptive inspector since M4.2, interactive allocation since M4.3) and the M5.1
+local build library with the app root (Home, New Build, All Builds, autosave):
+module boundaries, dataset flow, strict JSON policy, conformance strategy,
+persistence architecture and local build commands. It is the orientation map
+for later milestones — none should require restructuring what is described
+here.
 
 ## Module boundaries
 
@@ -33,7 +35,15 @@ Pure Kotlin Multiplatform library — **no Compose, no platform types**. Contain
   `DatasetLoadError` failures;
 - `DatasetAssetSource` abstraction (bytes in, nothing platform-specific out);
 - the M3B allocation engine and conformance executor in the `allocation`
-  package (see "Conformance strategy" below).
+  package (see "Conformance strategy" below), plus the pure
+  `BuildState ↔ BuildFile` conversions (`BuildFileMapping.kt`): only
+  allocation triples cross between the editing state and the portable
+  `allocation-build.v1` payload — never selection, viewport, undo history or
+  any other editing-session UI state;
+- the M5.1 **local build library** (`data.builds`): the app-private,
+  versioned persistence envelope and `LocalBuildRepository` (see
+  "Local build library" below). Pure Kotlin, no platform types — the platform
+  storage cell is injected at the app edge.
 
 Targets: Android, iOS arm64, iOS simulator arm64, JVM (fast contract tests).
 
@@ -41,7 +51,16 @@ Targets: Android, iOS arm64, iOS simulator arm64, JVM (fast contract tests).
 
 Compose Multiplatform application/UI host. Depends on `shared`. Contains:
 
-- `App` — thin entry that hosts the production screen below;
+- `App` — since M5.1 the **app root**: it takes the host-injected platform
+  `BuildLibraryStorage` (plus injectable clock/id generator for tests), builds
+  the repository + dataset collaborators once, and drives a small explicit
+  destination back stack — `Home → NewBuild → pick class: the tree REPLACES
+  New build (back → Home)`, `Home → Continue/Recent → tree (push, back →
+  Home)`, `Home → AllBuilds → tree (push, back → AllBuilds)`. No navigation
+  framework for four local screens, no bottom navigation; the editor opens by
+  opaque local build id, never by passing mutable UI state; navigation state
+  is not the persistence model. Android's system back and the visible
+  chevrons (`PlatformBackHandler` expect/actual) share one pop;
 - `ui/tree` — the **M4.1–M4.3 production Talent Tree screen** (read-only since
   M4.1, interactive since M4.3): the bundled
   baseline Forever Warrior document is loaded through
@@ -227,9 +246,40 @@ regression test taps repeatedly and asserts an unchanged counter), `Show`
 still navigates one prerequisite hop and never spends, and every mutation is
 an explicit visible control. The presentation, tier meter, prerequisite
 arrows and header counter all re-derive from the real engine state on every
-change, so locked→available transitions are live. The build is **in-memory
-only**: persistence, multiple saved builds and build sharing remain future
-milestones (M5+); no schema, dataset or contract change was needed or made.
+change, so locked→available transitions are live.
+
+M5.1 **genericizes the editor and persists it**. `TalentTreeUiState.Ready`
+now carries the build's title line (name, or "Draft" while unnamed — ADAPT 1)
+and its **class accent as an explicit input**; the header renders the
+two-line title plus the back control; every mutation lands in one
+`commitEditing` path that reports actual `BuildState` changes through a
+single `onBuildStateChanged` observer (the autosave contract — selection,
+pan, zoom, `Show` and denied actions never report). The class accent policy
+(`classAccentFor`) gives Warrior its spec-frozen accent and every other class
+the documented neutral fallback (`UnfrozenClassAccent`, the hueless
+`textSecondary` grey — replaceable when the spec freezes real per-class
+accents; no class colour is invented and the dataset stays colour-free). A
+source-scan test proves nothing outside the policy reads the Warrior-only
+token. `TalentTreeBuildScreen` is the generic editor host: it opens a locally
+stored build by id, validates it fail-closed (`loadEditorSession`: record →
+exact dataset identity → treeId → engine validation of the saved allocations;
+typed `EditorFailure`s, **no silent migration, clamping or baseline
+fallback**) and owns autosave (below). The self-loading Warrior production
+entry is gone; the baseline Warrior loader remains as the tests' fixture.
+
+- `ui/library` — the M5.1 loader/controller layer: Home and All-Builds card
+  models (each record resolved against its real class document and the real
+  engine — class display name, spent/budget; unresolved fields are simply
+  absent, never faked), the New Build class list (tokens from the baseline
+  manifest, display names from the nine real documents; a failed class
+  document disables that class conservatively — no invented name, no
+  substitution), draft creation (document → engine → `emptyState()` →
+  `BuildFile` bound to the exact dataset identity → persisted, and only a
+  persisted draft is "created"), the editor session loader, the relative-time
+  wording, shared shell controls and the platform clock expect/actual;
+- `ui/home`, `ui/newbuild`, `ui/builds` — the M5.1 shell screens
+  (Home / New Build / the basic All Builds list; see the design sections
+  above for their frozen behaviour).
 
 ### `iosApp`
 
@@ -239,6 +289,77 @@ Swift business or domain layer, no CocoaPods. The framework is built by the
 standard Compose Multiplatform integration: the Xcode target runs a
 `Build KMP Framework` script phase invoking
 `gradlew :composeApp:embedAndSignAppleFrameworkForXcode` and embeds the result.
+
+## Local build library (M5.1)
+
+The public portable build contract is **unchanged**: `allocation-build.v1`
+(`BuildFile`) stays a pure allocation plan bound to a dataset identity
+(game, clientBuild, classToken, treeId, allocations). Names, ids and
+timestamps are **local application metadata** and live in a separate,
+app-private, versioned envelope that is never presented as a TalentForge
+interchange schema:
+
+```json
+{ "storageVersion": 1,
+  "builds": [ { "localId": "…opaque…", "name": null,          // null = Draft
+                "createdAt": 0, "updatedAt": 0, "lastOpenedAt": null,
+                "build": { …the unchanged BuildFile payload… } } ] }
+```
+
+`LocalBuildLibraryCodec` (in `shared`) is deterministic (records serialized in
+canonical `localId` order) and keeps the same fail-closed reading standard as
+the public contracts: unknown fields within a storage version are rejected
+(documented policy — schema evolution requires a `storageVersion` bump;
+migration is deliberately absent in M5.1), quoted numeric literals are
+rejected by the same canonical wire-form check, an unsupported
+`storageVersion`, a wrong embedded build `schemaVersion`, duplicate/blank
+local ids and malformed JSON are typed failures, and persisted blank names
+normalize to `null` (Draft). `LocalBuildRepository` owns create-draft /
+autosave / open-touch / list with deterministic ordering (last edited first:
+`updatedAt` desc, then `createdAt` desc, then `localId`); every operation is
+a full read–modify–write over the storage, so a failed write never replaces
+the last persisted payload and a fresh instance (a relaunched app) observes
+prior writes. Time and id generation are injected (`BuildClock`,
+`LocalBuildIdGenerator`; default: platform clock + a random time-ordered
+prefix — no UUID dependency).
+
+**Platform storage stays at the edge.** `BuildLibraryStorage` is a one-string
+cell (`read(): String?` / `write(payload)`); the hosts inject their
+implementation into `App(...)`: Android `SharedPreferences` (synchronous
+`commit()`), iOS `NSUserDefaults`, desktop `java.util.prefs` — no database, no
+ORM, no DI framework, no file/storage library. A read/write failure is a
+typed `BuildLibraryError`, surfaced as a recoverable error state with Retry —
+never as "zero builds", which would invite an overwrite that destroys the
+stored library.
+
+**Autosave flow.** The editing layer's single `onBuildStateChanged` observer
+hands the current `BuildState` to the editor host, which converts it into the
+record's `BuildFile` and feeds a conflated, sequential save pipeline
+(`repository.saveBuild`: replaces the build, advances `updatedAt`, preserves
+`localId`/`createdAt`/`name`/`lastOpenedAt`). On failure the editor stays
+usable, a non-blocking notice offers Retry, the in-memory build never rolls
+back, no duplicate record is created to recover, and a later successful save
+clears the error. Opening a build touches `lastOpenedAt` (a real write, also
+fail-closed).
+
+**Build opening — no silent migration.** A saved build is never trusted
+blindly: the record's exact dataset identity resolves through
+`BundledTalentDatasetRepository` (an unavailable dataset never falls back to
+the current baseline), the saved `treeId` must exist in the loaded document,
+and the saved allocations must pass the real engine validation — no rank is
+clamped, dropped or "repaired". Any mismatch is a typed unavailable/
+incompatible editor state. A reopened build starts with empty undo/redo
+histories by design; only the build is persisted, never the M4 UI session.
+
+**Class-accent fallback policy.** Only Warrior has a spec-frozen accent; all
+eight other bundled classes render with the documented neutral fallback
+(`UnfrozenClassAccent`) until a committed source freezes real per-class
+accents. The policy is one function; a regression test scans production
+sources so nothing can read the Warrior-only token directly again.
+
+**Deferred to M5.2** (deliberately absent here): Name/Rename, the Name build
+flow, Duplicate, Delete + irreversible confirmation, and the Saved Builds
+management polish. There is no dead overflow control anywhere in M5.1.
 
 ## Version stack (all stable)
 
@@ -418,9 +539,9 @@ python3 scripts/sync_mobile_datasets.py
 
 # tests (JVM)
 cd mobile
-./gradlew :shared:jvmTest               # contract + repository + allocation + conformance replay
-./gradlew :shared:iosSimulatorArm64Test # common allocation tests on the iOS simulator
-./gradlew :composeApp:desktopTest       # bundled baseline, drift, design tokens, tree UI model/viewport/interaction/inspector/interactive editing
+./gradlew :shared:jvmTest               # contract + repository + allocation + conformance replay + local build library
+./gradlew :shared:iosSimulatorArm64Test # common allocation + build-library tests on the iOS simulator
+./gradlew :composeApp:desktopTest       # bundled baseline, drift, design tokens, tree UI, M5.1 build opening/restart/app flow/accent policy
 
 # opt-in M4.1 screenshot evidence from the real screen (skipped without the property)
 ./gradlew :composeApp:desktopTest --tests "*TalentTreeScreenshotTest*" \
@@ -433,6 +554,10 @@ cd mobile
 # opt-in M4.3 interactive-allocation screenshot evidence (same mechanism)
 ./gradlew :composeApp:desktopTest --tests "*TalentTreeM43ScreenshotTest*" \
     -Dtalentforge.m43.screenshots=<output-dir>
+
+# opt-in M5.1 app-flow screenshot evidence (same mechanism)
+./gradlew :composeApp:desktopTest --tests "*TalentTreeM51ScreenshotTest*" \
+    -Dtalentforge.m51.screenshots=<output-dir>
 
 # Android
 ./gradlew :composeApp:assembleDebug    # -> composeApp/build/outputs/apk/debug/
