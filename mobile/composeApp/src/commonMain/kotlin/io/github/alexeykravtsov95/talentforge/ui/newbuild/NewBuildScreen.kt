@@ -216,22 +216,24 @@ private fun ClassGrid(
             // spec H: the class grid is ALWAYS 3 columns; taller cards at 412 dp+.
             val cardHeight = if (maxWidth.value >= 412f) 96.dp else 84.dp
             val columns = 3
-            classes.chunked(columns).forEach { rowClasses ->
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    for (choice in rowClasses) {
-                        ClassCard(
-                            choice = choice,
-                            dimmed = creating,
-                            minHeight = cardHeight,
-                            modifier = Modifier.weight(1f),
-                            onClick = { onClassSelected(choice.token) },
-                        )
-                    }
-                    repeat(columns - rowClasses.size) {
-                        Spacer(Modifier.weight(1f))
+            Column(verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline)) {
+                classes.chunked(columns).forEach { rowClasses ->
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        for (choice in rowClasses) {
+                            ClassCard(
+                                choice = choice,
+                                dimmed = creating,
+                                minHeight = cardHeight,
+                                modifier = Modifier.weight(1f),
+                                onClick = { onClassSelected(choice.token) },
+                            )
+                        }
+                        repeat(columns - rowClasses.size) {
+                            Spacer(Modifier.weight(1f))
+                        }
                     }
                 }
             }
