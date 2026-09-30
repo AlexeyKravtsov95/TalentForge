@@ -158,11 +158,6 @@ data class TalentBuildEditingState(
          * Saveable form of the whole session (current + both histories) as one
          * flat `IntArray` of allocation triples — only simple
          * allocation/history values are serialized, never the engine.
-         */
-        /**
-         * Saveable form of the whole session (current + both histories) as one
-         * flat `IntArray` of allocation triples — only simple
-         * allocation/history values are serialized, never the engine.
          * (`listSaver` itself is typed `Saver<T, Any>`: it repacks the list.)
          */
         val Saver: Saver<TalentBuildEditingState, Any> = listSaver(
@@ -180,26 +175,40 @@ data class TalentBuildEditingState(
                 for (state in session.redoHistory) add(stateSaveableOf(state))
             }
 
-        /** Rebuilds a session from [serialize]'s output; `null` on any corruption. */
+        /**
+         * Rebuilds a session from [serialize]'s output. A **total, fail-closed**
+         * parser: any malformed payload returns `null` — it never throws — and
+         * the session restarts empty instead. This is save-state *format*
+         * validation only; [BuildState] keeps its own (deliberately lenient,
+         * reportable) semantics untouched.
+         */
         internal fun deserialize(values: List<IntArray>): TalentBuildEditingState? {
-            val iterator = values.iterator()
-            fun next(): IntArray {
-                check(iterator.hasNext()) { "corrupt editing-state save" }
-                return iterator.next()
+            var index = 0
+
+            /** The next payload array, or `null` when the payload is truncated. */
+            fun nextArray(): IntArray? = if (index < values.size) values[index++] else null
+
+            /** A history size: exactly one non-negative value, else `null`. */
+            fun countOf(array: IntArray?): Int? {
+                if (array == null || array.size != 1 || array[0] < 0) return null
+                return array[0]
             }
-            val current = stateOf(next()) ?: return null
-            val undoCount = next()[0]
-            val undo = buildList {
-                repeat(undoCount) {
-                    add(stateOf(next()) ?: return null)
+
+            /** [count] states, else `null` (a count beyond the remaining arrays is truncation). */
+            fun historyOf(count: Int?): List<BuildState>? {
+                if (count == null || count > values.size - index) return null
+                return buildList {
+                    repeat(count) {
+                        val state = stateOf(nextArray() ?: return null) ?: return null
+                        add(state)
+                    }
                 }
             }
-            val redoCount = next()[0]
-            val redo = buildList {
-                repeat(redoCount) {
-                    add(stateOf(next()) ?: return null)
-                }
-            }
+
+            val current = stateOf(nextArray() ?: return null) ?: return null
+            val undo = historyOf(countOf(nextArray())) ?: return null
+            val redo = historyOf(countOf(nextArray())) ?: return null
+            if (index != values.size) return null // trailing unexpected data
             return TalentBuildEditingState(current = current, undoHistory = undo, redoHistory = redo)
         }
 
@@ -211,12 +220,17 @@ data class TalentBuildEditingState(
             listOf(allocation.nodeId, allocation.entryId, allocation.rank)
         }.toIntArray()
 
-        /** Rebuilds a state from [stateSaveableOf]'s layout; `null` on any corruption. */
+        /**
+         * Rebuilds a state from [stateSaveableOf]'s layout; `null` on any
+         * corruption. Long arithmetic for the size check, so a corrupt huge
+         * allocation count can neither overflow into a false match nor drive a
+         * giant loop.
+         */
         private fun stateOf(values: IntArray): BuildState? {
             if (values.size < 2) return null
             val treeId = values[0]
             val count = values[1]
-            if (values.size != 2 + count * 3) return null
+            if (count < 0 || (values.size - 2).toLong() != count.toLong() * 3) return null
             val allocations = ArrayList<NodeAllocation>(count)
             for (index in 0 until count) {
                 val base = 2 + index * 3

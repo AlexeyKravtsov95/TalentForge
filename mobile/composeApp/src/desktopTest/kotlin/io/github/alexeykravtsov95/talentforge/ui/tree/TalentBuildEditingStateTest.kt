@@ -305,4 +305,94 @@ class TalentBuildEditingStateTest {
 
         assertEquals(session, assertNotNull(restored))
     }
+
+    // ------------------------------------------------------------------ fail-closed save-state parsing
+    //
+    // deserialize is a TOTAL parser: malformed payloads return null and never
+    // throw, so a corrupt save can only restart the session empty — it can
+    // never crash the screen, never loop, and never restore a wrong build.
+
+    /** The serialized prefix of a real one-rank session (current + undo count + undo state). */
+    private fun realSessionPrefix(): List<IntArray> {
+        var session = TalentBuildEditingState.start(readyState.engine)
+        session = session.spend(readyState.engine, improvedRendId).editing
+        return TalentBuildEditingState.serialize(session)
+    }
+
+    @Test
+    fun malformedEmptyPayloadFailsClosed() {
+        assertNull(TalentBuildEditingState.deserialize(emptyList()))
+    }
+
+    @Test
+    fun malformedMissingUndoCountFailsClosed() {
+        val payload = realSessionPrefix().dropLast(2) // current only
+        assertNull(TalentBuildEditingState.deserialize(payload))
+    }
+
+    @Test
+    fun malformedEmptyCountArrayFailsClosed() {
+        val payload = realSessionPrefix().dropLast(2) + intArrayOf() + intArrayOf(0)
+        assertNull(TalentBuildEditingState.deserialize(payload))
+    }
+
+    @Test
+    fun malformedNegativeUndoCountFailsClosed() {
+        val payload = realSessionPrefix().dropLast(2) + intArrayOf(-1)
+        assertNull(TalentBuildEditingState.deserialize(payload))
+    }
+
+    @Test
+    fun malformedTruncatedUndoHistoryFailsClosed() {
+        // claims two undo states but carries only one
+        val prefix = realSessionPrefix()
+        val payload = listOf(prefix[0], intArrayOf(2), prefix[2])
+        assertNull(TalentBuildEditingState.deserialize(payload))
+    }
+
+    @Test
+    fun malformedMissingRedoCountFailsClosed() {
+        val payload = realSessionPrefix().dropLast(1) // ends right after the undo state
+        assertNull(TalentBuildEditingState.deserialize(payload))
+    }
+
+    @Test
+    fun malformedNegativeRedoCountFailsClosed() {
+        val payload = realSessionPrefix() + intArrayOf(-3)
+        assertNull(TalentBuildEditingState.deserialize(payload))
+    }
+
+    @Test
+    fun malformedTrailingDataFailsClosed() {
+        val payload = realSessionPrefix() + intArrayOf(0) + intArrayOf(1117)
+        assertNull(TalentBuildEditingState.deserialize(payload))
+    }
+
+    @Test
+    fun malformedStateAllocationCountMismatchFailsClosed() {
+        // claims 2 allocation triples but carries none
+        assertNull(TalentBuildEditingState.deserialize(listOf(intArrayOf(1117, 2))))
+    }
+
+    @Test
+    fun malformedNegativeStateAllocationCountFailsClosed() {
+        assertNull(TalentBuildEditingState.deserialize(listOf(intArrayOf(1117, -1))))
+    }
+
+    @Test
+    fun malformedHugeStateAllocationCountCannotOverflowIntoAParse() {
+        // 3 * Int.MAX_VALUE overflows Int arithmetic — the size check must use
+        // wider math so this cannot match any real array length
+        assertNull(TalentBuildEditingState.deserialize(listOf(intArrayOf(1117, Int.MAX_VALUE))))
+    }
+
+    @Test
+    fun malformedStateRankRowFailsClosed() {
+        // one triple promised (size 5) but its rank is zero-rank garbage
+        assertNull(
+            TalentBuildEditingState.deserialize(
+                listOf(intArrayOf(1117, 1, improvedRendId, 130686, 0)),
+            ),
+        )
+    }
 }
