@@ -91,10 +91,13 @@ manual workflow runs the live integration tests.
 models + dataset repository, Compose Multiplatform app host, thin iOS host),
 **M3B** added the Kotlin allocation engine to `shared` (a one-to-one port of the
 M2 reference semantics that replays the committed conformance suite — 53
-scenarios / 177 steps — in Kotlin), and **M4.1** replaces the M3A smoke host
+scenarios / 177 steps — in Kotlin), **M4.1** replaces the M3A smoke host
 with the first production screen: the read-only Warrior talent tree rendered
 from the bundled dataset (real node geometry, connectors, pan/pinch/tap-select;
-allocation UI deliberately deferred).
+allocation UI deliberately deferred). **M4.2** adds the adaptive Talent
+Inspector and the engine-backed read-only node states (portrait compact bar +
+expanded sheet, landscape side panel, tablet persistent panel, prerequisite
+`Show` navigation; still no spending — the build stays `engine.emptyState()`).
 
 ```bash
 python3 scripts/sync_mobile_datasets.py --check   # bundled data == canonical data
