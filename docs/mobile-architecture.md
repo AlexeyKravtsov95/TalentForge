@@ -1,10 +1,10 @@
-# Mobile architecture (M3A foundation)
+# Mobile architecture (M3A foundation, M4.1 production tree screen)
 
-This document describes the Kotlin Multiplatform foundation introduced by M3A:
-module boundaries, dataset flow, strict JSON policy, conformance strategy and
-local build commands. It is the orientation map for M3B (Kotlin allocation
-engine) and M4 (production UI) — neither should require restructuring what is
-described here.
+This document describes the Kotlin Multiplatform foundation introduced by M3A
+and the M4.1 production read-only Talent Tree screen: module boundaries,
+dataset flow, strict JSON policy, conformance strategy and local build
+commands. It is the orientation map for later milestones — none should require
+restructuring what is described here.
 
 ## Module boundaries
 
@@ -40,26 +40,67 @@ Targets: Android, iOS arm64, iOS simulator arm64, JVM (fast contract tests).
 
 Compose Multiplatform application/UI host. Depends on `shared`. Contains:
 
-- `App` — the **M3A foundation smoke host (not production UI)**: a single screen
-  that boots the repository against the packaged Forever dataset and renders
-  the baseline identity (game, build, class count, node count, contract
-  version) or a readable error state;
+- `App` — thin entry that hosts the production screen below;
+- `ui/tree` — the **M4.1 production read-only Talent Tree screen**: the bundled
+  baseline Forever Warrior document is loaded through
+  `BundledTalentDatasetRepository` (no JSON in composables) into explicit
+  Loading/Ready/Failed states, and rendered as a pannable, pinch-zoomable
+  canvas driven entirely by the real dataset:
+
+  - `TalentTreeUiModel` — a pure, geometry-only projection of the real
+    `TalentTree` (node id/name/monogram/max-rank/section, world-canvas
+    positions, prerequisite + visual-only edges, computed bounds). It contains
+    no allocation semantics and duplicates no contract hierarchy. One uniform
+    factor maps client units to dp (one `layout.xStep` = 76 dp, the B3 portrait
+    column pitch), preserving the client's relative geometry without
+    distortion. Fail-closed presentation preconditions return typed build
+    errors instead of crashing or emitting sentinel geometry: no tree,
+    multiple trees, no nodes, duplicate node ids, invalid layout step,
+    dangling edge references;
+  - `TalentTreeViewport` — the single world→screen transform (`dp·scale +
+    offset`) with pure helpers for world↔screen, pan, focal-point zoom
+    clamped to the B3 0.8–2.2× bounds, and the deterministic initial
+    transform. `TalentTreeViewportState` holds it (saveable — no reset across
+    recomposition/rotation). Hit testing runs in **screen space**: the
+    effective target is `max(56 dp · scale, orientation minimum)` so zooming
+    out never shrinks the physically tappable area below the B3 usable
+    minimums (56 dp portrait, 48 dp landscape) — node visuals are untouched
+    by this;
+  - `TalentTreeCanvas` — connectors drawn behind nodes under one shared
+    transform, nodes as keyed composables carrying the real names in their
+    accessibility semantics, and the B3 gesture arbitration: tap node =
+    select only (never spends), tap empty canvas = deselect, drag (7 dp
+    slop, including node-origin drags) = pan, pinch = zoom around the
+    fingers, extra-finger join/leave rebases anchors so nothing jumps;
+  - `TalentNodeFallbackVisual` — the **icon fallback**, isolated on purpose:
+    `talent-data.v1` has no icon/texture identifier, so M4.1 renders the B3
+    implementation-safe rounded square with a deterministic monogram derived
+    from the real node name (leading "Improved" dropped; first letters of the
+    first and last remaining word — "HS" Heroic Strike, "RE" Rend). No
+    networking, no scraped art, no schema invention; a future icon renderer
+    replaces this file's content without touching geometry or gestures;
+
 - `ui/theme` — design tokens frozen by `TalentForge_UX_UI_Spec_v1.pdf`
   section G: colour (OKLCH-derived sRGB constants), spacing, radius, motion
-  durations, and the `ClassAccent` type with the single spec-fixed Warrior
-  accent;
+  durations, typography roles, and the `ClassAccent` type with the single
+  spec-fixed Warrior accent;
 - `ComposeResourceDatasetAssetSource` — the standard Compose Multiplatform
   resource mechanism (`composeResources/files/…`) as a `DatasetAssetSource`;
   it works on Android and iOS and only hands bytes to `shared`, where all
   JSON parsing happens. There are no per-platform parser implementations.
 
-Targets: Android, iOS arm64, iOS simulator arm64, desktop JVM (smoke host +
-packaged-resource tests).
+Targets: Android, iOS arm64, iOS simulator arm64, desktop JVM (production
+screen + packaged-resource and UI interaction tests).
 
-Material 3 is deliberately absent in M3A: Compose Multiplatform 1.10+ publishes
-its `material3` artifacts only in pre-release form, and this milestone accepts
-no alpha/beta/RC dependencies. The production UI milestone will revisit the
-component library choice.
+Material 3 is deliberately absent: Compose Multiplatform 1.10+ publishes its
+`material3` artifacts only in pre-release form, and this project accepts no
+alpha/beta/RC dependencies.
+
+M4.1 is **read-only by scope**: the M3B `TalentAllocationEngine` exists but no
+spend/refund UI, inspector, persistence, Home screen, class picker or
+navigation is exposed — those belong to later milestones. The M3A aggregate
+smoke host was removed with its screen; the repository/resource pipeline it
+proved remains covered by the desktop tests.
 
 ### `iosApp`
 
@@ -250,7 +291,11 @@ python3 scripts/sync_mobile_datasets.py
 cd mobile
 ./gradlew :shared:jvmTest               # contract + repository + allocation + conformance replay
 ./gradlew :shared:iosSimulatorArm64Test # common allocation tests on the iOS simulator
-./gradlew :composeApp:desktopTest       # bundled baseline, drift, design tokens
+./gradlew :composeApp:desktopTest       # bundled baseline, drift, design tokens, tree UI model/viewport/interaction
+
+# opt-in M4.1 screenshot evidence from the real screen (skipped without the property)
+./gradlew :composeApp:desktopTest --tests "*TalentTreeScreenshotTest*" \
+    -Dtalentforge.m41.screenshots=<output-dir>
 
 # Android
 ./gradlew :composeApp:assembleDebug    # -> composeApp/build/outputs/apk/debug/

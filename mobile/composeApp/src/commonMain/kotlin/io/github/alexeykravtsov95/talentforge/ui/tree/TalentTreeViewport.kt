@@ -1,0 +1,138 @@
+package io.github.alexeykravtsov95.talentforge.ui.tree
+
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import kotlin.math.abs
+
+/**
+ * The single world→screen transform of the Talent Tree canvas.
+ *
+ * One coherent model drives nodes, connectors, hit testing, pan and zoom:
+ * `screenDp = worldDp * scale + offset`. All values are dp at the current
+ * density (pointer events are converted to dp at the gesture boundary), so the
+ * math here is density-free and unit-testable without any rendering.
+ *
+ * [scale] is dimensionless and always finite; [offset] is the world-origin
+ * position in screen dp. The canvas never sees a partial or non-finite
+ * transform: construction rejects non-finite values and every operation either
+ * returns `this` unchanged or a new valid instance.
+ */
+data class TalentTreeViewport(
+    val scale: Float,
+    val offset: Offset,
+) {
+    init {
+        require(scale.isFinite() && scale > 0f) {
+            "viewport scale must be finite and positive, was $scale"
+        }
+        require(offset.x.isFinite() && offset.y.isFinite()) {
+            "viewport offset must be finite, was $offset"
+        }
+    }
+
+    fun worldToScreen(world: Offset): Offset =
+        Offset(world.x * scale + offset.x, world.y * scale + offset.y)
+
+    fun screenToWorld(screen: Offset): Offset =
+        Offset((screen.x - offset.x) / scale, (screen.y - offset.y) / scale)
+
+    /** Pans by [delta] screen dp; non-finite input leaves the viewport unchanged. */
+    fun panBy(delta: Offset): TalentTreeViewport {
+        if (!delta.x.isFinite() || !delta.y.isFinite()) return this
+        return copy(offset = Offset(offset.x + delta.x, offset.y + delta.y))
+    }
+
+    /**
+     * Zooms so that [targetScale] (clamped to the B3 0.8–2.2 bounds) is applied
+     * around [focal] (screen dp): the world point under the focal point stays
+     * under it. Non-finite targets are ignored, so a degenerate pinch span can
+     * never poison the transform.
+     */
+    fun zoomAt(focal: Offset, targetScale: Float): TalentTreeViewport {
+        if (!targetScale.isFinite()) return this
+        val newScale = targetScale.coerceIn(
+            TalentTreeCanvasMetrics.ZOOM_MIN,
+            TalentTreeCanvasMetrics.ZOOM_MAX,
+        )
+        if (newScale == scale) return this
+        val world = screenToWorld(focal)
+        return TalentTreeViewport(
+            scale = newScale,
+            offset = Offset(focal.x - world.x * newScale, focal.y - world.y * newScale),
+        )
+    }
+
+    companion object {
+        /**
+         * Deterministic initial transform for [bounds] inside a canvas of
+         * [canvasSize] (dp): the tree's left edge starts at the screen margin,
+         * and the content is vertically centred when it fits (otherwise
+         * top-aligned at the margin). Portrait starts at 1×; landscape starts at
+         * the B3 landscape grid ratio (see
+         * [TalentTreeCanvasMetrics.INITIAL_SCALE_LANDSCAPE]).
+         */
+        fun initialFor(
+            bounds: TalentTreeBounds,
+            canvasSize: Size,
+            landscape: Boolean,
+        ): TalentTreeViewport {
+            val scale = if (landscape) {
+                TalentTreeCanvasMetrics.INITIAL_SCALE_LANDSCAPE
+            } else {
+                TalentTreeCanvasMetrics.INITIAL_SCALE_PORTRAIT
+            }
+            val margin = TalentTreeCanvasMetrics.CANVAS_START_MARGIN_DP
+            val offsetX = margin - bounds.minX * scale
+            val contentHeight = bounds.height * scale
+            val offsetY = if (contentHeight <= canvasSize.height) {
+                canvasSize.height / 2f - bounds.centerY * scale
+            } else {
+                margin - bounds.minY * scale
+            }
+            return TalentTreeViewport(scale, Offset(offsetX, offsetY))
+        }
+    }
+}
+
+/**
+ * Effective touch-target side in **screen dp** for [viewport], never smaller
+ * than the orientation's B3 minimum ([minimumTargetDp]).
+ *
+ * Hit testing happens in screen space: the world-space 56 dp target scales
+ * with zoom-in (it may grow), but zooming out must not shrink the physically
+ * tappable area below the applicable minimum (56 dp portrait / 48 dp
+ * landscape, B3 05–06). Node *visuals* are untouched by this — only the
+ * interaction target is guaranteed.
+ */
+fun effectiveNodeTargetDp(viewport: TalentTreeViewport, minimumTargetDp: Float): Float =
+    maxOf(TalentTreeCanvasMetrics.NODE_TARGET_DP * viewport.scale, minimumTargetDp)
+
+/**
+ * Hit-tests a screen position (dp) against the node touch targets in screen
+ * space, using [effectiveNodeTargetDp] with the orientation's minimum. The
+ * closest node whose effective target contains [screen] wins (deterministic);
+ * null means empty canvas.
+ */
+fun TalentTreeUiModel.nodeAtScreen(
+    screen: Offset,
+    viewport: TalentTreeViewport,
+    minimumTargetDp: Float,
+): Int? {
+    if (!screen.x.isFinite() || !screen.y.isFinite()) return null
+    val halfTarget = effectiveNodeTargetDp(viewport, minimumTargetDp) / 2f
+    var bestId: Int? = null
+    var bestDistance = Float.MAX_VALUE
+    for (node in nodes) {
+        val nodeScreen = viewport.worldToScreen(Offset(node.centerX, node.centerY))
+        val dx = abs(screen.x - nodeScreen.x)
+        val dy = abs(screen.y - nodeScreen.y)
+        if (dx <= halfTarget && dy <= halfTarget) {
+            val distance = dx * dx + dy * dy
+            if (distance < bestDistance) {
+                bestDistance = distance
+                bestId = node.id
+            }
+        }
+    }
+    return bestId
+}

@@ -51,6 +51,7 @@ kotlin {
             dependencies {
                 implementation(libs.kotlin.test)
                 implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.compose.ui.test)
             }
         }
     }
@@ -71,5 +72,13 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+}
+
+// Opt-in screenshot evidence: `./gradlew :composeApp:desktopTest \
+//     -Dtalentforge.m41.screenshots=<dir>` — skipped by default.
+tasks.named<Test>("desktopTest") {
+    System.getProperty("talentforge.m41.screenshots")?.let {
+        systemProperty("talentforge.m41.screenshots", it)
     }
 }
