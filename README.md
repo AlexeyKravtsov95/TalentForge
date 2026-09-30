@@ -98,6 +98,12 @@ allocation UI deliberately deferred). **M4.2** adds the adaptive Talent
 Inspector and the engine-backed read-only node states (portrait compact bar +
 expanded sheet, landscape side panel, tablet persistent panel, prerequisite
 `Show` navigation; still no spending — the build stays `engine.emptyState()`).
+**M4.3** makes the tree an interactive local build editor: explicit `−`/`+`
+rank controls in every inspector variant, real `TalentAllocationEngine`
+spend/refund transitions with live tier/prerequisite/counter updates, undo /
+redo, and Reset Talents with an undoable one-step clear (node tap still only
+selects; every mutation routes through the engine; the build is in-memory
+only — persistence arrives in a later milestone).
 
 ```bash
 python3 scripts/sync_mobile_datasets.py --check   # bundled data == canonical data

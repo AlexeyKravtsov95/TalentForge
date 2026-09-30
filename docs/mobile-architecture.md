@@ -1,10 +1,11 @@
-# Mobile architecture (M3A foundation, M4.1–M4.2 production tree screen)
+# Mobile architecture (M3A foundation, M4.1–M4.3 production tree screen)
 
 This document describes the Kotlin Multiplatform foundation introduced by M3A
-and the M4.1/M4.2 production read-only Talent Tree screen: module boundaries,
-dataset flow, strict JSON policy, conformance strategy and local build
-commands. It is the orientation map for later milestones — none should require
-restructuring what is described here.
+and the M4.1–M4.3 production Talent Tree screen (read-only rendering since
+M4.1, adaptive inspector since M4.2, interactive allocation since M4.3): module
+boundaries, dataset flow, strict JSON policy, conformance strategy and local
+build commands. It is the orientation map for later milestones — none should
+require restructuring what is described here.
 
 ## Module boundaries
 
@@ -41,7 +42,8 @@ Targets: Android, iOS arm64, iOS simulator arm64, JVM (fast contract tests).
 Compose Multiplatform application/UI host. Depends on `shared`. Contains:
 
 - `App` — thin entry that hosts the production screen below;
-- `ui/tree` — the **M4.1/M4.2 production read-only Talent Tree screen**: the bundled
+- `ui/tree` — the **M4.1–M4.3 production Talent Tree screen** (read-only since
+  M4.1, interactive since M4.3): the bundled
   baseline Forever Warrior document is loaded through
   `BundledTalentDatasetRepository` (no JSON in composables) into explicit
   Loading/Ready/Failed states, and rendered as a pannable, pinch-zoomable
@@ -85,12 +87,11 @@ Compose Multiplatform application/UI host. Depends on `shared`. Contains:
     tier-locked, ↑ = prerequisite-locked) and the 15 dp rank chip derived from
     the real BuildState, with the neutral selection ring layered **above**
     any state;
-  - `TalentNodePresentation` — the **M4.2 read-only allocation-state
+  - `TalentNodePresentation` — the **M4.2 allocation-state
     projection**: a pure mapping of `TalentAllocationEngine.canSpend` over an
-    immutable `BuildState` (the production build is `engine.emptyState()`;
-    the mapper accepts any state so M4.3 reuses it when ranks change). It
-    never calls `spend`/`refund` (a desktop test scans production sources to
-    enforce this). The engine's full ordered issue set is preserved per node
+    immutable `BuildState`. It
+    never calls `spend`/`refund` (the M4.3 routing guard below scans
+    production sources to enforce this). The engine's full ordered issue set is preserved per node
     (a node can be prerequisite- *and* tier-locked at once); the single
     `state` field is documented UI-only precedence (fail-closed →
     partial/maxed → prerequisite → tier → no-points), not allocation
@@ -111,7 +112,9 @@ Compose Multiplatform application/UI host. Depends on `shared`. Contains:
     only if the panel would cover the node); tablet (840 dp+) persistent
     380 dp inspector with a minimal empty prompt (the spec freezes the
     behaviour, not the prompt wording — the line is documented
-    implementation-safe). All read-only: `Show` is the only action, offered
+    implementation-safe). Since M4.3 the inspector also carries the explicit
+    rank controls (see `TalentInspectorActions` below); `Show` remains the
+    only action for a *locked* node, offered
     only when the engine reports exactly one unmet prerequisite source
     (multi-source cases fail safe with no action rather than inventing a
     preference);
@@ -124,6 +127,43 @@ Compose Multiplatform application/UI host. Depends on `shared`. Contains:
     connectors fade to 18%, and the target's state line appends the B3
     "needed for <origin>" suffix. The next selection, a deselect or a spec
     change clears the guide;
+
+  - `TalentBuildEditingState` — the **M4.3 build editing session**: a small,
+    pure, fully unit-tested layer in `composeApp` (not `shared` — it is UI
+    editing concern, not domain semantics) holding the current immutable
+    `BuildState` plus undo/redo histories of exact immutable states. Every
+    mutation goes through the engine and nowhere else: `spend`/`refund`
+    delegate to `TalentAllocationEngine.spend`/`refund`, `reset` delegates to
+    `engine.emptyState()`, `spendToMax` loops engine spends but commits as one
+    atomic history entry. A successful mutation pushes the before-state onto
+    the undo history and clears redo; a denied mutation (typed
+    `AllocationIssue`s returned) changes nothing — no state, no history, no
+    counter. Undo/redo move whole immutable states between the histories.
+    Reset is one atomic history step (one undo restores the exact cleared
+    build) and a documented no-op on an already-empty build. A desktop test
+    (`AllocationRoutingEnforcementTest`) scans production sources: no
+    `BuildState.withAllocation` calls from production code, and
+    `engine.spend(`/`engine.refund(` appear only in this file — rank
+    arithmetic and refund dependency rules are never reimplemented in the UI;
+  - `TalentNodeActions` — the **action legality projection**: derives
+    `canSpend`/`canRefund` (plus the engine's denial reasons) for the
+    *selected* node from `canSpend`/`canRefund` queries — deliberately
+    independent from the visual `TalentNodeState`, because presentation state
+    and action legality answer different questions (a MAXED node still offers
+    refund; an AVAILABLE node at 0 remaining points shows a disabled +).
+    `blockedActionReason` maps structured issue codes to user copy
+    ("Needed by …", "Requires … first", "No talent points left") — never
+    guessed game semantics;
+  - `TalentInspectorActions` + `TalentTreeHeaderBar` + `TalentBuildOverlays`
+    — the M4.3 controls per B3: explicit `−`/`+` (compact inspector), the
+    expanded `− + Rank Max` row (expanded sheet, landscape side panel, tablet
+    persistent panel), the header bar with undo/redo and the overflow
+    (`⋯`) opening the "Reset talents" sheet in the warning colour, and the
+    reset snackbar ("Talents reset · N points cleared" + focus-coloured
+    *Undo*, auto-dismiss 4 s). Denied actions render disabled with the reason
+    in the state line; a successful spend plays the B3 purchase feedback
+    (260 ms node glow + 180 ms rank-chip pop) driven by a monotonic token so
+    recomposition can never replay it;
 
 - `ui/theme` — design tokens frozen by `TalentForge_UX_UI_Spec_v1.pdf`
   section G: colour (OKLCH-derived sRGB constants), spacing, radius, motion
@@ -160,6 +200,20 @@ escape into the header, the inspector or a neighbouring panel. It remains strict
 engine is only queried (`canSpend`/`validate`/`spentPoints`/
 `remainingPoints`), `Show` is pure navigation, and no spend/refund/undo
 controls exist anywhere. BuildState mutation arrives in M4.3.
+
+M4.3 turns the same screen into the **interactive local build editor**. The
+screen owns a `TalentBuildEditingState` (see `ui/tree` above) —
+`rememberSaveable` with a plain-value `Saver` (allocation entries and history
+as `IntArray`s; the engine is never serialized) — so editing survives
+recomposition and portrait↔landscape with the exact same build *and*
+histories. Node tap still **selects only** (never spends — a dedicated
+regression test taps repeatedly and asserts an unchanged counter), `Show`
+still navigates one prerequisite hop and never spends, and every mutation is
+an explicit visible control. The presentation, tier meter, prerequisite
+arrows and header counter all re-derive from the real engine state on every
+change, so locked→available transitions are live. The build is **in-memory
+only**: persistence, multiple saved builds and build sharing remain future
+milestones (M5+); no schema, dataset or contract change was needed or made.
 
 ### `iosApp`
 
@@ -350,7 +404,7 @@ python3 scripts/sync_mobile_datasets.py
 cd mobile
 ./gradlew :shared:jvmTest               # contract + repository + allocation + conformance replay
 ./gradlew :shared:iosSimulatorArm64Test # common allocation tests on the iOS simulator
-./gradlew :composeApp:desktopTest       # bundled baseline, drift, design tokens, tree UI model/viewport/interaction/inspector
+./gradlew :composeApp:desktopTest       # bundled baseline, drift, design tokens, tree UI model/viewport/interaction/inspector/interactive editing
 
 # opt-in M4.1 screenshot evidence from the real screen (skipped without the property)
 ./gradlew :composeApp:desktopTest --tests "*TalentTreeScreenshotTest*" \
@@ -359,6 +413,10 @@ cd mobile
 # opt-in M4.2 inspector screenshot evidence (same mechanism)
 ./gradlew :composeApp:desktopTest --tests "*TalentTreeM42ScreenshotTest*" \
     -Dtalentforge.m42.screenshots=<output-dir>
+
+# opt-in M4.3 interactive-allocation screenshot evidence (same mechanism)
+./gradlew :composeApp:desktopTest --tests "*TalentTreeM43ScreenshotTest*" \
+    -Dtalentforge.m43.screenshots=<output-dir>
 
 # Android
 ./gradlew :composeApp:assembleDebug    # -> composeApp/build/outputs/apk/debug/
