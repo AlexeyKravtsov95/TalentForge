@@ -26,7 +26,10 @@ import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRecord
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
+import io.github.alexeykravtsov95.talentforge.ui.library.BuildAutosaveCoordinator
 import io.github.alexeykravtsov95.talentforge.ui.tree.TalentTreeBuildScreen
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
 import java.io.File
@@ -185,10 +188,12 @@ class TalentTreeM51ScreenshotTest {
             TalentForgeTheme {
                 CompositionLocalProvider(LocalDensity provides Density(1f)) {
                     Box(Modifier.size(360.dp, 760.dp)) {
+                        val scope = rememberCoroutineScope()
                         TalentTreeBuildScreen(
                             localId = assertNotNull(warrior).localId,
                             repository = repository(),
                             datasets = datasets,
+                            autosave = remember { BuildAutosaveCoordinator(repository(), scope) },
                             onBack = {},
                         )
                     }

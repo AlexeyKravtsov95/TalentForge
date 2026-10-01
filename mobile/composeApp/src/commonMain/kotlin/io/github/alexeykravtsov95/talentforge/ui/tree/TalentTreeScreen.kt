@@ -251,6 +251,18 @@ private fun ReadyTalentTreeScreen(
         mutableStateOf(TalentBuildEditingState(current.buildState))
     }
 
+    // Restoration safety net for the autosave contract: a configuration
+    // change rebuilds the whole composition — including the save pipeline. If
+    // the restored session is newer than the persisted build this editor was
+    // opened from (a mutation whose save was still in flight), re-submit it
+    // through the ONE change path so it still reaches storage. A fresh open
+    // starts exactly at the persisted build, so this is a no-op there.
+    LaunchedEffect(current.engine) {
+        if (editing.current != current.buildState) {
+            onBuildStateChanged?.invoke(editing.current)
+        }
+    }
+
     // Feedback state (transient by design — animations and notices, not build
     // history; they die with the process rather than being serialized).
     var purchaseFeedback by remember { mutableStateOf<TalentPurchaseFeedback?>(null) }

@@ -28,6 +28,8 @@ import io.github.alexeykravtsov95.talentforge.data.describe
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryError
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
+import androidx.compose.runtime.collectAsState
+import io.github.alexeykravtsov95.talentforge.ui.library.BuildAutosaveCoordinator
 import io.github.alexeykravtsov95.talentforge.ui.library.EditorFailure
 import io.github.alexeykravtsov95.talentforge.ui.library.EditorLoad
 import io.github.alexeykravtsov95.talentforge.ui.library.InlineNotice
@@ -37,22 +39,23 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTypography
 import io.github.alexeykravtsov95.talentforge.ui.theme.classAccentFor
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.withContext
 
 /**
  * The M5.1 generic build editor host: opens a locally stored build by its
  * opaque `localId` (never by passing mutable UI state between screens),
- * resolves and validates it fail-closed through [loadEditorSession], and owns
- * **autosave**: the one [TalentTreeScreen.onBuildStateChanged] observer hands
- * the current [io.github.alexeykravtsov95.talentforge.allocation.BuildState]
- * to a serialized save pipeline that converts it into the record's portable
- * [BuildFile] and persists it through [LocalBuildRepository.saveBuild].
+ * resolves and validates it fail-closed through [loadEditorSession], and
+ * feeds **autosave** into the app-level [BuildAutosaveCoordinator]: the one
+ * [TalentTreeScreen.onBuildStateChanged] observer converts the current
+ * [io.github.alexeykravtsov95.talentforge.allocation.BuildState] into the
+ * record's portable [BuildFile] and submits it to the coordinator, whose
+ * lifetime sits ABOVE this screen — leaving the editor can therefore never
+ * cancel a pending save (back navigation flushes the coordinator first; see
+ * App).
  *
- * Autosave order/failure contract: saves run sequentially on one consumer and
- * are conflated (rapid mutations coalesce to the newest state), the editor
- * stays fully usable on a failed write, a visible non-blocking notice offers
- * retry, the in-memory build is never rolled back, no duplicate record is
+ * Failure contract: the editor stays fully usable on a failed write, a
+ * visible non-blocking notice offers Retry (a re-submission of the newest
+ * state), the in-memory build is never rolled back, no duplicate record is
  * ever created to "recover", and a later successful save clears the error.
  */
 @Composable
@@ -60,6 +63,7 @@ fun TalentTreeBuildScreen(
     localId: String,
     repository: LocalBuildRepository,
     datasets: TalentDatasetRepository,
+    autosave: BuildAutosaveCoordinator,
     onBack: () -> Unit,
 ) {
     var load by remember(localId) { mutableStateOf<EditorLoad>(EditorLoad.Loading) }
@@ -85,7 +89,7 @@ fun TalentTreeBuildScreen(
 
         is EditorLoad.Ready -> ReadyBuildEditor(
             session = current.session,
-            repository = repository,
+            autosave = autosave,
             onBack = onBack,
         )
     }
@@ -94,25 +98,13 @@ fun TalentTreeBuildScreen(
 @Composable
 private fun ReadyBuildEditor(
     session: io.github.alexeykravtsov95.talentforge.ui.library.EditorSession,
-    repository: LocalBuildRepository,
+    autosave: BuildAutosaveCoordinator,
     onBack: () -> Unit,
 ) {
     val record = session.record
-    var saveFailed by remember(record.localId) { mutableStateOf(false) }
-    var lastAttemptedFile by remember(record.localId) { mutableStateOf<BuildFile?>(null) }
-    val pendingSaves = remember(record.localId) { Channel<BuildFile>(Channel.CONFLATED) }
-
-    // The one autosave consumer: sequential writes, newest state wins, a
-    // failure only flags the visible notice — nothing rolls back.
-    LaunchedEffect(record.localId) {
-        for (file in pendingSaves) {
-            lastAttemptedFile = file
-            val outcome = withContext(Dispatchers.Default) {
-                repository.saveBuild(record.localId, file)
-            }
-            saveFailed = outcome is BuildLibraryOutcome.Failed
-        }
-    }
+    var newestFile by remember(record.localId) { mutableStateOf<BuildFile?>(null) }
+    val lastOutcome by autosave.lastOutcome.collectAsState()
+    val saveFailed = lastOutcome?.let { it.localId == record.localId && it.failed } == true
 
     Box(Modifier.fillMaxSize()) {
         TalentTreeScreen(
@@ -127,21 +119,21 @@ private fun ReadyBuildEditor(
             ),
             onBack = onBack,
             onBuildStateChanged = { state ->
-                pendingSaves.trySend(
-                    buildFileOf(
-                        state = state,
-                        game = record.build.game,
-                        clientBuild = record.build.clientBuild,
-                        classToken = record.build.classToken,
-                    ),
+                val file = buildFileOf(
+                    state = state,
+                    game = record.build.game,
+                    clientBuild = record.build.clientBuild,
+                    classToken = record.build.classToken,
                 )
+                newestFile = file
+                autosave.submit(localId = record.localId, build = file)
             },
         )
         if (saveFailed) {
             InlineNotice(
                 text = "Couldn't save your changes on this device",
                 actionText = "Retry",
-                onAction = { lastAttemptedFile?.let(pendingSaves::trySend) },
+                onAction = { newestFile?.let { autosave.submit(record.localId, it) } },
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .padding(top = 56.dp + TalentForgeSpacing.inline)

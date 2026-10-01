@@ -56,11 +56,17 @@ Compose Multiplatform application/UI host. Depends on `shared`. Contains:
   the repository + dataset collaborators once, and drives a small explicit
   destination back stack — `Home → NewBuild → pick class: the tree REPLACES
   New build (back → Home)`, `Home → Continue/Recent → tree (push, back →
-  Home)`, `Home → AllBuilds → tree (push, back → AllBuilds)`. No navigation
-  framework for four local screens, no bottom navigation; the editor opens by
-  opaque local build id, never by passing mutable UI state; navigation state
-  is not the persistence model. Android's system back and the visible
-  chevrons (`PlatformBackHandler` expect/actual) share one pop;
+  Home)`, `Home → AllBuilds → tree (push, back → AllBuilds)`. The stack is
+  `rememberSaveable` with an explicit plain-value saver (navigation facts
+  only — Home/NewBuild/AllBuilds/Editor(localId, origin); a corrupt entry
+  fails closed to Home), so a configuration change restores the exact
+  destination while the editing session restores through its own M4.3
+  saveable form. No navigation framework for four local screens, no bottom
+  navigation; the editor opens by opaque local build id, never by passing
+  mutable UI state; navigation state is not the persistence model. Android's
+  system back and the visible chevrons (`PlatformBackHandler` expect/actual)
+  share one pop, and popping an editor flushes the autosave coordinator
+  first;
 - `ui/tree` — the **M4.1–M4.3 production Talent Tree screen** (read-only since
   M4.1, interactive since M4.3): the bundled
   baseline Forever Warrior document is loaded through
@@ -334,13 +340,21 @@ stored library.
 
 **Autosave flow.** The editing layer's single `onBuildStateChanged` observer
 hands the current `BuildState` to the editor host, which converts it into the
-record's `BuildFile` and feeds a conflated, sequential save pipeline
-(`repository.saveBuild`: replaces the build, advances `updatedAt`, preserves
-`localId`/`createdAt`/`name`/`lastOpenedAt`). On failure the editor stays
-usable, a non-blocking notice offers Retry, the in-memory build never rolls
-back, no duplicate record is created to recover, and a later successful save
-clears the error. Opening a build touches `lastOpenedAt` (a real write, also
-fail-closed).
+record's `BuildFile` and submits it to the app-level
+`BuildAutosaveCoordinator` — a save pipeline owned ABOVE any single
+destination, so leaving the editor can never cancel a pending or in-flight
+save. Submissions are FIFO with monotonic generations and may coalesce to the
+newest queued state; `repository.saveBuild` replaces the build, advances
+`updatedAt`, and preserves `localId`/`createdAt`/`name`/`lastOpenedAt`.
+Popping the editor first FLUSHES the coordinator: navigation completes only
+after the newest submitted state is confirmed persisted; if the newest save
+failed, navigation visibly stays put with the retryable error notice (the
+in-memory build never rolls back, no duplicate record is created to recover,
+and a later successful save clears the error). A configuration change that
+rebuilds the pipeline cannot lose a newer restored session either: the
+editor re-submits a restored session that differs from the persisted build
+through the same single change path. Opening a build touches `lastOpenedAt`
+(a real write, also fail-closed).
 
 **Build opening — no silent migration.** A saved build is never trusted
 blindly: the record's exact dataset identity resolves through
