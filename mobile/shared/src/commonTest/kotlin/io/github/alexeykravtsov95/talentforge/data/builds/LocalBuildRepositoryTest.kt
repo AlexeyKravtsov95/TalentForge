@@ -6,6 +6,7 @@ import io.github.alexeykravtsov95.talentforge.data.allocation.BuildFile
 import io.github.alexeykravtsov95.talentforge.data.allocation.NodeAllocation
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
@@ -318,10 +319,15 @@ class LocalBuildRepositoryTest {
 
     @Test
     fun duplicateLocalIdsAreMalformed() {
+        // the writer refuses duplicate ids (see the write-boundary test below),
+        // so a duplicate payload can only arrive as hand-crafted/corrupted
+        // storage — exactly the case the reader must still reject
         val one = record("id-1", 1L, 1L)
-        val payload = LocalBuildLibraryCodec.encode(listOf(one, one.copy(createdAt = 2L, updatedAt = 2L)))
+        val single = LocalBuildLibraryCodec.encode(listOf(one))
+        val recordJson = single.substringAfter("[").substringBeforeLast("]")
+        val duplicated = single.replace("[$recordJson]", "[$recordJson,$recordJson]")
 
-        assertIs<BuildLibraryError.Malformed>(failureOver(payload))
+        assertIs<BuildLibraryError.Malformed>(failureOver(duplicated))
     }
 
     @Test
@@ -353,5 +359,76 @@ class LocalBuildRepositoryTest {
         assertEquals(created.localId, reloaded.localId)
         assertEquals(created.build, reloaded.build)
         assertNotEquals(0, storage.writeCount)
+    }
+
+    // ------------------------------------------------------------------ id-collision policy
+
+    @Test
+    fun createDraftRegeneratesACollidingIdAndKeepsTheOriginalRecord() {
+        val existing = record("same", 1L, 1L)
+        val storage = InMemoryBuildLibraryStorage(LocalBuildLibraryCodec.encode(listOf(existing)))
+        val repo = LocalBuildRepository(storage, FixedBuildClock(), ScriptedBuildIds("same", "fresh"))
+
+        val created = loaded(repo.createDraft(buildFile("MAGE")))
+
+        assertEquals("fresh", created.localId)
+        val records = loadedRecords(repo.load())
+        assertEquals(setOf("same", "fresh"), records.map { it.localId }.toSet())
+        assertEquals(existing, records.first { it.localId == "same" })
+    }
+
+    @Test
+    fun createDraftFailsTypedAfterTheBoundedCollisionPolicyAndNeverWrites() {
+        val existing = record("same", 1L, 1L)
+        val storage = InMemoryBuildLibraryStorage(LocalBuildLibraryCodec.encode(listOf(existing)))
+        val payloadBefore = storage.payload
+        val repo = LocalBuildRepository(storage, FixedBuildClock(), ScriptedBuildIds("same"))
+
+        val error = failure(repo.createDraft(buildFile()))
+
+        val collision = assertIs<BuildLibraryError.IdCollision>(error)
+        assertEquals(8, collision.attempts)
+        assertEquals(payloadBefore, storage.payload)
+        assertEquals(0, storage.writeCount)
+    }
+
+    @Test
+    fun theLibraryReloadsAfterEverySuccessfulCreateEvenWithOccasionalCollisions() {
+        val storage = InMemoryBuildLibraryStorage()
+        val repo = LocalBuildRepository(storage, FixedBuildClock(), ScriptedBuildIds("a", "b", "b", "c"))
+
+        val first = loaded(repo.createDraft(buildFile("WARRIOR")))
+        assertEquals(listOf(first), loadedRecords(repo.load()))
+        val second = loaded(repo.createDraft(buildFile("MAGE")))
+        assertEquals(2, loadedRecords(repo.load()).size)
+        val third = loaded(repo.createDraft(buildFile("ROGUE")))
+
+        val ids = loadedRecords(repo.load()).map { it.localId }
+        assertEquals(listOf(first.localId, second.localId, third.localId).toSet(), ids.toSet())
+        assertEquals(3, ids.size)
+    }
+
+    @Test
+    fun theWriteBoundaryRefusesDuplicateIdsTheReaderWouldReject() {
+        val one = record("id-1", 1L, 1L)
+
+        val error = assertFailsWith<LocalBuildLibraryFormatException.Malformed> {
+            LocalBuildLibraryCodec.encode(listOf(one, one.copy(createdAt = 2L, updatedAt = 2L)))
+        }
+
+        assertTrue(error.message!!.contains("duplicate localId id-1"))
+    }
+
+    @Test
+    fun randomIdsKeepTheirFullRandomPart() {
+        val clock = FixedBuildClock(1_000L)
+        val generated = List(200) { RandomLocalBuildIdGenerator(clock).next() }
+
+        // time-ordered prefix from the injected clock (1000 ms = "rs" base 36),
+        // then the untouched random part — no entropy-discarding transform
+        assertTrue(generated.all { it.startsWith("rs-") })
+        val suffixes = generated.map { it.substringAfter('-') }
+        assertTrue(suffixes.all { it.isNotEmpty() })
+        assertEquals(200, suffixes.toSet().size)
     }
 }

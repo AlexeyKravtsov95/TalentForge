@@ -26,6 +26,13 @@ sealed interface BuildLibraryError {
 
     /** The operation targets a `localId` the library does not contain. */
     data class UnknownRecord(val localId: String) : BuildLibraryError
+
+    /**
+     * The id generator kept returning ids the library already contains for the
+     * whole bounded retry policy — a new record was NOT persisted and the
+     * stored payload is untouched.
+     */
+    data class IdCollision(val attempts: Int) : BuildLibraryError
 }
 
 /** Outcome of a [LocalBuildRepository] operation (mirrors `DatasetOutcome`). */
@@ -48,7 +55,9 @@ fun interface LocalBuildIdGenerator {
 /**
  * Default id generator: opaque, time-ordered prefix + random suffix. No UUID
  * dependency — `kotlin.random.Random` is stable common API, and a local id only
- * has to be unique inside one device's library.
+ * has to be unique inside one device's library. The random part keeps the
+ * full positive-long range verbatim (base 36): every transformation of an
+ * opaque id needs a reason, and shortening one only discards entropy.
  */
 class RandomLocalBuildIdGenerator(
     private val clock: BuildClock,
@@ -56,7 +65,8 @@ class RandomLocalBuildIdGenerator(
 ) : LocalBuildIdGenerator {
 
     override fun next(): String =
-        clock.nowMillis().toString(RADIX) + "-" + random.nextLong().toString(RADIX).dropLast(2)
+        clock.nowMillis().toString(RADIX) + "-" +
+            random.nextLong(from = 0, until = Long.MAX_VALUE).toString(RADIX)
 
     private companion object {
         const val RADIX = 36
@@ -86,6 +96,16 @@ class LocalBuildRepository(
     private val idGenerator: LocalBuildIdGenerator,
 ) {
 
+    private companion object {
+
+        /**
+         * Bounded id-regeneration policy: with a real random generator a
+         * second collision is astronomically unlikely; the bound exists so a
+         * broken/fixed generator fails typed instead of looping forever.
+         */
+        const val MAX_ID_ATTEMPTS = 8
+    }
+
     /** The whole library in canonical domain order; empty when nothing was stored. */
     fun load(): BuildLibraryOutcome<List<LocalBuildRecord>> = when (val outcome = readAll()) {
         is ReadOutcome.Records -> BuildLibraryOutcome.Loaded(outcome.records.inLibraryOrder())
@@ -96,18 +116,47 @@ class LocalBuildRepository(
      * Creates and persists a new Draft (`name == null`) around [build] and
      * returns it. The draft exists on storage before any editor opens — a
      * Draft is unnamed, never unsaved.
+     *
+     * Id-collision policy: the generated id must be unique within the existing
+     * library (the reader rejects duplicate ids, so the writer must never
+     * produce them). A colliding candidate is regenerated up to
+     * [MAX_ID_ATTEMPTS] times; if every attempt collides, the operation fails
+     * typed ([BuildLibraryError.IdCollision]) without writing — the stored
+     * payload stays byte-for-byte intact.
      */
-    fun createDraft(build: BuildFile): BuildLibraryOutcome<LocalBuildRecord> {
+    fun createDraft(build: BuildFile): BuildLibraryOutcome<LocalBuildRecord> =
+        when (val outcome = readAll()) {
+            is ReadOutcome.Failed -> BuildLibraryOutcome.Failed(outcome.error)
+            is ReadOutcome.Records -> {
+                val record = newUniqueRecord(build, outcome.records)
+                    ?: return BuildLibraryOutcome.Failed(
+                        BuildLibraryError.IdCollision(attempts = MAX_ID_ATTEMPTS),
+                    )
+                when (val written = writeAll(outcome.records + record)) {
+                    is BuildLibraryOutcome.Failed -> BuildLibraryOutcome.Failed(written.error)
+                    is BuildLibraryOutcome.Loaded -> BuildLibraryOutcome.Loaded(record)
+                }
+            }
+        }
+
+    /** A draft record whose generated id is absent from [existing], or `null` after the bounded retries. */
+    private fun newUniqueRecord(build: BuildFile, existing: List<LocalBuildRecord>): LocalBuildRecord? {
+        val taken = existing.mapTo(HashSet(existing.size)) { it.localId }
         val now = clock.nowMillis()
-        val record = LocalBuildRecord(
-            localId = idGenerator.next(),
-            name = null,
-            createdAt = now,
-            updatedAt = now,
-            lastOpenedAt = null,
-            build = build,
-        )
-        return persistNew(record, prependTo = { records -> records + record })
+        repeat(MAX_ID_ATTEMPTS) {
+            val candidate = idGenerator.next()
+            if (candidate !in taken) {
+                return LocalBuildRecord(
+                    localId = candidate,
+                    name = null,
+                    createdAt = now,
+                    updatedAt = now,
+                    lastOpenedAt = null,
+                    build = build,
+                )
+            }
+        }
+        return null
     }
 
     /**
@@ -170,17 +219,11 @@ class LocalBuildRepository(
         throw e
     } catch (e: BuildLibraryWriteException) {
         BuildLibraryOutcome.Failed(BuildLibraryError.StorageWrite(e.message ?: "write failure"))
-    }
-
-    private fun persistNew(
-        record: LocalBuildRecord,
-        prependTo: (List<LocalBuildRecord>) -> List<LocalBuildRecord>,
-    ): BuildLibraryOutcome<LocalBuildRecord> = when (val outcome = readAll()) {
-        is ReadOutcome.Failed -> BuildLibraryOutcome.Failed(outcome.error)
-        is ReadOutcome.Records -> when (val written = writeAll(prependTo(outcome.records))) {
-            is BuildLibraryOutcome.Failed -> BuildLibraryOutcome.Failed(written.error)
-            is BuildLibraryOutcome.Loaded -> BuildLibraryOutcome.Loaded(record)
-        }
+    } catch (e: LocalBuildLibraryFormatException.Malformed) {
+        // write-boundary safety net (see the codec): a record set the reader
+        // would reject — duplicate local ids — is a typed failure, never a
+        // persisted payload and never an escaping exception
+        BuildLibraryOutcome.Failed(BuildLibraryError.Malformed(e.message ?: "invalid records"))
     }
 
     private fun mutate(

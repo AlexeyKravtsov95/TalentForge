@@ -91,11 +91,21 @@ object LocalBuildLibraryCodec {
 
     /** Serializes [records] deterministically (canonical `localId` order). */
     fun encode(records: List<LocalBuildRecord>): String {
+        // Write-boundary safety net: the reader rejects duplicate localIds,
+        // so the writer must never produce them — [LocalBuildRepository]
+        // translates this typed exception into a failure and never writes.
+        val sorted = records.sortedBy { it.localId }
+        val seen = HashSet<String>(sorted.size)
+        for (record in sorted) {
+            if (!seen.add(record.localId)) {
+                throw LocalBuildLibraryFormatException.Malformed(
+                    "duplicate localId ${record.localId} — refusing to encode a library the reader would reject",
+                )
+            }
+        }
         val envelope = LocalBuildLibraryFile(
             storageVersion = STORAGE_VERSION,
-            builds = records
-                .sortedBy { it.localId }
-                .map { it.toWire() },
+            builds = sorted.map { it.toWire() },
         )
         return json.encodeToString(LocalBuildLibraryFile.serializer(), envelope)
     }

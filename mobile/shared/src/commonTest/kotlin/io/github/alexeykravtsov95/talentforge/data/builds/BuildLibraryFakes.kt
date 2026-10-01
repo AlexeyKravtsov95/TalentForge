@@ -45,3 +45,14 @@ class SequentialBuildIds : LocalBuildIdGenerator {
 
     override fun next(): String = "id-${++next}"
 }
+
+/**
+ * Scripted ids in order; once the script is exhausted it keeps returning the
+ * last value (a generator "stuck" on one id — the collision-policy test).
+ */
+class ScriptedBuildIds(vararg script: String) : LocalBuildIdGenerator {
+    private val remaining = ArrayDeque(script.toList())
+    private val stuckOn = script.last()
+
+    override fun next(): String = remaining.removeFirstOrNull() ?: stuckOn
+}
