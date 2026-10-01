@@ -350,7 +350,10 @@ Popping the editor first FLUSHES the coordinator: navigation completes only
 after the newest submitted state is confirmed persisted; if the newest save
 failed, navigation visibly stays put with the retryable error notice (the
 in-memory build never rolls back, no duplicate record is created to recover,
-and a later successful save clears the error). A configuration change that
+and a later successful save clears the error). One pop is ever in flight —
+repeated Back during a flush is a no-op, and the pop re-verifies the stack
+after the suspended flush so Home can never be removed (the decoded saved
+stack is likewise always non-empty and rooted at Home). A configuration change that
 rebuilds the pipeline cannot lose a newer restored session either: the
 editor re-submits a restored session that differs from the persisted build
 through the same single change path. Opening a build touches `lastOpenedAt`

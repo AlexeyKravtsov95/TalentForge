@@ -15,6 +15,8 @@ class FakeBuildLibraryStorage(
     var payload: String? = null,
     var failReads: Boolean = false,
     var failWrites: Boolean = false,
+    /** Artificial write latency, so tests can hold an autosave flush in flight. */
+    var writeDelayMillis: Long = 0,
 ) : BuildLibraryStorage {
 
     var writeCount: Int = 0
@@ -27,6 +29,7 @@ class FakeBuildLibraryStorage(
 
     override fun write(payload: String) {
         if (failWrites) throw BuildLibraryWriteException("injected write failure")
+        if (writeDelayMillis > 0) Thread.sleep(writeDelayMillis)
         this.payload = payload
         writeCount += 1
     }

@@ -117,12 +117,15 @@ class LocalBuildRepository(
      * returns it. The draft exists on storage before any editor opens — a
      * Draft is unnamed, never unsaved.
      *
-     * Id-collision policy: the generated id must be unique within the existing
-     * library (the reader rejects duplicate ids, so the writer must never
-     * produce them). A colliding candidate is regenerated up to
-     * [MAX_ID_ATTEMPTS] times; if every attempt collides, the operation fails
-     * typed ([BuildLibraryError.IdCollision]) without writing — the stored
-     * payload stays byte-for-byte intact.
+     * Id-collision policy: a generated candidate is usable only if it is
+     * **nonblank** and **unique** within the existing library (the reader
+     * rejects both blank and duplicate ids, so the writer must never produce
+     * either). An unusable candidate is regenerated up to [MAX_ID_ATTEMPTS]
+     * times — a blank candidate consumes an attempt exactly like a collision;
+     * ids are opaque but never blank, and an invalid id is never normalized.
+     * If every attempt fails, the operation fails typed
+     * ([BuildLibraryError.IdCollision]) without writing — the stored payload
+     * stays byte-for-byte intact.
      */
     fun createDraft(build: BuildFile): BuildLibraryOutcome<LocalBuildRecord> =
         when (val outcome = readAll()) {
@@ -139,13 +142,13 @@ class LocalBuildRepository(
             }
         }
 
-    /** A draft record whose generated id is absent from [existing], or `null` after the bounded retries. */
+    /** A draft record whose generated id is nonblank and absent from [existing], or `null` after the bounded retries. */
     private fun newUniqueRecord(build: BuildFile, existing: List<LocalBuildRecord>): LocalBuildRecord? {
         val taken = existing.mapTo(HashSet(existing.size)) { it.localId }
         val now = clock.nowMillis()
         repeat(MAX_ID_ATTEMPTS) {
             val candidate = idGenerator.next()
-            if (candidate !in taken) {
+            if (candidate.isNotBlank() && candidate !in taken) {
                 return LocalBuildRecord(
                     localId = candidate,
                     name = null,

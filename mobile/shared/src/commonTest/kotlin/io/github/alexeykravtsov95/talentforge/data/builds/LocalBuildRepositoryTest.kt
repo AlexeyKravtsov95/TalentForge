@@ -419,6 +419,67 @@ class LocalBuildRepositoryTest {
         assertTrue(error.message!!.contains("duplicate localId id-1"))
     }
 
+    // ------------------------------------------------------------------ blank-id policy
+
+    @Test
+    fun aBlankGeneratedIdConsumesAnAttemptAndTheNextCandidateWins() {
+        val storage = InMemoryBuildLibraryStorage()
+        val repo = LocalBuildRepository(storage, FixedBuildClock(), ScriptedBuildIds("", "fresh"))
+
+        val created = loaded(repo.createDraft(buildFile("MAGE")))
+
+        assertEquals("fresh", created.localId, "the blank candidate must be skipped, not normalized")
+        assertEquals(listOf(created), loadedRecords(repo.load()))
+    }
+
+    @Test
+    fun aWhitespaceOnlyGeneratorFailsTypedAfterTheBoundWithoutWriting() {
+        val existing = record("id-1", 1L, 1L)
+        val storage = InMemoryBuildLibraryStorage(LocalBuildLibraryCodec.encode(listOf(existing)))
+        val payloadBefore = storage.payload
+        val repo = LocalBuildRepository(storage, FixedBuildClock(), ScriptedBuildIds("   "))
+
+        val error = failure(repo.createDraft(buildFile()))
+
+        assertIs<BuildLibraryError.IdCollision>(error)
+        assertEquals(payloadBefore, storage.payload)
+        assertEquals(0, storage.writeCount)
+    }
+
+    @Test
+    fun theWriteBoundaryRefusesABlankLocalIdTheReaderWouldReject() {
+        val error = assertFailsWith<LocalBuildLibraryFormatException.Malformed> {
+            LocalBuildLibraryCodec.encode(listOf(record("  ", 1L, 1L)))
+        }
+
+        assertTrue(error.message!!.contains("blank localId"))
+    }
+
+    @Test
+    fun theWriteBoundaryRefusesAnUnsupportedEmbeddedBuildSchemaVersion() {
+        val invalid = record("id-1", 1L, 1L).let { it.copy(build = it.build.copy(schemaVersion = 9)) }
+
+        val error = assertFailsWith<LocalBuildLibraryFormatException.Malformed> {
+            LocalBuildLibraryCodec.encode(listOf(invalid))
+        }
+
+        assertTrue(error.message!!.contains("schemaVersion 9"))
+    }
+
+    @Test
+    fun theLibraryReloadsAfterEverySuccessfulCreateEvenWithBlankAndCollidingCandidates() {
+        val storage = InMemoryBuildLibraryStorage()
+        val repo = LocalBuildRepository(storage, FixedBuildClock(), ScriptedBuildIds("", "a", "a", "  ", "b"))
+
+        val first = loaded(repo.createDraft(buildFile("WARRIOR")))
+        assertEquals(listOf(first), loadedRecords(repo.load()))
+        val second = loaded(repo.createDraft(buildFile("MAGE")))
+        assertEquals(2, loadedRecords(repo.load()).size)
+
+        val ids = loadedRecords(repo.load()).map { it.localId }
+        assertEquals(listOf("a", "b").toSet(), ids.toSet())
+    }
+
     @Test
     fun randomIdsKeepTheirFullRandomPart() {
         val clock = FixedBuildClock(1_000L)

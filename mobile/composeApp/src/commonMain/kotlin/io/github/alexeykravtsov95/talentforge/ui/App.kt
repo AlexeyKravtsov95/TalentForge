@@ -57,9 +57,11 @@ enum class EditorOrigin { CreatedNew, FromHome, FromAllBuilds }
 
 /**
  * Save/restore of the back stack as plain strings (`home`, `new-build`,
- * `all-builds`, `editor␟localId␟origin`). A malformed entry fails closed to
- * the initial stack (Home only) — navigation state is not user data, and a
- * corrupt bundle must never restore a wrong screen.
+ * `all-builds`, `editor␟localId␟origin`). A decoded stack must be non-empty
+ * and rooted at Home — anything else (blank, malformed entries, a stack that
+ * does not start with Home) fails closed to the initial Home-only stack:
+ * navigation state is not user data, and a corrupt bundle must never restore
+ * a wrong or rootless screen.
  */
 internal val DestinationStackSaver = listSaver<List<AppDestination>, String>(
     save = { stack -> stack.map(::encodeDestination) },
@@ -77,7 +79,9 @@ internal fun encodeDestination(destination: AppDestination): String = when (dest
 }
 
 internal fun decodeDestinations(values: List<String>): List<AppDestination>? {
-    if (values.isEmpty()) return null
+    // the stack is always rooted at Home; a rootless/plain-value payload is
+    // corrupt and must not restore anything
+    if (values.isEmpty() || values.first() != encodeDestination(AppDestination.Home)) return null
     val decoded = values.map { value ->
         when (value) {
             "home" -> AppDestination.Home
@@ -109,11 +113,12 @@ internal fun decodeDestinations(values: List<String>): List<AppDestination>? {
  * for four local screens — routes Home, New Build, All Builds and the
  * dataset-bound editor. The stack is `rememberSaveable`, so a configuration
  * change (Activity recreation) restores the exact destination. Android's
- * system back and the visible back affordances share one pop, and popping an
- * editor first FLUSHES the app-level autosave coordinator: navigation
- * completes only after the newest current BuildState is confirmed persisted —
- * if the newest save failed, navigation visibly stays put with the retryable
- * error notice (the in-memory build never rolls back).
+ * system back and the visible back affordances share one pop, at most one pop
+ * is ever in flight (repeated Back during an autosave flush is a no-op), and
+ * popping an editor first FLUSHES the app-level autosave coordinator:
+ * navigation completes only after the newest current BuildState is confirmed
+ * persisted — if the newest save failed, navigation visibly stays put with
+ * the retryable error notice (the in-memory build never rolls back).
  */
 @Composable
 fun App(
@@ -137,15 +142,34 @@ fun App(
         mutableStateOf<List<AppDestination>>(listOf(AppDestination.Home))
     }
 
+    // One logical pop at a time: repeated Back (chevron or Android system
+    // back) while a pop's autosave flush is still suspended must not launch a
+    // second pop — two concurrent pops could remove Home and leave an empty
+    // stack. The flag is set synchronously in the click handler (before any
+    // suspension), and only the coroutine that set it clears it. Plain
+    // remember, deliberately not saveable: a composition that dies mid-flush
+    // never popped, and a fresh composition starts with no pop in flight.
+    val popInFlight = remember { mutableStateOf(false) }
+
     fun navigateUp() {
         if (destinations.size <= 1) return
+        if (popInFlight.value) return
+        popInFlight.value = true
         appScope.launch {
-            val result = autosave.flush()
-            if (result == null || !result.failed) {
-                destinations = destinations.dropLast(1)
+            try {
+                val result = autosave.flush()
+                if (result == null || !result.failed) {
+                    // re-verify after the suspended flush: Home can never be
+                    // removed even if the stack changed while we waited
+                    if (destinations.size > 1) {
+                        destinations = destinations.dropLast(1)
+                    }
+                }
+                // else: the newest build is not on storage — stay on the
+                // editor; its save-error notice stays visible and retryable
+            } finally {
+                popInFlight.value = false
             }
-            // else: the newest build is not on storage — stay on the editor;
-            // its save-error notice stays visible and retryable
         }
     }
 

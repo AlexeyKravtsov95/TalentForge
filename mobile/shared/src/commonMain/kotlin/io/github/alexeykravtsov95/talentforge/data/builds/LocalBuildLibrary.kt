@@ -89,17 +89,35 @@ object LocalBuildLibraryCodec {
         isLenient = false
     }
 
-    /** Serializes [records] deterministically (canonical `localId` order). */
+    /**
+     * Serializes [records] deterministically (canonical `localId` order).
+     *
+     * Write-boundary invariant: anything this emits is structurally
+     * acceptable to [decode] for the same storage version. The reader rejects
+     * blank local ids, duplicate local ids and an embedded `BuildFile` whose
+     * `schemaVersion` is not the supported v1 — so the writer refuses all
+     * three the same way (a typed [LocalBuildLibraryFormatException.Malformed]
+     * that [LocalBuildRepository] translates into a typed failure without
+     * writing). Invalid ids are never silently normalized.
+     */
     fun encode(records: List<LocalBuildRecord>): String {
-        // Write-boundary safety net: the reader rejects duplicate localIds,
-        // so the writer must never produce them — [LocalBuildRepository]
-        // translates this typed exception into a failure and never writes.
         val sorted = records.sortedBy { it.localId }
         val seen = HashSet<String>(sorted.size)
         for (record in sorted) {
+            if (record.localId.isBlank()) {
+                throw LocalBuildLibraryFormatException.Malformed(
+                    "blank localId — refusing to encode a library the reader would reject",
+                )
+            }
             if (!seen.add(record.localId)) {
                 throw LocalBuildLibraryFormatException.Malformed(
                     "duplicate localId ${record.localId} — refusing to encode a library the reader would reject",
+                )
+            }
+            if (record.build.schemaVersion != BuildFileVersion.V1) {
+                throw LocalBuildLibraryFormatException.Malformed(
+                    "record ${record.localId} embeds build schemaVersion ${record.build.schemaVersion} " +
+                        "(supported: ${BuildFileVersion.V1}) — refusing to encode a library the reader would reject",
                 )
             }
         }
