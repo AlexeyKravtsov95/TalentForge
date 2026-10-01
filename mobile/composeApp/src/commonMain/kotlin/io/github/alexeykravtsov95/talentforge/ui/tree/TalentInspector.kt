@@ -70,6 +70,7 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
 /** Portrait: the compact bottom inspector; `content == null` hides it entirely. */
 @Composable
 fun TalentInspectorCompactBar(
+    accent: androidx.compose.ui.graphics.Color,
     content: TalentInspectorContent?,
     actions: TalentNodeActions? = null,
     onSpendRank: (Int) -> Unit = {},
@@ -141,6 +142,7 @@ fun TalentInspectorCompactBar(
                         TalentInspectorCompactActions(
                             talentName = content.name,
                             actions = actions,
+                            accent = accent,
                             onSpend = onSpendRank,
                             onRefund = onRefundRank,
                         )
@@ -175,6 +177,7 @@ fun TalentInspectorCompactBar(
  */
 @Composable
 fun TalentInspectorExpandedSheet(
+    accent: androidx.compose.ui.graphics.Color,
     content: TalentInspectorContent,
     actions: TalentNodeActions? = null,
     height: Dp,
@@ -234,6 +237,7 @@ fun TalentInspectorExpandedSheet(
             TalentInspectorRankActions(
                 talentName = content.name,
                 actions = actions,
+                accent = accent,
                 onSpend = onSpendRank,
                 onRefund = onRefundRank,
                 onMax = onMaxRank,
@@ -257,6 +261,7 @@ fun TalentInspectorExpandedSheet(
 /** Landscape: the 300 dp side panel with the full detail (B3 05). */
 @Composable
 fun TalentInspectorSidePanel(
+    accent: androidx.compose.ui.graphics.Color,
     content: TalentInspectorContent,
     actions: TalentNodeActions? = null,
     onDeselect: () -> Unit,
@@ -298,6 +303,7 @@ fun TalentInspectorSidePanel(
             TalentInspectorRankActions(
                 talentName = content.name,
                 actions = actions,
+                accent = accent,
                 onSpend = onSpendRank,
                 onRefund = onRefundRank,
                 onMax = onMaxRank,
@@ -314,6 +320,7 @@ fun TalentInspectorSidePanel(
  */
 @Composable
 fun TalentInspectorPersistentPanel(
+    accent: androidx.compose.ui.graphics.Color,
     content: TalentInspectorContent?,
     actions: TalentNodeActions? = null,
     onShowPrerequisite: (Int) -> Unit,
@@ -360,6 +367,7 @@ fun TalentInspectorPersistentPanel(
                 TalentInspectorRankActions(
                     talentName = content.name,
                     actions = actions,
+                    accent = accent,
                     onSpend = onSpendRank,
                     onRefund = onRefundRank,
                     onMax = onMaxRank,

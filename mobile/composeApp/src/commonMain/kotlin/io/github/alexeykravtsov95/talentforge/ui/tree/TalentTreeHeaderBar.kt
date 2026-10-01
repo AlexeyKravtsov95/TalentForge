@@ -3,12 +3,14 @@ package io.github.alexeykravtsov95.talentforge.ui.tree
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -35,10 +37,13 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 /**
- * The M4.3 header bar: `title · undo · redo · x / 51 · ⋯` (UX/UI spec 03 §5:
- * "Header: back · name / meta · undo · redo · x / 51 · ⋯" — there is no back
- * control before navigation exists, and no spec row: the published Warrior
- * sections are all nameless, so no Arms/Fury/Protection labels are invented).
+ * The M4.3/M5.1 header bar: `back · name / meta · undo · redo · x / 51 · ⋯`
+ * (UX/UI spec 03 §5). Since M5.1 the title is the two-line ADAPT 1 form —
+ * line 1 the build name (or "Draft"), line 2 `class · game` — and the back
+ * control appears when the screen is not the root (M4 kept the single-line
+ * class title because no navigation existed). There is still no spec row: the
+ * published sections are nameless, so no Arms/Fury/Protection labels are
+ * invented.
  *
  * Undo/redo are enabled iff the corresponding history is non-empty, stay
  * visible while disabled, and affect ONLY the BuildState — never selection,
@@ -57,12 +62,14 @@ object TalentTreeHeaderMetrics {
 @Composable
 fun TalentTreeHeaderBar(
     title: String,
+    meta: String?,
     pointsText: String?,
     canUndo: Boolean,
     canRedo: Boolean,
     onUndo: () -> Unit,
     onRedo: () -> Unit,
     onOpenBuildActions: () -> Unit,
+    onBack: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -72,12 +79,26 @@ fun TalentTreeHeaderBar(
             .padding(horizontal = TalentForgeSpacing.screenX),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        BasicText(
-            text = title,
-            style = HeaderTitleStyle.copy(color = talentForgeColors().textPrimary),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
+        if (onBack != null) {
+            BackChevronButton(onClick = onBack)
+            Spacer(Modifier.width(TalentForgeSpacing.hairline))
+        }
+        Column(Modifier.weight(1f)) {
+            BasicText(
+                text = title,
+                style = HeaderTitleStyle.copy(color = talentForgeColors().textPrimary),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            if (meta != null) {
+                BasicText(
+                    text = meta,
+                    style = HeaderMetaStyle.copy(color = talentForgeColors().textSecondary),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
         Spacer(Modifier.weight(1f))
         // Undo = ↺ (counterclockwise), redo = ↻: the arc is symmetric, so the
         // flag only flips the arrowhead's direction.
@@ -102,6 +123,47 @@ fun TalentTreeHeaderBar(
         }
         OverflowButton(onClick = onOpenBuildActions)
     }
+}
+
+/**
+ * The visible back affordance of any non-root screen (UX/UI spec 02 §1:
+ * "native system back everywhere" — on iOS/desktop hosts this chevron IS the
+ * frozen back behaviour; on Android it agrees with the system button). 44 × 44
+ * dp target, drawn glyph so it renders identically on every platform.
+ */
+@Composable
+fun BackChevronButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val color = talentForgeColors().textPrimary
+    Box(
+        modifier = modifier
+            .size(TalentTreeHeaderMetrics.CONTROL_SIZE_DP)
+            .clickable(
+                role = Role.Button,
+                onClickLabel = "go back",
+                onClick = onClick,
+            )
+            .semantics { contentDescription = "go back" },
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            Modifier
+                .size(width = 14.dp, height = 22.dp)
+                .drawBehind { drawBackChevron(color) },
+        )
+    }
+}
+
+/** A ‹ chevron: two strokes meeting in a left point, vertically centred. */
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawBackChevron(
+    color: androidx.compose.ui.graphics.Color,
+) {
+    val stroke = 2.4.dp.toPx()
+    val cap = androidx.compose.ui.graphics.StrokeCap.Round
+    val top = Offset(size.width * 0.72f, size.height * 0.18f)
+    val bottom = Offset(size.width * 0.72f, size.height * 0.82f)
+    val point = Offset(size.width * 0.28f, size.height * 0.5f)
+    drawLine(color = color, start = point, end = top, strokeWidth = stroke, cap = cap)
+    drawLine(color = color, start = point, end = bottom, strokeWidth = stroke, cap = cap)
 }
 
 // ------------------------------------------------------------------ controls
@@ -219,6 +281,12 @@ private val HeaderTitleStyle = TextStyle(
     fontSize = 15.5.sp,
     lineHeight = 20.sp,
     fontWeight = FontWeight.SemiBold,
+)
+
+/** ADAPT 1 line 2 (`Warrior · Forever`): the spec's Meta role, 12.5 / 16. */
+private val HeaderMetaStyle = TextStyle(
+    fontSize = 12.5.sp,
+    lineHeight = 16.sp,
 )
 
 /** UX/UI spec G: "Numeric 18 / 51 — Mono 17 · 600 · tabular". */

@@ -85,6 +85,7 @@ class TalentTreeCanvasClippingTest {
                                     presentation = presentation,
                                     viewportState = viewportState,
                                     layoutClass = TalentTreeLayoutClass.PORTRAIT,
+                                    accent = io.github.alexeykravtsov95.talentforge.ui.theme.WarriorClassAccent.color,
                                     selectedNodeId = null,
                                     showGuide = null,
                                     guideToken = 0,

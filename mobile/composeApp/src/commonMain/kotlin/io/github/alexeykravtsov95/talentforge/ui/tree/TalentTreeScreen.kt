@@ -19,7 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.mapSaver
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -44,23 +43,26 @@ import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTypography
+import io.github.alexeykravtsov95.talentforge.ui.theme.classAccentFor
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
 
 /**
- * The M4.3 production screen: the Talent Tree as an interactive **local build
- * editor**.
+ * The M4.3/M5.1 production screen: the Talent Tree as an interactive **local
+ * build editor**.
  *
- * The screen loads exactly the bundled baseline Forever Warrior document
- * through `BundledTalentDatasetRepository` (no JSON in composables), shows
- * explicit Loading / Ready / Failed states, and owns the in-memory editing
- * session ([TalentBuildEditingState]): which immutable [BuildState] is
- * current, plus undo/redo history. Every mutation — +, −, Max, Reset — goes
- * through the real M3B `TalentAllocationEngine` (`spend`/`refund`/
- * `emptyState`); nothing else ever touches ranks. Node taps still only
- * select; Show still navigates exactly one prerequisite hop and never spends.
+ * The screen renders explicit Loading / Ready / Failed states and owns the
+ * in-memory editing session ([TalentBuildEditingState]): which immutable
+ * [BuildState] is current, plus undo/redo history. Every mutation — +, −, Max,
+ * Reset — goes through the real M3B `TalentAllocationEngine`
+ * (`spend`/`refund`/`emptyState`); nothing else ever touches ranks. Node taps
+ * still only select; Show still navigates exactly one prerequisite hop and
+ * never spends.
+ *
+ * Since M5.1 the screen is dataset-generic: callers hand it a Ready state for
+ * ANY bundled class (editor host [TalentTreeBuildScreen]) plus the build's
+ * title line and its class accent; the former hardcoded Warrior entry remains
+ * only as the baseline test loader ([loadBaselineWarriorTreeState]).
  *
  * After every successful mutation the whole M4.2 presentation (node states,
  * rank chips, counters, connectors, tier meters) is recomputed from
@@ -76,11 +78,20 @@ sealed interface TalentTreeUiState {
         val engine: TalentAllocationEngine,
         /**
          * The **initial** build the editing session starts from. Production
-         * always passes the engine's empty state; tests may inject a prepared
-         * build. The live build is the editing session's `current`, never
-         * this field.
+         * passes the build opened from the local library (a draft starts from
+         * the engine's empty state); tests may inject a prepared build. The
+         * live build is the editing session's `current`, never this field.
          */
         val buildState: BuildState,
+        /** Header line 1: the build's name, or "Draft" while unnamed. */
+        val buildTitle: String,
+        /**
+         * The class accent of THIS build's class — an explicit presentation
+         * input since M5.1 (Warrior: the spec-frozen accent; other classes:
+         * the documented neutral fallback). Never read from the theme
+         * directly: the Warrior token is semantically Warrior-only.
+         */
+        val classAccent: androidx.compose.ui.graphics.Color,
     ) : TalentTreeUiState
 
     data class Failed(val failure: TalentTreeUiFailure) : TalentTreeUiState
@@ -141,12 +152,22 @@ private const val BLOCKED_REASON_MS: Long = 2600
  * `rememberSaveable`-survived: current build + both histories persist across
  * recomposition and configuration change; only allocation triples are
  * serialized, never the engine). The [BuildState]s themselves stay immutable.
+ *
+ * M5.1 wiring: [onBack] renders the header's back affordance (the screen is
+ * no longer the app root), and [onBuildStateChanged] is the ONE observer of
+ * the current build actually changing — every successful mutation (spend,
+ * refund, Max, undo, redo, reset) reports through it, and the autosave owner
+ * above converts the reported state into the persisted BuildFile. Selection,
+ * pan, zoom, Show and denied actions never report. Both are optional so the
+ * lower-level M4 usage (tests, previews) still works standalone.
  */
 @Composable
 fun TalentTreeScreen(
     state: TalentTreeUiState,
     modifier: Modifier = Modifier,
     viewportState: TalentTreeViewportState = rememberTalentTreeViewportState(),
+    onBack: (() -> Unit)? = null,
+    onBuildStateChanged: ((BuildState) -> Unit)? = null,
 ) {
     val colors = talentForgeColors()
     var selectedNodeId by rememberSaveable { mutableStateOf<Int?>(null) }
@@ -171,7 +192,7 @@ fun TalentTreeScreen(
     ) {
         when (val current = state) {
             TalentTreeUiState.Loading -> Column(Modifier.fillMaxSize()) {
-                TreeHeader(title = "TalentForge")
+                TreeHeader(title = "TalentForge", onBack = onBack)
                 StatusPane(primary = "Loading talent data…", primaryColor = colors.textSecondary)
             }
 
@@ -186,10 +207,12 @@ fun TalentTreeScreen(
                 guideToken = guideToken,
                 onGuideTokenAdvance = { guideToken += 1 },
                 viewportState = viewportState,
+                onBack = onBack,
+                onBuildStateChanged = onBuildStateChanged,
             )
 
             is TalentTreeUiState.Failed -> Column(Modifier.fillMaxSize()) {
-                TreeHeader(title = "TalentForge")
+                TreeHeader(title = "TalentForge", onBack = onBack)
                 StatusPane(
                     primary = "Talent data failed to load",
                     primaryColor = colors.danger,
@@ -217,6 +240,8 @@ private fun ReadyTalentTreeScreen(
     guideToken: Int,
     onGuideTokenAdvance: () -> Unit,
     viewportState: TalentTreeViewportState,
+    onBack: (() -> Unit)?,
+    onBuildStateChanged: ((BuildState) -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     // The editing session: which immutable BuildState is current + history.
@@ -224,6 +249,18 @@ private fun ReadyTalentTreeScreen(
     // engine); restored across recomposition and configuration change.
     var editing by rememberSaveable(current.engine, stateSaver = TalentBuildEditingState.Saver) {
         mutableStateOf(TalentBuildEditingState(current.buildState))
+    }
+
+    // Restoration safety net for the autosave contract: a configuration
+    // change rebuilds the whole composition — including the save pipeline. If
+    // the restored session is newer than the persisted build this editor was
+    // opened from (a mutation whose save was still in flight), re-submit it
+    // through the ONE change path so it still reaches storage. A fresh open
+    // starts exactly at the persisted build, so this is a no-op there.
+    LaunchedEffect(current.engine) {
+        if (editing.current != current.buildState) {
+            onBuildStateChanged?.invoke(editing.current)
+        }
     }
 
     // Feedback state (transient by design — animations and notices, not build
@@ -280,6 +317,22 @@ private fun ReadyTalentTreeScreen(
     }
 
     /**
+     * The ONE commit path of the editing session (M5.1 autosave contract):
+     * every successful mutation — spend, refund, Max, undo, redo, reset —
+     * lands here and here only, and [onBuildStateChanged] fires exactly when
+     * the current [BuildState] actually changed. Denied actions, selection,
+     * pan/zoom, Show and inspector expansion never call it. There is no
+     * second mutation route anywhere in the screen.
+     */
+    fun commitEditing(next: TalentBuildEditingState) {
+        val before = editing.current
+        editing = next
+        if (next.current != before) {
+            onBuildStateChanged?.invoke(next.current)
+        }
+    }
+
+    /**
      * Applies one editing result. The engine result is authoritative even
      * though the buttons were enabled/disabled from the same decisions: a
      * denied action changes nothing (state, history, counters) and only shows
@@ -291,7 +344,7 @@ private fun ReadyTalentTreeScreen(
      */
     fun applyEdit(result: TalentBuildEditResult, purchasedNodeId: Int? = null) {
         if (result.changed) {
-            editing = result.editing
+            commitEditing(result.editing)
             onShowGuideChange(null)
             blockedNotice = null
             // The reset notice promises "Undo restores what Reset cleared" —
@@ -318,14 +371,14 @@ private fun ReadyTalentTreeScreen(
     /** Undo/redo touch ONLY the BuildState — never selection, pan, zoom or inspector layout. */
     fun performUndo() {
         val undone = editing.undo() ?: return
-        editing = undone
+        commitEditing(undone)
         blockedNotice = null
         resetNotice = null
     }
 
     fun performRedo() {
         val redone = editing.redo() ?: return
-        editing = redone
+        commitEditing(redone)
         blockedNotice = null
         resetNotice = null
     }
@@ -343,13 +396,15 @@ private fun ReadyTalentTreeScreen(
     Box(modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
             TalentTreeHeaderBar(
-                title = "${current.classDisplayName} · ${current.gameDisplayName}",
+                title = current.buildTitle,
+                meta = "${current.classDisplayName} · ${current.gameDisplayName}",
                 pointsText = "${presentation.spentPoints} / ${presentation.pointBudget}",
                 canUndo = editing.canUndo,
                 canRedo = editing.canRedo,
                 onUndo = ::performUndo,
                 onRedo = ::performRedo,
                 onOpenBuildActions = { buildActionsOpen = true },
+                onBack = onBack,
             )
 
             BoxWithConstraints(Modifier.fillMaxSize()) {
@@ -444,6 +499,7 @@ private fun ReadyTalentTreeScreen(
                                 presentation = presentation,
                                 viewportState = viewportState,
                                 layoutClass = layoutClass,
+                                accent = current.classAccent,
                                 selectedNodeId = selectedNodeId,
                                 showGuide = showGuide,
                                 guideToken = guideToken,
@@ -454,6 +510,7 @@ private fun ReadyTalentTreeScreen(
                                 modifier = Modifier.weight(1f),
                             )
                             TalentInspectorPersistentPanel(
+                                accent = current.classAccent,
                                 content = inspectorContent,
                                 actions = selectedActions,
                                 onShowPrerequisite = onShowPrerequisite,
@@ -469,6 +526,7 @@ private fun ReadyTalentTreeScreen(
                                 presentation = presentation,
                                 viewportState = viewportState,
                                 layoutClass = layoutClass,
+                                accent = current.classAccent,
                                 selectedNodeId = selectedNodeId,
                                 showGuide = showGuide,
                                 guideToken = guideToken,
@@ -480,6 +538,7 @@ private fun ReadyTalentTreeScreen(
                             )
                             if (inspectorContent != null) {
                                 TalentInspectorSidePanel(
+                                    accent = current.classAccent,
                                     content = inspectorContent,
                                     actions = selectedActions,
                                     onDeselect = onSelectionCleared,
@@ -497,6 +556,7 @@ private fun ReadyTalentTreeScreen(
                                 presentation = presentation,
                                 viewportState = viewportState,
                                 layoutClass = layoutClass,
+                                accent = current.classAccent,
                                 selectedNodeId = selectedNodeId,
                                 showGuide = showGuide,
                                 guideToken = guideToken,
@@ -509,6 +569,7 @@ private fun ReadyTalentTreeScreen(
                             Column(Modifier.align(Alignment.BottomCenter)) {
                                 if (inspectorExpanded && inspectorContent != null) {
                                     TalentInspectorExpandedSheet(
+                                        accent = current.classAccent,
                                         content = inspectorContent,
                                         actions = selectedActions,
                                         height = expandedSheetHeight,
@@ -521,6 +582,7 @@ private fun ReadyTalentTreeScreen(
                                     )
                                 } else {
                                     TalentInspectorCompactBar(
+                                        accent = current.classAccent,
                                         content = inspectorContent,
                                         actions = selectedActions,
                                         onSpendRank = onSpendRank,
@@ -598,7 +660,7 @@ private fun ReadyTalentTreeScreen(
                 val cleared = current.engine.spentPoints(editing.current)
                 val result = editing.reset(current.engine)
                 if (result.changed) {
-                    editing = result.editing
+                    commitEditing(result.editing)
                     onShowGuideChange(null)
                     blockedNotice = null
                     resetNoticeToken += 1
@@ -636,23 +698,12 @@ private val TalentShowGuideSaver = mapSaver<TalentShowGuide?>(
 )
 
 /**
- * Self-loading entry used by the app hosts: loads the bundled baseline
- * Forever Warrior document and maps it to the UI model + engine session off
- * the main thread.
+ * Baseline loader of the M4-era Warrior entry — production no longer launches
+ * through it (the M5.1 app root navigates Home → New Build → the generic
+ * editor); it stays as the shared fixture of the tree UI tests: loads the
+ * bundled baseline Forever Warrior document and maps it to a Ready session
+ * (empty build) off the calling dispatcher.
  */
-@Composable
-fun WarriorTalentTreeScreen(modifier: Modifier = Modifier) {
-    val state by produceState<TalentTreeUiState>(initialValue = TalentTreeUiState.Loading) {
-        value = withContext(Dispatchers.Default) { loadBaselineWarriorTreeState() }
-    }
-    TalentTreeScreen(state = state, modifier = modifier)
-}
-
-/** Identity of the single dataset M4.2/M4.3 launches into. */
-private val BASELINE_GAME = GameId("forever")
-private const val BASELINE_CLIENT_BUILD = "1.60.1.70009"
-private val BASELINE_CLASS = ClassToken("WARRIOR")
-
 internal suspend fun loadBaselineWarriorTreeState(): TalentTreeUiState {
     val repository = BundledTalentDatasetRepository(ComposeResourceDatasetAssetSource())
     return when (val outcome = repository.document(DatasetId(BASELINE_GAME, BASELINE_CLIENT_BUILD, BASELINE_CLASS))) {
@@ -663,7 +714,12 @@ internal suspend fun loadBaselineWarriorTreeState(): TalentTreeUiState {
     }
 }
 
-/** Builds the Ready session (UI model + engine over the session's initial build) from a loaded document. */
+/** Identity of the single dataset M4.2/M4.3 launched into. */
+private val BASELINE_GAME = GameId("forever")
+private const val BASELINE_CLIENT_BUILD = "1.60.1.70009"
+private val BASELINE_CLASS = ClassToken("WARRIOR")
+
+/** Builds the baseline Ready session (UI model + engine over an empty build) from a loaded document. */
 internal fun loadWarriorTreeState(document: TalentDataDocument): TalentTreeUiState {
     val engine = try {
         TalentAllocationEngine(document)
@@ -681,6 +737,8 @@ internal fun loadWarriorTreeState(document: TalentDataDocument): TalentTreeUiSta
                 model = built.model,
                 engine = engine,
                 buildState = engine.emptyState(),
+                buildTitle = document.classInfo.name,
+                classAccent = classAccentFor(document.classInfo.token).color,
             )
     }
 }
@@ -694,6 +752,7 @@ internal fun loadWarriorTreeState(document: TalentDataDocument): TalentTreeUiSta
 private fun TreeHeader(
     title: String,
     pointsText: String? = null,
+    onBack: (() -> Unit)? = null,
 ) {
     val colors = talentForgeColors()
     Row(
@@ -703,6 +762,9 @@ private fun TreeHeader(
             .padding(horizontal = TalentForgeSpacing.screenX),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        if (onBack != null) {
+            BackChevronButton(onClick = onBack)
+        }
         BasicText(
             text = title,
             style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary),
