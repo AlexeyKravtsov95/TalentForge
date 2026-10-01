@@ -230,7 +230,7 @@ suspend fun loadNewBuildChoices(datasets: TalentDatasetRepository): NewBuildChoi
     }
     val resolver = DatasetClassResolver(datasets)
     val classes = manifest.classes.map { entry ->
-        val document = resolver.documentOf(entry.token)
+        val document = resolver.baselineDocumentOf(entry.token)
         NewBuildClassChoice(
             token = entry.token,
             displayName = (document as? DatasetOutcome.Loaded)?.value?.classInfo?.name,
@@ -280,43 +280,73 @@ suspend fun createClassDraft(
 }
 
 /**
- * Per-load cache of class documents/engines: Home/Builds resolve the same
- * class repeatedly across cards. Deliberately short-lived (one loader run) —
- * not a global cache.
+ * Per-load cache of class documents/engines, keyed by the **exact dataset
+ * identity** (`DatasetId`, never the class token alone): Home/All Builds
+ * cards must resolve each record's OWN game/clientBuild/classToken —
+ * substituting the currently bundled baseline for a record saved against
+ * another dataset would be a silent current-dataset substitution.
+ * Deliberately short-lived (one loader run) — not a global cache.
  */
 private class DatasetClassResolver(private val datasets: TalentDatasetRepository) {
 
-    private val documents = mutableMapOf<ClassToken, DatasetOutcome<TalentDataDocument>>()
-    private val engines = mutableMapOf<ClassToken, TalentAllocationEngine?>()
+    private val documents = mutableMapOf<DatasetId, DatasetOutcome<TalentDataDocument>>()
+    private val engines = mutableMapOf<Pair<DatasetId, Int>, TalentAllocationEngine?>()
 
-    suspend fun documentOf(token: ClassToken): DatasetOutcome<TalentDataDocument> =
-        documents.getOrPut(token) {
-            datasets.document(DatasetId(BASELINE_BUNDLE.game, BASELINE_BUNDLE.clientBuild, token))
-        }
+    /** Loads (and caches) the document of an exact dataset identity. */
+    suspend fun documentOf(id: DatasetId): DatasetOutcome<TalentDataDocument> =
+        documents.getOrPut(id) { datasets.document(id) }
 
-    private suspend fun engineOf(token: ClassToken): TalentAllocationEngine? =
-        engines.getOrPut(token) {
-            when (val document = documentOf(token)) {
+    /** The New Build screen intentionally creates from the bundled baseline bundle. */
+    suspend fun baselineDocumentOf(token: ClassToken): DatasetOutcome<TalentDataDocument> =
+        documentOf(DatasetId(BASELINE_BUNDLE.game, BASELINE_BUNDLE.clientBuild, token))
+
+    private suspend fun engineOf(id: DatasetId, treeId: Int): TalentAllocationEngine? =
+        engines.getOrPut(id to treeId) {
+            when (val document = documentOf(id)) {
                 is DatasetOutcome.Failed -> null
                 is DatasetOutcome.Loaded -> try {
-                    TalentAllocationEngine(document.value)
+                    TalentAllocationEngine(document.value, treeId = treeId)
                 } catch (_: AllocationEngineException) {
                     null
                 }
             }
         }
 
+    /**
+     * One card's honest metadata. Engine-derived point values appear ONLY
+     * when every gate passes for the record's EXACT identity: the dataset
+     * loads, the saved `treeId` exists in it, and the saved allocations
+     * validate with the real engine. No migration, no baseline fallback, no
+     * clamping — a failed gate simply leaves the derived fields absent; only
+     * facts already in the persisted record (plus the class display name when
+     * the exact document loaded) are shown.
+     */
     suspend fun cardOf(record: LocalBuildRecord): BuildCardModel {
-        val document = documentOf(record.build.classToken)
-        return when (document) {
-            is DatasetOutcome.Failed -> BuildCardModel(record, classDisplayName = null, spentPoints = null, pointBudget = null)
+        val id = DatasetId(
+            game = record.build.game,
+            clientBuild = record.build.clientBuild,
+            classToken = record.build.classToken,
+        )
+        return when (val document = documentOf(id)) {
+            is DatasetOutcome.Failed ->
+                BuildCardModel(record, classDisplayName = null, spentPoints = null, pointBudget = null)
+
             is DatasetOutcome.Loaded -> {
-                val engine = engineOf(record.build.classToken)
+                val displayName = document.value.classInfo.name
+                val tree = document.value.trees.firstOrNull { it.id == record.build.treeId }
+                val engine = tree?.let { engineOf(id, it.id) }
+                if (engine == null) {
+                    return BuildCardModel(record, displayName, spentPoints = null, pointBudget = null)
+                }
+                val state = record.build.toBuildState()
+                if (!engine.validate(state).valid) {
+                    return BuildCardModel(record, displayName, spentPoints = null, pointBudget = null)
+                }
                 BuildCardModel(
                     record = record,
-                    classDisplayName = document.value.classInfo.name,
-                    spentPoints = engine?.spentPoints(record.build.toBuildState()),
-                    pointBudget = engine?.pointBudget,
+                    classDisplayName = displayName,
+                    spentPoints = engine.spentPoints(state),
+                    pointBudget = engine.pointBudget,
                 )
             }
         }
