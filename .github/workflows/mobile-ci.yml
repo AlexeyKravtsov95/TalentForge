@@ -7,9 +7,11 @@ on:
     paths:
       - "mobile/**"
       - "data/normalized/**"
+      - "data/visuals/**"
       - "data/conformance/**"
       - "docs/schema/**"
       - "scripts/sync_mobile_datasets.py"
+      - "scripts/sync_mobile_visuals.py"
       - ".github/workflows/mobile-ci.yml"
 
 concurrency:
@@ -40,6 +42,9 @@ jobs:
 
       - name: Dataset drift check (bundled == canonical)
         run: python3 scripts/sync_mobile_datasets.py --check
+
+      - name: Visuals drift check (bundled icons == canonical, offline)
+        run: python3 scripts/sync_mobile_visuals.py --check
 
       - name: Shared JVM contract tests (18 documents, 2 manifests, conformance, repository)
         working-directory: mobile
