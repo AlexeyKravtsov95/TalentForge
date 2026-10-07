@@ -10,6 +10,7 @@ manifest       <manifest.json>
 schema         [--out docs/schema]
 allocation     validate|replay   (M2 allocation engine developer tools)
 visuals        fetch|report|normalize|check   (M5.V1 talent icons, build-pinned)
+tooltips       manifest   (M5.V2A client tooltip capture manifest, build-pinned)
 
 ``--class all`` (M1) normalizes / diffs every class of the build, deterministically ordered
 by class id, and writes a dataset manifest (normalize). A batch that fails for any class
@@ -31,6 +32,7 @@ from talent_data import paths
 from talent_data.allocation.conformance import ConformanceSuite
 from talent_data.allocation.models import BuildFile
 from talent_data.cli import allocation as allocation_cli
+from talent_data.cli import tooltips as tooltips_cli
 from talent_data.cli import visuals as visuals_cli
 from talent_data.db2.tables import TRAIT_TABLES
 from talent_data.diff.models import DatasetDiffReport, DiffReport
@@ -171,6 +173,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     allocation_cli.register(sub)
     visuals_cli.register(sub)
+    tooltips_cli.register(sub)
     return parser
 
 

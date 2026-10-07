@@ -60,3 +60,28 @@ def icon_coverage_path(game: str, version: ClientVersion) -> Path:
 def casc_cache_dir(source: str, game: str) -> Path:
     """Raw CASC file downloads (git-ignored): .cache/<source>/<game>/<build>/casc/<id>.bin"""
     return raw_cache_dir(source, game)
+
+
+def tooltip_capture_addon_dir() -> Path:
+    """The WoW addon that captures client-rendered tooltips (a development utility)."""
+    return project_root() / "tools" / "wow-tooltip-capture" / "TalentForgeTooltipCapture"
+
+
+def tooltip_capture_manifest_path() -> Path:
+    """Generated Lua capture manifest - the addon's only talent input."""
+    return tooltip_capture_addon_dir() / "GeneratedTalentManifest.lua"
+
+
+def tooltip_capture_dir(game: str, version: ClientVersion, locale: str) -> Path:
+    """Raw client tooltip evidence: artifacts/tooltips/<game>/<build>/<locale>/"""
+    return project_root() / "artifacts" / "tooltips" / game / str(version) / locale
+
+
+def tooltip_capture_path(game: str, version: ClientVersion, locale: str) -> Path:
+    """Imported raw client tooltip capture (audit artifact, not a mobile contract)."""
+    return tooltip_capture_dir(game, version, locale) / "client-capture.json"
+
+
+def tooltip_capture_report_path(game: str, version: ClientVersion, locale: str) -> Path:
+    """Structural analysis of the imported capture (input to M5.V2B)."""
+    return tooltip_capture_dir(game, version, locale) / "client-capture-report.md"
