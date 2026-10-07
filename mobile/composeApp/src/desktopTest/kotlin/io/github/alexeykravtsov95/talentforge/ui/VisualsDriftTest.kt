@@ -46,7 +46,7 @@ class VisualsDriftTest {
     private fun relativeFiles(directory: File): Set<String> =
         directory.walkTopDown()
             // dotfiles (Finder's .DS_Store) are OS noise, as in the Python check
-            .filter { it.isFile && !it.name.startswith(".") }
+            .filter { it.isFile && !it.name.startsWith(".") }
             .map { it.relativeTo(directory).invariantSeparatorsPath }
             .toSortedSet()
 
