@@ -1,0 +1,9 @@
+## Interface: 16001
+## Title: TalentForge Tooltip Capture
+## Notes: Read-only development utility. Captures client-rendered talent tooltips for the TalentForge data pipeline.
+## Author: TalentForge
+## Version: 1
+## SavedVariables: TalentForgeTooltipCaptureDB
+
+GeneratedTalentManifest.lua
+TalentForgeTooltipCapture.lua
