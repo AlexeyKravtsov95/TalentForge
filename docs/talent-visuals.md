@@ -245,6 +245,8 @@ assets. Checking committed assets parses the PNG header with the standard librar
 | client files (BLP2) | 2 087 808 bytes |
 | bundled images (PNG) | 1 996 859 bytes |
 | nine sidecars + `icons.json` | 216 640 bytes |
+| debug APK on `main` (`202467f`) | 9 469 072 bytes |
+| debug APK with icons (`add3738`) | 11 950 284 bytes (+2 481 212) |
 
 Individual deduplicated files; no atlas. At ~2 MB for 358 files an atlas would add a
 build step and a coordinate contract without a measured need.
@@ -302,8 +304,7 @@ A consumer of the sidecars must, as part of loading them:
 
 The Kotlin consumer (`BundledTalentVisualsRepository`, `TalentIconsLoader`, the icon
 rendering rules of the tree and the inspector) is described in
-[mobile-architecture.md](mobile-architecture.md#talent-visuals-m5v1), including its
-verification status.
+[mobile-architecture.md](mobile-architecture.md#talent-visuals-m5v1).
 
 ## 6. Provenance and ownership of the artwork
 

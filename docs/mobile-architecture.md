@@ -480,11 +480,13 @@ boundary.
 
 ## Talent visuals (M5.V1)
 
-> **Verification status.** This section's Kotlin was written in an environment
-> without access to the Gradle/Maven repositories or a macOS toolchain: it has
-> **not been compiled, and none of its tests have been run**. Treat everything
-> below as the intended design until `:shared:jvmTest`, `:composeApp:desktopTest`
-> and the platform builds have been run on a developer machine or CI.
+> **Verification.** Run locally on macOS 26.3.1 / Xcode 26.4.1 at `add3738`:
+> `:shared:jvmTest` (185 tests), `:composeApp:desktopTest` (243, of which the 9 opt-in
+> screenshot tests are skipped), `:composeApp:assembleDebug`,
+> `:shared:iosSimulatorArm64Test` (123), both iOS framework links and the `iosApp`
+> simulator `xcodebuild` — all green. The rendering was reviewed on a real Android
+> emulator (360 × 640 dp) and an iOS simulator; evidence is in
+> `docs/screenshots/m5-v1/`.
 
 Real WoW talent icons replace the monogram as the normal node content. They are
 build-pinned, bundled, and read only from local resources — there is no network
@@ -562,8 +564,8 @@ render time — nothing is baked into an image file:
 | no points | dimmed, colour kept | dimmed solid border and chip |
 | selected | — | neutral white ring + 6 % scale on top of any state |
 
-Two adaptations are implementation decisions, not spec text, and need a visual
-review against B3: B3 01 "Fill = what I spent" cannot fill a body that shows
+Two adaptations are implementation decisions, not spec text (shown in
+`docs/screenshots/m5-v1/m5v1-android-close-crop-states.png`): B3 01 "Fill = what I spent" cannot fill a body that shows
 artwork, so the accent moves from the body fill to a frame on the same body;
 and outline chips get an opaque plate over an icon so rank text and lock glyphs
 never read against art. The dimming/frame constants are marked
@@ -572,7 +574,12 @@ alone: border style and chip treatment differ exactly as in M4.2.
 
 **Inspector.** Every inspector variant shows the selected talent's icon in
 front of its name (`[icon] Talent Name`, 36 dp in the compact bar, 40 dp in
-the full-detail headers); with no icon the header is the M4 one. Home / New
+the full-detail headers); with no icon the header is the M4 one. In the compact
+bar the rank sits on the second line, in front of the state line
+(`1/3  In progress`): next to the icon and the − / + controls, name and rank no
+longer fit on one line of a 360 dp screen — on a real device the rank wrapped
+one character per line — so the name keeps the first line and the rank is
+single-line. Home / New
 Build / Saved Builds are unchanged — class marks stay monograms (they identify
 classes, not talents).
 
@@ -581,7 +588,12 @@ markup (`$s1`, `${…}`, cross-spell references, conditionals, …) for 461 of t
 469 bundled entries; an unevaluated template is never shown. The syntax
 inventory for M5.V2 is `docs/research/forever-tooltip-template-inventory.md`.
 
-**Tests added** (unrun, see the status note): `TalentVisualsContractTest`,
+**Package size.** Debug APK 9 469 072 bytes on `main` (`202467f`) →
+11 950 284 bytes at `add3738`: +2 481 212 bytes (≈ 2.37 MiB) for 358 PNG icons
+(1 996 859 bytes), the registry and nine sidecars (216 640 bytes) and the code.
+PNGs are stored uncompressed in the APK.
+
+**Tests added:** `TalentVisualsContractTest`,
 `TalentVisualsRepositoryTest` (`shared/jvmTest`); `TalentIconAssetsTest`,
 `TalentTreeIconUiTest`, `VisualsDriftTest` and the opt-in, desktop-rendered
 `TalentTreeM5V1ScreenshotTest` (`composeApp/desktopTest`).
