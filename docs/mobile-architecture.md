@@ -406,6 +406,8 @@ mirror Python internals:
 | dataset manifest v1 | `docs/schema/dataset-manifest.v1.schema.json` | `TalentDataContract.decodeDatasetManifest` |
 | allocation build v1 | `docs/schema/allocation-build.v1.schema.json` | `TalentDataContract.decodeAllocationBuildFile` |
 | allocation conformance v1 | `docs/schema/allocation-conformance.v1.schema.json` | `TalentDataContract.decodeConformanceSuite` |
+| talent visuals v1 (M5.V1) | `docs/schema/talent-visuals.v1.schema.json` | `TalentDataContract.decodeTalentVisualsDocument` |
+| talent icons v1 (M5.V1) | `docs/schema/talent-icons.v1.schema.json` | `TalentDataContract.decodeTalentIconRegistry` |
 
 The schemas are closed contracts; M3A is a consumer and never changes them.
 
@@ -475,6 +477,114 @@ Failures are the typed sealed hierarchy `DatasetLoadError`
 resource and a resource that exists but cannot be read are distinct failures,
 mirrored by `AssetNotFoundException` / `AssetReadException` at the asset-source
 boundary.
+
+## Talent visuals (M5.V1)
+
+> **Verification status.** This section's Kotlin was written in an environment
+> without access to the Gradle/Maven repositories or a macOS toolchain: it has
+> **not been compiled, and none of its tests have been run**. Treat everything
+> below as the intended design until `:shared:jvmTest`, `:composeApp:desktopTest`
+> and the platform builds have been run on a developer machine or CI.
+
+Real WoW talent icons replace the monogram as the normal node content. They are
+build-pinned, bundled, and read only from local resources — there is no network
+client anywhere in the app. Where the icons come from, the two sidecar contracts
+and the ownership note for the artwork: [talent-visuals.md](talent-visuals.md).
+
+**Bundle.** `scripts/sync_mobile_visuals.py` mirrors
+`data/visuals/forever/1.60.1.70009/` into
+`composeResources/files/visuals/forever/1.60.1.70009/`: nine
+`talent-visuals.v1` sidecars, the `talent-icons.v1` registry `icons.json` and
+`icons/<FileDataID>.png` (358 files, deduplicated by FileDataID across
+classes). Drift is caught by the script's `--check` (CI) and the JVM
+`VisualsDriftTest`, which also fail on a missing or extra file.
+
+**`shared` — `data/visuals/`.** `TalentVisualsDocument` / `TalentIconRegistry`
+are strict models with no Kotlin defaults (every property, `schemaVersion`
+included, is required on the wire; the closed `imageFormat` / `sourceFormat`
+values are enums). `BundledTalentVisualsRepository.visuals(document)` loads the
+visuals **of an already loaded class document** and returns
+`VisualsOutcome<TalentVisuals>`; it refuses, with a typed `VisualsLoadError`:
+
+- a sidecar whose `game`, `clientBuild` or `classToken` differs from the
+  document (`GameMismatch`, `BuildMismatch`, `ClassMismatch`);
+- a sidecar resolved for another dataset revision — `talentDataContentHash`
+  must equal the document's published `contentHash`
+  (`DatasetRevisionMismatch`; the hashes are compared as published strings,
+  never recomputed);
+- duplicate `entryId`s, entries the document does not contain, document entries
+  without a visual, and entries whose definition/spell contradict the document
+  (`DuplicateEntry`, `UnknownEntry`, `MissingEntry`, `EntryIdentityMismatch`);
+- non-positive ids/sizes (`NonPositiveValue`);
+- a registry of another game/build, duplicate registry keys, a `file` that is
+  not exactly `icons/<fileDataId>.png` (no other directory, URL or traversal is
+  ever resolved), and an icon used by an entry but absent from the registry
+  (`DuplicateIcon`, `InvalidIconFile`, `UnregisteredIcon`);
+- and the asset/parsing failures (`AssetMissing`, `AssetUnreadable`,
+  `InvalidJson`, `UnsupportedSchemaVersion`).
+
+There is no cross-version substitution: a build without bundled visuals simply
+has none.
+
+**`composeApp` — `ui/assets/TalentIconAssets.kt`.** `BundledTalentIconSource`
+reads an icon through the same `DatasetAssetSource` as the datasets and decodes
+it with the Compose resources decoder. Each image is read and decoded at most
+once per app run: outcomes — failures included — are cached by asset path,
+which carries game and build. `TalentIconsLoader.load(document, tree)` combines
+the repository and the source into a `TalentNodeIcons` (node id → decoded
+`ImageBitmap`) plus typed diagnostics (`visualsError`, `failedNodes`). It runs
+when an editor session opens (`loadEditorSession`, after every allocation gate
+passed, off the UI thread), so composition and drawing only look up an already
+decoded bitmap — no file I/O or decoding in a draw pass. A node gets an icon
+only when it has exactly one entry; the dataset publishes no rule for which
+entry represents a multi-entry node.
+
+**Failure is visual, never functional.** Visuals that fail to load, a missing
+image, an unreadable image and undecodable bytes (`TalentIconFailure`) each
+leave the affected node(s) on the M4 monogram tile. They never fail the
+session, the tree, or allocation. The monogram code is kept as that exceptional
+fallback and as the default for callers without visuals
+(`TalentNodeIcons.None`).
+
+**Node rendering** (`TalentNodeVisual`, formerly `TalentNodeFallbackVisual`).
+The icon fills the existing 48 dp rounded square; node centres, hit targets,
+pan/zoom, connectors, the rank chip, the selection ring, the Show pulse and
+the purchase feedback are untouched, and nothing depends on whether a node
+shows an icon. The B3 state language is layered over/around the artwork at
+render time — nothing is baked into an image file:
+
+| state | icon | around it (unchanged unless noted) |
+|---|---|---|
+| available | full colour | solid outline, outline chip |
+| partial | full colour | + class-accent inner frame; filled accent chip |
+| maxed | full colour | + accent frame and light inner rim (double rim); light chip |
+| tier / prerequisite locked, unavailable | desaturated, dimmed | dashed border; padlock / ↑ chip |
+| no points | dimmed, colour kept | dimmed solid border and chip |
+| selected | — | neutral white ring + 6 % scale on top of any state |
+
+Two adaptations are implementation decisions, not spec text, and need a visual
+review against B3: B3 01 "Fill = what I spent" cannot fill a body that shows
+artwork, so the accent moves from the body fill to a frame on the same body;
+and outline chips get an opaque plate over an icon so rank text and lock glyphs
+never read against art. The dimming/frame constants are marked
+implementation-safe in the source. State is still never carried by colour
+alone: border style and chip treatment differ exactly as in M4.2.
+
+**Inspector.** Every inspector variant shows the selected talent's icon in
+front of its name (`[icon] Talent Name`, 36 dp in the compact bar, 40 dp in
+the full-detail headers); with no icon the header is the M4 one. Home / New
+Build / Saved Builds are unchanged — class marks stay monograms (they identify
+classes, not talents).
+
+**Descriptions are not rendered.** `descriptionTemplate` is raw client tooltip
+markup (`$s1`, `${…}`, cross-spell references, conditionals, …) for 461 of the
+469 bundled entries; an unevaluated template is never shown. The syntax
+inventory for M5.V2 is `docs/research/forever-tooltip-template-inventory.md`.
+
+**Tests added** (unrun, see the status note): `TalentVisualsContractTest`,
+`TalentVisualsRepositoryTest` (`shared/jvmTest`); `TalentIconAssetsTest`,
+`TalentTreeIconUiTest`, `VisualsDriftTest` and the opt-in, desktop-rendered
+`TalentTreeM5V1ScreenshotTest` (`composeApp/desktopTest`).
 
 ## Conformance strategy (M3A parsing, M3B execution)
 
@@ -554,6 +664,10 @@ the spec fixes only the shared `accentClass` token so far.
 python3 scripts/sync_mobile_datasets.py --check
 python3 scripts/sync_mobile_datasets.py
 
+# talent visuals (icons) drift check / re-sync — offline, repository files only
+python3 scripts/sync_mobile_visuals.py --check
+python3 scripts/sync_mobile_visuals.py
+
 # tests (JVM)
 cd mobile
 ./gradlew :shared:jvmTest               # contract + repository + allocation + conformance replay + local build library
@@ -575,6 +689,10 @@ cd mobile
 # opt-in M5.1 app-flow screenshot evidence (same mechanism)
 ./gradlew :composeApp:desktopTest --tests "*TalentTreeM51ScreenshotTest*" \
     -Dtalentforge.m51.screenshots=<output-dir>
+
+# opt-in M5.V1 icon screenshot evidence (same mechanism; desktop-rendered, not device screenshots)
+./gradlew :composeApp:desktopTest --tests "*TalentTreeM5V1ScreenshotTest*" \
+    -Dtalentforge.m5v1.screenshots=<output-dir>
 
 # Android
 ./gradlew :composeApp:assembleDebug    # -> composeApp/build/outputs/apk/debug/

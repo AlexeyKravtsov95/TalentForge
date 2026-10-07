@@ -294,6 +294,11 @@ A consumer of the sidecars must, as part of loading them:
   keep the monogram tile as the fallback for a talent whose icon cannot be loaded —
   a broken icon must not take the tree down.
 
+The Kotlin consumer (`BundledTalentVisualsRepository`, `TalentIconsLoader`, the icon
+rendering rules of the tree and the inspector) is described in
+[mobile-architecture.md](mobile-architecture.md#talent-visuals-m5v1), including its
+verification status.
+
 ## 6. Provenance and ownership of the artwork
 
 * Source table: `SpellMisc` (`SpellIconFileDataID`), joined through `TraitDefinition`.

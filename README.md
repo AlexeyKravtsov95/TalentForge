@@ -126,7 +126,13 @@ Forever classes, drafts created and persisted the moment a class is picked,
 autosave of every successful mutation through one observer path, fail-closed
 build reopening (no silent migration), and the generic dataset-bound editor
 with the class accent as an explicit input (Warrior keeps its frozen accent;
-other classes use a documented neutral fallback).
+other classes use a documented neutral fallback). **M5.V1** replaces the
+monogram tiles of the Talent Tree with real, build-pinned WoW talent icons
+bundled as local resources (a strict visuals sidecar next to the unchanged
+`talent-data.v1`; the monogram stays as the fallback for an icon that cannot be
+loaded; descriptions are M5.V2). The M5.V1 Kotlin/Compose code has not been
+compiled or run yet — see the status note in
+[docs/mobile-architecture.md](docs/mobile-architecture.md#talent-visuals-m5v1).
 
 ```bash
 python3 scripts/sync_mobile_datasets.py --check   # bundled data == canonical data
