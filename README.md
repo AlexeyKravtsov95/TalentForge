@@ -88,6 +88,24 @@ python -m talent_data visuals check --build 1.60.1.70009                 # offli
 python scripts/sync_mobile_visuals.py --check                            # bundle == canonical
 ```
 
+## Talent tooltips (M5.V2A)
+
+Talent descriptions are not rendered from the `$…` templates. The exact Forever client
+renders them (`C_TooltipInfo.GetTraitEntry(entryID, rank)`), a read-only addon captures
+the raw result for all 469 entries / 1333 entry-rank pairs, and a strict importer turns the
+SavedVariables file into a build- and locale-pinned audit artifact. **Real client capture
+pending** - this milestone ships the tooling only; the mobile Inspector is unchanged.
+Pipeline, format and rules:
+[docs/research/forever-client-tooltip-capture.md](docs/research/forever-client-tooltip-capture.md);
+in-game steps: [tools/wow-tooltip-capture/README.md](tools/wow-tooltip-capture/README.md).
+
+```bash
+python -m talent_data tooltips manifest --build 1.60.1.70009 --check   # addon manifest == dataset
+python -m talent_data tooltips import-client --build 1.60.1.70009 \
+  --saved-variables /path/to/TalentForgeTooltipCapture.lua              # -> artifacts/tooltips/…
+python -m talent_data tooltips report --build 1.60.1.70009             # structure of the capture
+```
+
 ## Checks
 
 ```bash
@@ -158,10 +176,12 @@ src/talent_data/
   allocation/     M2 allocation engine (models, rules, engine) + conformance vector runner
   cli/            argparse CLI (python -m talent_data)
   visuals/        M5.V1 talent icons: resolution, BLP2 -> PNG conversion, sidecar publishing
+  tooltips/       M5.V2A client tooltip capture: addon manifest, strict importer, capture report
 data/normalized/  committed normalized documents + manifest per build (proof artifacts)
 data/visuals/     committed talent-visuals.v1 sidecars, talent-icons.v1 registry and PNG icons
 data/conformance/ allocation conformance vectors (for the future Kotlin engine)
 artifacts/diff/   committed diff output (per class + aggregate)
+tools/wow-tooltip-capture/  read-only WoW addon that captures client-rendered talent tooltips
 docs/             data-pipeline.md (how it works), forever-dataset.md (the dataset itself),
                   talent-allocation-semantics.md (allocation rules + evidence)
 tests/            unit (offline) + integration (network), real per-class DB2 fixtures,
