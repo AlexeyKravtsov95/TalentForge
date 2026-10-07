@@ -41,6 +41,7 @@ import io.github.alexeykravtsov95.talentforge.data.GameId
 import io.github.alexeykravtsov95.talentforge.data.describe
 import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
+import io.github.alexeykravtsov95.talentforge.ui.assets.TalentIconsLoader
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTypography
 import io.github.alexeykravtsov95.talentforge.ui.theme.classAccentFor
@@ -92,6 +93,12 @@ sealed interface TalentTreeUiState {
          * directly: the Warrior token is semantically Warrior-only.
          */
         val classAccent: androidx.compose.ui.graphics.Color,
+        /**
+         * Real talent icons by node id (M5.V1), decoded before the state is
+         * built. A node without one renders its monogram tile; the default is
+         * "no icons", so lower-level callers keep working without visuals.
+         */
+        val icons: TalentNodeIcons = TalentNodeIcons.None,
     ) : TalentTreeUiState
 
     data class Failed(val failure: TalentTreeUiFailure) : TalentTreeUiState
@@ -278,6 +285,8 @@ private fun ReadyTalentTreeScreen(
     }
     val facts = remember(current.engine) { talentNodeFacts(current.engine) }
     val selectedPresentation = selectedNodeId?.let { presentation.nodes[it] }
+    // The selected talent's real icon for the inspector header (null → no tile).
+    val selectedIcon = selectedNodeId?.let { current.icons.iconOf(it) }
     val selectedActions = selectedPresentation?.let {
         buildTalentNodeActions(current.engine, editing.current, it)
     }
@@ -500,6 +509,7 @@ private fun ReadyTalentTreeScreen(
                                 viewportState = viewportState,
                                 layoutClass = layoutClass,
                                 accent = current.classAccent,
+                                icons = current.icons,
                                 selectedNodeId = selectedNodeId,
                                 showGuide = showGuide,
                                 guideToken = guideToken,
@@ -512,6 +522,7 @@ private fun ReadyTalentTreeScreen(
                             TalentInspectorPersistentPanel(
                                 accent = current.classAccent,
                                 content = inspectorContent,
+                                icon = selectedIcon,
                                 actions = selectedActions,
                                 onShowPrerequisite = onShowPrerequisite,
                                 onSpendRank = onSpendRank,
@@ -527,6 +538,7 @@ private fun ReadyTalentTreeScreen(
                                 viewportState = viewportState,
                                 layoutClass = layoutClass,
                                 accent = current.classAccent,
+                                icons = current.icons,
                                 selectedNodeId = selectedNodeId,
                                 showGuide = showGuide,
                                 guideToken = guideToken,
@@ -540,6 +552,7 @@ private fun ReadyTalentTreeScreen(
                                 TalentInspectorSidePanel(
                                     accent = current.classAccent,
                                     content = inspectorContent,
+                                    icon = selectedIcon,
                                     actions = selectedActions,
                                     onDeselect = onSelectionCleared,
                                     onShowPrerequisite = onShowPrerequisite,
@@ -557,6 +570,7 @@ private fun ReadyTalentTreeScreen(
                                 viewportState = viewportState,
                                 layoutClass = layoutClass,
                                 accent = current.classAccent,
+                                icons = current.icons,
                                 selectedNodeId = selectedNodeId,
                                 showGuide = showGuide,
                                 guideToken = guideToken,
@@ -571,6 +585,7 @@ private fun ReadyTalentTreeScreen(
                                     TalentInspectorExpandedSheet(
                                         accent = current.classAccent,
                                         content = inspectorContent,
+                                        icon = selectedIcon,
                                         actions = selectedActions,
                                         height = expandedSheetHeight,
                                         onCollapse = { onInspectorExpandedChange(false) },
@@ -584,6 +599,7 @@ private fun ReadyTalentTreeScreen(
                                     TalentInspectorCompactBar(
                                         accent = current.classAccent,
                                         content = inspectorContent,
+                                        icon = selectedIcon,
                                         actions = selectedActions,
                                         onSpendRank = onSpendRank,
                                         onRefundRank = onRefundRank,
@@ -705,12 +721,22 @@ private val TalentShowGuideSaver = mapSaver<TalentShowGuide?>(
  * (empty build) off the calling dispatcher.
  */
 internal suspend fun loadBaselineWarriorTreeState(): TalentTreeUiState {
-    val repository = BundledTalentDatasetRepository(ComposeResourceDatasetAssetSource())
+    val assets = ComposeResourceDatasetAssetSource()
+    val repository = BundledTalentDatasetRepository(assets)
     return when (val outcome = repository.document(DatasetId(BASELINE_GAME, BASELINE_CLIENT_BUILD, BASELINE_CLASS))) {
         is DatasetOutcome.Failed ->
             TalentTreeUiState.Failed(TalentTreeUiFailure.Dataset(outcome.error))
 
-        is DatasetOutcome.Loaded -> loadWarriorTreeState(outcome.value)
+        is DatasetOutcome.Loaded -> when (val state = loadWarriorTreeState(outcome.value)) {
+            // The baseline renders like production: with the bundled real icons.
+            is TalentTreeUiState.Ready -> state.copy(
+                icons = TalentIconsLoader(assets)
+                    .load(outcome.value, outcome.value.trees.single())
+                    .icons,
+            )
+
+            else -> state
+        }
     }
 }
 

@@ -1,0 +1,147 @@
+{
+  "$defs": {
+    "IconAsset": {
+      "additionalProperties": false,
+      "properties": {
+        "byteLength": {
+          "exclusiveMinimum": 0,
+          "title": "Bytelength",
+          "type": "integer"
+        },
+        "file": {
+          "description": "Bundled image, relative to the registry: icons/<fileDataId>.png",
+          "pattern": "^icons/[1-9][0-9]*\\.png$",
+          "title": "File",
+          "type": "string"
+        },
+        "fileDataId": {
+          "exclusiveMinimum": 0,
+          "title": "Filedataid",
+          "type": "integer"
+        },
+        "height": {
+          "exclusiveMinimum": 0,
+          "title": "Height",
+          "type": "integer"
+        },
+        "sha256": {
+          "description": "sha256 of the bundled image",
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "sourceByteLength": {
+          "exclusiveMinimum": 0,
+          "title": "Sourcebytelength",
+          "type": "integer"
+        },
+        "sourceFormat": {
+          "const": "BLP2",
+          "description": "Container of the client file",
+          "title": "Sourceformat",
+          "type": "string"
+        },
+        "sourceSha256": {
+          "description": "sha256 of the client file as retrieved",
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Sourcesha256",
+          "type": "string"
+        },
+        "width": {
+          "exclusiveMinimum": 0,
+          "title": "Width",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "fileDataId",
+        "file",
+        "width",
+        "height",
+        "byteLength",
+        "sha256",
+        "sourceFormat",
+        "sourceByteLength",
+        "sourceSha256"
+      ],
+      "title": "IconAsset",
+      "type": "object"
+    },
+    "IconsProvenance": {
+      "additionalProperties": false,
+      "properties": {
+        "converter": {
+          "description": "Tool that produced the bundled images",
+          "title": "Converter",
+          "type": "string"
+        },
+        "retrieval": {
+          "description": "How the client files were obtained (never a URL)",
+          "title": "Retrieval",
+          "type": "string"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "retrieval",
+        "converter"
+      ],
+      "title": "IconsProvenance",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "clientBuild": {
+      "pattern": "^\\d+\\.\\d+\\.\\d+\\.\\d+$",
+      "title": "Clientbuild",
+      "type": "string"
+    },
+    "contentHash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "title": "Contenthash",
+      "type": "string"
+    },
+    "game": {
+      "minLength": 1,
+      "title": "Game",
+      "type": "string"
+    },
+    "icons": {
+      "description": "Ordered by fileDataId, one per FileDataID",
+      "items": {
+        "$ref": "#/$defs/IconAsset"
+      },
+      "title": "Icons",
+      "type": "array"
+    },
+    "imageFormat": {
+      "const": "png",
+      "title": "Imageformat",
+      "type": "string"
+    },
+    "provenance": {
+      "$ref": "#/$defs/IconsProvenance"
+    },
+    "schemaVersion": {
+      "const": 1,
+      "title": "Schemaversion",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "game",
+    "clientBuild",
+    "imageFormat",
+    "icons",
+    "contentHash",
+    "provenance"
+  ],
+  "title": "TalentIconRegistry",
+  "type": "object"
+}

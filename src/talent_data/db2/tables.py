@@ -62,6 +62,11 @@ RANK_COST_EXTENSION_TABLES: tuple[str, ...] = (
 # Every table whose absence a contract relies on; probed by `fetch` and by dataset loading.
 MUST_BE_ABSENT_TABLES: tuple[str, ...] = RANK_COST_EXTENSION_TABLES
 
+# Presentation-only tables (M5.V1 talent icons). Deliberately NOT part of TRAIT_TABLES:
+# allocation normalization must never fail because visual metadata is unavailable. Only the
+# `visuals` commands fetch and read these.
+VISUAL_TABLES: tuple[str, ...] = ("SpellMisc",)
+
 
 def _int(table: str, row: Mapping[str, str], column: str) -> int:
     raw = row.get(column)
@@ -294,6 +299,9 @@ class TraitDefinition:
     overrides_spell_id: int
     override_name: str
     override_description: str
+    # FileDataID of an icon that replaces the display spell's icon (0 = none). Presentation
+    # only: read by the visuals pipeline, never by allocation normalization.
+    override_icon: int
 
     TABLE: ClassVar[str] = "TraitDefinition"
 
@@ -307,6 +315,7 @@ class TraitDefinition:
             _int(t, row, "OverridesSpellID"),
             _str(t, row, "OverrideName_lang"),
             _str(t, row, "OverrideDescription_lang"),
+            _int(t, row, "OverrideIcon"),
         )
 
 
@@ -528,6 +537,38 @@ class SpellEffect:
             _int(t, row, "Effect"),
             _int(t, row, "EffectAura"),
             _float(t, row, "EffectBasePointsF"),
+        )
+
+
+@dataclass(frozen=True)
+class SpellMisc:
+    """Spell presentation row (WoWDBDefs SpellMisc). Only the icon columns are read.
+
+    Exact 1.60.1.70009 export shape (34 columns): ``ID``, ``Attributes_0..16``,
+    ``DifficultyID``, ``CastingTimeIndex``, ``DurationIndex``, ``PvPDurationIndex``,
+    ``RangeIndex``, ``SchoolMask``, ``Speed``, ``LaunchDelay``, ``MinDuration``,
+    ``SpellIconFileDataID``, ``ActiveIconFileDataID``, ``ContentTuningID``,
+    ``ShowFutureSpellPlayerConditionID``, ``SpellVisualScript``,
+    ``ActiveSpellVisualScript``, ``SpellID``. A spell can have one row per difficulty.
+    """
+
+    id: int
+    spell_id: int
+    difficulty_id: int
+    spell_icon_file_data_id: int
+    active_icon_file_data_id: int
+
+    TABLE: ClassVar[str] = "SpellMisc"
+
+    @classmethod
+    def parse(cls, row: Mapping[str, str]) -> Self:
+        t = cls.TABLE
+        return cls(
+            _int(t, row, "ID"),
+            _int(t, row, "SpellID"),
+            _int(t, row, "DifficultyID"),
+            _int(t, row, "SpellIconFileDataID"),
+            _int(t, row, "ActiveIconFileDataID"),
         )
 
 

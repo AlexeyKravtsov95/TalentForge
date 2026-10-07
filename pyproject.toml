@@ -14,10 +14,16 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Build-time only: decodes the client's BLP2 icon textures for `visuals normalize`.
+# Pinned exactly so the generated PNG bytes are reproducible (see docs/talent-visuals.md).
+visuals = [
+    "pillow==12.3.0",
+]
 dev = [
     "pytest>=8",
     "ruff>=0.6",
     "mypy>=1.11",
+    "pillow==12.3.0",
 ]
 
 [project.scripts]

@@ -6,6 +6,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -22,16 +23,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -41,17 +49,42 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeMotion
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeRadius
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
 
+/** Test tag of a node body that shows a real talent icon. */
+const val TALENT_NODE_ICON_TAG: String = "talent-node-icon"
+
+/** Test tag of a node body that shows the monogram fallback. */
+const val TALENT_NODE_MONOGRAM_TAG: String = "talent-node-monogram"
+
 /**
- * ICON FALLBACK — isolated on purpose.
+ * One talent node: the B3 implementation-safe 48 dp rounded square with its
+ * state, selection and feedback layers.
  *
- * `talent-data.v1` carries no icon/texture identifier, so M4.2 keeps rendering
- * every node as the B3 implementation-safe rounded square with the
- * deterministic text monogram derived from the real node name (see
- * [nodeMonogram]). No networking, no scraped art, no invented icon id; a real
- * icon renderer replaces this file's internals without touching canvas
- * geometry, hit testing or gestures.
+ * NODE CONTENT (M5.V1). The body shows the talent's real, build-pinned WoW
+ * icon ([icon], decoded once when the editor session opened — never loaded or
+ * decoded here). The deterministic text monogram derived from the real node
+ * name (see [nodeMonogram]) is kept as the **exceptional fallback**: it
+ * renders only when [icon] is `null` (visuals unavailable, or this icon
+ * missing/corrupt), exactly as in M4. Geometry, hit testing and gestures do
+ * not depend on which of the two is shown.
  *
- * M4.2 layers the B3 node-state language (B3 02/07) over the fallback shape,
+ * With an icon, the B3 state language is layered over/around the artwork
+ * (nothing is baked into the image file):
+ *
+ * - available — full-colour icon, solid outline, outline chip;
+ * - partial — full-colour icon + class-accent inner frame, filled accent chip;
+ * - maxed — full-colour icon + accent frame + light inner rim (the B3 double
+ *   rim), light chip;
+ * - tier / prerequisite locked, unavailable — desaturated and dimmed icon,
+ *   dashed border, padlock / ↑ chip;
+ * - no points — dimmed (not desaturated) icon, dimmed solid border and chip.
+ *
+ * B3 01 "Fill = what I spent" cannot fill a body that shows artwork, so the
+ * accent moves from the fill to a frame on the same body; border style and
+ * chip treatment are unchanged, so no state is carried by colour alone. Chips
+ * sit on an opaque plate over an icon, so rank text never reads against art.
+ *
+ * Without an icon the M4.2 treatment applies unchanged. It layers the B3
+ * node-state language (B3 02/07) over the fallback shape,
  * driven only by the engine-backed [TalentNodePresentation]:
  *
  * - available — solid outline, empty (outline) chip;
@@ -71,9 +104,10 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
  * with the tint.
  */
 @Composable
-fun TalentNodeFallbackVisual(
+fun TalentNodeVisual(
     node: TalentTreeNodeUiModel,
     presentation: TalentNodePresentation,
+    icon: ImageBitmap?,
     accent: Color,
     selected: Boolean,
     showOrigin: Boolean,
@@ -157,11 +191,23 @@ fun TalentNodeFallbackVisual(
     val borderDashed = state == TalentNodeState.PREREQUISITE_LOCKED ||
         state == TalentNodeState.TIER_LOCKED ||
         state == TalentNodeState.UNAVAILABLE
-    val nodeBackground = when (state) {
-        TalentNodeState.PARTIAL -> accent.copy(alpha = 0.22f)
-        TalentNodeState.MAXED -> accent
+    val nodeBackground = when {
+        // Under an icon the body stays neutral: invested points show as the
+        // accent frame drawn over the artwork (see the icon layer below).
+        icon != null -> colors.surfaceElevated
+        state == TalentNodeState.PARTIAL -> accent.copy(alpha = 0.22f)
+        state == TalentNodeState.MAXED -> accent
         else -> colors.surfaceElevated
     }
+    val iconLocked = state == TalentNodeState.PREREQUISITE_LOCKED ||
+        state == TalentNodeState.TIER_LOCKED ||
+        state == TalentNodeState.UNAVAILABLE
+    val iconAlpha = when {
+        iconLocked -> ICON_LOCKED_ALPHA
+        state == TalentNodeState.NO_POINTS -> ICON_NO_POINTS_ALPHA
+        else -> 1f
+    }
+    val iconColorFilter = if (iconLocked) DesaturateFilter else null
     val monogramColor = when (state) {
         TalentNodeState.MAXED -> bodyColor
         TalentNodeState.PREREQUISITE_LOCKED,
@@ -288,10 +334,79 @@ fun TalentNodeFallbackVisual(
                 ),
             contentAlignment = Alignment.Center,
         ) {
-            BasicText(
-                text = node.monogram,
-                style = TalentNodeMonogramStyle.copy(color = monogramColor),
-            )
+            if (icon != null) {
+                // The real icon fills the existing rounded square. FillBounds
+                // is exact for the square client textures and never distorts
+                // them (the body is square too).
+                Image(
+                    bitmap = icon,
+                    contentDescription = null, // the node's semantics already name the talent
+                    modifier = Modifier
+                        .matchParentSize()
+                        .clip(nodeShape)
+                        .testTag(TALENT_NODE_ICON_TAG),
+                    contentScale = ContentScale.FillBounds,
+                    alpha = iconAlpha,
+                    colorFilter = iconColorFilter,
+                    filterQuality = FilterQuality.Medium,
+                )
+                // State layers ABOVE the artwork: the body's own border/rim
+                // modifiers draw behind their content, which the icon covers.
+                Box(
+                    Modifier
+                        .matchParentSize()
+                        .drawBehind {
+                            val borderWidth = TalentTreeCanvasMetrics.NODE_BORDER_DP.dp.toPx()
+                            val cornerRadius = TalentTreeCanvasMetrics.NODE_CORNER_RADIUS_DP.dp.toPx()
+                            if (borderDashed) {
+                                drawDashedRoundedRectStroke(
+                                    color = borderColor,
+                                    strokeWidthPx = borderWidth,
+                                    dashPx = TalentInspectorMetrics.DASH_STROKE_DP.dp.toPx(),
+                                    gapPx = TalentInspectorMetrics.DASH_GAP_DP.dp.toPx(),
+                                    cornerRadiusPx = cornerRadius,
+                                )
+                            } else {
+                                drawRoundRect(
+                                    color = borderColor,
+                                    topLeft = Offset(borderWidth / 2f, borderWidth / 2f),
+                                    size = Size(size.width - borderWidth, size.height - borderWidth),
+                                    cornerRadius = CornerRadius(cornerRadius - borderWidth / 2f),
+                                    style = Stroke(width = borderWidth),
+                                )
+                            }
+                            if (state == TalentNodeState.PARTIAL || state == TalentNodeState.MAXED) {
+                                // Invested points: class-accent frame just inside the border.
+                                val frameWidth = ICON_ACCENT_FRAME_DP.dp.toPx()
+                                val inset = borderWidth + frameWidth / 2f
+                                drawRoundRect(
+                                    color = accent,
+                                    topLeft = Offset(inset, inset),
+                                    size = Size(size.width - 2 * inset, size.height - 2 * inset),
+                                    cornerRadius = CornerRadius(cornerRadius - inset),
+                                    style = Stroke(width = frameWidth),
+                                )
+                            }
+                            if (state == TalentNodeState.MAXED) {
+                                // B3 "double rim": the light rim inside the accent frame.
+                                val inset = borderWidth + ICON_ACCENT_FRAME_DP.dp.toPx() + 0.5.dp.toPx()
+                                drawRoundRect(
+                                    color = colors.focus.copy(alpha = 0.85f),
+                                    topLeft = Offset(inset, inset),
+                                    size = Size(size.width - 2 * inset, size.height - 2 * inset),
+                                    cornerRadius = CornerRadius(cornerRadius - inset),
+                                    style = Stroke(width = 1.dp.toPx()),
+                                )
+                            }
+                        },
+                )
+            } else {
+                BasicText(
+                    text = node.monogram,
+                    style = TalentNodeMonogramStyle.copy(color = monogramColor),
+                    modifier = Modifier.testTag(TALENT_NODE_MONOGRAM_TAG),
+                )
+            }
         }
 
         // Rank chip (B3 06): 15 dp tall, overlapping the node's bottom edge by
@@ -303,6 +418,7 @@ fun TalentNodeFallbackVisual(
             rankText = presentation.rankText,
             accent = accent,
             popScale = chipPop.value,
+            overArtwork = icon != null,
         )
     }
 }
@@ -314,6 +430,7 @@ private fun BoxScope.RankChip(
     rankText: String,
     accent: Color,
     popScale: Float = 1f,
+    overArtwork: Boolean = false,
 ) {
     if (state == TalentNodeState.UNAVAILABLE) return
     val colors = talentForgeColors()
@@ -344,7 +461,10 @@ private fun BoxScope.RankChip(
             .height(TalentInspectorMetrics.RANK_CHIP_HEIGHT_DP)
             .then(
                 if (chipBackground == Color.Transparent) {
-                    Modifier.border(
+                    // Outline chips are see-through over the plain monogram
+                    // body; over real artwork they get an opaque plate so the
+                    // rank / lock glyph never reads against the icon.
+                    (if (overArtwork) Modifier.background(colors.background, chipShape) else Modifier).border(
                         width = 1.dp,
                         color = if (state == TalentNodeState.NO_POINTS) {
                             colors.disabled
@@ -472,6 +592,19 @@ private fun DrawScope.drawDashedRoundedRectStroke(
         ),
     )
 }
+
+/** Icon dimming of a locked/unavailable node (also desaturated) — implementation-safe. */
+private const val ICON_LOCKED_ALPHA: Float = 0.42f
+
+/** Icon dimming of a reachable node with no points left (colour kept) — implementation-safe. */
+private const val ICON_NO_POINTS_ALPHA: Float = 0.6f
+
+/** Width of the class-accent "invested" frame over an icon — implementation-safe. */
+private const val ICON_ACCENT_FRAME_DP: Float = 2f
+
+/** Greyscale filter of locked icons; state is still carried by border + chip too. */
+private val DesaturateFilter: ColorFilter =
+    ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
 
 /**
  * Typography of the fallback monogram: the spec's mono/600 register (section G

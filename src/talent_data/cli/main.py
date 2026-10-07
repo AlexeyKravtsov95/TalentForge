@@ -9,6 +9,7 @@ validate       <normalized.json>
 manifest       <manifest.json>
 schema         [--out docs/schema]
 allocation     validate|replay   (M2 allocation engine developer tools)
+visuals        fetch|report|normalize|check   (M5.V1 talent icons, build-pinned)
 
 ``--class all`` (M1) normalizes / diffs every class of the build, deterministically ordered
 by class id, and writes a dataset manifest (normalize). A batch that fails for any class
@@ -30,12 +31,14 @@ from talent_data import paths
 from talent_data.allocation.conformance import ConformanceSuite
 from talent_data.allocation.models import BuildFile
 from talent_data.cli import allocation as allocation_cli
+from talent_data.cli import visuals as visuals_cli
 from talent_data.db2.tables import TRAIT_TABLES
 from talent_data.diff.models import DatasetDiffReport, DiffReport
 from talent_data.diff.render import render_dataset_text, render_text
 from talent_data.games import GAMES, GameConfig, get_game
 from talent_data.models.manifest import DatasetManifest
 from talent_data.models.talents import TalentDataDocument
+from talent_data.models.visuals import TalentIconRegistry, TalentVisualsDocument
 from talent_data.normalization.class_resolution import ClassResolutionError
 from talent_data.normalization.normalizer import NormalizationError
 from talent_data.pipeline import (
@@ -167,6 +170,7 @@ def _build_parser() -> argparse.ArgumentParser:
     man.set_defaults(handler=_cmd_manifest)
 
     allocation_cli.register(sub)
+    visuals_cli.register(sub)
     return parser
 
 
@@ -509,6 +513,8 @@ def json_schemas() -> dict[str, str]:
         "dataset-diff.v1.schema.json": _schema_text(DatasetDiffReport),
         "allocation-build.v1.schema.json": _schema_text(BuildFile),
         "allocation-conformance.v1.schema.json": _schema_text(ConformanceSuite),
+        "talent-visuals.v1.schema.json": _schema_text(TalentVisualsDocument),
+        "talent-icons.v1.schema.json": _schema_text(TalentIconRegistry),
     }
 
 

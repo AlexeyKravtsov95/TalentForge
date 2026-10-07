@@ -217,6 +217,11 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
+# Local agent/tool workspaces and OS noise - never part of the repository
+.zcode/
+Claude outputs/
+.DS_Store
+
 # talent_data (M0): raw DB2 downloads and in-flight files
 .cache/
 *.part

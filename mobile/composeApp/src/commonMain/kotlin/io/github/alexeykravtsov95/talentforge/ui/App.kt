@@ -15,6 +15,7 @@ import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildIdGenerator
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.data.builds.RandomLocalBuildIdGenerator
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
+import io.github.alexeykravtsov95.talentforge.ui.assets.TalentIconsLoader
 import io.github.alexeykravtsov95.talentforge.ui.builds.AllBuildsScreen
 import io.github.alexeykravtsov95.talentforge.ui.home.HomeScreen
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildAutosaveCoordinator
@@ -127,9 +128,12 @@ fun App(
     ids: LocalBuildIdGenerator = RandomLocalBuildIdGenerator(clock),
 ) {
     val environment = remember(storage, clock, ids) {
+        val bundledAssets = ComposeResourceDatasetAssetSource()
         AppEnvironment(
             repository = LocalBuildRepository(storage, clock, ids),
-            datasets = BundledTalentDatasetRepository(ComposeResourceDatasetAssetSource()),
+            datasets = BundledTalentDatasetRepository(bundledAssets),
+            // One loader per app run: decoded icons are cached across editor opens.
+            icons = TalentIconsLoader(bundledAssets),
         )
     }
     val appScope = rememberCoroutineScope()
@@ -217,13 +221,15 @@ fun App(
                 datasets = environment.datasets,
                 autosave = autosave,
                 onBack = ::navigateUp,
+                icons = environment.icons,
             )
         }
     }
 }
 
-/** The app's two data collaborators, built once per app run. */
+/** The app's data collaborators, built once per app run. */
 private data class AppEnvironment(
     val repository: LocalBuildRepository,
     val datasets: BundledTalentDatasetRepository,
+    val icons: TalentIconsLoader,
 )

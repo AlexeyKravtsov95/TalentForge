@@ -67,7 +67,10 @@ import kotlin.math.hypot
  *   active, except the origin→target path, which turns bright at 3 dp (B3 07);
  * - nodes layer the B3 state treatment under the neutral selection ring;
  * - [showGuide]'s target pulses once (900 ms) and its origin keeps a dashed
- *   ring (see [TalentNodeFallbackVisual]);
+ *   ring (see [TalentNodeVisual]);
+ * - M5.V1: a node with a real icon in [icons] renders it inside the same
+ *   48 dp rounded square, under the unchanged state/selection layers; geometry,
+ *   hit targets and gestures do not depend on icons at all;
  * - a [TalentTreeViewportState.requestFocus] is animated as the B3 300 ms
  *   ease-out Show pan (scale untouched, transform always finite).
  */
@@ -83,6 +86,7 @@ fun TalentTreeCanvas(
     guideToken: Int,
     purchaseNodeId: Int? = null,
     purchaseToken: Int = 0,
+    icons: TalentNodeIcons = TalentNodeIcons.None,
     onNodeSelected: (Int) -> Unit,
     onSelectionCleared: () -> Unit,
     modifier: Modifier = Modifier,
@@ -290,9 +294,10 @@ fun TalentTreeCanvas(
                                     }
                                 },
                         ) {
-                            TalentNodeFallbackVisual(
+                            TalentNodeVisual(
                                 node = node,
                                 presentation = nodePresentation,
+                                icon = icons.iconOf(node.id),
                                 accent = accent,
                                 selected = nodeIsSelected,
                                 showOrigin = showGuide?.originNodeId == node.id,

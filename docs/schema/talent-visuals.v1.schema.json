@@ -1,0 +1,135 @@
+{
+  "$defs": {
+    "TalentVisualEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "definitionId": {
+          "description": "TraitDefinition.ID",
+          "exclusiveMinimum": 0,
+          "title": "Definitionid",
+          "type": "integer"
+        },
+        "displaySpellId": {
+          "description": "The spell the client presents: TraitDefinition.VisibleSpellID when non-zero, otherwise TraitDefinition.SpellID",
+          "exclusiveMinimum": 0,
+          "title": "Displayspellid",
+          "type": "integer"
+        },
+        "entryId": {
+          "description": "TalentEntry.id of the matching talent-data.v1",
+          "exclusiveMinimum": 0,
+          "title": "Entryid",
+          "type": "integer"
+        },
+        "iconFileDataId": {
+          "description": "SpellMisc.SpellIconFileDataID of displaySpellId; key into the build's talent-icons.v1 registry",
+          "exclusiveMinimum": 0,
+          "title": "Iconfiledataid",
+          "type": "integer"
+        },
+        "spellId": {
+          "description": "TraitDefinition.SpellID (= TalentEntry.spellId)",
+          "exclusiveMinimum": 0,
+          "title": "Spellid",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entryId",
+        "definitionId",
+        "spellId",
+        "displaySpellId",
+        "iconFileDataId"
+      ],
+      "title": "TalentVisualEntry",
+      "type": "object"
+    },
+    "VisualsProvenance": {
+      "additionalProperties": false,
+      "properties": {
+        "iconColumn": {
+          "description": "DB2 column the icon FileDataID was read from",
+          "title": "Iconcolumn",
+          "type": "string"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "tables": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tables",
+          "type": "array"
+        }
+      },
+      "required": [
+        "source",
+        "tables",
+        "iconColumn"
+      ],
+      "title": "VisualsProvenance",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "classToken": {
+      "description": "Locale-independent class token, e.g. WARRIOR",
+      "pattern": "^[A-Z]+$",
+      "title": "Classtoken",
+      "type": "string"
+    },
+    "clientBuild": {
+      "pattern": "^\\d+\\.\\d+\\.\\d+\\.\\d+$",
+      "title": "Clientbuild",
+      "type": "string"
+    },
+    "contentHash": {
+      "description": "sha256 of the canonical JSON of every field except contentHash and provenance",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "title": "Contenthash",
+      "type": "string"
+    },
+    "entries": {
+      "description": "One entry per talent entry of the class, ordered by entryId",
+      "items": {
+        "$ref": "#/$defs/TalentVisualEntry"
+      },
+      "title": "Entries",
+      "type": "array"
+    },
+    "game": {
+      "minLength": 1,
+      "title": "Game",
+      "type": "string"
+    },
+    "provenance": {
+      "$ref": "#/$defs/VisualsProvenance"
+    },
+    "schemaVersion": {
+      "const": 1,
+      "title": "Schemaversion",
+      "type": "integer"
+    },
+    "talentDataContentHash": {
+      "description": "contentHash of the talent-data.v1 document these visuals were resolved for; a sidecar is only valid next to exactly that document",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "title": "Talentdatacontenthash",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "game",
+    "clientBuild",
+    "classToken",
+    "talentDataContentHash",
+    "entries",
+    "contentHash",
+    "provenance"
+  ],
+  "title": "TalentVisualsDocument",
+  "type": "object"
+}
