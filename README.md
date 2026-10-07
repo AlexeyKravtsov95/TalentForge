@@ -73,6 +73,21 @@ python -m talent_data allocation validate --game forever --build 1.60.1.70009 \
 python -m talent_data allocation replay --all   # data/conformance/forever/1.60.1.70009/allocation.v1.json
 ```
 
+## Talent visuals (M5.V1)
+
+Real WoW talent icons, pinned to the client build and bundled for offline use. Icons are
+resolved through `TraitDefinition` → display spell → `SpellMisc.SpellIconFileDataID`
+(469/469 entries of `1.60.1.70009`, 358 distinct files) and published as a separate
+sidecar contract — `talent-data.v1` is unchanged. Details, source evidence and the
+ownership note for the artwork: [docs/talent-visuals.md](docs/talent-visuals.md).
+
+```bash
+python -m talent_data visuals fetch --build 1.60.1.70009                 # online, on demand
+python -m talent_data visuals normalize --build 1.60.1.70009 --offline   # data/visuals/…
+python -m talent_data visuals check --build 1.60.1.70009                 # offline, CI
+python scripts/sync_mobile_visuals.py --check                            # bundle == canonical
+```
+
 ## Checks
 
 ```bash
@@ -115,6 +130,7 @@ other classes use a documented neutral fallback).
 
 ```bash
 python3 scripts/sync_mobile_datasets.py --check   # bundled data == canonical data
+python3 scripts/sync_mobile_visuals.py --check    # bundled icons == canonical icons
 cd mobile
 ./gradlew :shared:jvmTest :composeApp:desktopTest # contract/repository/conformance + tree UI + build library tests
 ./gradlew :composeApp:assembleDebug               # Android debug APK
@@ -136,7 +152,9 @@ src/talent_data/
   diff/           semantic diff engine, diff schema v1 + dataset aggregate, noise classification, renderer
   allocation/     M2 allocation engine (models, rules, engine) + conformance vector runner
   cli/            argparse CLI (python -m talent_data)
+  visuals/        M5.V1 talent icons: resolution, BLP2 -> PNG conversion, sidecar publishing
 data/normalized/  committed normalized documents + manifest per build (proof artifacts)
+data/visuals/     committed talent-visuals.v1 sidecars, talent-icons.v1 registry and PNG icons
 data/conformance/ allocation conformance vectors (for the future Kotlin engine)
 artifacts/diff/   committed diff output (per class + aggregate)
 docs/             data-pipeline.md (how it works), forever-dataset.md (the dataset itself),
