@@ -10,7 +10,7 @@ manifest       <manifest.json>
 schema         [--out docs/schema]
 allocation     validate|replay   (M2 allocation engine developer tools)
 visuals        fetch|report|normalize|check   (M5.V1 talent icons, build-pinned)
-tooltips       manifest   (M5.V2A client tooltip capture manifest, build-pinned)
+tooltips       manifest|import-client|report  (M5.V2A client tooltip capture, build-pinned)
 
 ``--class all`` (M1) normalizes / diffs every class of the build, deterministically ordered
 by class id, and writes a dataset manifest (normalize). A batch that fails for any class
