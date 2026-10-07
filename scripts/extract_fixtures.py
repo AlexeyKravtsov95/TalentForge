@@ -1,11 +1,11 @@
 """Extract small, real DB2 fixture sets for class trees from the local wago cache.
 
 For every requested class, keeps only the rows reachable from that class's TraitTree
-(nodes, entries, definitions, edges, gate groups/conditions, rank curves, spells), with
-canonical column names. The result is committed under
-``tests/fixtures/db2/<game>/<build>/<class-token>/`` so unit tests run offline on real
-client rows. Nothing is invented or hand-edited; each fixture is a strict subset of the
-wago.tools export of the named build.
+(nodes, entries, definitions, edges, gate groups/conditions, rank curves, spells, and the
+SpellMisc presentation rows of those spells), with canonical column names. The result is
+committed under ``tests/fixtures/db2/<game>/<build>/<class-token>/`` so unit tests run
+offline on real client rows. Nothing is invented or hand-edited; each fixture is a strict
+subset of the wago.tools export of the named build.
 
     python scripts/extract_fixtures.py --build 1.60.1.70009 --classes all
     python scripts/extract_fixtures.py --build 1.60.1.69977 --classes warrior,druid
@@ -20,7 +20,7 @@ from pathlib import Path
 
 from talent_data.db2 import tables as t
 from talent_data.db2.dataset import TraitDataSet
-from talent_data.db2.tables import MUST_BE_ABSENT_TABLES, TRAIT_TABLES
+from talent_data.db2.tables import MUST_BE_ABSENT_TABLES, TRAIT_TABLES, VISUAL_TABLES
 from talent_data.normalization.class_resolution import resolve_class, trees_for_class
 from talent_data.sources.base import Db2Table, TableAvailability, TableStatus
 from talent_data.sources.capabilities import record_absent, snapshot_path
@@ -100,6 +100,8 @@ def extract_class(
         "Spell": lambda r: r["ID"] in spells,
         "SpellName": lambda r: r["ID"] in spells,
         "SpellEffect": lambda r: r["SpellID"] in spells,
+        # presentation (talent icons): every row of the class's display spells
+        "SpellMisc": lambda r: r["SpellID"] in spells,
     }
     dst = ROOT / "tests" / "fixtures" / "db2" / game / build / chr_class.token.lower()
     dst.mkdir(parents=True, exist_ok=True)
@@ -142,7 +144,7 @@ def main() -> None:
         if args.classes == "all"
         else [resolve_class(dataset, key) for key in args.classes.split(",")]
     )
-    tables = {name: cache.load_table(version, name) for name in TRAIT_TABLES}
+    tables = {name: cache.load_table(version, name) for name in (*TRAIT_TABLES, *VISUAL_TABLES)}
     statuses = {name: cache.table_status(version, name) for name in MUST_BE_ABSENT_TABLES}
     for chr_class in classes:
         extract_class(chr_class, dataset, tables, args.game, args.build, statuses)
