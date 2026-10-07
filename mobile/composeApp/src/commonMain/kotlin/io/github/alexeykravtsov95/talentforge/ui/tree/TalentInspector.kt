@@ -134,22 +134,29 @@ fun TalentInspectorCompactBar(
                                 onClick = onToggleExpanded,
                             ),
                     ) {
+                        // M5.V1: `[icon] Talent Name` on the first line, rank + state on
+                        // the second. With the icon in the bar, name and rank no longer
+                        // fit side by side next to − / + on a 360 dp screen (the rank
+                        // wrapped one character per line on a real device), so the rank
+                        // moved down to the state line and can never wrap.
+                        BasicText(
+                            text = content.name,
+                            style = InspectorNameStyle.copy(color = talentForgeColors().textPrimary),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
                         ) {
                             BasicText(
-                                text = content.name,
-                                style = InspectorNameStyle.copy(color = talentForgeColors().textPrimary),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                            BasicText(
                                 text = content.rankText,
                                 style = InspectorRankStyle.copy(color = talentForgeColors().textSecondary),
+                                maxLines = 1,
+                                softWrap = false,
                             )
+                            InspectorReasonLines(content = content, compact = true)
                         }
-                        InspectorReasonLines(content = content, compact = true)
                     }
                     // B3 07 compact action set: prerequisite lock keeps Show
                     // as the only action; rank states show −/+ (or −/✓).
