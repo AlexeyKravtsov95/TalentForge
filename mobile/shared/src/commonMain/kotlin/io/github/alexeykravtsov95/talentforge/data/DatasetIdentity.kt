@@ -18,6 +18,8 @@ enum class ContractKind(val contractName: String) {
     DATASET_MANIFEST("dataset-manifest.v1"),
     ALLOCATION_BUILD("allocation-build.v1"),
     ALLOCATION_CONFORMANCE("allocation-conformance.v1"),
+    TALENT_VISUALS("talent-visuals.v1"),
+    TALENT_ICONS("talent-icons.v1"),
 }
 
 /**

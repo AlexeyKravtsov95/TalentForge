@@ -9,6 +9,7 @@ object TestRepoAssets {
 
     val forever69977: File get() = repoRoot.resolve("data/normalized/forever/1.60.1.69977")
     val forever70009: File get() = repoRoot.resolve("data/normalized/forever/1.60.1.70009")
+    val visuals70009: File get() = repoRoot.resolve("data/visuals/forever/1.60.1.70009")
     val conformance70009: File get() =
         repoRoot.resolve("data/conformance/forever/1.60.1.70009/allocation.v1.json")
 

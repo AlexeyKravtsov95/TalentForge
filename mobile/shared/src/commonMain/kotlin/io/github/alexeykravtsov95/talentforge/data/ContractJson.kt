@@ -4,6 +4,8 @@ import io.github.alexeykravtsov95.talentforge.data.allocation.BuildFile
 import io.github.alexeykravtsov95.talentforge.data.conformance.ConformanceSuite
 import io.github.alexeykravtsov95.talentforge.data.manifest.DatasetManifest
 import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
+import io.github.alexeykravtsov95.talentforge.data.visuals.TalentIconRegistry
+import io.github.alexeykravtsov95.talentforge.data.visuals.TalentVisualsDocument
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
@@ -54,6 +56,12 @@ object TalentDataContract {
     fun decodeConformanceSuite(bytes: ByteArray): ConformanceSuite =
         decode(ContractKind.ALLOCATION_CONFORMANCE, bytes, ConformanceSuite.serializer()) { json.decodeFromString(it) }
 
+    fun decodeTalentVisualsDocument(bytes: ByteArray): TalentVisualsDocument =
+        decode(ContractKind.TALENT_VISUALS, bytes, TalentVisualsDocument.serializer()) { json.decodeFromString(it) }
+
+    fun decodeTalentIconRegistry(bytes: ByteArray): TalentIconRegistry =
+        decode(ContractKind.TALENT_ICONS, bytes, TalentIconRegistry.serializer()) { json.decodeFromString(it) }
+
     private inline fun <T : Any> decode(
         contract: ContractKind,
         bytes: ByteArray,
@@ -82,6 +90,8 @@ object TalentDataContract {
         is DatasetManifest -> schemaVersion
         is BuildFile -> schemaVersion
         is ConformanceSuite -> schemaVersion
+        is TalentVisualsDocument -> schemaVersion
+        is TalentIconRegistry -> schemaVersion
         else -> throw SerializationException("unexpected contract payload ${this::class.simpleName}")
     }
 
