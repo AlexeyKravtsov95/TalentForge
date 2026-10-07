@@ -26,6 +26,21 @@ object TalentInspectorMetrics {
     val COMPACT_INSET_DP = 14.dp
 
     /**
+     * Implementation-safe (M5.V1): the talent icon in the compact bar. Not
+     * frozen by a spec page; 36 dp fits the 64 dp bar with its padding and
+     * leaves the bar's height unchanged.
+     */
+    val COMPACT_ICON_DP = 36.dp
+
+    /**
+     * Implementation-safe (M5.V1): the talent icon in the full-detail headers
+     * (expanded sheet, side panel, tablet panel). 40 dp shows the 64 px client
+     * texture below its native size on every density bucket ≥ 1.6×, and
+     * modestly scaled on lower ones.
+     */
+    val DETAIL_ICON_DP = 40.dp
+
+    /**
      * B3 06 CHROME / UX/UI spec 03: "Expanded sheet 448 dp" — the preferred
      * height, capped by the available height (see [SHEET_BOTTOM_CLEARANCE_DP]).
      */

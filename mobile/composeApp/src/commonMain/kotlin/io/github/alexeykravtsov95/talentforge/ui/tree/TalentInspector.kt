@@ -6,7 +6,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,10 +29,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -65,7 +72,17 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
  * meter], No points [− if ranked, + disabled]"; full detail adds the
  * `− + Rank Max` row). Spending/refunding happens only here — a node tap
  * never spends.
+ *
+ * M5.V1 adds the selected talent's real icon in front of its name in every
+ * variant (`[icon] Talent Name`), for visual identification only. The icon is
+ * the already decoded node icon; when there is none (monogram fallback) the
+ * header is exactly the M4 one. Talent descriptions are still not rendered:
+ * the dataset's `descriptionTemplate` is raw client tooltip markup, and an
+ * unevaluated template is never shown (M5.V2).
  */
+
+/** Test tag of the inspector's talent icon. */
+const val TALENT_INSPECTOR_ICON_TAG: String = "talent-inspector-icon"
 
 /** Portrait: the compact bottom inspector; `content == null` hides it entirely. */
 @Composable
@@ -73,6 +90,7 @@ fun TalentInspectorCompactBar(
     accent: androidx.compose.ui.graphics.Color,
     content: TalentInspectorContent?,
     actions: TalentNodeActions? = null,
+    icon: ImageBitmap? = null,
     onSpendRank: (Int) -> Unit = {},
     onRefundRank: (Int) -> Unit = {},
     onToggleExpanded: () -> Unit,
@@ -106,6 +124,7 @@ fun TalentInspectorCompactBar(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
                 ) {
+                    InspectorTalentIcon(icon = icon, size = TalentInspectorMetrics.COMPACT_ICON_DP)
                     Column(
                         modifier = Modifier
                             .weight(1f)
@@ -180,6 +199,7 @@ fun TalentInspectorExpandedSheet(
     accent: androidx.compose.ui.graphics.Color,
     content: TalentInspectorContent,
     actions: TalentNodeActions? = null,
+    icon: ImageBitmap? = null,
     height: Dp,
     onCollapse: () -> Unit,
     onDeselect: () -> Unit,
@@ -204,6 +224,7 @@ fun TalentInspectorExpandedSheet(
             horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
             modifier = Modifier.padding(vertical = TalentForgeSpacing.inline),
         ) {
+            InspectorTalentIcon(icon = icon, size = TalentInspectorMetrics.DETAIL_ICON_DP)
             Column(Modifier.weight(1f)) {
                 BasicText(
                     text = content.name,
@@ -264,6 +285,7 @@ fun TalentInspectorSidePanel(
     accent: androidx.compose.ui.graphics.Color,
     content: TalentInspectorContent,
     actions: TalentNodeActions? = null,
+    icon: ImageBitmap? = null,
     onDeselect: () -> Unit,
     onShowPrerequisite: (Int) -> Unit,
     onSpendRank: (Int) -> Unit = {},
@@ -280,8 +302,10 @@ fun TalentInspectorSidePanel(
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
             modifier = Modifier.padding(vertical = TalentForgeSpacing.inline),
         ) {
+            InspectorTalentIcon(icon = icon, size = TalentInspectorMetrics.DETAIL_ICON_DP)
             Column(Modifier.weight(1f)) {
                 BasicText(
                     text = content.name,
@@ -323,6 +347,7 @@ fun TalentInspectorPersistentPanel(
     accent: androidx.compose.ui.graphics.Color,
     content: TalentInspectorContent?,
     actions: TalentNodeActions? = null,
+    icon: ImageBitmap? = null,
     onShowPrerequisite: (Int) -> Unit,
     onSpendRank: (Int) -> Unit = {},
     onRefundRank: (Int) -> Unit = {},
@@ -346,8 +371,10 @@ fun TalentInspectorPersistentPanel(
         } else {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
                 modifier = Modifier.padding(vertical = TalentForgeSpacing.inline),
             ) {
+                InspectorTalentIcon(icon = icon, size = TalentInspectorMetrics.DETAIL_ICON_DP)
                 BasicText(
                     text = content.name,
                     style = InspectorNameStyle.copy(color = talentForgeColors().textPrimary),
@@ -379,6 +406,29 @@ fun TalentInspectorPersistentPanel(
 }
 
 // ------------------------------------------------------------------ shared internals
+
+/**
+ * The selected talent's real icon in front of its name. Renders nothing when
+ * the node has no icon (monogram fallback) — the header then is the M4 one,
+ * and no placeholder art is invented. Decorative for accessibility: the name
+ * next to it is the label.
+ */
+@Composable
+private fun InspectorTalentIcon(icon: ImageBitmap?, size: Dp) {
+    if (icon == null) return
+    val shape = RoundedCornerShape(TalentForgeRadius.small)
+    Image(
+        bitmap = icon,
+        contentDescription = null,
+        modifier = Modifier
+            .size(size)
+            .clip(shape)
+            .border(width = 1.dp, color = talentForgeColors().borderStrong, shape = shape)
+            .testTag(TALENT_INSPECTOR_ICON_TAG),
+        contentScale = ContentScale.FillBounds,
+        filterQuality = FilterQuality.Medium,
+    )
+}
 
 /** The full-detail facts of one selected node — sparse, real, nothing invented. */
 @Composable
