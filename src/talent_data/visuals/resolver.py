@@ -21,6 +21,7 @@ from enum import StrEnum
 from talent_data.db2 import tables as t
 from talent_data.models.talents import TalentDataDocument, TalentEntry
 from talent_data.models.visuals import (
+    VISUALS_SCHEMA_VERSION,
     TalentVisualEntry,
     TalentVisualsDocument,
     VisualsProvenance,
@@ -227,6 +228,7 @@ def build_visuals_document(
         for r in sorted(resolutions, key=lambda r: r.entry_id)
     ]
     draft = TalentVisualsDocument(
+        schema_version=VISUALS_SCHEMA_VERSION,
         game=document.game,
         client_build=document.client_build,
         class_token=document.class_.token,

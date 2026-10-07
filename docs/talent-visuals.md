@@ -39,6 +39,12 @@ Both are strict in every implementation: unknown fields, missing fields, an unsu
 malformed hashes are rejected. Neither has a timestamp, so regenerating from the same
 inputs is byte-identical.
 
+Every property of every object is **required** on the wire, including the constants
+`schemaVersion` and `imageFormat`: neither the Python models nor the Kotlin models
+declare a default, so the generated schemas list every property under `required` and
+a document that omits one is rejected by both implementations (a test pins this on the
+committed schemas).
+
 ### `talent-visuals.v1`
 
 ```json

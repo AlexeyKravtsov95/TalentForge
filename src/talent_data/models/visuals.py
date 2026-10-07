@@ -14,6 +14,10 @@ regenerating from the same inputs yields byte-identical files.
 
 JSON uses camelCase; Python uses snake_case. Parsing is strict: unknown fields, missing
 fields and wrong wire types (``"123"`` for a number, ``1.0`` for an integer) are rejected.
+
+Every field is explicit on the wire. No model field has a default - not even the constant
+``schemaVersion`` / ``imageFormat`` - because a default would make the generated JSON
+Schema stop requiring the property. Writers pass the constants explicitly.
 """
 
 from __future__ import annotations
@@ -27,6 +31,7 @@ from pydantic.alias_generators import to_camel
 
 VISUALS_SCHEMA_VERSION: Literal[1] = 1
 ICONS_SCHEMA_VERSION: Literal[1] = 1
+ICON_IMAGE_FORMAT: Literal["png"] = "png"
 
 # Fields that carry no visual meaning and are excluded from ``contentHash``.
 _UNHASHED_FIELDS = frozenset({"contentHash", "provenance"})
@@ -72,7 +77,7 @@ class VisualsProvenance(_Model):
 
 
 class TalentVisualsDocument(_Model):
-    schema_version: Literal[1] = VISUALS_SCHEMA_VERSION
+    schema_version: Literal[1]
     game: str = Field(min_length=1)
     client_build: str = Field(pattern=_BUILD_PATTERN)
     class_token: str = Field(
@@ -123,10 +128,10 @@ class IconsProvenance(_Model):
 
 
 class TalentIconRegistry(_Model):
-    schema_version: Literal[1] = ICONS_SCHEMA_VERSION
+    schema_version: Literal[1]
     game: str = Field(min_length=1)
     client_build: str = Field(pattern=_BUILD_PATTERN)
-    image_format: Literal["png"] = "png"
+    image_format: Literal["png"]
     icons: list[IconAsset] = Field(description="Ordered by fileDataId, one per FileDataID")
     content_hash: Sha256 = Field(pattern=_SHA256_PATTERN)
     provenance: IconsProvenance

@@ -18,6 +18,8 @@ import struct
 from dataclasses import dataclass
 
 from talent_data.models.visuals import (
+    ICON_IMAGE_FORMAT,
+    ICONS_SCHEMA_VERSION,
     IconAsset,
     IconsProvenance,
     TalentIconRegistry,
@@ -131,8 +133,10 @@ def build_icon_registry(
     if len(ids) != len(set(ids)):
         raise IconAssetError("duplicate FileDataID in the icon set")
     draft = TalentIconRegistry(
+        schema_version=ICONS_SCHEMA_VERSION,
         game=game,
         client_build=client_build,
+        image_format=ICON_IMAGE_FORMAT,
         icons=[
             IconAsset(
                 file_data_id=icon.file_data_id,

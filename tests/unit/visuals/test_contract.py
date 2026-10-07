@@ -146,7 +146,19 @@ VISUALS_REJECTED = {
     "unknown top-level field": lambda r: {**r, "atlas": "icons.png"},
     "unknown entry field": lambda r: mutate(r, ("entries", 0, "assetKey"), "132307"),
     "unknown provenance field": lambda r: mutate(r, ("provenance", "url"), "https://x"),
+    "missing schemaVersion": lambda r: {k: v for k, v in r.items() if k != "schemaVersion"},
     "missing game": lambda r: {k: v for k, v in r.items() if k != "game"},
+    "missing clientBuild": lambda r: {k: v for k, v in r.items() if k != "clientBuild"},
+    "missing classToken": lambda r: {k: v for k, v in r.items() if k != "classToken"},
+    "missing dataset hash": lambda r: {k: v for k, v in r.items() if k != "talentDataContentHash"},
+    "missing entries": lambda r: {k: v for k, v in r.items() if k != "entries"},
+    "missing entry field": lambda r: {
+        **r,
+        "entries": [
+            {k: v for k, v in r["entries"][0].items() if k != "displaySpellId"},
+            *r["entries"][1:],
+        ],
+    },
     "missing contentHash": lambda r: {k: v for k, v in r.items() if k != "contentHash"},
     "missing provenance": lambda r: {k: v for k, v in r.items() if k != "provenance"},
     "quoted schemaVersion": lambda r: {**r, "schemaVersion": "1"},
@@ -195,7 +207,18 @@ REGISTRY_REJECTED = {
     "unknown source format": lambda r: mutate(r, ("icons", 0, "sourceFormat"), "PNG"),
     "malformed sha256": lambda r: mutate(r, ("icons", 0, "sha256"), "0e7602"),
     "wrong schemaVersion": lambda r: {**r, "schemaVersion": 2},
+    "quoted schemaVersion": lambda r: {**r, "schemaVersion": "1"},
+    "missing schemaVersion": lambda r: {k: v for k, v in r.items() if k != "schemaVersion"},
+    "missing imageFormat": lambda r: {k: v for k, v in r.items() if k != "imageFormat"},
+    "missing game": lambda r: {k: v for k, v in r.items() if k != "game"},
+    "missing clientBuild": lambda r: {k: v for k, v in r.items() if k != "clientBuild"},
+    "missing contentHash": lambda r: {k: v for k, v in r.items() if k != "contentHash"},
+    "missing provenance": lambda r: {k: v for k, v in r.items() if k != "provenance"},
     "missing icons": lambda r: {k: v for k, v in r.items() if k != "icons"},
+    "missing icon field": lambda r: {
+        **r,
+        "icons": [{k: v for k, v in r["icons"][0].items() if k != "sourceFormat"}, *r["icons"][1:]],
+    },
 }
 
 
@@ -203,6 +226,63 @@ REGISTRY_REJECTED = {
 def test_icon_registry_is_a_closed_strict_contract(case: str) -> None:
     with pytest.raises(ValidationError):
         TalentIconRegistry.model_validate(REGISTRY_REJECTED[case](raw_registry()))
+
+
+def test_missing_schema_version_is_not_reported_as_an_unsupported_version(tmp_path) -> None:
+    """A document without ``schemaVersion`` is rejected by both readers, explicitly."""
+    visuals = tmp_path / "warrior.json"
+    visuals.write_text(
+        json.dumps({k: v for k, v in raw_visuals().items() if k != "schemaVersion"}),
+        encoding="utf-8",
+    )
+    with pytest.raises(PipelineError, match="unsupported talent-visuals schemaVersion None"):
+        read_visuals_document(visuals)
+    registry = tmp_path / "icons.json"
+    registry.write_text(
+        json.dumps({k: v for k, v in raw_registry().items() if k != "schemaVersion"}),
+        encoding="utf-8",
+    )
+    with pytest.raises(PipelineError, match="unsupported talent-icons schemaVersion None"):
+        read_icon_registry(registry)
+
+
+SCHEMA_DIR = CANONICAL_VISUALS.parents[3] / "docs" / "schema"
+
+
+def object_definitions(schema: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """The root object and every ``$defs`` object of a JSON Schema, by name."""
+    return {"<root>": schema, **schema.get("$defs", {})}
+
+
+@pytest.mark.parametrize(
+    "schema_file", ["talent-visuals.v1.schema.json", "talent-icons.v1.schema.json"]
+)
+def test_published_schema_requires_every_property_of_every_object(schema_file: str) -> None:
+    """Every field is explicit on the wire: nothing in either contract is optional, and
+    every object is closed. A model default would silently drop a property from
+    ``required`` - this pins the committed schema, which is generated from the models."""
+    schema = json.loads((SCHEMA_DIR / schema_file).read_text(encoding="utf-8"))
+    for name, definition in object_definitions(schema).items():
+        properties = set(definition["properties"])
+        assert set(definition["required"]) == properties, (schema_file, name)
+        assert definition["additionalProperties"] is False, (schema_file, name)
+        assert not [p for p, spec in definition["properties"].items() if "default" in spec], name
+
+
+def test_constants_are_required_and_emitted_explicitly() -> None:
+    visuals = json.loads((SCHEMA_DIR / "talent-visuals.v1.schema.json").read_text("utf-8"))
+    icons = json.loads((SCHEMA_DIR / "talent-icons.v1.schema.json").read_text("utf-8"))
+    assert "schemaVersion" in visuals["required"]
+    assert {"schemaVersion", "imageFormat"} <= set(icons["required"])
+    assert visuals["properties"]["schemaVersion"] == {
+        "const": 1,
+        "title": "Schemaversion",
+        "type": "integer",
+    }
+    assert icons["properties"]["imageFormat"]["const"] == "png"
+    # and the writers still put both constants on the wire
+    assert raw_visuals()["schemaVersion"] == 1
+    assert (raw_registry()["schemaVersion"], raw_registry()["imageFormat"]) == (1, "png")
 
 
 # --------------------------------------------------------------------------- identity

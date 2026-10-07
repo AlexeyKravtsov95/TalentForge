@@ -121,7 +121,6 @@
     },
     "imageFormat": {
       "const": "png",
-      "default": "png",
       "title": "Imageformat",
       "type": "string"
     },
@@ -130,14 +129,15 @@
     },
     "schemaVersion": {
       "const": 1,
-      "default": 1,
       "title": "Schemaversion",
       "type": "integer"
     }
   },
   "required": [
+    "schemaVersion",
     "game",
     "clientBuild",
+    "imageFormat",
     "icons",
     "contentHash",
     "provenance"
