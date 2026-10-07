@@ -80,3 +80,14 @@ def test_sync_repairs_drift_and_removes_stale_files(mirrored, capsys) -> None:
     assert sync_script.drift(canonical, bundled) == []
     assert not (bundled / "icons" / "424242.png").exists()
     assert not (bundled / "icons" / "132090.png").exists()
+
+
+def test_os_dotfiles_are_not_visuals(mirrored) -> None:
+    """Finder's .DS_Store in either tree is neither drift nor something to mirror."""
+    canonical, bundled = mirrored
+    (canonical / ".DS_Store").write_bytes(b"finder")
+    (bundled / "icons" / ".DS_Store").write_bytes(b"finder")
+    assert sync_script.drift(canonical, bundled) == []
+    assert sync_script.sync(canonical, bundled) == 0
+    assert not (bundled / ".DS_Store").exists()
+    assert (bundled / "icons" / ".DS_Store").exists()

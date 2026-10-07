@@ -62,7 +62,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def relative_files(directory: Path) -> set[str]:
     if not directory.is_dir():
         return set()
-    return {p.relative_to(directory).as_posix() for p in directory.rglob("*") if p.is_file()}
+    # Dotfiles (Finder's .DS_Store, editor droppings) are OS noise, never visuals.
+    return {
+        p.relative_to(directory).as_posix()
+        for p in directory.rglob("*")
+        if p.is_file() and not p.name.startswith(".")
+    }
 
 
 def drift(canonical_dir: Path, bundled_dir: Path) -> list[str]:

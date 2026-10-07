@@ -223,7 +223,12 @@ def write_coverage_report(report: IconCoverageReport, path: Path) -> None:
 def _relative_files(directory: Path) -> set[str]:
     if not directory.is_dir():
         return set()
-    return {p.relative_to(directory).as_posix() for p in directory.rglob("*") if p.is_file()}
+    # Dotfiles (Finder's .DS_Store, editor droppings) are OS noise, never visuals.
+    return {
+        p.relative_to(directory).as_posix()
+        for p in directory.rglob("*")
+        if p.is_file() and not p.name.startswith(".")
+    }
 
 
 def read_visuals_document(path: Path) -> TalentVisualsDocument:
