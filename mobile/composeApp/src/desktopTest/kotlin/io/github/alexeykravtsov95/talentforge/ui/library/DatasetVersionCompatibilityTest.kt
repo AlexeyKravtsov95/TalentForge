@@ -95,9 +95,10 @@ class DatasetVersionCompatibilityTest {
     private fun TalentTooltipRank.text(): String = segments.joinToString("") { it.text }
 
     /**
-     * A real 1.60.1.70009 Druid build with Shifting Power at 3/3 — spent
-     * through the engine, never hand-written. Shifting Power has max rank 1 on
-     * 1.60.1.70245, so this build only exists on its own build.
+     * A real 1.60.1.70009 Druid build with node 104951 (King of the Jungle on
+     * 70009) at 3/3 — spent through the engine, never hand-written. On
+     * 1.60.1.70245 the same node id is Shifting Power with max rank 1, so this
+     * build only exists on its own build.
      */
     private fun referenceDruidWithShiftingPowerMaxed(engine: TalentAllocationEngine): BuildState {
         var state = engine.emptyState()
@@ -144,7 +145,9 @@ class DatasetVersionCompatibilityTest {
         assertEquals(52, session.engine.tree.nodes.size)
         val improved = session.engine.tree.nodes.single { it.id == IMPROVED_SHIFTING_POWER }
         assertEquals("Improved Shifting Power", improved.name)
-        assertEquals(1, session.engine.tree.nodes.single { it.id == SHIFTING_POWER }.maxRank)
+        val newNode = session.engine.tree.nodes.single { it.id == SHIFTING_POWER }
+        assertEquals("Shifting Power", newNode.name)
+        assertEquals(1, newNode.maxRank)
         // the product build's own icon and description of its new talent
         assertTrue(IMPROVED_SHIFTING_POWER in session.icons.nodeIds)
         assertEquals(
@@ -179,7 +182,9 @@ class DatasetVersionCompatibilityTest {
         assertEquals("1.60.1.70009", session.engine.document.clientBuild)
         assertEquals(51, session.engine.tree.nodes.size)
         assertFalse(session.engine.tree.nodes.any { it.id == IMPROVED_SHIFTING_POWER })
-        assertEquals(3, session.engine.tree.nodes.single { it.id == SHIFTING_POWER }.maxRank)
+        val oldNode = session.engine.tree.nodes.single { it.id == SHIFTING_POWER }
+        assertEquals("King of the Jungle", oldNode.name)
+        assertEquals(3, oldNode.maxRank)
         // the reference build's own icon and description
         assertTrue(SHIFTING_POWER in session.icons.nodeIds)
         assertEquals(
@@ -247,7 +252,7 @@ class DatasetVersionCompatibilityTest {
     }
 
     private companion object {
-        /** Druid "Shifting Power": max rank 3 on 1.60.1.70009, 1 on 1.60.1.70245. */
+        /** Druid node 104951: "King of the Jungle" (max 3) on 1.60.1.70009, "Shifting Power" (max 1) on 1.60.1.70245. */
         const val SHIFTING_POWER = 104951
 
         /** Druid "Improved Shifting Power": new in 1.60.1.70245. */

@@ -278,8 +278,9 @@ unchanged.
 User-visible changes:
 
 * **Druid** (Feral tab reworked): new node **113563 Improved Shifting Power** (max rank 2,
-  row 4, requires Shifting Power, 20-point gate). **104951 Shifting Power** now uses a
-  different spell (King of the Jungle 417046 → Shifting Power 1322605), **max rank 3 → 1**,
+  row 4, requires Shifting Power, 20-point gate). Node **104951** is **King of the Jungle**
+  (spell 417046, max rank 3) on 70009 and **Shifting Power** (spell 1322605) on 70245:
+  same node id, different talent, **max rank 3 → 1**,
   moved row 4 → row 3, gate 20 → 15 points, gained a prerequisite on Shredding Attacks.
   Shredding Attacks moved row 3 → row 2 (gate 15 → 10); Predatory Instincts moved column 0
   → 3; the gates of Blood Frenzy, Primal Bite, Predatory Instincts, Predatory Strikes and
@@ -295,8 +296,9 @@ User-visible changes:
 * **Shaman**: no change.
 
 Rank costs (1 point of currency 3820), point budgets and the gate rule are unchanged.
-Because the same node id can mean something else in the two builds (Shifting Power 3/3 is
-a valid 70009 build and an invalid 70245 one), a saved build is always opened on its own
+Because the same node id can mean something else in the two builds (node 104951 at 3/3 —
+King of the Jungle — is a valid 70009 build and an invalid 70245 one, where 104951 is
+Shifting Power with max rank 1), a saved build is always opened on its own
 build and never migrated — see `docs/mobile-architecture.md`.
 
 ### Allocation compatibility

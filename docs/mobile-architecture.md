@@ -487,7 +487,8 @@ descriptions of each, every one from its own client build:
 exact ranks and points. Nothing is migrated: no node-id remapping, no rank or point
 recount against 1.60.1.70245, no rewrite of the stored record, and `allocation-build.v1` is
 unchanged. The data shows why this matters — the same node id can mean something else in
-the two builds (Druid 104951 *Shifting Power* has max rank 3 on 70009 and 1 on 70245, so a
+the two builds (Druid node 104951 is *King of the Jungle*, max rank 3, on 70009 and *Shifting
+Power*, max rank 1, on 70245, so a
 valid 70009 build is invalid on 70245). A record of a client build that is not bundled
 (e.g. 1.60.1.70170) keeps failing with the typed
 `DatasetLoadError.ManifestUnavailable(AssetMissing("dataset/forever/<build>/manifest.json"))`
@@ -505,7 +506,8 @@ design (each build ships the icons of its own client files).
 **Tests.** `DatasetVersionCompatibilityTest` (desktop, real bundled resources, every
 asset read recorded to prove which build answered): New Build lists 70245; a new Druid
 draft is created and opens on 70245 with the new talent, its icon and description; a
-70009 Druid build with Shifting Power 3/3 opens on 70009 unchanged and is invalid on 70245;
+70009 Druid build with node 104951 (King of the Jungle) at 3/3 opens on 70009 unchanged and is
+invalid on 70245;
 cards of both builds resolve their own datasets; an unbundled build fails typed and reads
 nothing else. `ProductDatasetContractTest` (shared JVM): the committed 70245 documents,
 manifest, visuals and tooltips pass the strict readers and repository identity checks,

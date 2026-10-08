@@ -144,6 +144,11 @@ def test_druid_changes_that_make_saved_builds_build_specific(
     new = {n.id: n for n in committed["druid"].trees[0].nodes}
     assert set(new) - set(old) == {IMPROVED_SHIFTING_POWER}
     assert set(old) - set(new) == set()
+    # one node id, two different talents
+    assert (old[SHIFTING_POWER].name, new[SHIFTING_POWER].name) == (
+        "King of the Jungle",
+        "Shifting Power",
+    )
     assert (old[SHIFTING_POWER].max_rank, new[SHIFTING_POWER].max_rank) == (3, 1)
     assert old[SHIFTING_POWER].entries[0].spell_id != new[SHIFTING_POWER].entries[0].spell_id
     improved = new[IMPROVED_SHIFTING_POWER]
@@ -166,8 +171,8 @@ def test_engine_supports_every_node_except_the_known_unresolved_venom(
 def test_a_reference_build_is_not_valid_on_the_product_build(
     committed: dict[str, TalentDataDocument], reference: dict[str, TalentDataDocument]
 ) -> None:
-    """A 70009 Druid build with Shifting Power 3/3 is valid on 70009 and invalid on 70245
-    (max rank 1): re-reading old builds against the product build would change them."""
+    """A 70009 Druid build with node 104951 at 3/3 (King of the Jungle on 70009) is valid on
+    70009 and invalid on 70245 (Shifting Power, max rank 1): re-reading old builds against the product build would change them."""
     old_engine = TalentAllocationEngine(reference["druid"])
     state = old_engine.empty_state()
     while old_engine.can_spend(state, SHIFTING_POWER).allowed is False:
@@ -177,7 +182,7 @@ def test_a_reference_build_is_not_valid_on_the_product_build(
             if n.section_index == 1 and n.id != SHIFTING_POWER
             if old_engine.can_spend(state, n.id).allowed
         ]
-        assert candidates, "Shifting Power must be reachable on 70009"
+        assert candidates, "node 104951 must be reachable on 70009"
         state = old_engine.spend(state, min(candidates)).state
     for _ in range(3):
         state = old_engine.spend(state, SHIFTING_POWER).state
