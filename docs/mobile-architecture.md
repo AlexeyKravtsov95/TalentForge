@@ -279,7 +279,9 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
   absent, never faked), the New Build class list (tokens from the baseline
   manifest, display names from the nine real documents; a failed class
   document disables that class conservatively — no invented name, no
-  substitution), draft creation (document → engine → `emptyState()` →
+  substitution; the version line is the neutral "Talent data 1.60.1" derived
+  from the bundled build — no "up to date" / "latest" claim, since the app has
+  no supported-build freshness mechanism), draft creation (document → engine → `emptyState()` →
   `BuildFile` bound to the exact dataset identity → persisted, and only a
   persisted draft is "created"), the editor session loader, the relative-time
   wording, shared shell controls and the platform clock expect/actual;
@@ -362,7 +364,7 @@ through the same single change path. Opening a build touches `lastOpenedAt`
 **Build opening — no silent migration.** A saved build is never trusted
 blindly: the record's exact dataset identity resolves through
 `BundledTalentDatasetRepository` (an unavailable dataset never falls back to
-the current baseline), the saved `treeId` must exist in the loaded document,
+the bundled baseline), the saved `treeId` must exist in the loaded document,
 and the saved allocations must pass the real engine validation — no rank is
 clamped, dropped or "repaired". Any mismatch is a typed unavailable/
 incompatible editor state. A reopened build starts with empty undo/redo
@@ -445,10 +447,15 @@ Open string unions the schema explicitly allows are modelled faithfully:
 1. Canonical data lives in `data/normalized/forever/<build>/` (Python
    pipeline output, committed).
 2. `scripts/sync_mobile_datasets.py` copies `manifest.json` + the nine class
-   documents of the baseline (`1.60.1.70009`) into
+   documents of the verified reference baseline (`1.60.1.70009`) into
    `mobile/composeApp/src/commonMain/composeResources/files/dataset/forever/1.60.1.70009/`.
 3. `--check` mode fails (exit 1) when the bundled files differ byte-for-byte
    from the canonical tree.
+
+The bundled baseline (`BASELINE_BUNDLE`, `1.60.1.70009`) is the verified reference
+baseline the allocation evidence and conformance vectors are pinned to — it is not
+claimed to be the current Forever build. Switching the bundle to a newer build is the
+separate M5.DATA milestone; the visuals and descriptions below follow the same baseline.
 
 The bundled copy is deterministically derived and never hand-edited. Drift is
 caught in three places: the Python check script (CI step 1), the JVM
@@ -583,10 +590,9 @@ single-line. Home / New
 Build / Saved Builds are unchanged — class marks stay monograms (they identify
 classes, not talents).
 
-**Descriptions are not rendered.** `descriptionTemplate` is raw client tooltip
-markup (`$s1`, `${…}`, cross-spell references, conditionals, …) for 461 of the
-469 bundled entries; an unevaluated template is never shown. The syntax
-inventory for M5.V2 is `docs/research/forever-tooltip-template-inventory.md`.
+**Descriptions** were not rendered in M5.V1; M5.V2 adds them from a separate
+sidecar - see [Talent descriptions (M5.V2)](#talent-descriptions-m5v2). The raw
+`descriptionTemplate` is still never shown.
 
 **Package size.** Debug APK 9 469 072 bytes on `main` (`202467f`) →
 11 950 284 bytes at `add3738`: +2 481 212 bytes (≈ 2.37 MiB) for 358 PNG icons
@@ -597,6 +603,66 @@ PNGs are stored uncompressed in the APK.
 `TalentVisualsRepositoryTest` (`shared/jvmTest`); `TalentIconAssetsTest`,
 `TalentTreeIconUiTest`, `VisualsDriftTest` and the opt-in, desktop-rendered
 `TalentTreeM5V1ScreenshotTest` (`composeApp/desktopTest`).
+
+## Talent descriptions (M5.V2)
+
+Real rank-specific talent descriptions, rendered at build time from the DB2 tables of the
+pinned client build and bundled offline. Sources, rules, evidence and the gap policy:
+[talent-tooltips.md](talent-tooltips.md); coverage for the reference baseline 1.60.1.70009 (1290 of 1333 ranks
+resolved, 43 partial, 0 unresolved, every gap listed):
+[research/forever-1.60.1.70009-tooltip-coverage.md](research/forever-1.60.1.70009-tooltip-coverage.md).
+
+**Contract and loading.** `talent-tooltips.v1` sidecars
+(`composeResources/files/tooltips/forever/1.60.1.70009/<class>.json`, mirrored
+byte-for-byte by `scripts/sync_mobile_tooltips.py`, CI `--check`) are decoded by
+`TalentDataContract.decodeTalentTooltipsDocument` (strict, closed enums, numeric
+wire-form check) and verified by `BundledTalentTooltipsRepository` (`shared`,
+`data.tooltips`) against the loaded class document: game, client build, class token,
+`talentDataContentHash`, every entry exactly once with the dataset's definition / spell /
+maxRank, ranks exactly `1..maxRank`, status consistent with segments and gaps, no `$`,
+`|` or `\r` in any text. Failures are typed `TooltipsLoadError`s; there is no
+cross-build substitution and no runtime network. `TalentDescriptionsLoader`
+(`composeApp`) loads them together with the icons when an editor session opens and maps
+entries to nodes (single-entry nodes only, like icons). A load failure never fails the
+session: `TalentNodeDescriptions.Unavailable` makes every inspector show "Talent
+description unavailable for this client data."
+
+**Inspector.** The full-detail variants (portrait expanded sheet, landscape side panel,
+tablet persistent panel) show, below the rank, state and lock lines:
+
+* the description of the **current** rank; for an unspent talent the rank-1 description
+  as the prospective effect;
+* the B3 04 / UX/UI spec H **CURRENT / NEXT RANK** comparison when exactly one value
+  changes between the ranks (rank 0: "—" / the rank-1 value, as in spec H's
+  "Deflection 0/5 … — · 1%"); when several values change (Weaponmaster, plurals), the
+  next rank's full text with the changed values emphasised - an unlabelled column of
+  numbers would not be readable; at max rank no next-rank section;
+* values semibold; a value that is not shown is a muted "—" with one note line
+  ("Values marked — depend on your character and are not shown." or "… are not
+  available in this client data.").
+
+The presentation (`TalentInspectorDescription`) is a pure function of the verified
+segments and the node's rank - it is recomputed from the engine-backed presentation, so
+`+`, `−`, Max, undo, redo and Reset update it with the build. The compact portrait bar is
+unchanged (B3 03: name, rank, state, actions). The detail column scrolls; the `− + Rank
+Max` row **and Show** are pinned to the bottom of the side and tablet panels (as in the
+expanded sheet), so a long description can never push a control, the blocked-action
+reason in the state line, or a lock reason out of reach. Deviation from the B3 04 order
+("description, current / next, requirements"): the lock lines stay above the description
+for that reason.
+
+**Tests added:** `TalentTooltipsContractTest`, `TalentTooltipsRepositoryTest`
+(`shared/jvmTest`); `TalentInspectorDescriptionTest`, `TalentTreeDescriptionUiTest`,
+`TooltipsDriftTest` and the opt-in, desktop-rendered `TalentTreeM5V2ScreenshotTest`
+(`composeApp/desktopTest`).
+
+**Device evidence** (`docs/screenshots/m5-v2/`, reference baseline 1.60.1.70009, real
+`adb screencap` / `xcrun simctl io screenshot` captures of the debug app): Android
+emulator (1080 × 2424, API 35) portrait Improved Rend rank 0 / 1 of 3 / max, Improved
+Slam, Weaponmaster (multi-line), Anger Management (prerequisite-locked, Show pinned),
+Mage Arcane Focus, Rogue Relentless Strikes (partial description), Druid Improved Wrath
+(several values change: next-rank text), landscape side inspector; iOS simulator
+(iPhone 17 Pro) New Build version line and the Improved Rend inspector.
 
 ## Conformance strategy (M3A parsing, M3B execution)
 

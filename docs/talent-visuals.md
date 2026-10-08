@@ -3,7 +3,8 @@
 This document describes how TalentForge obtains the real WoW icon of every talent, the
 two sidecar contracts that carry them, and how the mobile app renders them without any
 network access. Everything below was verified against the exact client build
-**Forever `1.60.1.70009`** on 2026-10-07.
+**Forever `1.60.1.70009`** on 2026-10-07 — the project's verified reference baseline,
+not a claim about the current Forever build (a data refresh to a newer build is M5.DATA).
 
 ```
 data/normalized/forever/<build>/<class>.json      (talent-data.v1, unchanged)
@@ -256,6 +257,7 @@ build step and a coordinate contract without a measured need.
 ```bash
 pip install -e ".[dev]"                                   # includes the pinned Pillow
 
+# Commands below reproduce the verified reference baseline.
 # ONLINE, on demand (only when the build or the dataset changes):
 python -m talent_data visuals fetch --build 1.60.1.70009  # SpellMisc + 358 client files
 

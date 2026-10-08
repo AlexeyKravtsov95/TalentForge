@@ -1,0 +1,274 @@
+{
+  "$defs": {
+    "TooltipEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "definitionId": {
+          "description": "TraitDefinition.ID",
+          "exclusiveMinimum": 0,
+          "title": "Definitionid",
+          "type": "integer"
+        },
+        "entryId": {
+          "description": "TalentEntry.id of the matching talent-data.v1",
+          "exclusiveMinimum": 0,
+          "title": "Entryid",
+          "type": "integer"
+        },
+        "maxRank": {
+          "description": "TalentEntry.maxRank",
+          "minimum": 1,
+          "title": "Maxrank",
+          "type": "integer"
+        },
+        "ranks": {
+          "description": "Exactly ranks 1..maxRank, in order",
+          "items": {
+            "$ref": "#/$defs/TooltipRank"
+          },
+          "title": "Ranks",
+          "type": "array"
+        },
+        "spellId": {
+          "description": "TraitDefinition.SpellID (= TalentEntry.spellId)",
+          "exclusiveMinimum": 0,
+          "title": "Spellid",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entryId",
+        "definitionId",
+        "spellId",
+        "maxRank",
+        "ranks"
+      ],
+      "title": "TooltipEntry",
+      "type": "object"
+    },
+    "TooltipGap": {
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "description": "Syntax category of the root-cause token",
+          "enum": [
+            "local-effect-value",
+            "local-periodic-total",
+            "local-radius",
+            "local-period",
+            "local-duration",
+            "local-proc",
+            "cross-spell-effect-value",
+            "cross-spell-radius",
+            "cross-spell-period",
+            "cross-spell-duration",
+            "cross-spell-proc",
+            "scaled-value",
+            "arithmetic",
+            "named-variable",
+            "description-variable",
+            "plural",
+            "conditional",
+            "nested-tooltip",
+            "color",
+            "line-break",
+            "unclassified"
+          ],
+          "title": "Category",
+          "type": "string"
+        },
+        "classification": {
+          "description": "contextDependent: needs character/client state a planner does not have; unsupported: the meaning is not proven for this build; missingData: a referenced client row does not exist in this build",
+          "enum": [
+            "contextDependent",
+            "unsupported",
+            "missingData"
+          ],
+          "title": "Classification",
+          "type": "string"
+        },
+        "fragment": {
+          "description": "The template text this gap stands for",
+          "minLength": 1,
+          "title": "Fragment",
+          "type": "string"
+        },
+        "reason": {
+          "minLength": 1,
+          "title": "Reason",
+          "type": "string"
+        },
+        "token": {
+          "description": "The token that could not be evaluated",
+          "minLength": 1,
+          "title": "Token",
+          "type": "string"
+        }
+      },
+      "required": [
+        "category",
+        "classification",
+        "fragment",
+        "token",
+        "reason"
+      ],
+      "title": "TooltipGap",
+      "type": "object"
+    },
+    "TooltipRank": {
+      "additionalProperties": false,
+      "properties": {
+        "gaps": {
+          "description": "One per gap segment, in order; for an unresolved rank, why nothing is shown",
+          "items": {
+            "$ref": "#/$defs/TooltipGap"
+          },
+          "title": "Gaps",
+          "type": "array"
+        },
+        "rank": {
+          "minimum": 1,
+          "title": "Rank",
+          "type": "integer"
+        },
+        "segments": {
+          "items": {
+            "$ref": "#/$defs/TooltipSegment"
+          },
+          "title": "Segments",
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "resolved",
+            "partial",
+            "unresolved"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rank",
+        "status",
+        "segments",
+        "gaps"
+      ],
+      "title": "TooltipRank",
+      "type": "object"
+    },
+    "TooltipSegment": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "description": "text: literal template text; value: one evaluated value (number, duration or plural word); gap: a construct that could not be evaluated (see gaps)",
+          "enum": [
+            "text",
+            "value",
+            "gap"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "text": {
+          "description": "Plain text; empty exactly for gap segments",
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "text"
+      ],
+      "title": "TooltipSegment",
+      "type": "object"
+    },
+    "TooltipsProvenance": {
+      "additionalProperties": false,
+      "properties": {
+        "renderer": {
+          "description": "Renderer and grammar revision that produced the text",
+          "title": "Renderer",
+          "type": "string"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "tables": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tables",
+          "type": "array"
+        }
+      },
+      "required": [
+        "source",
+        "tables",
+        "renderer"
+      ],
+      "title": "TooltipsProvenance",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "classToken": {
+      "description": "Locale-independent class token, e.g. WARRIOR",
+      "pattern": "^[A-Z]+$",
+      "title": "Classtoken",
+      "type": "string"
+    },
+    "clientBuild": {
+      "pattern": "^\\d+\\.\\d+\\.\\d+\\.\\d+$",
+      "title": "Clientbuild",
+      "type": "string"
+    },
+    "contentHash": {
+      "description": "sha256 of the canonical JSON of every field except contentHash and provenance",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "title": "Contenthash",
+      "type": "string"
+    },
+    "entries": {
+      "description": "One entry per talent entry of the class, ordered by entryId",
+      "items": {
+        "$ref": "#/$defs/TooltipEntry"
+      },
+      "title": "Entries",
+      "type": "array"
+    },
+    "game": {
+      "minLength": 1,
+      "title": "Game",
+      "type": "string"
+    },
+    "provenance": {
+      "$ref": "#/$defs/TooltipsProvenance"
+    },
+    "schemaVersion": {
+      "const": 1,
+      "title": "Schemaversion",
+      "type": "integer"
+    },
+    "talentDataContentHash": {
+      "description": "contentHash of the talent-data.v1 document these descriptions were rendered for; a sidecar is only valid next to exactly that document",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "title": "Talentdatacontenthash",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "game",
+    "clientBuild",
+    "classToken",
+    "talentDataContentHash",
+    "entries",
+    "contentHash",
+    "provenance"
+  ],
+  "title": "TalentTooltipsDocument",
+  "type": "object"
+}

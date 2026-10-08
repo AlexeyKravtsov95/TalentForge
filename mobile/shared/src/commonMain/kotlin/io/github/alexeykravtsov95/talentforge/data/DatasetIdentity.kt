@@ -20,6 +20,7 @@ enum class ContractKind(val contractName: String) {
     ALLOCATION_CONFORMANCE("allocation-conformance.v1"),
     TALENT_VISUALS("talent-visuals.v1"),
     TALENT_ICONS("talent-icons.v1"),
+    TALENT_TOOLTIPS("talent-tooltips.v1"),
 }
 
 /**

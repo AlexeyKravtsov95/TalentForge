@@ -4,7 +4,10 @@ import io.github.alexeykravtsov95.talentforge.data.DatasetBundleId
 import io.github.alexeykravtsov95.talentforge.data.GameId
 
 /**
- * The one dataset bundle M5.1 ships: Forever at the baseline client build.
+ * The one dataset bundle M5.1 ships: Forever at the verified reference baseline
+ * client build (the build the allocation evidence and conformance vectors are
+ * pinned to) — not a claim that it is the current Forever build; refreshing it
+ * is the M5.DATA milestone.
  * New Build resolves its class list from THIS bundle's manifest (never from
  * hardcoded filenames); the manifest stays the dataset list.
  */

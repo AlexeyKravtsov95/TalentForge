@@ -41,6 +41,7 @@ import io.github.alexeykravtsov95.talentforge.data.GameId
 import io.github.alexeykravtsov95.talentforge.data.describe
 import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
+import io.github.alexeykravtsov95.talentforge.ui.assets.TalentDescriptionsLoader
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentIconsLoader
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTypography
@@ -99,6 +100,12 @@ sealed interface TalentTreeUiState {
          * "no icons", so lower-level callers keep working without visuals.
          */
         val icons: TalentNodeIcons = TalentNodeIcons.None,
+        /**
+         * Verified talent descriptions by node id (M5.V2), loaded before the
+         * state is built. The default "none" leaves the inspector without a
+         * description section, so lower-level callers keep working.
+         */
+        val descriptions: TalentNodeDescriptions = TalentNodeDescriptions.None,
     ) : TalentTreeUiState
 
     data class Failed(val failure: TalentTreeUiFailure) : TalentTreeUiState
@@ -314,6 +321,7 @@ private fun ReadyTalentTreeScreen(
             facts = facts,
             guideOriginName = guideOriginName,
             blockedReason = selectedBlockedReason,
+            descriptions = current.descriptions,
         )
     }
 
@@ -733,6 +741,10 @@ internal suspend fun loadBaselineWarriorTreeState(): TalentTreeUiState {
                 icons = TalentIconsLoader(assets)
                     .load(outcome.value, outcome.value.trees.single())
                     .icons,
+                // ... and with the bundled real descriptions (M5.V2).
+                descriptions = TalentDescriptionsLoader(assets)
+                    .load(outcome.value, outcome.value.trees.single())
+                    .descriptions,
             )
 
             else -> state

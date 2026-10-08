@@ -5,6 +5,12 @@ versioned talent-tree contract, and how it detects semantic changes between clie
 Everything below was verified against real Forever beta builds `1.60.1.69876` … `1.60.1.70009`
 on 2026-09-27. Nothing in the pipeline is hand-written talent data.
 
+`1.60.1.70009` is the project's **verified reference baseline** (the build the live
+allocation evidence, the conformance vectors and every committed dataset are pinned to),
+not a claim about the current Forever build: newer builds keep appearing and
+`builds latest` reports whichever is newest when it runs. Refreshing the product data to a
+newer build is the separate M5.DATA milestone.
+
 ```
 wago.tools /api/builds ──► BuildSource ──► latest Forever build
 wago.tools /db2/<T>/csv ─► Db2Source ────► .cache/wago/forever/<build>/<T>.csv (+ .meta.json)
@@ -51,11 +57,12 @@ A build is Forever when **both** hold (`games.py`):
 | version branch (`major.minor`) | `1.60` | the same product also carries `5.5.0` (MoP Classic beta) builds, and `wow_classic_era` carries `1.15.x` |
 
 The **latest** build is the one with the greatest `created_at` (version as tie-breaker)
-— `sources/base.py::latest_build`. At the time of writing:
+— `sources/base.py::latest_build`. Snapshot of `builds list` on 2026-09-27, when the
+reference baseline was chosen (historical; newer builds have appeared since):
 
 | version | created_at |
 | --- | --- |
-| 1.60.1.70009 | 2026-09-24 22:02:03 ← latest |
+| 1.60.1.70009 | 2026-09-24 22:02:03 ← latest on 2026-09-27 (now the reference baseline) |
 | 1.60.1.69977 | 2026-09-23 00:35:05 |
 | 1.60.1.69913 | 2026-09-18 03:02:04 |
 | 1.60.1.69893 | 2026-09-16 23:14:03 |
@@ -400,8 +407,9 @@ noise as balance changes).
   1.60.1.70009 are investigated client-data features, each with a stable code and a
   regression test — see `docs/forever-dataset.md` for the evidence and the full list of
   unresolved semantics.
-* Tooltips are raw templates; `$s1`, `${$m1/-1000}.2`, `$12976d`, conditionals are not
-  rendered. Per-rank numbers are available structurally for curve-backed effects only.
+* Tooltips are raw templates in `talent-data.v1`; `$s1`, `${$m1/-1000}.2`, `$12976d`,
+  conditionals are not rendered there. Since M5.V2 the rendered, rank-specific
+  descriptions are a separate sidecar (`talent-tooltips.v1`, `docs/talent-tooltips.md`).
 * Tab names (Arms / Fury / Protection) are not present in the client data and are `null`.
 * `TraitEdge` semantics beyond the WoWDBDefs names are unverified: whether *sufficient* edges
   are OR-ed and *required* edges AND-ed, and whether a prerequisite must be fully ranked, is
@@ -427,12 +435,16 @@ noise as balance changes).
 python -m venv .venv && . .venv/bin/activate
 pip install -e ".[dev]"
 
+# dynamic discovery (online; output changes over time)
 python -m talent_data builds list --game forever
-python -m talent_data builds latest --game forever        # Forever latest build: 1.60.1.70009
+python -m talent_data builds latest --game forever
+python -m talent_data fetch --game forever --build latest   # whatever builds latest reports now
+
+# reproduce the verified reference baseline (and the historical build it is diffed against)
 python -m talent_data fetch --game forever --build 1.60.1.69977
-python -m talent_data fetch --game forever --build latest
+python -m talent_data fetch --game forever --build 1.60.1.70009
 python -m talent_data normalize --game forever --build 1.60.1.70009 --class warrior
-python -m talent_data normalize --game forever --build latest --class all   # whole dataset + manifest
+python -m talent_data normalize --game forever --build 1.60.1.70009 --class all   # whole dataset + manifest
 python -m talent_data diff --game forever --class warrior --from 1.60.1.69977 --to 1.60.1.70009
 python -m talent_data diff --game forever --class all --from 1.60.1.69977 --to 1.60.1.70009
 python -m talent_data validate data/normalized/forever/1.60.1.70009/hunter.json

@@ -9,6 +9,13 @@ subset of the wago.tools export of the named build.
 
     python scripts/extract_fixtures.py --build 1.60.1.70009 --classes all
     python scripts/extract_fixtures.py --build 1.60.1.69977 --classes warrior,druid
+
+``--tooltips`` (M5.V2) instead writes ``tests/fixtures/tooltips/<game>/<build>/``: the rows of
+the tooltip tables that the committed dataset's description templates can reach (the talent
+spells, every spell they reference or nest, transitively), the whole of the small
+``SpellDuration``/``SpellRadius`` tables and the duration rows of ``GlobalStrings``:
+
+    python scripts/extract_fixtures.py --build 1.60.1.70009 --tooltips
 """
 
 from __future__ import annotations
@@ -20,12 +27,21 @@ from pathlib import Path
 
 from talent_data.db2 import tables as t
 from talent_data.db2.dataset import TraitDataSet
-from talent_data.db2.tables import MUST_BE_ABSENT_TABLES, TRAIT_TABLES, VISUAL_TABLES
+from talent_data.db2.tables import (
+    MUST_BE_ABSENT_TABLES,
+    TOOLTIP_TABLES,
+    TRAIT_TABLES,
+    VISUAL_TABLES,
+)
+from talent_data.games import get_game
 from talent_data.normalization.class_resolution import resolve_class, trees_for_class
 from talent_data.sources.base import Db2Table, TableAvailability, TableStatus
 from talent_data.sources.capabilities import record_absent, snapshot_path
 from talent_data.sources.wago.source import WagoDb2Source
+from talent_data.tooltips.grammar import TemplateSyntaxError, parse, referenced_spells
+from talent_data.tooltips.values import DURATION_TAGS
 from talent_data.versions import ClientVersion
+from talent_data.visuals.pipeline import load_canonical_dataset
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -129,15 +145,77 @@ def extract_class(
     return dst
 
 
+def _write_table(table: Db2Table, rows: list[Row], dst: Path) -> int:
+    with (dst / f"{table.name}.csv").open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.writer(fh, lineterminator="\n")
+        writer.writerow(table.columns)
+        writer.writerows([r[c] for c in table.columns] for r in rows)
+    return len(rows)
+
+
+def extract_tooltips(cache: WagoDb2Source, game: str, version: ClientVersion) -> Path:
+    """Tooltip fixture: the closure of spells the committed dataset's templates reach."""
+    tables = {name: cache.load_table(version, name) for name in TOOLTIP_TABLES}
+    descriptions = {r["ID"]: r["Description_lang"] for r in tables["Spell"].rows}
+    documents = load_canonical_dataset(get_game(game), version)
+    pending = [
+        e.spell_id for d in documents for tree in d.trees for n in tree.nodes for e in n.entries
+    ]
+    spells: set[int] = set()
+    while pending:
+        spell_id = pending.pop()
+        if spell_id in spells:
+            continue
+        spells.add(spell_id)
+        description = descriptions.get(str(spell_id))
+        if description is None:
+            continue
+        try:
+            values, nested = referenced_spells(parse(description))
+        except TemplateSyntaxError:
+            continue
+        pending += [*values, *nested]
+    keep_ids = {str(s) for s in spells}
+    links = [r for r in tables["SpellXDescriptionVariables"].rows if r["SpellID"] in keep_ids]
+    variable_ids = {r["SpellDescriptionVariablesID"] for r in links}
+    keep: dict[str, Callable[[Row], bool]] = {
+        "Spell": lambda r: r["ID"] in keep_ids,
+        "SpellEffect": lambda r: r["SpellID"] in keep_ids,
+        "SpellMisc": lambda r: r["SpellID"] in keep_ids,
+        "SpellDuration": lambda r: True,
+        "SpellRadius": lambda r: True,
+        "SpellAuraOptions": lambda r: r["SpellID"] in keep_ids,
+        "SpellXDescriptionVariables": lambda r: r["SpellID"] in keep_ids,
+        "SpellDescriptionVariables": lambda r: r["ID"] in variable_ids,
+        "GlobalStrings": lambda r: r["BaseTag"] in DURATION_TAGS,
+    }
+    dst = ROOT / "tests" / "fixtures" / "tooltips" / game / str(version)
+    dst.mkdir(parents=True, exist_ok=True)
+    total = sum(
+        _write_table(table, [r for r in table.rows if keep[name](r)], dst)
+        for name, table in tables.items()
+    )
+    print(f"tooltips: {len(spells)} spells, {total} rows -> {dst}")
+    return dst
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--game", default="forever")
     parser.add_argument("--build", required=True)
-    parser.add_argument("--classes", required=True, help="'all' or comma-separated class keys")
+    parser.add_argument("--classes", help="'all' or comma-separated class keys")
+    parser.add_argument(
+        "--tooltips", action="store_true", help="write the tooltip fixture instead of classes"
+    )
     args = parser.parse_args()
 
     cache = WagoDb2Source(None, ROOT / ".cache" / "wago" / args.game, offline=True)
     version = ClientVersion.parse(args.build)
+    if args.tooltips:
+        extract_tooltips(cache, args.game, version)
+        return
+    if not args.classes:
+        parser.error("--classes is required unless --tooltips is given")
     dataset = TraitDataSet.load(cache, version)
     classes = (
         sorted(dataset.classes.values(), key=lambda c: c.id)

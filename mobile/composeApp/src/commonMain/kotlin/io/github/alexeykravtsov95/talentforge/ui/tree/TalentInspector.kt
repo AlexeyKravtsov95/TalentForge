@@ -76,9 +76,17 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
  * M5.V1 adds the selected talent's real icon in front of its name in every
  * variant (`[icon] Talent Name`), for visual identification only. The icon is
  * the already decoded node icon; when there is none (monogram fallback) the
- * header is exactly the M4 one. Talent descriptions are still not rendered:
- * the dataset's `descriptionTemplate` is raw client tooltip markup, and an
- * unevaluated template is never shown (M5.V2).
+ * header is exactly the M4 one.
+ *
+ * M5.V2 adds the talent description to every full-detail variant (expanded
+ * sheet, side panel, tablet panel): the current rank's text (rank 1 as the
+ * prospective effect while unspent) and the B3 CURRENT / NEXT RANK comparison,
+ * from the verified `talent-tooltips.v1` sidecar only — the raw
+ * `descriptionTemplate` is never shown. The description sits below the rank,
+ * state and lock lines and scrolls with the detail, while the rank actions and
+ * Show are pinned to the bottom of every variant, so a long description can
+ * never push a control or a blocked-action reason out of reach. The compact
+ * bar is unchanged (B3 03: name, rank, state and actions only).
  */
 
 /** Test tag of the inspector's talent icon. */
@@ -328,19 +336,21 @@ fun TalentInspectorSidePanel(
                 .weight(1f)
                 .verticalScroll(rememberScrollState()),
         ) {
-            InspectorDetail(content = content, onShowPrerequisite = onShowPrerequisite)
-        }
-        if (actions != null && actions.offersRankControls) {
-            TalentInspectorRankActions(
-                talentName = content.name,
-                actions = actions,
-                accent = accent,
-                onSpend = onSpendRank,
-                onRefund = onRefundRank,
-                onMax = onMaxRank,
-                modifier = Modifier.padding(vertical = TalentForgeSpacing.inline),
+            InspectorDetail(
+                content = content,
+                onShowPrerequisite = onShowPrerequisite,
+                showActionInline = false,
             )
         }
+        InspectorPinnedActions(
+            content = content,
+            actions = actions,
+            accent = accent,
+            onShowPrerequisite = onShowPrerequisite,
+            onSpendRank = onSpendRank,
+            onRefundRank = onRefundRank,
+            onMaxRank = onMaxRank,
+        )
     }
 }
 
@@ -395,19 +405,58 @@ fun TalentInspectorPersistentPanel(
                     .weight(1f)
                     .verticalScroll(rememberScrollState()),
             ) {
-                InspectorDetail(content = content, onShowPrerequisite = onShowPrerequisite)
-            }
-            if (actions != null && actions.offersRankControls) {
-                TalentInspectorRankActions(
-                    talentName = content.name,
-                    actions = actions,
-                    accent = accent,
-                    onSpend = onSpendRank,
-                    onRefund = onRefundRank,
-                    onMax = onMaxRank,
-                    modifier = Modifier.padding(vertical = TalentForgeSpacing.inline),
+                InspectorDetail(
+                    content = content,
+                    onShowPrerequisite = onShowPrerequisite,
+                    showActionInline = false,
                 )
             }
+            InspectorPinnedActions(
+                content = content,
+                actions = actions,
+                accent = accent,
+                onShowPrerequisite = onShowPrerequisite,
+                onSpendRank = onSpendRank,
+                onRefundRank = onRefundRank,
+                onMaxRank = onMaxRank,
+            )
+        }
+    }
+}
+
+/**
+ * The bottom-pinned actions of the side and tablet panels: the full-detail
+ * `− + Rank Max` row and, for a prerequisite-locked node, its single Show
+ * action — outside the scrolling detail, so they stay reachable however long
+ * the description is (same placement as the expanded sheet, UX/UI spec 04).
+ */
+@Composable
+private fun InspectorPinnedActions(
+    content: TalentInspectorContent,
+    actions: TalentNodeActions?,
+    accent: androidx.compose.ui.graphics.Color,
+    onShowPrerequisite: (Int) -> Unit,
+    onSpendRank: (Int) -> Unit,
+    onRefundRank: (Int) -> Unit,
+    onMaxRank: (Int) -> Unit,
+) {
+    if (actions != null && actions.offersRankControls) {
+        TalentInspectorRankActions(
+            talentName = content.name,
+            actions = actions,
+            accent = accent,
+            onSpend = onSpendRank,
+            onRefund = onRefundRank,
+            onMax = onMaxRank,
+            modifier = Modifier.padding(vertical = TalentForgeSpacing.inline),
+        )
+    }
+    content.showAction?.let { action ->
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(vertical = TalentForgeSpacing.inline),
+        ) {
+            ShowButton(action = action, onClick = { onShowPrerequisite(action.prerequisiteNodeId) })
         }
     }
 }
@@ -470,6 +519,7 @@ private fun InspectorDetail(
         for (gate in content.tierMeters) {
             TierMeter(gate = gate, modifier = Modifier.fillMaxWidth())
         }
+        content.description?.let { InspectorDescriptionBlock(it) }
         if (showActionInline) {
             content.showAction?.let { action ->
                 ShowButton(action = action, onClick = { onShowPrerequisite(action.prerequisiteNodeId) })
