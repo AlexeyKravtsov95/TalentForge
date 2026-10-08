@@ -1,0 +1,3917 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "clientBuild": "1.60.1.70245",
+  "class": {
+    "id": 1,
+    "token": "WARRIOR",
+    "name": "Warrior"
+  },
+  "trees": [
+    {
+      "id": 1117,
+      "pointBudget": {
+        "currencyId": 3820,
+        "maxPoints": 51
+      },
+      "layout": {
+        "xStep": 600,
+        "yStep": 600
+      },
+      "sections": [
+        {
+          "index": 0,
+          "name": null,
+          "nodeIds": [
+            105941,
+            105942,
+            105944,
+            105945,
+            105947,
+            105948,
+            105949,
+            105950,
+            105951,
+            105952,
+            105954,
+            105955,
+            105956,
+            105957,
+            105958,
+            110524,
+            110858
+          ]
+        },
+        {
+          "index": 1,
+          "name": null,
+          "nodeIds": [
+            105926,
+            105927,
+            105928,
+            105929,
+            105930,
+            105931,
+            105932,
+            105933,
+            105934,
+            105935,
+            105936,
+            105937,
+            105938,
+            105939,
+            105953,
+            105977,
+            105978,
+            110857
+          ]
+        },
+        {
+          "index": 2,
+          "name": null,
+          "nodeIds": [
+            105959,
+            105961,
+            105962,
+            105963,
+            105964,
+            105965,
+            105966,
+            105967,
+            105968,
+            105969,
+            105970,
+            105971,
+            105972,
+            105973,
+            105974,
+            105975,
+            105976,
+            110856
+          ]
+        }
+      ],
+      "nodes": [
+        {
+          "id": 105958,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 2130,
+            "row": 0,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 12282,
+          "name": "Improved Heroic Strike",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130688,
+              "definitionId": 135489,
+              "spellId": 12282,
+              "name": "Improved Heroic Strike",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the cost of your Heroic Strike ability by $/10;s1 Rage.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -10
+                    },
+                    {
+                      "rank": 2,
+                      "value": -20
+                    },
+                    {
+                      "rank": 3,
+                      "value": -30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105957,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 16462,
+          "name": "Deflection",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130687,
+              "definitionId": 135488,
+              "spellId": 16462,
+              "name": "Deflection",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your Parry chance by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105956,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 2130,
+            "row": 0,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 12286,
+          "name": "Improved Rend",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130686,
+              "definitionId": 135487,
+              "spellId": 12286,
+              "name": "Improved Rend",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the Bleed damage done by your Rend ability by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 12
+                    },
+                    {
+                      "rank": 2,
+                      "value": 23
+                    },
+                    {
+                      "rank": 3,
+                      "value": 35
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105955,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 2730,
+            "row": 1,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 12285,
+          "name": "Improved Charge",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105956,
+                105957,
+                105958
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130685,
+              "definitionId": 135486,
+              "spellId": 12285,
+              "name": "Improved Charge",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the Rage generated by your Charge ability by $/10;s1.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 30
+                    },
+                    {
+                      "rank": 2,
+                      "value": 60
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105954,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 12295,
+          "name": "Improved Tactical Mastery",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105956,
+                105957,
+                105958
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130684,
+              "definitionId": 135485,
+              "spellId": 12295,
+              "name": "Improved Tactical Mastery",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Tactical Mastery lets you retain up to an additional $s1 Rage when you change stances.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 6
+                    },
+                    {
+                      "rank": 3,
+                      "value": 9
+                    },
+                    {
+                      "rank": 4,
+                      "value": 12
+                    },
+                    {
+                      "rank": 5,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105952,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2820,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 12290,
+          "name": "Improved Overpower",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105956,
+                105957,
+                105958
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130682,
+              "definitionId": 135483,
+              "spellId": 12290,
+              "name": "Improved Overpower",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the critical strike chance of your Overpower ability by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 25
+                    },
+                    {
+                      "rank": 2,
+                      "value": 50
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 25,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105951,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 12296,
+          "name": "Anger Management",
+          "prerequisites": [
+            {
+              "nodeId": 105954,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105952,
+                105954,
+                105955,
+                105956,
+                105957,
+                105958
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130681,
+              "definitionId": 135482,
+              "spellId": 12296,
+              "name": "Anger Management",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Generates $m2 Rage every $m3 sec while in combat, and reduces Rage loss while out of combat by $s4%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 3,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 3,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105950,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 3330,
+            "row": 2,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 12834,
+          "name": "Deep Wounds",
+          "prerequisites": [
+            {
+              "nodeId": 105956,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105952,
+                105954,
+                105955,
+                105956,
+                105957,
+                105958
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130680,
+              "definitionId": 135481,
+              "spellId": 12834,
+              "name": "Deep Wounds",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Your critical strikes cause your opponent to Bleed, dealing $m1% of your melee weapon's average damage over $412609d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 20
+                    },
+                    {
+                      "rank": 2,
+                      "value": 40
+                    },
+                    {
+                      "rank": 3,
+                      "value": 60
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105949,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 1310222,
+          "name": "Spearing Strike",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105950,
+                105951,
+                105952,
+                105954,
+                105955,
+                105956,
+                105957,
+                105958
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130679,
+              "definitionId": 135480,
+              "spellId": 1310222,
+              "name": "Spearing Strike",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "A brutal attack that deals $s2% weapon damage, plus an additional ${$s2*$s3}% weapon damage against Giants, Dragonkin, and mounted targets.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 40,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 2,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105948,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 12163,
+          "name": "Two-Handed Weapon Specialization",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105950,
+                105951,
+                105952,
+                105954,
+                105955,
+                105956,
+                105957,
+                105958
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130678,
+              "definitionId": 135479,
+              "spellId": 12163,
+              "name": "Two-Handed Weapon Specialization",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the damage you deal with two-handed melee weapons by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105947,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 16493,
+          "name": "Impale",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105950,
+                105951,
+                105952,
+                105954,
+                105955,
+                105956,
+                105957,
+                105958
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130677,
+              "definitionId": 135478,
+              "spellId": 16493,
+              "name": "Impale",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the critical strike damage bonus of your abilities by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 110524,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 4530,
+            "row": 4,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 1289682,
+          "name": "Bloodthrill",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105947,
+                105948,
+                105949,
+                105950,
+                105951,
+                105952,
+                105954,
+                105955,
+                105956,
+                105957,
+                105958
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 137214,
+              "definitionId": 141974,
+              "spellId": 1289682,
+              "name": "Bloodthrill",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Your Main Hand melee attacks against enemies afflicted by your Rend have a $s1% chance to allow the use of your Overpower ability on the target. Lasts $1289681d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 4
+                    },
+                    {
+                      "rank": 2,
+                      "value": 8
+                    },
+                    {
+                      "rank": 3,
+                      "value": 12
+                    },
+                    {
+                      "rank": 4,
+                      "value": 16
+                    },
+                    {
+                      "rank": 5,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105945,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 12292,
+          "name": "Sweeping Strikes",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105947,
+                105948,
+                105949,
+                105950,
+                105951,
+                105952,
+                105954,
+                105955,
+                105956,
+                105957,
+                105958
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130675,
+              "definitionId": 135476,
+              "spellId": 12292,
+              "name": "Sweeping Strikes",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Your next $n melee attacks strike an additional nearby opponent.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105944,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 4530,
+            "row": 4,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 1290261,
+          "name": "Weaponmaster",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105947,
+                105948,
+                105949,
+                105950,
+                105951,
+                105952,
+                105954,
+                105955,
+                105956,
+                105957,
+                105958
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130674,
+              "definitionId": 135475,
+              "spellId": 1290261,
+              "name": "Weaponmaster",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Gives your melee weapon attacks a benefit depending on the weapon.\r\n\r\n    |CFFFFFFFFAxe/Polearm:|R Increases your\r\n    critical strike chance by $s1%.\r\n\r\n    |CFFFFFFFFMace/Staff:|R Your attacks ignore\r\n    $s2% of your target's armor.\r\n\r\n    |CFFFFFFFFSword:|R Your successful melee \r\n    attacks have a $s3% chance to \r\n    trigger an extra attack on the \r\n    target.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 6
+                    },
+                    {
+                      "rank": 3,
+                      "value": 9
+                    },
+                    {
+                      "rank": 4,
+                      "value": 12
+                    },
+                    {
+                      "rank": 5,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 110858,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 5130,
+            "row": 5,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 8,
+          "maxRank": 2,
+          "spellId": 12862,
+          "name": "Improved Slam",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105944,
+                105945,
+                105947,
+                105948,
+                105949,
+                105950,
+                105951,
+                105952,
+                105954,
+                105955,
+                105956,
+                105957,
+                105958,
+                110524
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 137850,
+              "definitionId": 142604,
+              "spellId": 12862,
+              "name": "Improved Slam",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the global cooldown and cast time of your Slam ability by ${$m1/-1000}.2 sec. In addition, Slam no longer interrupts or delays your melee swing and Slam's cooldown is reduced by ${$m3/-1000}.1 sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -250
+                    },
+                    {
+                      "rank": 2,
+                      "value": -500
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -500,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -250
+                    },
+                    {
+                      "rank": 2,
+                      "value": -500
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -500,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -1500
+                    },
+                    {
+                      "rank": 2,
+                      "value": -3000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -3000,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 3,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 1310196,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 4,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 1310197,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 5,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 1310198,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 6,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 1310199,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 7,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 1310200,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105942,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 12289,
+          "name": "Improved Hamstring",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105944,
+                105945,
+                105947,
+                105948,
+                105949,
+                105950,
+                105951,
+                105952,
+                105954,
+                105955,
+                105956,
+                105957,
+                105958,
+                110524
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130672,
+              "definitionId": 135473,
+              "spellId": 12289,
+              "name": "Improved Hamstring",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Gives your Hamstring ability a $m1% chance to immobilize the target for $23694d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    },
+                    {
+                      "rank": 3,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105941,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 12294,
+          "name": "Mortal Strike",
+          "prerequisites": [
+            {
+              "nodeId": 105945,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105941,
+                105942,
+                105944,
+                105945,
+                105947,
+                105948,
+                105949,
+                105950,
+                105951,
+                105952,
+                105954,
+                105955,
+                105956,
+                105957,
+                105958,
+                110524,
+                110858
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130671,
+              "definitionId": 135472,
+              "spellId": 12294,
+              "name": "Mortal Strike",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "A vicious strike that deals weapon damage plus $s2 and wounds the target, reducing the effectiveness of any healing by $s1% for $d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": -50,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 85,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105938,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 12321,
+          "name": "Booming Voice",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130668,
+              "definitionId": 135469,
+              "spellId": 12321,
+              "name": "Booming Voice",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the radius of your Battle Shout and Demoralizing Shout abilities by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    },
+                    {
+                      "rank": 3,
+                      "value": 30
+                    },
+                    {
+                      "rank": 4,
+                      "value": 40
+                    },
+                    {
+                      "rank": 5,
+                      "value": 50
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 50,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105939,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 2130,
+            "row": 0,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 12320,
+          "name": "Cruelty",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130669,
+              "definitionId": 135470,
+              "spellId": 12320,
+              "name": "Cruelty",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Improves your chance to get a critical strike with melee attacks by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 110857,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 8,
+          "maxRank": 5,
+          "spellId": 12962,
+          "name": "Iron Will",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105938,
+                105939
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 137849,
+              "definitionId": 142603,
+              "spellId": 12962,
+              "name": "Iron Will",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the duration of Stun and Fear effects inflicted on you by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -3
+                    },
+                    {
+                      "rank": 2,
+                      "value": -6
+                    },
+                    {
+                      "rank": 3,
+                      "value": -9
+                    },
+                    {
+                      "rank": 4,
+                      "value": -12
+                    },
+                    {
+                      "rank": 5,
+                      "value": -15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -15,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -3
+                    },
+                    {
+                      "rank": 2,
+                      "value": -6
+                    },
+                    {
+                      "rank": 3,
+                      "value": -9
+                    },
+                    {
+                      "rank": 4,
+                      "value": -12
+                    },
+                    {
+                      "rank": 5,
+                      "value": -15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105937,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 12322,
+          "name": "Unbridled Wrath",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105938,
+                105939
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130667,
+              "definitionId": 135468,
+              "spellId": 12322,
+              "name": "Unbridled Wrath",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Gives you a $m1% chance to generate ${$12964m1/10} additional Rage when you deal melee damage with a weapon. This effect is increased to ${($12964m1/10)*2} Rage for two-handed weapons.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 12
+                    },
+                    {
+                      "rank": 2,
+                      "value": 24
+                    },
+                    {
+                      "rank": 3,
+                      "value": 36
+                    },
+                    {
+                      "rank": 4,
+                      "value": 48
+                    },
+                    {
+                      "rank": 5,
+                      "value": 60
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105936,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 12329,
+          "name": "Improved Cleave",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105937,
+                105938,
+                105939,
+                110857
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130666,
+              "definitionId": 135467,
+              "spellId": 12329,
+              "name": "Improved Cleave",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the Rage cost of your Cleave ability by ${$m1/-10}.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -10
+                    },
+                    {
+                      "rank": 2,
+                      "value": -20
+                    },
+                    {
+                      "rank": 3,
+                      "value": -30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105935,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 12323,
+          "name": "Piercing Howl",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105937,
+                105938,
+                105939,
+                110857
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130665,
+              "definitionId": 135466,
+              "spellId": 12323,
+              "name": "Piercing Howl",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Causes all nearby enemies to be Dazed, reducing movement speed by $s1% for $d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": -50,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105934,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 3330,
+            "row": 2,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 16487,
+          "name": "Blood Craze",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105937,
+                105938,
+                105939,
+                110857
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130664,
+              "definitionId": 135465,
+              "spellId": 16487,
+              "name": "Blood Craze",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Regenerates $m1% of your total Health over $16488d after being the victim of a critical strike, dealing damage with Bloodthirst, or suffering more than $m2% of your maximum Health from a single attack.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 3,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105953,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6820,
+            "y": 3330,
+            "row": 2,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 1310236,
+          "name": "Boundless Rage",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105937,
+                105938,
+                105939,
+                110857
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130683,
+              "definitionId": 135484,
+              "spellId": 1310236,
+              "name": "Boundless Rage",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your maximum Rage by ${$m1/10}.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 100
+                    },
+                    {
+                      "rank": 2,
+                      "value": 200
+                    },
+                    {
+                      "rank": 3,
+                      "value": 300
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 300,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105933,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 23584,
+          "name": "Dual Wield Specialization",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105934,
+                105935,
+                105936,
+                105937,
+                105938,
+                105939,
+                105953,
+                110857
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130663,
+              "definitionId": 135464,
+              "spellId": 23584,
+              "name": "Dual Wield Specialization",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your off-hand weapon damage by $m1% and chance to hit with off-hand attacks by $m2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    },
+                    {
+                      "rank": 3,
+                      "value": 15
+                    },
+                    {
+                      "rank": 4,
+                      "value": 20
+                    },
+                    {
+                      "rank": 5,
+                      "value": 25
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": null,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105977,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 1310315,
+          "name": "Raging Blows",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105934,
+                105935,
+                105936,
+                105937,
+                105938,
+                105939,
+                105953,
+                110857
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130707,
+              "definitionId": 135508,
+              "spellId": 1310315,
+              "name": "Raging Blows",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Causes your Whirlwind to also strike with your Off Hand weapon, and reduces the Rage cost of your Cleave ability by ${$m2/-10}.\r\n",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": -20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105931,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 12317,
+          "name": "Enrage",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105934,
+                105935,
+                105936,
+                105937,
+                105938,
+                105939,
+                105953,
+                110857
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130661,
+              "definitionId": 135462,
+              "spellId": 12317,
+              "name": "Enrage",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Gives you a $h% chance to deal $m1% increased Physical damage for $12880d after being the victim of any damaging attack.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105932,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6820,
+            "y": 3930,
+            "row": 3,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 20502,
+          "name": "Improved Execute",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105934,
+                105935,
+                105936,
+                105937,
+                105938,
+                105939,
+                105953,
+                110857
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130662,
+              "definitionId": 135463,
+              "spellId": 20502,
+              "name": "Improved Execute",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the Rage cost of your Execute ability by $/10;s1.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -30
+                    },
+                    {
+                      "rank": 2,
+                      "value": -50
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -50,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105929,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 4530,
+            "row": 4,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 1225295,
+          "name": "Precision",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105931,
+                105932,
+                105933,
+                105934,
+                105935,
+                105936,
+                105937,
+                105938,
+                105939,
+                105953,
+                105977,
+                110857
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130659,
+              "definitionId": 135460,
+              "spellId": 1225295,
+              "name": "Precision",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Improves your chance to hit by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 3,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 3,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105927,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 12328,
+          "name": "Death Wish",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105931,
+                105932,
+                105933,
+                105934,
+                105935,
+                105936,
+                105937,
+                105938,
+                105939,
+                105953,
+                105977,
+                110857
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130657,
+              "definitionId": 135458,
+              "spellId": 12328,
+              "name": "Death Wish",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "When activated, increases your Physical damage done by $s1% and makes you immune to Fear effects, but increases all damage you take by $s3%. Lasts $d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105926,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6820,
+            "y": 4530,
+            "row": 4,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 20504,
+          "name": "Improved Intercept",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105931,
+                105932,
+                105933,
+                105934,
+                105935,
+                105936,
+                105937,
+                105938,
+                105939,
+                105953,
+                105977,
+                110857
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130656,
+              "definitionId": 135457,
+              "spellId": 20504,
+              "name": "Improved Intercept",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the cooldown of your Intercept ability by $/1000;s1 sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -5000
+                    },
+                    {
+                      "rank": 2,
+                      "value": -10000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -10000,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105978,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 5130,
+            "row": 5,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 20500,
+          "name": "Improved Berserker Rage",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105926,
+                105927,
+                105929,
+                105931,
+                105932,
+                105933,
+                105934,
+                105935,
+                105936,
+                105937,
+                105938,
+                105939,
+                105953,
+                105977,
+                110857
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130708,
+              "definitionId": 135509,
+              "spellId": 20500,
+              "name": "Improved Berserker Rage",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Your Berserker Rage ability will instantly generate $/10;m1 Rage and has a $m2% chance to remove all movement impairing effects when activated.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 50
+                    },
+                    {
+                      "rank": 2,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 50
+                    },
+                    {
+                      "rank": 2,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105928,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 12319,
+          "name": "Flurry",
+          "prerequisites": [
+            {
+              "nodeId": 105931,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105926,
+                105927,
+                105929,
+                105931,
+                105932,
+                105933,
+                105934,
+                105935,
+                105936,
+                105937,
+                105938,
+                105939,
+                105953,
+                105977,
+                110857
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130658,
+              "definitionId": 135459,
+              "spellId": 12319,
+              "name": "Flurry",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your melee attack speed by $m1% for your next $12966n swings after dealing a melee critical strike.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    },
+                    {
+                      "rank": 3,
+                      "value": 15
+                    },
+                    {
+                      "rank": 4,
+                      "value": 20
+                    },
+                    {
+                      "rank": 5,
+                      "value": 25
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105930,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 23881,
+          "name": "Bloodthirst",
+          "prerequisites": [
+            {
+              "nodeId": 105927,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105926,
+                105927,
+                105928,
+                105929,
+                105930,
+                105931,
+                105932,
+                105933,
+                105934,
+                105935,
+                105936,
+                105937,
+                105938,
+                105939,
+                105953,
+                105977,
+                105978,
+                110857
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130660,
+              "definitionId": 135461,
+              "spellId": 23881,
+              "name": "Bloodthirst",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Instantly attack the target causing damage equal to $s2% of your Attack Power plus $s1 and increasing your movement speed by $s3% for $d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 35,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105976,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 12298,
+          "name": "Shield Specialization",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130706,
+              "definitionId": 135507,
+              "spellId": 12298,
+              "name": "Shield Specialization",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your chance to Block attacks with your shield by $s1% and grants you a $m2% chance to generate ${$1310318m1/10} Rage when you Block.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 20
+                    },
+                    {
+                      "rank": 2,
+                      "value": 40
+                    },
+                    {
+                      "rank": 3,
+                      "value": 60
+                    },
+                    {
+                      "rank": 4,
+                      "value": 80
+                    },
+                    {
+                      "rank": 5,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105975,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 2130,
+            "row": 0,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 12297,
+          "name": "Anticipation",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130705,
+              "definitionId": 135506,
+              "spellId": 12297,
+              "name": "Anticipation",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your Defense Skill by $m1.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 4
+                    },
+                    {
+                      "rank": 2,
+                      "value": 8
+                    },
+                    {
+                      "rank": 3,
+                      "value": 12
+                    },
+                    {
+                      "rank": 4,
+                      "value": 16
+                    },
+                    {
+                      "rank": 5,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105974,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 2730,
+            "row": 1,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 12301,
+          "name": "Improved Bloodrage",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105975,
+                105976
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130704,
+              "definitionId": 135505,
+              "spellId": 12301,
+              "name": "Improved Bloodrage",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases all the Rage generated by your Bloodrage ability by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 25
+                    },
+                    {
+                      "rank": 2,
+                      "value": 50
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 50,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105973,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 12299,
+          "name": "Toughness",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105975,
+                105976
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130703,
+              "definitionId": 135504,
+              "spellId": 12299,
+              "name": "Toughness",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your Armor value from items by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105972,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10880,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 12287,
+          "name": "Improved Thunder Clap",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105975,
+                105976
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130702,
+              "definitionId": 135503,
+              "spellId": 12287,
+              "name": "Improved Thunder Clap",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the Rage cost of your Thunder Clap ability by $/10;s1.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -20
+                    },
+                    {
+                      "rank": 2,
+                      "value": -40
+                    },
+                    {
+                      "rank": 3,
+                      "value": -60
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -60,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105970,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 12975,
+          "name": "Last Stand",
+          "prerequisites": [
+            {
+              "nodeId": 105974,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105972,
+                105973,
+                105974,
+                105975,
+                105976
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130700,
+              "definitionId": 135501,
+              "spellId": 12975,
+              "name": "Last Stand",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "When activated, this ability temporarily grants you $12976s1% of your maximum health for $12976d. After the effect expires, the health is lost.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105971,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 1310316,
+          "name": "Master of Defense",
+          "prerequisites": [
+            {
+              "nodeId": 105976,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105972,
+                105973,
+                105974,
+                105975,
+                105976
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130701,
+              "definitionId": 135502,
+              "spellId": 1310316,
+              "name": "Master of Defense",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Grants you a $m1% chance to generate ${$23602m1/10} Rage when you Dodge or Parry while a shield is equipped.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 50
+                    },
+                    {
+                      "rank": 2,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105969,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 3330,
+            "row": 2,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 12797,
+          "name": "Improved Revenge",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105972,
+                105973,
+                105974,
+                105975,
+                105976
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130699,
+              "definitionId": 135500,
+              "spellId": 12797,
+              "name": "Improved Revenge",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases damage dealt by your Revenge ability by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 20
+                    },
+                    {
+                      "rank": 2,
+                      "value": 40
+                    },
+                    {
+                      "rank": 3,
+                      "value": 60
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 60,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 110856,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10880,
+            "y": 3330,
+            "row": 2,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 8,
+          "maxRank": 3,
+          "spellId": 12792,
+          "name": "Defiance",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105972,
+                105973,
+                105974,
+                105975,
+                105976
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 137848,
+              "definitionId": 142602,
+              "spellId": 12792,
+              "name": "Defiance",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases all threat generated in Defensive stance by an additional $s1% while a shield is equipped.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    },
+                    {
+                      "rank": 3,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105968,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 12308,
+          "name": "Improved Sunder Armor",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105969,
+                105970,
+                105971,
+                105972,
+                105973,
+                105974,
+                105975,
+                105976,
+                110856
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130698,
+              "definitionId": 135499,
+              "spellId": 12308,
+              "name": "Improved Sunder Armor",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the Rage cost of your Sunder Armor ability by $/10;s1.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -10
+                    },
+                    {
+                      "rank": 2,
+                      "value": -20
+                    },
+                    {
+                      "rank": 3,
+                      "value": -30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105967,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 12313,
+          "name": "Improved Disarm",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105969,
+                105970,
+                105971,
+                105972,
+                105973,
+                105974,
+                105975,
+                105976,
+                110856
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130697,
+              "definitionId": 135498,
+              "spellId": 12313,
+              "name": "Improved Disarm",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the cooldown of your Disarm ability by $/1000;s1 secs.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -7000
+                    },
+                    {
+                      "rank": 2,
+                      "value": -13000
+                    },
+                    {
+                      "rank": 3,
+                      "value": -20000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -20000,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105966,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 1310317,
+          "name": "Vanguard",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105969,
+                105970,
+                105971,
+                105972,
+                105973,
+                105974,
+                105975,
+                105976,
+                110856
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130696,
+              "definitionId": 135497,
+              "spellId": 1310317,
+              "name": "Vanguard",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Your Charge ability is now usable while in Defensive Stance.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 1240289,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 1240288,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 1240287,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105964,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 4530,
+            "row": 4,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 12312,
+          "name": "Improved Shield Wall",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105966,
+                105967,
+                105968,
+                105969,
+                105970,
+                105971,
+                105972,
+                105973,
+                105974,
+                105975,
+                105976,
+                110856
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130694,
+              "definitionId": 135495,
+              "spellId": 12312,
+              "name": "Improved Shield Wall",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the cooldown of your Shield Wall ability by ${$m1/-60000}.1 min.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -330000
+                    },
+                    {
+                      "rank": 2,
+                      "value": -660000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -660000,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105965,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 12809,
+          "name": "Concussion Blow",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105966,
+                105967,
+                105968,
+                105969,
+                105970,
+                105971,
+                105972,
+                105973,
+                105974,
+                105975,
+                105976,
+                110856
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130695,
+              "definitionId": 135496,
+              "spellId": 12809,
+              "name": "Concussion Blow",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Stuns the target for $d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105963,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 4530,
+            "row": 4,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 12311,
+          "name": "Improved Shield Bash",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105966,
+                105967,
+                105968,
+                105969,
+                105970,
+                105971,
+                105972,
+                105973,
+                105974,
+                105975,
+                105976,
+                110856
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130693,
+              "definitionId": 135494,
+              "spellId": 12311,
+              "name": "Improved Shield Bash",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Gives your Shield Bash ability a $m1% chance to Silence the target for $18498d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 50
+                    },
+                    {
+                      "rank": 2,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105962,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10880,
+            "y": 4530,
+            "row": 4,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 16538,
+          "name": "Bastion",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105966,
+                105967,
+                105968,
+                105969,
+                105970,
+                105971,
+                105972,
+                105973,
+                105974,
+                105975,
+                105976,
+                110856
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130692,
+              "definitionId": 135493,
+              "spellId": 16538,
+              "name": "Bastion",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases all damage you deal by $s1% while a shield is equipped.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105961,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 29787,
+          "name": "Focused Rage",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105962,
+                105963,
+                105964,
+                105965,
+                105966,
+                105967,
+                105968,
+                105969,
+                105970,
+                105971,
+                105972,
+                105973,
+                105974,
+                105975,
+                105976,
+                110856
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130691,
+              "definitionId": 135492,
+              "spellId": 29787,
+              "name": "Focused Rage",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the Rage cost of your offensive abilities by $/10;s1.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -10
+                    },
+                    {
+                      "rank": 2,
+                      "value": -20
+                    },
+                    {
+                      "rank": 3,
+                      "value": -30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105959,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 23922,
+          "name": "Shield Slam",
+          "prerequisites": [
+            {
+              "nodeId": 105965,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105959,
+                105961,
+                105962,
+                105963,
+                105964,
+                105965,
+                105966,
+                105967,
+                105968,
+                105969,
+                105970,
+                105971,
+                105972,
+                105973,
+                105974,
+                105975,
+                105976,
+                110856
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130689,
+              "definitionId": 135490,
+              "spellId": 23922,
+              "name": "Shield Slam",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Slam the target with your shield, causing $s2 damage, increased by your Block Value, and has a 50% chance of dispelling $s1 magic effect on the target. Causes a very high amount of threat.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 430,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "visualOnlyEdges": []
+    }
+  ],
+  "contentHash": "sha256:c1cf11e7b12266496d8c7765d21bda12bb61395d08c74ca6708c3d237200bd39",
+  "generatedAt": "2026-10-08T17:59:49Z",
+  "provenance": {
+    "source": "wago.tools",
+    "tables": [
+      "ChrClasses",
+      "SkillRaceClassInfo",
+      "SkillLineXTraitTree",
+      "TraitTree",
+      "TraitTreeXTraitCurrency",
+      "TraitCurrency",
+      "TraitTreeXTraitCost",
+      "TraitCost",
+      "TraitNode",
+      "TraitNodeXTraitNodeEntry",
+      "TraitNodeEntry",
+      "TraitDefinition",
+      "TraitEdge",
+      "TraitNodeGroupXTraitNode",
+      "TraitNodeGroupXTraitCond",
+      "TraitNodeXTraitCond",
+      "TraitCond",
+      "TraitDefinitionEffectPoints",
+      "Curve",
+      "CurvePoint",
+      "Spell",
+      "SpellName",
+      "SpellEffect"
+    ]
+  }
+}
