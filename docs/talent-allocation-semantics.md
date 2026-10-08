@@ -19,6 +19,15 @@ no newer Forever build existed when M2 started or finished). The previous captur
 1.60.1.69977 has an identical allocation structure (same costs, edge/condition/node
 inventory; checked by the tests on both builds).
 
+**M5.DATA product dataset 1.60.1.70245.** The rules, evidence and confidence levels of this
+document are unchanged, and the conformance vectors stay pinned to 1.60.1.70009. 70245 was
+checked for new mechanics before it was published: its allocation inventory (§3) equals
+70009's except Druid (one more node and two more Sufficient edges — no new node type, entry
+type, node flag, edge type, condition shape, currency or cost link), the engine reports only
+the known Venom condition as unsupported, and the engine invariants run on all nine 70245
+classes (`tests/unit/test_product_build.py`, `test_invariants.py`). The live-client
+observations of §15 are for 70009 only; nothing was observed on a 70245 client.
+
 Confidence scale used below:
 
 | Level | Meaning |
@@ -127,6 +136,13 @@ for 1.60.1.69977):
 | MAGE | 1112 | 54 | 0x54 | 0x54 | 1x54 | 1x54 | 1x12, 2x14, 3x17, 5x11 | 2x6 | 0 | 3820 (max 51) | 1x3820 curve 0 | 18 | 0 | 1 |
 | WARLOCK | 1116 | 52 | 0x52 | 0x51, 8x1 | 1x52 | 1x52 | 1x12, 2x11, 3x15, 5x14 | 2x8 | 0 | 3820 (max 51) | 1x3820 curve 0 | 18 | 0 | 1 |
 | DRUID | 1089 | 51 | 0x51 | 0x50, 8x1 | 1x51 | 1x51 | 1x12, 2x11, 3x13, 5x15 | 0x1, 2x8, 3x1 | 0 | 3820 (max 51) | 1x3820 curve 0 | 19 | 0 | 1 |
+
+1.60.1.70245 (M5.DATA, `--build 1.60.1.70245`): every row and the condition-shape table are
+identical except
+
+| Class | Tree | Nodes | Node.Type | Node.Flags | Entries/node | EntryType | MaxRanks | Edge.Type | Nodes w/ >1 prereq edge | Currency | Rank cost (tree) | Conds | Granted conds | Tree.Flags |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| DRUID | 1089 | 52 | 0x52 | 0x50, 8x2 | 1x52 | 1x52 | 1x13, 2x12, 3x12, 5x15 | 0x1, 2x10, 3x1 | 0 | 3820 (max 51) | 1x3820 curve 0 | 19 | 0 | 1 |
 
 | TraitCond shape (non-zero functional fields) | Count |
 |---|---|

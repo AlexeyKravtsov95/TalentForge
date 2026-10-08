@@ -5,11 +5,18 @@ versioned talent-tree contract, and how it detects semantic changes between clie
 Everything below was verified against real Forever beta builds `1.60.1.69876` … `1.60.1.70009`
 on 2026-09-27. Nothing in the pipeline is hand-written talent data.
 
-`1.60.1.70009` is the project's **verified reference baseline** (the build the live
-allocation evidence, the conformance vectors and every committed dataset are pinned to),
-not a claim about the current Forever build: newer builds keep appearing and
-`builds latest` reports whichever is newest when it runs. Refreshing the product data to a
-newer build is the separate M5.DATA milestone.
+Two committed builds have distinct roles (M5.DATA):
+
+* `1.60.1.70245` is the **product dataset** — the newest Forever build wago.tools listed
+  on 2026-10-08 with `is_bgdl` explicitly `false`; the mobile app creates new builds on it.
+  It went through the same unchanged pipeline (§9 commands with `--build 1.60.1.70245`).
+* `1.60.1.70009` stays the **verified reference baseline**: the build the live allocation
+  evidence and the M2 conformance vectors are pinned to, and the build every pre-M5.DATA
+  saved build was created on. It is kept, unchanged, next to the product dataset.
+
+Neither is a claim about the build the live realms currently run: newer builds keep
+appearing, `builds latest` reports whichever is newest when it runs, and wago.tools has no
+"live" marker. Selection evidence: `docs/forever-dataset.md`.
 
 ```
 wago.tools /api/builds ──► BuildSource ──► latest Forever build
@@ -69,7 +76,9 @@ reference baseline was chosen (historical; newer builds have appeared since):
 | 1.60.1.69876 | 2026-09-16 18:23:04 |
 
 `is_bgdl` (background-download build) is carried in `BuildInfo.extra` but not used for
-selection; none of the Forever builds had it set. M1 makes the distinction explicit in
+`latest` selection; none of the Forever builds had it set (on 2026-09-27, and again for all
+eleven 1.60.1 builds on 2026-10-08). Since M5.DATA an entry without the field is lifted as
+*unknown*, not as `false` (the wago model used to default it to `false`). M1 makes the distinction explicit in
 the domain model (`classify_build` / `latest_publishable_build` in `sources/base.py`)
 and surfaces `[background-download]` in `builds list`: "latest detected" and "latest
 publishable" are different notions, and neither is proven "live" — wago.tools exposes no
@@ -439,6 +448,14 @@ pip install -e ".[dev]"
 python -m talent_data builds list --game forever
 python -m talent_data builds latest --game forever
 python -m talent_data fetch --game forever --build latest   # whatever builds latest reports now
+
+# reproduce the product dataset (M5.DATA) and its diff to the reference baseline
+python -m talent_data fetch --game forever --build 1.60.1.70245
+python -m talent_data normalize --game forever --build 1.60.1.70245 --class all
+python -m talent_data diff --game forever --class all --from 1.60.1.70009 --to 1.60.1.70245
+python -m talent_data manifest data/normalized/forever/1.60.1.70245/manifest.json
+python -m talent_data visuals fetch --build 1.60.1.70245      # then: visuals normalize/check
+python -m talent_data tooltips fetch --build 1.60.1.70245     # then: tooltips normalize/check
 
 # reproduce the verified reference baseline (and the historical build it is diffed against)
 python -m talent_data fetch --game forever --build 1.60.1.69977
