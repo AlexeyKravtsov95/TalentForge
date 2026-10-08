@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 1,
+    "token": "WARRIOR",
+    "name": "Warrior"
+  },
+  "fromBuild": "1.60.1.70009",
+  "toBuild": "1.60.1.70245",
+  "fromContentHash": "sha256:cab5b5103c6a8f7f4dd6cc70bd727f640e95a16d49e9619133cd21299844528e",
+  "toContentHash": "sha256:c1cf11e7b12266496d8c7765d21bda12bb61395d08c74ca6708c3d237200bd39",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 3,
+    "changesByKind": {
+      "descriptionChanged": 3,
+      "effectBasePointsChanged": 2,
+      "effectRankValueChanged": 5
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 105933,
+      "treeId": 1117,
+      "name": "Dual Wield Specialization",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130663,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases your off-hand weapon damage by $m1%, off-hand Rage generation by $m2%, and chance to hit with off-hand attacks by $m3%.",
+          "new": "Increases your off-hand weapon damage by $m1% and chance to hit with off-hand attacks by $m2%."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130663,
+          "effectIndex": 1,
+          "rank": 1,
+          "old": 20,
+          "new": 2
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130663,
+          "effectIndex": 1,
+          "rank": 2,
+          "old": 40,
+          "new": 4
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130663,
+          "effectIndex": 1,
+          "rank": 3,
+          "old": 60,
+          "new": 6
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130663,
+          "effectIndex": 1,
+          "rank": 4,
+          "old": 80,
+          "new": 8
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130663,
+          "effectIndex": 1,
+          "rank": 5,
+          "old": 100,
+          "new": 10
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130663,
+          "effectIndex": 1,
+          "rank": null,
+          "old": 5,
+          "new": 10
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130663,
+          "effectIndex": 2,
+          "rank": null,
+          "old": 10,
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 105949,
+      "treeId": 1117,
+      "name": "Spearing Strike",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130679,
+          "effectIndex": null,
+          "rank": null,
+          "old": "A brutal attack that deals $s2% weapon damage. Deals an additional ${$s2*$s3}% weapon damage against Giants, Dragonkin, and mounted targets. Mounted targets are dismounted.",
+          "new": "A brutal attack that deals $s2% weapon damage, plus an additional ${$s2*$s3}% weapon damage against Giants, Dragonkin, and mounted targets."
+        }
+      ]
+    },
+    {
+      "nodeId": 105977,
+      "treeId": 1117,
+      "name": "Raging Blows",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130707,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Causes your Whirlwind to also strike with your off-hand weapon, and reduces the Rage cost of your Cleave ability by ${$m2/-10}.\r\n",
+          "new": "Causes your Whirlwind to also strike with your Off Hand weapon, and reduces the Rage cost of your Cleave ability by ${$m2/-10}.\r\n"
+        }
+      ]
+    }
+  ]
+}

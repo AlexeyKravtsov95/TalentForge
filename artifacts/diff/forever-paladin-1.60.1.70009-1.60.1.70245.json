@@ -1,0 +1,234 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 2,
+    "token": "PALADIN",
+    "name": "Paladin"
+  },
+  "fromBuild": "1.60.1.70009",
+  "toBuild": "1.60.1.70245",
+  "fromContentHash": "sha256:91ca3aa09768de5f3c5674d7a70d3105a453abe99af7d760fd4a3c90defddfce",
+  "toContentHash": "sha256:4488199d62115685bc1778b5413c618d1bdcb43d3de5732cc09444a26b03321e",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 9,
+    "changesByKind": {
+      "descriptionChanged": 7,
+      "effectBasePointsChanged": 1,
+      "effectRankValueChanged": 8,
+      "effectRemoved": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 105320,
+      "treeId": 1100,
+      "name": "Light's Vigil",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130014,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Applies Light's Vigil to the target for $1310909d. Your next Holy Shock cast on them triggers no cooldown and causes enemy targets to suffer $1310914s1 Holy damage and refund $s2% of Light's Vigil's Mana cost, or allied targets to heal their party for $1310912s1.  The Paladin may only have one Light's Vigil active per party.",
+          "new": "Applies Light's Vigil to the target for $1310909d. Your next Holy Shock cast on them triggers no cooldown and causes enemy targets to suffer $1310914s1 Holy damage and refund $s2% of Light's Vigil's Mana cost, or allied targets to heal their party for $1310912s1. You may only have one Light's Vigil active per party."
+        }
+      ]
+    },
+    {
+      "nodeId": 105330,
+      "treeId": 1100,
+      "name": "Voice of Truth",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130024,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Grants you immunity to Silence and Interrupt effects.  Lasts $d.",
+          "new": "Grants you immunity to Silence and Interrupt effects for $d."
+        }
+      ]
+    },
+    {
+      "nodeId": 105331,
+      "treeId": 1100,
+      "name": "Unyielding Faith",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130025,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Reduces the duration of  Fear and Disorient effects on you by $s1%.",
+          "new": "Reduces the duration of Fear and Disorient effects on you by $s1%."
+        }
+      ]
+    },
+    {
+      "nodeId": 105625,
+      "treeId": 1100,
+      "name": "Templar's Bulwark",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130349,
+          "effectIndex": null,
+          "rank": null,
+          "old": "When activated, this ability grants you an absorb shield equal to $s1% of your maximum health for $d.  Applies Forbearance for $25771d. Cannot be cast while Forbearance is active.",
+          "new": "When activated, this ability grants you an absorb shield equal to $s1% of your maximum health for $d. Applies Forbearance for $25771d. Cannot be cast while Forbearance is active."
+        }
+      ]
+    },
+    {
+      "nodeId": 105626,
+      "treeId": 1100,
+      "name": "Redoubt",
+      "changes": [
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130350,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 6,
+          "new": 4
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130350,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 12,
+          "new": 8
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130350,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 18,
+          "new": 12
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130350,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": 24,
+          "new": 16
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130350,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": 30,
+          "new": 20
+        }
+      ]
+    },
+    {
+      "nodeId": 105628,
+      "treeId": 1100,
+      "name": "Holy Shield",
+      "changes": [
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130352,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 20,
+          "new": 30
+        }
+      ]
+    },
+    {
+      "nodeId": 105692,
+      "treeId": 1100,
+      "name": "Twist of Light",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130421,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Reduces the Mana cost of your Seal spells by $s1%, and when you replace your Seal of Command, Seal of Righteousness, Seal of Fury, or Seal of Justice with a different Seal, gain an Echo of that Seal. Your next melee attack applies the replaced Seal's effects, consuming the Echo.",
+          "new": "Reduces the Mana cost of your Seal spells by $s1%, and when you replace your Seal of Command, Seal of Righteousness, Seal of Fury, or Seal of Justice with a different Seal, you gain an Echo of that Seal. Your next melee attack applies the replaced Seal's effects, consuming the Echo."
+        }
+      ]
+    },
+    {
+      "nodeId": 110879,
+      "treeId": 1100,
+      "name": "Iron Creed",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 137877,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases the threat generated by your Holy Strike ability $m1%. While Righteous Fury is active, Holy Strike also reduces your damage taken by $m2% for $1311033d.",
+          "new": "Increases the threat generated by your Holy Strike ability by $m1%. While Righteous Fury is active, Holy Strike also reduces your damage taken by $m2% for $1311033d."
+        }
+      ]
+    },
+    {
+      "nodeId": 110882,
+      "treeId": 1100,
+      "name": "Champion of the Light",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 137880,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases your spell damage and healing by up to $m1% of your Intellect.",
+          "new": "Increases your spell damage by up to $m1% of your Intellect."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137880,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 33,
+          "new": 20
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137880,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 66,
+          "new": 40
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137880,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 100,
+          "new": 60
+        },
+        {
+          "kind": "effectRemoved",
+          "entryId": 137880,
+          "effectIndex": 1,
+          "rank": null,
+          "old": {
+            "index": 1,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 100,
+            "unresolvedReason": null
+          },
+          "new": null
+        }
+      ]
+    }
+  ]
+}

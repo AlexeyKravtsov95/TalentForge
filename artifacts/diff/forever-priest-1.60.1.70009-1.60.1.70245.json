@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 5,
+    "token": "PRIEST",
+    "name": "Priest"
+  },
+  "fromBuild": "1.60.1.70009",
+  "toBuild": "1.60.1.70245",
+  "fromContentHash": "sha256:4103fbd3c199e3e2e101999fa2bf7b47642541d15dbc75cece1a4b99d66a569f",
+  "toContentHash": "sha256:09ff3abcdc8f9159de0d7938b5bda9d6354aa16833099ef3207fbf481289bdf6",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 4,
+    "changesByKind": {
+      "descriptionChanged": 4
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 105819,
+      "treeId": 1114,
+      "name": "Devouring Contagion",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130548,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Reduces the mana cost of your Devouring Plague by $s1%.\r\n\r\nTargets that die while Devouring Plague is active spreads it, jumping to a nearby enemy within $s2 yards for the remaining duration.\r\n",
+          "new": "Reduces the mana cost of your Devouring Plague by $s1%.\r\n\r\nTargets that die while Devouring Plague is active spreads it, jumping to a nearby enemy within $s2 yds for the remaining duration.\r\n"
+        }
+      ]
+    },
+    {
+      "nodeId": 105820,
+      "treeId": 1114,
+      "name": "Vampiric Embrace",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130549,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Afflicts your target with Shadow energy that causes all party members to be healed for $s1% of any Shadow spell damage you deal for $d. Vampiric Embrace also grants a chance for your Spirit Tap talent to trigger when enemies afflicted by it die.",
+          "new": "Afflicts your target with Shadow energy that causes all party members to be healed for $s1% of any Shadow spell damage you deal for $d."
+        }
+      ]
+    },
+    {
+      "nodeId": 105833,
+      "treeId": 1114,
+      "name": "Spirit Tap",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130562,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Gives you a $m1% chance to gain a $15271s1% bonus to your Spirit for $15271d after killing a non-trivial target. For the duration, your Mana will regenerate at a $15271s2% of normal rate while casting.",
+          "new": "Gives you a $m1% chance to increase your Spirit by $15271s1% for $15271d after killing a non-trivial target or when an enemy afflicted by your Vampiric Embrace dies. For the duration, $15271S2% of your Mana regeneration will continue while casting."
+        }
+      ]
+    },
+    {
+      "nodeId": 105844,
+      "treeId": 1114,
+      "name": "Inner Focus",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130573,
+          "effectIndex": null,
+          "rank": null,
+          "old": "When activated, reduces the Mana cost of your next spell by $s1% and increases its critical effect chance by $s2% if it is capable of a critical effect.",
+          "new": "When activated, reduces the Mana cost of your next spell by $s1% and increases its critical effect chance by $s2% if it is a non-periodic spell and capable of a critical effect."
+        }
+      ]
+    }
+  ]
+}

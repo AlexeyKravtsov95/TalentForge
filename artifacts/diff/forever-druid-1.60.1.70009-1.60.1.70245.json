@@ -1,0 +1,591 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 11,
+    "token": "DRUID",
+    "name": "Druid"
+  },
+  "fromBuild": "1.60.1.70009",
+  "toBuild": "1.60.1.70245",
+  "fromContentHash": "sha256:0105ee1c9a858d61a8c2c595f1a4701ba1e3cd2164d04c6b1d37d5ff2da18772",
+  "toContentHash": "sha256:add5db0d089816ad966574977165e9b8e9138d27760097e86ef4f08cab4496d6",
+  "summary": {
+    "added": 1,
+    "removed": 0,
+    "changed": 8,
+    "changesByKind": {
+      "descriptionChanged": 3,
+      "effectBasePointsChanged": 1,
+      "effectRankValueChanged": 3,
+      "effectRemoved": 1,
+      "effectStatusChanged": 1,
+      "maxRankChanged": 1,
+      "positionChanged": 3,
+      "prerequisitesChanged": 1,
+      "spellReplaced": 1,
+      "unlockRequirementsChanged": 7
+    }
+  },
+  "treeChanges": [],
+  "added": [
+    {
+      "nodeId": 113563,
+      "treeId": 1089,
+      "name": "Improved Shifting Power",
+      "spellId": 1322670,
+      "sectionIndex": 1,
+      "position": {
+        "x": 5020,
+        "y": 4530,
+        "row": 4,
+        "column": 0
+      },
+      "maxRank": 2,
+      "relatedNodeId": null
+    }
+  ],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 104937,
+      "treeId": 1089,
+      "name": "Moonkin Form",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129597,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Transforms the Druid into Moonkin Form. While in this form, the armor contribution from items is increased by $24905s1%, Omen of Clarity gains $s5% increased chance to trigger, and all party members within $24907a1 yards have their critical strike chance increased by $24907s1%, exclusive with Leader of the Pack. The Moonkin cannot cast healing spells while shapeshifted.\r\n\r\nThe act of shapeshifting frees the caster of Polymorph and Movement Impairing effects.",
+          "new": "Shapeshift into Moonkin Form, increasing Omen of Clarity's chance to trigger by $s5%, Armor contribution from items by $24905s1%, and all party members within $24907a1 yards have their Critical Strike chance increased by $24907s1%, exclusive with Leader of the Pack.  Also protects the caster from Polymorph effects and prevents the use of healing spells.\r\n\r\nThe act of shapeshifting frees the caster of Polymorph and Movement Impairing effects."
+        }
+      ]
+    },
+    {
+      "nodeId": 104945,
+      "treeId": 1089,
+      "name": "Shredding Attacks",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 5020,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          },
+          "new": {
+            "x": 5020,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104938,
+                104939,
+                104940,
+                104941,
+                104942,
+                104943,
+                104944,
+                104946,
+                104948
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104938,
+                104939,
+                104940,
+                104941,
+                104942,
+                104943
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 104947,
+      "treeId": 1089,
+      "name": "Blood Frenzy",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104938,
+                104939,
+                104940,
+                104941,
+                104942,
+                104943,
+                104944,
+                104946,
+                104948
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104938,
+                104939,
+                104940,
+                104941,
+                104942,
+                104943,
+                104944,
+                104945,
+                104946,
+                104948
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 104949,
+      "treeId": 1089,
+      "name": "Primal Bite",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104938,
+                104939,
+                104940,
+                104941,
+                104942,
+                104943,
+                104944,
+                104946,
+                104948
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104938,
+                104939,
+                104940,
+                104941,
+                104942,
+                104943,
+                104944,
+                104945,
+                104946,
+                104948
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129609,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Bite the target for $s2% normal damage plus $s1.",
+          "new": "Bite the target, dealing $s2% normal damage plus $s1 and generating a high amount of threat."
+        }
+      ]
+    },
+    {
+      "nodeId": 104950,
+      "treeId": 1089,
+      "name": "Predatory Instincts",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 5020,
+            "y": 4530,
+            "row": 4,
+            "column": 0
+          },
+          "new": {
+            "x": 6820,
+            "y": 4530,
+            "row": 4,
+            "column": 3
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104938,
+                104939,
+                104940,
+                104941,
+                104942,
+                104943,
+                104944,
+                104945,
+                104946,
+                104947,
+                104948,
+                104949,
+                104952
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104938,
+                104939,
+                104940,
+                104941,
+                104942,
+                104943,
+                104944,
+                104945,
+                104946,
+                104947,
+                104948,
+                104949,
+                104951,
+                104952
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 104951,
+      "treeId": 1089,
+      "name": "Shifting Power",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 6820,
+            "y": 4530,
+            "row": 4,
+            "column": 3
+          },
+          "new": {
+            "x": 5020,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          }
+        },
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 3,
+          "new": 1
+        },
+        {
+          "kind": "prerequisitesChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [],
+          "new": [
+            {
+              "nodeId": 104945,
+              "kind": "sufficient",
+              "name": "Shredding Attacks"
+            }
+          ]
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104938,
+                104939,
+                104940,
+                104941,
+                104942,
+                104943,
+                104944,
+                104945,
+                104946,
+                104947,
+                104948,
+                104949,
+                104952
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104938,
+                104939,
+                104940,
+                104941,
+                104942,
+                104943,
+                104944,
+                104945,
+                104946,
+                104948
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "spellReplaced",
+          "entryId": 129611,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 417046,
+            "name": "King of the Jungle"
+          },
+          "new": {
+            "spellId": 1322605,
+            "name": "Shifting Power"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129611,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Tiger's Fury now instantly grants you $s1 Energy.",
+          "new": "Instantly convert $c Mana into $s2 Energy. Shifting Power's cost is reduced by effects that reduce the cost of Shapeshifting."
+        },
+        {
+          "kind": "effectStatusChanged",
+          "entryId": 129611,
+          "effectIndex": 0,
+          "rank": null,
+          "old": "resolved",
+          "new": "none"
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129611,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 20,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129611,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 40,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129611,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 60,
+          "new": null
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 129611,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 60,
+          "new": 40
+        },
+        {
+          "kind": "effectRemoved",
+          "entryId": 129611,
+          "effectIndex": 1,
+          "rank": null,
+          "old": {
+            "index": 1,
+            "perRank": [
+              {
+                "rank": 1,
+                "value": 5
+              },
+              {
+                "rank": 2,
+                "value": 10
+              },
+              {
+                "rank": 3,
+                "value": 15
+              }
+            ],
+            "perRankStatus": "resolved",
+            "basePoints": 15,
+            "unresolvedReason": null
+          },
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 104952,
+      "treeId": 1089,
+      "name": "Predatory Strikes",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104938,
+                104939,
+                104940,
+                104941,
+                104942,
+                104943,
+                104944,
+                104946,
+                104948
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104938,
+                104939,
+                104940,
+                104941,
+                104942,
+                104943,
+                104944,
+                104945,
+                104946,
+                104948
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 104955,
+      "treeId": 1089,
+      "name": "Leader of the Pack",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104938,
+                104939,
+                104940,
+                104941,
+                104942,
+                104943,
+                104944,
+                104945,
+                104946,
+                104947,
+                104948,
+                104949,
+                104952
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                104938,
+                104939,
+                104940,
+                104941,
+                104942,
+                104943,
+                104944,
+                104945,
+                104946,
+                104947,
+                104948,
+                104949,
+                104951,
+                104952
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

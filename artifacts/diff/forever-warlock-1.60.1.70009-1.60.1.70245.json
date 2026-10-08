@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 9,
+    "token": "WARLOCK",
+    "name": "Warlock"
+  },
+  "fromBuild": "1.60.1.70009",
+  "toBuild": "1.60.1.70245",
+  "fromContentHash": "sha256:0bf67cfe81a6066be2932875db37c6a81271ae266b061a3ec6623b1930079235",
+  "toContentHash": "sha256:ff947e568e5ed55a625befdf153cde7788f9d2c660bc5b2a9ab3ba5dd842b352",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 2,
+    "changesByKind": {
+      "descriptionChanged": 2,
+      "renamed": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 105909,
+      "treeId": 1116,
+      "name": "Wrack",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130639,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Tears the target apart from within, dealing $s1 Shadow damage every $t sec and increasing the damage they take from your other Shadow damage over time effects by $s2%. Lasts $d.",
+          "new": "Tears the target apart from within, inflicting $s1 Shadow damage every $t sec and increasing the damage they take from your other Shadow damage over time effects by $s2% for $d."
+        }
+      ]
+    },
+    {
+      "nodeId": 105922,
+      "treeId": 1116,
+      "name": "Soul Harvest",
+      "changes": [
+        {
+          "kind": "renamed",
+          "entryId": 130652,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Soul Harvesting",
+          "new": "Soul Harvest"
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130652,
+          "effectIndex": null,
+          "rank": null,
+          "old": "You gain Soul Harvest for $1242853d if a victim is killed while afflicted with your Drain Soul. Soul Harvest allows your Mana to regenerate at $m1% of normal speed while you are casting spells, and grants a $m2% increase to your Mana regeneration.",
+          "new": "Killing a non-trivial target afflicted by your Drain Soul increases your Mana regeneration by $m1% for $1242853d and allows $m2% of normal Mana regeneration to continue while casting."
+        }
+      ]
+    }
+  ]
+}

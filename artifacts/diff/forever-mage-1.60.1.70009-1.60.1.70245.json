@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 8,
+    "token": "MAGE",
+    "name": "Mage"
+  },
+  "fromBuild": "1.60.1.70009",
+  "toBuild": "1.60.1.70245",
+  "fromContentHash": "sha256:29fd95f62da2210850793a73e6f5cdb51b38e1d65e71c90569147b692ad94039",
+  "toContentHash": "sha256:347c68bef08acf24b9b3ec60a3f03e2a2bb6d185fdce6997fa4004bbacffee22",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 1,
+    "changesByKind": {
+      "descriptionChanged": 1,
+      "renamed": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 105786,
+      "treeId": 1112,
+      "name": "Heating Up",
+      "changes": [
+        {
+          "kind": "renamed",
+          "entryId": 130515,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Hot Streak",
+          "new": "Heating Up"
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130515,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Your non-periodic critical strikes with Fireball, Frostfire Bolt, Fire Blast, and Scorch grant Hot Streak for $400625d. Hot Streak reduces the cast time of Pyroblast by $400625s1%, stacking up to $400625s2 times.",
+          "new": "Non-periodic critical strikes with Fireball, Frostfire Bolt, Fire Blast, and Scorch reduce the cast time of your next Pyroblast cast within $400625d by $400625s1%, stacking up to $400625s2 times."
+        }
+      ]
+    }
+  ]
+}
