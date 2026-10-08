@@ -1,13 +1,17 @@
 package io.github.alexeykravtsov95.talentforge.ui
 
+import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
+import io.github.alexeykravtsov95.talentforge.ui.library.REFERENCE_BUNDLE
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
  * JVM mirror of `scripts/sync_mobile_datasets.py --check`: the bundled Compose
- * resources must stay byte-identical to the canonical `data/normalized` tree,
+ * resources must stay byte-identical to the canonical `data/normalized` tree
+ * for every bundled build — the reference baseline and the product dataset —
  * so a canonical update without a bundle sync fails the build in CI.
  */
 class DatasetDriftTest {
@@ -27,11 +31,39 @@ class DatasetDriftTest {
 
     @Test
     fun bundledDatasetMatchesCanonicalSourceByteForByte() {
-        val repoRoot = findRepoRoot(File(System.getProperty("user.dir")).absoluteFile)
-        val canonicalDir = repoRoot.resolve("data/normalized/forever/1.60.1.70009")
-        val bundledDir = repoRoot
-            .resolve("mobile/composeApp/src/commonMain/composeResources/files/dataset/forever/1.60.1.70009")
+        for (clientBuild in listOf(REFERENCE_BUNDLE.clientBuild, PRODUCT_BUNDLE.clientBuild)) {
+            assertBuildMatches(clientBuild)
+        }
+    }
 
+    @Test
+    fun exactlyTheReferenceAndTheProductBuildAreBundled() {
+        val repoRoot = findRepoRoot(File(System.getProperty("user.dir")).absoluteFile)
+        val bundledRoot = repoRoot
+            .resolve("mobile/composeApp/src/commonMain/composeResources/files/dataset/forever")
+        val bundledBuilds = bundledRoot.listFiles().orEmpty()
+            .filter { !it.name.startsWith(".") }
+            .map { it.name }
+            .toSet()
+        assertEquals(setOf(REFERENCE_BUNDLE.clientBuild, PRODUCT_BUNDLE.clientBuild), bundledBuilds)
+    }
+
+    private fun assertBuildMatches(clientBuild: String) {
+        val repoRoot = findRepoRoot(File(System.getProperty("user.dir")).absoluteFile)
+        val canonicalDir = repoRoot.resolve("data/normalized/forever/$clientBuild")
+        val bundledDir = repoRoot
+            .resolve("mobile/composeApp/src/commonMain/composeResources/files/dataset/forever/$clientBuild")
+
+        assertEquals(
+            bundledFiles.toSet(),
+            canonicalDir.listFiles().orEmpty().filter { !it.name.startsWith(".") }.map { it.name }.toSet(),
+            "canonical $clientBuild holds exactly the manifest and nine class documents",
+        )
+        assertEquals(
+            bundledFiles.toSet(),
+            bundledDir.listFiles().orEmpty().filter { !it.name.startsWith(".") }.map { it.name }.toSet(),
+            "bundled $clientBuild holds extra or missing files — run scripts/sync_mobile_datasets.py",
+        )
         for (name in bundledFiles) {
             val canonical = canonicalDir.resolve(name)
             val bundled = bundledDir.resolve(name)

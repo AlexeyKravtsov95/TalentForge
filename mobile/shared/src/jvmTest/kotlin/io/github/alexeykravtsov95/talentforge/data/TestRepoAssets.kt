@@ -11,6 +11,11 @@ object TestRepoAssets {
     val forever70009: File get() = repoRoot.resolve("data/normalized/forever/1.60.1.70009")
     val visuals70009: File get() = repoRoot.resolve("data/visuals/forever/1.60.1.70009")
     val tooltips70009: File get() = repoRoot.resolve("data/tooltips/forever/1.60.1.70009")
+
+    /** The product dataset of M5.DATA (70009 stays the reference baseline). */
+    val forever70245: File get() = repoRoot.resolve("data/normalized/forever/1.60.1.70245")
+    val visuals70245: File get() = repoRoot.resolve("data/visuals/forever/1.60.1.70245")
+    val tooltips70245: File get() = repoRoot.resolve("data/tooltips/forever/1.60.1.70245")
     val conformance70009: File get() =
         repoRoot.resolve("data/conformance/forever/1.60.1.70009/allocation.v1.json")
 

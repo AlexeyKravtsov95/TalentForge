@@ -52,7 +52,7 @@ jobs:
       - name: Tooltips drift check (bundled descriptions == canonical, offline)
         run: python3 scripts/sync_mobile_tooltips.py --check
 
-      - name: Shared JVM contract tests (18 documents, 2 manifests, conformance, repository)
+      - name: Shared JVM contract tests (27 documents, 3 manifests, conformance, repository)
         working-directory: mobile
         run: ./gradlew :shared:jvmTest --console=plain
 
