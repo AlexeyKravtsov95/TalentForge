@@ -67,6 +67,22 @@ MUST_BE_ABSENT_TABLES: tuple[str, ...] = RANK_COST_EXTENSION_TABLES
 # `visuals` commands fetch and read these.
 VISUAL_TABLES: tuple[str, ...] = ("SpellMisc",)
 
+# Presentation-only tables (M5.V2 talent descriptions). Like VISUAL_TABLES, deliberately NOT
+# part of TRAIT_TABLES: only the `tooltips` commands fetch and read these, and allocation
+# normalization never depends on them. Each one supplies a tooltip value kind; the mapping
+# and the evidence for it are in docs/talent-tooltips.md.
+TOOLTIP_TABLES: tuple[str, ...] = (
+    "Spell",  # Description_lang of cross-referenced and nested spells
+    "SpellEffect",  # effect values, periods, radius indices, value-scaling columns
+    "SpellMisc",  # DurationIndex
+    "SpellDuration",  # $d
+    "SpellRadius",  # $a
+    "SpellAuraOptions",  # $h / $n / $u
+    "SpellXDescriptionVariables",  # which spells define $<name> description variables
+    "SpellDescriptionVariables",  # the definitions (classified, never evaluated)
+    "GlobalStrings",  # the build's own duration unit formats
+)
+
 
 def _int(table: str, row: Mapping[str, str], column: str) -> int:
     raw = row.get(column)
@@ -570,6 +586,234 @@ class SpellMisc:
             _int(t, row, "SpellIconFileDataID"),
             _int(t, row, "ActiveIconFileDataID"),
         )
+
+
+@dataclass(frozen=True)
+class SpellEffectValues:
+    """The value-bearing columns of one SpellEffect row, for tooltip evaluation.
+
+    A second typed view of ``SpellEffect`` (the allocation view :class:`SpellEffect` stays
+    unchanged). Observed 1.60.1.70009 export shape (37 columns): ``ID``, ``EffectAura``,
+    ``DifficultyID``, ``EffectIndex``, ``Effect``, ``EffectAmplitude``, ``EffectAttributes``,
+    ``EffectAuraPeriod``, ``EffectBonusCoefficient``, ``EffectChainAmplitude``,
+    ``EffectChainTargets``, ``EffectItemType``, ``EffectMechanic``,
+    ``EffectPointsPerResource``, ``EffectPos_facing``, ``EffectRealPointsPerLevel``,
+    ``EffectTriggerSpell``, ``BonusCoefficientFromAP``, ``PvpMultiplier``, ``Coefficient``,
+    ``Variance``, ``ResourceCoefficient``, ``GroupSizeBasePointsCoefficient``,
+    ``EffectBasePointsF``, ``ScalingClass``, ``Node__Field_12_0_0_63534_001``,
+    ``EffectMiscValue_0..1``, ``EffectRadiusIndex_0..1``, ``EffectSpellClassMask_0..3``,
+    ``ImplicitTarget_0..1``, ``SpellID``.
+    """
+
+    id: int
+    spell_id: int
+    effect_index: int
+    difficulty_id: int
+    effect: int
+    effect_aura: int
+    base_points: str  # EffectBasePointsF, verbatim: evaluated as an exact decimal
+    aura_period: int  # EffectAuraPeriod, milliseconds
+    radius_index_0: int
+    radius_index_1: int
+    # Columns that make the displayed amount depend on the caster (or on a roll). The
+    # tooltip renderer refuses an effect value when any of them is not at its neutral value.
+    real_points_per_level: float
+    scaling_class: int
+    coefficient: float
+    variance: float
+    bonus_coefficient: float  # EffectBonusCoefficient
+    bonus_coefficient_from_ap: float
+    points_per_resource: float
+    resource_coefficient: float
+    group_size_base_points_coefficient: float
+    pvp_multiplier: float
+    chain_amplitude: float
+
+    TABLE: ClassVar[str] = "SpellEffect"
+
+    @classmethod
+    def parse(cls, row: Mapping[str, str]) -> Self:
+        t = cls.TABLE
+        base = _str(t, row, "EffectBasePointsF")
+        _float(t, row, "EffectBasePointsF")  # must be numeric; kept verbatim for exactness
+        return cls(
+            _int(t, row, "ID"),
+            _int(t, row, "SpellID"),
+            _int(t, row, "EffectIndex"),
+            _int(t, row, "DifficultyID"),
+            _int(t, row, "Effect"),
+            _int(t, row, "EffectAura"),
+            base,
+            _int(t, row, "EffectAuraPeriod"),
+            _int(t, row, "EffectRadiusIndex_0"),
+            _int(t, row, "EffectRadiusIndex_1"),
+            _float(t, row, "EffectRealPointsPerLevel"),
+            _int(t, row, "ScalingClass"),
+            _float(t, row, "Coefficient"),
+            _float(t, row, "Variance"),
+            _float(t, row, "EffectBonusCoefficient"),
+            _float(t, row, "BonusCoefficientFromAP"),
+            _float(t, row, "EffectPointsPerResource"),
+            _float(t, row, "ResourceCoefficient"),
+            _float(t, row, "GroupSizeBasePointsCoefficient"),
+            _float(t, row, "PvpMultiplier"),
+            _float(t, row, "EffectChainAmplitude"),
+        )
+
+
+@dataclass(frozen=True)
+class SpellMiscDuration:
+    """The duration link of one SpellMisc row (see :class:`SpellMisc` for the full shape)."""
+
+    id: int
+    spell_id: int
+    difficulty_id: int
+    duration_index: int  # -> SpellDuration.ID (0 = none)
+
+    TABLE: ClassVar[str] = "SpellMisc"
+
+    @classmethod
+    def parse(cls, row: Mapping[str, str]) -> Self:
+        t = cls.TABLE
+        return cls(
+            _int(t, row, "ID"),
+            _int(t, row, "SpellID"),
+            _int(t, row, "DifficultyID"),
+            _int(t, row, "DurationIndex"),
+        )
+
+
+@dataclass(frozen=True)
+class SpellDuration:
+    """Observed 1.60.1.70009 shape: ``ID``, ``Duration``, ``MaxDuration``,
+    ``DurationPerResource`` (milliseconds; ``-1`` = no expiry)."""
+
+    id: int
+    duration: int
+    max_duration: int
+    duration_per_resource: int
+
+    TABLE: ClassVar[str] = "SpellDuration"
+
+    @classmethod
+    def parse(cls, row: Mapping[str, str]) -> Self:
+        t = cls.TABLE
+        return cls(
+            _int(t, row, "ID"),
+            _int(t, row, "Duration"),
+            _int(t, row, "MaxDuration"),
+            _int(t, row, "DurationPerResource"),
+        )
+
+
+@dataclass(frozen=True)
+class SpellRadius:
+    """Observed 1.60.1.70009 shape: ``ID``, ``Radius``, ``RadiusPerLevel``, ``RadiusMin``,
+    ``RadiusMax`` (yards)."""
+
+    id: int
+    radius: str  # verbatim, evaluated as an exact decimal
+    radius_per_level: float
+    radius_min: float
+    radius_max: float
+
+    TABLE: ClassVar[str] = "SpellRadius"
+
+    @classmethod
+    def parse(cls, row: Mapping[str, str]) -> Self:
+        t = cls.TABLE
+        _float(t, row, "Radius")
+        return cls(
+            _int(t, row, "ID"),
+            _str(t, row, "Radius"),
+            _float(t, row, "RadiusPerLevel"),
+            _float(t, row, "RadiusMin"),
+            _float(t, row, "RadiusMax"),
+        )
+
+
+@dataclass(frozen=True)
+class SpellAuraOptions:
+    """Observed 1.60.1.70009 shape: ``ID``, ``DifficultyID``, ``CumulativeAura``,
+    ``ProcCategoryRecovery``, ``ProcChance``, ``ProcCharges``, ``SpellProcsPerMinuteID``,
+    ``ProcTypeMask_0..1``, ``SpellID``."""
+
+    id: int
+    spell_id: int
+    difficulty_id: int
+    cumulative_aura: int
+    proc_category_recovery: int
+    proc_chance: int
+    proc_charges: int
+    spell_procs_per_minute_id: int
+
+    TABLE: ClassVar[str] = "SpellAuraOptions"
+
+    @classmethod
+    def parse(cls, row: Mapping[str, str]) -> Self:
+        t = cls.TABLE
+        return cls(
+            _int(t, row, "ID"),
+            _int(t, row, "SpellID"),
+            _int(t, row, "DifficultyID"),
+            _int(t, row, "CumulativeAura"),
+            _int(t, row, "ProcCategoryRecovery"),
+            _int(t, row, "ProcChance"),
+            _int(t, row, "ProcCharges"),
+            _int(t, row, "SpellProcsPerMinuteID"),
+        )
+
+
+@dataclass(frozen=True)
+class SpellXDescriptionVariables:
+    """Observed 1.60.1.70009 shape: ``ID``, ``SpellID``, ``SpellDescriptionVariablesID``."""
+
+    id: int
+    spell_id: int
+    spell_description_variables_id: int
+
+    TABLE: ClassVar[str] = "SpellXDescriptionVariables"
+
+    @classmethod
+    def parse(cls, row: Mapping[str, str]) -> Self:
+        t = cls.TABLE
+        return cls(
+            _int(t, row, "ID"),
+            _int(t, row, "SpellID"),
+            _int(t, row, "SpellDescriptionVariablesID"),
+        )
+
+
+@dataclass(frozen=True)
+class SpellDescriptionVariables:
+    """Observed 1.60.1.70009 shape: ``ID``, ``Variables`` (newline-separated
+    ``$name=<expression>`` definitions)."""
+
+    id: int
+    variables: str
+
+    TABLE: ClassVar[str] = "SpellDescriptionVariables"
+
+    @classmethod
+    def parse(cls, row: Mapping[str, str]) -> Self:
+        t = cls.TABLE
+        return cls(_int(t, row, "ID"), _str(t, row, "Variables"))
+
+
+@dataclass(frozen=True)
+class GlobalString:
+    """Observed 1.60.1.70009 shape: ``ID``, ``BaseTag``, ``TagText_lang``, ``Flags``."""
+
+    id: int
+    base_tag: str
+    text: str
+
+    TABLE: ClassVar[str] = "GlobalStrings"
+
+    @classmethod
+    def parse(cls, row: Mapping[str, str]) -> Self:
+        t = cls.TABLE
+        return cls(_int(t, row, "ID"), _str(t, row, "BaseTag"), _str(t, row, "TagText_lang"))
 
 
 class Db2Record(Protocol):
