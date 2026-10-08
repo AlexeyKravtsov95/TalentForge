@@ -43,12 +43,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.alexeykravtsov95.talentforge.data.TalentDatasetRepository
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
-import io.github.alexeykravtsov95.talentforge.ui.library.BASELINE_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildCardModel
 import io.github.alexeykravtsov95.talentforge.ui.library.ClassMonogramMark
 import io.github.alexeykravtsov95.talentforge.ui.library.HomeModel
 import io.github.alexeykravtsov95.talentforge.ui.library.InlineNotice
 import io.github.alexeykravtsov95.talentforge.ui.library.LibraryData
+import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.library.PrimaryActionButton
 import io.github.alexeykravtsov95.talentforge.ui.library.SectionLabel
 import io.github.alexeykravtsov95.talentforge.ui.library.SecondaryActionButton
@@ -212,8 +212,8 @@ private fun NewUserContent() {
             style = TalentForgeTypography.body.copy(color = colors.textSecondary),
         )
         BasicText(
-            "${gameDisplayName(BASELINE_BUNDLE.game)} talent data " +
-                dataVersionOf(BASELINE_BUNDLE.clientBuild),
+            "${gameDisplayName(PRODUCT_BUNDLE.game)} talent data " +
+                dataVersionOf(PRODUCT_BUNDLE.clientBuild),
             style = TalentForgeTypography.meta.copy(color = colors.textMuted),
         )
     }

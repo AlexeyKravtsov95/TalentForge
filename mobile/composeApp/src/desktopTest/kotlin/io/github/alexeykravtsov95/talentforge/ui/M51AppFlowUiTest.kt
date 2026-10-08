@@ -20,8 +20,8 @@ import androidx.compose.ui.test.swipe
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.alexeykravtsov95.talentforge.data.ClassToken
-import io.github.alexeykravtsov95.talentforge.data.GameId
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
+import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.library.createClassDraft
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
 import kotlin.test.BeforeTest
@@ -88,8 +88,8 @@ class M51AppFlowUiTest {
             kotlin.test.assertIs<io.github.alexeykravtsov95.talentforge.data.DatasetOutcome.Loaded<io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument>>(
                 realDatasets().document(
                     io.github.alexeykravtsov95.talentforge.data.DatasetId(
-                        GameId("forever"),
-                        "1.60.1.70009",
+                        PRODUCT_BUNDLE.game,
+                        PRODUCT_BUNDLE.clientBuild,
                         ClassToken("WARRIOR"),
                     ),
                 ),
@@ -155,7 +155,8 @@ class M51AppFlowUiTest {
 
         composeRule.onNodeWithText("New build").assertExists()
         composeRule.onNodeWithText("Forever").assertExists()
-        composeRule.onNodeWithText("Talent data 1.60.1").assertExists()
+        // the exact client build drafts are created on - no "latest" / "up to date" claim
+        composeRule.onNodeWithText("Talent data 1.60.1.70245").assertExists()
         composeRule.onNodeWithText("Builds save to this device as you edit.").assertExists()
         for (name in listOf(
             "Warrior", "Paladin", "Hunter", "Rogue", "Priest", "Shaman", "Mage", "Warlock", "Druid",

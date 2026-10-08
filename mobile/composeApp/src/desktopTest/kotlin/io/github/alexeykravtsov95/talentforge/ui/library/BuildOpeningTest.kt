@@ -131,12 +131,13 @@ class BuildOpeningTest {
 
     @Test
     fun allNineManifestClassTokensResolveTheirRealDocumentsAndOpen() {
-        val manifest = runBlocking { loadedDocument(datasets.manifest(BASELINE_BUNDLE)) }
+        // drafts are created on the product dataset (M5.DATA)
+        val manifest = runBlocking { loadedDocument(datasets.manifest(PRODUCT_BUNDLE)) }
         assertEquals(9, manifest.classes.size)
 
         for (entry in manifest.classes) {
             val document = runBlocking {
-                loadedDocument(datasets.document(DatasetId(game, clientBuild, entry.token)))
+                loadedDocument(datasets.document(DatasetId(game, PRODUCT_BUNDLE.clientBuild, entry.token)))
             }
             assertEquals(entry.token, document.classInfo.token)
             assertTrue(document.classInfo.name.isNotBlank())

@@ -6,7 +6,6 @@ import io.github.alexeykravtsov95.talentforge.data.BundledTalentDatasetRepositor
 import io.github.alexeykravtsov95.talentforge.data.ClassToken
 import io.github.alexeykravtsov95.talentforge.data.DatasetId
 import io.github.alexeykravtsov95.talentforge.data.DatasetOutcome
-import io.github.alexeykravtsov95.talentforge.data.GameId
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRecord
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
@@ -57,7 +56,8 @@ class BuildRestartPersistenceTest {
             runBlocking { createClassDraft(repositoryA, datasetsA, ClassToken("WARRIOR")) },
         ).record
         val document: TalentDataDocument = runBlocking {
-            loadedDocument(datasetsA.document(DatasetId(GameId("forever"), "1.60.1.70009", ClassToken("WARRIOR"))))
+            // the draft's own dataset (the product dataset since M5.DATA)
+            loadedDocument(datasetsA.document(DatasetId(created.build.game, created.build.clientBuild, created.build.classToken)))
         }
         val engine = TalentAllocationEngine(document)
         var state = engine.emptyState()
