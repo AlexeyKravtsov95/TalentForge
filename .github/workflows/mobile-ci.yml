@@ -11,6 +11,7 @@ on:
       - "data/tooltips/**"
       - "data/conformance/**"
       - "docs/schema/**"
+      - "scripts/mobile_bundles.py"
       - "scripts/sync_mobile_datasets.py"
       - "scripts/sync_mobile_visuals.py"
       - "scripts/sync_mobile_tooltips.py"
