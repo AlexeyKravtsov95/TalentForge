@@ -656,6 +656,14 @@ for that reason.
 `TooltipsDriftTest` and the opt-in, desktop-rendered `TalentTreeM5V2ScreenshotTest`
 (`composeApp/desktopTest`).
 
+**Device evidence** (`docs/screenshots/m5-v2/`, reference baseline 1.60.1.70009, real
+`adb screencap` / `xcrun simctl io screenshot` captures of the debug app): Android
+emulator (1080 × 2424, API 35) portrait Improved Rend rank 0 / 1 of 3 / max, Improved
+Slam, Weaponmaster (multi-line), Anger Management (prerequisite-locked, Show pinned),
+Mage Arcane Focus, Rogue Relentless Strikes (partial description), Druid Improved Wrath
+(several values change: next-rank text), landscape side inspector; iOS simulator
+(iPhone 17 Pro) New Build version line and the Improved Rend inspector.
+
 ## Conformance strategy (M3A parsing, M3B execution)
 
 M3A implements the full serialization contract for
