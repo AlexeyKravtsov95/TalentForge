@@ -75,16 +75,19 @@ def filter_game_builds(index: WagoBuildIndex, game: GameConfig) -> list[BuildInf
                 continue
             if version.branch != game.version_branch:
                 continue
+            extra = {
+                "build_config": entry.build_config or "",
+                "cdn_config": entry.cdn_config or "",
+            }
+            # Only a flag wago.tools actually sent is lifted; a missing one stays unknown.
+            if entry.is_bgdl is not None:
+                extra["is_bgdl"] = str(entry.is_bgdl).lower()
             builds.append(
                 BuildInfo(
                     version=version,
                     product=product,
                     created_at=entry.created_at,
-                    extra={
-                        "build_config": entry.build_config or "",
-                        "cdn_config": entry.cdn_config or "",
-                        "is_bgdl": str(entry.is_bgdl).lower(),
-                    },
+                    extra=extra,
                 )
             )
     return builds
