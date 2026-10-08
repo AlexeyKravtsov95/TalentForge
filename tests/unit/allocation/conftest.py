@@ -7,7 +7,7 @@ import pytest
 from talent_data.allocation import TalentAllocationEngine
 from talent_data.models.talents import TalentDataDocument, TalentNode
 from tests.conformance.scenarios import BASELINE, load_documents
-from tests.helpers import OLD_BUILD
+from tests.helpers import OLD_BUILD, PRODUCT_BUILD
 
 
 @pytest.fixture(scope="session")
@@ -20,6 +20,12 @@ def docs() -> dict[str, TalentDataDocument]:
 def old_docs() -> dict[str, TalentDataDocument]:
     """Previous captured build (1.60.1.69977) documents by class token."""
     return load_documents(OLD_BUILD)
+
+
+@pytest.fixture(scope="session")
+def product_docs() -> dict[str, TalentDataDocument]:
+    """Product dataset (1.60.1.70245, M5.DATA) documents by class token."""
+    return load_documents(PRODUCT_BUILD)
 
 
 @pytest.fixture(scope="session")

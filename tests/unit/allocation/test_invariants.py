@@ -1,4 +1,4 @@
-"""Engine-wide invariants on every class of both captured builds (deterministic).
+"""Engine-wide invariants on every class of the captured builds (deterministic).
 
 * random-walk invariants: allowed actions keep the build valid, refused actions never touch
   the state, spend-then-refund restores the state, points/ranks stay in bounds, results are
@@ -20,16 +20,19 @@ import pytest
 from talent_data.allocation import BuildState, TalentAllocationEngine
 from talent_data.models.talents import TalentDataDocument, TalentTree
 from tests.conformance.scenarios import BASELINE
-from tests.helpers import OLD_BUILD
+from tests.helpers import OLD_BUILD, PRODUCT_BUILD
 
 CLASSES = ["WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "MAGE", "WARLOCK", "DRUID"]
-BUILDS = [str(BASELINE), str(OLD_BUILD)]
+BUILDS = [str(BASELINE), str(OLD_BUILD), str(PRODUCT_BUILD)]
 
 
 def _docs(
-    build: str, docs: dict[str, TalentDataDocument], old_docs: dict[str, TalentDataDocument]
+    build: str,
+    docs: dict[str, TalentDataDocument],
+    old_docs: dict[str, TalentDataDocument],
+    product_docs: dict[str, TalentDataDocument],
 ) -> dict[str, TalentDataDocument]:
-    return docs if build == str(BASELINE) else old_docs
+    return {str(BASELINE): docs, str(OLD_BUILD): old_docs, str(PRODUCT_BUILD): product_docs}[build]
 
 
 @pytest.mark.parametrize("build", BUILDS)
@@ -39,8 +42,9 @@ def test_random_walk_invariants(
     build: str,
     docs: dict[str, TalentDataDocument],
     old_docs: dict[str, TalentDataDocument],
+    product_docs: dict[str, TalentDataDocument],
 ) -> None:
-    doc = _docs(build, docs, old_docs)[cls]
+    doc = _docs(build, docs, old_docs, product_docs)[cls]
     engine = TalentAllocationEngine(doc)
     twin = TalentAllocationEngine(doc)  # a second instance must answer identically
     rng = random.Random(f"{cls}-{build}")

@@ -68,10 +68,10 @@ def test_valid_manifest_has_no_problems(real_batch, valid_manifest) -> None:
     assert baseline_checks(valid_manifest, docs_for(real_batch)) == []
 
 
-def test_both_committed_forever_manifests_pass() -> None:
-    """The two committed real manifests (1.60.1.69977 and 1.60.1.70009) with their
-    committed class documents must satisfy every invariant."""
-    for build in ("1.60.1.69977", "1.60.1.70009"):
+def test_every_committed_forever_manifest_passes() -> None:
+    """The committed real manifests (1.60.1.69977, the reference baseline 1.60.1.70009 and
+    the product dataset 1.60.1.70245) with their class documents satisfy every invariant."""
+    for build in ("1.60.1.69977", "1.60.1.70009", "1.60.1.70245"):
         mpath = ROOT / "data" / "normalized" / "forever" / build / "manifest.json"
         manifest = read_manifest(mpath)
         docs = {}
