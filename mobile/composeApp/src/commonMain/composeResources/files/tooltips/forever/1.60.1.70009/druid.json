@@ -1,0 +1,4144 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "clientBuild": "1.60.1.70009",
+  "classToken": "DRUID",
+  "talentDataContentHash": "sha256:0105ee1c9a858d61a8c2c595f1a4701ba1e3cd2164d04c6b1d37d5ff2da18772",
+  "entries": [
+    {
+      "entryId": 129569,
+      "definitionId": 134370,
+      "spellId": 17123,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces threat caused by Tranquility by "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " and its cooldown by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces threat caused by Tranquility by "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " and its cooldown by "
+            },
+            {
+              "kind": "value",
+              "text": "60%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129570,
+      "definitionId": 134371,
+      "spellId": 408120,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Heals the target and their party for "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " over "
+            },
+            {
+              "kind": "value",
+              "text": "7 sec"
+            },
+            {
+              "kind": "text",
+              "text": ". Party members must be within "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " yards of target. The amount healed is applied quickly at first, and slows down as Wild Growth reaches its full duration."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "local-periodic-total",
+              "classification": "contextDependent",
+              "fragment": "$o1",
+              "token": "$o1",
+              "reason": "spell 408120 effect 0: EffectRealPointsPerLevel=1, the amount scales with the caster's level"
+            },
+            {
+              "category": "local-radius",
+              "classification": "unsupported",
+              "fragment": "$a1",
+              "token": "$a1",
+              "reason": "spell 408120 effect 0 has EffectRadiusIndex [0, 524]; which one $a1 reads is only proven when the first is set and the second is empty or equal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "entryId": 129571,
+      "definitionId": 134372,
+      "spellId": 1309631,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Spirit by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Spirit by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Spirit by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129572,
+      "definitionId": 134373,
+      "spellId": 18562,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Instantly heals a target with an active Rejuvenation or Regrowth effect for an amount equal to the full duration of the periodic effect of one of those spells."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129573,
+      "definitionId": 134374,
+      "spellId": 17074,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical effect chance of your Regrowth spell by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical effect chance of your Regrowth spell by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical effect chance of your Regrowth spell by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical effect chance of your Regrowth spell by "
+            },
+            {
+              "kind": "value",
+              "text": "40%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical effect chance of your Regrowth spell by "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129574,
+      "definitionId": 134375,
+      "spellId": 17111,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the effect of your Rejuvenation spell by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the effect of your Rejuvenation spell by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the effect of your Rejuvenation spell by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129575,
+      "definitionId": 134376,
+      "spellId": 24968,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the mana cost of your Healing Touch and Tranquility spells by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the mana cost of your Healing Touch and Tranquility spells by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the mana cost of your Healing Touch and Tranquility spells by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the mana cost of your Healing Touch and Tranquility spells by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the mana cost of your Healing Touch and Tranquility spells by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129576,
+      "definitionId": 134377,
+      "spellId": 17104,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the effect of all your healing spells by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the effect of all your healing spells by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the effect of all your healing spells by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the effect of all your healing spells by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the effect of all your healing spells by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129577,
+      "definitionId": 134378,
+      "spellId": 17106,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Allows "
+            },
+            {
+              "kind": "value",
+              "text": "17%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Mana regeneration to continue while casting."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Allows "
+            },
+            {
+              "kind": "value",
+              "text": "33%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Mana regeneration to continue while casting."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Allows "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Mana regeneration to continue while casting."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129578,
+      "definitionId": 134379,
+      "spellId": 414673,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the global cooldown by "
+            },
+            {
+              "kind": "value",
+              "text": "0.5"
+            },
+            {
+              "kind": "text",
+              "text": " seconds on your Rejuvenation, Swiftmend, and Wild Growth spells."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129579,
+      "definitionId": 134380,
+      "spellId": 16833,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the mana cost of all shapeshifting by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the mana cost of all shapeshifting by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the mana cost of all shapeshifting by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129580,
+      "definitionId": 134381,
+      "spellId": 17118,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the threat generated by your Nature and Arcane spells by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the threat generated by your Nature and Arcane spells by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the threat generated by your Nature and Arcane spells by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129581,
+      "definitionId": 134382,
+      "spellId": 17116,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "When activated, your next Nature spell becomes an instant cast spell."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129582,
+      "definitionId": 134383,
+      "spellId": 17069,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cast time of your Healing Touch spell by "
+            },
+            {
+              "kind": "value",
+              "text": "0.1"
+            },
+            {
+              "kind": "text",
+              "text": " sec and increases all damage you deal by "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cast time of your Healing Touch spell by "
+            },
+            {
+              "kind": "value",
+              "text": "0.2"
+            },
+            {
+              "kind": "text",
+              "text": " sec and increases all damage you deal by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cast time of your Healing Touch spell by "
+            },
+            {
+              "kind": "value",
+              "text": "0.3"
+            },
+            {
+              "kind": "text",
+              "text": " sec and increases all damage you deal by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cast time of your Healing Touch spell by "
+            },
+            {
+              "kind": "value",
+              "text": "0.4"
+            },
+            {
+              "kind": "text",
+              "text": " sec and increases all damage you deal by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cast time of your Healing Touch spell by "
+            },
+            {
+              "kind": "value",
+              "text": "0.5"
+            },
+            {
+              "kind": "text",
+              "text": " sec and increases all damage you deal by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129583,
+      "definitionId": 134384,
+      "spellId": 16814,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cast time of your Wrath spell by "
+            },
+            {
+              "kind": "value",
+              "text": "0.1"
+            },
+            {
+              "kind": "text",
+              "text": " sec and its Mana cost by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cast time of your Wrath spell by "
+            },
+            {
+              "kind": "value",
+              "text": "0.2"
+            },
+            {
+              "kind": "text",
+              "text": " sec and its Mana cost by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cast time of your Wrath spell by "
+            },
+            {
+              "kind": "value",
+              "text": "0.3"
+            },
+            {
+              "kind": "text",
+              "text": " sec and its Mana cost by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cast time of your Wrath spell by "
+            },
+            {
+              "kind": "value",
+              "text": "0.4"
+            },
+            {
+              "kind": "text",
+              "text": " sec and its Mana cost by "
+            },
+            {
+              "kind": "value",
+              "text": "40%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cast time of your Wrath spell by "
+            },
+            {
+              "kind": "value",
+              "text": "0.5"
+            },
+            {
+              "kind": "text",
+              "text": " sec and its Mana cost by "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129584,
+      "definitionId": 134385,
+      "spellId": 1223081,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the periodic damage and healing done by your spells and abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the periodic damage and healing done by your spells and abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the periodic damage and healing done by your spells and abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the periodic damage and healing done by your spells and abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the periodic damage and healing done by your spells and abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129585,
+      "definitionId": 134386,
+      "spellId": 16845,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Mana cost of your damaging spells by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Mana cost of your damaging spells by "
+            },
+            {
+              "kind": "value",
+              "text": "17%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Mana cost of your damaging spells by "
+            },
+            {
+              "kind": "value",
+              "text": "25%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129586,
+      "definitionId": 134387,
+      "spellId": 16918,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your Entangling Roots spell by "
+            },
+            {
+              "kind": "value",
+              "text": "25%"
+            },
+            {
+              "kind": "text",
+              "text": ", and its victims can take up to "
+            },
+            {
+              "kind": "value",
+              "text": "25%"
+            },
+            {
+              "kind": "text",
+              "text": " more damage without interrupting the effect."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your Entangling Roots spell by "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": ", and its victims can take up to "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " more damage without interrupting the effect."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your Entangling Roots spell by "
+            },
+            {
+              "kind": "value",
+              "text": "75%"
+            },
+            {
+              "kind": "text",
+              "text": ", and its victims can take up to "
+            },
+            {
+              "kind": "value",
+              "text": "75%"
+            },
+            {
+              "kind": "text",
+              "text": " more damage without interrupting the effect."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129587,
+      "definitionId": 134388,
+      "spellId": 1223082,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your critical strike chance with spells and melee attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your critical strike chance with spells and melee attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129588,
+      "definitionId": 134389,
+      "spellId": 1223083,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the duration of your Moonfire and Rejuvenation spells by "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": " sec, your Regrowth spell by "
+            },
+            {
+              "kind": "value",
+              "text": "6"
+            },
+            {
+              "kind": "text",
+              "text": " sec, and your Insect Swarm spell by "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129589,
+      "definitionId": 134390,
+      "spellId": 16819,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the range of your offensive Balance spells by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " and improves your chance to hit by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the range of your offensive Balance spells by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " and improves your chance to hit by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129590,
+      "definitionId": 134391,
+      "spellId": 5570,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "The enemy target is swarmed by insects, decreasing their chance to hit with attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": " and causing "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " Nature damage over "
+            },
+            {
+              "kind": "value",
+              "text": "12 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "local-periodic-total",
+              "classification": "contextDependent",
+              "fragment": "$o1",
+              "token": "$o1",
+              "reason": "spell 5570 effect 0: EffectBonusCoefficient=0.158 on a damage/healing/absorb amount, the amount includes the caster's spell power"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "entryId": 129591,
+      "definitionId": 134392,
+      "spellId": 16821,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage and critical strike chance of your Moonfire spell by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage and critical strike chance of your Moonfire spell by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129592,
+      "definitionId": 134393,
+      "spellId": 16909,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike damage bonus of your Arcane and Nature spells by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike damage bonus of your Arcane and Nature spells by "
+            },
+            {
+              "kind": "value",
+              "text": "40%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike damage bonus of your Arcane and Nature spells by "
+            },
+            {
+              "kind": "value",
+              "text": "60%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike damage bonus of your Arcane and Nature spells by "
+            },
+            {
+              "kind": "value",
+              "text": "80%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike damage bonus of your Arcane and Nature spells by "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129593,
+      "definitionId": 134394,
+      "spellId": 16850,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cast time of Starfire by "
+            },
+            {
+              "kind": "value",
+              "text": "0.1"
+            },
+            {
+              "kind": "text",
+              "text": " sec and Starfire has a "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to stun its target for "
+            },
+            {
+              "kind": "value",
+              "text": "3 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cast time of Starfire by "
+            },
+            {
+              "kind": "value",
+              "text": "0.2"
+            },
+            {
+              "kind": "text",
+              "text": " sec and Starfire has a "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to stun its target for "
+            },
+            {
+              "kind": "value",
+              "text": "3 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cast time of Starfire by "
+            },
+            {
+              "kind": "value",
+              "text": "0.3"
+            },
+            {
+              "kind": "text",
+              "text": " sec and Starfire has a "
+            },
+            {
+              "kind": "value",
+              "text": "9%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to stun its target for "
+            },
+            {
+              "kind": "value",
+              "text": "3 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cast time of Starfire by "
+            },
+            {
+              "kind": "value",
+              "text": "0.4"
+            },
+            {
+              "kind": "text",
+              "text": " sec and Starfire has a "
+            },
+            {
+              "kind": "value",
+              "text": "12%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to stun its target for "
+            },
+            {
+              "kind": "value",
+              "text": "3 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cast time of Starfire by "
+            },
+            {
+              "kind": "value",
+              "text": "0.5"
+            },
+            {
+              "kind": "text",
+              "text": " sec and Starfire has a "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to stun its target for "
+            },
+            {
+              "kind": "value",
+              "text": "3 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129594,
+      "definitionId": 134395,
+      "spellId": 16880,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "All non-periodic spell criticals grace you with a blessing of nature, increasing your spellcasting speed and reducing your global cooldown by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "3 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129595,
+      "definitionId": 134396,
+      "spellId": 408248,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your Wrath spell reduces the cast time of your next "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": " Starfire spells by "
+            },
+            {
+              "kind": "value",
+              "text": "0.17"
+            },
+            {
+              "kind": "text",
+              "text": " sec. Stores up to "
+            },
+            {
+              "kind": "value",
+              "text": "4"
+            },
+            {
+              "kind": "text",
+              "text": " charges. Lasts "
+            },
+            {
+              "kind": "value",
+              "text": "15 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your Wrath spell reduces the cast time of your next "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": " Starfire spells by "
+            },
+            {
+              "kind": "value",
+              "text": "0.33"
+            },
+            {
+              "kind": "text",
+              "text": " sec. Stores up to "
+            },
+            {
+              "kind": "value",
+              "text": "4"
+            },
+            {
+              "kind": "text",
+              "text": " charges. Lasts "
+            },
+            {
+              "kind": "value",
+              "text": "15 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your Wrath spell reduces the cast time of your next "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": " Starfire spells by "
+            },
+            {
+              "kind": "value",
+              "text": "0.50"
+            },
+            {
+              "kind": "text",
+              "text": " sec. Stores up to "
+            },
+            {
+              "kind": "value",
+              "text": "4"
+            },
+            {
+              "kind": "text",
+              "text": " charges. Lasts "
+            },
+            {
+              "kind": "value",
+              "text": "15 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129596,
+      "definitionId": 134397,
+      "spellId": 16896,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your Arcane and Nature spells by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your Arcane and Nature spells by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your Arcane and Nature spells by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your Arcane and Nature spells by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your Arcane and Nature spells by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129597,
+      "definitionId": 134398,
+      "spellId": 24858,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Transforms the Druid into Moonkin Form. While in this form, the armor contribution from items is increased by "
+            },
+            {
+              "kind": "value",
+              "text": "360%"
+            },
+            {
+              "kind": "text",
+              "text": ", Omen of Clarity gains "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " increased chance to trigger, and all party members within "
+            },
+            {
+              "kind": "value",
+              "text": "45"
+            },
+            {
+              "kind": "text",
+              "text": " yards have their critical strike chance increased by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": ", exclusive with Leader of the Pack. The Moonkin cannot cast healing spells while shapeshifted.\n\nThe act of shapeshifting frees the caster of Polymorph and Movement Impairing effects."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129598,
+      "definitionId": 134399,
+      "spellId": 16934,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cost of your Maul, Primal Bite, Swipe, Claw, and Rake abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": " Rage or Energy."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cost of your Maul, Primal Bite, Swipe, Claw, and Rake abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": " Rage or Energy."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cost of your Maul, Primal Bite, Swipe, Claw, and Rake abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": " Rage or Energy."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cost of your Maul, Primal Bite, Swipe, Claw, and Rake abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "4"
+            },
+            {
+              "kind": "text",
+              "text": " Rage or Energy."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cost of your Maul, Primal Bite, Swipe, Claw, and Rake abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " Rage or Energy."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129599,
+      "definitionId": 134400,
+      "spellId": 17003,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Intellect by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": ". In addition, while in Bear Form or Dire Bear Form your Stamina is increased by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": " and while in Cat Form your Strength is increased by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Intellect by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": ". In addition, while in Bear Form or Dire Bear Form your Stamina is increased by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": " and while in Cat Form your Strength is increased by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Intellect by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": ". In addition, while in Bear Form or Dire Bear Form your Stamina is increased by "
+            },
+            {
+              "kind": "value",
+              "text": "12%"
+            },
+            {
+              "kind": "text",
+              "text": " and while in Cat Form your Strength is increased by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Intellect by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": ". In addition, while in Bear Form or Dire Bear Form your Stamina is increased by "
+            },
+            {
+              "kind": "value",
+              "text": "16%"
+            },
+            {
+              "kind": "text",
+              "text": " and while in Cat Form your Strength is increased by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Intellect by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": ". In addition, while in Bear Form or Dire Bear Form your Stamina is increased by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " and while in Cat Form your Strength is increased by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129600,
+      "definitionId": 134401,
+      "spellId": 16947,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases damage done by your Swipe ability by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " and reduces the chance enemies have to detect you while Prowling as if you were "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": " "
+            },
+            {
+              "kind": "value",
+              "text": "level"
+            },
+            {
+              "kind": "text",
+              "text": " higher."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases damage done by your Swipe ability by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " and reduces the chance enemies have to detect you while Prowling as if you were "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": " "
+            },
+            {
+              "kind": "value",
+              "text": "levels"
+            },
+            {
+              "kind": "text",
+              "text": " higher."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases damage done by your Swipe ability by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " and reduces the chance enemies have to detect you while Prowling as if you were "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": " "
+            },
+            {
+              "kind": "value",
+              "text": "levels"
+            },
+            {
+              "kind": "text",
+              "text": " higher."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129601,
+      "definitionId": 134402,
+      "spellId": 16940,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the stun duration of your Bash and Pounce abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "0.5"
+            },
+            {
+              "kind": "text",
+              "text": " sec and reduces the cooldown of Bash by "
+            },
+            {
+              "kind": "value",
+              "text": "15"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the stun duration of your Bash and Pounce abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": " sec and reduces the cooldown of Bash by "
+            },
+            {
+              "kind": "value",
+              "text": "30"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129602,
+      "definitionId": 134403,
+      "spellId": 16929,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "While in Bear Form, Cat Form, Dire Bear Form, or Moonkin Form, you gain "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": " additional base Armor per level and another "
+            },
+            {
+              "kind": "value",
+              "text": "0.67"
+            },
+            {
+              "kind": "text",
+              "text": " base Armor for each point of defense skill beyond five times your level. This amount can be further increased by multipliers from those forms."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "While in Bear Form, Cat Form, Dire Bear Form, or Moonkin Form, you gain "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": " additional base Armor per level and another "
+            },
+            {
+              "kind": "value",
+              "text": "1.33"
+            },
+            {
+              "kind": "text",
+              "text": " base Armor for each point of defense skill beyond five times your level. This amount can be further increased by multipliers from those forms."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "While in Bear Form, Cat Form, Dire Bear Form, or Moonkin Form, you gain "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": " additional base Armor per level and another "
+            },
+            {
+              "kind": "value",
+              "text": "2.00"
+            },
+            {
+              "kind": "text",
+              "text": " base Armor for each point of defense skill beyond five times your level. This amount can be further increased by multipliers from those forms."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129603,
+      "definitionId": 134404,
+      "spellId": 17002,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your movement speed while in Cat Form by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": ", and increases your chance to Dodge by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your movement speed while in Cat Form by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": ", and increases your chance to Dodge by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129604,
+      "definitionId": 134405,
+      "spellId": 1238122,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Requires Bear Form, Dire Bear Form\nCharge an enemy, immobilizing them and interrupting any spell they are casting for "
+            },
+            {
+              "kind": "value",
+              "text": "4 sec"
+            },
+            {
+              "kind": "text",
+              "text": ".\n\nLeap behind an enemy."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129605,
+      "definitionId": 134406,
+      "spellId": 16966,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Energy cost of your Shred ability by "
+            },
+            {
+              "kind": "value",
+              "text": "6"
+            },
+            {
+              "kind": "text",
+              "text": " and reduces the Rage cost of your Lacerate ability by "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Energy cost of your Shred ability by "
+            },
+            {
+              "kind": "value",
+              "text": "12"
+            },
+            {
+              "kind": "text",
+              "text": " and reduces the Rage cost of your Lacerate ability by "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Energy cost of your Shred ability by "
+            },
+            {
+              "kind": "value",
+              "text": "18"
+            },
+            {
+              "kind": "text",
+              "text": " and reduces the Rage cost of your Lacerate ability by "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129606,
+      "definitionId": 134407,
+      "spellId": 16942,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your critical strike chance while in Bear Form, Dire Bear Form, or Cat Form by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your critical strike chance while in Bear Form, Dire Bear Form, or Cat Form by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129607,
+      "definitionId": 134408,
+      "spellId": 16958,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to gain an additional "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " Rage any time you get a critical strike while in Bear Form or Dire Bear Form. In addition, your non-periodic critical strikes from Cat Form abilities that generate Combo Points have a "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to add an additional Combo Point."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to gain an additional "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " Rage any time you get a critical strike while in Bear Form or Dire Bear Form. In addition, your non-periodic critical strikes from Cat Form abilities that generate Combo Points have a "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to add an additional Combo Point."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129608,
+      "definitionId": 134409,
+      "spellId": 16998,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage caused by your Claw, Rake, Shred, Maul, and Swipe abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage caused by your Claw, Rake, Shred, Maul, and Swipe abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129609,
+      "definitionId": 134410,
+      "spellId": 407995,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Bite the target for "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " normal damage plus "
+            },
+            {
+              "kind": "value",
+              "text": "26"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129610,
+      "definitionId": 134411,
+      "spellId": 1223242,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike damage bonus of your melee abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike damage bonus of your melee abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129611,
+      "definitionId": 134412,
+      "spellId": 417046,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Tiger's Fury now instantly grants you "
+            },
+            {
+              "kind": "value",
+              "text": "20"
+            },
+            {
+              "kind": "text",
+              "text": " Energy."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Tiger's Fury now instantly grants you "
+            },
+            {
+              "kind": "value",
+              "text": "40"
+            },
+            {
+              "kind": "text",
+              "text": " Energy."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Tiger's Fury now instantly grants you "
+            },
+            {
+              "kind": "value",
+              "text": "60"
+            },
+            {
+              "kind": "text",
+              "text": " Energy."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129612,
+      "definitionId": 134413,
+      "spellId": 16972,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your melee Attack Power in Cat Form, Bear Form, and Dire Bear Form by "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " of your level."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your melee Attack Power in Cat Form, Bear Form, and Dire Bear Form by "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " of your level."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your melee Attack Power in Cat Form, Bear Form, and Dire Bear Form by "
+            },
+            {
+              "kind": "value",
+              "text": "150%"
+            },
+            {
+              "kind": "text",
+              "text": " of your level."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129613,
+      "definitionId": 134414,
+      "spellId": 1223246,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases damage done by your melee abilities on Bleeding targets by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases damage done by your melee abilities on Bleeding targets by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases damage done by your melee abilities on Bleeding targets by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases damage done by your melee abilities on Bleeding targets by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases damage done by your melee abilities on Bleeding targets by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129614,
+      "definitionId": 134415,
+      "spellId": 417051,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your dodge chance by "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": ", and gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to gain "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " Rage each time you dodge."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your dodge chance by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": ", and gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "40%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to gain "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " Rage each time you dodge."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your dodge chance by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": ", and gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "60%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to gain "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " Rage each time you dodge."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your dodge chance by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": ", and gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "80%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to gain "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " Rage each time you dodge."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your dodge chance by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": ", and gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to gain "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " Rage each time you dodge."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129615,
+      "definitionId": 134416,
+      "spellId": 17007,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "While in Cat Form, Bear Form, or Dire Bear Form, the Leader of the Pack increases the critical strike chance of all party members within "
+            },
+            {
+              "kind": "value",
+              "text": "45"
+            },
+            {
+              "kind": "text",
+              "text": " yards by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": ", exclusive with Moonkin Aura."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129616,
+      "definitionId": 134417,
+      "spellId": 417141,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": "\nCauses your Primal Bite ability to strike up to "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": " targets, removes its cooldown, and increases the critical strike chance of your Combo Point-generating abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": ". Clears and grants immunity to Fear effects for the duration. Lasts "
+            },
+            {
+              "kind": "value",
+              "text": "15 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "conditional",
+              "classification": "contextDependent",
+              "fragment": "$?a5487|a9634|a3025[|CFFFFFFFFReuires Cat Form, Bear Form, Dire Bear Form|R][|CFFFF2020Requires Cat Form, Bear Form, Dire Bear Form|R]",
+              "token": "$?a5487|a9634|a3025[|CFFFFFFFFReuires Cat Form, Bear Form, Dire Bear Form|R][|CFFFF2020Requires Cat Form, Bear Form, Dire Bear Form|R]",
+              "reason": "client-side condition $?a5487|a9634|a3025 selects between 2 different texts; the character's state is unknown"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "entryId": 129617,
+      "definitionId": 134418,
+      "spellId": 17063,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "14%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to avoid interruption caused by damage while casting Arcane and Nature spells."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "28%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to avoid interruption caused by damage while casting Arcane and Nature spells."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "42%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to avoid interruption caused by damage while casting Arcane and Nature spells."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "56%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to avoid interruption caused by damage while casting Arcane and Nature spells."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "70%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to avoid interruption caused by damage while casting Arcane and Nature spells."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129618,
+      "definitionId": 134419,
+      "spellId": 17056,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to gain "
+            },
+            {
+              "kind": "value",
+              "text": "10"
+            },
+            {
+              "kind": "text",
+              "text": " Rage when you shapeshift into Bear Form or Dire Bear Form. When you shift into Cat Form, you will regain "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " of the Energy you had when you were last in Cat Form, plus "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": " Energy for each second you spent not in Bear Form, Cat Form, or Dire Bear Form, up to a maximum of "
+            },
+            {
+              "kind": "value",
+              "text": "20"
+            },
+            {
+              "kind": "text",
+              "text": " Energy."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "40%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to gain "
+            },
+            {
+              "kind": "value",
+              "text": "10"
+            },
+            {
+              "kind": "text",
+              "text": " Rage when you shapeshift into Bear Form or Dire Bear Form. When you shift into Cat Form, you will regain "
+            },
+            {
+              "kind": "value",
+              "text": "40%"
+            },
+            {
+              "kind": "text",
+              "text": " of the Energy you had when you were last in Cat Form, plus "
+            },
+            {
+              "kind": "value",
+              "text": "4"
+            },
+            {
+              "kind": "text",
+              "text": " Energy for each second you spent not in Bear Form, Cat Form, or Dire Bear Form, up to a maximum of "
+            },
+            {
+              "kind": "value",
+              "text": "40"
+            },
+            {
+              "kind": "text",
+              "text": " Energy."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "60%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to gain "
+            },
+            {
+              "kind": "value",
+              "text": "10"
+            },
+            {
+              "kind": "text",
+              "text": " Rage when you shapeshift into Bear Form or Dire Bear Form. When you shift into Cat Form, you will regain "
+            },
+            {
+              "kind": "value",
+              "text": "60%"
+            },
+            {
+              "kind": "text",
+              "text": " of the Energy you had when you were last in Cat Form, plus "
+            },
+            {
+              "kind": "value",
+              "text": "6"
+            },
+            {
+              "kind": "text",
+              "text": " Energy for each second you spent not in Bear Form, Cat Form, or Dire Bear Form, up to a maximum of "
+            },
+            {
+              "kind": "value",
+              "text": "60"
+            },
+            {
+              "kind": "text",
+              "text": " Energy."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "80%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to gain "
+            },
+            {
+              "kind": "value",
+              "text": "10"
+            },
+            {
+              "kind": "text",
+              "text": " Rage when you shapeshift into Bear Form or Dire Bear Form. When you shift into Cat Form, you will regain "
+            },
+            {
+              "kind": "value",
+              "text": "80%"
+            },
+            {
+              "kind": "text",
+              "text": " of the Energy you had when you were last in Cat Form, plus "
+            },
+            {
+              "kind": "value",
+              "text": "8"
+            },
+            {
+              "kind": "text",
+              "text": " Energy for each second you spent not in Bear Form, Cat Form, or Dire Bear Form, up to a maximum of "
+            },
+            {
+              "kind": "value",
+              "text": "80"
+            },
+            {
+              "kind": "text",
+              "text": " Energy."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to gain "
+            },
+            {
+              "kind": "value",
+              "text": "10"
+            },
+            {
+              "kind": "text",
+              "text": " Rage when you shapeshift into Bear Form or Dire Bear Form. When you shift into Cat Form, you will regain "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " of the Energy you had when you were last in Cat Form, plus "
+            },
+            {
+              "kind": "value",
+              "text": "10"
+            },
+            {
+              "kind": "text",
+              "text": " Energy for each second you spent not in Bear Form, Cat Form, or Dire Bear Form, up to a maximum of "
+            },
+            {
+              "kind": "value",
+              "text": "100"
+            },
+            {
+              "kind": "text",
+              "text": " Energy."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 137836,
+      "definitionId": 142590,
+      "spellId": 17245,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the maximum number of targets you may have affected by Entangling Roots by "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the maximum number of targets you may have affected by Entangling Roots by "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    }
+  ],
+  "contentHash": "sha256:217a037543d5f5b31dbe70a1ea1b3bc7c273156955509bf667488919fd5b4f4d",
+  "provenance": {
+    "source": "wago.tools",
+    "tables": [
+      "Spell",
+      "SpellEffect",
+      "SpellMisc",
+      "SpellDuration",
+      "SpellRadius",
+      "SpellAuraOptions",
+      "SpellXDescriptionVariables",
+      "SpellDescriptionVariables",
+      "GlobalStrings"
+    ],
+    "renderer": "talent_data.tooltips grammar-v1"
+  }
+}
