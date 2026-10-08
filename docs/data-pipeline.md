@@ -400,8 +400,9 @@ noise as balance changes).
   1.60.1.70009 are investigated client-data features, each with a stable code and a
   regression test — see `docs/forever-dataset.md` for the evidence and the full list of
   unresolved semantics.
-* Tooltips are raw templates; `$s1`, `${$m1/-1000}.2`, `$12976d`, conditionals are not
-  rendered. Per-rank numbers are available structurally for curve-backed effects only.
+* Tooltips are raw templates in `talent-data.v1`; `$s1`, `${$m1/-1000}.2`, `$12976d`,
+  conditionals are not rendered there. Since M5.V2 the rendered, rank-specific
+  descriptions are a separate sidecar (`talent-tooltips.v1`, `docs/talent-tooltips.md`).
 * Tab names (Arms / Fury / Protection) are not present in the client data and are `null`.
 * `TraitEdge` semantics beyond the WoWDBDefs names are unverified: whether *sufficient* edges
   are OR-ed and *required* edges AND-ed, and whether a prerequisite must be fully ranked, is

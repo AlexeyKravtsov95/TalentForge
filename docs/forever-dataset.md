@@ -292,7 +292,8 @@ python scripts/extract_fixtures.py --build 1.60.1.70009 --classes all
   the source proves the per-group/node/entry cost tables absent (present or unknown fails
   closed); still no cost field in schema v1.
 * Tab names (Arms/Fury/Protection…) do not exist in client data; `section.name` is null.
-* Tooltips stay raw templates; per-rank numbers exist for curve-backed effects only.
+* Tooltips stay raw templates in `talent-data.v1`; per-rank numbers exist for curve-backed
+  effects only. Rendered descriptions (M5.V2) live in the `talent-tooltips.v1` sidecar.
 * Whether the mis-placed duplicate nodes (Hunter/Priest) are drawn by the client is
   unknowable from DB2 alone; they are preserved in the contract and flagged.
 * `effectBasePointsChanged` noise under SpellEffect index shifts (see diff noise above)
