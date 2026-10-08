@@ -5,11 +5,20 @@ per-class facts, every validation warning with its investigation, and the semant
 could not (yet) prove. Data basis: real client DB2 tables of builds `1.60.1.69893` …
 `1.60.1.70009` fetched from wago.tools on 2026-09-27.
 
+`1.60.1.70009` is the **verified reference baseline**: the committed dataset, the
+allocation evidence and the conformance vectors are pinned to it. It is not claimed to be
+the current Forever build — newer builds exist (`builds latest` reports the newest at the
+moment it runs); refreshing the published dataset to one of them is the M5.DATA milestone.
+
 ## One-command dataset
 
 ```bash
+# any build: the newest one wago.tools reports right now
 python -m talent_data normalize --game forever --build latest --class all
 # -> data/normalized/forever/<build>/{warrior..druid}.json + manifest.json
+
+# reproduce the verified reference baseline
+python -m talent_data normalize --game forever --build 1.60.1.70009 --class all
 
 python -m talent_data diff --game forever --class all --from 1.60.1.69977 --to 1.60.1.70009
 # -> per-class talent-diff v1 JSONs + aggregate forever-all-<a>-<b>.json + summary
@@ -19,7 +28,7 @@ Classes are discovered from `ChrClasses` (data-driven, no hardcoded list), proce
 published in class-id order. `--class` also accepts a comma-separated subset
 (`--class warrior,druid`); single-class invocations behave exactly as in M0.
 
-## Dataset status (build 1.60.1.70009)
+## Dataset status (reference baseline 1.60.1.70009)
 
 | Class | ID | Tree | Nodes | Sections | Point budget | Errors | Warnings (codes) |
 | --- | --- | --- | --- | --- | --- | --- | --- |

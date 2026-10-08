@@ -213,7 +213,7 @@ private fun NewUserContent() {
         )
         BasicText(
             "${gameDisplayName(BASELINE_BUNDLE.game)} talent data " +
-                "${dataVersionOf(BASELINE_BUNDLE.clientBuild)} · up to date",
+                dataVersionOf(BASELINE_BUNDLE.clientBuild),
             style = TalentForgeTypography.meta.copy(color = colors.textMuted),
         )
     }

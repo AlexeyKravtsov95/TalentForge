@@ -261,7 +261,7 @@ suspend fun loadNewBuildChoices(datasets: TalentDatasetRepository): NewBuildChoi
     }
     return NewBuildChoices(
         gameDisplayName = gameDisplayName(manifest.game),
-        versionDetail = "Talent data ${dataVersionOf(manifest.clientBuild)} · up to date",
+        versionDetail = "Talent data ${dataVersionOf(manifest.clientBuild)}",
         classes = classes,
     )
 }

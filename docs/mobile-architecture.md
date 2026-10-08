@@ -279,7 +279,9 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
   absent, never faked), the New Build class list (tokens from the baseline
   manifest, display names from the nine real documents; a failed class
   document disables that class conservatively — no invented name, no
-  substitution), draft creation (document → engine → `emptyState()` →
+  substitution; the version line is the neutral "Talent data 1.60.1" derived
+  from the bundled build — no "up to date" / "latest" claim, since the app has
+  no supported-build freshness mechanism), draft creation (document → engine → `emptyState()` →
   `BuildFile` bound to the exact dataset identity → persisted, and only a
   persisted draft is "created"), the editor session loader, the relative-time
   wording, shared shell controls and the platform clock expect/actual;
@@ -362,7 +364,7 @@ through the same single change path. Opening a build touches `lastOpenedAt`
 **Build opening — no silent migration.** A saved build is never trusted
 blindly: the record's exact dataset identity resolves through
 `BundledTalentDatasetRepository` (an unavailable dataset never falls back to
-the current baseline), the saved `treeId` must exist in the loaded document,
+the bundled baseline), the saved `treeId` must exist in the loaded document,
 and the saved allocations must pass the real engine validation — no rank is
 clamped, dropped or "repaired". Any mismatch is a typed unavailable/
 incompatible editor state. A reopened build starts with empty undo/redo
@@ -445,10 +447,15 @@ Open string unions the schema explicitly allows are modelled faithfully:
 1. Canonical data lives in `data/normalized/forever/<build>/` (Python
    pipeline output, committed).
 2. `scripts/sync_mobile_datasets.py` copies `manifest.json` + the nine class
-   documents of the baseline (`1.60.1.70009`) into
+   documents of the verified reference baseline (`1.60.1.70009`) into
    `mobile/composeApp/src/commonMain/composeResources/files/dataset/forever/1.60.1.70009/`.
 3. `--check` mode fails (exit 1) when the bundled files differ byte-for-byte
    from the canonical tree.
+
+The bundled baseline (`BASELINE_BUNDLE`, `1.60.1.70009`) is the verified reference
+baseline the allocation evidence and conformance vectors are pinned to — it is not
+claimed to be the current Forever build. Switching the bundle to a newer build is the
+separate M5.DATA milestone; the visuals and descriptions below follow the same baseline.
 
 The bundled copy is deterministically derived and never hand-edited. Drift is
 caught in three places: the Python check script (CI step 1), the JVM
@@ -601,7 +608,7 @@ PNGs are stored uncompressed in the APK.
 
 Real rank-specific talent descriptions, rendered at build time from the DB2 tables of the
 pinned client build and bundled offline. Sources, rules, evidence and the gap policy:
-[talent-tooltips.md](talent-tooltips.md); coverage for 1.60.1.70009 (1290 of 1333 ranks
+[talent-tooltips.md](talent-tooltips.md); coverage for the reference baseline 1.60.1.70009 (1290 of 1333 ranks
 resolved, 43 partial, 0 unresolved, every gap listed):
 [research/forever-1.60.1.70009-tooltip-coverage.md](research/forever-1.60.1.70009-tooltip-coverage.md).
 

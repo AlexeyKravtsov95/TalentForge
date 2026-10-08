@@ -2,8 +2,15 @@
 
 TalentForge shows each talent's description at every rank. The text is rendered **at
 build time** from the client tooltip template and the DB2 tables of the **same pinned
-build** (`forever 1.60.1.70009`), validated, and bundled offline as a sidecar contract.
-There is no client capture step, no addon, no runtime network and no hand-written text.
+build**, validated, and bundled offline as a sidecar contract. There is no client
+capture step, no addon, no runtime network and no hand-written text.
+
+**Build scope.** The renderer is build-generic (`--build` takes any exact client build).
+Its first canonical output — the one committed and bundled — is for the project's
+**verified reference baseline** `forever 1.60.1.70009`, the build the allocation evidence,
+conformance vectors, dataset and icons are pinned to. That build is not claimed to be the
+current Forever build; publishing descriptions for a newer build belongs to the M5.DATA
+data refresh. The table and column facts below are observed on the reference baseline.
 
 ```
 exact Forever build
@@ -19,6 +26,7 @@ exact Forever build
 ```
 
 ```bash
+# verified reference baseline
 python -m talent_data tooltips fetch --build 1.60.1.70009                # online, on demand
 python -m talent_data tooltips normalize --build 1.60.1.70009 --offline  # sidecars + report
 python -m talent_data tooltips check --build 1.60.1.70009                # offline, CI
@@ -28,7 +36,7 @@ python scripts/sync_mobile_tooltips.py --check                           # bundl
 The coverage report is `artifacts/tooltips/forever-1.60.1.70009-tooltip-coverage.json`,
 summarised (with every gap) in
 [`research/forever-1.60.1.70009-tooltip-coverage.md`](research/forever-1.60.1.70009-tooltip-coverage.md).
-Result for 1.60.1.70009: **469 entries, 1333 rank descriptions: 1290 resolved
+Result for the reference baseline 1.60.1.70009: **469 entries, 1333 rank descriptions: 1290 resolved
 (96.77 %), 43 partial, 0 unresolved.**
 
 ## Contract: `talent-tooltips.v1`

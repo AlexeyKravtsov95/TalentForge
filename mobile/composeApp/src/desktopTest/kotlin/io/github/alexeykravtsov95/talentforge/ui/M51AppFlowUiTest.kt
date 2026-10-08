@@ -114,7 +114,7 @@ class M51AppFlowUiTest {
         composeRule.onNodeWithText("Plan your first build").assertExists()
         composeRule.onNodeWithText("CONTINUE").assertDoesNotExist()
         composeRule.onNodeWithText("RECENT").assertDoesNotExist()
-        composeRule.onNodeWithText("Forever talent data 1.60.1 · up to date").assertExists()
+        composeRule.onNodeWithText("Forever talent data 1.60.1").assertExists()
     }
 
     @Test
@@ -155,7 +155,7 @@ class M51AppFlowUiTest {
 
         composeRule.onNodeWithText("New build").assertExists()
         composeRule.onNodeWithText("Forever").assertExists()
-        composeRule.onNodeWithText("Talent data 1.60.1 · up to date").assertExists()
+        composeRule.onNodeWithText("Talent data 1.60.1").assertExists()
         composeRule.onNodeWithText("Builds save to this device as you edit.").assertExists()
         for (name in listOf(
             "Warrior", "Paladin", "Hunter", "Rogue", "Priest", "Shaman", "Mage", "Warlock", "Druid",
