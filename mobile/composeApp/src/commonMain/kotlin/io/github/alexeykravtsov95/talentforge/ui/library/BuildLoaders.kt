@@ -15,7 +15,9 @@ import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRecord
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
+import io.github.alexeykravtsov95.talentforge.ui.assets.TalentDescriptionsLoader
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentIconsLoader
+import io.github.alexeykravtsov95.talentforge.ui.tree.TalentNodeDescriptions
 import io.github.alexeykravtsov95.talentforge.ui.tree.TalentNodeIcons
 import io.github.alexeykravtsov95.talentforge.ui.tree.TalentTreeUiBuildError
 import io.github.alexeykravtsov95.talentforge.ui.tree.TalentTreeUiModel
@@ -86,6 +88,12 @@ data class EditorSession(
      * their monogram tile and never fails the session.
      */
     val icons: TalentNodeIcons = TalentNodeIcons.None,
+    /**
+     * Verified talent descriptions of the tree (M5.V2). Presentation only:
+     * descriptions that fail to load show the neutral "unavailable" line in
+     * the inspector and never fail the session.
+     */
+    val descriptions: TalentNodeDescriptions = TalentNodeDescriptions.None,
 )
 
 /** Typed, fail-closed editor opening failures. No silent migration exists. */
@@ -145,6 +153,7 @@ suspend fun loadEditorSession(
     datasets: TalentDatasetRepository,
     localId: String,
     icons: TalentIconsLoader? = null,
+    descriptions: TalentDescriptionsLoader? = null,
 ): EditorLoad {
     val record = when (val opened = repository.open(localId)) {
         is BuildLibraryOutcome.Failed -> return EditorLoad.Failed(EditorFailure.Record(opened.error))
@@ -189,6 +198,8 @@ suspend fun loadEditorSession(
                     // Loaded last, after every allocation gate passed: icons
                     // can never influence whether a build opens.
                     icons = icons?.load(document, tree)?.icons ?: TalentNodeIcons.None,
+                    descriptions = descriptions?.load(document, tree)?.descriptions
+                        ?: TalentNodeDescriptions.None,
                 ),
             )
     }

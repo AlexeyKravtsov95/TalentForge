@@ -5,7 +5,8 @@ package io.github.alexeykravtsov95.talentforge.ui.tree
  * [TalentNodePresentation], the real node names and the tree-level point
  * facts; every string is derived from dataset/engine values, and the builder
  * never invents spell descriptions, effect prose or lore the contracts do not
- * publish.
+ * publish. Since M5.V2 the description comes from the build-pinned
+ * `talent-tooltips.v1` sidecar ([TalentInspectorDescription]).
  *
  * Wording follows TalentForge_TalentTree_B3.pdf 03–05 where the design freezes
  * it ("Available", "In progress", "Maxed", "Requires <prereq> r/r",
@@ -37,6 +38,12 @@ data class TalentInspectorContent(
     val showAction: ShowAction?,
     /** Real required/spent values of every unmet tier gate (B3 non-interactive meter). */
     val tierMeters: List<TalentTierGateProgress>,
+    /**
+     * M5.V2: the rendered description and CURRENT / NEXT RANK comparison from
+     * the verified `talent-tooltips.v1` sidecar; `null` when the caller
+     * provided no descriptions (the inspector then has no description section).
+     */
+    val description: TalentInspectorDescription? = null,
 ) {
     /**
      * The read-only prerequisite navigation action (B3 07: one hop, never
@@ -77,6 +84,8 @@ fun talentNodeFacts(engine: io.github.alexeykravtsov95.talentforge.allocation.Ta
  * @param facts published names/max ranks of the tree's nodes.
  * @param guideOriginName while a Show guide is active (the user navigated from
  *   this node), the target's state line appends the B3 "needed for" suffix.
+ * @param descriptions the tree's verified talent descriptions (M5.V2); the
+ *   default [TalentNodeDescriptions.None] leaves the description section out.
  * @param blockedReason the explanation of a disabled rank control (B3 04
  *   state 07: "+ is shown disabled and the state line explains why"; B3 07:
  *   "A blocked refund shows its reason in the state line"), or the transient
@@ -89,6 +98,7 @@ fun buildTalentInspectorContent(
     facts: TalentTreeNodeFacts,
     guideOriginName: String? = null,
     blockedReason: String? = null,
+    descriptions: TalentNodeDescriptions = TalentNodeDescriptions.None,
 ): TalentInspectorContent {
     val name = facts.nameOf(presentation.nodeId)
 
@@ -129,6 +139,12 @@ fun buildTalentInspectorContent(
             )
         },
         tierMeters = presentation.tierGates,
+        description = buildTalentInspectorDescription(
+            descriptions = descriptions,
+            nodeId = presentation.nodeId,
+            rank = presentation.rank,
+            maxRank = presentation.maxRank,
+        ),
     )
 }
 

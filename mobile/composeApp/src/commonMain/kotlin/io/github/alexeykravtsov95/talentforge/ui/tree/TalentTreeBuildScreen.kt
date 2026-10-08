@@ -28,6 +28,7 @@ import io.github.alexeykravtsov95.talentforge.data.describe
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryError
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
+import io.github.alexeykravtsov95.talentforge.ui.assets.TalentDescriptionsLoader
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentIconsLoader
 import androidx.compose.runtime.collectAsState
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildAutosaveCoordinator
@@ -67,11 +68,14 @@ fun TalentTreeBuildScreen(
     autosave: BuildAutosaveCoordinator,
     onBack: () -> Unit,
     icons: TalentIconsLoader? = null,
+    descriptions: TalentDescriptionsLoader? = null,
 ) {
     var load by remember(localId) { mutableStateOf<EditorLoad>(EditorLoad.Loading) }
     LaunchedEffect(localId) {
         load = EditorLoad.Loading
-        load = withContext(Dispatchers.Default) { loadEditorSession(repository, datasets, localId, icons) }
+        load = withContext(Dispatchers.Default) {
+            loadEditorSession(repository, datasets, localId, icons, descriptions)
+        }
     }
 
     val colors = talentForgeColors()
@@ -119,6 +123,7 @@ private fun ReadyBuildEditor(
                 buildTitle = record.name ?: "Draft",
                 classAccent = classAccentFor(record.build.classToken).color,
                 icons = session.icons,
+                descriptions = session.descriptions,
             ),
             onBack = onBack,
             onBuildStateChanged = { state ->
