@@ -60,3 +60,23 @@ def icon_coverage_path(game: str, version: ClientVersion) -> Path:
 def casc_cache_dir(source: str, game: str) -> Path:
     """Raw CASC file downloads (git-ignored): .cache/<source>/<game>/<build>/casc/<id>.bin"""
     return raw_cache_dir(source, game)
+
+
+def tooltips_dir(game: str, version: ClientVersion) -> Path:
+    """Canonical talent tooltips of one build: data/tooltips/<game>/<build>/"""
+    return project_root() / "data" / "tooltips" / game / str(version)
+
+
+def tooltips_path(game: str, version: ClientVersion, class_token: str) -> Path:
+    """talent-tooltips.v1 sidecar of one class: data/tooltips/<game>/<build>/<class>.json"""
+    return tooltips_dir(game, version) / f"{class_token.lower()}.json"
+
+
+def tooltip_coverage_path(game: str, version: ClientVersion) -> Path:
+    """Tooltip coverage report: artifacts/tooltips/<game>-<build>-tooltip-coverage.json"""
+    return project_root() / "artifacts" / "tooltips" / f"{game}-{version}-tooltip-coverage.json"
+
+
+def tooltip_coverage_markdown_path(game: str, version: ClientVersion) -> Path:
+    """Human tooltip coverage summary: docs/research/<game>-<build>-tooltip-coverage.md"""
+    return project_root() / "docs" / "research" / f"{game}-{version}-tooltip-coverage.md"
