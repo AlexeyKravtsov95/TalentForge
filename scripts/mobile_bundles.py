@@ -19,7 +19,10 @@ Rules, for each kind (dataset / visuals / tooltips):
 * a sync copies changed files and removes stale files *inside* a bundled build, but never
   removes a whole build directory: a bundled directory of a build that is not in
   ``BUNDLED_BUILDS`` is reported (and fails the check and the sync) - retiring a build is a
-  deliberate change, not a side effect of syncing another one.
+  deliberate change, not a side effect of syncing another one;
+* a sync is all or nothing: its preflight (unlisted bundled builds, missing required
+  canonical files) runs before the first file is written or removed, and a failed
+  preflight leaves the bundle exactly as it was.
 """
 
 from __future__ import annotations
@@ -167,7 +170,41 @@ def check(kind: BundleKind, builds: Sequence[str] = BUNDLED_BUILDS) -> int:
     return 0
 
 
+def preflight(kind: BundleKind, builds: Sequence[str] = BUNDLED_BUILDS) -> list[str]:
+    """Every reason a sync must not start: checked before any file is written or removed.
+
+    * a required canonical file of a bundled build is missing - a sync would mirror an
+      incomplete build;
+    * the bundle holds a build directory (or stray entry) that is not a bundled build -
+      saved builds may reference it, and a sync must neither delete it nor run next to it.
+    """
+    problems = [f"{name}: canonical file missing" for name in missing_canonical(kind, builds)]
+    problems += [
+        f"{name}: in bundle but not a bundled build (BUNDLED_BUILDS in scripts/mobile_bundles.py)"
+        for name in unlisted_entries(kind, builds)
+    ]
+    return problems
+
+
 def sync(kind: BundleKind, builds: Sequence[str] = BUNDLED_BUILDS) -> int:
+    """Mirror the canonical data of ``builds`` into the bundle - all or nothing.
+
+    The preflight runs first; when it fails, nothing in the bundle is changed.
+    """
+    problems = preflight(kind, builds)
+    if problems:
+        print(
+            f"refusing to sync the mobile {kind.name} bundle (nothing was changed):",
+            file=sys.stderr,
+        )
+        for problem in problems:
+            print(f"  - {problem}", file=sys.stderr)
+        print(
+            "a bundled build that is not listed may be referenced by saved builds: add it to "
+            "BUNDLED_BUILDS or retire it deliberately",
+            file=sys.stderr,
+        )
+        return 1
     copied = removed = 0
     for build in builds:
         canonical_dir, bundled_dir = kind.canonical_root / build, kind.bundled_root / build
@@ -187,15 +224,6 @@ def sync(kind: BundleKind, builds: Sequence[str] = BUNDLED_BUILDS) -> int:
         f"synced {_file_count(kind, builds)} files of {len(builds)} builds into "
         f"{kind.bundled_root} ({copied} copied, {removed} removed)"
     )
-    unlisted = unlisted_entries(kind, builds)
-    if unlisted:
-        print(
-            f"refusing to remove bundled {kind.name} that is not a bundled build: "
-            f"{', '.join(unlisted)} - saved builds may reference it; add it to BUNDLED_BUILDS "
-            "or retire it deliberately",
-            file=sys.stderr,
-        )
-        return 1
     return 0
 
 
@@ -207,10 +235,12 @@ def run(kind: BundleKind, argv: list[str] | None = None, doc: str | None = None)
         help=f"verify the {kind.name} bundle matches the canonical data instead of copying",
     )
     args = parser.parse_args(argv)
+    if not args.check:
+        return sync(kind)  # all-or-nothing: its preflight runs before any file change
     missing = missing_canonical(kind, BUNDLED_BUILDS)
     if missing:
         print(f"canonical {kind.name} files are missing in {kind.canonical_root}:", file=sys.stderr)
         for name in missing:
             print(f"  - {name}", file=sys.stderr)
         return 1
-    return check(kind) if args.check else sync(kind)
+    return check(kind)

@@ -75,7 +75,10 @@ def test_committed_bundle_matches_canonical_without_network(kind: str, no_networ
 def mirror(tmp_path: Path):
     """A visuals kind over a small real copy of both builds, already synced."""
     kind = dataclasses.replace(
-        bundles.VISUALS, canonical_root=tmp_path / "canonical", bundled_root=tmp_path / "bundled"
+        bundles.VISUALS,
+        canonical_root=tmp_path / "canonical",
+        bundled_root=tmp_path / "bundled",
+        required_files=("icons.json", "warrior.json"),  # the subset this fixture copies
     )
     for build in (REFERENCE, PRODUCT):
         source = bundles.VISUALS.canonical_root / build
@@ -125,13 +128,77 @@ def test_sync_repairs_drift_and_removes_stale_files_inside_a_build(mirror) -> No
 def test_syncing_one_build_never_removes_another_build_s_bundle(mirror, capsys) -> None:
     """Dropping a build from the list must not silently delete what saved builds open."""
     assert bundles.sync(mirror, builds=(PRODUCT,)) == 1
-    assert "refusing to remove bundled visuals" in capsys.readouterr().err
+    assert "refusing to sync the mobile visuals bundle (nothing was changed)" in (
+        capsys.readouterr().err
+    )
     assert (mirror.bundled_root / REFERENCE / "warrior.json").is_file()
     assert bundles.drift(mirror, builds=(PRODUCT,)) == [
         f"{REFERENCE}: in bundle but not a bundled build "
         "(BUNDLED_BUILDS in scripts/mobile_bundles.py)"
     ]
     assert bundles.check(mirror, builds=(PRODUCT,)) == 1
+
+
+def snapshot(root: Path) -> dict[str, bytes]:
+    """Every file under ``root`` (dotfiles included) with its bytes."""
+    return {p.relative_to(root).as_posix(): p.read_bytes() for p in root.rglob("*") if p.is_file()}
+
+
+def drifted(kind) -> None:
+    """Drift a sync WOULD repair: a changed file and a stale file inside the product build."""
+    (kind.bundled_root / PRODUCT / "warrior.json").write_text("{}")
+    (kind.bundled_root / PRODUCT / "icons" / "424242.png").write_bytes(b"orphan")
+
+
+def test_failed_preflight_for_an_unlisted_build_changes_nothing(mirror, capsys) -> None:
+    """Regression: the unlisted-build check used to run AFTER the listed builds were
+    mirrored, so a failing sync had already rewritten and deleted files."""
+    drifted(mirror)
+    (mirror.bundled_root / "1.60.1.69977").mkdir()
+    (mirror.bundled_root / "1.60.1.69977" / "warrior.json").write_text("{}")
+    before = snapshot(mirror.bundled_root)
+
+    assert bundles.sync(mirror) == 1
+
+    assert snapshot(mirror.bundled_root) == before
+    err = capsys.readouterr().err
+    assert "nothing was changed" in err
+    assert "1.60.1.69977: in bundle but not a bundled build" in err
+
+
+def test_failed_preflight_for_a_missing_canonical_file_changes_nothing(mirror, capsys) -> None:
+    drifted(mirror)
+    (mirror.canonical_root / REFERENCE / "icons.json").unlink()
+    kind = dataclasses.replace(mirror, required_files=("icons.json", "warrior.json"))
+    before = snapshot(kind.bundled_root)
+
+    assert bundles.sync(kind) == 1
+
+    assert snapshot(kind.bundled_root) == before
+    assert f"{REFERENCE}/icons.json: canonical file missing" in capsys.readouterr().err
+
+
+def test_preflight_lists_every_blocking_problem(mirror) -> None:
+    (mirror.canonical_root / PRODUCT / "warrior.json").unlink()
+    (mirror.bundled_root / "1.60.1.69977").mkdir()
+    kind = dataclasses.replace(mirror, required_files=("icons.json", "warrior.json"))
+    assert bundles.preflight(kind) == [
+        f"{PRODUCT}/warrior.json: canonical file missing",
+        "1.60.1.69977: in bundle but not a bundled build "
+        "(BUNDLED_BUILDS in scripts/mobile_bundles.py)",
+    ]
+
+
+def test_the_sync_entry_point_is_all_or_nothing(mirror, monkeypatch, capsys) -> None:
+    """The script's own entry point (not just ``sync``) leaves a blocked bundle untouched."""
+    drifted(mirror)
+    (mirror.bundled_root / "1.60.1.69977").mkdir()
+    before = snapshot(mirror.bundled_root)
+    kind = dataclasses.replace(mirror, required_files=("icons.json", "warrior.json"))
+
+    assert bundles.run(kind, []) == 1
+
+    assert snapshot(mirror.bundled_root) == before
 
 
 def test_an_unknown_bundled_build_directory_is_drift(mirror) -> None:

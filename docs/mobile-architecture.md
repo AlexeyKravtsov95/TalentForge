@@ -460,7 +460,10 @@ Open string unions the schema explicitly allows are modelled faithfully:
    build that is not listed. A sync repairs files inside the listed builds but
    **never removes another build's bundle** — saved builds open on their own
    build, so retiring a bundled build is a deliberate change (it also fails the
-   Kotlin drift tests below), never a side effect of syncing a new one.
+   Kotlin drift tests below), never a side effect of syncing a new one. A sync is
+   all or nothing: its preflight (an unlisted bundled build, a missing required
+   canonical file) runs before the first file is written or removed, and a failed
+   preflight leaves the bundle untouched.
 
 The bundled copy is deterministically derived and never hand-edited. Drift is
 caught in three places: the Python check scripts (CI), the JVM
