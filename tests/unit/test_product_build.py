@@ -172,7 +172,8 @@ def test_a_reference_build_is_not_valid_on_the_product_build(
     committed: dict[str, TalentDataDocument], reference: dict[str, TalentDataDocument]
 ) -> None:
     """A 70009 Druid build with node 104951 at 3/3 (King of the Jungle on 70009) is valid on
-    70009 and invalid on 70245 (Shifting Power, max rank 1): re-reading old builds against the product build would change them."""
+    70009 and invalid on 70245 (Shifting Power, max rank 1): re-reading old builds against
+    the product build would change them."""
     old_engine = TalentAllocationEngine(reference["druid"])
     state = old_engine.empty_state()
     while old_engine.can_spend(state, SHIFTING_POWER).allowed is False:
