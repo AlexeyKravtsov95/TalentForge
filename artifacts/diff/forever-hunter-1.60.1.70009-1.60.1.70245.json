@@ -1,0 +1,179 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 3,
+    "token": "HUNTER",
+    "name": "Hunter"
+  },
+  "fromBuild": "1.60.1.70009",
+  "toBuild": "1.60.1.70245",
+  "fromContentHash": "sha256:8ce355b3670712c9ea24522c2ec32112f8232f95d0435d433ebfb5b66d5633d5",
+  "toContentHash": "sha256:e807ded16e000922bb8612cee7147e8ccf87d5dab83a5c363db65afa548969f6",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 7,
+    "changesByKind": {
+      "descriptionChanged": 6,
+      "effectAdded": 1,
+      "effectRankValueChanged": 5
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 104984,
+      "treeId": 1091,
+      "name": "Lacerating Strikes",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129648,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Your Mongoose Bite also causes the target to Bleed for damage over $1310536d equal to $s1% of the damage done by Mongoose Bite.",
+          "new": "Your Mongoose Bite also causes the target to Bleed for damage equal to $s1% of the damage done by Mongoose Bite over $1310536d"
+        }
+      ]
+    },
+    {
+      "nodeId": 104995,
+      "treeId": 1091,
+      "name": "Deflection",
+      "changes": [
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129659,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 2,
+          "new": 1
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129659,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 4,
+          "new": 2
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129659,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 6,
+          "new": 3
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129659,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": 8,
+          "new": 4
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129659,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": 10,
+          "new": 5
+        }
+      ]
+    },
+    {
+      "nodeId": 104997,
+      "treeId": 1091,
+      "name": "Sniper Shot",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129661,
+          "effectIndex": null,
+          "rank": null,
+          "old": "A steady snipe that increases ranged damage by $s1.",
+          "new": "A long-range shot that deals ranged damage plus $s1 and increases the range of your next $n Shots by $s2 yards for $d."
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 129661,
+          "effectIndex": 1,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 1,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 10,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 105004,
+      "treeId": 1091,
+      "name": "Trueshot Aura",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129668,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases the Ranged Attack Power of party members within $a1 yards by $s1. Lasts $d.",
+          "new": "Increases the Ranged Attack Power of party members within $a1 yds by $s1."
+        }
+      ]
+    },
+    {
+      "nodeId": 110860,
+      "treeId": 1091,
+      "name": "Survivalist's Discipline",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 137852,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Reduces the cooldown of your Trap and Deterrence abilities by $m%.",
+          "new": "Reduces the cooldown of your Trap and Deterrence abilities by $m1%."
+        }
+      ]
+    },
+    {
+      "nodeId": 110861,
+      "treeId": 1091,
+      "name": "Predator's Edge",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 137853,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases your melee critical strike damage by $s1% and your offhand weapon damage by $s2%.",
+          "new": "Increases your melee critical strike damage by $s1% and your Off Hand weapon damage by $s2%."
+        }
+      ]
+    },
+    {
+      "nodeId": 110870,
+      "treeId": 1091,
+      "name": "Improved Stings",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 137868,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increased the damage of your Serpent Sting ability by $s1%, reduces the cooldown of your Viper Sting ability by ${$m2/-1000} sec, and increases the duration of your Scorpid Sting ability by ${$m3/1000} sec.",
+          "new": "Increases the damage of your Serpent Sting ability by $s1%, reduces the cooldown of your Viper Sting ability by ${$m2/-1000} sec, and increases the duration of your Scorpid Sting ability by ${$m3/1000} sec."
+        }
+      ]
+    }
+  ]
+}

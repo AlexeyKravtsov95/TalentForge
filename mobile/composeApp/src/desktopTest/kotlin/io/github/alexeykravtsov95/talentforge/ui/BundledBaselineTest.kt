@@ -5,10 +5,11 @@ import io.github.alexeykravtsov95.talentforge.data.ClassToken
 import io.github.alexeykravtsov95.talentforge.data.DatasetBundleId
 import io.github.alexeykravtsov95.talentforge.data.DatasetId
 import io.github.alexeykravtsov95.talentforge.data.DatasetOutcome
-import io.github.alexeykravtsov95.talentforge.data.GameId
 import io.github.alexeykravtsov95.talentforge.data.manifest.DatasetManifest
 import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
+import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
+import io.github.alexeykravtsov95.talentforge.ui.library.REFERENCE_BUNDLE
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -16,16 +17,28 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
 
 /**
- * Baseline runtime verification: the packaged 1.60.1.70009 bundle loads through
- * the real Compose Multiplatform resource pipeline on the desktop target —
- * the same source the Android and iOS hosts use.
+ * Bundled runtime verification: both packaged bundles — the 1.60.1.70009
+ * reference baseline and the 1.60.1.70245 product dataset — load through the
+ * real Compose Multiplatform resource pipeline on the desktop target, the
+ * same source the Android and iOS hosts use.
  */
 class BundledBaselineTest {
 
-    private val bundle = DatasetBundleId(GameId("forever"), "1.60.1.70009")
+    private val bundles = listOf(REFERENCE_BUNDLE, PRODUCT_BUNDLE)
+
+    @Test
+    fun bundlesAreTheReferenceBaselineAndTheProductDataset() {
+        assertEquals("1.60.1.70009", REFERENCE_BUNDLE.clientBuild)
+        assertEquals("1.60.1.70245", PRODUCT_BUNDLE.clientBuild)
+        assertEquals(REFERENCE_BUNDLE.game, PRODUCT_BUNDLE.game)
+    }
 
     @Test
     fun manifestContainsNineClasses() = runTest {
+        for (bundle in bundles) assertNineClasses(bundle)
+    }
+
+    private suspend fun assertNineClasses(bundle: DatasetBundleId) {
         val outcome = repository().manifest(bundle)
 
         val manifest = assertIs<DatasetOutcome.Loaded<DatasetManifest>>(outcome).value
@@ -40,7 +53,11 @@ class BundledBaselineTest {
     }
 
     @Test
-    fun loadsEveryBaselineDocumentViaManifest() = runTest {
+    fun loadsEveryBundledDocumentViaManifest() = runTest {
+        for (bundle in bundles) assertEveryDocumentLoads(bundle)
+    }
+
+    private suspend fun assertEveryDocumentLoads(bundle: DatasetBundleId) {
         val repository = repository()
         val manifest = assertIs<DatasetOutcome.Loaded<DatasetManifest>>(
             repository.manifest(bundle),

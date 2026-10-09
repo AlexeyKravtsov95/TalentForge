@@ -1,5 +1,7 @@
 package io.github.alexeykravtsov95.talentforge.ui
 
+import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
+import io.github.alexeykravtsov95.talentforge.ui.library.REFERENCE_BUNDLE
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -9,17 +11,35 @@ import kotlin.test.assertTrue
 /**
  * JVM mirror of `scripts/sync_mobile_tooltips.py --check`: the bundled talent
  * descriptions must be a byte-identical mirror of the canonical
- * `data/tooltips` directory — nothing missing, nothing extra, nothing
- * different. Reads repository files only; no network.
+ * `data/tooltips` directory of every bundled build — nothing missing,
+ * nothing extra, nothing different. Reads repository files only; no network.
  */
 class TooltipsDriftTest {
 
     @Test
     fun bundledTooltipsMirrorTheCanonicalDirectoryByteForByte() {
+        for (clientBuild in listOf(REFERENCE_BUNDLE.clientBuild, PRODUCT_BUNDLE.clientBuild)) {
+            assertBuildMirrors(clientBuild)
+        }
+    }
+
+    @Test
+    fun exactlyTheReferenceAndTheProductBuildAreBundled() {
         val repoRoot = findRepoRoot(File(System.getProperty("user.dir")).absoluteFile)
-        val canonicalDir = repoRoot.resolve("data/tooltips/forever/1.60.1.70009")
+        val bundledRoot = repoRoot
+            .resolve("mobile/composeApp/src/commonMain/composeResources/files/tooltips/forever")
+        val bundledBuilds = bundledRoot.listFiles().orEmpty()
+            .filter { !it.name.startsWith(".") }
+            .map { it.name }
+            .toSet()
+        assertEquals(setOf(REFERENCE_BUNDLE.clientBuild, PRODUCT_BUNDLE.clientBuild), bundledBuilds)
+    }
+
+    private fun assertBuildMirrors(clientBuild: String) {
+        val repoRoot = findRepoRoot(File(System.getProperty("user.dir")).absoluteFile)
+        val canonicalDir = repoRoot.resolve("data/tooltips/forever/$clientBuild")
         val bundledDir = repoRoot
-            .resolve("mobile/composeApp/src/commonMain/composeResources/files/tooltips/forever/1.60.1.70009")
+            .resolve("mobile/composeApp/src/commonMain/composeResources/files/tooltips/forever/$clientBuild")
 
         val canonical = relativeFiles(canonicalDir)
         val bundled = relativeFiles(bundledDir)

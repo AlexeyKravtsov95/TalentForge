@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "fromBuild": "1.60.1.70009",
+  "toBuild": "1.60.1.70245",
+  "classes": [
+    {
+      "class": {
+        "id": 1,
+        "token": "WARRIOR",
+        "name": "Warrior"
+      },
+      "file": "forever-warrior-1.60.1.70009-1.60.1.70245.json",
+      "summary": {
+        "added": 0,
+        "removed": 0,
+        "changed": 3,
+        "changesByKind": {
+          "descriptionChanged": 3,
+          "effectBasePointsChanged": 2,
+          "effectRankValueChanged": 5
+        }
+      }
+    },
+    {
+      "class": {
+        "id": 2,
+        "token": "PALADIN",
+        "name": "Paladin"
+      },
+      "file": "forever-paladin-1.60.1.70009-1.60.1.70245.json",
+      "summary": {
+        "added": 0,
+        "removed": 0,
+        "changed": 9,
+        "changesByKind": {
+          "descriptionChanged": 7,
+          "effectBasePointsChanged": 1,
+          "effectRankValueChanged": 8,
+          "effectRemoved": 1
+        }
+      }
+    },
+    {
+      "class": {
+        "id": 3,
+        "token": "HUNTER",
+        "name": "Hunter"
+      },
+      "file": "forever-hunter-1.60.1.70009-1.60.1.70245.json",
+      "summary": {
+        "added": 0,
+        "removed": 0,
+        "changed": 7,
+        "changesByKind": {
+          "descriptionChanged": 6,
+          "effectAdded": 1,
+          "effectRankValueChanged": 5
+        }
+      }
+    },
+    {
+      "class": {
+        "id": 4,
+        "token": "ROGUE",
+        "name": "Rogue"
+      },
+      "file": "forever-rogue-1.60.1.70009-1.60.1.70245.json",
+      "summary": {
+        "added": 0,
+        "removed": 0,
+        "changed": 2,
+        "changesByKind": {
+          "descriptionChanged": 2
+        }
+      }
+    },
+    {
+      "class": {
+        "id": 5,
+        "token": "PRIEST",
+        "name": "Priest"
+      },
+      "file": "forever-priest-1.60.1.70009-1.60.1.70245.json",
+      "summary": {
+        "added": 0,
+        "removed": 0,
+        "changed": 4,
+        "changesByKind": {
+          "descriptionChanged": 4
+        }
+      }
+    },
+    {
+      "class": {
+        "id": 7,
+        "token": "SHAMAN",
+        "name": "Shaman"
+      },
+      "file": "forever-shaman-1.60.1.70009-1.60.1.70245.json",
+      "summary": {
+        "added": 0,
+        "removed": 0,
+        "changed": 0,
+        "changesByKind": {}
+      }
+    },
+    {
+      "class": {
+        "id": 8,
+        "token": "MAGE",
+        "name": "Mage"
+      },
+      "file": "forever-mage-1.60.1.70009-1.60.1.70245.json",
+      "summary": {
+        "added": 0,
+        "removed": 0,
+        "changed": 1,
+        "changesByKind": {
+          "descriptionChanged": 1,
+          "renamed": 1
+        }
+      }
+    },
+    {
+      "class": {
+        "id": 9,
+        "token": "WARLOCK",
+        "name": "Warlock"
+      },
+      "file": "forever-warlock-1.60.1.70009-1.60.1.70245.json",
+      "summary": {
+        "added": 0,
+        "removed": 0,
+        "changed": 2,
+        "changesByKind": {
+          "descriptionChanged": 2,
+          "renamed": 1
+        }
+      }
+    },
+    {
+      "class": {
+        "id": 11,
+        "token": "DRUID",
+        "name": "Druid"
+      },
+      "file": "forever-druid-1.60.1.70009-1.60.1.70245.json",
+      "summary": {
+        "added": 1,
+        "removed": 0,
+        "changed": 8,
+        "changesByKind": {
+          "descriptionChanged": 3,
+          "effectBasePointsChanged": 1,
+          "effectRankValueChanged": 3,
+          "effectRemoved": 1,
+          "effectStatusChanged": 1,
+          "maxRankChanged": 1,
+          "positionChanged": 3,
+          "prerequisitesChanged": 1,
+          "spellReplaced": 1,
+          "unlockRequirementsChanged": 7
+        }
+      }
+    }
+  ],
+  "total": {
+    "added": 1,
+    "removed": 0,
+    "changed": 36,
+    "changesByKind": {
+      "descriptionChanged": 28,
+      "effectAdded": 1,
+      "effectBasePointsChanged": 4,
+      "effectRankValueChanged": 21,
+      "effectRemoved": 2,
+      "effectStatusChanged": 1,
+      "maxRankChanged": 1,
+      "positionChanged": 3,
+      "prerequisitesChanged": 1,
+      "renamed": 2,
+      "spellReplaced": 1,
+      "unlockRequirementsChanged": 7
+    }
+  }
+}

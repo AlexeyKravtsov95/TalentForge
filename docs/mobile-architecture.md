@@ -68,8 +68,8 @@ Compose Multiplatform application/UI host. Depends on `shared`. Contains:
   share one pop, and popping an editor flushes the autosave coordinator
   first;
 - `ui/tree` — the **M4.1–M4.3 production Talent Tree screen** (read-only since
-  M4.1, interactive since M4.3): the bundled
-  baseline Forever Warrior document is loaded through
+  M4.1, interactive since M4.3): a bundled Forever class document (the
+  reference-baseline Warrior in the M4-era test fixture) is loaded through
   `BundledTalentDatasetRepository` (no JSON in composables) into explicit
   Loading/Ready/Failed states, and rendered as a pannable, pinch-zoomable
   canvas driven entirely by the real dataset:
@@ -276,12 +276,13 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
 - `ui/library` — the M5.1 loader/controller layer: Home and All-Builds card
   models (each record resolved against its real class document and the real
   engine — class display name, spent/budget; unresolved fields are simply
-  absent, never faked), the New Build class list (tokens from the baseline
-  manifest, display names from the nine real documents; a failed class
+  absent, never faked), the New Build class list (tokens from the product
+  dataset's manifest, display names from the nine real documents; a failed class
   document disables that class conservatively — no invented name, no
-  substitution; the version line is the neutral "Talent data 1.60.1" derived
-  from the bundled build — no "up to date" / "latest" claim, since the app has
-  no supported-build freshness mechanism), draft creation (document → engine → `emptyState()` →
+  substitution; the version line names the exact client build drafts are created
+  on, "Talent data 1.60.1.70245" — no "up to date" / "latest" claim, since the app
+  has no supported-build freshness mechanism), draft creation on the product
+  dataset (document → engine → `emptyState()` →
   `BuildFile` bound to the exact dataset identity → persisted, and only a
   persisted draft is "created"), the editor session loader, the relative-time
   wording, shared shell controls and the platform clock expect/actual;
@@ -363,8 +364,10 @@ through the same single change path. Opening a build touches `lastOpenedAt`
 
 **Build opening — no silent migration.** A saved build is never trusted
 blindly: the record's exact dataset identity resolves through
-`BundledTalentDatasetRepository` (an unavailable dataset never falls back to
-the bundled baseline), the saved `treeId` must exist in the loaded document,
+`BundledTalentDatasetRepository` (a build opens on its own bundled build, and an
+unavailable dataset never falls back to a bundled one — see
+[Bundled datasets](#bundled-datasets-product-and-reference-m5data)), the saved
+`treeId` must exist in the loaded document,
 and the saved allocations must pass the real engine validation — no rank is
 clamped, dropped or "repaired". Any mismatch is a typed unavailable/
 incompatible editor state. A reopened build starts with empty undo/redo
@@ -446,20 +449,71 @@ Open string unions the schema explicitly allows are modelled faithfully:
 
 1. Canonical data lives in `data/normalized/forever/<build>/` (Python
    pipeline output, committed).
-2. `scripts/sync_mobile_datasets.py` copies `manifest.json` + the nine class
-   documents of the verified reference baseline (`1.60.1.70009`) into
-   `mobile/composeApp/src/commonMain/composeResources/files/dataset/forever/1.60.1.70009/`.
-3. `--check` mode fails (exit 1) when the bundled files differ byte-for-byte
-   from the canonical tree.
-
-The bundled baseline (`BASELINE_BUNDLE`, `1.60.1.70009`) is the verified reference
-baseline the allocation evidence and conformance vectors are pinned to — it is not
-claimed to be the current Forever build. Switching the bundle to a newer build is the
-separate M5.DATA milestone; the visuals and descriptions below follow the same baseline.
+2. `scripts/sync_mobile_datasets.py` mirrors `manifest.json` + the nine class
+   documents of **every bundled build** (`BUNDLED_BUILDS` in
+   `scripts/mobile_bundles.py`: `1.60.1.70009` and `1.60.1.70245`) into
+   `mobile/composeApp/src/commonMain/composeResources/files/dataset/forever/<build>/`;
+   `sync_mobile_visuals.py` and `sync_mobile_tooltips.py` do the same for
+   `files/visuals/…` and `files/tooltips/…` through the same module.
+3. `--check` mode (offline, CI) fails (exit 1) on a missing, changed or extra
+   file of a bundled build, on a missing build and on a bundled directory of a
+   build that is not listed. A sync repairs files inside the listed builds but
+   **never removes another build's bundle** — saved builds open on their own
+   build, so retiring a bundled build is a deliberate change (it also fails the
+   Kotlin drift tests below), never a side effect of syncing a new one. A sync is
+   all or nothing: its preflight (an unlisted bundled build, a missing required
+   canonical file) runs before the first file is written or removed, and a failed
+   preflight leaves the bundle untouched.
 
 The bundled copy is deterministically derived and never hand-edited. Drift is
-caught in three places: the Python check script (CI step 1), the JVM
-`DatasetDriftTest`, and the resource pipeline itself (files are packaged as-is).
+caught in three places: the Python check scripts (CI), the JVM
+`DatasetDriftTest` / `VisualsDriftTest` / `TooltipsDriftTest` (every bundled
+build, and exactly the reference and the product build), and the resource
+pipeline itself (files are packaged as-is).
+
+## Bundled datasets: product and reference (M5.DATA)
+
+The app bundles two complete Forever datasets side by side — documents, icons and
+descriptions of each, every one from its own client build:
+
+| Constant (`ui/library/BundledDatasets.kt`) | Client build | Role |
+| --- | --- | --- |
+| `PRODUCT_BUNDLE` | `1.60.1.70245` | The **product dataset**: New Build lists its classes from this manifest and creates every new draft on it. Selected as the newest Forever build wago.tools listed on 2026-10-08 with `is_bgdl` explicitly `false` ([forever-dataset.md](forever-dataset.md#product-dataset-160170245-m5data)) — not a claim that it is the build the live realms run. |
+| `REFERENCE_BUNDLE` | `1.60.1.70009` | The **verified reference baseline**: the live-client evidence and the M2 conformance vectors are pinned to it, and every build saved before M5.DATA was created on it. Kept bundled, byte-for-byte unchanged. The M4/M5 tree UI fixture (`loadBaselineWarriorTreeState`) and the existing screenshot tests use it. |
+
+**Saved builds.** `loadEditorSession` and the build cards resolve each record's **own**
+`game` / `clientBuild` / `classToken` / `treeId` (unchanged since M5.1): a build saved on
+1.60.1.70009 opens on the 1.60.1.70009 document, engine, icons and descriptions, with its
+exact ranks and points. Nothing is migrated: no node-id remapping, no rank or point
+recount against 1.60.1.70245, no rewrite of the stored record, and `allocation-build.v1` is
+unchanged. The data shows why this matters — the same node id can mean something else in
+the two builds (Druid node 104951 is *King of the Jungle*, max rank 3, on 70009 and *Shifting
+Power*, max rank 1, on 70245, so a
+valid 70009 build is invalid on 70245). A record of a client build that is not bundled
+(e.g. 1.60.1.70170) keeps failing with the typed
+`DatasetLoadError.ManifestUnavailable(AssetMissing("dataset/forever/<build>/manifest.json"))`
+and reads nothing else — never a fallback to either bundled dataset.
+
+**What the UI states.** New Build shows "Talent data 1.60.1.70245" (the exact client build);
+Home's first-run line keeps the spec form "Forever talent data 1.60.1". Neither claims
+"latest" or "up to date". Build cards do not show a build yet: the spec's "Built on older
+talent data" notice (UX/UI spec F.1) and any review/migration flow are out of scope.
+
+**Package size.** Each bundled build adds ≈ 5 MB of raw resources (dataset 0.98 MB,
+descriptions 0.89 MB, 357–358 PNG icons 3.1 MB); icons are not shared across builds, by
+design (each build ships the icons of its own client files).
+
+**Tests.** `DatasetVersionCompatibilityTest` (desktop, real bundled resources, every
+asset read recorded to prove which build answered): New Build lists 70245; a new Druid
+draft is created and opens on 70245 with the new talent, its icon and description; a
+70009 Druid build with node 104951 (King of the Jungle) at 3/3 opens on 70009 unchanged and is
+invalid on 70245;
+cards of both builds resolve their own datasets; an unbundled build fails typed and reads
+nothing else. `ProductDatasetContractTest` (shared JVM): the committed 70245 documents,
+manifest, visuals and tooltips pass the strict readers and repository identity checks,
+the Kotlin engine supports them exactly like 70009 (only Rogue Venom unresolved), and a
+70009 sidecar placed under 70245 fails with a typed `BuildMismatch`. `BundledBaselineTest`
+loads both bundles through the real Compose resource pipeline.
 
 ## Runtime resource loading
 
@@ -501,11 +555,11 @@ client anywhere in the app. Where the icons come from, the two sidecar contracts
 and the ownership note for the artwork: [talent-visuals.md](talent-visuals.md).
 
 **Bundle.** `scripts/sync_mobile_visuals.py` mirrors
-`data/visuals/forever/1.60.1.70009/` into
-`composeResources/files/visuals/forever/1.60.1.70009/`: nine
+`data/visuals/forever/<build>/` into
+`composeResources/files/visuals/forever/<build>/` for every bundled build: nine
 `talent-visuals.v1` sidecars, the `talent-icons.v1` registry `icons.json` and
-`icons/<FileDataID>.png` (358 files, deduplicated by FileDataID across
-classes). Drift is caught by the script's `--check` (CI) and the JVM
+`icons/<FileDataID>.png` (deduplicated by FileDataID across classes: 358 files
+for 1.60.1.70009, 357 for 1.60.1.70245). Drift is caught by the script's `--check` (CI) and the JVM
 `VisualsDriftTest`, which also fail on a missing or extra file.
 
 **`shared` — `data/visuals/`.** `TalentVisualsDocument` / `TalentIconRegistry`
@@ -610,10 +664,12 @@ Real rank-specific talent descriptions, rendered at build time from the DB2 tabl
 pinned client build and bundled offline. Sources, rules, evidence and the gap policy:
 [talent-tooltips.md](talent-tooltips.md); coverage for the reference baseline 1.60.1.70009 (1290 of 1333 ranks
 resolved, 43 partial, 0 unresolved, every gap listed):
-[research/forever-1.60.1.70009-tooltip-coverage.md](research/forever-1.60.1.70009-tooltip-coverage.md).
+[research/forever-1.60.1.70009-tooltip-coverage.md](research/forever-1.60.1.70009-tooltip-coverage.md);
+for the product dataset 1.60.1.70245 (1289 resolved, 43 partial, 1 unresolved):
+[research/forever-1.60.1.70245-tooltip-coverage.md](research/forever-1.60.1.70245-tooltip-coverage.md).
 
 **Contract and loading.** `talent-tooltips.v1` sidecars
-(`composeResources/files/tooltips/forever/1.60.1.70009/<class>.json`, mirrored
+(`composeResources/files/tooltips/forever/<build>/<class>.json` of every bundled build, mirrored
 byte-for-byte by `scripts/sync_mobile_tooltips.py`, CI `--check`) are decoded by
 `TalentDataContract.decodeTalentTooltipsDocument` (strict, closed enums, numeric
 wire-form check) and verified by `BundledTalentTooltipsRepository` (`shared`,
@@ -745,6 +801,11 @@ python3 scripts/sync_mobile_datasets.py
 # talent visuals (icons) drift check / re-sync — offline, repository files only
 python3 scripts/sync_mobile_visuals.py --check
 python3 scripts/sync_mobile_visuals.py
+
+# talent descriptions drift check / re-sync — offline
+python3 scripts/sync_mobile_tooltips.py --check
+python3 scripts/sync_mobile_tooltips.py
+# (all three mirror every build in BUNDLED_BUILDS of scripts/mobile_bundles.py)
 
 # tests (JVM)
 cd mobile

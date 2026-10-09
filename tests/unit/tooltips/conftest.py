@@ -18,18 +18,6 @@ ROOT = Path(__file__).resolve().parents[3]
 GAME = get_game("forever")
 CANONICAL_DATASET = ROOT / "data" / "normalized" / "forever" / str(NEW_BUILD)
 CANONICAL_TOOLTIPS = ROOT / "data" / "tooltips" / "forever" / str(NEW_BUILD)
-BUNDLED_TOOLTIPS = (
-    ROOT
-    / "mobile"
-    / "composeApp"
-    / "src"
-    / "commonMain"
-    / "composeResources"
-    / "files"
-    / "tooltips"
-    / "forever"
-    / str(NEW_BUILD)
-)
 COVERAGE_REPORT = ROOT / "artifacts" / "tooltips" / f"forever-{NEW_BUILD}-tooltip-coverage.json"
 COVERAGE_MARKDOWN = ROOT / "docs" / "research" / f"forever-{NEW_BUILD}-tooltip-coverage.md"
 # The closure of every tooltip-table row the committed templates reach (real rows only;

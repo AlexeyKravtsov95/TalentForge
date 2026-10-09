@@ -25,6 +25,9 @@ DB2_FIXTURES = FIXTURES / "db2" / "forever"
 # The two real consecutive Forever builds captured in tests/fixtures/db2/forever/.
 OLD_BUILD = ClientVersion.parse("1.60.1.69977")
 NEW_BUILD = ClientVersion.parse("1.60.1.70009")
+# The product dataset of M5.DATA (also captured in tests/fixtures/db2/forever/). NEW_BUILD
+# stays the verified reference baseline the M0-M5.V2 tests and the conformance pin to.
+PRODUCT_BUILD = ClientVersion.parse("1.60.1.70245")
 FIXED_TIME = datetime(2026, 9, 27, 12, 0, tzinfo=UTC)
 
 

@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 4,
+    "token": "ROGUE",
+    "name": "Rogue"
+  },
+  "fromBuild": "1.60.1.70009",
+  "toBuild": "1.60.1.70245",
+  "fromContentHash": "sha256:689be2140e5ecbb43e5c452663ebfc4f8b5fda38d6755e858d5c119fb2e64312",
+  "toContentHash": "sha256:c8af484ca76b2f49709220bae0270494d9e86136f02f828bf01065f60df332b8",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 2,
+    "changesByKind": {
+      "descriptionChanged": 2
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 105712,
+      "treeId": 1111,
+      "name": "Venom",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130441,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Finishing move that increases the damage of your Poisons by $m2% and your chance to apply Poisons by $m4%.  Lasts longer per combo point:\r\n   1 point  : 9 seconds\r\n   2 points: 12 seconds\r\n   3 points: 15 seconds\r\n   4 points: 18 seconds\r\n   5 points: 21 seconds",
+          "new": "Finishing move that increases the damage of your Poisons by $m2% and your chance to apply Poisons by $m4%. Lasts longer per combo point:\r\n   1 point  : 9 sec\r\n   2 points: 12 sec\r\n   3 points: 15 sec\r\n   4 points: 18 sec\r\n   5 points: 21 sec"
+        }
+      ]
+    },
+    {
+      "nodeId": 105751,
+      "treeId": 1111,
+      "name": "Setup",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130480,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Gives you a $m1% chance to add a Combo Point to your target after Dodging an attack or fully resisting a spell.",
+          "new": "Gives you a $m1% chance to add a Combo Point to your target after Dodging one of their attacks or fully resisting one of their spells."
+        }
+      ]
+    }
+  ]
+}

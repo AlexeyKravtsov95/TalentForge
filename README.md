@@ -22,6 +22,12 @@ pip install -e ".[dev]"
 # changes over time, so it is not recorded here)
 python -m talent_data builds latest --game forever
 
+# Reproduce the product dataset (M5.DATA: what the app creates new builds on)
+python -m talent_data fetch --game forever --build 1.60.1.70245
+python -m talent_data normalize --game forever --build 1.60.1.70245 --class all
+python -m talent_data diff --game forever --class all --from 1.60.1.70009 --to 1.60.1.70245
+# -> 9 classes, 0 errors, the same 12 investigated warnings; 1 added / 36 changed nodes
+
 # Reproduce the verified reference baseline
 python -m talent_data fetch --game forever --build 1.60.1.70009
 python -m talent_data normalize --game forever --build 1.60.1.70009 --class all
@@ -34,13 +40,17 @@ python -m talent_data diff --game forever --class all \
 # -> per-class diffs + aggregate artifacts/diff/forever-all-<a>-<b>.json + summary
 ```
 
-**Reference baseline.** `1.60.1.70009` is the project's *verified reference baseline*, not
-a claim about the current Forever build: the live allocation evidence, the M2
-conformance vectors, the committed normalized datasets, icons and talent descriptions,
-and the dataset bundled in the mobile app are all pinned to it. Newer builds exist and are
-found by `builds latest`; refreshing the product data to one of them is a separate
-milestone (M5.DATA). Commands below that name `1.60.1.70009` reproduce or check that
-baseline.
+**Product dataset and reference baseline (M5.DATA).** Two committed builds have distinct
+roles. `1.60.1.70245` is the **product dataset**: the newest Forever build wago.tools listed
+on 2026-10-08 whose `is_bgdl` is explicitly `false`; the mobile app creates new builds on
+it. `1.60.1.70009` stays the **verified reference baseline**: the live allocation evidence
+and the M2 conformance vectors are pinned to it, and builds saved on it keep opening on it.
+Both are committed with their own icons and descriptions and both are bundled in the app.
+Neither is a claim about the build the live realms run (wago.tools cannot say; newer builds
+are found by `builds latest`). Selection evidence, the 70009 → 70245 changes and the
+validity limits: [docs/forever-dataset.md](docs/forever-dataset.md#product-dataset-160170245-m5data).
+Commands below that name `1.60.1.70009` reproduce or check the reference baseline; the
+same commands with `1.60.1.70245` do it for the product dataset.
 
 Single classes keep working exactly as in M0 (reference baseline):
 
@@ -99,6 +109,7 @@ ownership note for the artwork: [docs/talent-visuals.md](docs/talent-visuals.md)
 python -m talent_data visuals fetch --build 1.60.1.70009                 # online, on demand
 python -m talent_data visuals normalize --build 1.60.1.70009 --offline   # data/visuals/…
 python -m talent_data visuals check --build 1.60.1.70009                 # offline, CI
+python -m talent_data visuals check --build 1.60.1.70245                 # product dataset: 470/470, 357 files
 python scripts/sync_mobile_visuals.py --check                            # bundle == canonical
 ```
 
@@ -117,6 +128,7 @@ is for the reference baseline 1.60.1.70009: 1290 of 1333 ranks resolved, 43 part
 python -m talent_data tooltips fetch --build 1.60.1.70009                # online, on demand
 python -m talent_data tooltips normalize --build 1.60.1.70009 --offline  # data/tooltips/… + report
 python -m talent_data tooltips check --build 1.60.1.70009                # offline, CI
+python -m talent_data tooltips check --build 1.60.1.70245                # product: 1289 resolved, 43 partial, 1 unresolved
 python scripts/sync_mobile_tooltips.py --check                           # bundle == canonical
 ```
 
@@ -168,11 +180,16 @@ loaded) — see
 rank, CURRENT / NEXT RANK, rank 1 as the prospective effect) from a strict
 `talent-tooltips.v1` sidecar - see
 [docs/mobile-architecture.md](docs/mobile-architecture.md#talent-descriptions-m5v2).
+**M5.DATA** bundles the product dataset 1.60.1.70245 next to the unchanged reference
+baseline 1.60.1.70009: New Build creates drafts on 70245, every saved build opens on its
+own recorded build (no migration), an unbundled build fails with a typed error — see
+[docs/mobile-architecture.md](docs/mobile-architecture.md#bundled-datasets-product-and-reference-m5data).
 
 ```bash
 python3 scripts/sync_mobile_datasets.py --check   # bundled data == canonical data
 python3 scripts/sync_mobile_visuals.py --check    # bundled icons == canonical icons
 python3 scripts/sync_mobile_tooltips.py --check   # bundled descriptions == canonical descriptions
+# (all three cover every build in BUNDLED_BUILDS of scripts/mobile_bundles.py)
 cd mobile
 ./gradlew :shared:jvmTest :composeApp:desktopTest # contract/repository/conformance + tree UI + build library tests
 ./gradlew :composeApp:assembleDebug               # Android debug APK

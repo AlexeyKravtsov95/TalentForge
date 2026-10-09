@@ -16,18 +16,6 @@ ROOT = Path(__file__).resolve().parents[3]
 GAME = get_game("forever")
 CANONICAL_DATASET = ROOT / "data" / "normalized" / "forever" / str(NEW_BUILD)
 CANONICAL_VISUALS = ROOT / "data" / "visuals" / "forever" / str(NEW_BUILD)
-BUNDLED_VISUALS = (
-    ROOT
-    / "mobile"
-    / "composeApp"
-    / "src"
-    / "commonMain"
-    / "composeResources"
-    / "files"
-    / "visuals"
-    / "forever"
-    / str(NEW_BUILD)
-)
 COVERAGE_REPORT = ROOT / "artifacts" / "visuals" / f"forever-{NEW_BUILD}-icon-coverage.json"
 CASC_FIXTURES = FIXTURES / "casc" / "forever" / str(NEW_BUILD)
 # Two real client icon files of 1.60.1.70009: one with a real alpha channel (rounded

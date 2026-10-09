@@ -140,13 +140,16 @@ sealed interface DraftCreation {
  * 1. `repository.open(localId)` touches `lastOpenedAt` (a real write — its
  *    failure is surfaced, not skipped);
  * 2. the record's exact dataset identity (game / client build / class token)
- *    resolves through the bundled repository — an unavailable dataset NEVER
- *    falls back to the current baseline;
+ *    resolves through the bundled repository — a build saved on the
+ *    reference baseline opens on the reference baseline, and an unavailable
+ *    dataset NEVER falls back to the product dataset ([PRODUCT_BUNDLE]);
  * 3. the saved `treeId` must exist in the loaded document;
  * 4. the saved allocations must pass the real engine validation — no rank is
  *    clamped, dropped or "repaired".
  *
- * M5.1 has no migration: any mismatch is a typed [EditorFailure].
+ * There is no migration (M5.1, kept by M5.DATA): any mismatch is a typed
+ * [EditorFailure]; node ids, ranks and points are never re-read against
+ * another build.
  */
 suspend fun loadEditorSession(
     repository: LocalBuildRepository,
@@ -240,20 +243,23 @@ private suspend fun <T> loadCardList(
 }
 
 /**
- * New Build's class list: the manifest defines the tokens (never hardcoded
- * filenames); display names come from the real class documents. One class
+ * New Build's class list, from the product dataset ([PRODUCT_BUNDLE]): the
+ * manifest defines the tokens (never hardcoded filenames); display names come
+ * from the real class documents. The version line names the exact client
+ * build the drafts will be created on — nothing claims it is "latest" or
+ * "up to date". One class
  * document failing loads fails THAT class conservatively (disabled card, no
  * invented name) — the other classes are unaffected. Returns `null` when the
  * manifest itself cannot load (the screen's Failed state).
  */
 suspend fun loadNewBuildChoices(datasets: TalentDatasetRepository): NewBuildChoices? {
-    val manifest = when (val outcome = datasets.manifest(BASELINE_BUNDLE)) {
+    val manifest = when (val outcome = datasets.manifest(PRODUCT_BUNDLE)) {
         is DatasetOutcome.Failed -> return null
         is DatasetOutcome.Loaded -> outcome.value
     }
     val resolver = DatasetClassResolver(datasets)
     val classes = manifest.classes.map { entry ->
-        val document = resolver.baselineDocumentOf(entry.token)
+        val document = resolver.productDocumentOf(entry.token)
         NewBuildClassChoice(
             token = entry.token,
             displayName = (document as? DatasetOutcome.Loaded)?.value?.classInfo?.name,
@@ -261,13 +267,14 @@ suspend fun loadNewBuildChoices(datasets: TalentDatasetRepository): NewBuildChoi
     }
     return NewBuildChoices(
         gameDisplayName = gameDisplayName(manifest.game),
-        versionDetail = "Talent data ${dataVersionOf(manifest.clientBuild)}",
+        versionDetail = "Talent data ${manifest.clientBuild}",
         classes = classes,
     )
 }
 
 /**
- * The New Build tap: load the real document, construct the real engine, take
+ * The New Build tap: load the real document of the product dataset
+ * ([PRODUCT_BUNDLE]), construct the real engine, take
  * its `emptyState()`, bind the exact dataset identity into a [BuildFile] and
  * PERSIST the draft — only a successfully persisted draft is "Created". The
  * editor must never open over a failed persistence looking saved.
@@ -279,7 +286,7 @@ suspend fun createClassDraft(
 ): DraftCreation {
     val document = when (
         val outcome = datasets.document(
-            DatasetId(game = BASELINE_BUNDLE.game, clientBuild = BASELINE_BUNDLE.clientBuild, classToken = classToken),
+            DatasetId(game = PRODUCT_BUNDLE.game, clientBuild = PRODUCT_BUNDLE.clientBuild, classToken = classToken),
         )
     ) {
         is DatasetOutcome.Failed -> return DraftCreation.Failed(DraftCreation.Failure.Dataset(outcome.error))
@@ -306,8 +313,8 @@ suspend fun createClassDraft(
  * Per-load cache of class documents/engines, keyed by the **exact dataset
  * identity** (`DatasetId`, never the class token alone): Home/All Builds
  * cards must resolve each record's OWN game/clientBuild/classToken —
- * substituting the currently bundled baseline for a record saved against
- * another dataset would be a silent current-dataset substitution.
+ * substituting the product dataset for a record saved against another
+ * dataset would be a silent current-dataset substitution.
  * Deliberately short-lived (one loader run) — not a global cache.
  */
 private class DatasetClassResolver(private val datasets: TalentDatasetRepository) {
@@ -319,9 +326,9 @@ private class DatasetClassResolver(private val datasets: TalentDatasetRepository
     suspend fun documentOf(id: DatasetId): DatasetOutcome<TalentDataDocument> =
         documents.getOrPut(id) { datasets.document(id) }
 
-    /** The New Build screen intentionally creates from the bundled baseline bundle. */
-    suspend fun baselineDocumentOf(token: ClassToken): DatasetOutcome<TalentDataDocument> =
-        documentOf(DatasetId(BASELINE_BUNDLE.game, BASELINE_BUNDLE.clientBuild, token))
+    /** The New Build screen intentionally creates from the product dataset. */
+    suspend fun productDocumentOf(token: ClassToken): DatasetOutcome<TalentDataDocument> =
+        documentOf(DatasetId(PRODUCT_BUNDLE.game, PRODUCT_BUNDLE.clientBuild, token))
 
     private suspend fun engineOf(id: DatasetId, treeId: Int): TalentAllocationEngine? =
         engines.getOrPut(id to treeId) {
@@ -339,7 +346,7 @@ private class DatasetClassResolver(private val datasets: TalentDatasetRepository
      * One card's honest metadata. Engine-derived point values appear ONLY
      * when every gate passes for the record's EXACT identity: the dataset
      * loads, the saved `treeId` exists in it, and the saved allocations
-     * validate with the real engine. No migration, no baseline fallback, no
+     * validate with the real engine. No migration, no product-dataset fallback, no
      * clamping — a failed gate simply leaves the derived fields absent; only
      * facts already in the persisted record (plus the class display name when
      * the exact document loaded) are shown.

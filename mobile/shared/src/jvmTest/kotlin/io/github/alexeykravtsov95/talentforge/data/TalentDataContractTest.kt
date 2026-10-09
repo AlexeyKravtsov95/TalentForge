@@ -19,6 +19,7 @@ class TalentDataContractTest {
         val builds = listOf(
             "1.60.1.69977" to TestRepoAssets.forever69977,
             "1.60.1.70009" to TestRepoAssets.forever70009,
+            "1.60.1.70245" to TestRepoAssets.forever70245,
         )
         val parsed = mutableListOf<TalentDataDocument>()
         for ((build, directory) in builds) {
@@ -34,20 +35,21 @@ class TalentDataContractTest {
                 parsed += document
             }
         }
-        assertEquals(18, parsed.size, "expected 9 classes x 2 builds of committed documents")
+        assertEquals(27, parsed.size, "expected 9 classes x 3 builds of committed documents")
     }
 
     @Test
-    fun parsesBothCommittedManifests() {
+    fun parsesEveryCommittedManifest() {
         val manifests = listOf(
             TestRepoAssets.forever69977.resolve("manifest.json"),
             TestRepoAssets.forever70009.resolve("manifest.json"),
+            TestRepoAssets.forever70245.resolve("manifest.json"),
         ).map { file ->
             assertTrue(file.isFile, "missing committed manifest ${file.path}")
             TalentDataContract.decodeDatasetManifest(file.readBytes())
         }
 
-        assertEquals(2, manifests.size)
+        assertEquals(3, manifests.size)
         manifests.forEach { manifest: DatasetManifest ->
             assertEquals(GameId("forever"), manifest.game)
             assertEquals(9, manifest.classes.size)
@@ -56,11 +58,12 @@ class TalentDataContractTest {
         }
         assertEquals("1.60.1.69977", manifests[0].clientBuild)
         assertEquals("1.60.1.70009", manifests[1].clientBuild)
+        assertEquals("1.60.1.70245", manifests[2].clientBuild)
     }
 
     @Test
     fun manifestFileInventoryMatchesCommittedDocuments() {
-        for (directory in listOf(TestRepoAssets.forever69977, TestRepoAssets.forever70009)) {
+        for (directory in listOf(TestRepoAssets.forever69977, TestRepoAssets.forever70009, TestRepoAssets.forever70245)) {
             val manifest = TalentDataContract.decodeDatasetManifest(
                 directory.resolve("manifest.json").readBytes(),
             )

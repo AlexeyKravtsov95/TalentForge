@@ -35,7 +35,9 @@ class WagoBuild(BaseModel):
     product_config: str | None = None
     cdn_config: str | None = None
     # Background-download builds are pre-staged clients, not necessarily live on the realm.
-    is_bgdl: bool = False
+    # Absent on the wire means *unknown* (None), never "not a background download":
+    # ``classify_build`` turns an unknown flag into a non-publishable candidate.
+    is_bgdl: bool | None = None
 
 
 class WagoBuildIndex(RootModel[dict[str, list[WagoBuild]]]):

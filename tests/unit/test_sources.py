@@ -6,7 +6,7 @@ from datetime import datetime
 import pytest
 
 from talent_data.games import GameConfig, get_game
-from talent_data.sources.base import BuildInfo, SourceError, latest_build
+from talent_data.sources.base import BuildInfo, SourceError, classify_build, latest_build
 from talent_data.sources.csvio import read_csv_table
 from talent_data.sources.wago.models import WagoBuildIndex
 from talent_data.sources.wago.source import WagoDb2Source, filter_game_builds
@@ -59,6 +59,19 @@ def test_latest_prefers_created_at_over_version_number() -> None:
 def test_latest_of_nothing_is_an_error() -> None:
     with pytest.raises(SourceError):
         latest_build([])
+
+
+def test_wago_is_bgdl_flag_is_lifted_only_when_present() -> None:
+    """A build whose /api/builds entry omits ``is_bgdl`` is unknown, not publishable."""
+    raw = json.loads((WAGO / "builds.json").read_text())
+    entries = [e for e in raw["wow_classic_beta"] if e["version"].startswith("1.60.")]
+    del entries[0]["is_bgdl"]
+    builds = filter_game_builds(WagoBuildIndex.model_validate(raw), get_game("forever"))
+    by_version = {str(b.version): classify_build(b) for b in builds}
+    stripped = by_version.pop(entries[0]["version"])
+    assert stripped.background_download is None
+    assert not stripped.publishable
+    assert all(c.background_download is False and c.publishable for c in by_version.values())
 
 
 def test_product_field_mismatch_is_rejected() -> None:

@@ -37,12 +37,12 @@ import io.github.alexeykravtsov95.talentforge.data.ClassToken
 import io.github.alexeykravtsov95.talentforge.data.DatasetId
 import io.github.alexeykravtsov95.talentforge.data.DatasetLoadError
 import io.github.alexeykravtsov95.talentforge.data.DatasetOutcome
-import io.github.alexeykravtsov95.talentforge.data.GameId
 import io.github.alexeykravtsov95.talentforge.data.describe
 import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentDescriptionsLoader
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentIconsLoader
+import io.github.alexeykravtsov95.talentforge.ui.library.REFERENCE_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTypography
 import io.github.alexeykravtsov95.talentforge.ui.theme.classAccentFor
@@ -725,13 +725,15 @@ private val TalentShowGuideSaver = mapSaver<TalentShowGuide?>(
  * Baseline loader of the M4-era Warrior entry — production no longer launches
  * through it (the M5.1 app root navigates Home → New Build → the generic
  * editor); it stays as the shared fixture of the tree UI tests: loads the
- * bundled baseline Forever Warrior document and maps it to a Ready session
- * (empty build) off the calling dispatcher.
+ * Warrior document of the bundled reference baseline ([REFERENCE_BUNDLE],
+ * which the M4/M5 screenshot and UI tests are pinned to) and maps it to a
+ * Ready session (empty build) off the calling dispatcher.
  */
 internal suspend fun loadBaselineWarriorTreeState(): TalentTreeUiState {
     val assets = ComposeResourceDatasetAssetSource()
     val repository = BundledTalentDatasetRepository(assets)
-    return when (val outcome = repository.document(DatasetId(BASELINE_GAME, BASELINE_CLIENT_BUILD, BASELINE_CLASS))) {
+    val id = DatasetId(REFERENCE_BUNDLE.game, REFERENCE_BUNDLE.clientBuild, BASELINE_CLASS)
+    return when (val outcome = repository.document(id)) {
         is DatasetOutcome.Failed ->
             TalentTreeUiState.Failed(TalentTreeUiFailure.Dataset(outcome.error))
 
@@ -752,9 +754,7 @@ internal suspend fun loadBaselineWarriorTreeState(): TalentTreeUiState {
     }
 }
 
-/** Identity of the single dataset M4.2/M4.3 launched into. */
-private val BASELINE_GAME = GameId("forever")
-private const val BASELINE_CLIENT_BUILD = "1.60.1.70009"
+/** Class of the single dataset M4.2/M4.3 launched into (on the reference baseline). */
 private val BASELINE_CLASS = ClassToken("WARRIOR")
 
 /** Builds the baseline Ready session (UI model + engine over an empty build) from a loaded document. */

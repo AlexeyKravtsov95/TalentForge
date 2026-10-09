@@ -5,10 +5,12 @@ per-class facts, every validation warning with its investigation, and the semant
 could not (yet) prove. Data basis: real client DB2 tables of builds `1.60.1.69893` …
 `1.60.1.70009` fetched from wago.tools on 2026-09-27.
 
-`1.60.1.70009` is the **verified reference baseline**: the committed dataset, the
-allocation evidence and the conformance vectors are pinned to it. It is not claimed to be
-the current Forever build — newer builds exist (`builds latest` reports the newest at the
-moment it runs); refreshing the published dataset to one of them is the M5.DATA milestone.
+`1.60.1.70009` is the **verified reference baseline**: the allocation evidence and the
+conformance vectors are pinned to it, and the warning investigations below were made on it.
+Since M5.DATA the **product dataset** — the one the app creates new builds on — is
+`1.60.1.70245` ([below](#product-dataset-160170245-m5data)); 70009 stays committed and
+bundled, unchanged. Neither is claimed to be the build the live realms run (`builds latest`
+reports the newest detected build at the moment it runs; wago.tools has no "live" marker).
 
 ## One-command dataset
 
@@ -197,6 +199,139 @@ The 69977→70009 all-class diff produces 24 changed nodes; the raw change kinds
 The machine-readable boundary lives in `talent_data.diff.models`
 (`USER_VISIBLE_CHANGE_KINDS` / `DIAGNOSTIC_CHANGE_KINDS`); it is a classification only —
 the raw engineering diff is never filtered.
+
+## Product dataset 1.60.1.70245 (M5.DATA)
+
+### Build selection
+
+`python -m talent_data builds list --game forever` / `builds latest` on **2026-10-08**
+(≈17:50 UTC), cross-checked against the raw `GET https://wago.tools/api/builds` entries:
+
+| version | created_at (wago) | `is_bgdl` on the wire | note |
+| --- | --- | --- | --- |
+| **1.60.1.70245** | 2026-10-06 23:02:04 | `false` | latest detected = latest publishable → **selected** |
+| 1.60.1.70235 | 2026-10-05 23:37:04 | `false` | |
+| 1.60.1.70205 | 2026-10-03 01:58:05 | `false` | |
+| 1.60.1.70170 | 2026-10-01 22:54:04 | `false` | |
+| 1.60.1.70124 | 2026-09-30 01:57:04 | `false` | |
+| 1.60.1.70058 | 2026-09-29 16:41:04 | `false` | |
+| 1.60.1.70009 | 2026-09-24 22:02:03 | `false` | reference baseline |
+| 1.60.1.69977 … 69876 | 2026-09-23 … 09-16 | `false` | historical |
+
+All entries are product `wow_classic_beta`, branch `1.60`. `builds latest` printed
+`Forever latest build: 1.60.1.70245 … not a background-download build ('latest' != proven
+live)`. 70245 (`build_config 0bf141260c698dfc9cb3b5b7947b78c3`, `cdn_config
+f92adcaab18113166c331aa070d5b7e7`) had been seen before M5.DATA; its status was checked
+again on 2026-10-08 and is unchanged. The same version is also listed under `wow_cn_beta`
+(2026-10-06 23:15:07, `is_bgdl=false`).
+
+**Basis and its limit.** 70245 is the newest Forever build whose `is_bgdl` is *explicitly*
+`false` — the project's definition of *publishable* (necessary condition: not a
+background download). It is **not** evidence that 70245 is the build the live realms run:
+wago.tools has no such field, and no client of 70245 was observed for this milestone (the
+live-client evidence of `talent-allocation-semantics.md` §15 is for 70009). M5.DATA also
+fixed a fail-open default: an `/api/builds` entry *without* `is_bgdl` used to be read as
+`false`; it is now *unknown* and therefore not publishable.
+
+### Generation and integrity
+
+Same unchanged pipeline and validators as 70009 — nothing hand-edited, no check relaxed:
+
+```bash
+python -m talent_data fetch --game forever --build 1.60.1.70245
+python -m talent_data normalize --game forever --build 1.60.1.70245 --class all
+python -m talent_data diff --game forever --class all --from 1.60.1.70009 --to 1.60.1.70245
+python -m talent_data manifest data/normalized/forever/1.60.1.70245/manifest.json
+python -m talent_data visuals fetch|normalize|check --build 1.60.1.70245
+python -m talent_data tooltips fetch|normalize|check --build 1.60.1.70245
+```
+
+* 9 classes, **0 errors, the same 12 warnings** (same codes, nodes and counts per class as
+  70009, see the investigations above); the cost/table-absence proofs hold; the manifest
+  re-validates (identity, inventory, content hashes, warning counts).
+* Re-normalizing 70009 from a fresh download reproduces every committed 70009 content
+  hash (only `generatedAt` differs) — the reference data is untouched.
+* Real DB2 and tooltip-table fixtures of 70245 are committed
+  (`tests/fixtures/{db2,tooltips}/forever/1.60.1.70245/`);
+  `tests/unit/test_product_build.py` regenerates the committed documents, visuals
+  resolutions, tooltips and coverage report from them and pins the facts below.
+
+| Class | Tree | Nodes | Prereq links | Total ranks | Point budget | Errors | Warnings |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Warrior | 1117 | 53 | 8 | 154 | 51 | 0 | — |
+| Paladin | 1100 | 50 | 7 | 138 | 51 | 0 | 2 × OFF_GRID_NODE |
+| Hunter | 1091 | 52 | 9 | 158 | 51 | 0 | 2 × OFF_GRID_NODE, 1 × DUPLICATE_SPELL_IDENTITY, 1 × SUFFICIENT_PREREQUISITE_CYCLE |
+| Rogue | 1111 | 53 | 8 | 139 | 51 | 0 | 1 × INCOMPLETE_RANK_CURVE, 1 × UNRESOLVED_CONDITION |
+| Priest | 1114 | 54 | 8 | 153 | 51 | 0 | 1 × OFF_GRID_NODE, 1 × DUPLICATE_SPELL_IDENTITY |
+| Shaman | 1082 | 50 | 7 | 148 | 51 | 0 | — |
+| Mage | 1112 | 54 | 6 | 146 | 51 | 0 | — |
+| Warlock | 1116 | 52 | 8 | 149 | 51 | 0 | 2 × OFF_GRID_NODE |
+| Druid | 1089 | **52** | **11** | 148 | 51 | 0 | — |
+
+Total 470 nodes (70009: 469). Tree ids, sections (3 per class) and the 51-point budget are
+unchanged.
+
+### What changed 70009 → 70245
+
+`artifacts/diff/forever-all-1.60.1.70009-1.60.1.70245.json` (+ one file per class):
+**1 added, 0 removed, 36 changed nodes** (28 description changes, 21 rank-value changes).
+User-visible changes:
+
+* **Druid** (Feral tab reworked): new node **113563 Improved Shifting Power** (max rank 2,
+  row 4, requires Shifting Power, 20-point gate). Node **104951** is **King of the Jungle**
+  (spell 417046, max rank 3) on 70009 and **Shifting Power** (spell 1322605) on 70245:
+  same node id, different talent, **max rank 3 → 1**,
+  moved row 4 → row 3, gate 20 → 15 points, gained a prerequisite on Shredding Attacks.
+  Shredding Attacks moved row 3 → row 2 (gate 15 → 10); Predatory Instincts moved column 0
+  → 3; the gates of Blood Frenzy, Primal Bite, Predatory Instincts, Predatory Strikes and
+  Leader of the Pack now count the moved nodes; Moonkin Form / Primal Bite texts reworded.
+* **Paladin**: Redoubt 6/12/18/24/30 → 4/8/12/16/20; Champion of the Light 33/66/100 →
+  20/40/60 (one effect removed); Holy Shield base points 20 → 30; six description changes.
+* **Hunter**: Deflection 2/4/6/8/10 → 1/2/3/4/5; Sniper Shot gained an effect; five
+  description changes.
+* **Warrior**: Dual Wield Specialization effect #1 20…100 → 2…10 (and base points);
+  Spearing Strike, Raging Blows texts.
+* **Mage**: Hot Streak renamed **Heating Up**. **Warlock**: Soul Harvesting renamed **Soul
+  Harvest**; Wrack text. **Priest**: four, **Rogue**: two description changes.
+* **Shaman**: no change.
+
+Rank costs (1 point of currency 3820), point budgets and the gate rule are unchanged.
+Because the same node id can mean something else in the two builds (node 104951 at 3/3 —
+King of the Jungle — is a valid 70009 build and an invalid 70245 one, where 104951 is
+Shifting Power with max rank 1), a saved build is always opened on its own
+build and never migrated — see `docs/mobile-architecture.md`.
+
+### Allocation compatibility
+
+`python scripts/allocation_inventory.py --build 1.60.1.70245` (committed fixtures) is
+identical to 70009 except Druid (52 nodes, `Flags` 0×50/8×2, `Edge.Type` 0×1/2×10/3×1):
+**no new node type, entry type, node flag, edge type, condition shape, currency or cost
+link** — only mechanics the engine already supports (§3 of
+`talent-allocation-semantics.md`). The Python reference engine flags exactly one node as
+unsupported (Rogue Venom, cond 50984, as on 70009) and the random-walk invariants pass on
+all nine 70245 classes; `ProductDatasetContractTest` pins the Kotlin engine to the same
+answer. The M2 conformance vectors stay pinned to 70009 and replay unchanged
+(53/53); no confidence label changes (EDGE-ACTIVE / EDGE-SUF remain hypotheses).
+
+### Icons and descriptions
+
+* Visuals: 470 / 470 entries resolved from 70245's own `TraitDefinition` → `SpellMisc`
+  rows; 357 distinct icons fetched as 70245 client files (3 new FileDataIDs, 4 no longer
+  used; the 354 shared ones convert to identical PNGs). Nothing is copied from 70009.
+* Descriptions: 1333 ranks — **1289 resolved, 43 partial, 1 unresolved** —
+  `docs/research/forever-1.60.1.70245-tooltip-coverage.md`. The unresolved rank is the new
+  Shifting Power text: `$c` (its mana cost) is outside the renderer's grammar and stays an
+  explicit gap; the app shows the neutral "unavailable" line, never a guessed number.
+
+### Validity boundaries
+
+* Valid for WoW: Forever **1.60.1.70245** as published by wago.tools; nothing here
+  carries over to another build without re-running the pipeline.
+* Not established: that 70245 is live on the realms, that a newer build will not change
+  the Druid rework again, and every semantic still listed as unresolved below.
+* The tooltip template inventory (`docs/research/forever-tooltip-template-inventory.md`)
+  remains the 70009 research artifact; 70245's single new construct (`$c`) is recorded by
+  its coverage report.
 
 ## Dataset manifest
 
