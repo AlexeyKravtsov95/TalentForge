@@ -7,7 +7,7 @@ import pytest
 from talent_data.allocation import TalentAllocationEngine
 from talent_data.models.talents import TalentDataDocument, TalentNode
 from tests.conformance.scenarios import BASELINE, load_documents
-from tests.helpers import OLD_BUILD, PRODUCT_BUILD
+from tests.helpers import OLD_BUILD, PREVIOUS_PRODUCT_BUILD, PRODUCT_BUILD
 
 
 @pytest.fixture(scope="session")
@@ -24,8 +24,14 @@ def old_docs() -> dict[str, TalentDataDocument]:
 
 @pytest.fixture(scope="session")
 def product_docs() -> dict[str, TalentDataDocument]:
-    """Product dataset (1.60.1.70245, M5.DATA) documents by class token."""
+    """Product dataset (1.60.1.70338, M5.DATA.2) documents by class token."""
     return load_documents(PRODUCT_BUILD)
+
+
+@pytest.fixture(scope="session")
+def previous_product_docs() -> dict[str, TalentDataDocument]:
+    """Previous product dataset (1.60.1.70245, M5.DATA) documents by class token."""
+    return load_documents(PREVIOUS_PRODUCT_BUILD)
 
 
 @pytest.fixture(scope="session")
