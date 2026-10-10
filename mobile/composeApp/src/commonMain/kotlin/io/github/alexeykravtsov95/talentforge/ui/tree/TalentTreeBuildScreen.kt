@@ -126,6 +126,8 @@ private fun ReadyBuildEditor(
                 descriptions = session.descriptions,
             ),
             onBack = onBack,
+            // M5.UX.1: section cameras belong to THIS build only
+            sessionKey = record.localId,
             onBuildStateChanged = { state ->
                 val file = buildFileOf(
                     state = state,

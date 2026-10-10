@@ -1,5 +1,7 @@
 package io.github.alexeykravtsov95.talentforge.ui.tree
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,7 +19,9 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.mapSaver
@@ -27,6 +31,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.alexeykravtsov95.talentforge.allocation.AllocationEngineException
@@ -174,6 +180,15 @@ private const val BLOCKED_REASON_MS: Long = 2600
  * above converts the reported state into the persisted BuildFile. Selection,
  * pan, zoom, Show and denied actions never report. Both are optional so the
  * lower-level M4 usage (tests, previews) still works standalone.
+ *
+ * M5.UX.1: in portrait the tree is shown one section at a time behind section
+ * tabs (approved direction 1A v2), each section with its own camera held in
+ * [sectionCameras] (default: one remembered per [sessionKey] — the opened
+ * build's local id — and tree, so another build never inherits it).
+ * [viewportState] stays the camera of the whole-tree canvas used by the
+ * landscape and tablet layouts (and by the fail-safe portrait fallback when a
+ * tree's sections cannot be resolved). Tab switches, pan, zoom and FIT are
+ * view state only: they never report through [onBuildStateChanged].
  */
 @Composable
 fun TalentTreeScreen(
@@ -182,6 +197,8 @@ fun TalentTreeScreen(
     viewportState: TalentTreeViewportState = rememberTalentTreeViewportState(),
     onBack: (() -> Unit)? = null,
     onBuildStateChanged: ((BuildState) -> Unit)? = null,
+    sessionKey: String = "",
+    sectionCameras: TalentTreeSectionCameras? = null,
 ) {
     val colors = talentForgeColors()
     var selectedNodeId by rememberSaveable { mutableStateOf<Int?>(null) }
@@ -223,6 +240,8 @@ fun TalentTreeScreen(
                 viewportState = viewportState,
                 onBack = onBack,
                 onBuildStateChanged = onBuildStateChanged,
+                sessionKey = sessionKey,
+                sectionCameras = sectionCameras,
             )
 
             is TalentTreeUiState.Failed -> Column(Modifier.fillMaxSize()) {
@@ -256,6 +275,8 @@ private fun ReadyTalentTreeScreen(
     viewportState: TalentTreeViewportState,
     onBack: (() -> Unit)?,
     onBuildStateChanged: ((BuildState) -> Unit)?,
+    sessionKey: String,
+    sectionCameras: TalentTreeSectionCameras?,
     modifier: Modifier = Modifier,
 ) {
     // The editing session: which immutable BuildState is current + history.
@@ -325,6 +346,26 @@ private fun ReadyTalentTreeScreen(
         )
     }
 
+    // M5.UX.1 sections (1A v2): a pure view of the real tree's sections;
+    // the engine and the one BuildState keep working on the whole tree.
+    val sectioned = remember(current.engine, current.model) {
+        buildTalentTreeSections(current.engine.tree, current.model) as? TalentTreeSectionsResult.Sectioned
+    }
+    val rememberedCameras = rememberTalentTreeSectionCameras(sessionKey, current.model.treeId)
+    val cameras = sectionCameras ?: rememberedCameras
+    // per-section spent points from the live build (tabs)
+    val sectionPoints = remember(sectioned, editing.current) {
+        sectioned?.let { sectionSpentPoints(it, editing.current) } ?: emptyMap()
+    }
+    // 1A v2 04: the way back after a cross-section Show (UI state only)
+    var sectionReturn by rememberSaveable(stateSaver = TalentSectionReturnSaver) {
+        mutableStateOf<TalentSectionReturn?>(null)
+    }
+    // 1A v2 S8: undo/redo that changed another tab highlights it (transient)
+    var tabHighlight by remember { mutableStateOf<TalentTabHighlight?>(null) }
+    var tabHighlightToken by remember { mutableStateOf(0) }
+    val sectionEnterMemory = remember { TalentSectionEnterMemory() }
+
     // B3 07: "A blocked refund shows its reason in the state line for 2.6 s."
     LaunchedEffect(blockedNotice) {
         if (blockedNotice != null) {
@@ -385,19 +426,42 @@ private fun ReadyTalentTreeScreen(
         }
     }
 
-    /** Undo/redo touch ONLY the BuildState — never selection, pan, zoom or inspector layout. */
+    /**
+     * 1A v2 S8 "Undo from another branch": no tab switch — the tabs whose
+     * points the history step changed (other than the open one) flash.
+     */
+    fun highlightChangedSections(before: BuildState, after: BuildState) {
+        val sections = sectioned ?: return
+        val pointsBefore = sectionSpentPoints(sections, before)
+        val pointsAfter = sectionSpentPoints(sections, after)
+        val open = cameras.selectedSection ?: sections.sections.first().index
+        val changed = sections.sections
+            .map { it.index }
+            .filter { it != open && pointsBefore[it] != pointsAfter[it] }
+            .toSet()
+        if (changed.isNotEmpty()) {
+            tabHighlightToken += 1
+            tabHighlight = TalentTabHighlight(sections = changed, token = tabHighlightToken)
+        }
+    }
+
+    /** Undo/redo touch ONLY the BuildState — never selection, pan, zoom, tabs or inspector layout. */
     fun performUndo() {
+        val before = editing.current
         val undone = editing.undo() ?: return
         commitEditing(undone)
         blockedNotice = null
         resetNotice = null
+        highlightChangedSections(before, undone.current)
     }
 
     fun performRedo() {
+        val before = editing.current
         val redone = editing.redo() ?: return
         commitEditing(redone)
         blockedNotice = null
         resetNotice = null
+        highlightChangedSections(before, redone.current)
     }
 
     val onSpendRank: (Int) -> Unit = { nodeId ->
@@ -426,9 +490,37 @@ private fun ReadyTalentTreeScreen(
 
             BoxWithConstraints(Modifier.fillMaxSize()) {
                 val layoutClass = talentTreeLayoutClass(maxWidth.value, maxHeight.value)
+                // M5.UX.1: portrait phones show one section per tab (1A v2);
+                // landscape and tablet keep the whole-tree canvas until
+                // M5.UX.2, and so does a tree whose sections cannot be
+                // resolved (typed fallback — no node is ever hidden).
+                val portraitSections = if (layoutClass == TalentTreeLayoutClass.PORTRAIT) sectioned else null
+                val activeSection = portraitSections?.let { sections ->
+                    // the selected talent's own section wins (a cross-section
+                    // Show, or a selection carried over from another layout —
+                    // 1A v2 S5 "rotation keeps the section and the selection")
+                    selectedNodeId?.let { sections.sectionOfNode[it] }
+                        ?: cameras.selectedSection?.takeIf { sections.section(it) != null }
+                        ?: sections.sections.first().index
+                }
+                val activeSectionModel = activeSection?.let { portraitSections?.section(it) }
+                // The camera of what the canvas shows: one section's own
+                // camera in portrait, the whole-tree viewport otherwise.
+                val activeCamera = if (activeSection != null) cameras.stateOf(activeSection) else viewportState
+                LaunchedEffect(activeSection) {
+                    if (activeSection != null && cameras.selectedSection != activeSection) {
+                        cameras.selectedSection = activeSection
+                    }
+                }
                 // Captured before the nested layout lambdas: the scope's
                 // constraints are only implicitly available at this level.
-                val areaHeight = maxHeight
+                // In sectioned portrait the tab row sits above the canvas
+                // region, so the sheet and the canvas share the height below it.
+                val areaHeight = if (activeSection != null) {
+                    maxHeight - TalentTreeSectionTabsMetrics.TAB_HEIGHT_DP
+                } else {
+                    maxHeight
+                }
                 // B3 06/UX spec 03-04: the expanded sheet occupies its
                 // preferred 448 dp height, capped at the available height
                 // minus 96 dp. This is the sheet's ACTUAL geometry (and
@@ -438,24 +530,35 @@ private fun ReadyTalentTreeScreen(
                     TalentInspectorMetrics.EXPANDED_SHEET_PREFERRED_DP,
                     areaHeight - TalentInspectorMetrics.SHEET_BOTTOM_CLEARANCE_DP,
                 )
+                // Portrait height of the canvas bottom the overlaid inspector
+                // covers: the camera clamp lets the content move above it.
+                val compactCoveredDp = TalentInspectorMetrics.COMPACT_INSET_DP.value * 2f +
+                    TalentInspectorMetrics.COMPACT_HEIGHT_DP.value
+                val coveredBottomDp = when {
+                    layoutClass != TalentTreeLayoutClass.PORTRAIT || inspectorContent == null -> 0f
+                    inspectorExpanded -> expandedSheetHeight.value
+                    else -> compactCoveredDp
+                }
+                SideEffect { activeCamera.coveredBottomDp = coveredBottomDp }
 
                 /**
-                 * Pans (animated by the canvas) so the selected node is fully
-                 * visible in the canvas area not covered by the inspector.
+                 * Pans (animated by the canvas) so [nodeId] is fully visible
+                 * in [camera]'s canvas area not covered by the inspector.
                  * No-op when it already is (B3: "the canvas stays still").
                  * [reveal] selects the B3 08 minimal-pan mode used by
                  * inspector layout changes; Show keeps the B3 07 centring.
                  */
-                fun focusSelectedNode(
+                fun focusNode(
+                    nodeId: Int,
+                    camera: TalentTreeViewportState = activeCamera,
                     coveredRightDp: Float = 0f,
                     coveredBottomDp: Float = 0f,
                     reveal: Boolean = false,
                 ) {
-                    val target = selectedNodeId ?: return
-                    val canvas = viewportState.canvasSize
+                    val canvas = camera.canvasSize
                     if (canvas == Size.Zero) return
-                    val node = current.model.nodes.firstOrNull { it.id == target } ?: return
-                    viewportState.requestFocus(
+                    val node = current.model.nodes.firstOrNull { it.id == nodeId } ?: return
+                    camera.requestFocus(
                         world = Offset(node.centerX, node.centerY),
                         visibleSize = Size(
                             (canvas.width - coveredRightDp).coerceAtLeast(0f),
@@ -465,17 +568,19 @@ private fun ReadyTalentTreeScreen(
                     )
                 }
 
-                /** B3: a plain selection clears any active Show guide. */
+                /** B3: a plain selection clears any active Show guide (and the Back chip). */
                 val onNodeSelected: (Int) -> Unit = { nodeId ->
                     onShowGuideChange(null)
                     onInspectorExpandedChange(false)
+                    sectionReturn = null
                     // B3 05: when the side panel opens it takes 300 dp of the
                     // canvas; the tree pans only if the panel would cover the
                     // node. Later selections keep the (already smaller) canvas.
                     val panelOpening = selectedNodeId == null
                     onSelectedNodeIdChange(nodeId)
                     if (layoutClass == TalentTreeLayoutClass.LANDSCAPE && panelOpening) {
-                        focusSelectedNode(
+                        focusNode(
+                            nodeId = nodeId,
                             coveredRightDp = TalentInspectorMetrics.LANDSCAPE_PANEL_WIDTH_DP.value,
                             reveal = true,
                         )
@@ -485,8 +590,32 @@ private fun ReadyTalentTreeScreen(
                     onShowGuideChange(null)
                     onInspectorExpandedChange(false)
                     onSelectedNodeIdChange(null)
+                    sectionReturn = null
                 }
-                /** B3 07: Show selects the direct prerequisite (one hop, never spends). */
+
+                /**
+                 * 1A v2 S6 tab change: one tap; deselects and closes the
+                 * inspector; never touches the BuildState, undo/redo or the
+                 * autosave. A tap on the active tab returns its camera to
+                 * the fit (1A v2 01).
+                 */
+                val onSectionSelected: (Int) -> Unit = { index ->
+                    if (index == activeSection) {
+                        cameras.stateOf(index).requestFit()
+                    } else {
+                        onSelectionCleared()
+                        cameras.selectedSection = index
+                    }
+                }
+
+                /**
+                 * B3 07: Show selects the direct prerequisite (one hop, never
+                 * spends). 1A v2 04 (M5.UX.1): when the prerequisite lives in
+                 * another section, the tab switches to it — the origin
+                 * section's camera stays exactly as it was — the target's
+                 * camera centres it within the content, and a Back chip
+                 * offers the way back to the origin talent.
+                 */
                 val onShowPrerequisite: (Int) -> Unit = { prerequisiteId ->
                     val originId = selectedNodeId
                     if (originId != null && originId != prerequisiteId) {
@@ -495,15 +624,70 @@ private fun ReadyTalentTreeScreen(
                         )
                         onGuideTokenAdvance()
                         onInspectorExpandedChange(false)
-                        onSelectedNodeIdChange(prerequisiteId)
-                        val coveredBottom = if (layoutClass == TalentTreeLayoutClass.PORTRAIT) {
-                            TalentInspectorMetrics.COMPACT_INSET_DP.value * 2f +
-                                TalentInspectorMetrics.COMPACT_HEIGHT_DP.value
+                        val coveredBottom = if (layoutClass == TalentTreeLayoutClass.PORTRAIT) compactCoveredDp else 0f
+                        val targetSection = portraitSections?.sectionOfNode?.get(prerequisiteId)
+                        val targetSectionModel = targetSection?.let { portraitSections?.section(it) }
+                        if (targetSection != null && targetSectionModel != null && targetSection != activeSection) {
+                            val targetCamera = cameras.stateOf(targetSection)
+                            targetCamera.prepare(targetSectionModel.model.bounds, activeCamera.canvasSize, layoutClass)
+                            targetCamera.coveredBottomDp = coveredBottom
+                            // the Back chip floats over the top of the canvas: a target
+                            // in the top row is moved below it, never left under it
+                            val targetNode = targetSectionModel.model.nodes.firstOrNull { it.id == prerequisiteId }
+                            val prepared = targetCamera.viewport
+                            if (targetNode != null && prepared != null) {
+                                val chipClearance = TalentTreeSectionTabsMetrics.FIT_TARGET_DP.value +
+                                    TalentInspectorMetrics.FOCUS_CLEARANCE_DP
+                                val targetY = prepared.worldToScreen(Offset(targetNode.centerX, targetNode.centerY)).y
+                                if (targetY < chipClearance) {
+                                    targetCamera.applyTransform(prepared.panBy(Offset(0f, chipClearance - targetY)))
+                                }
+                            }
+                            sectionReturn = TalentSectionReturn(
+                                originNodeId = originId,
+                                originSection = activeSection ?: targetSection,
+                            )
+                            cameras.selectedSection = targetSection
+                            onSelectedNodeIdChange(prerequisiteId)
+                            focusNode(prerequisiteId, camera = targetCamera, coveredBottomDp = coveredBottom)
                         } else {
-                            0f
+                            onSelectedNodeIdChange(prerequisiteId)
+                            focusNode(prerequisiteId, coveredBottomDp = coveredBottom)
                         }
-                        focusSelectedNode(coveredBottomDp = coveredBottom)
                     }
+                }
+
+                /** 1A v2 04 Back chip: back to the origin talent and its untouched camera. */
+                val onReturnToOrigin: (TalentSectionReturn) -> Unit = { origin ->
+                    onShowGuideChange(null)
+                    onInspectorExpandedChange(false)
+                    sectionReturn = null
+                    cameras.selectedSection = origin.originSection
+                    onSelectedNodeIdChange(origin.originNodeId)
+                }
+
+                @Composable
+                fun TreeCanvas(
+                    model: TalentTreeUiModel,
+                    camera: TalentTreeViewportState,
+                    modifier: Modifier,
+                ) {
+                    TalentTreeCanvas(
+                        model = model,
+                        presentation = presentation,
+                        viewportState = camera,
+                        layoutClass = layoutClass,
+                        accent = current.classAccent,
+                        icons = current.icons,
+                        selectedNodeId = selectedNodeId,
+                        showGuide = showGuide,
+                        guideToken = guideToken,
+                        purchaseNodeId = purchaseFeedback?.nodeId,
+                        purchaseToken = purchaseFeedback?.token ?: 0,
+                        onNodeSelected = onNodeSelected,
+                        onSelectionCleared = onSelectionCleared,
+                        modifier = modifier,
+                    )
                 }
 
                 // The workspace below the header, with the reset notice as its
@@ -511,22 +695,7 @@ private fun ReadyTalentTreeScreen(
                 Box(Modifier.fillMaxSize()) {
                     when (layoutClass) {
                         TalentTreeLayoutClass.TABLET -> Row(Modifier.fillMaxSize()) {
-                            TalentTreeCanvas(
-                                model = current.model,
-                                presentation = presentation,
-                                viewportState = viewportState,
-                                layoutClass = layoutClass,
-                                accent = current.classAccent,
-                                icons = current.icons,
-                                selectedNodeId = selectedNodeId,
-                                showGuide = showGuide,
-                                guideToken = guideToken,
-                                purchaseNodeId = purchaseFeedback?.nodeId,
-                                purchaseToken = purchaseFeedback?.token ?: 0,
-                                onNodeSelected = onNodeSelected,
-                                onSelectionCleared = onSelectionCleared,
-                                modifier = Modifier.weight(1f),
-                            )
+                            TreeCanvas(current.model, viewportState, Modifier.weight(1f))
                             TalentInspectorPersistentPanel(
                                 accent = current.classAccent,
                                 content = inspectorContent,
@@ -540,22 +709,7 @@ private fun ReadyTalentTreeScreen(
                         }
 
                         TalentTreeLayoutClass.LANDSCAPE -> Row(Modifier.fillMaxSize()) {
-                            TalentTreeCanvas(
-                                model = current.model,
-                                presentation = presentation,
-                                viewportState = viewportState,
-                                layoutClass = layoutClass,
-                                accent = current.classAccent,
-                                icons = current.icons,
-                                selectedNodeId = selectedNodeId,
-                                showGuide = showGuide,
-                                guideToken = guideToken,
-                                purchaseNodeId = purchaseFeedback?.nodeId,
-                                purchaseToken = purchaseFeedback?.token ?: 0,
-                                onNodeSelected = onNodeSelected,
-                                onSelectionCleared = onSelectionCleared,
-                                modifier = Modifier.weight(1f),
-                            )
+                            TreeCanvas(current.model, viewportState, Modifier.weight(1f))
                             if (inspectorContent != null) {
                                 TalentInspectorSidePanel(
                                     accent = current.classAccent,
@@ -571,62 +725,130 @@ private fun ReadyTalentTreeScreen(
                             }
                         }
 
-                        TalentTreeLayoutClass.PORTRAIT -> Box(Modifier.fillMaxSize()) {
-                            TalentTreeCanvas(
-                                model = current.model,
-                                presentation = presentation,
-                                viewportState = viewportState,
-                                layoutClass = layoutClass,
-                                accent = current.classAccent,
-                                icons = current.icons,
-                                selectedNodeId = selectedNodeId,
-                                showGuide = showGuide,
-                                guideToken = guideToken,
-                                purchaseNodeId = purchaseFeedback?.nodeId,
-                                purchaseToken = purchaseFeedback?.token ?: 0,
-                                onNodeSelected = onNodeSelected,
-                                onSelectionCleared = onSelectionCleared,
-                                modifier = Modifier.fillMaxSize(),
-                            )
-                            Column(Modifier.align(Alignment.BottomCenter)) {
-                                if (inspectorExpanded && inspectorContent != null) {
-                                    TalentInspectorExpandedSheet(
-                                        accent = current.classAccent,
-                                        content = inspectorContent,
-                                        icon = selectedIcon,
-                                        actions = selectedActions,
-                                        height = expandedSheetHeight,
-                                        onCollapse = { onInspectorExpandedChange(false) },
-                                        onDeselect = onSelectionCleared,
-                                        onShowPrerequisite = onShowPrerequisite,
-                                        onSpendRank = onSpendRank,
-                                        onRefundRank = onRefundRank,
-                                        onMaxRank = onMaxRank,
-                                    )
-                                } else {
-                                    TalentInspectorCompactBar(
-                                        accent = current.classAccent,
-                                        content = inspectorContent,
-                                        icon = selectedIcon,
-                                        actions = selectedActions,
-                                        onSpendRank = onSpendRank,
-                                        onRefundRank = onRefundRank,
-                                        onToggleExpanded = {
-                                            val expanding = !inspectorExpanded
-                                            onInspectorExpandedChange(expanding)
-                                            if (expanding) {
-                                                // B3 08: "Expanding pans the canvas the
-                                                // minimum amount needed, and only when
-                                                // the node would be covered" — the covered
-                                                // region is the sheet's actual height.
-                                                focusSelectedNode(
-                                                    coveredBottomDp = expandedSheetHeight.value,
-                                                    reveal = true,
-                                                )
+                        TalentTreeLayoutClass.PORTRAIT -> Column(Modifier.fillMaxSize()) {
+                            if (portraitSections != null && activeSection != null) {
+                                TalentTreeSectionTabs(
+                                    tabs = talentSectionTabs(portraitSections, sectionPoints, current.icons),
+                                    selectedIndex = activeSection,
+                                    accent = current.classAccent,
+                                    icons = current.icons,
+                                    highlightedSections = tabHighlight?.sections.orEmpty(),
+                                    highlightToken = tabHighlight?.token ?: 0,
+                                    onSelectSection = onSectionSelected,
+                                )
+                            }
+                            Box(Modifier.fillMaxSize()) {
+                                if (activeSectionModel != null) {
+                                    // One canvas per section (keyed): its own camera,
+                                    // laid out afresh, entering with the 1A v2 S4
+                                    // 180 ms fade + 24 dp shift from the chosen side.
+                                    key(activeSectionModel.index) {
+                                        val ordinal = activeSectionModel.ordinal
+                                        val direction = remember {
+                                            val previous = sectionEnterMemory.previousOrdinal
+                                            sectionEnterMemory.previousOrdinal = ordinal
+                                            when {
+                                                previous == null || previous == ordinal -> 0
+                                                ordinal > previous -> 1
+                                                else -> -1
                                             }
-                                        },
-                                        onShowPrerequisite = onShowPrerequisite,
-                                    )
+                                        }
+                                        val enter = remember { Animatable(if (direction == 0) 1f else 0f) }
+                                        LaunchedEffect(Unit) {
+                                            enter.animateTo(
+                                                1f,
+                                                tween(TalentTreeSectionTabsMetrics.CONTENT_FADE_MS),
+                                            )
+                                        }
+                                        val shiftPx = with(LocalDensity.current) {
+                                            TalentTreeSectionTabsMetrics.CONTENT_SHIFT_DP.toPx()
+                                        }
+                                        TreeCanvas(
+                                            model = activeSectionModel.model,
+                                            camera = activeCamera,
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .graphicsLayer {
+                                                    alpha = enter.value
+                                                    translationX = (1f - enter.value) * shiftPx * direction
+                                                },
+                                        )
+                                    }
+                                    val origin = sectionReturn
+                                    if (origin != null && origin.originSection != activeSection) {
+                                        val originLabel = portraitSections?.section(origin.originSection)?.label
+                                        TalentSectionReturnChip(
+                                            text = listOfNotNull(
+                                                "Back to ${facts.nameOf(origin.originNodeId)}",
+                                                originLabel,
+                                            ).joinToString(" · "),
+                                            onClick = { onReturnToOrigin(origin) },
+                                            modifier = Modifier
+                                                .align(Alignment.TopCenter)
+                                                .padding(horizontal = TalentForgeSpacing.screenX),
+                                        )
+                                    }
+                                    if (!(inspectorExpanded && inspectorContent != null)) {
+                                        TalentTreeFitButton(
+                                            viewportState = activeCamera,
+                                            modifier = Modifier
+                                                .align(Alignment.BottomEnd)
+                                                .padding(
+                                                    end = TalentTreeSectionTabsMetrics.FIT_INSET_DP -
+                                                        (TalentTreeSectionTabsMetrics.FIT_TARGET_DP -
+                                                            TalentTreeSectionTabsMetrics.FIT_VISUAL_DP) / 2,
+                                                    bottom = coveredBottomDp.dp +
+                                                        TalentTreeSectionTabsMetrics.FIT_INSET_DP -
+                                                        (TalentTreeSectionTabsMetrics.FIT_TARGET_DP -
+                                                            TalentTreeSectionTabsMetrics.FIT_VISUAL_DP) / 2,
+                                                ),
+                                        )
+                                    }
+                                } else {
+                                    TreeCanvas(current.model, viewportState, Modifier.fillMaxSize())
+                                }
+                                Column(Modifier.align(Alignment.BottomCenter)) {
+                                    if (inspectorExpanded && inspectorContent != null) {
+                                        TalentInspectorExpandedSheet(
+                                            accent = current.classAccent,
+                                            content = inspectorContent,
+                                            icon = selectedIcon,
+                                            actions = selectedActions,
+                                            height = expandedSheetHeight,
+                                            onCollapse = { onInspectorExpandedChange(false) },
+                                            onDeselect = onSelectionCleared,
+                                            onShowPrerequisite = onShowPrerequisite,
+                                            onSpendRank = onSpendRank,
+                                            onRefundRank = onRefundRank,
+                                            onMaxRank = onMaxRank,
+                                        )
+                                    } else {
+                                        TalentInspectorCompactBar(
+                                            accent = current.classAccent,
+                                            content = inspectorContent,
+                                            icon = selectedIcon,
+                                            actions = selectedActions,
+                                            onSpendRank = onSpendRank,
+                                            onRefundRank = onRefundRank,
+                                            onToggleExpanded = {
+                                                val expanding = !inspectorExpanded
+                                                onInspectorExpandedChange(expanding)
+                                                val target = selectedNodeId
+                                                if (expanding && target != null) {
+                                                    // B3 08: "Expanding pans the canvas the
+                                                    // minimum amount needed, and only when
+                                                    // the node would be covered" — the covered
+                                                    // region is the sheet's actual height.
+                                                    focusNode(
+                                                        nodeId = target,
+                                                        coveredBottomDp = expandedSheetHeight.value,
+                                                        reveal = true,
+                                                    )
+                                                }
+                                            },
+                                            onShowPrerequisite = onShowPrerequisite,
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -661,6 +883,8 @@ private fun ReadyTalentTreeScreen(
                             .align(Alignment.TopCenter)
                             .fillMaxWidth()
                             .padding(end = sideInspectorWidth)
+                            // M5.UX.1: below the section tabs, which stay usable
+                            .padding(top = if (activeSection != null) TalentTreeSectionTabsMetrics.TAB_HEIGHT_DP else 0.dp)
                             .padding(
                                 top = TalentForgeSpacing.rowGap,
                                 start = TalentForgeSpacing.screenX,
@@ -720,6 +944,42 @@ private val TalentShowGuideSaver = mapSaver<TalentShowGuide?>(
         if (origin != null && target != null) TalentShowGuide(origin, target) else null
     },
 )
+
+/**
+ * 1A v2 04: after a cross-section Show, the talent (and its section) the
+ * Back chip returns to. Pure navigation state — never part of the build.
+ */
+data class TalentSectionReturn(
+    val originNodeId: Int,
+    val originSection: Int,
+)
+
+/** Saveable [TalentSectionReturn] (survives recomposition and configuration change). */
+private val TalentSectionReturnSaver = mapSaver<TalentSectionReturn?>(
+    save = { origin ->
+        if (origin == null) {
+            emptyMap()
+        } else {
+            mapOf("node" to origin.originNodeId, "section" to origin.originSection)
+        }
+    },
+    restore = { values ->
+        val node = values["node"] as? Int
+        val section = values["section"] as? Int
+        if (node != null && section != null) TalentSectionReturn(node, section) else null
+    },
+)
+
+/** The tabs an undo/redo just changed (1A v2 S8); [token] restarts their 600 ms flash. */
+private data class TalentTabHighlight(
+    val sections: Set<Int>,
+    val token: Int,
+)
+
+/** Which section was shown last, so a newly shown one enters from the chosen side (1A v2 S4). */
+private class TalentSectionEnterMemory {
+    var previousOrdinal: Int? = null
+}
 
 /**
  * Baseline loader of the M4-era Warrior entry — production no longer launches
