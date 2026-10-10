@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 9,
+    "token": "WARLOCK",
+    "name": "Warlock"
+  },
+  "fromBuild": "1.60.1.70245",
+  "toBuild": "1.60.1.70338",
+  "fromContentHash": "sha256:ff947e568e5ed55a625befdf153cde7788f9d2c660bc5b2a9ab3ba5dd842b352",
+  "toContentHash": "sha256:03e683b4f0d06c2a993c850cae6e4d00edba8b06727ec099c36a58caad450b33",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 2,
+    "changesByKind": {
+      "descriptionChanged": 1,
+      "effectRankValueChanged": 2,
+      "effectStatusChanged": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 105881,
+      "treeId": 1116,
+      "name": "Destructive Reach",
+      "changes": [
+        {
+          "kind": "effectStatusChanged",
+          "entryId": 130611,
+          "effectIndex": 1,
+          "rank": null,
+          "old": "none",
+          "new": "resolved"
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130611,
+          "effectIndex": 1,
+          "rank": 1,
+          "old": null,
+          "new": 10
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130611,
+          "effectIndex": 1,
+          "rank": 2,
+          "old": null,
+          "new": 20
+        }
+      ]
+    },
+    {
+      "nodeId": 105896,
+      "treeId": 1116,
+      "name": "Demonic Brand",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130626,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Your Searing Pain generates $s1% less threat and brands the target for $1293696d. Your pet's next $m2 attacks against the target generate high threat and deal $<minDam> to $<maxDam> Fire or Shadow damage based on the pet.",
+          "new": "Your Searing Pain generates $s1% less threat and brands the target for $1293696d. Your pet's next $m2 attacks against the target deal $<minDam> to $<maxDam> Fire or Shadow damage based on the pet. If Shadow damage is dealt, it has high threat."
+        }
+      ]
+    }
+  ]
+}

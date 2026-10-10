@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 11,
+    "token": "DRUID",
+    "name": "Druid"
+  },
+  "fromBuild": "1.60.1.70245",
+  "toBuild": "1.60.1.70338",
+  "fromContentHash": "sha256:add5db0d089816ad966574977165e9b8e9138d27760097e86ef4f08cab4496d6",
+  "toContentHash": "sha256:1a11964e9bcc293eb81c0d984b58f35fc4f0215273d518fe937aaf0fc6b92436",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 2,
+    "changesByKind": {
+      "descriptionChanged": 2,
+      "effectAdded": 1,
+      "renamed": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 104950,
+      "treeId": 1089,
+      "name": "Natural Instinct",
+      "changes": [
+        {
+          "kind": "renamed",
+          "entryId": 129610,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Predatory Instincts",
+          "new": "Natural Instinct"
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129610,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases the critical strike damage bonus of your melee abilities by $m1%.",
+          "new": "Increases the critical strike damage bonus of your melee abilities by $m1% and increases your spell healing by $s2% of your Intellect."
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 129610,
+          "effectIndex": 1,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 1,
+            "perRank": [
+              {
+                "rank": 1,
+                "value": 12
+              },
+              {
+                "rank": 2,
+                "value": 25
+              }
+            ],
+            "perRankStatus": "resolved",
+            "basePoints": 25,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 104958,
+      "treeId": 1089,
+      "name": "Furor",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129618,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Gives you a $m1% chance to gain $/10;17057s1 Rage when you shapeshift into Bear Form or Dire Bear Form. When you shift into Cat Form, you will regain ${100*($m2/100)}% of the Energy you had when you were last in Cat Form, plus ${10*($m2/100)} Energy for each second you spent not in Bear Form, Cat Form, or Dire Bear Form, up to a maximum of ${100*($m2/100)} Energy.",
+          "new": "Gives you a $m1% chance to gain $/10;17057s1 Rage when shapeshifting into Bear Form or Dire Bear Form. Shapeshifting into Cat Form restores ${100*($m2/100)}% of the Energy you had when last in Cat Form, plus ${10*($m2/100)} Energy per sec spent outside Cat Form, up to ${100*($m2/100)} Energy.\r\n\r\nBear Form and Dire Bear Form forfeit this Energy and halt its restoration while active."
+        }
+      ]
+    }
+  ]
+}
