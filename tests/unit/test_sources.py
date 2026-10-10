@@ -4,6 +4,7 @@ import json
 from datetime import datetime
 
 import pytest
+from pydantic import ValidationError
 
 from talent_data.games import GameConfig, get_game
 from talent_data.sources.base import BuildInfo, SourceError, classify_build, latest_build
@@ -72,6 +73,15 @@ def test_wago_is_bgdl_flag_is_lifted_only_when_present() -> None:
     assert stripped.background_download is None
     assert not stripped.publishable
     assert all(c.background_download is False and c.publishable for c in by_version.values())
+
+
+@pytest.mark.parametrize("wire", ["false", "true", 0, 1])
+def test_a_non_boolean_wago_is_bgdl_is_rejected_not_coerced(wire: object) -> None:
+    """``is_bgdl`` gates publication: ``"false"`` or ``0`` must not become publishable."""
+    raw = json.loads((WAGO / "builds.json").read_text())
+    raw["wow_classic_beta"][1]["is_bgdl"] = wire
+    with pytest.raises(ValidationError):
+        WagoBuildIndex.model_validate(raw)
 
 
 def test_product_field_mismatch_is_rejected() -> None:

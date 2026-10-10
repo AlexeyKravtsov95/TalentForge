@@ -20,7 +20,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, RootModel
+from pydantic import BaseModel, ConfigDict, RootModel, StrictBool
 
 
 class WagoBuild(BaseModel):
@@ -37,7 +37,9 @@ class WagoBuild(BaseModel):
     # Background-download builds are pre-staged clients, not necessarily live on the realm.
     # Absent on the wire means *unknown* (None), never "not a background download":
     # ``classify_build`` turns an unknown flag into a non-publishable candidate.
-    is_bgdl: bool | None = None
+    # Strict: the flag gates publication, so a non-boolean on the wire (``"false"``, ``0``,
+    # ``"yes"``) is a schema error, never coerced into a publishability answer.
+    is_bgdl: StrictBool | None = None
 
 
 class WagoBuildIndex(RootModel[dict[str, list[WagoBuild]]]):
