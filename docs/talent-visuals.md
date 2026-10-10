@@ -5,11 +5,15 @@ two sidecar contracts that carry them, and how the mobile app renders them witho
 network access. Everything below was verified against the exact client build
 **Forever `1.60.1.70009`** on 2026-10-07 — the project's verified reference baseline,
 not a claim about the current Forever build. **M5.DATA** ran the same unchanged pipeline
-for the product dataset **`1.60.1.70245`** on 2026-10-08: 470 / 470 entries resolved from
+for its product dataset **`1.60.1.70245`** on 2026-10-08: 470 / 470 entries resolved from
 that build's own `TraitDefinition` / `SpellMisc` rows, 357 distinct icons fetched as that
 build's client files (`data/visuals/forever/1.60.1.70245/`; 3 FileDataIDs new compared with
-70009, 4 no longer used, the 354 shared ones convert to identical PNGs). No icon is ever
-carried over from another build; each build is published and bundled with its own.
+70009, 4 no longer used, the 354 shared ones convert to identical PNGs). **M5.DATA.2** did
+the same for the product dataset **`1.60.1.70338`** on 2026-10-10: 469 / 469 entries, 358
+distinct icons (`data/visuals/forever/1.60.1.70338/`; compared with 70245: 132356, 135727
+and 236309 new, 132338 and 236310 no longer used, the 355 shared ones convert to identical
+PNGs). No icon is ever carried over from another build; each build is published and bundled
+with its own.
 
 ```
 data/normalized/forever/<build>/<class>.json      (talent-data.v1, unchanged)
@@ -295,7 +299,8 @@ by `pytest -m integration` (manual workflow), separately.
 ## 5. Mobile bundle and consumer obligations
 
 `mobile/composeApp/src/commonMain/composeResources/files/visuals/forever/<build>/` (for
-every bundled build: 1.60.1.70009 and 1.60.1.70245) is a derived, byte-identical copy of
+every bundled build: 1.60.1.70009, 1.60.1.70245 and 1.60.1.70338) is a derived,
+byte-identical copy of
 the canonical directory; never edit it by hand.
 
 A consumer of the sidecars must, as part of loading them:

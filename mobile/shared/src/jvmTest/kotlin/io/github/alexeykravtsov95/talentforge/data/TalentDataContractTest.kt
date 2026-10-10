@@ -20,6 +20,7 @@ class TalentDataContractTest {
             "1.60.1.69977" to TestRepoAssets.forever69977,
             "1.60.1.70009" to TestRepoAssets.forever70009,
             "1.60.1.70245" to TestRepoAssets.forever70245,
+            "1.60.1.70338" to TestRepoAssets.forever70338,
         )
         val parsed = mutableListOf<TalentDataDocument>()
         for ((build, directory) in builds) {
@@ -35,7 +36,7 @@ class TalentDataContractTest {
                 parsed += document
             }
         }
-        assertEquals(27, parsed.size, "expected 9 classes x 3 builds of committed documents")
+        assertEquals(36, parsed.size, "expected 9 classes x 4 builds of committed documents")
     }
 
     @Test
@@ -44,12 +45,13 @@ class TalentDataContractTest {
             TestRepoAssets.forever69977.resolve("manifest.json"),
             TestRepoAssets.forever70009.resolve("manifest.json"),
             TestRepoAssets.forever70245.resolve("manifest.json"),
+            TestRepoAssets.forever70338.resolve("manifest.json"),
         ).map { file ->
             assertTrue(file.isFile, "missing committed manifest ${file.path}")
             TalentDataContract.decodeDatasetManifest(file.readBytes())
         }
 
-        assertEquals(3, manifests.size)
+        assertEquals(4, manifests.size)
         manifests.forEach { manifest: DatasetManifest ->
             assertEquals(GameId("forever"), manifest.game)
             assertEquals(9, manifest.classes.size)
@@ -59,11 +61,18 @@ class TalentDataContractTest {
         assertEquals("1.60.1.69977", manifests[0].clientBuild)
         assertEquals("1.60.1.70009", manifests[1].clientBuild)
         assertEquals("1.60.1.70245", manifests[2].clientBuild)
+        assertEquals("1.60.1.70338", manifests[3].clientBuild)
     }
 
     @Test
     fun manifestFileInventoryMatchesCommittedDocuments() {
-        for (directory in listOf(TestRepoAssets.forever69977, TestRepoAssets.forever70009, TestRepoAssets.forever70245)) {
+        val directories = listOf(
+            TestRepoAssets.forever69977,
+            TestRepoAssets.forever70009,
+            TestRepoAssets.forever70245,
+            TestRepoAssets.forever70338,
+        )
+        for (directory in directories) {
             val manifest = TalentDataContract.decodeDatasetManifest(
                 directory.resolve("manifest.json").readBytes(),
             )

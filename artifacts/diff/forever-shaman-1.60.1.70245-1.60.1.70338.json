@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 7,
+    "token": "SHAMAN",
+    "name": "Shaman"
+  },
+  "fromBuild": "1.60.1.70245",
+  "toBuild": "1.60.1.70338",
+  "fromContentHash": "sha256:9ccaf9c51e5b3de9fe06b90ae68911335919964d16539991b5b31d1decd0b83d",
+  "toContentHash": "sha256:8f408fcf1756c25aa4db7da61d51f2c311579f833ed4288ccb2085db06bde338",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 1,
+    "changesByKind": {
+      "effectAdded": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 104732,
+      "treeId": 1082,
+      "name": "Water Shield",
+      "changes": [
+        {
+          "kind": "effectAdded",
+          "entryId": 129392,
+          "effectIndex": 1,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 1,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 1,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 """The mobile bundle mirrors the canonical data of every bundled build, offline (M5.DATA).
 
 Covers ``scripts/mobile_bundles.py`` and the three ``sync_mobile_*.py`` entry points: the
-committed bundle is in sync for both bundled builds, ``--check`` detects missing, changed
+committed bundle is in sync for every bundled build, ``--check`` detects missing, changed
 and extra files and unlisted builds without opening a connection, and a sync repairs the
 bundle of the listed builds but never removes another build's bundle.
 """
@@ -19,7 +19,7 @@ from types import ModuleType
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-REFERENCE, PRODUCT = "1.60.1.70009", "1.60.1.70245"
+REFERENCE, PREVIOUS_PRODUCT, PRODUCT = "1.60.1.70009", "1.60.1.70245", "1.60.1.70338"
 
 
 def load_script(name: str) -> ModuleType:
@@ -41,9 +41,9 @@ SCRIPTS = {
 KINDS = {"dataset": bundles.DATASET, "visuals": bundles.VISUALS, "tooltips": bundles.TOOLTIPS}
 # committed files per kind and build: 9 class files (+ manifest | + registry and icons)
 FILE_COUNTS = {
-    "dataset": {REFERENCE: 10, PRODUCT: 10},
-    "visuals": {REFERENCE: 368, PRODUCT: 367},
-    "tooltips": {REFERENCE: 9, PRODUCT: 9},
+    "dataset": {REFERENCE: 10, PREVIOUS_PRODUCT: 10, PRODUCT: 10},
+    "visuals": {REFERENCE: 368, PREVIOUS_PRODUCT: 367, PRODUCT: 368},
+    "tooltips": {REFERENCE: 9, PREVIOUS_PRODUCT: 9, PRODUCT: 9},
 }
 
 
@@ -56,8 +56,14 @@ def no_network(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(socket, "create_connection", refuse)
 
 
-def test_both_the_reference_and_the_product_build_are_bundled() -> None:
-    assert bundles.BUNDLED_BUILDS == (REFERENCE, PRODUCT)
+def test_the_reference_the_previous_and_the_current_product_build_are_bundled() -> None:
+    assert bundles.BUNDLED_BUILDS == (REFERENCE, PREVIOUS_PRODUCT, PRODUCT)
+
+
+def test_the_app_s_product_bundle_is_the_newest_bundled_build() -> None:
+    """PRODUCT_BUNDLE in BundledDatasets.kt is what the freshness check compares; it must
+    be bundled, and no bundled build may be newer than it."""
+    assert bundles.product_build() == PRODUCT == bundles.BUNDLED_BUILDS[-1]
 
 
 @pytest.mark.parametrize("kind", KINDS)
@@ -66,21 +72,21 @@ def test_committed_bundle_matches_canonical_without_network(kind: str, no_networ
     assert KINDS[kind].bundled_root == resources / kind / "forever"
     assert SCRIPTS[kind].main(["--check"]) == 0
     total = sum(FILE_COUNTS[kind].values())
-    assert f"bundle in sync: {total} files of 2 builds" in capsys.readouterr().out
+    assert f"bundle in sync: {total} files of 3 builds" in capsys.readouterr().out
     for build, count in FILE_COUNTS[kind].items():
         assert len(bundles.relative_files(KINDS[kind].bundled_root / build)) == count
 
 
 @pytest.fixture
 def mirror(tmp_path: Path):
-    """A visuals kind over a small real copy of both builds, already synced."""
+    """A visuals kind over a small real copy of every bundled build, already synced."""
     kind = dataclasses.replace(
         bundles.VISUALS,
         canonical_root=tmp_path / "canonical",
         bundled_root=tmp_path / "bundled",
         required_files=("icons.json", "warrior.json"),  # the subset this fixture copies
     )
-    for build in (REFERENCE, PRODUCT):
+    for build in bundles.BUNDLED_BUILDS:
         source = bundles.VISUALS.canonical_root / build
         target = kind.canonical_root / build
         (target / "icons").mkdir(parents=True)
@@ -132,9 +138,10 @@ def test_syncing_one_build_never_removes_another_build_s_bundle(mirror, capsys) 
         capsys.readouterr().err
     )
     assert (mirror.bundled_root / REFERENCE / "warrior.json").is_file()
+    assert (mirror.bundled_root / PREVIOUS_PRODUCT / "warrior.json").is_file()
     assert bundles.drift(mirror, builds=(PRODUCT,)) == [
-        f"{REFERENCE}: in bundle but not a bundled build "
-        "(BUNDLED_BUILDS in scripts/mobile_bundles.py)"
+        f"{build}: in bundle but not a bundled build (BUNDLED_BUILDS in scripts/mobile_bundles.py)"
+        for build in (REFERENCE, PREVIOUS_PRODUCT)
     ]
     assert bundles.check(mirror, builds=(PRODUCT,)) == 1
 

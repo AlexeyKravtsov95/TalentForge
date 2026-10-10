@@ -5,18 +5,21 @@ versioned talent-tree contract, and how it detects semantic changes between clie
 Everything below was verified against real Forever beta builds `1.60.1.69876` … `1.60.1.70009`
 on 2026-09-27. Nothing in the pipeline is hand-written talent data.
 
-Two committed builds have distinct roles (M5.DATA):
+Committed builds have distinct roles (M5.DATA, M5.DATA.2):
 
-* `1.60.1.70245` is the **product dataset** — the newest Forever build wago.tools listed
-  on 2026-10-08 with `is_bgdl` explicitly `false`; the mobile app creates new builds on it.
-  It went through the same unchanged pipeline (§9 commands with `--build 1.60.1.70245`).
+* `1.60.1.70338` is the **product dataset** — the newest Forever build wago.tools listed
+  on 2026-10-10 with `is_bgdl` explicitly `false`; the mobile app creates new builds on it.
+  It went through the same unchanged pipeline (§9 commands with `--build 1.60.1.70338`).
+* `1.60.1.70245`, the product dataset of M5.DATA, is kept unchanged for the builds saved on
+  it.
 * `1.60.1.70009` stays the **verified reference baseline**: the build the live allocation
   evidence and the M2 conformance vectors are pinned to, and the build every pre-M5.DATA
   saved build was created on. It is kept, unchanged, next to the product dataset.
 
-Neither is a claim about the build the live realms currently run: newer builds keep
+None is a claim about the build the live realms currently run: newer builds keep
 appearing, `builds latest` reports whichever is newest when it runs, and wago.tools has no
-"live" marker. Selection evidence: `docs/forever-dataset.md`.
+"live" marker. `builds freshness` (§2) tells whether a newer publishable build exists.
+Selection evidence: `docs/forever-dataset.md`.
 
 ```
 wago.tools /api/builds ──► BuildSource ──► latest Forever build
@@ -78,7 +81,9 @@ reference baseline was chosen (historical; newer builds have appeared since):
 `is_bgdl` (background-download build) is carried in `BuildInfo.extra` but not used for
 `latest` selection; none of the Forever builds had it set (on 2026-09-27, and again for all
 eleven 1.60.1 builds on 2026-10-08). Since M5.DATA an entry without the field is lifted as
-*unknown*, not as `false` (the wago model used to default it to `false`). M1 makes the distinction explicit in
+*unknown*, not as `false` (the wago model used to default it to `false`); since M5.DATA.2 a
+non-boolean value (`"false"`, `0`, `"yes"`) is an unexpected `/api/builds` schema instead of
+being coerced by the lax pydantic `bool`. M1 makes the distinction explicit in
 the domain model (`classify_build` / `latest_publishable_build` in `sources/base.py`)
 and surfaces `[background-download]` in `builds list`: "latest detected" and "latest
 publishable" are different notions, and neither is proven "live" — wago.tools exposes no
@@ -87,6 +92,15 @@ the time of writing). The flag is modelled as a **tri-state** (`True` / `False` 
 `None`=unknown): a source that does not provide it yields an *unknown* build, which is
 not publishable — absence of the flag is not evidence of publishability. See
 `docs/forever-dataset.md` for the full reasoning.
+
+**Product freshness (M5.DATA.2).** `python -m talent_data builds freshness --game forever
+--product-build <version>` (or `scripts/check_product_freshness.py`, which reads
+`PRODUCT_BUNDLE` from the app) compares the product build with `latest_publishable_build`
+and prints a `product-freshness` v1 JSON document; the exit code is the status — 0
+`CURRENT`, 3 `OUTDATED`, 4 `UNKNOWN`. Network, HTTP and schema failures, a newer build with
+unknown `is_bgdl`, no publishable build and a product build newer than the source are all
+`UNKNOWN`, never `CURRENT`; newer background-download builds are reported, not counted as
+updates (`talent_data/freshness.py`, `docs/forever-dataset.md`).
 
 ## 3. DB2 tables used
 
@@ -449,13 +463,17 @@ python -m talent_data builds list --game forever
 python -m talent_data builds latest --game forever
 python -m talent_data fetch --game forever --build latest   # whatever builds latest reports now
 
-# reproduce the product dataset (M5.DATA) and its diff to the reference baseline
-python -m talent_data fetch --game forever --build 1.60.1.70245
-python -m talent_data normalize --game forever --build 1.60.1.70245 --class all
-python -m talent_data diff --game forever --class all --from 1.60.1.70009 --to 1.60.1.70245
-python -m talent_data manifest data/normalized/forever/1.60.1.70245/manifest.json
-python -m talent_data visuals fetch --build 1.60.1.70245      # then: visuals normalize/check
-python -m talent_data tooltips fetch --build 1.60.1.70245     # then: tooltips normalize/check
+# is the app's product dataset still the latest publishable build? (read-only)
+python scripts/check_product_freshness.py --output freshness.json
+
+# reproduce the product dataset (M5.DATA.2) and its diff to the previous product dataset
+python -m talent_data fetch --game forever --build 1.60.1.70338
+python -m talent_data normalize --game forever --build 1.60.1.70338 --class all
+python -m talent_data diff --game forever --class all --from 1.60.1.70245 --to 1.60.1.70338
+python -m talent_data manifest data/normalized/forever/1.60.1.70338/manifest.json
+python -m talent_data visuals fetch --build 1.60.1.70338      # then: visuals normalize/check
+python -m talent_data tooltips fetch --build 1.60.1.70338     # then: tooltips normalize/check
+# (the same commands with 1.60.1.70245 / --from 1.60.1.70009 reproduce M5.DATA's dataset)
 
 # reproduce the verified reference baseline (and the historical build it is diffed against)
 python -m talent_data fetch --game forever --build 1.60.1.69977

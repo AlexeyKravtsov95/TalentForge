@@ -28,6 +28,7 @@ Rules, for each kind (dataset / visuals / tooltips):
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -37,8 +38,9 @@ GAME = "forever"
 
 # Every client build the app bundles (ascending). 1.60.1.70009 is the verified reference
 # baseline (allocation evidence, M2 conformance, every build saved before M5.DATA);
-# 1.60.1.70245 is the product dataset new builds are created on.
-BUNDLED_BUILDS: tuple[str, ...] = ("1.60.1.70009", "1.60.1.70245")
+# 1.60.1.70245 was the product dataset of M5.DATA and stays for the builds saved on it;
+# 1.60.1.70338 is the product dataset new builds are created on (M5.DATA.2).
+BUNDLED_BUILDS: tuple[str, ...] = ("1.60.1.70009", "1.60.1.70245", "1.60.1.70338")
 
 CLASS_FILES: tuple[str, ...] = (
     "warrior.json",
@@ -54,6 +56,27 @@ CLASS_FILES: tuple[str, ...] = (
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 RESOURCES = REPO_ROOT / "mobile" / "composeApp" / "src" / "commonMain" / "composeResources"
+# Where the app declares its product dataset (the bundle New Build creates drafts on).
+BUNDLED_DATASETS_KT = (
+    REPO_ROOT
+    / "mobile"
+    / "composeApp"
+    / "src"
+    / "commonMain"
+    / "kotlin"
+    / "io"
+    / "github"
+    / "alexeykravtsov95"
+    / "talentforge"
+    / "ui"
+    / "library"
+    / "BundledDatasets.kt"
+)
+_PRODUCT_BUNDLE_RE = re.compile(
+    r"\bval PRODUCT_BUNDLE: DatasetBundleId = DatasetBundleId\(\s*"
+    r'game = GameId\("(?P<game>[a-z]+)"\),\s*'
+    r'clientBuild = "(?P<build>\d+\.\d+\.\d+\.\d+)",\s*\)'
+)
 
 
 @dataclass(frozen=True)
@@ -89,6 +112,27 @@ TOOLTIPS = BundleKind(
     bundled_root=RESOURCES / "files" / "tooltips" / GAME,
     required_files=CLASS_FILES,
 )
+
+
+def product_build(source: Path = BUNDLED_DATASETS_KT) -> str:
+    """The client build of ``PRODUCT_BUNDLE`` as the app declares it in Kotlin.
+
+    The app owns the role decision; this reads it - strictly - so that offline tooling
+    (the product freshness check, the bundle tests) compares against the very build the
+    app creates new builds on. Anything but exactly one declaration of the expected shape
+    for this game is an error, never a guess.
+    """
+    matches = list(_PRODUCT_BUNDLE_RE.finditer(source.read_text(encoding="utf-8")))
+    if len(matches) != 1:
+        raise ValueError(
+            f"{source}: expected exactly one PRODUCT_BUNDLE declaration "
+            f'(DatasetBundleId(game = GameId("{GAME}"), clientBuild = "a.b.c.d")), '
+            f"found {len(matches)}"
+        )
+    match = matches[0]
+    if match["game"] != GAME:
+        raise ValueError(f"{source}: PRODUCT_BUNDLE is for game {match['game']!r}, not {GAME!r}")
+    return match["build"]
 
 
 def relative_files(directory: Path) -> set[str]:

@@ -7,10 +7,13 @@ could not (yet) prove. Data basis: real client DB2 tables of builds `1.60.1.6989
 
 `1.60.1.70009` is the **verified reference baseline**: the allocation evidence and the
 conformance vectors are pinned to it, and the warning investigations below were made on it.
-Since M5.DATA the **product dataset** — the one the app creates new builds on — is
-`1.60.1.70245` ([below](#product-dataset-160170245-m5data)); 70009 stays committed and
-bundled, unchanged. Neither is claimed to be the build the live realms run (`builds latest`
-reports the newest detected build at the moment it runs; wago.tools has no "live" marker).
+Since M5.DATA.2 the **product dataset** — the one the app creates new builds on — is
+`1.60.1.70338` ([below](#product-dataset-160170338-m5data2)). `1.60.1.70245`, the product
+dataset of M5.DATA ([below](#product-dataset-160170245-m5data)), and 70009 stay committed
+and bundled, unchanged, for the builds saved on them. None of them is claimed to be the
+build the live realms run (`builds latest` reports the newest detected build at the moment
+it runs; wago.tools has no "live" marker). Whether the product dataset is still the newest
+publishable build is answered by `builds freshness` ([below](#product-freshness-check-m5data2)).
 
 ## One-command dataset
 
@@ -200,7 +203,174 @@ The machine-readable boundary lives in `talent_data.diff.models`
 (`USER_VISIBLE_CHANGE_KINDS` / `DIAGNOSTIC_CHANGE_KINDS`); it is a classification only —
 the raw engineering diff is never filtered.
 
+## Product dataset 1.60.1.70338 (M5.DATA.2)
+
+### Build selection
+
+`python -m talent_data builds latest --game forever` on **2026-10-10** (17:28 UTC) printed
+`Forever latest build: 1.60.1.70338 … not a background-download build ('latest' != proven
+live)`, cross-checked against the raw `GET https://wago.tools/api/builds` entries:
+
+| version | created_at (wago) | `is_bgdl` on the wire | note |
+| --- | --- | --- | --- |
+| **1.60.1.70338** | 2026-10-10 05:05:05 | `false` | latest detected = latest publishable → **selected** |
+| 1.60.1.70334 | 2026-10-09 22:49:04 | `false` | the build external sources reported; byte-identical data |
+| 1.60.1.70291 | 2026-10-08 20:25:12 | `false` | brought every talent change below |
+| 1.60.1.70245 | 2026-10-06 23:02:04 | `false` | product dataset of M5.DATA, kept |
+
+All four are product `wow_classic_beta`, branch `1.60` (70338 `build_config
+f6e309c700cea095978aeb5d85210df4`, `cdn_config ad00f88bc136373cdfe57c6bb796516b`). The only
+other product listing `1.60.1` builds is `wow_cn_beta` (70338 at 2026-10-10 04:54:10, 70334,
+70245 — all `is_bgdl=false`); no other track of branch 1.60 exists on wago.tools.
+
+70291, 70334 and 70338 were all fetched and normalized with the same pipeline: their talent
+data is identical (`diff` 70291 → 70334 → 70338: 0 added, 0 removed, 0 changed), and 70334 and
+70338 are byte-identical in every table the pipeline reads (the 23 trait tables, the tooltip
+tables, `SpellMisc`) and in all 358 icon files. Only 70338 is committed.
+
+**Basis and its limit** (unchanged from M5.DATA): 70338 is the newest Forever build whose
+`is_bgdl` is *explicitly* `false` — the project's definition of *publishable*. It is **not**
+evidence that 70338 is the build the live realms run, and no 70338 client was observed.
+
+### Generation and integrity
+
+Same unchanged pipeline and validators, nothing hand-edited, no check relaxed:
+
+```bash
+python -m talent_data fetch --game forever --build 1.60.1.70338
+python -m talent_data normalize --game forever --build 1.60.1.70338 --class all
+python -m talent_data diff --game forever --class all --from 1.60.1.70245 --to 1.60.1.70338
+python -m talent_data manifest data/normalized/forever/1.60.1.70338/manifest.json --expect-complete
+python -m talent_data visuals fetch|normalize|check --build 1.60.1.70338
+python -m talent_data tooltips fetch|normalize|check --build 1.60.1.70338
+```
+
+* 9 classes, **0 errors, the same 12 warnings** (same codes, nodes and counts as 70009 and
+  70245); the manifest re-validates.
+* Real DB2 and tooltip-table fixtures of 70338 are committed
+  (`tests/fixtures/{db2,tooltips}/forever/1.60.1.70338/`); `tests/unit/test_product_build.py`
+  regenerates the committed documents, visuals resolutions, tooltips and coverage report
+  from them and pins the facts below. The former 70245 product tests continue unchanged in
+  `tests/unit/test_build_70245.py`.
+
+| Class | Tree | Nodes | Prereq links | Total ranks | Point budget | Errors | Warnings |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Warrior | 1117 | **52** | 8 | **150** | 51 | 0 | — |
+| Paladin | 1100 | 50 | 7 | 138 | 51 | 0 | 2 × OFF_GRID_NODE |
+| Hunter | 1091 | 52 | 9 | 158 | 51 | 0 | 2 × OFF_GRID_NODE, 1 × DUPLICATE_SPELL_IDENTITY, 1 × SUFFICIENT_PREREQUISITE_CYCLE |
+| Rogue | 1111 | 53 | 8 | 139 | 51 | 0 | 1 × INCOMPLETE_RANK_CURVE, 1 × UNRESOLVED_CONDITION |
+| Priest | 1114 | 54 | 8 | 153 | 51 | 0 | 1 × OFF_GRID_NODE, 1 × DUPLICATE_SPELL_IDENTITY |
+| Shaman | 1082 | 50 | 7 | 148 | 51 | 0 | — |
+| Mage | 1112 | 54 | 6 | 146 | 51 | 0 | — |
+| Warlock | 1116 | 52 | 8 | 149 | 51 | 0 | 2 × OFF_GRID_NODE |
+| Druid | 1089 | 52 | 11 | 148 | 51 | 0 | — |
+
+Total 469 nodes (70245: 470). Tree ids, sections (3 per class), the 51-point budget, rank
+costs (1 point of currency 3820) and the gate rule are unchanged.
+
+### What changed 70245 → 70338
+
+`artifacts/diff/forever-all-1.60.1.70245-1.60.1.70338.json` (+ one file per class):
+**2 added, 3 removed, 36 changed nodes** — 29 of the changes are the Warrior rework.
+
+* **Warrior** (tree 1117; sections: 0 Arms, 1 Fury, 2 Protection as laid out by the client):
+  * removed: **Precision** 105929 (Fury, max 3), **Improved Cleave** 105936 (Fury, max 3),
+    **Toughness** 105973 (Protection, max 5);
+  * added: **Gore Drinker** 113569 (Fury, row 5, max 2, requires Enrage) and **Iron Will**
+    113570 (Protection, row 0, max 5) — Iron Will's spell 12962 moved here from node 110857;
+  * same node id, different talent: **105953** Boundless Rage (spell 1310236, +max Rage) →
+    **Furious Precision** (spell 1323963, off-hand hit 4/7/10 %), moved row 2 column 3 →
+    column 0; **110857** Iron Will → **Lingering Rage** (spell 1323964, rage decay delayed
+    2…10 s). Both keep their max rank, so an old build that spent them still *validates* on
+    70338 while meaning something else;
+  * prerequisites: **Flurry** requires Death Wish instead of Enrage (and moved column 2 → 1);
+    **Bloodthirst** no longer requires Death Wish; **Impale** now requires Deep Wounds;
+    **Last Stand** no longer requires Improved Bloodrage;
+  * Protection re-laid out (row/column): Improved Bloodrage 1/0 → 0/0 (no gate),
+    Anticipation 0/2 → 1/0 (5-point gate), Improved Revenge 2/2 → 1/2 (gate 10 → 5),
+    Improved Disarm 3/1 → 2/2 (gate 15 → 10), Vanguard 3/2 → 3/1, Improved Shield Bash
+    4/2 → 3/2 (gate 20 → 15), Focused Rage 5/2 → 4/2 (gate 25 → 20), Bastion 4/3 → 5/2
+    (gate 20 → 25); Improved Berserker Rage (Fury) 5/0 → 4/0 (gate 25 → 20); every other
+    gate's counted node set follows the removed/added nodes;
+  * values and texts: Dual Wield Specialization (off-hand damage 10…50 % and off-hand Rage),
+    Bloodthirst base points 35 → 45, Raging Blows (Cleave and Whirlwind cost −3), Booming
+    Voice (+ Rage cost reduction effect), Blood Craze, Unbridled Wrath, Piercing Howl,
+    Spearing Strike texts; Improved Slam lost the per-rank values of effect #2.
+* **Druid**: Predatory Instincts renamed **Natural Instinct** and gained an effect (spell
+  healing by 12/25 % of Intellect); Furor text.
+* **Paladin**: Reckoning text (once every 1.5 sec). **Hunter**: Expose Prey duration
+  reference. **Shaman**: Water Shield gained an effect without per-rank values.
+  **Warlock**: Destructive Reach effect #1 now resolved (10/20); Demonic Brand text.
+* **Rogue, Priest, Mage**: no change.
+
+Because a node id can be removed (Toughness 5/5 is a valid 70245 build and an invalid 70338
+one) or keep validating while meaning another talent (Boundless Rage 3/3 on 105953), a saved
+build is always opened on its own build and never migrated — see
+`docs/mobile-architecture.md`.
+
+### Allocation compatibility
+
+`python scripts/allocation_inventory.py --build 1.60.1.70338` (committed fixtures) is
+identical to 70245 except the Warrior row (52 nodes, `Flags` 0×47/8×5, `MaxRanks`
+1×12/2×12/3×13/5×15, `Edge.Type` 2×8): **no new node type, entry type, node flag, edge type,
+condition shape, currency or cost link** — flag 8 (TestGridPositioned) is already supported.
+The Python reference engine flags exactly one node as unsupported (Rogue Venom, cond 50984,
+as before), the random-walk invariants pass on all nine 70338 classes, and
+`ProductDatasetContractTest` pins the Kotlin engine to the same answer. No rule was changed
+for this build; the M2 conformance vectors stay pinned to 70009 and no confidence label
+changes (EDGE-ACTIVE / EDGE-SUF remain hypotheses). An unsupported mechanic in a future
+build fails these tests and blocks its publication.
+
+### Icons and descriptions
+
+* Visuals: 469 / 469 entries resolved from 70338's own `TraitDefinition` → `SpellMisc` rows;
+  358 distinct icons fetched as 70338 client files (new compared with 70245: 132356, 135727,
+  236309; no longer used: 132338, 236310; the 355 shared ones convert to identical PNGs).
+* Descriptions: 1329 ranks — **1281 resolved, 47 partial, 1 unresolved** —
+  `docs/research/forever-1.60.1.70338-tooltip-coverage.md`. The unresolved rank is still Druid
+  Shifting Power (`$c`). New partial ranks, shown with explicit gaps, never guessed: Druid
+  Thick Hide ranks 1–3 (`$s2` now scales with the caster's level) and Warrior Piercing Howl
+  (`$a2`, a radius reference).
+
+### Validity boundaries
+
+* Valid for WoW: Forever **1.60.1.70338** as published by wago.tools (and, by the byte
+  identity above, 70334); nothing carries over to another build without re-running the
+  pipeline.
+* Not established: that 70338 is live on the realms, that the Warrior rework is final, and
+  every semantic still listed as unresolved below.
+
+## Product freshness check (M5.DATA.2)
+
+```bash
+python scripts/check_product_freshness.py [--output freshness.json]
+# = python -m talent_data builds freshness --game forever --product-build <PRODUCT_BUNDLE>
+```
+
+The script reads `PRODUCT_BUNDLE` strictly from the app's `BundledDatasets.kt` and compares
+it with the latest publishable build wago.tools lists (`latest_publishable_build`, below).
+It prints one `product-freshness` v1 JSON document (`status`, `productBuild`,
+`latestPublishable`, `latestDetected`, `newerUnpublishable`, `reason`, `source`,
+`checkedAt`) and exits with the status:
+
+| status | exit | meaning |
+| --- | --- | --- |
+| `CURRENT` | 0 | the product build is the latest publishable build (newer background-download builds are listed in `newerUnpublishable`, not counted as updates) |
+| `OUTDATED` | 3 | a newer build with `is_bgdl` explicitly `false` exists: refresh the product dataset |
+| `UNKNOWN` | 4 | not established: network / HTTP / schema failure, no publishable build, a newer build without `is_bgdl`, or a product build newer than anything publishable |
+
+A failed lookup is never read as "no update". The check only reads: it fetches no data
+into the repository and publishes, commits or merges nothing; the scheduled watcher that
+will run it is M5.DATA.WATCH. Since M5.DATA.2 a non-boolean `is_bgdl` on the wire
+(`"false"`, `0`) is an unexpected schema, not a publishability answer (it used to be coerced
+by the lax pydantic `bool`). On 2026-10-10 it answered `OUTDATED` for 70245 and `CURRENT`
+for 70338.
+
 ## Product dataset 1.60.1.70245 (M5.DATA)
+
+Since M5.DATA.2 70245 is no longer the product dataset; it stays committed and bundled,
+unchanged, so that builds saved on it keep opening on it. Its facts below are as recorded
+by M5.DATA.
 
 ### Build selection
 
@@ -253,7 +423,7 @@ python -m talent_data tooltips fetch|normalize|check --build 1.60.1.70245
   hash (only `generatedAt` differs) — the reference data is untouched.
 * Real DB2 and tooltip-table fixtures of 70245 are committed
   (`tests/fixtures/{db2,tooltips}/forever/1.60.1.70245/`);
-  `tests/unit/test_product_build.py` regenerates the committed documents, visuals
+  `tests/unit/test_build_70245.py` (`test_product_build.py` until M5.DATA.2) regenerates the committed documents, visuals
   resolutions, tooltips and coverage report from them and pins the facts below.
 
 | Class | Tree | Nodes | Prereq links | Total ranks | Point budget | Errors | Warnings |
@@ -406,7 +576,7 @@ behavior was changed silently in M1.
 ## Fixture strategy
 
 `tests/fixtures/db2/forever/<build>/<class-token>/<Table>.csv` — for each of the nine
-classes and both captured builds (69977, 70009), the strict subset of rows reachable
+classes and every captured build (69977, 70009, 70245, 70338), the strict subset of rows reachable
 from that class's tree (~1000 rows per class), extracted by
 `scripts/extract_fixtures.py` from the real wago.tools cache. Nothing is hand-written;
 the Warrior M0 fixtures are the same rows in the new layout. Because each class
@@ -419,6 +589,7 @@ Regenerate after `python -m talent_data fetch --build <build>`:
 
 ```bash
 python scripts/extract_fixtures.py --build 1.60.1.70009 --classes all
+python scripts/extract_fixtures.py --build 1.60.1.70338 --classes all   # + --tooltips
 ```
 
 ## Known unresolved semantics (unchanged or newly scoped in M1)

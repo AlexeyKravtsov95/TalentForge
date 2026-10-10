@@ -9,12 +9,17 @@ capture step, no addon, no runtime network and no hand-written text.
 Its first canonical output — the one committed and bundled — is for the project's
 **verified reference baseline** `forever 1.60.1.70009`, the build the allocation evidence,
 conformance vectors, dataset and icons are pinned to. That build is not claimed to be the
-current Forever build. **M5.DATA** published the descriptions of the product dataset
+current Forever build. **M5.DATA** published the descriptions of its product dataset
 **`1.60.1.70245`** with the same unchanged renderer: 470 entries, 1333 ranks — 1289
 resolved, 43 partial, **1 unresolved** (Druid Shifting Power's new template uses `$c`, an
 unknown construct; see [research/forever-1.60.1.70245-tooltip-coverage.md](research/forever-1.60.1.70245-tooltip-coverage.md)).
-The table and column facts below are observed on the reference baseline; the 70245
-exports have the same shapes (the typed table readers accept them unchanged).
+**M5.DATA.2** did the same for the product dataset **`1.60.1.70338`**: 469 entries, 1329
+ranks — 1281 resolved, 47 partial, 1 unresolved (still Shifting Power's `$c`); the new
+partial ranks are Druid Thick Hide (`$s2` now scales with the caster's level) and Warrior
+Piercing Howl (`$a2`); see
+[research/forever-1.60.1.70338-tooltip-coverage.md](research/forever-1.60.1.70338-tooltip-coverage.md).
+The table and column facts below are observed on the reference baseline; the 70245 and
+70338 exports have the same shapes (the typed table readers accept them unchanged).
 
 ```
 exact Forever build
@@ -205,8 +210,8 @@ Resourcefulness `$m3` (a rank curve for effect 2, but the spell has no `EffectIn
 
 **Unknown syntax** (anything outside the grammar) makes the whole rank `unresolved` with an
 `unclassified` gap: the extent of an unknown construct is unknown, so the text around it is
-not trusted either. 1.60.1.70009 has none; 1.60.1.70245 has one (`$c` in Druid Shifting
-Power, rank 1 → `unresolved`, shown as "unavailable" in the app).
+not trusted either. 1.60.1.70009 has none; 1.60.1.70245 and 1.60.1.70338 have one (`$c` in
+Druid Shifting Power, rank 1 → `unresolved`, shown as "unavailable" in the app).
 
 ## Mobile
 

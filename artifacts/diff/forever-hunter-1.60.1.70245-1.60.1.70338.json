@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 3,
+    "token": "HUNTER",
+    "name": "Hunter"
+  },
+  "fromBuild": "1.60.1.70245",
+  "toBuild": "1.60.1.70338",
+  "fromContentHash": "sha256:e807ded16e000922bb8612cee7147e8ccf87d5dab83a5c363db65afa548969f6",
+  "toContentHash": "sha256:717ae2bdbaf67d253ce51d9cc184347d92e6ec4185d0a79b2ac6bfab519574a7",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 1,
+    "changesByKind": {
+      "descriptionChanged": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 104985,
+      "treeId": 1091,
+      "name": "Expose Prey",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129649,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Your attacks against targets with Hunter's Mark have a $s1% chance to activate your Mongoose Bite for $5302d.",
+          "new": "Your attacks against targets with Hunter's Mark have a $s1% chance to activate your Mongoose Bite for $1310726d."
+        }
+      ]
+    }
+  ]
+}

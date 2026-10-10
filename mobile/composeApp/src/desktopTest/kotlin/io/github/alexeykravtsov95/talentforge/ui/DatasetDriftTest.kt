@@ -1,7 +1,6 @@
 package io.github.alexeykravtsov95.talentforge.ui
 
-import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
-import io.github.alexeykravtsov95.talentforge.ui.library.REFERENCE_BUNDLE
+import io.github.alexeykravtsov95.talentforge.ui.library.ALL_BUNDLES
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -11,7 +10,8 @@ import kotlin.test.assertTrue
 /**
  * JVM mirror of `scripts/sync_mobile_datasets.py --check`: the bundled Compose
  * resources must stay byte-identical to the canonical `data/normalized` tree
- * for every bundled build — the reference baseline and the product dataset —
+ * for every bundled build — the reference baseline, the previous product
+ * dataset 1.60.1.70245 and the product dataset —
  * so a canonical update without a bundle sync fails the build in CI.
  */
 class DatasetDriftTest {
@@ -31,13 +31,13 @@ class DatasetDriftTest {
 
     @Test
     fun bundledDatasetMatchesCanonicalSourceByteForByte() {
-        for (clientBuild in listOf(REFERENCE_BUNDLE.clientBuild, PRODUCT_BUNDLE.clientBuild)) {
+        for (clientBuild in ALL_BUNDLES.map { it.clientBuild }) {
             assertBuildMatches(clientBuild)
         }
     }
 
     @Test
-    fun exactlyTheReferenceAndTheProductBuildAreBundled() {
+    fun exactlyTheThreeBundledBuildsAreBundled() {
         val repoRoot = findRepoRoot(File(System.getProperty("user.dir")).absoluteFile)
         val bundledRoot = repoRoot
             .resolve("mobile/composeApp/src/commonMain/composeResources/files/dataset/forever")
@@ -45,7 +45,7 @@ class DatasetDriftTest {
             .filter { !it.name.startsWith(".") }
             .map { it.name }
             .toSet()
-        assertEquals(setOf(REFERENCE_BUNDLE.clientBuild, PRODUCT_BUNDLE.clientBuild), bundledBuilds)
+        assertEquals(ALL_BUNDLES.map { it.clientBuild }.toSet(), bundledBuilds)
     }
 
     private fun assertBuildMatches(clientBuild: String) {

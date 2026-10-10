@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 2,
+    "token": "PALADIN",
+    "name": "Paladin"
+  },
+  "fromBuild": "1.60.1.70245",
+  "toBuild": "1.60.1.70338",
+  "fromContentHash": "sha256:4488199d62115685bc1778b5413c618d1bdcb43d3de5732cc09444a26b03321e",
+  "toContentHash": "sha256:1a78d939e12e0c325cd2c28cf50cd9f34f7163e91ba9e225385e6515bf250642",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 1,
+    "changesByKind": {
+      "descriptionChanged": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 105627,
+      "treeId": 1100,
+      "name": "Reckoning",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130351,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Gives you a $m1% chance to gain an extra attack after Blocking a melee attack and a ${$m1*2.5}% chance to gain an extra attack after being the victim of a non-periodic critical strike.",
+          "new": "Gives you a $m1% chance to gain an extra attack after Blocking a melee attack and a ${$m1*2.5}% chance to gain an extra attack after being the victim of a non-periodic critical strike. Cannot occur more often than once every 1.5 sec."
+        }
+      ]
+    }
+  ]
+}

@@ -31,12 +31,13 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 
 /**
- * M5.DATA: two datasets bundled side by side. New drafts are created on the
- * product dataset ([PRODUCT_BUNDLE], 1.60.1.70245); a build saved on the
- * reference baseline ([REFERENCE_BUNDLE], 1.60.1.70009) opens on 1.60.1.70009
- * — same tree, ranks, points, icons and descriptions — and is never re-read
- * against the product dataset; a build of a client build that is not bundled
- * fails with a typed error instead of falling back.
+ * M5.DATA / M5.DATA.2: three datasets bundled side by side. New drafts are
+ * created on the product dataset ([PRODUCT_BUNDLE], 1.60.1.70338); a build
+ * saved on the reference baseline ([REFERENCE_BUNDLE], 1.60.1.70009) or on the
+ * previous product dataset ([PREVIOUS_PRODUCT_BUNDLE], 1.60.1.70245) opens on
+ * its own build — same tree, ranks, points, icons and descriptions — and is
+ * never re-read against the product dataset; a build of a client build that
+ * is not bundled fails with a typed error instead of falling back.
  *
  * Every bundled read goes through [RecordingAssetSource], so each test can
  * prove WHICH build's files answered.
@@ -95,25 +96,37 @@ class DatasetVersionCompatibilityTest {
     private fun TalentTooltipRank.text(): String = segments.joinToString("") { it.text }
 
     /**
-     * A real 1.60.1.70009 Druid build with node 104951 (King of the Jungle on
-     * 70009) at 3/3 — spent through the engine, never hand-written. On
-     * 1.60.1.70245 the same node id is Shifting Power with max rank 1, so this
-     * build only exists on its own build.
+     * A real build with [target] at its max rank, reached by spending the
+     * lowest-id allowed talent of the target's own section until the target
+     * opens — spent through the engine, never hand-written.
      */
-    private fun referenceDruidWithShiftingPowerMaxed(engine: TalentAllocationEngine): BuildState {
+    private fun maxedThroughItsSection(engine: TalentAllocationEngine, target: Int): BuildState {
+        val node = engine.tree.nodes.single { it.id == target }
         var state = engine.emptyState()
-        while (!engine.canSpend(state, SHIFTING_POWER).allowed) {
+        while (!engine.canSpend(state, target).allowed) {
             val next = engine.tree.nodes
-                .filter { it.sectionIndex == 1 && it.id != SHIFTING_POWER }
+                .filter { it.sectionIndex == node.sectionIndex && it.id != target }
                 .filter { engine.canSpend(state, it.id).allowed }
                 .minOf { it.id }
             state = engine.spend(state, next).state
         }
-        repeat(3) { state = engine.spend(state, SHIFTING_POWER).state }
-        assertEquals(3, state.rankOf(SHIFTING_POWER))
+        repeat(node.maxRank) { state = engine.spend(state, target).state }
+        assertEquals(node.maxRank, state.rankOf(target))
         assertTrue(engine.validate(state).valid)
         return state
     }
+
+    /**
+     * A real 1.60.1.70009 Druid build with node 104951 (King of the Jungle on
+     * 70009) at 3/3. On 1.60.1.70245 and 1.60.1.70338 the same node id is
+     * Shifting Power with max rank 1, so this build only exists on its own build.
+     */
+    private fun referenceDruidWithShiftingPowerMaxed(engine: TalentAllocationEngine): BuildState =
+        maxedThroughItsSection(engine, SHIFTING_POWER).also { assertEquals(3, it.rankOf(SHIFTING_POWER)) }
+
+    /** Saves [state] as a draft of [clientBuild] / [classToken] and returns its local id. */
+    private fun saved(state: BuildState, clientBuild: String, classToken: String): String =
+        loaded(repository.createDraft(buildFileOf(state, game, clientBuild, ClassToken(classToken)))).localId
 
     private fun Iterable<String>.allIn(clientBuild: String): Boolean = all { it.contains("/$clientBuild/") }
 
@@ -124,7 +137,7 @@ class DatasetVersionCompatibilityTest {
         val choices = assertNotNull(runBlocking { loadNewBuildChoices(datasets) })
 
         assertEquals("Forever", choices.gameDisplayName)
-        assertEquals("Talent data 1.60.1.70245", choices.versionDetail)
+        assertEquals("Talent data 1.60.1.70338", choices.versionDetail)
         assertEquals(9, choices.classes.size)
         assertTrue(choices.classes.all { it.available })
         assertTrue(assets.paths.allIn(PRODUCT_BUNDLE.clientBuild), "read: ${assets.paths}")
@@ -135,13 +148,13 @@ class DatasetVersionCompatibilityTest {
         val created = assertIs<DraftCreation.Created>(
             runBlocking { createClassDraft(repository, datasets, ClassToken("DRUID")) },
         ).record
-        assertEquals("1.60.1.70245", created.build.clientBuild)
+        assertEquals("1.60.1.70338", created.build.clientBuild)
         assertEquals(PRODUCT_BUNDLE.clientBuild, created.build.clientBuild)
         assertEquals(1089, created.build.treeId)
 
         val session = assertIs<EditorLoad.Ready>(open(created.localId)).session
 
-        assertEquals("1.60.1.70245", session.engine.document.clientBuild)
+        assertEquals("1.60.1.70338", session.engine.document.clientBuild)
         assertEquals(52, session.engine.tree.nodes.size)
         val improved = session.engine.tree.nodes.single { it.id == IMPROVED_SHIFTING_POWER }
         assertEquals("Improved Shifting Power", improved.name)
@@ -157,9 +170,41 @@ class DatasetVersionCompatibilityTest {
             ),
             ranksOf(session, IMPROVED_SHIFTING_POWER).map { it.text() },
         )
-        // dataset, visuals and descriptions all came from 1.60.1.70245
-        assertTrue(assets.paths.any { it.startsWith("visuals/forever/1.60.1.70245/") })
-        assertTrue(assets.paths.any { it.startsWith("tooltips/forever/1.60.1.70245/") })
+        // dataset, visuals and descriptions all came from 1.60.1.70338
+        assertTrue(assets.paths.any { it.startsWith("visuals/forever/1.60.1.70338/") })
+        assertTrue(assets.paths.any { it.startsWith("tooltips/forever/1.60.1.70338/") })
+        assertTrue(assets.paths.allIn(PRODUCT_BUNDLE.clientBuild), "read: ${assets.paths}")
+    }
+
+    @Test
+    fun aNewWarriorDraftIsCreatedOnTheReworkedTree() {
+        val created = assertIs<DraftCreation.Created>(
+            runBlocking { createClassDraft(repository, datasets, ClassToken("WARRIOR")) },
+        ).record
+        assertEquals("1.60.1.70338", created.build.clientBuild)
+        assertEquals(1117, created.build.treeId)
+
+        val session = assertIs<EditorLoad.Ready>(open(created.localId)).session
+
+        val nodes = session.engine.tree.nodes.associateBy { it.id }
+        assertEquals(52, nodes.size)
+        assertFalse(TOUGHNESS in nodes, "Toughness is gone on 1.60.1.70338")
+        assertEquals("Gore Drinker", nodes.getValue(GORE_DRINKER).name)
+        assertEquals(listOf(ENRAGE), nodes.getValue(GORE_DRINKER).prerequisites.map { it.nodeId })
+        assertEquals("Iron Will", nodes.getValue(IRON_WILL).name)
+        assertEquals("Furious Precision", nodes.getValue(BOUNDLESS_RAGE_NODE).name)
+        assertEquals("Lingering Rage", nodes.getValue(IRON_WILL_NODE).name)
+        // the product build's own icon and description of its new talent
+        assertTrue(GORE_DRINKER in session.icons.nodeIds)
+        assertEquals(
+            "Your Enrage, Berserker Rage, Bloodrage, Death Wish, and Bloodthirst abilities cause " +
+                "your next 3 melee attacks to restore 1.0% of your maximum Health.",
+            ranksOf(session, GORE_DRINKER)[1].text(),
+        )
+        assertEquals(
+            "Increases your chance to hit with off-hand attacks by 10%.",
+            ranksOf(session, BOUNDLESS_RAGE_NODE)[2].text(),
+        )
         assertTrue(assets.paths.allIn(PRODUCT_BUNDLE.clientBuild), "read: ${assets.paths}")
     }
 
@@ -202,13 +247,72 @@ class DatasetVersionCompatibilityTest {
         assertFalse(productEngine.validate(state).valid)
     }
 
+    // ------------------------------------------------------------------ saved previous-product builds
+
     @Test
-    fun buildCardsOfBothBuildsResolveTheirOwnDatasets() {
+    fun aBuildSavedOnThePreviousProductDatasetOpensOnItsOwnBuildUnchanged() {
+        // Warrior Toughness 5/5: a valid 1.60.1.70245 build whose node no longer exists on 70338
+        val previousEngine = TalentAllocationEngine(document(PREVIOUS_PRODUCT_BUNDLE.clientBuild, "WARRIOR"))
+        val state = maxedThroughItsSection(previousEngine, TOUGHNESS)
+        val localId = saved(state, "1.60.1.70245", "WARRIOR")
+        val file = loaded(repository.load()).single().build
+        assets.paths.clear()
+
+        val session = assertIs<EditorLoad.Ready>(open(localId)).session
+
+        // exact identity, ranks and points: nothing migrated, re-mapped or recounted
+        assertEquals(file, session.record.build)
+        assertEquals(state, session.buildState)
+        assertEquals(previousEngine.spentPoints(state), session.engine.spentPoints(session.buildState))
+        assertEquals("1.60.1.70245", session.engine.document.clientBuild)
+        val nodes = session.engine.tree.nodes.associateBy { it.id }
+        assertEquals(53, nodes.size)
+        assertFalse(GORE_DRINKER in nodes)
+        assertEquals("Toughness", nodes.getValue(TOUGHNESS).name)
+        assertEquals(5, session.buildState.rankOf(TOUGHNESS))
+        // the previous product build's own icon and description
+        assertTrue(TOUGHNESS in session.icons.nodeIds)
+        assertEquals("Increases your Armor value from items by 10%.", ranksOf(session, TOUGHNESS)[4].text())
+        assertTrue(assets.paths.any { it.startsWith("visuals/forever/1.60.1.70245/") })
+        assertTrue(assets.paths.any { it.startsWith("tooltips/forever/1.60.1.70245/") })
+        assertTrue(assets.paths.allIn(PREVIOUS_PRODUCT_BUNDLE.clientBuild), "read: ${assets.paths}")
+        assertEquals(file, loaded(repository.load()).single().build)
+
+        // why it must open on 1.60.1.70245: the product dataset rejects the same ranks
+        val productEngine = TalentAllocationEngine(document(PRODUCT_BUNDLE.clientBuild, "WARRIOR"))
+        assertFalse(productEngine.validate(state).valid)
+    }
+
+    @Test
+    fun aPreviousProductBuildThatStaysValidStillOpensWithItsOwnTalents() {
+        // node 105953 at 3/3 validates on BOTH builds, but it is Boundless Rage on
+        // 70245 and Furious Precision on 70338: validity is no license to migrate
+        val previousEngine = TalentAllocationEngine(document(PREVIOUS_PRODUCT_BUNDLE.clientBuild, "WARRIOR"))
+        val state = maxedThroughItsSection(previousEngine, BOUNDLESS_RAGE_NODE)
+        val productEngine = TalentAllocationEngine(document(PRODUCT_BUNDLE.clientBuild, "WARRIOR"))
+        assertTrue(productEngine.validate(state).valid)
+        val localId = saved(state, PREVIOUS_PRODUCT_BUNDLE.clientBuild, "WARRIOR")
+        assets.paths.clear()
+
+        val session = assertIs<EditorLoad.Ready>(open(localId)).session
+
+        assertEquals("1.60.1.70245", session.engine.document.clientBuild)
+        assertEquals(state, session.buildState)
+        assertEquals("Boundless Rage", session.engine.tree.nodes.single { it.id == BOUNDLESS_RAGE_NODE }.name)
+        assertEquals("Increases your maximum Rage by 30.", ranksOf(session, BOUNDLESS_RAGE_NODE)[2].text())
+        assertTrue(assets.paths.allIn(PREVIOUS_PRODUCT_BUNDLE.clientBuild), "read: ${assets.paths}")
+    }
+
+    @Test
+    fun buildCardsOfEveryBundledBuildResolveTheirOwnDatasets() {
         val referenceEngine = TalentAllocationEngine(document(REFERENCE_BUNDLE.clientBuild, "DRUID"))
         val state = referenceDruidWithShiftingPowerMaxed(referenceEngine)
         val reference = loaded(
             repository.createDraft(buildFileOf(state, game, REFERENCE_BUNDLE.clientBuild, ClassToken("DRUID"))),
         )
+        val previousEngine = TalentAllocationEngine(document(PREVIOUS_PRODUCT_BUNDLE.clientBuild, "WARRIOR"))
+        val previousState = maxedThroughItsSection(previousEngine, TOUGHNESS)
+        val previousId = saved(previousState, PREVIOUS_PRODUCT_BUNDLE.clientBuild, "WARRIOR")
         val product = assertIs<DraftCreation.Created>(
             runBlocking { createClassDraft(repository, datasets, ClassToken("DRUID")) },
         ).record
@@ -221,6 +325,10 @@ class DatasetVersionCompatibilityTest {
         assertEquals("Druid", referenceCard.classDisplayName)
         assertEquals(referenceEngine.spentPoints(state), referenceCard.spentPoints)
         assertEquals(51, referenceCard.pointBudget)
+        val previousCard = cards.getValue(previousId)
+        assertEquals("Warrior", previousCard.classDisplayName)
+        assertEquals(previousEngine.spentPoints(previousState), previousCard.spentPoints)
+        assertEquals(51, previousCard.pointBudget)
         val productCard = cards.getValue(product.localId)
         assertEquals("Druid", productCard.classDisplayName)
         assertEquals(0, productCard.spentPoints)
@@ -231,31 +339,46 @@ class DatasetVersionCompatibilityTest {
 
     @Test
     fun aBuildOfAnUnbundledClientBuildFailsTypedWithoutFallback() {
-        // 1.60.1.70170 is a real Forever build between the two bundled ones
+        // real Forever builds that are not bundled: 1.60.1.70170 (between 70009 and
+        // 70245) and 1.60.1.70334 (talent data identical to 70338 - still no stand-in)
         val productEngine = TalentAllocationEngine(document(PRODUCT_BUNDLE.clientBuild, "DRUID"))
-        val record = loaded(
-            repository.createDraft(buildFileOf(productEngine.emptyState(), game, "1.60.1.70170", ClassToken("DRUID"))),
-        )
-        assets.paths.clear()
+        for (clientBuild in listOf("1.60.1.70170", "1.60.1.70334")) {
+            val localId = saved(productEngine.emptyState(), clientBuild, "DRUID")
+            assets.paths.clear()
 
-        val failure = assertIs<EditorLoad.Failed>(open(record.localId)).failure
+            val failure = assertIs<EditorLoad.Failed>(open(localId)).failure
 
-        val dataset = assertIs<EditorFailure.Dataset>(failure)
-        val unavailable = assertIs<DatasetLoadError.ManifestUnavailable>(dataset.error)
-        assertEquals(
-            DatasetLoadError.AssetMissing("dataset/forever/1.60.1.70170/manifest.json"),
-            unavailable.error,
-        )
-        // neither bundled dataset was consulted in its place
-        assertEquals(listOf("dataset/forever/1.60.1.70170/manifest.json"), assets.paths)
-        assertEquals("1.60.1.70170", loaded(repository.load()).single().build.clientBuild)
+            val dataset = assertIs<EditorFailure.Dataset>(failure)
+            val unavailable = assertIs<DatasetLoadError.ManifestUnavailable>(dataset.error)
+            assertEquals(
+                DatasetLoadError.AssetMissing("dataset/forever/$clientBuild/manifest.json"),
+                unavailable.error,
+            )
+            // no bundled dataset was consulted in its place
+            assertEquals(listOf("dataset/forever/$clientBuild/manifest.json"), assets.paths)
+            assertTrue(loaded(repository.load()).any { it.localId == localId && it.build.clientBuild == clientBuild })
+        }
     }
 
     private companion object {
-        /** Druid node 104951: "King of the Jungle" (max 3) on 1.60.1.70009, "Shifting Power" (max 1) on 1.60.1.70245. */
+        /** Druid node 104951: "King of the Jungle" (max 3) on 1.60.1.70009, "Shifting Power" (max 1) since 1.60.1.70245. */
         const val SHIFTING_POWER = 104951
 
         /** Druid "Improved Shifting Power": new in 1.60.1.70245. */
         const val IMPROVED_SHIFTING_POWER = 113563
+
+        /** Warrior "Toughness" (Protection, max 5): on 1.60.1.70245, removed in 1.60.1.70338. */
+        const val TOUGHNESS = 105973
+
+        /** Warrior node 105953: "Boundless Rage" on 1.60.1.70245, "Furious Precision" on 1.60.1.70338 (max 3 on both). */
+        const val BOUNDLESS_RAGE_NODE = 105953
+
+        /** Warrior node 110857: "Iron Will" on 1.60.1.70245, "Lingering Rage" on 1.60.1.70338. */
+        const val IRON_WILL_NODE = 110857
+
+        /** Warrior "Gore Drinker" (requires Enrage) and the moved "Iron Will": new in 1.60.1.70338. */
+        const val GORE_DRINKER = 113569
+        const val IRON_WILL = 113570
+        const val ENRAGE = 105931
     }
 }

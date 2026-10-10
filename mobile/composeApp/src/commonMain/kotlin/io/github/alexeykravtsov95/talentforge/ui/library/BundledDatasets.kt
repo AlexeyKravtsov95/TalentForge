@@ -4,18 +4,23 @@ import io.github.alexeykravtsov95.talentforge.data.DatasetBundleId
 import io.github.alexeykravtsov95.talentforge.data.GameId
 
 /**
- * The product dataset (M5.DATA): the bundle New Build lists its classes from
- * and creates every new draft on — Forever `1.60.1.70245`, the newest Forever
- * build wago.tools reported on 2026-10-08 that is explicitly not a
+ * The product dataset (M5.DATA.2): the bundle New Build lists its classes from
+ * and creates every new draft on — Forever `1.60.1.70338`, the newest Forever
+ * build wago.tools reported on 2026-10-10 that is explicitly not a
  * background download. That makes it the product's selected version, not a
  * claim that it is the build the live realms run (wago.tools cannot say) or
- * that it is current.
+ * that it is current (`scripts/check_product_freshness.py` reads this
+ * declaration and answers that question).
  * New Build resolves its class list from THIS bundle's manifest (never from
  * hardcoded filenames); the manifest stays the dataset list.
+ *
+ * `1.60.1.70245`, the product dataset of M5.DATA, stays bundled, unchanged:
+ * builds saved on it open on it like any saved build (see
+ * `loadEditorSession`); it is never a fallback for, or migrated to, this one.
  */
 val PRODUCT_BUNDLE: DatasetBundleId = DatasetBundleId(
     game = GameId("forever"),
-    clientBuild = "1.60.1.70245",
+    clientBuild = "1.60.1.70338",
 )
 
 /**
@@ -35,7 +40,7 @@ val REFERENCE_BUNDLE: DatasetBundleId = DatasetBundleId(
 fun gameDisplayName(game: GameId): String = game.value.replaceFirstChar { it.uppercase() }
 
 /**
- * The human-facing data version of a client build: `1.60.1.70245` →
+ * The human-facing data version of a client build: `1.60.1.70338` →
  * `1.60.1` (first three components — how the UX spec's "Talent data 1.60.1"
  * line is derived, presentation-only, no contract meaning).
  */

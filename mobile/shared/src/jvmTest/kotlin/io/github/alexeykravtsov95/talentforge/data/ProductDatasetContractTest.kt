@@ -20,15 +20,16 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
 
-private val PRODUCT = DatasetBundleId(GameId("forever"), "1.60.1.70245")
+private val PRODUCT = DatasetBundleId(GameId("forever"), "1.60.1.70338")
 
 /**
- * M5.DATA: the committed product dataset 1.60.1.70245 — documents, manifest,
+ * M5.DATA.2: the committed product dataset 1.60.1.70338 — documents, manifest,
  * `talent-visuals.v1` / `talent-icons.v1` and `talent-tooltips.v1` — parses
  * under the strict readers, passes every repository identity check, and is
  * supported by the Kotlin allocation engine exactly like the reference
- * baseline (only Rogue Venom stays unresolved). Another build's sidecars can
- * never stand in for it: they fail with a typed build mismatch.
+ * baseline (only Rogue Venom stays unresolved). Another build's sidecars —
+ * even those of the previous product dataset 1.60.1.70245 — can never stand
+ * in for it: they fail with a typed build mismatch.
  */
 class ProductDatasetContractTest {
 
@@ -63,13 +64,13 @@ class ProductDatasetContractTest {
         }
 
     private fun productDocument(token: String): TalentDataDocument =
-        TalentDataContract.decodeTalentDataDocument(TestRepoAssets.forever70245.resolve("$token.json").readBytes())
+        TalentDataContract.decodeTalentDataDocument(TestRepoAssets.forever70338.resolve("$token.json").readBytes())
 
     @Test
     fun everyProductDocumentLoadsThroughTheVerifyingRepository() = runTest {
         val repository = BundledTalentDatasetRepository(committedAssets())
         val manifest = assertIs<DatasetOutcome.Loaded<DatasetManifest>>(repository.manifest(PRODUCT)).value
-        assertEquals("1.60.1.70245", manifest.clientBuild)
+        assertEquals("1.60.1.70338", manifest.clientBuild)
         assertEquals(TestRepoAssets.classTokens.map { it.uppercase() }.toSet(), manifest.classes.map { it.token.value }.toSet())
 
         var nodes = 0
@@ -81,7 +82,7 @@ class ProductDatasetContractTest {
             assertEquals(51, document.trees.single().pointBudget?.maxPoints, entry.token.value)
             nodes += document.trees.single().nodes.size
         }
-        assertEquals(470, nodes)
+        assertEquals(469, nodes)
     }
 
     @Test
@@ -102,41 +103,41 @@ class ProductDatasetContractTest {
         for (token in TestRepoAssets.classTokens) {
             val document = productDocument(token)
             val loadedVisuals = assertIs<VisualsOutcome.Loaded<TalentVisuals>>(visuals.visuals(document), token).value
-            assertEquals("1.60.1.70245", loadedVisuals.clientBuild)
+            assertEquals("1.60.1.70338", loadedVisuals.clientBuild)
             for (fileDataId in loadedVisuals.iconFileDataIds) {
                 val path = loadedVisuals.iconAssetPathOf(fileDataId)
-                assertTrue(path != null && path.startsWith("visuals/forever/1.60.1.70245/icons/"), "$token $path")
+                assertTrue(path != null && path.startsWith("visuals/forever/1.60.1.70338/icons/"), "$token $path")
             }
             icons += loadedVisuals.iconFileDataIds.size
             val loadedTooltips = assertIs<TooltipsOutcome.Loaded<TalentTooltips>>(tooltips.tooltips(document), token).value
-            assertEquals("1.60.1.70245", loadedTooltips.clientBuild)
+            assertEquals("1.60.1.70338", loadedTooltips.clientBuild)
         }
-        assertTrue(icons >= 357, "every class resolves its own icons ($icons class-icon pairs)")
+        assertTrue(icons >= 358, "every class resolves its own icons ($icons class-icon pairs)")
     }
 
     @Test
-    fun referenceSidecarsCannotStandInForTheProductBuild() = runTest {
-        // a hand-copied 70009 visuals/tooltips tree placed where 70245's belongs
+    fun previousProductSidecarsCannotStandInForTheProductBuild() = runTest {
+        // a hand-copied 70245 visuals/tooltips tree placed where 70338's belongs
         val temp = Files.createTempDirectory("talentforge-substitution").toFile()
         tempDirs += temp
-        TestRepoAssets.visuals70009.copyRecursively(temp.resolve("visuals/forever/1.60.1.70245"))
-        TestRepoAssets.tooltips70009.copyRecursively(temp.resolve("tooltips/forever/1.60.1.70245"))
+        TestRepoAssets.visuals70245.copyRecursively(temp.resolve("visuals/forever/1.60.1.70338"))
+        TestRepoAssets.tooltips70245.copyRecursively(temp.resolve("tooltips/forever/1.60.1.70338"))
         val assets = directoryAssetSource(temp)
-        val document = productDocument("druid")
+        val document = productDocument("warrior")
 
         val visualsError = assertIs<VisualsOutcome.Failed>(BundledTalentVisualsRepository(assets).visuals(document)).error
         val visualsMismatch = assertIs<VisualsLoadError.BuildMismatch>(visualsError)
-        assertEquals("1.60.1.70245", visualsMismatch.expected)
-        assertEquals("1.60.1.70009", visualsMismatch.actual)
+        assertEquals("1.60.1.70338", visualsMismatch.expected)
+        assertEquals("1.60.1.70245", visualsMismatch.actual)
 
         val tooltipsError = assertIs<TooltipsOutcome.Failed>(BundledTalentTooltipsRepository(assets).tooltips(document)).error
         val tooltipsMismatch = assertIs<TooltipsLoadError.BuildMismatch>(tooltipsError)
-        assertEquals("1.60.1.70245", tooltipsMismatch.expected)
-        assertEquals("1.60.1.70009", tooltipsMismatch.actual)
+        assertEquals("1.60.1.70338", tooltipsMismatch.expected)
+        assertEquals("1.60.1.70245", tooltipsMismatch.actual)
     }
 
     private companion object {
-        /** Rogue "Venom": its TraitCond 50984 stays unresolved in both builds. */
+        /** Rogue "Venom": its TraitCond 50984 stays unresolved in every committed build. */
         const val VENOM = 105712
     }
 }
