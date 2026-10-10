@@ -2,6 +2,7 @@
 
 builds list    --game forever
 builds latest  --game forever
+builds freshness --game forever --product-build <version> [--output <file.json>]
 fetch          --game forever --build <version|latest>
 normalize      --game forever --build <version|latest> --class warrior|all|warrior,priest,...
 diff           --game forever --class warrior|all --from <version> --to <version|latest>
@@ -11,6 +12,10 @@ schema         [--out docs/schema]
 allocation     validate|replay   (M2 allocation engine developer tools)
 visuals        fetch|report|normalize|check   (M5.V1 talent icons, build-pinned)
 tooltips       fetch|report|normalize|check   (M5.V2 talent descriptions, build-pinned)
+
+``builds freshness`` (M5.DATA.2) compares the product build with the latest publishable
+build and prints a ``product-freshness`` v1 JSON document; its exit code is the status:
+0 CURRENT, 3 OUTDATED, 4 UNKNOWN (a source/network failure is UNKNOWN, never CURRENT).
 
 ``--class all`` (M1) normalizes / diffs every class of the build, deterministically ordered
 by class id, and writes a dataset manifest (normalize). A batch that fails for any class
@@ -24,6 +29,7 @@ import json
 import logging
 import sys
 from collections.abc import Sequence
+from datetime import UTC, datetime
 from pathlib import Path
 
 from pydantic import BaseModel
@@ -37,6 +43,7 @@ from talent_data.cli import visuals as visuals_cli
 from talent_data.db2.tables import TRAIT_TABLES
 from talent_data.diff.models import DatasetDiffReport, DiffReport
 from talent_data.diff.render import render_dataset_text, render_text
+from talent_data.freshness import FreshnessStatus, evaluate_freshness
 from talent_data.games import GAMES, GameConfig, get_game
 from talent_data.models.manifest import DatasetManifest
 from talent_data.models.talents import TalentDataDocument
@@ -74,6 +81,12 @@ log = logging.getLogger("talent_data")
 
 EXIT_OK = 0
 EXIT_FAILURE = 1
+# ``builds freshness``: the exit code is the status (argparse already uses 2 for usage).
+FRESHNESS_EXIT = {
+    FreshnessStatus.CURRENT: EXIT_OK,
+    FreshnessStatus.OUTDATED: 3,
+    FreshnessStatus.UNKNOWN: 4,
+}
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -118,6 +131,20 @@ def _build_parser() -> argparse.ArgumentParser:
     b_latest = builds_sub.add_parser("latest", help="print the latest build of the game")
     game_arg(b_latest)
     b_latest.set_defaults(handler=_cmd_builds_latest)
+    b_fresh = builds_sub.add_parser(
+        "freshness",
+        help="is the product build the latest publishable build? (CURRENT/OUTDATED/UNKNOWN)",
+    )
+    game_arg(b_fresh)
+    b_fresh.add_argument(
+        "--product-build",
+        required=True,
+        help="the build the app creates new builds on (PRODUCT_BUNDLE), e.g. 1.60.1.70338",
+    )
+    b_fresh.add_argument(
+        "--output", type=Path, help="also write the JSON result to this file (CI artifact)"
+    )
+    b_fresh.set_defaults(handler=_cmd_builds_freshness)
 
     fetch = sub.add_parser("fetch", help="download the DB2 tables needed for talents")
     game_arg(fetch)
@@ -319,6 +346,26 @@ def _cmd_builds_latest(args: argparse.Namespace) -> int:
         file=sys.stderr,
     )
     return EXIT_OK
+
+
+def _cmd_builds_freshness(args: argparse.Namespace) -> int:
+    game = get_game(args.game)
+    try:
+        product_build = ClientVersion.parse(args.product_build)
+    except ValueError as exc:
+        raise PipelineError(str(exc)) from exc
+    check_game_version(game, product_build)
+    with _http() as http:
+        report = evaluate_freshness(
+            WagoBuildSource(http), game, product_build, now=datetime.now(UTC)
+        )
+    text = report.to_json()
+    if args.output is not None:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(text, encoding="utf-8")
+    sys.stdout.write(text)
+    print(f"{report.status}: {report.reason}", file=sys.stderr)
+    return FRESHNESS_EXIT[report.status]
 
 
 def _cmd_fetch(args: argparse.Namespace) -> int:
