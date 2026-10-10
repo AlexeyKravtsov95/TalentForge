@@ -1,7 +1,8 @@
 package io.github.alexeykravtsov95.talentforge.ui.tree
 
-import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationState
 import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.animateTo
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -10,7 +11,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawBehind
@@ -55,7 +59,9 @@ import kotlin.math.hypot
  * - tapping empty canvas deselects;
  * - dragging pans — including drags that start on a node, once movement passes
  *   the 7 dp touch slop (no node-origin pan dead zones);
- * - pinching zooms 0.8–2.2× around the fingers.
+ * - pinching zooms 0.62–1.6× around the fingers (1A v2 S3);
+ * - gestures are clamped to the content (12 dp field, 1A v2 S3) and
+ *   interrupt any running camera animation (1A v2 S4).
  *
  * M4.2 presentation (read-only, engine-backed via [presentation]):
  * - prerequisite connectors draw "2 dp solid when the prerequisite is met,
@@ -72,7 +78,11 @@ import kotlin.math.hypot
  *   48 dp rounded square, under the unchanged state/selection layers; geometry,
  *   hit targets and gestures do not depend on icons at all;
  * - a [TalentTreeViewportState.requestFocus] is animated as the B3 300 ms
- *   ease-out Show pan (scale untouched, transform always finite).
+ *   ease-out Show pan (scale untouched, transform always finite);
+ * - M5.UX.1: a [TalentTreeViewportState.requestFit] is animated back to the
+ *   fit camera (1A v2 S3 FIT, 280 ms ease-out). [model] may be the whole tree
+ *   or one section's view ([TalentTreeSectionUiModel.model]) — the canvas is
+ *   the same either way.
  */
 @Composable
 fun TalentTreeCanvas(
@@ -101,35 +111,35 @@ fun TalentTreeCanvas(
 
     // B3 07: "otherwise the target is centred (300 ms ease-out)"; B3 08 reveal
     // requests pan the minimum amount needed. Both keep the scale and always
-    // produce a finite transform.
-    LaunchedEffect(viewportState.focusRequest) {
+    // produce a finite transform. Keyed on initialization too: a request made
+    // for a camera that is not laid out yet (a cross-section Show) runs as
+    // soon as the camera exists. A gesture stops the animation (1A v2 S4).
+    // derived: the canvas recomposes when the camera becomes available, never per pan frame
+    val viewportReady by remember(viewportState) { derivedStateOf { viewportState.viewport != null } }
+    LaunchedEffect(viewportState.focusRequest, viewportReady) {
         val request = viewportState.focusRequest ?: return@LaunchedEffect
         val current = viewportState.viewport ?: return@LaunchedEffect
+        // each request runs once, even if this canvas re-enters composition
+        if (!viewportState.consumeFocusRequest(request)) return@LaunchedEffect
         val target = when (request.mode) {
-            TalentTreeFocusMode.CENTRE -> current.focusedOn(request.world, request.visibleSize)
+            // 1A v2 04: the Show target is centred within the content bounds
+            TalentTreeFocusMode.CENTRE ->
+                viewportState.clampTarget(current.focusedOn(request.world, request.visibleSize))
             TalentTreeFocusMode.REVEAL -> current.panToReveal(request.world, request.visibleSize)
         }
         if (target == current) return@LaunchedEffect
-        val start = current.offset
-        val end = target.offset
-        val animation = Animatable(0f)
-        animation.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(
-                durationMillis = TalentInspectorMetrics.SHOW_PAN_MS,
-                easing = LinearOutSlowInEasing,
-            ),
-        ) {
-            viewportState.applyTransform(
-                TalentTreeViewport(
-                    scale = current.scale,
-                    offset = Offset(
-                        start.x + (end.x - start.x) * value,
-                        start.y + (end.y - start.y) * value,
-                    ),
-                ),
-            )
-        }
+        animateCamera(viewportState, current, target, TalentInspectorMetrics.SHOW_PAN_MS)
+    }
+
+    // 1A v2 S3 FIT: back to the fit camera in 280 ms; a gesture interrupts it
+    // (the camera then stays user-moved where the gesture left it).
+    LaunchedEffect(viewportState.fitRequest, viewportReady) {
+        val current = viewportState.viewport ?: return@LaunchedEffect
+        val fit = viewportState.fitViewport() ?: return@LaunchedEffect
+        if (!viewportState.consumeFitRequest()) return@LaunchedEffect
+        val finished = current.isCloseTo(fit) ||
+            animateCamera(viewportState, current, fit, TalentTreeCanvasMetrics.FIT_ANIMATION_MS)
+        if (finished) viewportState.completeFit(fit)
     }
 
     Box(
@@ -406,7 +416,9 @@ private suspend fun PointerInputScope.talentTreeGestures(
                             targetScale = viewport.scale * spanRatio,
                         )
                     }
-                    viewportState.applyTransform(next)
+                    // clamped to the content, marks the camera user-moved and
+                    // stops any running camera animation (1A v2 S3/S4)
+                    viewportState.applyUserTransform(next)
                 }
                 for (change in pressedChanges) {
                     if (change.positionChanged()) change.consume()
@@ -419,6 +431,42 @@ private suspend fun PointerInputScope.talentTreeGestures(
             previousSpan = span
         }
     }
+}
+
+/**
+ * Animates the camera from [from] to [to] (scale and offset together, ease-out
+ * over [durationMillis]). Returns `false` when a user gesture interrupted it —
+ * the animation then stops at once and leaves the camera where the gesture
+ * put it (1A v2 S4: "the gesture interrupts the animation").
+ */
+private suspend fun animateCamera(
+    viewportState: TalentTreeViewportState,
+    from: TalentTreeViewport,
+    to: TalentTreeViewport,
+    durationMillis: Int,
+): Boolean {
+    val epoch = viewportState.gestureEpoch
+    var interrupted = false
+    AnimationState(0f).animateTo(
+        targetValue = 1f,
+        animationSpec = tween(durationMillis = durationMillis, easing = LinearOutSlowInEasing),
+    ) {
+        if (viewportState.gestureEpoch != epoch) {
+            interrupted = true
+            cancelAnimation()
+            return@animateTo
+        }
+        viewportState.applyTransform(
+            TalentTreeViewport(
+                scale = from.scale + (to.scale - from.scale) * value,
+                offset = Offset(
+                    from.offset.x + (to.offset.x - from.offset.x) * value,
+                    from.offset.y + (to.offset.y - from.offset.y) * value,
+                ),
+            ),
+        )
+    }
+    return !interrupted
 }
 
 private fun centroidOf(changes: List<PointerInputChange>): Offset {
