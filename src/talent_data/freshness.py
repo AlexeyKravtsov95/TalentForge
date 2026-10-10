@@ -18,9 +18,9 @@ statuses:
 explicitly ``false``). It is a necessary condition for production data, never proof that
 a build is live - ``CURRENT`` does not mean "the realms run this build".
 
-The result is a stable, machine-readable JSON document (``product-freshness`` v1) for the
-future scheduled watcher (M5.DATA.WATCH); nothing here publishes data or changes the
-repository.
+The result is a stable, machine-readable JSON document (``product-freshness`` v1) read by
+the scheduled watcher (M5.DATA.WATCH, ``talent_data.watch``); nothing here publishes data
+or changes the repository.
 """
 
 from __future__ import annotations
