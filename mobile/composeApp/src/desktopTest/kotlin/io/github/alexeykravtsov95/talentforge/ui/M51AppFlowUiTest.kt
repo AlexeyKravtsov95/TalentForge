@@ -156,7 +156,7 @@ class M51AppFlowUiTest {
         composeRule.onNodeWithText("New build").assertExists()
         composeRule.onNodeWithText("Forever").assertExists()
         // the exact client build drafts are created on - no "latest" / "up to date" claim
-        composeRule.onNodeWithText("Talent data 1.60.1.70245").assertExists()
+        composeRule.onNodeWithText("Talent data 1.60.1.70338").assertExists()
         composeRule.onNodeWithText("Builds save to this device as you edit.").assertExists()
         for (name in listOf(
             "Warrior", "Paladin", "Hunter", "Rogue", "Priest", "Shaman", "Mage", "Warlock", "Druid",

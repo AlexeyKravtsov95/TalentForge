@@ -1,7 +1,6 @@
 package io.github.alexeykravtsov95.talentforge.ui
 
-import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
-import io.github.alexeykravtsov95.talentforge.ui.library.REFERENCE_BUNDLE
+import io.github.alexeykravtsov95.talentforge.ui.library.ALL_BUNDLES
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -18,13 +17,13 @@ class TooltipsDriftTest {
 
     @Test
     fun bundledTooltipsMirrorTheCanonicalDirectoryByteForByte() {
-        for (clientBuild in listOf(REFERENCE_BUNDLE.clientBuild, PRODUCT_BUNDLE.clientBuild)) {
+        for (clientBuild in ALL_BUNDLES.map { it.clientBuild }) {
             assertBuildMirrors(clientBuild)
         }
     }
 
     @Test
-    fun exactlyTheReferenceAndTheProductBuildAreBundled() {
+    fun exactlyTheThreeBundledBuildsAreBundled() {
         val repoRoot = findRepoRoot(File(System.getProperty("user.dir")).absoluteFile)
         val bundledRoot = repoRoot
             .resolve("mobile/composeApp/src/commonMain/composeResources/files/tooltips/forever")
@@ -32,7 +31,7 @@ class TooltipsDriftTest {
             .filter { !it.name.startsWith(".") }
             .map { it.name }
             .toSet()
-        assertEquals(setOf(REFERENCE_BUNDLE.clientBuild, PRODUCT_BUNDLE.clientBuild), bundledBuilds)
+        assertEquals(ALL_BUNDLES.map { it.clientBuild }.toSet(), bundledBuilds)
     }
 
     private fun assertBuildMirrors(clientBuild: String) {

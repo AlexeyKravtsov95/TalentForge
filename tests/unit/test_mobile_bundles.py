@@ -60,6 +60,12 @@ def test_the_reference_the_previous_and_the_current_product_build_are_bundled() 
     assert bundles.BUNDLED_BUILDS == (REFERENCE, PREVIOUS_PRODUCT, PRODUCT)
 
 
+def test_the_app_s_product_bundle_is_the_newest_bundled_build() -> None:
+    """PRODUCT_BUNDLE in BundledDatasets.kt is what the freshness check compares; it must
+    be bundled, and no bundled build may be newer than it."""
+    assert bundles.product_build() == PRODUCT == bundles.BUNDLED_BUILDS[-1]
+
+
 @pytest.mark.parametrize("kind", KINDS)
 def test_committed_bundle_matches_canonical_without_network(kind: str, no_network, capsys):
     resources = ROOT / "mobile/composeApp/src/commonMain/composeResources/files"

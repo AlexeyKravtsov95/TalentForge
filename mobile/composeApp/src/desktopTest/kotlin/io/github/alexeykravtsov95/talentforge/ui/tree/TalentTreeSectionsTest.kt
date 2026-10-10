@@ -13,6 +13,7 @@ import io.github.alexeykravtsov95.talentforge.data.talentdata.PrerequisiteKind
 import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
 import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentSection
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
+import io.github.alexeykravtsov95.talentforge.ui.library.ALL_BUNDLES
 import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.library.REFERENCE_BUNDLE
 import kotlin.math.abs
@@ -25,8 +26,9 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 
 /**
- * M5.UX.1 section projection against the REAL bundled datasets of BOTH client
- * builds (1.60.1.70009 reference, 1.60.1.70245 product), all nine classes:
+ * M5.UX.1 section projection against the REAL bundled datasets of EVERY bundled
+ * client build (1.60.1.70009 reference, 1.60.1.70245 previous product,
+ * 1.60.1.70338 product), all nine classes:
  * the tree splits into exactly its published sections, no node id is lost or
  * duplicated, no connector is invented or broken, bounds come from each
  * section's own nodes, the geometry is the original one, the per-section
@@ -58,14 +60,14 @@ class TalentTreeSectionsTest {
 
     /** Every bundled (build, class) document. */
     private fun everyDocument(): List<TalentDataDocument> =
-        listOf(REFERENCE_BUNDLE, PRODUCT_BUNDLE).flatMap { bundle -> classes.map { document(bundle, it) } }
+        ALL_BUNDLES.flatMap { bundle -> classes.map { document(bundle, it) } }
 
     // ------------------------------------------------------------------ partition
 
     @Test
     fun everyRealTreeSplitsIntoExactlyItsPublishedSections() {
         val documents = everyDocument()
-        assertEquals(18, documents.size, "nine classes on each of the two bundled builds")
+        assertEquals(27, documents.size, "nine classes on each of the three bundled builds")
         for (document in documents) {
             val tree = document.trees.single()
             val label = "${document.classInfo.token} ${document.clientBuild}"

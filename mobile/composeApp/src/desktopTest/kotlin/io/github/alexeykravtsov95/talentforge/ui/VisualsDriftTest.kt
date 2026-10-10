@@ -1,5 +1,7 @@
 package io.github.alexeykravtsov95.talentforge.ui
 
+import io.github.alexeykravtsov95.talentforge.ui.library.ALL_BUNDLES
+import io.github.alexeykravtsov95.talentforge.ui.library.PREVIOUS_PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.library.REFERENCE_BUNDLE
 import java.io.File
@@ -21,11 +23,12 @@ class VisualsDriftTest {
     fun bundledVisualsMirrorTheCanonicalTreeByteForByte() {
         // nine sidecars + icons.json + one PNG per distinct FileDataID of that build
         assertBuildMirrors(REFERENCE_BUNDLE.clientBuild, files = 368, icons = 358)
-        assertBuildMirrors(PRODUCT_BUNDLE.clientBuild, files = 367, icons = 357)
+        assertBuildMirrors(PREVIOUS_PRODUCT_BUNDLE.clientBuild, files = 367, icons = 357)
+        assertBuildMirrors(PRODUCT_BUNDLE.clientBuild, files = 368, icons = 358)
     }
 
     @Test
-    fun exactlyTheReferenceAndTheProductBuildAreBundled() {
+    fun exactlyTheThreeBundledBuildsAreBundled() {
         val repoRoot = findRepoRoot(File(System.getProperty("user.dir")).absoluteFile)
         val bundledRoot = repoRoot
             .resolve("mobile/composeApp/src/commonMain/composeResources/files/visuals/forever")
@@ -33,7 +36,7 @@ class VisualsDriftTest {
             .filter { !it.name.startsWith(".") }
             .map { it.name }
             .toSet()
-        assertEquals(setOf(REFERENCE_BUNDLE.clientBuild, PRODUCT_BUNDLE.clientBuild), bundledBuilds)
+        assertEquals(ALL_BUNDLES.map { it.clientBuild }.toSet(), bundledBuilds)
     }
 
     private fun assertBuildMirrors(clientBuild: String, files: Int, icons: Int) {
