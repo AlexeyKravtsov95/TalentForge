@@ -79,7 +79,8 @@ android {
 //     -Dtalentforge.m41.screenshots=<dir>` (M4.1), `-Dtalentforge.m42.screenshots`
 // (M4.2), `-Dtalentforge.m43.screenshots` (M4.3) or
 // `-Dtalentforge.m51.screenshots` (M5.1) or `-Dtalentforge.m5v1.screenshots`
-// (M5.V1, desktop-rendered) — skipped by default.
+// (M5.V1, desktop-rendered) or `-Dtalentforge.m5ux.screenshots` (M5.UX.1,
+// desktop-rendered section tabs) — skipped by default.
 tasks.named<Test>("desktopTest") {
     System.getProperty("talentforge.m41.screenshots")?.let {
         systemProperty("talentforge.m41.screenshots", it)
@@ -95,5 +96,8 @@ tasks.named<Test>("desktopTest") {
     }
     System.getProperty("talentforge.m5v1.screenshots")?.let {
         systemProperty("talentforge.m5v1.screenshots", it)
+    }
+    System.getProperty("talentforge.m5ux.screenshots")?.let {
+        systemProperty("talentforge.m5ux.screenshots", it)
     }
 }
