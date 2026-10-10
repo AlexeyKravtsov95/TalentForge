@@ -360,8 +360,10 @@ It prints one `product-freshness` v1 JSON document (`status`, `productBuild`,
 | `UNKNOWN` | 4 | not established: network / HTTP / schema failure, no publishable build, a newer build without `is_bgdl`, or a product build newer than anything publishable |
 
 A failed lookup is never read as "no update". The check only reads: it fetches no data
-into the repository and publishes, commits or merges nothing; the scheduled watcher that
-will run it is M5.DATA.WATCH. Since M5.DATA.2 a non-boolean `is_bgdl` on the wire
+into the repository and publishes, commits or merges nothing. Since M5.DATA.WATCH it runs
+daily in `.github/workflows/dataset-freshness.yml`, which reports through one tracked
+GitHub Issue and is the mandatory release preflight
+([`docs/dataset-freshness-watch.md`](dataset-freshness-watch.md)). Since M5.DATA.2 a non-boolean `is_bgdl` on the wire
 (`"false"`, `0`) is an unexpected schema, not a publishability answer (it used to be coerced
 by the lax pydantic `bool`). On 2026-10-10 it answered `OUTDATED` for 70245 and `CURRENT`
 for 70338.

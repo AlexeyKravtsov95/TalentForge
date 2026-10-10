@@ -1,0 +1,77 @@
+name: Dataset freshness
+
+# M5.DATA.WATCH: is the app's product dataset (PRODUCT_BUNDLE) still the latest
+# publishable Forever build? Reads only the wago.tools build index (no DB2 download) and
+# reports through ONE tracked GitHub Issue. It never changes datasets, PRODUCT_BUNDLE,
+# BUNDLED_BUILDS or saved builds, and never commits, opens PRs or merges.
+# Runbook: docs/dataset-freshness-watch.md
+on:
+  schedule:
+    - cron: "0 6 * * *" # daily, ~06:00 UTC (GitHub may delay scheduled runs)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+# One run at a time, queued not cancelled: two runs must never both create an issue.
+concurrency:
+  group: dataset-freshness
+  cancel-in-progress: false
+
+jobs:
+  freshness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: pip install -e .
+
+      # The check exits 0 CURRENT / 3 OUTDATED / 4 UNKNOWN (anything else is a failure of
+      # the check). Its code is recorded instead of failing this step, so the report is
+      # saved and the issue updated first; the last step restores the final status.
+      - name: Check product freshness
+        id: check
+        shell: bash
+        run: |
+          mkdir -p freshness
+          set +e
+          python scripts/check_product_freshness.py --output freshness/freshness.json \
+            > freshness/stdout.json 2> freshness/stderr.log
+          code=$?
+          set -e
+          cat freshness/stderr.log >&2
+          echo "$code" > freshness/exit-code.txt
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          echo "check_product_freshness.py exited with $code"
+
+      - name: Upload the freshness report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: freshness-report
+          path: freshness/
+          if-no-files-found: warn
+          retention-days: 30
+
+      # Exits 0 CURRENT / 3 OUTDATED / 4 UNKNOWN once the tracking issue is up to date,
+      # 1 for a watcher failure (bad exit code / JSON), 5 if the issue could not be updated.
+      - name: Update the tracking issue (final status)
+        if: always() && steps.check.outputs.exit_code != ''
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CHECK_EXIT_CODE: ${{ steps.check.outputs.exit_code }}
+        run: >-
+          python scripts/dataset_freshness_watch.py
+          --report freshness/freshness.json
+          --check-exit-code "$CHECK_EXIT_CODE"

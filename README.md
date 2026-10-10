@@ -148,7 +148,11 @@ pytest -m integration   # live wago.tools (also a manual GitHub Actions workflow
 ```
 
 CI (`.github/workflows/ci.yml`) runs exactly these four steps on every push/PR; a second
-manual workflow runs the live integration tests.
+manual workflow runs the live integration tests. A third, daily workflow
+(`dataset-freshness.yml`, M5.DATA.WATCH) checks whether a newer publishable Forever build
+exists and reports it in one tracked GitHub Issue; before a release run
+`python scripts/check_product_freshness.py` — see
+[docs/dataset-freshness-watch.md](docs/dataset-freshness-watch.md).
 
 ## Mobile
 
@@ -220,6 +224,7 @@ src/talent_data/
   cli/            argparse CLI (python -m talent_data)
   visuals/        M5.V1 talent icons: resolution, BLP2 -> PNG conversion, sidecar publishing
   tooltips/       M5.V2 talent descriptions: template grammar, build-pinned renderer, coverage
+  watch/          M5.DATA.WATCH freshness watcher: report reader, tracked-issue decision, GitHub Issues client
 data/normalized/  committed normalized documents + manifest per build (proof artifacts)
 data/visuals/     committed talent-visuals.v1 sidecars, talent-icons.v1 registry and PNG icons
 data/tooltips/    committed talent-tooltips.v1 sidecars (rendered descriptions per rank)
