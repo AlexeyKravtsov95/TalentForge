@@ -25,8 +25,16 @@ checked for new mechanics before it was published: its allocation inventory (§3
 70009's except Druid (one more node and two more Sufficient edges — no new node type, entry
 type, node flag, edge type, condition shape, currency or cost link), the engine reports only
 the known Venom condition as unsupported, and the engine invariants run on all nine 70245
-classes (`tests/unit/test_product_build.py`, `test_invariants.py`). The live-client
+classes (`tests/unit/test_build_70245.py`, `test_invariants.py`). The live-client
 observations of §15 are for 70009 only; nothing was observed on a 70245 client.
+
+**M5.DATA.2 product dataset 1.60.1.70338.** Same check, same result: no rule, evidence or
+confidence level changed, and nothing was observed on a 70338 client. The Warrior rework
+(3 nodes removed, 2 added, four prerequisite links moved, gates re-laid out) uses only
+mechanics of §3 — its inventory row differs from 70245 in counts only (§3 below); the engine
+reports only Venom as unsupported and the invariants run on all nine 70338 classes
+(`tests/unit/test_product_build.py`, `test_invariants.py`). EDGE-ACTIVE / EDGE-SUF remain
+hypotheses; the new and moved Sufficient edges are evaluated by the same, unchanged rules.
 
 Confidence scale used below:
 
@@ -143,6 +151,13 @@ identical except
 | Class | Tree | Nodes | Node.Type | Node.Flags | Entries/node | EntryType | MaxRanks | Edge.Type | Nodes w/ >1 prereq edge | Currency | Rank cost (tree) | Conds | Granted conds | Tree.Flags |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | DRUID | 1089 | 52 | 0x52 | 0x50, 8x2 | 1x52 | 1x52 | 1x13, 2x12, 3x12, 5x15 | 0x1, 2x10, 3x1 | 0 | 3820 (max 51) | 1x3820 curve 0 | 19 | 0 | 1 |
+
+1.60.1.70338 (M5.DATA.2, `--build 1.60.1.70338`): every row of 70245 and the
+condition-shape table are identical except
+
+| Class | Tree | Nodes | Node.Type | Node.Flags | Entries/node | EntryType | MaxRanks | Edge.Type | Nodes w/ >1 prereq edge | Currency | Rank cost (tree) | Conds | Granted conds | Tree.Flags |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| WARRIOR | 1117 | 52 | 0x52 | 0x47, 8x5 | 1x52 | 1x52 | 1x12, 2x12, 3x13, 5x15 | 2x8 | 0 | 3820 (max 51) | 1x3820 curve 0 | 18 | 0 | 1 |
 
 | TraitCond shape (non-zero functional fields) | Count |
 |---|---|
