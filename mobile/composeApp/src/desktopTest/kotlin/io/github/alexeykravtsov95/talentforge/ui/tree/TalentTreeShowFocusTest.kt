@@ -89,7 +89,7 @@ class TalentTreeShowFocusTest {
 
         assertEquals(1f, portrait.scale, 1e-4f)
         assertEquals(TalentTreeCanvasMetrics.INITIAL_SCALE_LANDSCAPE, landscape.scale, 1e-4f)
-        // UX/UI spec 13: tablet nodes are 56 dp (48 dp world) → ×56/48
+        // UX/UI spec 13: tablet nodes are 56 dp (52 dp world) → ×56/52
         assertEquals(
             TalentInspectorMetrics.TABLET_NODE_VISUAL_DP / TalentTreeCanvasMetrics.NODE_VISUAL_DP,
             tablet.scale,
@@ -98,7 +98,7 @@ class TalentTreeShowFocusTest {
         for (viewport in listOf(portrait, landscape, tablet)) {
             assertTrue(
                 viewport.scale in TalentTreeCanvasMetrics.ZOOM_MIN..TalentTreeCanvasMetrics.ZOOM_MAX,
-                "initial scale stays inside the B3 zoom bounds",
+                "initial scale stays inside the 1A v2 zoom bounds",
             )
             assertNotNull(viewport.offset)
         }
@@ -106,7 +106,8 @@ class TalentTreeShowFocusTest {
 
     @Test
     fun layoutClassesPickTheirSpecScreenTargetFloors() {
-        assertEquals(56f, minimumNodeTargetDp(TalentTreeLayoutClass.PORTRAIT))
+        // 1A v2 S1: max(48, size + 8) on phones; the UX/UI spec 13 tablet target stays
+        assertEquals(48f, minimumNodeTargetDp(TalentTreeLayoutClass.PORTRAIT))
         assertEquals(48f, minimumNodeTargetDp(TalentTreeLayoutClass.LANDSCAPE))
         assertEquals(68f, minimumNodeTargetDp(TalentTreeLayoutClass.TABLET))
     }

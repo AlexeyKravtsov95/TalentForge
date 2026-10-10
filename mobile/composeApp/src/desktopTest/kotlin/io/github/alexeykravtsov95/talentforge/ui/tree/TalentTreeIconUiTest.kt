@@ -114,6 +114,14 @@ class TalentTreeIconUiTest {
 
     // ------------------------------------------------------------------ icon-backed trees
 
+    /** The portrait screen's sections (M5.UX.1: one section per tab). */
+    private fun sectionsOf(state: TalentTreeUiState.Ready): TalentTreeSectionsResult.Sectioned =
+        buildTalentTreeSections(state.engine.tree, state.model) as TalentTreeSectionsResult.Sectioned
+
+    /** Node count of the section a portrait screen opens on. */
+    private fun firstSectionSize(state: TalentTreeUiState.Ready): Int =
+        sectionsOf(state).sections.first().model.nodes.size
+
     private fun assertEveryNodeIsIconBacked(classToken: String, expectedNodes: Int) {
         val state = readyStateOf(classToken)
         assertEquals(expectedNodes, state.model.nodes.size)
@@ -121,8 +129,16 @@ class TalentTreeIconUiTest {
 
         compose(state)
 
-        assertEquals(expectedNodes, count(TALENT_NODE_ICON_TAG), "$classToken icon-backed nodes")
-        assertEquals(0, count(TALENT_NODE_MONOGRAM_TAG), "$classToken monogram fallbacks")
+        // every tab renders exactly its own nodes with icons; together: the whole tree
+        var rendered = 0
+        for (section in sectionsOf(state).sections) {
+            composeRule.onNodeWithText(section.label).performClick()
+            composeRule.waitForIdle()
+            assertEquals(section.model.nodes.size, count(TALENT_NODE_ICON_TAG), "$classToken ${section.label}")
+            assertEquals(0, count(TALENT_NODE_MONOGRAM_TAG), "$classToken ${section.label} monogram fallbacks")
+            rendered += count(TALENT_NODE_ICON_TAG)
+        }
+        assertEquals(expectedNodes, rendered, "$classToken icon-backed nodes across all tabs")
     }
 
     @Test
@@ -176,15 +192,16 @@ class TalentTreeIconUiTest {
         assertEquals("3/3, maxed", stateDescriptionOf("Improved Rend"))
 
         assertEquals(listOf(1, 0, 3), changes.map { it.rankOf(rend) })
-        // the icon is still the node content in every state
-        assertEquals(53, count(TALENT_NODE_ICON_TAG))
+        // the icon is still the node content in every state (the open section's nodes)
+        assertEquals(firstSectionSize(state), count(TALENT_NODE_ICON_TAG))
     }
 
     // ------------------------------------------------------------------ overlays on icons
 
     @Test
     fun rankChipsLockStatesAndSelectionCoexistWithIcons() {
-        compose(readyStateOf("WARRIOR"))
+        val state = readyStateOf("WARRIOR")
+        compose(state)
 
         // rank chips are still real text on top of the icon nodes
         assertTrue(composeRule.onAllNodesWithText("0/3").fetchSemanticsNodes().isNotEmpty())
@@ -196,7 +213,7 @@ class TalentTreeIconUiTest {
         composeRule.onNodeWithContentDescription("Deep Wounds").assertIsSelected()
         // selection is independent of the locked state and of the icon
         assertEquals("0/3, locked by prerequisite", stateDescriptionOf("Deep Wounds"))
-        assertEquals(53, count(TALENT_NODE_ICON_TAG))
+        assertEquals(firstSectionSize(state), count(TALENT_NODE_ICON_TAG))
     }
 
     @Test
@@ -278,7 +295,7 @@ class TalentTreeIconUiTest {
 
         compose(state.copy(icons = withoutRend))
 
-        assertEquals(52, count(TALENT_NODE_ICON_TAG))
+        assertEquals(firstSectionSize(state) - 1, count(TALENT_NODE_ICON_TAG))
         assertEquals(1, count(TALENT_NODE_MONOGRAM_TAG))
         composeRule.onNodeWithText(rend.monogram).assertExists()
 
@@ -293,10 +310,13 @@ class TalentTreeIconUiTest {
 
     @Test
     fun withoutAnyVisualsTheWholeTreeRendersTheMonogramFallback() {
-        compose(readyStateOf("WARRIOR").copy(icons = TalentNodeIcons.None))
+        val state = readyStateOf("WARRIOR").copy(icons = TalentNodeIcons.None)
+        compose(state)
 
         assertEquals(0, count(TALENT_NODE_ICON_TAG))
-        assertEquals(53, count(TALENT_NODE_MONOGRAM_TAG))
+        assertEquals(firstSectionSize(state), count(TALENT_NODE_MONOGRAM_TAG))
+        // no icon → the tabs show their label only, never invented art
+        assertEquals(0, count(TALENT_SECTION_TAB_ICON_TAG))
         select("Improved Rend")
         composeRule.onNode(hasTextExactly("Improved Rend", "0/3", "Available")).assertExists()
     }

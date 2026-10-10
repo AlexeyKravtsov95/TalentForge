@@ -12,8 +12,8 @@ import kotlin.test.assertTrue
 
 /**
  * Pure transform tests of the canvas viewport: round-trip stability, zoom
- * clamping and focal-point behaviour (B3 07: pinch zoom 0.8–2.2× around the
- * fingers), initial-viewport determinism and finiteness guarantees.
+ * clamping and focal-point behaviour (1A v2 S3: pinch zoom 0.62–1.6× around
+ * the fingers), initial-viewport determinism and finiteness guarantees.
  */
 class TalentTreeViewportTest {
 
@@ -46,7 +46,7 @@ class TalentTreeViewportTest {
     }
 
     @Test
-    fun zoomIsClampedToTheB3Bounds() {
+    fun zoomIsClampedToTheDirectionBounds() {
         val base = TalentTreeViewport(1f, Offset(50f, 60f))
         val focal = Offset(120f, 140f)
 
@@ -156,10 +156,11 @@ class TalentTreeViewportTest {
 /**
  * Screen-space hit-testing of the node touch targets.
  *
- * B3 freezes usable screen targets (56 dp portrait, 48 dp landscape). The
- * world-space 56 dp target may grow with zoom-in, but zooming out must never
- * shrink the physically tappable area below the orientation minimum — visual
- * node size and interaction target are deliberately separate concerns.
+ * M5.UX.1 (1A v2 S1): `hit = min(pitch − 2, max(48, size + 8))` with
+ * `size = 52·s` and `pitch = 80·s` on screen. The target is the node plus
+ * 4 dp, never below the 48 dp floor while zoomed out — and never closer than
+ * 2 dp to the next grid position, so two neighbouring talents never share a
+ * touch point. Visual node size and interaction target stay separate concerns.
  */
 class TalentTreeHitTestTest {
 
@@ -168,15 +169,16 @@ class TalentTreeHitTestTest {
             id = 1, name = "Left", monogram = "LE", maxRank = 3, sectionIndex = 0,
             centerX = 100f, centerY = 100f,
         )
+        // one grid pitch (80 dp world) apart, like two neighbouring columns
         val right = TalentTreeNodeUiModel(
             id = 2, name = "Right", monogram = "RI", maxRank = 3, sectionIndex = 0,
-            centerX = 176f, centerY = 100f,
+            centerX = 180f, centerY = 100f,
         )
         return TalentTreeUiModel(
             treeId = 1,
             nodes = listOf(left, right),
             edges = emptyList(),
-            bounds = TalentTreeBounds(76f, 76f, 200f, 124f),
+            bounds = TalentTreeBounds(74f, 74f, 206f, 126f),
         )
     }
 
@@ -196,60 +198,76 @@ class TalentTreeHitTestTest {
     }
 
     @Test
-    fun portraitAtIdentityScaleKeepsThe56dpTarget() {
+    fun identityScaleTargetIsTheNodePlusFourDpPerSide() {
         val model = twoNodeModel()
         val viewport = TalentTreeViewport(1f, Offset.Zero)
 
-        assertEquals(1, hit(model, viewport, 56f, dxFromNodeScreenCentre = 27.9f))
-        assertEquals(1, hit(model, viewport, 56f, dxFromNodeScreenCentre = -27.9f))
-        assertEquals(1, hit(model, viewport, 56f, dyFromNodeScreenCentre = 27.9f))
-        assertNull(hit(model, viewport, 56f, dxFromNodeScreenCentre = 28.1f), "outside the target")
+        // 52 dp node + 8 = 60 dp (below the 78 dp pitch cap, above the 48 dp floor)
+        assertEquals(60f, effectiveNodeTargetDp(viewport, 48f), 1e-3f)
+        assertEquals(1, hit(model, viewport, 48f, dxFromNodeScreenCentre = 29.9f))
+        assertEquals(1, hit(model, viewport, 48f, dxFromNodeScreenCentre = -29.9f))
+        assertEquals(1, hit(model, viewport, 48f, dyFromNodeScreenCentre = 29.9f))
+        assertNull(hit(model, viewport, 48f, dxFromNodeScreenCentre = 30.1f), "outside the target")
     }
 
     @Test
-    fun portraitZoomedOutKeepsAtLeast56dpOnScreen() {
+    fun minimumZoomCapsTheTargetBelowThePitchSoNeighboursNeverOverlap() {
         val model = twoNodeModel()
-        val viewport = TalentTreeViewport(0.8f, Offset(-40f, 20f))
+        val viewport = TalentTreeViewport(TalentTreeCanvasMetrics.ZOOM_MIN, Offset(-40f, 20f))
 
-        // 56 dp world * 0.8 = 44.8 dp screen — the floor must restore 56 dp
-        assertEquals(
-            56f,
-            effectiveNodeTargetDp(viewport, TalentTreeCanvasMetrics.NODE_TARGET_MIN_PORTRAIT_DP),
-            1e-3f,
-        )
-
-        // 27.5 dp from the node's screen centre: inside a 56 dp screen target,
-        // far outside the shrunken 44.8 dp one
-        assertEquals(1, hit(model, viewport, 56f, dxFromNodeScreenCentre = 27.5f))
-        assertEquals(1, hit(model, viewport, 56f, dyFromNodeScreenCentre = 27.5f))
-        assertNull(hit(model, viewport, 56f, dxFromNodeScreenCentre = 28.5f), "still bounded")
+        // 0.62×: node 32.2 dp, pitch 49.6 dp → min(47.6, max(48, 40.2)) = 47.6 dp
+        assertEquals(47.6f, effectiveNodeTargetDp(viewport, TalentTreeCanvasMetrics.NODE_TARGET_MIN_DP), 1e-3f)
+        assertEquals(1, hit(model, viewport, 48f, dxFromNodeScreenCentre = 23.7f))
+        assertEquals(1, hit(model, viewport, 48f, dyFromNodeScreenCentre = 23.7f))
+        assertNull(hit(model, viewport, 48f, dyFromNodeScreenCentre = 23.9f), "still bounded")
+        // the point between the two neighbours belongs to neither
+        val between = viewport.worldToScreen(Offset(140f, 100f))
+        assertNull(model.nodeAtScreen(between, viewport, 48f))
     }
 
     @Test
-    fun landscapeInitialScaleKeepsAtLeast48dpOnScreen() {
+    fun landscapeInitialScaleKeepsThe48dpFloor() {
         val model = twoNodeModel()
-        val landscapeInitial = TalentTreeCanvasMetrics.INITIAL_SCALE_LANDSCAPE
-        val viewport = TalentTreeViewport(landscapeInitial, Offset(10f, -5f))
-        val minimum = TalentTreeCanvasMetrics.NODE_TARGET_MIN_LANDSCAPE_DP
+        val viewport = TalentTreeViewport(TalentTreeCanvasMetrics.INITIAL_SCALE_LANDSCAPE, Offset(10f, -5f))
+        val minimum = minimumNodeTargetDp(TalentTreeLayoutClass.LANDSCAPE)
 
-        // 56 dp world * 62/76 ≈ 45.7 dp screen — below the 48 dp landscape floor
-        assertEquals(minimum, effectiveNodeTargetDp(viewport, minimum), 1e-3f)
-
+        // 0.75×: node 39 dp + 8 = 47 dp, below the 48 dp floor → 48 dp
+        assertEquals(48f, effectiveNodeTargetDp(viewport, minimum), 1e-3f)
         assertEquals(1, hit(model, viewport, minimum, dxFromNodeScreenCentre = 23.5f))
         assertEquals(1, hit(model, viewport, minimum, dyFromNodeScreenCentre = 23.5f))
         assertNull(hit(model, viewport, minimum, dxFromNodeScreenCentre = 24.5f), "still bounded")
     }
 
     @Test
-    fun zoomInGrowsTheScreenTargetBeyondTheMinimum() {
+    fun zoomInGrowsTheScreenTargetWithTheNode() {
         val model = twoNodeModel()
-        val viewport = TalentTreeViewport(2f, Offset.Zero)
+        val viewport = TalentTreeViewport(TalentTreeCanvasMetrics.ZOOM_MAX, Offset.Zero)
 
-        // 56 dp world * 2 = 112 dp screen
-        assertEquals(112f, effectiveNodeTargetDp(viewport, 56f), 1e-3f)
+        // 1.6×: node 83.2 dp + 8 = 91.2 dp (pitch cap 126 dp)
+        assertEquals(91.2f, effectiveNodeTargetDp(viewport, 48f), 1e-3f)
+        assertEquals(1, hit(model, viewport, 48f, dxFromNodeScreenCentre = 45f), "grown target")
+        assertNull(hit(model, viewport, 48f, dxFromNodeScreenCentre = 46f), "still bounded")
+    }
 
-        assertEquals(1, hit(model, viewport, 56f, dxFromNodeScreenCentre = 55f), "grown target")
-        assertNull(hit(model, viewport, 56f, dxFromNodeScreenCentre = 57f), "still bounded")
+    @Test
+    fun gridNeighbourTargetsNeverOverlapAtAnyZoom() {
+        var scale = TalentTreeCanvasMetrics.ZOOM_MIN
+        while (scale <= TalentTreeCanvasMetrics.ZOOM_MAX + 1e-6f) {
+            val viewport = TalentTreeViewport(scale, Offset.Zero)
+            val pitch = TalentTreeCanvasMetrics.GRID_STEP_DP * scale
+            for (layoutClass in TalentTreeLayoutClass.entries) {
+                val target = effectiveNodeTargetDp(viewport, minimumNodeTargetDp(layoutClass))
+                assertTrue(
+                    pitch - target >= TalentTreeCanvasMetrics.NODE_TARGET_PITCH_GAP_DP - 1e-3f,
+                    "targets one pitch apart overlap at ${scale}× ($layoutClass): target $target, pitch $pitch",
+                )
+                assertTrue(
+                    target >= TalentTreeCanvasMetrics.NODE_VISUAL_DP * scale,
+                    "the target always covers the whole node at ${scale}× ($layoutClass)",
+                )
+            }
+            scale += 0.01f
+        }
     }
 
     @Test
@@ -257,11 +275,11 @@ class TalentTreeHitTestTest {
         val model = twoNodeModel()
         val viewport = TalentTreeViewport(1f, Offset.Zero)
 
-        assertNull(model.nodeAtScreen(Offset(0f, 0f), viewport, 56f))
-        assertNull(model.nodeAtScreen(Offset(1_000f, 1_000f), viewport, 56f))
-        // between the two columns: 38 dp from each centre at a 28 dp half-target
-        val midpoint = viewport.worldToScreen(Offset(138f, 100f))
-        assertNull(model.nodeAtScreen(midpoint, viewport, 56f))
+        assertNull(model.nodeAtScreen(Offset(0f, 0f), viewport, 48f))
+        assertNull(model.nodeAtScreen(Offset(1_000f, 1_000f), viewport, 48f))
+        // between the two columns: 40 dp from each centre at a 30 dp half-target
+        val midpoint = viewport.worldToScreen(Offset(140f, 100f))
+        assertNull(model.nodeAtScreen(midpoint, viewport, 48f))
     }
 
     @Test
@@ -314,10 +332,10 @@ class TalentTreeHitTestTest {
         val identity = TalentTreeViewport(1f, Offset.Zero)
         val panned = TalentTreeViewport(1f, Offset(123.5f, -321f))
 
-        for (dx in listOf(-27.5f, -10f, 0f, 10f, 27.5f)) {
+        for (dx in listOf(-29.5f, -10f, 0f, 10f, 29.5f)) {
             assertEquals(
-                hit(model, identity, 56f, dxFromNodeScreenCentre = dx),
-                hit(model, panned, 56f, dxFromNodeScreenCentre = dx),
+                hit(model, identity, 48f, dxFromNodeScreenCentre = dx),
+                hit(model, panned, 48f, dxFromNodeScreenCentre = dx),
                 "pan must not alter relative hit testing (dx=$dx)",
             )
         }

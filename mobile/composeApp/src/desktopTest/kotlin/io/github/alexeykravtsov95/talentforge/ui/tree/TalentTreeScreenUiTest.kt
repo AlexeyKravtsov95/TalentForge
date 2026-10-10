@@ -33,7 +33,9 @@ import org.junit.Rule
 /**
  * Screen-level contract tests: the explicit Loading/Ready/Failed states, and
  * the frozen read-only semantic contract — a node click selects, never spends,
- * and an empty-canvas click clears the selection.
+ * and an empty-canvas click clears the selection. Since M5.UX.1 the portrait
+ * screen shows one section (tab) at a time; "every node" means every node of
+ * the open section here, and the section tests prove the union covers the tree.
  */
 class TalentTreeScreenUiTest {
 
@@ -45,6 +47,12 @@ class TalentTreeScreenUiTest {
     @BeforeTest
     fun loadRealWarriorState() {
         readyState = runBlocking { loadBaselineWarriorTreeState() } as TalentTreeUiState.Ready
+    }
+
+    /** The first section — the tab a portrait screen opens on. */
+    private fun firstSection(): TalentTreeSectionUiModel {
+        val sections = buildTalentTreeSections(readyState.engine.tree, readyState.model)
+        return (sections as TalentTreeSectionsResult.Sectioned).sections.first()
     }
 
     private fun compose(state: TalentTreeUiState) {
@@ -84,13 +92,17 @@ class TalentTreeScreenUiTest {
     }
 
     @Test
-    fun readyStateShowsTheRealClassGameContextAndEveryNode() {
+    fun readyStateShowsTheRealClassGameContextAndEveryNodeOfTheOpenSection() {
         compose(readyState)
 
         composeRule.onNodeWithText("Warrior · Forever").assertExists()
-        // every tree node + the three M4.3 header controls (undo, redo, ⋯)
+        // every node of the open section + the three M4.3 header controls (undo, redo, ⋯)
         composeRule.onAllNodes(anyContentDescription())
-            .assertCountEquals(readyState.model.nodes.size + 3)
+            .assertCountEquals(firstSection().model.nodes.size + 3)
+        // the data-driven section tabs (the dataset names no section)
+        for (label in listOf("Tree 1", "Tree 2", "Tree 3")) {
+            composeRule.onNodeWithText(label).assertExists()
+        }
     }
 
     @Test
@@ -115,7 +127,10 @@ class TalentTreeScreenUiTest {
                 TalentNodeState.PREREQUISITE_LOCKED,
                 TalentNodeState.UNAVAILABLE,
             )
-            presentation.nodes.values.count { it.rankText == "0/3" && it.state !in hiddenByGlyph }
+            val shownIds = firstSection().model.nodes.map { it.id }.toSet()
+            presentation.nodes.values.count {
+                it.nodeId in shownIds && it.rankText == "0/3" && it.state !in hiddenByGlyph
+            }
         }
         composeRule.onAllNodes(hasTextExactly("0/3")).assertCountEquals(shownChips)
         composeRule.onAllNodes(hasText("+", substring = true)).assertCountEquals(0)
@@ -145,7 +160,7 @@ class TalentTreeScreenUiTest {
     @Test
     fun selectionDoesNotChangeAnyNodeIdentity() {
         compose(readyState)
-        val names = readyState.model.nodes.mapNotNull { it.name }
+        val names = firstSection().model.nodes.mapNotNull { it.name }
 
         composeRule.onNodeWithContentDescription("Improved Rend").performClick()
         composeRule.waitForIdle()

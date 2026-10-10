@@ -191,9 +191,11 @@ class TalentTreeCanvasInteractionTest {
         val start = screenPxOf(node.centerX, node.centerY)
         val initialOffset = assertNotNull(viewportState.viewport).offset
 
-        // > 7 dp movement from a finger that started on a node: tap cancels, canvas pans
+        // > 7 dp movement from a finger that started on a node: tap cancels,
+        // canvas pans (leftwards: the tree's left edge already sits at the
+        // margin, and the M5.UX.1 camera clamp keeps it within its 12 dp field)
         composeRule.onRoot().performTouchInput {
-            swipe(start, start + Offset(120f, 0f), durationMillis = 400)
+            swipe(start, start + Offset(-120f, 0f), durationMillis = 400)
         }
         composeRule.waitForIdle()
 
@@ -208,7 +210,7 @@ class TalentTreeCanvasInteractionTest {
     }
 
     @Test
-    fun pinchZoomsAroundTheFingersAndClampsToB3Bounds() {
+    fun pinchZoomsAroundTheFingersAndClampsToTheZoomBounds() {
         viewportState = TalentTreeViewportState(initial = null)
         selectedNodeId = null
         composeCanvas()
@@ -229,7 +231,7 @@ class TalentTreeCanvasInteractionTest {
         composeRule.waitForIdle()
 
         val viewport = assertNotNull(viewportState.viewport)
-        assertEquals(TalentTreeCanvasMetrics.ZOOM_MAX, viewport.scale, 1e-2f, "zoom clamps at 2.2×")
+        assertEquals(TalentTreeCanvasMetrics.ZOOM_MAX, viewport.scale, 1e-2f, "zoom clamps at 1.6×")
         assertTrue(
             viewport.scale.isFinite() && viewport.offset.x.isFinite() && viewport.offset.y.isFinite(),
             "pinch must leave finite transform state",
@@ -257,12 +259,12 @@ class TalentTreeCanvasInteractionTest {
     }
 
     @Test
-    fun zoomedOutPortraitStillSelectsThroughTheFull56dpScreenTarget() {
+    fun zoomedOutPortraitSelectsThroughThePitchCappedScreenTarget() {
         viewportState = TalentTreeViewportState(initial = null)
         selectedNodeId = null
         composeCanvas()
 
-        // pinch inward past the floor: ratio 1/3 clamps to the 0.8 minimum
+        // pinch inward past the floor: ratio 1/3 clamps to the 0.62 minimum
         // (all positions stay inside the canvas)
         composeRule.onRoot().performTouchInput {
             val centre = Offset(
@@ -282,17 +284,22 @@ class TalentTreeCanvasInteractionTest {
             TalentTreeCanvasMetrics.ZOOM_MIN,
             assertNotNull(viewportState.viewport).scale,
             1e-3f,
-            "pinch must reach the 0.8 floor",
+            "pinch must reach the 0.62 floor",
         )
 
-        // 27.5 dp from the node's screen centre: inside the 56 dp screen floor,
-        // outside the shrunken 44.8 dp world-scaled target (density 1: px == dp)
+        // 1A v2 S1 at 0.62×: target min(pitch 49.6 − 2, max(48, 32.2 + 8)) =
+        // 47.6 dp — 23 dp from the node's screen centre is inside it, far
+        // outside the 32 dp node visual (density 1: px == dp) …
         val node = nodeById("Improved Rend")
         val centre = screenPxOf(node.centerX, node.centerY)
-        composeRule.onRoot().performTouchInput { click(centre + Offset(27.5f, 0f)) }
+        composeRule.onRoot().performTouchInput { click(centre + Offset(0f, 23f)) }
         composeRule.waitForIdle()
+        assertEquals(node.id, selectedNodeId, "the 47.6 dp screen target survives zooming out")
 
-        assertEquals(node.id, selectedNodeId, "56 dp screen target must survive zooming out")
+        // … and 24.5 dp is outside: the targets stop 2 dp short of the next grid position
+        composeRule.onRoot().performTouchInput { click(centre + Offset(0f, 24.5f)) }
+        composeRule.waitForIdle()
+        assertNull(selectedNodeId, "beyond the capped target the canvas is empty")
     }
 
     @Test
@@ -312,7 +319,7 @@ class TalentTreeCanvasInteractionTest {
         assertTrue(viewportState.isLandscape, "canvas wider than tall reports landscape")
 
         // 23.5 dp from the node's screen centre: inside the 48 dp landscape
-        // floor, outside the ~45.7 dp world-scaled target (density 1: px == dp)
+        // floor, outside the 47 dp node + 8 target (density 1: px == dp)
         val node = nodeById("Improved Rend")
         val centre = screenPxOf(node.centerX, node.centerY)
         composeRule.onRoot().performTouchInput { click(centre + Offset(23.5f, 0f)) }

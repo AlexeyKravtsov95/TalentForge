@@ -91,8 +91,8 @@ object TalentInspectorMetrics {
     /**
      * B3 07 (prerequisite navigation): "The canvas stays still if the target
      * is fully visible above the inspector; otherwise the target is centred."
-     * Implementation-safe clearance kept around the focused node: the 48 dp
-     * node half plus the selection-ring outset (3 + 2.5 dp) and touch slop.
+     * Implementation-safe clearance kept around the focused node: the node
+     * half plus the selection-ring outset (3 + 2.5 dp) and touch slop.
      */
     val FOCUS_CLEARANCE_DP: Float =
         TalentTreeCanvasMetrics.NODE_VISUAL_DP / 2f +
@@ -123,8 +123,8 @@ object TalentInspectorMetrics {
 
     /**
      * Initial canvas scale of the tablet layout, derived from the UX/UI spec
-     * 13 node size (56 dp on screen / 48 dp world node ≈ 1.167) — inside the
-     * B3 0.8–2.2 zoom bounds.
+     * 13 node size (56 dp on screen / 52 dp world node ≈ 1.077) — inside the
+     * 1A v2 S3 0.62–1.6 zoom bounds and below its 1.1 tablet cap.
      */
     val INITIAL_SCALE_TABLET: Float = TABLET_NODE_VISUAL_DP / TalentTreeCanvasMetrics.NODE_VISUAL_DP
 }

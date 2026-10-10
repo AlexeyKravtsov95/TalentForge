@@ -43,10 +43,10 @@ data class TalentTreeViewport(
     }
 
     /**
-     * Zooms so that [targetScale] (clamped to the B3 0.8–2.2 bounds) is applied
-     * around [focal] (screen dp): the world point under the focal point stays
-     * under it. Non-finite targets are ignored, so a degenerate pinch span can
-     * never poison the transform.
+     * Zooms so that [targetScale] (clamped to the 1A v2 S3 0.62–1.6 bounds) is
+     * applied around [focal] (screen dp): the world point under the focal
+     * point stays under it. Non-finite targets are ignored, so a degenerate
+     * pinch span can never poison the transform.
      */
     fun zoomAt(focal: Offset, targetScale: Float): TalentTreeViewport {
         if (!targetScale.isFinite()) return this
@@ -101,6 +101,165 @@ data class TalentTreeViewport(
             }
             return TalentTreeViewport(scale, Offset(offsetX, offsetY))
         }
+
+        /**
+         * M5.UX.1 (1A v2 S3 "first open"): the camera of ONE section
+         * when it is first opened — `s = clamp(Wvis / 354, 0.62, cap)` with
+         * the layout-class cap (phone 1.0, landscape 0.75, tablet 1.1), so a
+         * standard four-column section (3 pitches + one node = 292 dp at
+         * s = 1, plus 31 dp each side) fills the visible width without
+         * shrinking nodes below the S1 sizes.
+         *
+         * The section is horizontally centred when it fits the width (with
+         * the [TalentTreeCanvasMetrics.CAMERA_FIELD_DP] field), otherwise
+         * start-aligned at the screen margin; it is always top-aligned at
+         * the margin, so a tall section scrolls down to its lower tiers
+         * instead of shrinking. Start-alignment is what keeps the real
+         * section visible when the dataset places a node far outside the
+         * grid (the documented OFF_GRID_NODE duplicates of Hunter/Priest):
+         * those nodes stay reachable by pan, never hidden, never moved.
+         *
+         * Deterministic and finite for any non-degenerate canvas; a canvas
+         * without area falls back to scale 1 at the margin.
+         */
+        fun sectionFitFor(
+            bounds: TalentTreeBounds,
+            canvasSize: Size,
+            layoutClass: TalentTreeLayoutClass,
+        ): TalentTreeViewport {
+            val margin = TalentTreeCanvasMetrics.CANVAS_START_MARGIN_DP
+            val width = canvasSize.width
+            if (!width.isFinite() || width <= 0f) {
+                return TalentTreeViewport(1f, Offset(margin - bounds.minX, margin - bounds.minY))
+            }
+            val cap = sectionFitCap(layoutClass)
+            val scale = (width / TalentTreeCanvasMetrics.SECTION_FIT_REFERENCE_WIDTH_DP)
+                .coerceIn(TalentTreeCanvasMetrics.ZOOM_MIN, cap)
+            val field = TalentTreeCanvasMetrics.CAMERA_FIELD_DP
+            val contentWidth = bounds.width * scale
+            val offsetX = if (contentWidth + 2f * field <= width) {
+                (width - contentWidth) / 2f - bounds.minX * scale
+            } else {
+                margin - bounds.minX * scale
+            }
+            val offsetY = margin - bounds.minY * scale
+            return TalentTreeViewport(scale, Offset(offsetX, offsetY))
+        }
+
+        /** 1A v2 S3: "cap: phone 1.0, landscape 0.75, tablet 1.1". */
+        fun sectionFitCap(layoutClass: TalentTreeLayoutClass): Float = when (layoutClass) {
+            TalentTreeLayoutClass.PORTRAIT -> TalentTreeCanvasMetrics.INITIAL_SCALE_PORTRAIT
+            TalentTreeLayoutClass.LANDSCAPE -> TalentTreeCanvasMetrics.INITIAL_SCALE_LANDSCAPE
+            TalentTreeLayoutClass.TABLET -> TABLET_SECTION_FIT_CAP
+        }
+
+        /** 1A v2 S3: the tablet scale cap. */
+        const val TABLET_SECTION_FIT_CAP: Float = 1.1f
+    }
+
+    /**
+     * True when [other] is the same camera within
+     * [TalentTreeCanvasMetrics.CAMERA_EPSILON_DP] — used to hide FIT when the
+     * camera already is the fit (1A v2 S3).
+     */
+    fun isCloseTo(other: TalentTreeViewport): Boolean {
+        val epsilon = TalentTreeCanvasMetrics.CAMERA_EPSILON_DP
+        return abs(scale - other.scale) <= epsilon / 500f &&
+            abs(offset.x - other.offset.x) <= epsilon &&
+            abs(offset.y - other.offset.y) <= epsilon
+    }
+
+    /**
+     * 1A v2 S3 bounds: the camera may not move [content] (world-dp bounds)
+     * further than [TalentTreeCanvasMetrics.CAMERA_FIELD_DP] into the
+     * visible area — the user can never lose the tree in empty canvas.
+     *
+     * Per axis: content that fits the visible extent (plus the field on both
+     * sides) stays fully inside it, keeping the field; larger content may not
+     * open a gap wider than the field at either edge. The vertical extent
+     * excludes [coveredBottomDp] (the region an overlaid inspector covers),
+     * so a bottom node can always be pulled above the inspector.
+     *
+     * [reference] (the camera before this change) relaxes every bound to
+     * where the reference already sat: a camera that is outside the bounds
+     * (after the visible extent changed, or the initial margin) is never
+     * pulled in with a jump and never pushed further out — it can only move
+     * back towards them. Works across scale changes because the comparison is
+     * made on screen-space edge gaps, not offsets.
+     *
+     * Only the offset changes; the scale is never touched and the result is
+     * always finite. Degenerate canvases return `this`.
+     */
+    fun clampedTo(
+        content: TalentTreeBounds,
+        canvasSize: Size,
+        coveredBottomDp: Float = 0f,
+        reference: TalentTreeViewport? = null,
+    ): TalentTreeViewport {
+        val covered = if (coveredBottomDp.isFinite()) coveredBottomDp.coerceAtLeast(0f) else 0f
+        val extentX = canvasSize.width
+        val extentY = canvasSize.height - covered
+        if (!extentX.isFinite() || !extentY.isFinite() || extentX <= 0f || extentY <= 0f) return this
+        val x = clampAxis(
+            offset = offset.x,
+            min = content.minX,
+            max = content.maxX,
+            extent = extentX,
+            referenceScale = reference?.scale,
+            referenceOffset = reference?.offset?.x,
+        )
+        val y = clampAxis(
+            offset = offset.y,
+            min = content.minY,
+            max = content.maxY,
+            extent = extentY,
+            referenceScale = reference?.scale,
+            referenceOffset = reference?.offset?.y,
+        )
+        if (x == offset.x && y == offset.y) return this
+        return TalentTreeViewport(scale, Offset(x, y))
+    }
+
+    private fun clampAxis(
+        offset: Float,
+        min: Float,
+        max: Float,
+        extent: Float,
+        referenceScale: Float?,
+        referenceOffset: Float?,
+    ): Float {
+        val field = TalentTreeCanvasMetrics.CAMERA_FIELD_DP
+        // screen-space gaps of the reference camera (leading = content start
+        // to the visible start, trailing = content end to the visible end)
+        val referenceLead = if (referenceScale != null && referenceOffset != null) {
+            min * referenceScale + referenceOffset
+        } else {
+            null
+        }
+        val referenceTrail = if (referenceScale != null && referenceOffset != null) {
+            extent - (max * referenceScale + referenceOffset)
+        } else {
+            null
+        }
+        val size = (max - min) * scale
+        val low: Float
+        val high: Float
+        if (size + 2f * field <= extent) {
+            // fits: both gaps at least the field (or as small as they already were)
+            val leadMin = minOf(field, referenceLead ?: field)
+            val trailMin = minOf(field, referenceTrail ?: field)
+            low = leadMin - min * scale
+            high = extent - trailMin - max * scale
+        } else {
+            // larger: neither gap wider than the field (or than it already was)
+            val leadMax = maxOf(field, referenceLead ?: field)
+            val trailMax = maxOf(field, referenceTrail ?: field)
+            low = extent - trailMax - max * scale
+            high = leadMax - min * scale
+        }
+        if (!low.isFinite() || !high.isFinite()) return offset
+        if (low > high) return (low + high) / 2f
+        return offset.coerceIn(low, high)
     }
 
     /**
@@ -175,22 +334,36 @@ data class TalentTreeViewport(
 }
 
 /**
- * Effective touch-target side in **screen dp** for [viewport], never smaller
- * than the orientation's B3 minimum ([minimumTargetDp]).
+ * Effective touch-target side in **screen dp** for [viewport] — 1A v2 S1:
+ * `hit = min(pitch − 2, max(48, size + 8))` with `size = 52·s` and
+ * `pitch = 80·s` on screen, where 48 is the layout's floor
+ * ([minimumTargetDp]).
  *
- * Hit testing happens in screen space: the world-space 56 dp target scales
- * with zoom-in (it may grow), but zooming out must not shrink the physically
- * tappable area below the applicable minimum (56 dp portrait / 48 dp
- * landscape, B3 05–06; 68 dp tablet, UX/UI spec 13). Node *visuals* are
- * untouched by this — only the interaction target is guaranteed.
+ * The node's own visual plus 4 dp on every side, never below the floor so
+ * zooming out keeps a usable target — but never closer than 2 dp to the next
+ * grid position, so the targets of two neighbouring talents can never
+ * overlap at any zoom (the cap wins over the floor; at the 0.62 minimum zoom
+ * the pitch is 49.6 dp and the target 47.6 dp). Node *visuals* are untouched
+ * by this — only the interaction target is defined here.
  */
-fun effectiveNodeTargetDp(viewport: TalentTreeViewport, minimumTargetDp: Float): Float =
-    maxOf(TalentTreeCanvasMetrics.NODE_TARGET_DP * viewport.scale, minimumTargetDp)
+fun effectiveNodeTargetDp(viewport: TalentTreeViewport, minimumTargetDp: Float): Float {
+    val size = TalentTreeCanvasMetrics.NODE_VISUAL_DP * viewport.scale
+    val pitch = TalentTreeCanvasMetrics.GRID_STEP_DP * viewport.scale
+    return minOf(
+        pitch - TalentTreeCanvasMetrics.NODE_TARGET_PITCH_GAP_DP,
+        maxOf(minimumTargetDp, size + TalentTreeCanvasMetrics.NODE_TARGET_PADDING_DP),
+    )
+}
 
-/** Screen-space floor of the usable touch target for the layout class. */
+/**
+ * Screen-space floor of the usable touch target for the layout class: the
+ * 1A v2 S1 48 dp on phones (portrait and landscape); the UX/UI spec 13 68 dp
+ * tablet target is kept unchanged (M5.UX.2 owns the tablet redesign).
+ */
 fun minimumNodeTargetDp(layoutClass: TalentTreeLayoutClass): Float = when (layoutClass) {
-    TalentTreeLayoutClass.PORTRAIT -> TalentTreeCanvasMetrics.NODE_TARGET_MIN_PORTRAIT_DP
-    TalentTreeLayoutClass.LANDSCAPE -> TalentTreeCanvasMetrics.NODE_TARGET_MIN_LANDSCAPE_DP
+    TalentTreeLayoutClass.PORTRAIT,
+    TalentTreeLayoutClass.LANDSCAPE,
+    -> TalentTreeCanvasMetrics.NODE_TARGET_MIN_DP
     TalentTreeLayoutClass.TABLET -> TalentInspectorMetrics.TABLET_NODE_TARGET_DP
 }
 

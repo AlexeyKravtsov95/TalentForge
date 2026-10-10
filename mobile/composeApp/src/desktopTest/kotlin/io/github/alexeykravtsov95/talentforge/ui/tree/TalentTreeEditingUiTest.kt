@@ -72,23 +72,42 @@ class TalentTreeEditingUiTest {
         return session.current
     }
 
+    /** The M5.UX.1 section cameras of the composed screen (portrait shows one section per tab). */
+    private lateinit var sectionCameras: TalentTreeSectionCameras
+
+    /**
+     * Composes the screen and returns the camera of what the canvas shows:
+     * the open section's own camera in portrait, the whole-tree camera
+     * otherwise.
+     */
     private fun compose(
         state: TalentTreeUiState,
         width: Dp = 360.dp,
         height: Dp = 760.dp,
     ): TalentTreeViewportState {
         val viewportState = TalentTreeViewportState(initial = null)
+        sectionCameras = TalentTreeSectionCameras(sessionKey = "editing-test", treeId = readyState.model.treeId)
         composeRule.setContent {
             TalentForgeTheme {
                 CompositionLocalProvider(LocalDensity provides Density(1f)) {
                     Box(Modifier.size(width, height)) {
-                        TalentTreeScreen(state, viewportState = viewportState)
+                        TalentTreeScreen(state, viewportState = viewportState, sectionCameras = sectionCameras)
                     }
                 }
             }
         }
         composeRule.waitForIdle()
-        return viewportState
+        return if (width < height) sectionCameras.stateOf(sections().sections.first().index) else viewportState
+    }
+
+    private fun sections(): TalentTreeSectionsResult.Sectioned =
+        buildTalentTreeSections(readyState.engine.tree, readyState.model) as TalentTreeSectionsResult.Sectioned
+
+    /** Opens the portrait tab of [name]'s section (one tap, never a build change). */
+    private fun openSectionOf(name: String) {
+        val section = assertNotNull(sections().sectionOf(nodeIdOf(name)))
+        composeRule.onNodeWithText(section.label).performClick()
+        composeRule.waitForIdle()
     }
 
     private fun select(name: String) {
@@ -210,10 +229,10 @@ class TalentTreeEditingUiTest {
     @Test
     fun noPointsTalentShowsAVisibleButDisabledPlus() {
         val full = readyState.copy(buildState = fullBudgetBuild())
-        val viewportState = compose(full)
+        compose(full)
 
         val noPoints = noPointsTalentName(full)
-        focusNodeIntoView(noPoints, viewportState)
+        openSectionOf(noPoints)
         select(noPoints)
 
         composeRule.onNodeWithText("+").assertExists()
@@ -231,14 +250,14 @@ class TalentTreeEditingUiTest {
     @Test
     fun partialTalentAtTheFullBudgetKeepsItsStateAndExplainsTheDisabledPlus() {
         val full = readyState.copy(buildState = fullBudgetBuild())
-        val viewportState = compose(full)
+        compose(full)
 
         // the greedy fill leaves exactly one talent mid-rank at 51/51: its
         // visual state stays PARTIAL ("In progress" is NOT the no-points
         // state — the UI precedence is deliberate), so the disabled + must
         // explain itself (B3 04 state 07).
         val partial = partialTalentName(full)
-        focusNodeIntoView(partial, viewportState)
+        openSectionOf(partial)
         select(partial)
 
         composeRule.onNodeWithText("+").assertExists()
@@ -264,20 +283,6 @@ class TalentTreeEditingUiTest {
         composeRule.onNode(hasTextExactly("Improved Rend", "1/3", "In progress")).assertExists()
         composeRule.onNodeWithText("No talent points left · 51/51 spent").assertDoesNotExist()
         composeRule.onNodeWithText("Needed by Deep Wounds").assertDoesNotExist()
-    }
-
-    /** Pans the canvas so [name]'s node is actually visible before tapping it. */
-    private fun focusNodeIntoView(name: String, viewportState: TalentTreeViewportState) {
-        val node = assertNotNull(readyState.model.nodes.firstOrNull { it.name == name })
-        viewportState.requestFocus(
-            world = androidx.compose.ui.geometry.Offset(node.centerX, node.centerY),
-            visibleSize = androidx.compose.ui.geometry.Size(360f, 500f),
-        )
-        composeRule.waitForIdle()
-        composeRule.mainClock.advanceTimeBy(
-            (TalentInspectorMetrics.SHOW_PAN_MS + 200).toLong(),
-        )
-        composeRule.waitForIdle()
     }
 
     @Test
@@ -579,11 +584,18 @@ class TalentTreeEditingUiTest {
         composeRule.waitForIdle()
 
         // no inspector exists to collide with; the notice floats over the top
-        // of the canvas (density 1 in this test: header 44 + 12 gap)
+        // of the canvas — since M5.UX.1 the canvas starts below the 48 dp
+        // section tabs, which the notice must leave usable (density 1 in this
+        // test: header 44 + tabs 48 + 12 gap)
         val notice = boundsOf(composeRule.onNodeWithText("Talents reset · 1 point cleared"))
+        val tabs = TalentTreeSectionTabsMetrics.TAB_HEIGHT_DP.value
         assertTrue(
-            notice.top < 120f,
+            notice.top < 120f + tabs,
             "with nothing selected the notice stays at the top of the canvas (top=${notice.top})",
+        )
+        assertTrue(
+            notice.top >= TalentTreeHeaderMetrics.HEADER_HEIGHT_DP.value + tabs,
+            "the notice never covers the section tabs (top=${notice.top})",
         )
     }
 

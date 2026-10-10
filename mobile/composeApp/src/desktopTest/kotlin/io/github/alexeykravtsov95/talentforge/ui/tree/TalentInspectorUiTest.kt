@@ -49,23 +49,38 @@ class TalentInspectorUiTest {
         readyState = runBlocking { loadBaselineWarriorTreeState() } as TalentTreeUiState.Ready
     }
 
+    /** The M5.UX.1 section cameras of the composed screen (portrait shows one section per tab). */
+    private lateinit var sectionCameras: TalentTreeSectionCameras
+
+    /**
+     * Composes the screen and returns the camera of what the canvas shows:
+     * the first section's own camera in portrait, the whole-tree camera in
+     * landscape/tablet.
+     */
     private fun compose(
         state: TalentTreeUiState,
         width: Dp = 360.dp,
         height: Dp = 760.dp,
     ): TalentTreeViewportState {
         val viewportState = TalentTreeViewportState(initial = null)
+        sectionCameras = TalentTreeSectionCameras(sessionKey = "inspector-test", treeId = readyState.model.treeId)
         composeRule.setContent {
             TalentForgeTheme {
                 CompositionLocalProvider(LocalDensity provides Density(1f)) {
                     Box(Modifier.size(width, height)) {
-                        TalentTreeScreen(state, viewportState = viewportState)
+                        TalentTreeScreen(state, viewportState = viewportState, sectionCameras = sectionCameras)
                     }
                 }
             }
         }
         composeRule.waitForIdle()
-        return viewportState
+        return if (width < height) sectionCameras.stateOf(firstSection().index) else viewportState
+    }
+
+    /** The first section — the tab a portrait screen opens on. */
+    private fun firstSection(): TalentTreeSectionUiModel {
+        val sections = buildTalentTreeSections(readyState.engine.tree, readyState.model)
+        return (sections as TalentTreeSectionsResult.Sectioned).sections.first()
     }
 
     /** Advances the 300 ms focus animation to its end. */
@@ -76,15 +91,21 @@ class TalentInspectorUiTest {
     }
 
 
-    /** Node chips that currently show this rank text (locked chips show glyphs instead). */
+    /**
+     * Node chips of the open (first) section that currently show this rank
+     * text (locked chips show glyphs instead) — portrait renders one section.
+     */
     private fun expectedRankChipCount(state: TalentTreeUiState.Ready, rankText: String): Int {
         val presentation = buildTalentTreePresentation(state.engine, state.buildState)
+        val shownIds = firstSection().model.nodes.map { it.id }.toSet()
         val hiddenByGlyph = setOf(
             TalentNodeState.TIER_LOCKED,
             TalentNodeState.PREREQUISITE_LOCKED,
             TalentNodeState.UNAVAILABLE,
         )
-        return presentation.nodes.values.count { it.rankText == rankText && it.state !in hiddenByGlyph }
+        return presentation.nodes.values.count {
+            it.nodeId in shownIds && it.rankText == rankText && it.state !in hiddenByGlyph
+        }
     }
 
     // ------------------------------------------------------------------ portrait (360 × 760)
@@ -353,12 +374,13 @@ class TalentInspectorUiTest {
         settleFocusAnimation()
 
         composeRule.onNodeWithText("×").performClick() // deselect
-        composeRule.onNodeWithContentDescription("Deep Wounds").performClick()
-        composeRule.onNodeWithText("Deep Wounds").performClick() // expand again
+        // a talent that is on screen after the reveal (M5.UX.1 section geometry)
+        composeRule.onNodeWithContentDescription("Mortal Strike").performClick()
+        composeRule.onNodeWithText("Mortal Strike").performClick() // expand again
         settleFocusAnimation()
         val beforeCollapse = assertNotNull(viewportState.viewport)
 
-        composeRule.onNodeWithContentDescription("Deep Wounds").performClick() // collapse via chevron/name
+        composeRule.onNodeWithContentDescription("Mortal Strike").performClick() // collapse via chevron/name
         settleFocusAnimation()
 
         assertEquals(

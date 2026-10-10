@@ -78,21 +78,23 @@ Compose Multiplatform application/UI host. Depends on `shared`. Contains:
     `TalentTree` (node id/name/monogram/max-rank/section, world-canvas
     positions, prerequisite + visual-only edges, computed bounds). It contains
     no allocation semantics and duplicates no contract hierarchy. One uniform
-    factor maps client units to dp (one `layout.xStep` = 76 dp, the B3 portrait
-    column pitch), preserving the client's relative geometry without
-    distortion. Fail-closed presentation preconditions return typed build
+    factor maps client units to dp (one `layout.xStep` = 80 dp — the 1A v2
+    S1 pitch since M5.UX.1, 76 dp before), preserving the client's relative
+    geometry without distortion. Fail-closed presentation preconditions return typed build
     errors instead of crashing or emitting sentinel geometry: no tree,
     multiple trees, no nodes, duplicate node ids, invalid layout step,
     dangling edge references;
   - `TalentTreeViewport` — the single world→screen transform (`dp·scale +
     offset`) with pure helpers for world↔screen, pan, focal-point zoom
-    clamped to the B3 0.8–2.2× bounds, and the deterministic initial
-    transform. `TalentTreeViewportState` holds it (saveable — no reset across
-    recomposition/rotation). Hit testing runs in **screen space**: the
-    effective target is `max(56 dp · scale, orientation minimum)` so zooming
-    out never shrinks the physically tappable area below the B3 usable
-    minimums (56 dp portrait, 48 dp landscape) — node visuals are untouched
-    by this;
+    clamped to the 0.62–1.6× bounds (1A v2 S3, M5.UX.1; B3's 0.8–2.2×
+    before), and the deterministic initial transform.
+    `TalentTreeViewportState` holds it (saveable — no reset across
+    recomposition/rotation for the whole-tree canvas). Hit testing runs in
+    **screen space**: since M5.UX.1 the effective target is the 1A v2 S1
+    `min(pitch − 2, max(48, size + 8))` (52 dp node, 80 dp pitch, both × the
+    scale; 68 dp tablet floor kept) — at least 48 dp while zoomed out, yet
+    always 2 dp short of the next grid position, so neighbouring targets
+    never overlap at any zoom; node visuals are untouched by this;
   - `TalentTreeCanvas` — connectors drawn behind nodes under one shared
     transform, nodes as keyed composables carrying the real names in their
     accessibility semantics, and the B3 gesture arbitration: tap node =
@@ -289,6 +291,55 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
 - `ui/home`, `ui/newbuild`, `ui/builds` — the M5.1 shell screens
   (Home / New Build / the basic All Builds list; see the design sections
   above for their frozen behaviour).
+
+- **M5.UX.1 section tabs and per-section cameras** (approved direction
+  "1A v2 · Specialization Tabs"; portrait phones only — landscape and tablet
+  keep the whole-tree canvas until M5.UX.2):
+
+  - `TalentTreeSections` — a pure projection of the real tree's
+    `sections` onto the UI model, never a second game model: each
+    `TalentTreeSectionUiModel` holds the section's own node values (same ids,
+    names, ranks, world positions), only the connectors with both ends in the
+    section, and bounds from its actual nodes; connectors between sections
+    are reported (`crossSectionEdges`, none in the published data) and never
+    drawn, while the engine keeps enforcing them on the one `BuildState`.
+    Labels are the dataset's section name or "Tree N" (the datasets publish
+    no names — no spec name is guessed). A missing/unknown `sectionIndex` or a
+    `nodeIds` list that disagrees with the nodes is a typed
+    `TalentTreeSectionsResult.Unsectioned` reason: the screen then shows the
+    whole tree on one canvas without tabs — nothing hidden or re-assigned.
+    `sectionSpentPoints` counts each tab's points with the allocation rules'
+    own `AllocationRules.pointsSpent` (the tier-gate count); for any valid
+    build the tabs add up to the header counter;
+  - `TalentTreeSectionTabs` — one tab per section (first-talent icon, label,
+    points; icons hidden under 360 dp or above 115 % font scale), equal
+    widths while each keeps 72 dp, otherwise a scrolling row; one tap
+    switches the section (closing the inspector and clearing the selection),
+    a tap on the active tab is FIT, an undo/redo that changes another tab
+    flashes it for 600 ms without switching. There is no swipe between tabs
+    and no pan through empty space between trees;
+  - `TalentTreeSectionCameras` — `sectionIndex → TalentTreeViewportState`
+    (policy `SECTION`) plus the open tab, for ONE build: keyed and saved with
+    the build's local id and tree id (`rememberSaveable`, plain values,
+    fail-closed decoding), so another build never inherits its cameras. A
+    section's first camera is `s = clamp(Wvis / 354, 0.62, 1.0)`, centred
+    horizontally, top-aligned (tall sections scroll to their lower tiers);
+    returning to a tab restores its exact pan/zoom; a canvas of another size
+    (rotation) re-fits. Gestures go through `applyUserTransform`: clamped so
+    the content never leaves the visible area by more than the 12 dp field
+    (the inspector-covered bottom excluded), marked `userMoved`, and they
+    interrupt any running camera animation. FIT appears only while the
+    camera was moved away from its fit and animates back in 280 ms;
+  - cross-section `Show` (1A v2 04): the target's tab opens with the origin
+    tab's camera untouched, the target is selected and centred within its
+    section, and a "Back to <origin> · Tree N" chip returns to the origin
+    talent. Covered by a synthetic, test-only cross-section edge — the
+    PDF's Omen of Clarity → Feral Charge link is illustrative and exists in
+    no dataset.
+
+  Tab switches, pan, zoom, FIT, selection and Show are view state only: the
+  autosave observer (`onBuildStateChanged`) never sees them; undo/redo,
+  reset and the point budget stay global to the one build.
 
 ### `iosApp`
 
