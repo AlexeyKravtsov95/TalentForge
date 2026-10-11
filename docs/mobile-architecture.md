@@ -492,9 +492,15 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
     starts cost 240–360 ms of main-thread work (composition ≈ 140, first
     measure ≈ 105, first draw ≈ 45), and the end of every motion disposed the
     old page and re-diffed every node's modifiers (50–90 ms). So the other
-    pages are composed ahead, at rest, one per frame, nearest first
+    pages are composed ahead, at rest, nearest first
     (`talentSectionNextWarmPage`), and kept (`talentSectionComposedPages(…,
-    warm)`): a motion only moves pages that already exist. Only the active
+    warm)`): a motion only moves pages that already exist. Round 7: a page
+    composed ahead grows by a few talent nodes per frame
+    (`TalentTreeCanvas(composedNodeCount = …)`; `talentSectionWarmBatch`
+    halves the batch after a frame over two 60 Hz vsyncs, doubles it after one
+    under 20 ms, 1–8 nodes), never a whole page in one frame, so the editor
+    answers a touch right after it opens; a touch or a motion pauses it, and a
+    page that comes on screen before it is complete is composed whole. Only the active
     page has pointer input and exposes talents to accessibility; the others
     are drawn only, with ONE `clearAndSetSemantics` on their node layer (the
     per-node modifiers are the same on every page, so switching the active
