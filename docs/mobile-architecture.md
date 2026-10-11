@@ -400,6 +400,42 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
   storage or autosave: expand, collapse, reveal and the header layout are
   view state only.
 
+- **PR #19 gesture arbitration** (found on a real Android device; rules in
+  `TalentTreeGestureRules.kt`, all thresholds implementation-safe):
+
+  - section swipe — inside the canvas's ONE gesture handler
+    (`talentTreeGestures`), not a second detector: while a single finger
+    pans, the horizontal movement the content clamp refuses accumulates as
+    overscroll (`TalentSectionOverscroll`; a movement back first unwinds it)
+    and shows as a bounded rubber band (0.35×, ≤ 32 dp, drawn after the
+    pointer-input node so it never shifts the gesture's coordinates). At the
+    release `talentSectionSwipeDirection` switches to the neighbouring
+    section only when the overscroll is still ≥ 64 dp, the path is at most
+    ≈ 27° (|dy| ≤ 0.5·|dx|), the gesture never had a second finger, passed the
+    tap slop, and did not start in `WindowInsets.systemGestures` (Android's
+    edge Back stays the OS's). Swipe left at the right edge → next, right at
+    the left edge → previous, no wrap-around (`neighbourSection`). The switch
+    is the tab tap path (`onSectionSelected`): selection cleared, every
+    section keeps its own camera, no `BuildState` change, no autosave;
+  - bottom inspector — `inspectorVerticalSwipe` on the whole 76 dp compact
+    strip (swipe up expands) and on the sheet's header (top bar + identity
+    row; swipe down collapses). It observes after the children, takes the
+    pointer only after 8 dp of mostly vertical travel (consuming it cancels
+    any button press under the finger, so a drag never spends, refunds,
+    maxes or shows) and needs 32 dp at the release
+    (`talentInspectorSwipe`). The description's scroll region is outside the
+    header, so scrolling never collapses the sheet. Taps on the handle (now
+    the strip's full width) and the name still expand;
+  - system Back (1A v2 S6, `editorBackStep`) — the editor registers its own
+    `PlatformBackHandler` after the app's: ⋯ sheet open → close it; sheet
+    expanded → collapse; a selection → clear it; otherwise it is disabled and
+    the app's navigation Back runs as before (autosave flush, re-entrancy
+    guard). On Android this is activity-compose `BackHandler`, so the
+    predictive Back gesture follows the same order. The desktop actual is now
+    a real dispatcher with the same last-enabled-wins rule (`DesktopBackDispatcher`,
+    Esc in the desktop window), which makes the order testable; iOS has no
+    system Back.
+
 ### `iosApp`
 
 Thin native iOS host. A SwiftUI `App`/`UIViewControllerRepresentable` pair that
