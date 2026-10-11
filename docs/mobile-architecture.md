@@ -453,6 +453,51 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
     Esc in the desktop window), which makes the order testable; iOS has no
     system Back.
 
+- **PR #19 motion** (`TalentSectionPaging.kt`, all values implementation-safe).
+  It replaces the 1A v2 S4 tab-change entry (180 ms fade + 24 dp shift of the
+  new section only) at the brief's request:
+  - section pages. Every section change — tab, swipe, cross-section Show,
+    Back chip — calls `TalentSectionPager.switchTo` in the same event that
+    changes `cameras.selectedSection`. From the first frame both pages are
+    composed: the new active page starts where the gesture left it (one page
+    off for a tap) and both ease to rest (260 ms for a whole page,
+    proportionally less after a swipe, never below 120 ms;
+    `cubic(.2, .8, .2, 1)`). The old page leaves towards the gesture, and the
+    new one arrives from the chosen tab's side (RTL mirrored);
+  - finger-follow. The canvas's single gesture handler publishes
+    `sectionOverscrollDp` (finger travel at FIT, overscroll when zoomed).
+    `talentSectionDragFrame` turns it into page offsets: the active page
+    follows 1:1 and the neighbour comes in from the opposite edge, while the
+    first and last section only rubber-band. At the release the canvas
+    reports `(direction, releaseDragDp)`: a confirmed swipe continues from
+    the release, and an unconfirmed (or system-cancelled) one eases back
+    (`settleBack`);
+  - one interactive canvas. Pages are keyed by section, so a page keeps its
+    instance as it changes role. Only the active page has pointer input and
+    node semantics (`interactive`); the other is drawn only. The offset is
+    applied after the pointer input, so it never shifts gesture coordinates.
+    A touch on the pages (Initial pass, nothing consumed) or a new switch
+    ends a running transition at once: fast swipes and tab taps never queue.
+    The neighbours' cameras are fitted ahead of time with `prepare` (an
+    existing camera is never reset), and no camera, `BuildState` or autosave
+    is touched by the motion;
+  - tab indicator. `TalentTreeSectionTabs(indicatorPosition = …)` reads
+    `talentSectionIndicatorPosition` at layout time, so it travels with the
+    visible share of the pages. The label emphasis follows the mostly shown
+    tab, while the `selected` semantics stay the logical section;
+  - inspector sheet. It slides up from the strip's top edge and back down
+    (240 ms, the same curve) by `graphicsLayer` translation only. Its layout,
+    and therefore the measured covered height and `TalentInspectorRevealTracker`,
+    is the final geometry from the first measured frame, so the camera
+    reveals the talent once and never per animation frame. A closing sheet
+    is a picture: no semantics and no input, with the strip already back
+    underneath;
+  - reduced motion. `prefersReducedMotion()` (expect/actual: Android
+    `ANIMATOR_DURATION_SCALE` = 0, iOS Reduce Motion, desktop none;
+    `LocalReducedMotion` overrides it in tests) makes pages, the sheet and the
+    compact strip's entry instant. Finger-follow stays (direct
+    manipulation), and every action works the same.
+
 ### `iosApp`
 
 Thin native iOS host. A SwiftUI `App`/`UIViewControllerRepresentable` pair that
