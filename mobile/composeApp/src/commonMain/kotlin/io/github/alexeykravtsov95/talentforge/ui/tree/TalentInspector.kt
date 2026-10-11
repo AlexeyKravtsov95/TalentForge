@@ -12,6 +12,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -37,10 +38,12 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -58,10 +61,12 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
  * real content ([TalentInspectorContent]), driven by the engine-backed action
  * projection ([TalentNodeActions]):
  *
- * - portrait compact bar (B3 03/06: 64 dp + 14 dp inset, grows at large text),
- *   expanded by tapping the name or the chevron into the sheet (B3 04/08:
- *   448 dp preferred, capped by the available height minus 96 dp, scrolls
- *   internally);
+ * - portrait compact bar (B3 03/06: 64 dp + 14 dp inset, grows at large text;
+ *   since M5.UX.2a it stacks its actions under the name on narrow screens and
+ *   at large text — [talentInspectorCompactLayout]), expanded by tapping the
+ *   name or the chevron into the sheet (M5.UX.2a: sized by its content between
+ *   160 dp and min(448 dp, available − 96 dp), scrolls internally — see
+ *   [expandedSheetLimits]);
  * - landscape side panel (B3 05 / UX/UI spec 03: 300 dp, full detail, no
  *   compact state; × deselects);
  * - tablet persistent panel (UX/UI spec 03/13: 380 dp, always open, minimal
@@ -86,13 +91,46 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
  * state and lock lines and scrolls with the detail, while the rank actions and
  * Show are pinned to the bottom of every variant, so a long description can
  * never push a control or a blocked-action reason out of reach. The compact
- * bar is unchanged (B3 03: name, rank, state and actions only).
+ * bar has no description (B3 03: name, rank, state and actions only).
  */
 
 /** Test tag of the inspector's talent icon. */
 const val TALENT_INSPECTOR_ICON_TAG: String = "talent-inspector-icon"
 
-/** Portrait: the compact bottom inspector; `content == null` hides it entirely. */
+/** Test tag of the compact bar's surface (M5.UX.2a). */
+const val TALENT_INSPECTOR_COMPACT_TAG: String = "talent-inspector-compact"
+
+/** Test tag of the compact bar's state / lock reason line (M5.UX.2a). */
+const val TALENT_INSPECTOR_REASON_TAG: String = "talent-inspector-reason"
+
+/** Test tag of the expanded sheet's surface (M5.UX.2a). */
+const val TALENT_INSPECTOR_SHEET_TAG: String = "talent-inspector-sheet"
+
+/** Test tag of the expanded sheet's scrolling detail region (M5.UX.2a). */
+const val TALENT_INSPECTOR_DETAIL_SCROLL_TAG: String = "talent-inspector-detail-scroll"
+
+/** Test tag of the expanded sheet's pinned action area (M5.UX.2a). */
+const val TALENT_INSPECTOR_SHEET_ACTIONS_TAG: String = "talent-inspector-sheet-actions"
+
+/** Accessibility label of the compact strip's expand handle (M5.UX.2a). */
+const val INSPECTOR_EXPAND_LABEL: String = "Expand inspector"
+
+/** Accessibility label of the sheet's ⌄ collapse control. */
+const val INSPECTOR_COLLAPSE_LABEL: String = "Collapse inspector"
+
+/**
+ * Portrait: the compact strip docked to the bottom (1A v2 02 / S1, M5.UX.2a);
+ * `content == null` hides it entirely.
+ *
+ * `[handle 12 dp]` over one 64 dp row `[icon 44] name … rank / state [actions]`
+ * — 76 dp in all (the system safe area below it is applied by the screen
+ * root). Tapping the handle or the name expands (1A v2 02); the handle
+ * replaces the B3 chevron button, which is what keeps a readable name column
+ * next to `− 48×48 + 56×48` on a 320 dp phone. At very large text or on a
+ * narrower strip the row grows to its two-line form ([talentInspectorCompactLayout]).
+ * The state line carries the engine-derived reason in words and the 1A v2
+ * S2 tone ([talentInspectorStateTone]) — never colour alone.
+ */
 @Composable
 fun TalentInspectorCompactBar(
     accent: androidx.compose.ui.graphics.Color,
@@ -114,83 +152,90 @@ fun TalentInspectorCompactBar(
         modifier = modifier,
     ) {
         if (content != null) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        horizontal = TalentInspectorMetrics.COMPACT_INSET_DP,
-                        vertical = TalentInspectorMetrics.COMPACT_INSET_DP,
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                val fontScale = LocalDensity.current.fontScale
+                val twoLine = talentInspectorCompactLayout(maxWidth, fontScale) ==
+                    TalentInspectorCompactLayout.TWO_LINE
+                val stateColor = talentInspectorStateTone(content, actions).color(accent)
+                val cluster: @Composable () -> Unit = {
+                    CompactActionCluster(
+                        content = content,
+                        actions = actions,
+                        accent = accent,
+                        onSpendRank = onSpendRank,
+                        onRefundRank = onRefundRank,
+                        onShowPrerequisite = onShowPrerequisite,
                     )
-                    .heightIn(min = TalentInspectorMetrics.COMPACT_HEIGHT_DP)
-                    .background(
-                        talentForgeColors().surfaceElevated,
-                        RoundedCornerShape(TalentForgeRadius.large),
-                    )
-                    .padding(horizontal = TalentForgeSpacing.inline, vertical = TalentForgeSpacing.hairline),
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
-                ) {
-                    InspectorTalentIcon(icon = icon, size = TalentInspectorMetrics.COMPACT_ICON_DP)
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable(
-                                role = Role.Button,
-                                onClickLabel = "expand inspector",
-                                onClick = onToggleExpanded,
-                            ),
-                    ) {
-                        // M5.V1: `[icon] Talent Name` on the first line, rank + state on
-                        // the second. With the icon in the bar, name and rank no longer
-                        // fit side by side next to − / + on a 360 dp screen (the rank
-                        // wrapped one character per line on a real device), so the rank
-                        // moved down to the state line and can never wrap.
-                        BasicText(
-                            text = content.name,
-                            style = InspectorNameStyle.copy(color = talentForgeColors().textPrimary),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
-                        ) {
-                            BasicText(
-                                text = content.rankText,
-                                style = InspectorRankStyle.copy(color = talentForgeColors().textSecondary),
-                                maxLines = 1,
-                                softWrap = false,
-                            )
-                            InspectorReasonLines(content = content, compact = true)
-                        }
-                    }
-                    // B3 07 compact action set: prerequisite lock keeps Show
-                    // as the only action; rank states show −/+ (or −/✓).
-                    if (content.showAction != null && actions?.offersRankControls != true) {
-                        content.showAction?.let { action ->
-                            ShowButton(action = action, onClick = { onShowPrerequisite(action.prerequisiteNodeId) })
-                        }
-                    } else if (actions != null && actions.offersRankControls) {
-                        TalentInspectorCompactActions(
-                            talentName = content.name,
-                            actions = actions,
-                            accent = accent,
-                            onSpend = onSpendRank,
-                            onRefund = onRefundRank,
-                        )
-                    }
-                    ChevronButton(expanded = false, onToggle = onToggleExpanded)
                 }
-                // B3 04: the tier-locked compact state shows a non-interactive meter.
-                if (content.tierMeters.isNotEmpty() && content.showAction == null) {
-                    Spacer(Modifier.height(TalentForgeSpacing.hairline))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            talentForgeColors().surfaceElevated,
+                            RoundedCornerShape(topStart = TalentForgeRadius.large, topEnd = TalentForgeRadius.large),
+                        )
+                        .padding(horizontal = TalentInspectorMetrics.COMPACT_PADDING_X_DP)
+                        .testTag(TALENT_INSPECTOR_COMPACT_TAG),
+                ) {
+                    InspectorHandle(onClick = onToggleExpanded)
                     Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = TalentInspectorMetrics.COMPACT_HEIGHT_DP),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
                     ) {
-                        TierMeter(gate = content.tierMeters.first(), modifier = Modifier.weight(1f))
+                        InspectorTalentIcon(icon = icon, size = TalentInspectorMetrics.COMPACT_ICON_DP)
+                        // 1A v2 02: "Тап по имени или ручке разворачивает инспектор."
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(vertical = TalentForgeSpacing.hairline)
+                                .clickable(
+                                    role = Role.Button,
+                                    onClickLabel = "expand inspector",
+                                    onClick = onToggleExpanded,
+                                ),
+                        ) {
+                            // `Name … 0/3`: the rank never wraps and sits at the end;
+                            // the name ellipsizes first. Two-line form: the name gets the
+                            // whole width (two lines, words never split by a rank beside
+                            // them), the rank goes under it, and the state line keeps the
+                            // width next to the actions.
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                BasicText(
+                                    text = content.name,
+                                    style = InspectorNameStyle.copy(color = talentForgeColors().textPrimary),
+                                    maxLines = if (twoLine) 2 else 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.weight(1f),
+                                )
+                                if (!twoLine) CompactRank(content.rankText)
+                            }
+                            if (twoLine) CompactRank(content.rankText, start = 0.dp)
+                            if (!twoLine) {
+                                InspectorReasonLines(content = content, color = stateColor, maxLines = 2)
+                            }
+                        }
+                        if (!twoLine) cluster()
+                    }
+                    if (twoLine) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = TalentInspectorMetrics.COMPACT_ACTION_DP)
+                                .padding(bottom = TalentForgeSpacing.inline),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
+                        ) {
+                            InspectorReasonLines(
+                                content = content,
+                                color = stateColor,
+                                maxLines = 4,
+                                modifier = Modifier.weight(1f),
+                            )
+                            cluster()
+                        }
                     }
                 }
             }
@@ -199,15 +244,18 @@ fun TalentInspectorCompactBar(
 }
 
 /**
- * Portrait: the expanded sheet over the canvas (B3 04/06/08, UX/UI spec 03–04).
+ * Portrait: the expanded sheet over the canvas (1A v2 02 / S1, M5.UX.2a;
+ * B3 04/08 content).
  *
- * The sheet **occupies** its preferred height — min(448 dp, available − 96 dp)
- * — rather than wrapping its (deliberately sparse) content: B3 freezes the
- * sheet as a 448 dp surface, the detail scrolls inside it at large text sizes,
- * and the actions pin to the bottom (UX/UI spec 04). Because [height] is the
- * sheet's actual geometry, the caller uses exactly this value as the covered
- * canvas region for the expand focus — covered height can never diverge from
- * the real one.
+ * Sized by its content within [limits] ([expandedSheetLimits]: 260 dp to
+ * min(66 % H, H − top − 104)) — a one-line description no longer leaves an
+ * empty 448 dp surface. Top bar 48 dp (`⌄ · handle · ×`), 18 dp side padding,
+ * identity row, then the detail, which scrolls inside the sheet
+ * ([TALENT_INSPECTOR_DETAIL_SCROLL_TAG]) once the content is taller than the
+ * maximum; the actions (`− 56×52`, `+ Rank` flex × 52, `Max 68×52`, or the
+ * Show action) are pinned to the bottom, so no description length can push a
+ * control out of reach. The caller measures the sheet's real height for the
+ * covered canvas region — never an estimate.
  */
 @Composable
 fun TalentInspectorExpandedSheet(
@@ -215,7 +263,7 @@ fun TalentInspectorExpandedSheet(
     content: TalentInspectorContent,
     actions: TalentNodeActions? = null,
     icon: ImageBitmap? = null,
-    height: Dp,
+    limits: TalentInspectorSheetLimits,
     onCollapse: () -> Unit,
     onDeselect: () -> Unit,
     onShowPrerequisite: (Int) -> Unit,
@@ -227,67 +275,89 @@ fun TalentInspectorExpandedSheet(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .height(height)
+            .heightIn(min = limits.min, max = limits.max)
             .background(
                 talentForgeColors().surfaceElevated,
                 RoundedCornerShape(topStart = TalentForgeRadius.sheet, topEnd = TalentForgeRadius.sheet),
             )
-            .padding(horizontal = TalentForgeSpacing.sheetX),
+            .padding(horizontal = TalentInspectorMetrics.SHEET_PADDING_X_DP)
+            .testTag(TALENT_INSPECTOR_SHEET_TAG),
+        // the slack of the 260 dp floor sits between the detail and the actions,
+        // so the actions stay pinned to the bottom edge in every case
+        verticalArrangement = Arrangement.SpaceBetween,
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
-            modifier = Modifier.padding(vertical = TalentForgeSpacing.inline),
-        ) {
-            InspectorTalentIcon(icon = icon, size = TalentInspectorMetrics.DETAIL_ICON_DP)
-            Column(Modifier.weight(1f)) {
-                BasicText(
-                    text = content.name,
-                    style = InspectorNameStyle.copy(color = talentForgeColors().textPrimary),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                BasicText(
-                    text = content.rankText,
-                    style = InspectorRankStyle.copy(color = talentForgeColors().textSecondary),
-                )
+        Column(Modifier.weight(1f, fill = false)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(TalentInspectorMetrics.SHEET_HEADER_DP),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                ChevronButton(expanded = true, onToggle = onCollapse, targetSize = TalentInspectorMetrics.SHEET_CONTROL_DP)
+                Box(Modifier.weight(1f), contentAlignment = Alignment.Center) { HandleBar() }
+                CloseButton(onClose = onDeselect, targetSize = TalentInspectorMetrics.SHEET_CONTROL_DP)
             }
-            ChevronButton(expanded = true, onToggle = onCollapse)
-            CloseButton(onClose = onDeselect)
-        }
-        Column(
-            Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState()),
-        ) {
-            InspectorDetail(
-                content = content,
-                onShowPrerequisite = onShowPrerequisite,
-                showActionInline = false,
-            )
-        }
-        // UX/UI spec 04: the sheet's actions are pinned at the bottom — the
-        // full-detail `− + Rank Max` row (B3 04/08) and, when the node is
-        // prerequisite-locked, its single Show action.
-        if (actions != null && actions.offersRankControls) {
-            TalentInspectorRankActions(
-                talentName = content.name,
-                actions = actions,
-                accent = accent,
-                onSpend = onSpendRank,
-                onRefund = onRefundRank,
-                onMax = onMaxRank,
-                modifier = Modifier.padding(vertical = TalentForgeSpacing.inline),
-            )
-        }
-        content.showAction?.let { action ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(vertical = TalentForgeSpacing.inline),
+                horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.rowGap),
+                modifier = Modifier.padding(bottom = TalentForgeSpacing.inline),
             ) {
+                InspectorTalentIcon(icon = icon, size = TalentInspectorMetrics.COMPACT_ICON_DP)
+                // very large text (1A v2 S8): the rank goes under the name, so the
+                // name keeps the row's width and a long word is never split
+                val rankBelow = LocalDensity.current.fontScale >= TalentInspectorMetrics.COMPACT_STACK_FONT_SCALE
+                Column(Modifier.weight(1f)) {
+                    BasicText(
+                        text = content.name,
+                        style = InspectorNameStyle.copy(color = talentForgeColors().textPrimary),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    if (rankBelow) SheetRank(content.rankText)
+                }
+                if (!rankBelow) SheetRank(content.rankText)
+            }
+            // wraps a short detail; a long one takes the remaining height and scrolls
+            Column(
+                Modifier
+                    .weight(1f, fill = false)
+                    .verticalScroll(rememberScrollState())
+                    .testTag(TALENT_INSPECTOR_DETAIL_SCROLL_TAG)
+                    .padding(bottom = TalentForgeSpacing.inline),
+            ) {
+                InspectorDetail(
+                    content = content,
+                    onShowPrerequisite = onShowPrerequisite,
+                    showActionInline = false,
+                    showRank = false,
+                    stateColor = talentInspectorStateTone(content, actions).color(accent),
+                )
+            }
+        }
+        // 1A v2 02 / UX/UI spec 04: the actions are pinned at the bottom.
+        Column(
+            Modifier
+                .testTag(TALENT_INSPECTOR_SHEET_ACTIONS_TAG)
+                .padding(vertical = TalentForgeSpacing.rowGap),
+        ) {
+            if (actions != null && actions.offersRankControls) {
+                TalentInspectorSheetRankActions(
+                    talentName = content.name,
+                    actions = actions,
+                    accent = accent,
+                    onSpend = onSpendRank,
+                    onRefund = onRefundRank,
+                    onMax = onMaxRank,
+                )
+            }
+            content.showAction?.let { action ->
                 ShowButton(
                     action = action,
                     onClick = { onShowPrerequisite(action.prerequisiteNodeId) },
+                    portrait = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(TalentInspectorActionMetrics.SHEET_HEIGHT_DP),
                 )
             }
         }
@@ -492,28 +562,33 @@ private fun InspectorDetail(
     content: TalentInspectorContent,
     onShowPrerequisite: (Int) -> Unit,
     showActionInline: Boolean = true,
+    showRank: Boolean = true,
+    stateColor: androidx.compose.ui.graphics.Color? = null,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline)) {
-        BasicText(
-            text = content.rankText,
-            style = InspectorRankLargeStyle.copy(color = talentForgeColors().textPrimary),
-        )
+        // the expanded sheet shows the rank in its identity row (1A v2 02)
+        if (showRank) {
+            BasicText(
+                text = content.rankText,
+                style = InspectorRankLargeStyle.copy(color = talentForgeColors().textPrimary),
+            )
+        }
         if (content.stateLine.isNotEmpty()) {
             BasicText(
                 text = content.stateLine,
-                style = InspectorStateLineStyle.copy(color = talentForgeColors().textSecondary),
+                style = InspectorStateLineStyle.copy(color = stateColor ?: talentForgeColors().textSecondary),
             )
         }
         content.prerequisiteLine?.let { line ->
             BasicText(
                 text = line,
-                style = InspectorStateLineStyle.copy(color = talentForgeColors().textSecondary),
+                style = InspectorStateLineStyle.copy(color = stateColor ?: talentForgeColors().textSecondary),
             )
         }
         content.tierLine?.let { line ->
             BasicText(
                 text = line,
-                style = InspectorStateLineStyle.copy(color = talentForgeColors().textSecondary),
+                style = InspectorStateLineStyle.copy(color = stateColor ?: talentForgeColors().textSecondary),
             )
         }
         for (gate in content.tierMeters) {
@@ -528,16 +603,64 @@ private fun InspectorDetail(
     }
 }
 
-/** Compact/sheet lock reason line: the prerequisite reason when present, else the tier reason. */
+/**
+ * Compact lock reason line: the prerequisite reason when present, else the
+ * tier reason, else the state line (which carries a disabled control's
+ * engine-derived explanation). M5.UX.2a: wraps up to [maxLines] instead of
+ * cutting the reason after a few characters.
+ */
 @Composable
-private fun InspectorReasonLines(content: TalentInspectorContent, compact: Boolean) {
+private fun InspectorReasonLines(
+    content: TalentInspectorContent,
+    color: androidx.compose.ui.graphics.Color,
+    maxLines: Int,
+    modifier: Modifier = Modifier,
+) {
     val line = content.prerequisiteLine ?: content.tierLine ?: content.stateLine
+    if (line.isEmpty()) return
     BasicText(
         text = line,
-        style = InspectorStateLineStyle.copy(color = talentForgeColors().textSecondary),
-        maxLines = if (compact) 1 else 2,
+        style = InspectorStateLineStyle.copy(color = color),
+        maxLines = maxLines,
         overflow = TextOverflow.Ellipsis,
+        modifier = modifier.testTag(TALENT_INSPECTOR_REASON_TAG),
     )
+}
+
+/**
+ * B3 07 / 1A v2 02 compact action set: a prerequisite lock keeps Show as the
+ * only action; rank states show − / + (or − / ✓); a tier lock shows its
+ * non-interactive gate counter (`13/15`) in place of + (1A v2 2.2).
+ */
+@Composable
+private fun CompactActionCluster(
+    content: TalentInspectorContent,
+    actions: TalentNodeActions?,
+    accent: androidx.compose.ui.graphics.Color,
+    onSpendRank: (Int) -> Unit,
+    onRefundRank: (Int) -> Unit,
+    onShowPrerequisite: (Int) -> Unit,
+) {
+    val show = content.showAction
+    val gate = content.tierMeters.firstOrNull()
+    if (show != null && actions?.offersRankControls != true) {
+        ShowButton(
+            action = show,
+            onClick = { onShowPrerequisite(show.prerequisiteNodeId) },
+            portrait = true,
+            modifier = Modifier.height(TalentInspectorMetrics.COMPACT_ACTION_DP),
+        )
+    } else if (gate != null && actions?.offersRankControls != true) {
+        TierChip(gate)
+    } else if (actions != null && actions.offersRankControls) {
+        TalentInspectorCompactActions(
+            talentName = content.name,
+            actions = actions,
+            accent = accent,
+            onSpend = onSpendRank,
+            onRefund = onRefundRank,
+        )
+    }
 }
 
 /**
@@ -591,12 +714,22 @@ private fun ShowButton(
     action: TalentInspectorContent.ShowAction,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    portrait: Boolean = false,
 ) {
     val colors = talentForgeColors()
+    val shape = RoundedCornerShape(TalentForgeRadius.medium)
     Box(
         modifier = modifier
             .heightIn(min = TalentInspectorMetrics.ACTION_MIN_DP)
-            .background(colors.focus, RoundedCornerShape(TalentForgeRadius.medium))
+            .then(
+                // 1A v2 02 (portrait): an outlined amber "↑ Show" — the lock colour,
+                // never the class accent; side/tablet panels keep the neutral light fill
+                if (portrait) {
+                    Modifier.border(1.dp, colors.warning, shape)
+                } else {
+                    Modifier.background(colors.focus, shape)
+                },
+            )
             .clickable(
                 role = Role.Button,
                 onClickLabel = "show prerequisite ${action.prerequisiteName}",
@@ -605,25 +738,128 @@ private fun ShowButton(
             .padding(horizontal = TalentForgeSpacing.rowGap, vertical = TalentForgeSpacing.inline),
         contentAlignment = Alignment.Center,
     ) {
+        if (portrait) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                BasicText(text = "↑", style = InspectorActionStyle.copy(color = colors.warning))
+                BasicText(
+                    text = "Show",
+                    style = InspectorActionStyle.copy(color = colors.warning),
+                    maxLines = 1,
+                    modifier = Modifier.padding(start = TalentForgeSpacing.hairline),
+                )
+            }
+        } else {
+            BasicText(
+                text = "Show",
+                style = InspectorActionStyle.copy(color = colors.background),
+            )
+        }
+    }
+}
+
+/**
+ * 1A v2 2.2: the tier-locked compact state shows the real gate counter
+ * (`spent/required` from the engine's TIER_GATE_NOT_MET issue) in place of +.
+ * Not a button; amber like every lock (1A v2 S2).
+ */
+@Composable
+private fun TierChip(gate: TalentTierGateProgress) {
+    val colors = talentForgeColors()
+    Box(
+        modifier = Modifier
+            .heightIn(min = TalentInspectorMetrics.COMPACT_ACTION_DP)
+            .border(1.dp, colors.warning, RoundedCornerShape(TalentForgeRadius.medium))
+            .semantics(mergeDescendants = true) {
+                contentDescription = "Tier points ${gate.spentPoints} of ${gate.requiredPoints}"
+            }
+            .padding(horizontal = TalentForgeSpacing.rowGap),
+        contentAlignment = Alignment.Center,
+    ) {
         BasicText(
-            text = "Show",
-            style = InspectorActionStyle.copy(color = colors.background),
+            text = "${gate.spentPoints}/${gate.requiredPoints}",
+            style = InspectorRankStyle.copy(color = colors.warning),
+            maxLines = 1,
+            softWrap = false,
         )
+    }
+}
+
+/** The compact strip's rank (`0/3`, mono, never wraps). */
+@Composable
+private fun CompactRank(rankText: String, start: Dp = TalentForgeSpacing.inline) {
+    BasicText(
+        text = rankText,
+        style = InspectorRankStyle.copy(color = talentForgeColors().textSecondary),
+        maxLines = 1,
+        softWrap = false,
+        modifier = Modifier.padding(start = start),
+    )
+}
+
+/** The sheet's identity-row rank (1A v2 02: large mono `1/3`). */
+@Composable
+private fun SheetRank(rankText: String) {
+    BasicText(
+        text = rankText,
+        style = InspectorRankLargeStyle.copy(color = talentForgeColors().textPrimary),
+        maxLines = 1,
+        softWrap = false,
+    )
+}
+
+/** The 36 × 4 dp grab handle mark (1A v2 02). */
+@Composable
+private fun HandleBar() {
+    Box(
+        Modifier
+            .size(width = 36.dp, height = 4.dp)
+            .background(talentForgeColors().borderStrong, RoundedCornerShape(2.dp)),
+    )
+}
+
+/**
+ * The compact strip's 12 dp handle (1A v2 S1): tapping it expands, like the
+ * name. Its touch area spans the handle row over 96 dp; the name column next
+ * to the icon is the large expand target.
+ */
+@Composable
+private fun InspectorHandle(onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(TalentInspectorMetrics.COMPACT_HANDLE_DP),
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(width = 96.dp, height = TalentInspectorMetrics.COMPACT_HANDLE_DP)
+                .clickable(role = Role.Button, onClickLabel = "expand inspector", onClick = onClick)
+                .semantics { contentDescription = INSPECTOR_EXPAND_LABEL },
+            contentAlignment = Alignment.Center,
+        ) {
+            HandleBar()
+        }
     }
 }
 
 /** B3 03: "Tap the name or the chevron tab to expand." */
 @Composable
-private fun ChevronButton(expanded: Boolean, onToggle: () -> Unit) {
+private fun ChevronButton(
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    targetSize: Dp = TalentInspectorMetrics.ACTION_MIN_DP,
+) {
     val color = talentForgeColors().textSecondary
+    val label = if (expanded) INSPECTOR_COLLAPSE_LABEL else INSPECTOR_EXPAND_LABEL
     Box(
         modifier = Modifier
-            .size(TalentInspectorMetrics.ACTION_MIN_DP)
+            .size(targetSize)
             .clickable(
                 role = Role.Button,
                 onClickLabel = if (expanded) "collapse inspector" else "expand inspector",
                 onClick = onToggle,
-            ),
+            )
+            .semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) {
         Box(
@@ -651,10 +887,10 @@ private fun ChevronButton(expanded: Boolean, onToggle: () -> Unit) {
 
 /** × dismiss of the sheet/side panel (B3 05: "× or tapping empty canvas deselects"). */
 @Composable
-private fun CloseButton(onClose: () -> Unit) {
+private fun CloseButton(onClose: () -> Unit, targetSize: Dp = TalentInspectorMetrics.ACTION_MIN_DP) {
     Box(
         modifier = Modifier
-            .size(TalentInspectorMetrics.ACTION_MIN_DP)
+            .size(targetSize)
             .clickable(role = Role.Button, onClickLabel = "clear selection", onClick = onClose),
         contentAlignment = Alignment.Center,
     ) {
@@ -662,6 +898,51 @@ private fun CloseButton(onClose: () -> Unit) {
             text = "×",
             style = InspectorCloseStyle.copy(color = talentForgeColors().textSecondary),
         )
+    }
+}
+
+// ------------------------------------------------------------------ state tone
+
+/**
+ * 1A v2 S2 colour semantics of the state line: green for Available, the
+ * class accent for invested ranks ("Акцент класса только на потраченных
+ * очках"), amber for every lock and blocked action. The words of the line
+ * always carry the meaning; the tone only reinforces it.
+ */
+enum class TalentInspectorStateTone { AVAILABLE, INVESTED, BLOCKED, NEUTRAL }
+
+/**
+ * The tone of a selected talent's state line, from the same engine-backed
+ * projections the controls use — the lock lines of [content] and the
+ * `canSpend` / `canRefund` of [actions] (mirrors
+ * [disabledActionExplanation]); never a re-derivation of the rules.
+ */
+fun talentInspectorStateTone(
+    content: TalentInspectorContent,
+    actions: TalentNodeActions?,
+): TalentInspectorStateTone = when {
+    content.prerequisiteLine != null || content.tierLine != null -> TalentInspectorStateTone.BLOCKED
+    actions == null -> TalentInspectorStateTone.NEUTRAL
+    actions.state == TalentNodeState.NO_POINTS -> TalentInspectorStateTone.BLOCKED
+    actions.offersRankControls &&
+        ((!actions.isMaxed && !actions.canSpend) || (actions.rank > 0 && !actions.canRefund)) ->
+        TalentInspectorStateTone.BLOCKED
+
+    actions.state == TalentNodeState.AVAILABLE -> TalentInspectorStateTone.AVAILABLE
+    actions.state == TalentNodeState.PARTIAL || actions.state == TalentNodeState.MAXED ->
+        TalentInspectorStateTone.INVESTED
+
+    else -> TalentInspectorStateTone.NEUTRAL
+}
+
+@Composable
+private fun TalentInspectorStateTone.color(accent: androidx.compose.ui.graphics.Color): androidx.compose.ui.graphics.Color {
+    val colors = talentForgeColors()
+    return when (this) {
+        TalentInspectorStateTone.AVAILABLE -> colors.positive
+        TalentInspectorStateTone.INVESTED -> accent
+        TalentInspectorStateTone.BLOCKED -> colors.warning
+        TalentInspectorStateTone.NEUTRAL -> colors.textSecondary
     }
 }
 
