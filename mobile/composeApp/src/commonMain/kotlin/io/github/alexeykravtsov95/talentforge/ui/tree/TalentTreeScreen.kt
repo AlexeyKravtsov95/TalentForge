@@ -714,6 +714,7 @@ private fun ReadyTalentTreeScreen(
                     model: TalentTreeUiModel,
                     camera: TalentTreeViewportState,
                     modifier: Modifier,
+                    onSectionSwipe: ((Int) -> Unit)? = null,
                 ) {
                     TalentTreeCanvas(
                         model = model,
@@ -730,7 +731,20 @@ private fun ReadyTalentTreeScreen(
                         onNodeSelected = onNodeSelected,
                         onSelectionCleared = onSelectionCleared,
                         modifier = modifier,
+                        onSectionSwipe = onSectionSwipe,
                     )
+                }
+
+                /**
+                 * PR #19: a confirmed overscroll swipe opens the neighbouring
+                 * section through the SAME path as a tab tap (selection cleared,
+                 * cameras kept, BuildState untouched); none past the first/last.
+                 */
+                val onSectionSwipe: (Int) -> Unit = { direction ->
+                    val order = portraitSections?.sections?.map { it.index }.orEmpty()
+                    val from = activeSection
+                    val to = if (from != null) neighbourSection(order, from, direction) else null
+                    if (to != null) onSectionSelected(to)
                 }
 
                 // The workspace below the header, with the reset notice as its
@@ -809,6 +823,7 @@ private fun ReadyTalentTreeScreen(
                                         TreeCanvas(
                                             model = activeSectionModel.model,
                                             camera = activeCamera,
+                                            onSectionSwipe = onSectionSwipe,
                                             modifier = Modifier
                                                 .fillMaxSize()
                                                 .graphicsLayer {
