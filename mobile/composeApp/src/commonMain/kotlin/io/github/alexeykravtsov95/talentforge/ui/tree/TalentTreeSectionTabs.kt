@@ -96,6 +96,13 @@ object TalentTreeSectionTabsMetrics {
     /** 1A v2 03/S1: above a 115 % font scale the tab icons are hidden. */
     const val ICONS_MAX_FONT_SCALE: Float = 1.15f
 
+    /**
+     * 1A v2 S8 "Шрифт 200%: … вкладки только «N» и очки": from this font scale
+     * on (M5.UX.2a) a tab shows its position number instead of its label; the
+     * full label stays its accessibility description.
+     */
+    const val NUMBER_ONLY_FONT_SCALE: Float = 1.75f
+
     /** 1A v2 S8: an undo/redo that changes another tab highlights that tab for 600 ms. */
     const val CHANGE_HIGHLIGHT_MS: Int = 600
 
@@ -184,6 +191,7 @@ fun TalentTreeSectionTabs(
         val fontScale = LocalDensity.current.fontScale
         val showIcons = maxWidth >= TalentTreeSectionTabsMetrics.ICONS_MIN_WIDTH_DP &&
             fontScale <= TalentTreeSectionTabsMetrics.ICONS_MAX_FONT_SCALE
+        val numberOnly = fontScale >= TalentTreeSectionTabsMetrics.NUMBER_ONLY_FONT_SCALE
         val selectedOrdinal = tabs.indexOfFirst { it.index == selectedIndex }.coerceAtLeast(0)
         val indicatorWidth = tabWidth * TalentTreeSectionTabsMetrics.INDICATOR_WIDTH_FRACTION
         val indicatorX by animateDpAsState(
@@ -201,9 +209,10 @@ fun TalentTreeSectionTabs(
                 .then(if (scrolls) Modifier.horizontalScroll(rememberScrollState()) else Modifier),
         ) {
             Row(Modifier.fillMaxHeight()) {
-                for (tab in tabs) {
+                for ((ordinal, tab) in tabs.withIndex()) {
                     SectionTab(
                         tab = tab,
+                        shortLabel = if (numberOnly) "${ordinal + 1}" else null,
                         selected = tab.index == selectedIndex,
                         accent = accent,
                         icon = if (showIcons) tab.iconNodeId?.let { icons.iconOf(it) } else null,
@@ -228,6 +237,7 @@ fun TalentTreeSectionTabs(
 @Composable
 private fun SectionTab(
     tab: TalentSectionTab,
+    shortLabel: String?,
     selected: Boolean,
     accent: Color,
     icon: ImageBitmap?,
@@ -255,6 +265,7 @@ private fun SectionTab(
             .selectable(selected = selected, role = Role.Tab, onClick = onClick)
             .semantics(mergeDescendants = true) {
                 stateDescription = if (tab.points == 1) "1 point spent" else "${tab.points} points spent"
+                if (shortLabel != null) contentDescription = tab.label
             }
             .padding(horizontal = TalentForgeSpacing.hairline),
         horizontalArrangement = Arrangement.Center,
@@ -272,7 +283,7 @@ private fun SectionTab(
             Spacer(Modifier.width(6.dp))
         }
         BasicText(
-            text = tab.label,
+            text = shortLabel ?: tab.label,
             style = TabLabelStyle.copy(
                 color = if (selected) colors.textPrimary else colors.textSecondary,
                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
