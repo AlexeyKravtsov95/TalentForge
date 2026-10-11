@@ -45,7 +45,9 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
 import kotlin.math.abs
@@ -108,9 +110,11 @@ fun TalentTreeCanvas(
     onSelectionCleared: () -> Unit,
     modifier: Modifier = Modifier,
     /**
-     * PR #19: a released single-finger swipe that overscrolled the content's
-     * horizontal bound (see [talentSectionSwipeDirection]) — `+1` next
-     * section, `-1` previous. `null` (landscape/tablet whole tree) disables it.
+     * PR #19: a confirmed single-finger section swipe — at FIT a horizontal
+     * swipe anywhere in the canvas ([talentSectionFitSwipeDirection]), when
+     * zoomed an overscroll past the content's horizontal bound
+     * ([talentSectionSwipeDirection]) — `+1` next section, `-1` previous
+     * ([sectionSwipeDirectionOf]). `null` (landscape/tablet whole tree) disables it.
      */
     onSectionSwipe: ((Int) -> Unit)? = null,
 ) {
@@ -120,6 +124,7 @@ fun TalentTreeCanvas(
     // system gesture zone never switches sections (0 on desktop/iOS hosts).
     val gestureInsets = WindowInsets.systemGestures
     val layoutDirection = LocalLayoutDirection.current
+    val rtl by rememberUpdatedState(layoutDirection == LayoutDirection.Rtl)
     val windowFrame = remember { CanvasWindowFrame() }
     val inSystemGestureZone: (Offset) -> Boolean = { local ->
         val x = windowFrame.leftPx + local.x
@@ -205,6 +210,7 @@ fun TalentTreeCanvas(
                     onEmptyTap = onSelectionCleared,
                     sectionSwipe = { sectionSwipe },
                     inSystemGestureZone = inSystemGestureZone,
+                    isRtl = { rtl },
                 )
             }
             // PR #19 rubber band: AFTER the pointer input in the chain, so the
@@ -373,13 +379,21 @@ fun TalentTreeCanvas(
  * - a finger joining or leaving rebases the anchors, so the second finger
  *   never causes a jump; a degenerate (zero) pinch span is ignored, keeping
  *   the transform finite at all times;
- * - PR #19 section swipe, part of the SAME handler (no competing detector):
- *   while one finger pans, whatever horizontal movement the content clamp
- *   refuses accumulates as overscroll ([TalentSectionOverscroll], shown as a
- *   bounded rubber band); at the release [talentSectionSwipeDirection]
- *   decides whether it switches the section. A pinch, a tap, a diagonal or
- *   short swipe, a swipe started in the system gesture zone, or a pull back
- *   before the release never switch.
+ * - PR #19 section swipe, part of the SAME handler (no competing detector),
+ *   in one of two models decided when the gesture passes the slop
+ *   ([TalentSectionSwipeModel]):
+ *   - FIT: a mostly horizontal gesture is locked as a section swipe — the
+ *     camera does not move, the canvas only follows the finger as a bounded
+ *     rubber band, and at the release [talentSectionFitSwipeDirection]
+ *     decides (distance or flick); a mostly vertical one scrolls the section
+ *     vertically with the sideways movement locked;
+ *   - EDGE (zoomed / wider section): one finger pans as always; whatever
+ *     horizontal movement the content clamp refuses accumulates as overscroll
+ *     ([TalentSectionOverscroll]) and [talentSectionSwipeDirection] decides
+ *     on the movement since the edge was reached.
+ *   A pinch (a second finger ends a locked swipe and zooms), a tap, a
+ *   diagonal or short swipe, a swipe started in the system gesture zone, or a
+ *   pull back before the release never switch.
  */
 private suspend fun PointerInputScope.talentTreeGestures(
     model: TalentTreeUiModel,
@@ -388,6 +402,7 @@ private suspend fun PointerInputScope.talentTreeGestures(
     onEmptyTap: () -> Unit,
     sectionSwipe: () -> ((Int) -> Unit)?,
     inSystemGestureZone: (Offset) -> Boolean,
+    isRtl: () -> Boolean,
 ) {
     val slopPx = TalentTreeCanvasMetrics.TOUCH_SLOP_DP.dp.toPx()
     val densityScale = this.density
@@ -416,6 +431,13 @@ private suspend fun PointerInputScope.talentTreeGestures(
         val overscroll = TalentSectionOverscroll()
         val startedInSystemGestureZone = inSystemGestureZone(down.position)
         var lastSinglePosition = down.position
+        // FIT model (decided at the slop): a locked section swipe, or a vertical-only scroll
+        var fitSwipe = false
+        var lockSideways = false
+        // edge model: where the finger was when the content edge was reached
+        var edgeAnchor: Offset? = null
+        val velocity = VelocityTracker()
+        velocity.addPosition(down.uptimeMillis, down.position)
 
         try {
             while (true) {
@@ -443,26 +465,44 @@ private suspend fun PointerInputScope.talentTreeGestures(
                     // PR #19: the release confirms (or not) a section switch
                     val onSwipe = sectionSwipe()
                     if (onSwipe != null) {
-                        val total = screenPxToDp(lastSinglePosition - down.position)
-                        val direction = talentSectionSwipeDirection(
-                            overscrollDp = overscroll.overscrollDp,
-                            totalDxDp = total.x,
-                            totalDyDp = total.y,
-                            passedSlop = passedSlop,
-                            multiTouch = multiTouchSeen,
-                            startedInSystemGestureZone = startedInSystemGestureZone,
-                        )
+                        val direction = if (fitSwipe) {
+                            val total = screenPxToDp(lastSinglePosition - down.position)
+                            talentSectionFitSwipeDirection(
+                                totalDxDp = total.x,
+                                totalDyDp = total.y,
+                                velocityXDpPerSecond = velocity.calculateVelocity().x / densityScale,
+                                multiTouch = multiTouchSeen,
+                                startedInSystemGestureZone = startedInSystemGestureZone,
+                                rtl = isRtl(),
+                            )
+                        } else {
+                            val sinceEdge = screenPxToDp(lastSinglePosition - (edgeAnchor ?: lastSinglePosition))
+                            talentSectionSwipeDirection(
+                                overscrollDp = overscroll.overscrollDp,
+                                totalDxDp = sinceEdge.x,
+                                totalDyDp = sinceEdge.y,
+                                passedSlop = passedSlop,
+                                multiTouch = multiTouchSeen,
+                                startedInSystemGestureZone = startedInSystemGestureZone,
+                                rtl = isRtl(),
+                            )
+                        }
                         viewportState.sectionOverscrollDp = 0f
                         if (direction != 0) onSwipe(direction)
                     }
                     break
                 }
                 if (multiTouchSeen) {
-                    // a pinch never switches sections: drop any overscroll at once
+                    // a pinch never switches sections: drop any overscroll at once,
+                    // and a locked FIT swipe becomes an ordinary pan + zoom
                     overscroll.reset()
+                    edgeAnchor = null
+                    fitSwipe = false
                     viewportState.sectionOverscrollDp = 0f
                 } else {
-                    lastSinglePosition = pressedChanges.first().position
+                    val single = pressedChanges.first()
+                    lastSinglePosition = single.position
+                    velocity.addPosition(single.uptimeMillis, single.position)
                 }
 
                 val centroid = centroidOf(pressedChanges)
@@ -476,14 +516,30 @@ private suspend fun PointerInputScope.talentTreeGestures(
                             (change.position.y - origin.y).toDouble(),
                         ).toFloat() > slopPx
                     }
+                    // PR #19: the FIT model is chosen once, as the gesture stops being a tap
+                    if (passedSlop && !multiTouchSeen && sectionSwipe() != null &&
+                        viewportState.sectionSwipeModel() == TalentSectionSwipeModel.FIT_SWIPE
+                    ) {
+                        val moved = screenPxToDp(lastSinglePosition - down.position)
+                        if (talentSectionFitSwipeLocks(moved.x, moved.y)) fitSwipe = true else lockSideways = true
+                    }
                 }
 
                 val anchor = previousCentroid
-                if (passedSlop && !fingerSetChanged && anchor != null) {
+                if (fitSwipe && passedSlop) {
+                    // FIT: the camera stays where it is; the canvas follows the finger (bounded)
+                    viewportState.sectionOverscrollDp = screenPxToDp(lastSinglePosition - down.position).x
+                    for (change in pressedChanges) {
+                        if (change.positionChanged()) change.consume()
+                    }
+                } else if (passedSlop && !fingerSetChanged && anchor != null) {
                     val viewport = viewportState.viewport
                     if (viewport != null) {
-                        val pan = screenPxToDp(centroid - anchor)
-                        val trackOverscroll = sectionSwipe() != null && !multiTouchSeen
+                        val rawPan = screenPxToDp(centroid - anchor)
+                        // FIT model, vertical gesture: scrolls a tall section, never sideways
+                        val pan = if (lockSideways && !multiTouchSeen) Offset(0f, rawPan.y) else rawPan
+                        val trackOverscroll = sectionSwipe() != null && !multiTouchSeen && !lockSideways
+                        val overscrollBefore = overscroll.overscrollDp
                         // single finger: a move back towards the content first unwinds the overscroll
                         val givenX = if (trackOverscroll) overscroll.beforePan(pan.x) else pan.x
                         var next = viewport.panBy(Offset(givenX, pan.y))
@@ -501,6 +557,12 @@ private suspend fun PointerInputScope.talentTreeGestures(
                             val movedX = (viewportState.viewport?.offset?.x ?: viewport.offset.x) - viewport.offset.x
                             overscroll.afterPan(givenDxDp = givenX, movedDxDp = movedX)
                             viewportState.sectionOverscrollDp = overscroll.overscrollDp
+                            // the switch is judged on the movement since the edge was reached
+                            if (overscroll.overscrollDp == 0f) {
+                                edgeAnchor = null
+                            } else if (overscrollBefore == 0f) {
+                                edgeAnchor = anchor
+                            }
                         }
                     }
                     for (change in pressedChanges) {
@@ -518,6 +580,14 @@ private suspend fun PointerInputScope.talentTreeGestures(
             viewportState.sectionOverscrollDp = 0f
         }
     }
+}
+
+/** PR #19: the swipe model of this camera right now (no camera yet → the edge model). */
+private fun TalentTreeViewportState.sectionSwipeModel(): TalentSectionSwipeModel {
+    val current = viewport ?: return TalentSectionSwipeModel.EDGE_OVERSCROLL
+    val bounds = contentBounds ?: return TalentSectionSwipeModel.EDGE_OVERSCROLL
+    val fit = fitViewport() ?: return TalentSectionSwipeModel.EDGE_OVERSCROLL
+    return talentSectionSwipeModel(current.scale, fit.scale, bounds.width, canvasSize.width)
 }
 
 /** Where the canvas sits in its window (px), for the system-gesture-zone test. */

@@ -15,12 +15,25 @@ import kotlin.math.sign
 object TalentTreeGestureMetrics {
 
     /**
-     * Section swipe: the horizontal overscroll (dp the finger travelled past
-     * the content's horizontal bound) a release must still have to switch to
-     * the neighbouring section. A short pan that merely reaches the edge
-     * never switches.
+     * Edge model (zoomed / wider section, see [TalentSectionSwipeModel]): the
+     * horizontal overscroll (dp the finger travelled past the content's
+     * horizontal bound) a release must still have to switch to the
+     * neighbouring section. A short pan that merely reaches the edge never
+     * switches. (PR #19 v1 asked for 64 dp; lowered after the device check.)
      */
-    const val SECTION_SWIPE_OVERSCROLL_DP: Float = 64f
+    const val SECTION_SWIPE_OVERSCROLL_DP: Float = 40f
+
+    /** FIT model: a release after at least this much horizontal travel switches … */
+    const val FIT_SWIPE_DISTANCE_DP: Float = 56f
+
+    /** … and so does a quick flick of at least [FIT_SWIPE_FLING_MIN_DP] … */
+    const val FIT_SWIPE_FLING_MIN_DP: Float = 32f
+
+    /** … whose horizontal release velocity (dp/s, same direction) reaches this. */
+    const val FIT_SWIPE_FLING_VELOCITY_DP_S: Float = 600f
+
+    /** FIT model: the camera scale counts as the fit scale within this (the FIT button's own tolerance). */
+    const val FIT_SCALE_EPSILON: Float = TalentTreeCanvasMetrics.CAMERA_EPSILON_DP / 500f
 
     /** Section swipe: the gesture must be at most this steep (|dy| ≤ 0.5·|dx|, ≈ 27°). */
     const val SECTION_SWIPE_MAX_SLOPE: Float = 0.5f
@@ -95,9 +108,100 @@ class TalentSectionOverscroll {
 }
 
 /**
- * Decides, at the release of a canvas gesture, whether it switches the
- * section: `+1` the next section (swipe left past the right edge), `-1` the
- * previous one (swipe right past the left edge), `0` none.
+ * PR #19 swipe DIRECTION, the one place it is decided: the content follows the
+ * finger, like every platform pager (Android ViewPager / HorizontalPager, iOS
+ * paging). In a left-to-right layout the tabs read Tree 1 | Tree 2 | Tree 3,
+ * so moving the finger LEFT drags the current tree out to the left and brings
+ * in the tree whose tab is on its RIGHT — the next one (`+1`); moving it right
+ * brings in the previous one (`-1`). "Swipe right to the next tree" therefore
+ * means "move right along the tabs"; the rubber band and the 1A v2 S4 entry
+ * shift (the new tree arrives from the chosen tab's side) agree with it. A
+ * right-to-left layout mirrors the tabs, so it mirrors this too.
+ */
+fun sectionSwipeDirectionOf(fingerDxDp: Float, rtl: Boolean = false): Int {
+    if (!fingerDxDp.isFinite() || fingerDxDp == 0f) return 0
+    val towardsNext = if (rtl) fingerDxDp > 0f else fingerDxDp < 0f
+    return if (towardsNext) 1 else -1
+}
+
+/**
+ * How a single-finger canvas gesture may switch the section.
+ *
+ * - [FIT_SWIPE]: the camera is at its fit zoom and the section fits the width
+ *   (there is nothing to pan sideways). A horizontal swipe anywhere in the
+ *   canvas switches directly — no pan to an edge first; the camera does not
+ *   move. A vertical drag still scrolls a tall section (sideways locked), so
+ *   scrolling down to the lower tiers keeps this model.
+ * - [EDGE_OVERSCROLL]: zoomed in or out, or a section wider than the canvas.
+ *   One finger pans as always; only the movement the content bound refuses
+ *   counts towards a switch ([TalentSectionOverscroll]). FIT (or a re-tap of
+ *   the tab) returns to [FIT_SWIPE].
+ */
+enum class TalentSectionSwipeModel { FIT_SWIPE, EDGE_OVERSCROLL }
+
+/** [TalentSectionSwipeModel] for a camera at [scale] whose fit scale is [fitScale]. */
+fun talentSectionSwipeModel(
+    scale: Float,
+    fitScale: Float,
+    contentWidthDp: Float,
+    canvasWidthDp: Float,
+): TalentSectionSwipeModel {
+    if (!scale.isFinite() || !fitScale.isFinite() || !contentWidthDp.isFinite() || !canvasWidthDp.isFinite()) {
+        return TalentSectionSwipeModel.EDGE_OVERSCROLL
+    }
+    val atFitZoom = abs(scale - fitScale) <= TalentTreeGestureMetrics.FIT_SCALE_EPSILON
+    // the same "fits" test as the section fit camera (content + the 12 dp field on both sides)
+    val fitsWidth = contentWidthDp * scale + 2f * TalentTreeCanvasMetrics.CAMERA_FIELD_DP <= canvasWidthDp
+    return if (atFitZoom && fitsWidth) TalentSectionSwipeModel.FIT_SWIPE else TalentSectionSwipeModel.EDGE_OVERSCROLL
+}
+
+/**
+ * FIT model, at the touch slop: `true` locks the gesture as a section swipe
+ * (more horizontal than vertical), `false` makes it a vertical scroll for the
+ * rest of the gesture. Decided once per gesture.
+ */
+fun talentSectionFitSwipeLocks(dxDp: Float, dyDp: Float): Boolean =
+    dxDp.isFinite() && dyDp.isFinite() && abs(dxDp) > abs(dyDp)
+
+/**
+ * FIT model, at the release of a locked swipe: `+1` / `-1` (see
+ * [sectionSwipeDirectionOf]) or `0`. A confident swipe is either at least
+ * [TalentTreeGestureMetrics.FIT_SWIPE_DISTANCE_DP] of horizontal travel, or a
+ * flick of at least [TalentTreeGestureMetrics.FIT_SWIPE_FLING_MIN_DP] still
+ * moving at [TalentTreeGestureMetrics.FIT_SWIPE_FLING_VELOCITY_DP_S] the same
+ * way at the release. Never for a pinch, a gesture started in the system
+ * gesture zone, a path steeper than |dy| ≤ 0.5·|dx|, or a swipe pulled back
+ * below the distance.
+ */
+fun talentSectionFitSwipeDirection(
+    totalDxDp: Float,
+    totalDyDp: Float,
+    velocityXDpPerSecond: Float,
+    multiTouch: Boolean,
+    startedInSystemGestureZone: Boolean,
+    rtl: Boolean = false,
+): Int {
+    if (multiTouch || startedInSystemGestureZone) return 0
+    if (!totalDxDp.isFinite() || !totalDyDp.isFinite()) return 0
+    val distance = abs(totalDxDp)
+    if (distance < TalentTreeGestureMetrics.FIT_SWIPE_FLING_MIN_DP) return 0
+    if (abs(totalDyDp) > distance * TalentTreeGestureMetrics.SECTION_SWIPE_MAX_SLOPE) return 0
+    val flick = velocityXDpPerSecond.isFinite() &&
+        sign(velocityXDpPerSecond) == sign(totalDxDp) &&
+        abs(velocityXDpPerSecond) >= TalentTreeGestureMetrics.FIT_SWIPE_FLING_VELOCITY_DP_S
+    if (distance < TalentTreeGestureMetrics.FIT_SWIPE_DISTANCE_DP && !flick) return 0
+    return sectionSwipeDirectionOf(totalDxDp, rtl)
+}
+
+/**
+ * Edge model: decides, at the release of a canvas gesture, whether it switches
+ * the section: `+1` the next section (finger left past the right edge), `-1`
+ * the previous one (finger right past the left edge), `0` none — mirrored in
+ * a right-to-left layout ([sectionSwipeDirectionOf]).
+ *
+ * [totalDxDp] / [totalDyDp] are the finger's movement SINCE the content edge
+ * was reached, so any pan may come first and only the push past the edge has
+ * to be horizontal.
  *
  * Never for a tap (no slop passed), a gesture that ever had two fingers
  * (pinch), a gesture that started in the system gesture zone (Android owns
@@ -113,6 +217,7 @@ fun talentSectionSwipeDirection(
     passedSlop: Boolean,
     multiTouch: Boolean,
     startedInSystemGestureZone: Boolean,
+    rtl: Boolean = false,
 ): Int {
     if (!passedSlop || multiTouch || startedInSystemGestureZone) return 0
     if (!overscrollDp.isFinite() || !totalDxDp.isFinite() || !totalDyDp.isFinite()) return 0
@@ -120,7 +225,7 @@ fun talentSectionSwipeDirection(
     if (abs(totalDyDp) > abs(totalDxDp) * TalentTreeGestureMetrics.SECTION_SWIPE_MAX_SLOPE) return 0
     // the finger's net movement must agree with the overscroll's side
     if (totalDxDp == 0f || sign(totalDxDp) != sign(overscrollDp)) return 0
-    return if (overscrollDp < 0f) 1 else -1
+    return sectionSwipeDirectionOf(overscrollDp, rtl)
 }
 
 /** The rubber-band shift (dp) the canvas shows for [overscrollDp]: bounded, same sign. */

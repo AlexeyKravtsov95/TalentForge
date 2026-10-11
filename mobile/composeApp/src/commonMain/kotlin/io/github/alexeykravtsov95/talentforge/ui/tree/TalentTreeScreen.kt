@@ -756,7 +756,7 @@ private fun ReadyTalentTreeScreen(
                 }
 
                 /**
-                 * PR #19: a confirmed overscroll swipe opens the neighbouring
+                 * PR #19: a confirmed section swipe opens the neighbouring
                  * section through the SAME path as a tab tap (selection cleared,
                  * cameras kept, BuildState untouched); none past the first/last.
                  */
