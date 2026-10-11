@@ -1,122 +1,87 @@
 package io.github.alexeykravtsov95.talentforge.ui.tree
 
+import androidx.compose.animation.core.FloatSpringSpec
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** PR #19 motion: the pure section-pager rules (offsets are fractions of the page width, + = right). */
+/** PR #19 motion: the pure pager rules (positions in tab ordinals, x in pages, + = right). */
 class TalentSectionPagingTest {
 
-    private val order = listOf(0, 1, 2)
+    private val width = 360f
 
     @Test
-    fun aDragCarriesTheActivePageAndBringsTheNeighbourFromTheOppositeEdge() {
-        val left = talentSectionDragFrame(dragDp = -90f, widthDp = 360f, active = 0, order = order)
-        assertEquals(1, left.companion, "finger left: Tree 2 comes in")
-        assertEquals(-0.25f, left.activeOffset, 1e-5f)
-        assertEquals(0.75f, left.companionOffset, 1e-5f, "from the right edge")
-        val right = talentSectionDragFrame(dragDp = 90f, widthDp = 360f, active = 1, order = order)
-        assertEquals(0, right.companion, "finger right: Tree 1 comes in")
-        assertEquals(-0.75f, right.companionOffset, 1e-5f, "from the left edge")
-        val rtl = talentSectionDragFrame(dragDp = 90f, widthDp = 360f, active = 0, order = order, rtl = true)
-        assertEquals(1, rtl.companion, "right-to-left: the next tab is on the left")
-        assertEquals(-0.75f, rtl.companionOffset, 1e-5f)
+    fun everySectionIsDrawnAtItsOrdinalMinusThePositionMirroredRightToLeft() {
+        assertEquals(0f, talentSectionPageX(ordinal = 0, position = 0f))
+        assertEquals(1f, talentSectionPageX(ordinal = 1, position = 0f), "Tree 2 waits one page right")
+        assertEquals(-0.25f, talentSectionPageX(ordinal = 0, position = 0.25f))
+        assertEquals(0.75f, talentSectionPageX(ordinal = 1, position = 0.25f), "side by side, no gap")
+        assertEquals(-1f, talentSectionPageX(ordinal = 1, position = 0f, rtl = true), "right-to-left: on the left")
     }
 
     @Test
-    fun theFirstAndLastSectionOnlyRubberBandAndARestingPageIsSettled() {
-        val first = talentSectionDragFrame(dragDp = 200f, widthDp = 360f, active = 0, order = order)
-        assertNull(first.companion, "no wrap-around: nothing comes in before Tree 1")
-        assertEquals(TalentTreeGestureMetrics.SECTION_SWIPE_FEEDBACK_MAX_DP / 360f, first.activeOffset, 1e-5f)
-        assertNull(talentSectionDragFrame(-200f, 360f, active = 2, order = order).companion)
-        assertEquals(TalentSectionPageFrame.Settled, talentSectionDragFrame(0f, 360f, 0, order))
-        assertEquals(TalentSectionPageFrame.Settled, talentSectionDragFrame(Float.NaN, 360f, 0, order))
-        assertEquals(TalentSectionPageFrame.Settled, talentSectionDragFrame(-50f, 0f, 0, order))
-        assertEquals(-1f, talentSectionDragFrame(-900f, 360f, 0, order).activeOffset, "never past one page")
+    fun aHeldPositionFollowsTheFinger1to1FromWhereItWasGrabbed() {
+        assertEquals(0.25f, talentSectionHeldPosition(grabbedAt = 0f, dragDp = -90f, widthDp = width, count = 3), 1e-5f)
+        assertEquals(0.4f, talentSectionHeldPosition(0.65f, dragDp = 90f, widthDp = width, count = 3), 1e-5f, "mid-motion")
+        assertEquals(0.25f, talentSectionHeldPosition(0f, dragDp = 90f, widthDp = width, count = 3, rtl = true), 1e-5f)
+        // past the first / last tab: only the bounded rubber band
+        val beyond = talentSectionHeldPosition(0f, dragDp = 300f, widthDp = width, count = 3)
+        assertEquals(-TalentTreeGestureMetrics.SECTION_SWIPE_FEEDBACK_MAX_DP / width, beyond, 1e-5f)
+        assertTrue(talentSectionHeldPosition(2f, dragDp = -300f, widthDp = width, count = 3) <= 2f + 32f / width)
+        assertEquals(1f, talentSectionHeldPosition(1f, Float.NaN, width, 3))
     }
 
     @Test
-    fun aSwitchLeavesTheOldPageTowardsTheGestureAndContinuesFromTheRelease() {
-        // forward (Tree 1 → Tree 2): old page leaves left, new comes from the right
-        assertEquals(-1, talentSectionTransitionSide(fromOrdinal = 0, toOrdinal = 1))
-        assertEquals(1f, talentSectionTransitionStart(side = -1), "a tab tap: the new page starts one page right")
-        // backward
-        assertEquals(1, talentSectionTransitionSide(fromOrdinal = 2, toOrdinal = 1))
-        assertEquals(-1f, talentSectionTransitionStart(side = 1))
-        // right-to-left mirrors it
-        assertEquals(1, talentSectionTransitionSide(fromOrdinal = 0, toOrdinal = 1, rtl = true))
-        // a swipe released at -0.3: the old page stays at -0.3, the new one at 0.7 — no jump
-        val release = talentSectionDragFrame(-108f, 360f, 0, order)
-        val start = talentSectionTransitionStart(side = -1, releaseOffset = release.activeOffset)
-        assertEquals(release.companionOffset, start, 1e-5f, "the new page is exactly where the finger left it")
-        assertEquals(release.activeOffset, start + -1, 1e-5f, "the old page too")
-        assertEquals(1f, talentSectionTransitionStart(-1, Float.NaN))
+    fun theFingerVelocityBecomesThePositionVelocityWithTheSameSign() {
+        assertEquals(2f, talentSectionPositionVelocity(-720f, width), 1e-5f, "finger left: position grows")
+        assertEquals(-2f, talentSectionPositionVelocity(720f, width), 1e-5f)
+        assertEquals(-2f, talentSectionPositionVelocity(-720f, width, rtl = true), 1e-5f)
+        assertEquals(TalentMotionMetrics.PAGE_MAX_VELOCITY, talentSectionPositionVelocity(-1e6f, width))
+        assertEquals(0f, talentSectionPositionVelocity(Float.NaN, width))
     }
 
     @Test
-    fun theSettleIsEaseOutAndTakesAtMostTheTabTapDuration() {
-        assertEquals(TalentMotionMetrics.PAGE_MS, talentSectionSettleMillis(1f, reducedMotion = false), "a tab tap: 260 ms")
-        assertEquals(TalentMotionMetrics.PAGE_MS, talentSectionSettleMillis(-1f, reducedMotion = false))
-        assertEquals(182, talentSectionSettleMillis(0.7f, reducedMotion = false), "a swipe released part-way: in proportion")
-        assertEquals(TalentMotionMetrics.PAGE_MIN_MS, talentSectionSettleMillis(0.1f, reducedMotion = false))
-        assertEquals(0, talentSectionSettleMillis(0f, reducedMotion = false))
-        assertEquals(0, talentSectionSettleMillis(1f, reducedMotion = true), "reduced motion: instant")
-        // ease-out: most of the way is covered in the first half
-        assertTrue(TalentMotionMetrics.EASING.transform(0.5f) > 0.75f)
+    fun aReleaseGoesToTheNextBoundaryInTheSwipeDirection() {
+        // from rest: one tab, no wrap-around
+        assertEquals(1, talentSectionReleaseTarget(grabbedAt = 0f, activeOrdinal = 0, direction = 1, count = 3))
+        assertEquals(0, talentSectionReleaseTarget(0f, 0, direction = -1, count = 3), "nothing before Tree 1")
+        assertEquals(2, talentSectionReleaseTarget(2f, 2, direction = 1, count = 3), "nothing after Tree 3")
+        assertEquals(1, talentSectionReleaseTarget(1f, 1, direction = 0, count = 3), "not confirmed: rest")
+        // against a running motion (Tree 2 → Tree 1, grabbed at 0.6): a forward swipe undoes it
+        assertEquals(1, talentSectionReleaseTarget(0.6f, activeOrdinal = 0, direction = 1, count = 3))
+        // along it: continues; unconfirmed: completes
+        assertEquals(0, talentSectionReleaseTarget(0.6f, activeOrdinal = 0, direction = -1, count = 3))
+        assertEquals(0, talentSectionReleaseTarget(0.6f, activeOrdinal = 0, direction = 0, count = 3))
+        // almost arrived (within a quarter page): a quick follow-up swipe goes on from there
+        assertEquals(2, talentSectionReleaseTarget(0.8f, activeOrdinal = 1, direction = 1, count = 3))
+        assertEquals(1, talentSectionReleaseTarget(0.6f, activeOrdinal = 1, direction = 1, count = 3), "mid-way: to Tree 2")
     }
 
     @Test
-    fun theIndicatorFollowsTheVisibleShareOfThePagesContinuously() {
-        assertEquals(0f, talentSectionIndicatorPosition(0, null, 0f))
-        // dragging Tree 1 a quarter left: a quarter towards Tree 2
-        assertEquals(0.25f, talentSectionIndicatorPosition(0, 1, -0.25f), 1e-5f)
-        // the switch begins: Tree 2 is active at +0.75, Tree 1 still mostly shown — same position
-        assertEquals(0.25f, talentSectionIndicatorPosition(1, 0, 0.75f), 1e-5f)
-        // a tap Tree 1 → Tree 3 travels across Tree 2
-        assertEquals(0f, talentSectionIndicatorPosition(2, 0, 1f), 1e-5f)
-        assertEquals(1f, talentSectionIndicatorPosition(2, 0, 0.5f), 1e-5f)
-        assertEquals(2f, talentSectionIndicatorPosition(2, 0, 0f), 1e-5f)
+    fun onlyThePagesOnScreenAndTheActiveOneAreComposed() {
+        assertEquals(listOf(0), talentSectionComposedPages(position = 0f, activeOrdinal = 0, count = 3), "at rest: one page")
+        assertEquals(listOf(0, 1), talentSectionComposedPages(position = 0.3f, activeOrdinal = 0, count = 3))
+        assertEquals(listOf(0, 1, 2), talentSectionComposedPages(position = 0.4f, activeOrdinal = 2, count = 3), "a tap across")
+        assertEquals(listOf(0), talentSectionComposedPages(position = -0.05f, activeOrdinal = 0, count = 3), "rubber band")
+        assertEquals(emptyList(), talentSectionComposedPages(0f, 0, 0))
     }
 
     @Test
-    fun onlyOneTransitionAtATimeAndATouchFinishesIt() {
-        val pager = TalentSectionPager()
-        pager.switchTo(from = 0, to = 1, order = order)
-        val first = assertNotNull(pager.transition)
-        assertEquals(1, first.active)
-        assertEquals(0, first.companion)
-        assertEquals(1f, first.activeOffset)
-        assertEquals(0f, first.companionOffset, "the old page starts fully shown")
-        assertTrue(first.running)
-
-        pager.switchTo(from = 1, to = 2, order = order) // a tab tap during the animation
-        val second = assertNotNull(pager.transition)
-        assertFalse(first.running, "the previous transition ended — nothing is queued")
-        assertEquals(2, second.active)
-        assertEquals(1, second.companion)
-
-        pager.finishNow() // a touch on the moving pages
-        assertFalse(second.running)
-        assertEquals(0f, second.activeOffset)
-
-        pager.switchTo(from = 2, to = 2, order = order)
-        assertNull(pager.transition, "no transition to the same section")
-    }
-
-    @Test
-    fun aCancelledSwipeEasesBackFromWhereItWasReleased() {
-        val pager = TalentSectionPager()
-        val released = talentSectionDragFrame(-40f, 360f, 0, order)
-        pager.settleBack(active = 0, frame = released)
-        val back = assertNotNull(pager.transition)
-        assertEquals(0, back.active)
-        assertEquals(1, back.companion, "the peeking Tree 2 goes back out")
-        assertEquals(released.activeOffset, back.activeOffset)
-        assertEquals(released.companionOffset, back.companionOffset, 1e-5f)
-        pager.settleBack(active = 0, frame = TalentSectionPageFrame.Settled)
-        assertNull(pager.transition, "nothing to ease back")
+    fun theSpringIsHorizontalPagersAndAWholePageIsVisuallyDoneIn220To340ms() {
+        val spring = FloatSpringSpec(
+            dampingRatio = TalentMotionMetrics.PAGE_SPRING_DAMPING,
+            stiffness = TalentMotionMetrics.PAGE_SPRING_STIFFNESS,
+            visibilityThreshold = TalentMotionMetrics.PAGE_REST_THRESHOLD,
+        )
+        fun remaining(ms: Long) = spring.getValueFromNanos(ms * 1_000_000, 1f, 0f, 0f)
+        assertEquals(400f, TalentMotionMetrics.PAGE_SPRING_STIFFNESS, "Spring.StiffnessMediumLow (PagerDefaults)")
+        assertEquals(1f, TalentMotionMetrics.PAGE_SPRING_DAMPING, "no bounce")
+        assertTrue(remaining(160) > 0.1f, "not instant")
+        assertTrue(remaining(240) < 0.05f, "95 % by 240 ms: ${remaining(240)}")
+        assertTrue(remaining(340) < 0.01f, "99 % by 340 ms: ${remaining(340)}")
+        // the release velocity is kept: the spring starts exactly at the finger's speed …
+        assertEquals(-3f, spring.getVelocityFromNanos(0, 0.4f, 0f, -3f), 1e-4f)
+        // … and a release with speed arrives sooner than one without
+        assertTrue(spring.getValueFromNanos(120_000_000, 0.6f, 0f, -4f) < spring.getValueFromNanos(120_000_000, 0.6f, 0f, 0f))
     }
 }

@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -129,7 +130,25 @@ class TalentTreeMotionUiTest {
         for (other in session.sections - section) assertNull(page(other), "$message: only one page is composed at rest")
     }
 
-    // ------------------------------------------------------------------ 1. direction + 2. exit / entry
+    /** The left edge of [section]'s page as drawn (its visible part's left edge, `w` when just off the right). */
+    private fun ComposeUiTest.leftOf(section: Int): Float = page(section)?.left ?: w
+
+    /** A drag of [steps] moves of [dx] dp, [millis] apart, from [start]; released when [release]. */
+    private fun ComposeUiTest.drag(
+        dx: Float,
+        steps: Int,
+        millis: Long = 16,
+        start: Offset = centre,
+        release: Boolean = true,
+    ) {
+        onRoot().performTouchInput {
+            down(start)
+            repeat(steps) { moveBy(Offset(dx, 0f), delayMillis = millis) }
+            if (release) up()
+        }
+    }
+
+    // ------------------------------------------------------------------ 1. direction + 2. both pages, the spring
 
     @Test
     fun aTabTapSlidesTheOldPageOutAndTheNewOneInFromTheTabsSide() {
@@ -137,24 +156,18 @@ class TalentTreeMotionUiTest {
             val (a, b) = session.sections
             onNodeWithText("Tree 2").performClick()
             advance(16)
-            // the very first frame: Tree 1 still fully shown, Tree 2 composed just beyond the right edge —
-            // the new tree never just appears
-            assertEquals(w, assertNotNull(page(a), "Tree 1 is still on screen").width)
-            assertTrue(composed(b), "Tree 2 is about to enter")
-            advance(32)
-            val b0 = assertNotNull(page(b), "Tree 2 is entering")
-            assertTrue(b0.left > 150f && b0.right == w, "Tree 2 enters from the right: $b0")
-
-            advance(68)
+            // the first frames: Tree 1 still almost fully shown, Tree 2 entering at the right edge
+            assertTrue(assertNotNull(page(a), "Tree 1 is still on screen").width > 0.75f * w)
+            assertTrue(composed(b), "Tree 2 is entering")
+            assertTrue(leftOf(b) > 0.75f * w, "from the right edge: ${leftOf(b)}")
+            advance(48)
             val a1 = assertNotNull(page(a))
             val b1 = assertNotNull(page(b))
             assertEquals(0f, a1.left, "forward: Tree 1 leaves to the LEFT")
             assertEquals(w, b1.right, "… and Tree 2 comes in from the RIGHT")
             assertEquals(a1.right, b1.left, 1f, "the pages are side by side, no gap, no overlap")
-            assertEquals(b1.width / w, indicator(), 0.03f, "the indicator shows exactly what the pages show")
-
-            advance(400)
-            assertSettledOn(session, b, "after 260 ms")
+            rest()
+            assertSettledOn(session, b, "at rest")
             onNodeWithText("Tree 2").assertIsSelected()
             assertEquals(1f, indicator(), 0.01f)
 
@@ -171,50 +184,55 @@ class TalentTreeMotionUiTest {
     }
 
     @Test
-    fun theTransitionEndsWithAnEaseOutAndTakesAbout260ms() {
+    fun aTabTapIsHorizontalPagersSpringVisuallyDoneIn220To340ms() {
         onPhone { session ->
             val b = session.sections[1]
             onNodeWithText("Tree 2").performClick()
             advance(16) // the animation's first frame
-            val samples = mutableListOf(w)
-            repeat(17) {
+            val samples = mutableListOf(w) // Tree 2's left edge every frame
+            repeat(22) {
                 advance(16)
-                assertTrue(composed(b))
-                samples += page(b)?.left ?: w // still just beyond the right edge
+                samples += leftOf(b)
             }
-            val travelled = samples.first() - samples.last()
-            val firstHalf = samples.first() - samples[8]
-            assertTrue(firstHalf > 0.7f * travelled, "decelerating: $samples")
-            assertTrue(samples.zipWithNext().all { (x, y) -> y <= x }, "never moves back: $samples")
-            assertEquals(0f, samples.last(), 1f, "at rest after ≈ 260 ms: $samples")
+            assertTrue(samples.zipWithNext().all { (x, y) -> y <= x }, "one direction, never back: $samples")
+            assertTrue(samples[10] > 0.1f * w, "not instant: ${samples[10]} left at ≈ 160 ms")
+            assertTrue(samples[21] < 0.015f * w, "visually done by ≈ 340 ms: ${samples[21]} dp left")
+            // decelerating into place: each of the last steps is smaller than the one before
+            val steps = samples.zipWithNext { x, y -> x - y }
+            assertTrue(steps.takeLast(8).zipWithNext().all { (x, y) -> y <= x + 0.01f }, "eases out: $steps")
         }
     }
 
-    // ------------------------------------------------------------------ finger-follow, 3. cancel
+    // ------------------------------------------------------------------ continuity, 3. cancel
 
     @Test
-    fun aSwipeCarriesBothPagesThenFinishesFromWhereTheFingerLetGo() {
+    fun aSwipeContinuesFromWhereAndAsFastAsTheFingerLetGo() {
         onPhone { session ->
             val (a, b) = session.sections
-            onRoot().performTouchInput {
-                down(centre)
-                repeat(10) { moveBy(Offset(-10f, 0f)) }
-            }
+            drag(dx = -10f, steps = 10, release = false) // 10 dp per 16 ms ≈ 625 dp/s
             advance(16)
             val a0 = assertNotNull(page(a))
             val b0 = assertNotNull(page(b), "Tree 2 follows the finger in")
-            assertEquals(260f, a0.right, 2f, "Tree 1 moved with the finger, 1:1")
+            // the pages follow from where the swipe locked (after the first move): 90 dp, 1:1
+            assertEquals(270f, a0.right, 2f, "Tree 1 moved with the finger, 1:1")
             assertEquals(a0.right, b0.left, 1f)
-            assertEquals(b0.width / w, indicator(), 0.03f, "the indicator follows the finger too")
+            assertEquals(b0.width / w, indicator(), 0.02f, "the indicator follows the finger too")
             session.assertCameraAtFit(a)
 
             onRoot().performTouchInput { up() }
             advance(16)
             val a1 = assertNotNull(page(a), "the leaving page continues from the release")
-            assertTrue(abs(a1.right - a0.right) < 40f, "no jump at the release: ${a0.right} → ${a1.right}")
+            val firstStep = a0.right - a1.right
+            assertTrue(firstStep in 2f..30f, "no jump and no stop at the release: moved $firstStep dp in one frame")
             assertEquals(b, session.open(), "the switch is decided at the release")
-            advance(60)
-            assertTrue(assertNotNull(page(a)).right < a1.right, "still leaving to the left")
+            // the direction is kept to the end: always leftwards, never back
+            var previous = a1.right
+            repeat(12) {
+                advance(16)
+                val now = page(a)?.right ?: 0f
+                assertTrue(now <= previous + 0.01f, "keeps moving left: $previous → $now")
+                previous = now
+            }
             rest()
             assertSettledOn(session, b, "the swipe finished")
             session.assertCameraAtFit(a)
@@ -224,51 +242,93 @@ class TalentTreeMotionUiTest {
     }
 
     @Test
-    fun aCancelledSwipeEasesBackToTheSameSection() {
+    fun aCancelledSwipeEasesBackToTheSameSectionWithoutBounce() {
         onPhone { session ->
             val (a, b) = session.sections
-            onRoot().performTouchInput {
-                down(centre)
-                repeat(8) { moveBy(Offset(-5f, 0f), delayMillis = 60) } // 40 dp, slowly: below the threshold
-            }
+            drag(dx = -5f, steps = 8, millis = 60, release = false) // 40 dp, slowly: below the threshold
             advance(16)
             val peek = assertNotNull(page(b), "Tree 2 peeks in")
-            assertEquals(320f, peek.left, 2f)
+            assertEquals(330f, peek.left, 2f, "30 dp after the slop lock")
             onRoot().performTouchInput { up() }
             advance(16)
             assertEquals(a, session.open(), "not confirmed: still Tree 1")
-            val start = assertNotNull(page(b)).left
-            assertTrue(abs(start - peek.left) < 10f, "eases back from the release: $start")
-            advance(50)
-            assertTrue(assertNotNull(page(b)).left > start, "Tree 2 goes back out to the right")
+            val back = mutableListOf(leftOf(b))
+            assertTrue(abs(back.first() - peek.left) < 6f, "eases back from the release: ${back.first()}")
+            repeat(25) {
+                advance(16)
+                back += leftOf(b)
+            }
+            assertTrue(back.zipWithNext().all { (x, y) -> y >= x - 0.01f }, "straight back, no bounce: $back")
+            assertEquals(w, back.last(), 0.5f)
             rest()
             assertSettledOn(session, a, "cancelled")
             assertTrue(session.reported.isEmpty())
         }
     }
 
-    // ------------------------------------------------------------------ 4. fast repeats + 5. tab during a transition
+    // ------------------------------------------------------------------ interruption, 4. fast repeats, 5. tab mid-motion
 
     @Test
-    fun fastRepeatedSwipesNeverQueueAnimations() {
+    fun aTouchStopsThePagesWhereTheyAreAndTheFingerCarriesThemOn() {
+        onPhone { session ->
+            val (a, b) = session.sections
+            onNodeWithText("Tree 2").performClick()
+            advance(16 + 64)
+            val before = leftOf(b)
+            assertTrue(before in 60f..300f, "Tree 2 is mid-way: $before")
+            onRoot().performTouchInput { down(centre) } // catch
+            advance(16)
+            assertEquals(before, leftOf(b), 0.5f, "caught exactly where it was drawn — no snap to the end")
+            advance(100)
+            assertEquals(before, leftOf(b), 0.5f, "and held there")
+            // the finger now carries the pages from that position, 1:1 (after the slop lock)
+            onRoot().performTouchInput {
+                repeat(5) { moveBy(Offset(10f, 0f), delayMillis = 60) } // slowly back towards Tree 1
+            }
+            advance(16)
+            assertEquals(before + 40f, leftOf(b), 1.5f, "held + the drag since the lock")
+            assertEquals(b, session.open())
+            // released without a confirmed swipe: the interrupted transition completes
+            onRoot().performTouchInput { up() }
+            rest()
+            assertSettledOn(session, b, "interrupted, then completed")
+            assertTrue(session.reported.isEmpty())
+
+            // a confirmed swipe against a running transition undoes it, from where it is
+            onNodeWithText("Tree 1").performClick()
+            advance(16 + 64)
+            val mid = leftOf(b)
+            drag(dx = -15f, steps = 6, release = false) // finger left: back towards Tree 2
+            advance(16)
+            assertTrue(leftOf(b) < mid, "the pages follow the finger from mid-way")
+            onRoot().performTouchInput { up() }
+            rest()
+            assertSettledOn(session, b, "the swipe took Tree 2 back")
+            assertNull(page(a))
+        }
+    }
+
+    @Test
+    fun fastRepeatedSwipesAdvanceOneTabEachWithoutJumps() {
         onPhone { session ->
             val (a, b, c) = session.sections
-            fun fling() = onRoot().performTouchInput {
-                down(centre)
+            drag(dx = -20f, steps = 6, millis = 10) // a fling
+            advance(120)
+            val tree2 = leftOf(b)
+            onRoot().performTouchInput { down(centre) } // the next swipe begins mid-motion
+            advance(16)
+            assertEquals(tree2, leftOf(b), 0.5f, "the next touch starts from the drawn position")
+            onRoot().performTouchInput {
                 repeat(6) { moveBy(Offset(-20f, 0f), delayMillis = 10) }
                 up()
             }
-            fling()
-            advance(48) // Tree 1 → Tree 2 is still moving …
-            assertNotNull(page(a))
-            fling() // … the next touch lets the pages rest at once and swipes on from Tree 2
             advance(16)
-            assertEquals(c, session.open())
-            assertNull(page(a), "the first transition ended: nothing queued behind it")
-            assertNotNull(page(b))
-            fling() // no wrap-around after the last section
+            assertEquals(c, session.open(), "the second swipe advanced one more tab")
+            advance(120)
+            drag(dx = -20f, steps = 6, millis = 10) // no wrap-around after the last tab
             rest()
             assertSettledOn(session, c, "three quick swipes: Tree 3, deterministic")
+            assertNull(page(a))
             onNodeWithText("Tree 3").assertIsSelected()
             assertEquals(2f, indicator(), 0.01f)
             assertTrue(session.reported.isEmpty())
@@ -276,21 +336,65 @@ class TalentTreeMotionUiTest {
     }
 
     @Test
-    fun aTabTapDuringATransitionRetargetsWithoutAQueue() {
+    fun aTabTapDuringAMotionContinuesFromWhereItIsAndPassesTheTabBetween() {
         onPhone { session ->
             val (a, b, c) = session.sections
             onNodeWithText("Tree 2").performClick()
-            advance(16 + 80)
-            onNodeWithText("Tree 3").performClick()
+            advance(16 + 64)
+            onNodeWithText("Tree 3").performClick() // (a click itself lets the test clock run a few frames)
+            val aLeft = assertNotNull(page(a)).right
             advance(16)
-            assertNull(page(a), "Tree 1's transition ended at once")
-            assertNotNull(page(b), "Tree 2 leaves …")
-            assertTrue(composed(c), "… and Tree 3 comes in")
+            val aNext = assertNotNull(page(a), "Tree 1 does not vanish").right
+            assertTrue(aNext <= aLeft && aLeft - aNext < 70f, "Tree 1 keeps moving left, one frame's way: $aLeft → $aNext")
+            // the indicator travels across Tree 2 to Tree 3, like a pager
+            var previous = indicator()
+            repeat(20) {
+                advance(16)
+                val now = indicator()
+                assertTrue(now >= previous - 0.001f, "the indicator only moves towards Tree 3: $previous → $now")
+                previous = now
+            }
             rest()
             assertSettledOn(session, c, "the last tap wins")
             onNodeWithText("Tree 3").assertIsSelected()
+            assertNull(page(b))
             assertTrue(session.reported.isEmpty())
         }
+    }
+
+    @Test
+    fun theIndicatorMatchesThePagesOnEveryIntermediateFrame() {
+        onPhone { session ->
+            val b = session.sections[1]
+            onNodeWithText("Tree 2").performClick()
+            repeat(18) {
+                advance(16)
+                val shown = (w - leftOf(b)) / w // the visible share of Tree 2
+                assertEquals(shown, indicator(), 0.02f, "frame $it")
+            }
+        }
+    }
+
+    @Test
+    fun aTapThatCatchesMovingPagesNeverSelects() {
+        onPhone { session ->
+            onNodeWithText("Tree 2").performClick()
+            advance(16 + 48)
+            onRoot().performTouchInput { click(centre) }
+            rest()
+            onNodeWithTag(TALENT_INSPECTOR_COMPACT_TAG).assertDoesNotExist()
+            assertSettledOn(session, session.sections[1], "the caught motion completed")
+            // at rest a tap selects as always
+            onNodeWithContentDescription(assertNotNull(firstTalentOf(session, 1))).performClick()
+            rest()
+            onNodeWithTag(TALENT_INSPECTOR_COMPACT_TAG).assertExists()
+        }
+    }
+
+    private fun firstTalentOf(session: Session, ordinal: Int): String? {
+        val warrior = productState("WARRIOR")
+        val sections = (buildTalentTreeSections(warrior.engine.tree, warrior.model) as TalentTreeSectionsResult.Sectioned)
+        return sections.sections.first { it.index == session.sections[ordinal] }.model.nodes.firstNotNullOfOrNull { it.name }
     }
 
     // ------------------------------------------------------------------ 6. cameras + 7. autosave

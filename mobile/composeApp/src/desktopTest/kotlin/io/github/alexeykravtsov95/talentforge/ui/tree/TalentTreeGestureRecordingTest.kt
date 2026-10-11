@@ -66,7 +66,13 @@ class TalentTreeGestureRecordingTest {
     }
 
     /** A drag in [steps] injected moves, one frame per move, released at the end, then the settle. */
-    private fun ComposeUiTest.recordedDrag(start: Offset, delta: Offset, steps: Int = 14, moveMillis: Long = 16) {
+    private fun ComposeUiTest.recordedDrag(
+        start: Offset,
+        delta: Offset,
+        steps: Int = 14,
+        moveMillis: Long = 16,
+        settle: Int = 12,
+    ) {
         onRoot().performTouchInput { down(start * DENSITY) }
         repeat(steps) {
             onRoot().performTouchInput { moveBy(delta * DENSITY / steps.toFloat(), delayMillis = moveMillis) }
@@ -74,12 +80,12 @@ class TalentTreeGestureRecordingTest {
             shoot()
         }
         onRoot().performTouchInput { up() }
-        settleFrames()
+        settleFrames(settle)
     }
 
-    /** ≈ 320 ms of frames: a page transition or the sheet settling. */
-    private fun ComposeUiTest.settleFrames() {
-        repeat(10) {
+    /** [frames] × 32 ms of frames (≈ 380 ms by default): a page transition or the sheet settling. */
+    private fun ComposeUiTest.settleFrames(frames: Int = 12) {
+        repeat(frames) {
             advance(32)
             shoot()
         }
@@ -121,6 +127,30 @@ class TalentTreeGestureRecordingTest {
             shoot(hold = 6)
             // a cancelled swipe: 40 dp slowly, Tree 2 peeks in and eases back out
             recordedDrag(start = Offset(220f, 420f), delta = Offset(-40f, 0f), steps = 8, moveMillis = 60)
+            shoot(hold = 6)
+            // quick double swipes Tree 1 → 2 → 3 (the second starts mid-motion) and back
+            repeat(2) { index ->
+                val left = index == 0
+                recordedDrag(
+                    start = Offset(if (left) 250f else 110f, 420f),
+                    delta = Offset(if (left) -120f else 120f, 0f),
+                    steps = 6,
+                    settle = 4,
+                )
+                recordedDrag(
+                    start = Offset(if (left) 250f else 110f, 420f),
+                    delta = Offset(if (left) -120f else 120f, 0f),
+                    steps = 6,
+                )
+                shoot(hold = 4)
+            }
+            // a tab tap caught mid-way by a finger: the pages stop where they are, then follow it back
+            onNodeWithText("Tree 2").performClick()
+            repeat(3) {
+                advance(32)
+                shoot()
+            }
+            recordedDrag(start = Offset(180f, 420f), delta = Offset(80f, 0f), steps = 8, moveMillis = 40)
             shoot(hold = 6)
             // Tree 1 zoomed by a pinch, then Tree 2 and back: Tree 1 comes back with its zoom
             onRoot().performTouchInput {

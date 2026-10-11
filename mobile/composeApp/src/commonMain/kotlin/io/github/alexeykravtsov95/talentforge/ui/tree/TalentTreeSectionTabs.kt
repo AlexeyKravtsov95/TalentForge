@@ -172,7 +172,7 @@ fun TalentTreeSectionTabs(
     modifier: Modifier = Modifier,
     /**
      * PR #19 motion: the indicator's live position (fractional tab ordinal,
-     * see [talentSectionIndicatorPosition]) read at layout time — it travels
+     * the pager position, see [TalentSectionPager]) read at layout time — it travels
      * with the pages instead of animating on its own, and the label emphasis
      * follows the tab the screen mostly shows. `selected` (accessibility)
      * stays the logical section. `null`: the 1A v2 S4 200 ms animation.

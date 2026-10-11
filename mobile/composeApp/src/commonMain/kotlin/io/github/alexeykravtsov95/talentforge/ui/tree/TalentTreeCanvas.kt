@@ -39,6 +39,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
@@ -117,10 +118,11 @@ fun TalentTreeCanvas(
      * ([talentSectionSwipeDirection]) — `+1` next section, `-1` previous
      * ([sectionSwipeDirectionOf]), `0` none — with the drag the release left
      * (dp), so the pages can finish (or ease back) from where the finger let
-     * go. Called for every release that moved the pages, including `0`.
+     * go, and the finger's horizontal velocity there (dp/s), so the motion continues
+     * without a break in speed. Called for every release that moved the pages, including `0`.
      * `null` (landscape/tablet whole tree) disables it.
      */
-    onSectionSwipe: ((direction: Int, releaseDragDp: Float) -> Unit)? = null,
+    onSectionSwipe: ((direction: Int, releaseDragDp: Float, releaseVelocityDpPerSecond: Float) -> Unit)? = null,
     /**
      * PR #19 motion: `false` for a page that is only shown (the section
      * leaving, or the neighbour peeking in): no pointer input and no node
@@ -334,6 +336,8 @@ fun TalentTreeCanvas(
         Box(
             Modifier
                 .matchParentSize()
+                // a shown-only page (PR #19 motion) is a picture: nothing in it reaches semantics
+                .then(if (interactive) Modifier else Modifier.clearAndSetSemantics {})
                 .graphicsLayer {
                     val viewport = viewportState.viewport ?: return@graphicsLayer
                     scaleX = viewport.scale
@@ -430,7 +434,7 @@ private suspend fun PointerInputScope.talentTreeGestures(
     viewportState: TalentTreeViewportState,
     onNodeTap: (Int) -> Unit,
     onEmptyTap: () -> Unit,
-    sectionSwipe: () -> ((Int, Float) -> Unit)?,
+    sectionSwipe: () -> ((Int, Float, Float) -> Unit)?,
     inSystemGestureZone: (Offset) -> Boolean,
     isRtl: () -> Boolean,
 ) {
@@ -463,6 +467,7 @@ private suspend fun PointerInputScope.talentTreeGestures(
         var lastSinglePosition = down.position
         // FIT model (decided at the slop): a locked section swipe, or a vertical-only scroll
         var fitSwipe = false
+        var fitSwipeFrom = down.position
         var lockSideways = false
         // edge model: where the finger was when the content edge was reached
         var edgeAnchor: Offset? = null
@@ -496,12 +501,14 @@ private suspend fun PointerInputScope.talentTreeGestures(
                     // PR #19: the release confirms (or not) a section switch
                     val onSwipe = sectionSwipe()
                     if (onSwipe != null) {
+                        // the finger's speed at the release carries into the pages' motion (never after a pinch)
+                        val releaseVelocity = if (multiTouchSeen) 0f else velocity.calculateVelocity().x / densityScale
                         val direction = if (fitSwipe) {
                             val total = screenPxToDp(lastSinglePosition - down.position)
                             talentSectionFitSwipeDirection(
                                 totalDxDp = total.x,
                                 totalDyDp = total.y,
-                                velocityXDpPerSecond = velocity.calculateVelocity().x / densityScale,
+                                velocityXDpPerSecond = releaseVelocity,
                                 multiTouch = multiTouchSeen,
                                 startedInSystemGestureZone = startedInSystemGestureZone,
                                 rtl = isRtl(),
@@ -522,7 +529,7 @@ private suspend fun PointerInputScope.talentTreeGestures(
                         viewportState.sectionOverscrollDp = 0f
                         swipeReported = true
                         // the pages finish the switch, or ease back, from where they were let go
-                        if (direction != 0 || releaseDrag != 0f) onSwipe(direction, releaseDrag)
+                        if (direction != 0 || releaseDrag != 0f) onSwipe(direction, releaseDrag, releaseVelocity)
                     }
                     break
                 }
@@ -555,14 +562,20 @@ private suspend fun PointerInputScope.talentTreeGestures(
                         viewportState.sectionSwipeModel() == TalentSectionSwipeModel.FIT_SWIPE
                     ) {
                         val moved = screenPxToDp(lastSinglePosition - down.position)
-                        if (talentSectionFitSwipeLocks(moved.x, moved.y)) fitSwipe = true else lockSideways = true
+                        if (talentSectionFitSwipeLocks(moved.x, moved.y)) {
+                            fitSwipe = true
+                            // the pages follow from where the swipe locked: no jump by the slop
+                            fitSwipeFrom = lastSinglePosition
+                        } else {
+                            lockSideways = true
+                        }
                     }
                 }
 
                 val anchor = previousCentroid
                 if (fitSwipe && passedSlop) {
                     // FIT: the camera stays where it is; the canvas follows the finger (bounded)
-                    viewportState.sectionOverscrollDp = screenPxToDp(lastSinglePosition - down.position).x
+                    viewportState.sectionOverscrollDp = screenPxToDp(lastSinglePosition - fitSwipeFrom).x
                     for (change in pressedChanges) {
                         if (change.positionChanged()) change.consume()
                     }
@@ -614,7 +627,7 @@ private suspend fun PointerInputScope.talentTreeGestures(
             // page half-way: it eases back like a released, unconfirmed swipe
             val leftOver = viewportState.sectionOverscrollDp
             viewportState.sectionOverscrollDp = 0f
-            if (!swipeReported && leftOver != 0f) sectionSwipe()?.invoke(0, leftOver)
+            if (!swipeReported && leftOver != 0f) sectionSwipe()?.invoke(0, leftOver, 0f)
         }
     }
 }

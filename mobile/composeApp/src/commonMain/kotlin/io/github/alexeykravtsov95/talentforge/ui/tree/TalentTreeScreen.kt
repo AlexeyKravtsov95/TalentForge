@@ -27,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.mapSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -378,7 +379,8 @@ private fun ReadyTalentTreeScreen(
     var tabHighlight by remember { mutableStateOf<TalentTabHighlight?>(null) }
     var tabHighlightToken by remember { mutableStateOf(0) }
     // PR #19 motion: the section page transition (view state only, never saved)
-    val pager = remember { TalentSectionPager() }
+    val pagerScope = rememberCoroutineScope()
+    val pager = remember { TalentSectionPager(pagerScope) }
     val reducedMotion = prefersReducedMotion()
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     // M5.UX.2a: the portrait inspector's MEASURED covered height (never an
@@ -673,15 +675,50 @@ private fun ReadyTalentTreeScreen(
                  */
                 val sectionOrder = portraitSections?.sections?.map { it.index }.orEmpty()
 
+                // the pages' width (the canvas region spans the whole workspace width)
+                val pageWidthDp = maxWidth.value
+                val pageWidthPx = with(LocalDensity.current) { maxWidth.toPx() }
+                // PR #19 motion: ONE pager position (tab ordinals) drives every page
+                // and the tab indicator; a change made without motion just rests there
+                val sectionCount = sectionOrder.size
+                val activeOrdinal = activeSection?.let { sectionOrder.indexOf(it) } ?: -1
+                if (activeOrdinal >= 0) pager.sync(activeOrdinal)
+
                 /**
-                 * PR #19 motion: a section change from [from] (tab, swipe,
-                 * Show, Back chip) begins the page transition in the same
-                 * event — the first frame already shows both pages, so the
-                 * new tree never just appears.
+                 * The pager position as drawn now: the holding finger's (from
+                 * where it grabbed the pages, 1:1), or the motion's. Read at draw
+                 * / layout time only, never per frame in composition.
                  */
-                fun beginSectionTransition(from: Int?, to: Int, releaseOffset: Float = 0f) {
-                    if (from != null && from != to) pager.switchTo(from, to, sectionOrder, rtl, releaseOffset)
+                fun currentPosition(): Float {
+                    val held = pager.heldFrom
+                    return if (held != null) {
+                        talentSectionHeldPosition(held, activeCamera.sectionOverscrollDp, pageWidthDp, sectionCount, rtl)
+                    } else {
+                        pager.position
+                    }
                 }
+
+                /**
+                 * PR #19 motion: a section change (tab, Show, Back chip) moves the
+                 * ONE pager position from where it is drawn now, carrying the
+                 * running motion's velocity — from rest the old page slides out
+                 * and the new one in; mid-motion nothing jumps.
+                 */
+                fun beginSectionTransition(from: Int?, to: Int) {
+                    val toOrdinal = sectionOrder.indexOf(to)
+                    if (from == null || from == to || toOrdinal < 0) return
+                    pager.settle(
+                        from = currentPosition(),
+                        to = toOrdinal,
+                        initialVelocity = if (pager.moving) pager.velocity else 0f,
+                        reducedMotion = reducedMotion,
+                        count = sectionCount,
+                    )
+                }
+
+                // a tap that only caught moving pages never selects (as on a native pager)
+                val onCanvasNodeSelected: (Int) -> Unit = { nodeId -> if (!pager.caughtMotion) onNodeSelected(nodeId) }
+                val onCanvasSelectionCleared: () -> Unit = { if (!pager.caughtMotion) onSelectionCleared() }
 
                 val onSectionSelected: (Int) -> Unit = { index ->
                     if (index == activeSection) {
@@ -704,7 +741,6 @@ private fun ReadyTalentTreeScreen(
                         }
                     }
                 }
-                LaunchedEffect(pager.transition) { pager.transition?.run(reducedMotion) }
 
                 /**
                  * B3 07: Show selects the direct prerequisite (one hop, never
@@ -776,7 +812,7 @@ private fun ReadyTalentTreeScreen(
                     model: TalentTreeUiModel,
                     camera: TalentTreeViewportState,
                     modifier: Modifier,
-                    onSectionSwipe: ((Int, Float) -> Unit)? = null,
+                    onSectionSwipe: ((Int, Float, Float) -> Unit)? = null,
                     interactive: Boolean = true,
                     pageOffsetPx: (() -> Float)? = null,
                     pageTag: String? = null,
@@ -793,8 +829,8 @@ private fun ReadyTalentTreeScreen(
                         guideToken = guideToken,
                         purchaseNodeId = purchaseFeedback?.nodeId,
                         purchaseToken = purchaseFeedback?.token ?: 0,
-                        onNodeSelected = onNodeSelected,
-                        onSelectionCleared = onSelectionCleared,
+                        onNodeSelected = onCanvasNodeSelected,
+                        onSelectionCleared = onCanvasSelectionCleared,
                         modifier = modifier,
                         onSectionSwipe = onSectionSwipe,
                         interactive = interactive,
@@ -803,63 +839,34 @@ private fun ReadyTalentTreeScreen(
                     )
                 }
 
-                // the pages' width (the canvas region spans the whole workspace width)
-                val pageWidthDp = maxWidth.value
-                val pageWidthPx = with(LocalDensity.current) { maxWidth.toPx() }
-
                 /**
                  * PR #19: a confirmed section swipe opens the neighbouring
                  * section through the SAME path as a tab tap (selection cleared,
                  * cameras kept, BuildState untouched); none past the first/last.
-                 * The pages continue from where the finger released them; an
-                 * unconfirmed swipe eases them back.
+                 * The motion continues from where the finger let go, with its
+                 * velocity: one tab on from the tab the touch started on, or
+                 * back to rest when the swipe was not confirmed.
                  */
-                val onSectionSwipe: (Int, Float) -> Unit = { direction, releaseDragDp ->
+                val onSectionSwipe: (Int, Float, Float) -> Unit = { direction, releaseDragDp, releaseVelocity ->
                     val from = activeSection
-                    if (from != null) {
-                        val released = talentSectionDragFrame(releaseDragDp, pageWidthDp, from, sectionOrder, rtl)
-                        val to = neighbourSection(sectionOrder, from, direction)
-                        if (to != null) {
-                            beginSectionTransition(from, to, releaseOffset = released.activeOffset)
+                    if (from != null && activeOrdinal >= 0 && pageWidthDp > 0f) {
+                        val grabbedAt = pager.heldFrom ?: pager.position
+                        val released = talentSectionHeldPosition(grabbedAt, releaseDragDp, pageWidthDp, sectionCount, rtl)
+                        // past the first / last tab only the rubber band moved: it returns without speed
+                        val outside = released < 0f || released > sectionCount - 1
+                        val speed = if (outside) 0f else talentSectionPositionVelocity(releaseVelocity, pageWidthDp, rtl)
+                        val target = talentSectionReleaseTarget(grabbedAt, activeOrdinal, direction, sectionCount)
+                        pager.settle(released, target, speed, reducedMotion, sectionCount)
+                        val to = sectionOrder[target]
+                        if (to != from) {
                             onSelectionCleared()
                             cameras.selectedSection = to
-                        } else {
-                            pager.settleBack(from, released)
                         }
                     }
                 }
 
-                // PR #19 motion: what the pages show right now. Composition only
-                // reacts to a transition starting/ending or a drag changing side;
-                // the offsets themselves are read at draw / layout time.
-                val runningTransition = pager.transition?.takeIf { it.running && it.active == activeSection }
-                val dragSide by remember(activeCamera) {
-                    derivedStateOf {
-                        val drag = activeCamera.sectionOverscrollDp
-                        if (drag < 0f) -1 else if (drag > 0f) 1 else 0
-                    }
-                }
-                val dragNeighbour = if (runningTransition == null && dragSide != 0 && activeSection != null) {
-                    neighbourSection(sectionOrder, activeSection, sectionSwipeDirectionOf(dragSide.toFloat(), rtl))
-                } else {
-                    null
-                }
-                val companionSection = runningTransition?.companion ?: dragNeighbour
-                fun liveDragFrame(): TalentSectionPageFrame = if (activeSection != null) {
-                    talentSectionDragFrame(activeCamera.sectionOverscrollDp, pageWidthDp, activeSection, sectionOrder, rtl)
-                } else {
-                    TalentSectionPageFrame.Settled
-                }
-                val activePageOffset: () -> Float = { runningTransition?.activeOffset ?: liveDragFrame().activeOffset }
-                val companionPageOffset: () -> Float = {
-                    runningTransition?.companionOffset ?: liveDragFrame().companionOffset
-                }
                 val indicatorPosition: () -> Float = {
-                    talentSectionIndicatorPosition(
-                        activeOrdinal = sectionOrder.indexOf(activeSection).coerceAtLeast(0),
-                        companionOrdinal = companionSection?.let { sectionOrder.indexOf(it) },
-                        activeOffset = activePageOffset(),
-                    )
+                    currentPosition().coerceIn(0f, (sectionCount - 1).coerceAtLeast(0).toFloat())
                 }
 
                 // The workspace below the header, with the reset notice as its
@@ -913,28 +920,38 @@ private fun ReadyTalentTreeScreen(
                             Box(Modifier.fillMaxSize()) {
                                 if (activeSectionModel != null) {
                                     // PR #19 motion: the section pages. One canvas per
-                                    // section (keyed, its own camera); the active page is
-                                    // the ONLY interactive one, the leaving / peeking page
-                                    // is drawn only. Both move together: with the finger
-                                    // (the canvas reports the drag) and then easing out.
-                                    // A touch on moving pages lets them rest at once, so
-                                    // fast repeated swipes never queue animations.
-                                    val pages = listOfNotNull(
-                                        companionSection?.takeIf { it != activeSectionModel.index },
-                                        activeSectionModel.index,
-                                    )
+                                    // section (keyed, its own camera): the active page is
+                                    // the ONLY interactive one; a page coming into view is
+                                    // composed as soon as it shows (drawn only, invisible to
+                                    // accessibility), like HorizontalPager. All of them move
+                                    // by ONE position, read at draw time; composition only
+                                    // runs when a page enters or leaves. A touch stops a
+                                    // running motion where it is drawn; the finger carries it.
+                                    val composedPages by remember(pager, activeCamera, activeOrdinal, sectionCount, pageWidthDp) {
+                                        derivedStateOf { talentSectionComposedPages(currentPosition(), activeOrdinal, sectionCount) }
+                                    }
                                     Box(
                                         Modifier
                                             .fillMaxSize()
                                             .clipToBounds()
-                                            .pointerInput(pager) {
+                                            .pointerInput(pager, reducedMotion, sectionCount) {
                                                 awaitEachGesture {
                                                     awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
-                                                    pager.finishNow()
+                                                    pager.grab()
+                                                    // after the canvas has handled the release (Final pass): a touch
+                                                    // that did not swipe lets the motion it stopped go on
+                                                    do {
+                                                        val event = awaitPointerEvent(PointerEventPass.Final)
+                                                    } while (event.changes.any { it.pressed })
+                                                    pager.heldFrom?.let { held ->
+                                                        pager.settle(held, pager.target, 0f, reducedMotion, sectionCount)
+                                                    }
+                                                    pager.endTouch()
                                                 }
                                             },
                                     ) {
-                                        for (section in pages) {
+                                        for (ordinal in composedPages) {
+                                            val section = sectionOrder[ordinal]
                                             key(section) {
                                                 val pageModel = portraitSections?.section(section)
                                                 val isActive = section == activeSectionModel.index
@@ -944,10 +961,8 @@ private fun ReadyTalentTreeScreen(
                                                         camera = cameras.stateOf(section),
                                                         onSectionSwipe = if (isActive) onSectionSwipe else null,
                                                         interactive = isActive,
-                                                        pageOffsetPx = if (isActive) {
-                                                            { activePageOffset() * pageWidthPx }
-                                                        } else {
-                                                            { companionPageOffset() * pageWidthPx }
+                                                        pageOffsetPx = {
+                                                            talentSectionPageX(ordinal, currentPosition(), rtl) * pageWidthPx
                                                         },
                                                         pageTag = talentSectionPageTag(section),
                                                         modifier = Modifier.fillMaxSize(),
@@ -1001,7 +1016,7 @@ private fun ReadyTalentTreeScreen(
                                 LaunchedEffect(sheetOpen) {
                                     val spec = tween<Float>(
                                         durationMillis = if (reducedMotion) 0 else TalentMotionMetrics.SHEET_MS,
-                                        easing = TalentMotionMetrics.EASING,
+                                        easing = TalentMotionMetrics.SHEET_EASING,
                                     )
                                     sheetProgress.animateTo(if (sheetOpen) 1f else 0f, spec)
                                 }
