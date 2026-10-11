@@ -50,6 +50,7 @@ import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAs
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentDescriptionsLoader
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentIconsLoader
 import io.github.alexeykravtsov95.talentforge.ui.library.REFERENCE_BUNDLE
+import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTypography
 import io.github.alexeykravtsov95.talentforge.ui.theme.classAccentFor
@@ -479,6 +480,25 @@ private fun ReadyTalentTreeScreen(
     }
     val onMaxRank: (Int) -> Unit = { nodeId ->
         applyEdit(editing.spendToMax(current.engine, nodeId), purchasedNodeId = nodeId)
+    }
+
+    // PR #19 / 1A v2 S6 system Back: close the ⋯ sheet, else collapse the
+    // inspector, else clear the selection — one step per Back. Registered
+    // after the app's navigation handler, so it takes precedence while
+    // enabled; with nothing open the app's own Back (autosave flush,
+    // re-entrancy guard) navigates as before. View state only: never the build.
+    PlatformBackHandler(enabled = buildActionsOpen || selectedNodeId != null) {
+        when (editorBackStep(inspectorExpanded, selectedNodeId != null, buildActionsOpen)) {
+            EditorBackStep.CLOSE_BUILD_ACTIONS -> buildActionsOpen = false
+            EditorBackStep.COLLAPSE_INSPECTOR -> onInspectorExpandedChange(false)
+            EditorBackStep.CLEAR_SELECTION -> {
+                onShowGuideChange(null)
+                onInspectorExpandedChange(false)
+                onSelectedNodeIdChange(null)
+                sectionReturn = null
+            }
+            EditorBackStep.NAVIGATE -> Unit // disabled in this state: the app's handler receives it
+        }
     }
 
     BoxWithConstraints(modifier.fillMaxSize()) {
