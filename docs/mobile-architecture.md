@@ -471,6 +471,13 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
       (`talentSectionReleaseTarget`: the next boundary in the swipe direction,
       within ¼ page of the motion's tab it counts as arrived, an unconfirmed
       touch rests on the active tab);
+    - release velocity: Compose's `VelocityTracker` fed through
+      `addPointerInputChange` with the down, every move (including the touch
+      samples Android batches into one event between two frames) and the lift,
+      so the estimate does not depend on the display rate and a finger that
+      rests before the lift releases without speed. The "one frame ahead" lead
+      is `FRAME_LEAD_NANOS`, one 60 Hz frame: at 90/120 Hz the first frame after
+      a release advances by 1.5/2 frames' worth;
     - touch: a touch stops the motion exactly where it is drawn
       (`grab`/`heldFrom`), and a tap that only caught moving pages never selects;
     - section changes: tab, Show and Back chip call `pager.settle` from the
