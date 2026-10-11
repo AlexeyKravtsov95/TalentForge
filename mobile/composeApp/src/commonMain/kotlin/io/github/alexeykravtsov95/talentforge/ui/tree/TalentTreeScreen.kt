@@ -31,6 +31,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.mapSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -68,6 +70,7 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTypography
 import io.github.alexeykravtsov95.talentforge.ui.theme.classAccentFor
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 
 /**
  * The M4.3/M5.1 production screen: the Talent Tree as an interactive **local
@@ -684,6 +687,23 @@ private fun ReadyTalentTreeScreen(
                 val activeOrdinal = activeSection?.let { sectionOrder.indexOf(it) } ?: -1
                 if (activeOrdinal >= 0) pager.sync(activeOrdinal)
 
+                // PR #19 round 6: the other pages are composed ahead, at rest, one per
+                // frame (nearest first), and kept, so no motion composes or disposes a
+                // page (talentSectionComposedPages). Section indices of this tree.
+                var warmSections by remember(portraitSections) { mutableStateOf(emptySet<Int>()) }
+                LaunchedEffect(portraitSections, activeSection) {
+                    val order = sectionOrder
+                    while (true) {
+                        snapshotFlow { !pager.moving && pager.heldFrom == null }.first { it }
+                        withFrameNanos { } // the frame that is due first: the active page's own
+                        if (pager.moving || pager.heldFrom != null) continue
+                        val active = order.indexOf(activeSection)
+                        val warm = warmSections.map { order.indexOf(it) }.filter { it >= 0 }.toSet()
+                        val next = talentSectionNextWarmPage(active, order.size, warm) ?: break
+                        warmSections = warmSections + order[next]
+                    }
+                }
+
                 /**
                  * The pager position as drawn now: the holding finger's (from
                  * where it grabbed the pages, 1:1), or the motion's. Read at draw
@@ -921,14 +941,22 @@ private fun ReadyTalentTreeScreen(
                                 if (activeSectionModel != null) {
                                     // PR #19 motion: the section pages. One canvas per
                                     // section (keyed, its own camera): the active page is
-                                    // the ONLY interactive one; a page coming into view is
-                                    // composed as soon as it shows (drawn only, invisible to
-                                    // accessibility), like HorizontalPager. All of them move
-                                    // by ONE position, read at draw time; composition only
-                                    // runs when a page enters or leaves. A touch stops a
-                                    // running motion where it is drawn; the finger carries it.
-                                    val composedPages by remember(pager, activeCamera, activeOrdinal, sectionCount, pageWidthDp) {
-                                        derivedStateOf { talentSectionComposedPages(currentPosition(), activeOrdinal, sectionCount) }
+                                    // the ONLY interactive one; the others are drawn only,
+                                    // invisible to accessibility. They are composed ahead,
+                                    // at rest (round 6: composing one costs 240-360 ms on a
+                                    // phone), so a motion never composes or disposes a page.
+                                    // All of them move by ONE position, read at draw time.
+                                    // A touch stops a running motion where it is drawn; the
+                                    // finger carries it.
+                                    val composedPages by remember(pager, activeCamera, activeOrdinal, sectionOrder, pageWidthDp, portraitSections) {
+                                        derivedStateOf {
+                                            talentSectionComposedPages(
+                                                currentPosition(),
+                                                activeOrdinal,
+                                                sectionCount,
+                                                warm = warmSections.map { sectionOrder.indexOf(it) },
+                                            )
+                                        }
                                     }
                                     Box(
                                         Modifier

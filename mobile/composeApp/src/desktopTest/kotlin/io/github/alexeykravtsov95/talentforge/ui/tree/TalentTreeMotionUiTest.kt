@@ -11,6 +11,7 @@ import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.click
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -127,7 +128,7 @@ class TalentTreeMotionUiTest {
         val shown = assertNotNull(page(section), message)
         assertEquals(0f, shown.left, message)
         assertEquals(w, shown.right, message)
-        for (other in session.sections - section) assertNull(page(other), "$message: only one page is composed at rest")
+        for (other in session.sections - section) assertNull(page(other), "$message: only one page is visible at rest")
     }
 
     /** The left edge of [section]'s page as drawn (its visible part's left edge, `w` when just off the right). */
@@ -417,6 +418,41 @@ class TalentTreeMotionUiTest {
         val warrior = productState("WARRIOR")
         val sections = (buildTalentTreeSections(warrior.engine.tree, warrior.model) as TalentTreeSectionsResult.Sectioned)
         return sections.sections.first { it.index == session.sections[ordinal] }.model.nodes.firstNotNullOfOrNull { it.name }
+    }
+
+    // ------------------------------------------------------------------ round 6: pages composed ahead
+
+    @Test
+    fun everyPageIsComposedAheadAtRestAndNoSwipeComposesOrDisposesOne() {
+        onPhone { session ->
+            val (a, b, c) = session.sections
+            // after the opening rest the other pages already exist, off screen …
+            for (section in session.sections) assertTrue(composed(section), "section $section is composed ahead")
+            assertNull(page(b), "Tree 2 is off screen")
+            assertNull(page(c), "Tree 3 is off screen")
+            // … and hidden from accessibility: only the active page's talents can be found
+            val tree1Talent = assertNotNull(firstTalentOf(session, 0))
+            val tree2Talent = assertNotNull(firstTalentOf(session, 1))
+            onNodeWithContentDescription(tree1Talent).assertExists()
+            assertTrue(onAllNodesWithContentDescription(tree2Talent).fetchSemanticsNodes().isEmpty(), "Tree 2 is not exposed")
+
+            drag(dx = -10f, steps = 10, release = false)
+            advance(16)
+            for (section in session.sections) assertTrue(composed(section), "mid-drag: no page composed or disposed")
+            onRoot().performTouchInput { up() }
+            repeat(25) {
+                advance(16)
+                for (section in session.sections) assertTrue(composed(section), "mid-settle: no page composed or disposed")
+            }
+            rest()
+            assertSettledOn(session, b, "switched")
+            assertNotNull(page(b))
+            assertNull(page(a))
+            for (section in session.sections) assertTrue(composed(section), "every page stays composed after the motion")
+            onNodeWithContentDescription(tree2Talent).assertExists()
+            assertTrue(onAllNodesWithContentDescription(tree1Talent).fetchSemanticsNodes().isEmpty(), "Tree 1 left the accessibility tree")
+            assertTrue(session.reported.isEmpty(), "composing ahead never reaches the build or autosave")
+        }
     }
 
     // ------------------------------------------------------------------ 6. cameras + 7. autosave

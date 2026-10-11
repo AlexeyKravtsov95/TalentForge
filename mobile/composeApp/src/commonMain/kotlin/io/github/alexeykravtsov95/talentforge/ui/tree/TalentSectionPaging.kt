@@ -156,19 +156,46 @@ fun talentSectionReleaseTarget(grabbedAt: Float, activeOrdinal: Int, direction: 
 }
 
 /**
- * The tab ordinals to compose for [position]: the pages on screen now, plus
- * the active (interactive) page. Like HorizontalPager's default
- * (`beyondViewportPageCount = 0`), a page is composed as soon as any part of
- * it becomes visible and dropped when it leaves; at rest only the active page
- * exists.
+ * The tab ordinals to compose for [position]: the pages on screen now, the
+ * active (interactive) page, and the pages already composed ahead ([warm]).
+ *
+ * Composing a page is expensive (measured on a TECNO Spark 40: 240–360 ms of
+ * main-thread work for one section — composition, first measure, first draw),
+ * so a page must not be composed while the pages move. The screen composes the
+ * other pages ahead, at rest ([talentSectionNextWarmPage]), and keeps them:
+ * a motion then only moves pages that already exist, and a page that leaves
+ * the screen is never disposed mid-motion. Without [warm] this is
+ * HorizontalPager's default (`beyondViewportPageCount = 0`): the visible pages
+ * plus the active one.
  */
-fun talentSectionComposedPages(position: Float, activeOrdinal: Int, count: Int): List<Int> {
+fun talentSectionComposedPages(
+    position: Float,
+    activeOrdinal: Int,
+    count: Int,
+    warm: Collection<Int> = emptyList(),
+): List<Int> {
     if (count <= 0) return emptyList()
     val p = if (position.isFinite()) position else activeOrdinal.toFloat()
-    return listOf(floor(p).toInt(), ceil(p).toInt(), activeOrdinal)
+    return (listOf(floor(p).toInt(), ceil(p).toInt(), activeOrdinal) + warm)
         .filter { it in 0 until count }
         .distinct()
         .sorted()
+}
+
+/**
+ * The next page to compose ahead (see [talentSectionComposedPages]), or `null`
+ * when every page is composed: the nearest to the active page first, the next
+ * tab before the previous one at the same distance. The active page itself is
+ * always composed and never returned.
+ */
+fun talentSectionNextWarmPage(activeOrdinal: Int, count: Int, warm: Set<Int>): Int? {
+    if (count <= 0 || activeOrdinal !in 0 until count) return null
+    for (distance in 1 until count) {
+        for (ordinal in intArrayOf(activeOrdinal + distance, activeOrdinal - distance)) {
+            if (ordinal in 0 until count && ordinal !in warm) return ordinal
+        }
+    }
+    return null
 }
 
 /**

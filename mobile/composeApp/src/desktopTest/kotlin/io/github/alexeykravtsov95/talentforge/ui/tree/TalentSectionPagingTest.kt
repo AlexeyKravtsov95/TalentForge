@@ -67,6 +67,29 @@ class TalentSectionPagingTest {
     }
 
     @Test
+    fun pagesComposedAheadStayComposedWhereverThePagesAre() {
+        assertEquals(listOf(0, 1, 2), talentSectionComposedPages(position = 0f, activeOrdinal = 0, count = 3, warm = listOf(1, 2)), "at rest")
+        assertEquals(
+            listOf(0, 1, 2),
+            talentSectionComposedPages(position = 0.5f, activeOrdinal = 1, count = 3, warm = listOf(0, 2)),
+            "mid-motion: nothing is added or dropped",
+        )
+        assertEquals(listOf(0, 1), talentSectionComposedPages(position = 0f, activeOrdinal = 0, count = 3, warm = listOf(1, 7, -1)), "out of range ignored")
+    }
+
+    @Test
+    fun theNearestPageIsComposedAheadFirstAndTheNextTabBeforeThePrevious() {
+        assertEquals(1, talentSectionNextWarmPage(activeOrdinal = 0, count = 3, warm = emptySet()))
+        assertEquals(2, talentSectionNextWarmPage(activeOrdinal = 0, count = 3, warm = setOf(1)))
+        assertEquals(null, talentSectionNextWarmPage(activeOrdinal = 0, count = 3, warm = setOf(1, 2)), "all composed")
+        assertEquals(2, talentSectionNextWarmPage(activeOrdinal = 1, count = 3, warm = emptySet()), "the next tab first at the same distance")
+        assertEquals(0, talentSectionNextWarmPage(activeOrdinal = 1, count = 3, warm = setOf(2)))
+        assertEquals(1, talentSectionNextWarmPage(activeOrdinal = 2, count = 3, warm = emptySet()))
+        assertEquals(null, talentSectionNextWarmPage(activeOrdinal = 0, count = 1, warm = emptySet()), "one page: nothing ahead")
+        assertEquals(null, talentSectionNextWarmPage(activeOrdinal = -1, count = 3, warm = emptySet()), "no active page")
+    }
+
+    @Test
     fun theSpringIsHorizontalPagersAndAWholePageIsVisuallyDoneIn220To340ms() {
         val spring = FloatSpringSpec(
             dampingRatio = TalentMotionMetrics.PAGE_SPRING_DAMPING,

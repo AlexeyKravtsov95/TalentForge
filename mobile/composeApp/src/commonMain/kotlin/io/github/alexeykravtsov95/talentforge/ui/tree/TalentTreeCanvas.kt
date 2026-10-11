@@ -366,24 +366,22 @@ fun TalentTreeCanvas(
                                         (node.centerY.dp - containerHalfSide).roundToPx(),
                                     )
                                 }
-                                // a shown-only page (PR #19 motion) exposes no talents to accessibility
-                                .then(
-                                    if (!interactive) {
-                                        Modifier
-                                    } else {
-                                        Modifier.semantics {
-                                            contentDescription = node.name ?: "talent ${node.id}"
-                                            stateDescription =
-                                                nodePresentation.accessibilityStateDescription()
-                                            role = Role.Button
-                                            selected = nodeIsSelected
-                                            onClick(label = "select talent") {
-                                                onNodeSelected(node.id)
-                                                true
-                                            }
-                                        }
-                                    },
-                                ),
+                                // Always the same modifiers, active page or not: a shown-only page
+                                // (PR #19 motion) hides its talents from accessibility with ONE
+                                // clearAndSetSemantics on the node layer above, so making a page
+                                // active or inactive never rediffs every node's modifier chain
+                                // (the switch frames measured 30-55 ms of applyChanges on a phone).
+                                .semantics {
+                                    contentDescription = node.name ?: "talent ${node.id}"
+                                    stateDescription =
+                                        nodePresentation.accessibilityStateDescription()
+                                    role = Role.Button
+                                    selected = nodeIsSelected
+                                    onClick(label = "select talent") {
+                                        onNodeSelected(node.id)
+                                        true
+                                    }
+                                },
                         ) {
                             TalentNodeVisual(
                                 node = node,
