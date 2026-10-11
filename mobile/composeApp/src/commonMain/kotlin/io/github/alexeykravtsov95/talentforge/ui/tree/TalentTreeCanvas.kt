@@ -128,7 +128,12 @@ fun TalentTreeCanvas(
             TalentTreeFocusMode.REVEAL -> current.panToReveal(request.world, request.visibleSize)
         }
         if (target == current) return@LaunchedEffect
-        animateCamera(viewportState, current, target, TalentInspectorMetrics.SHOW_PAN_MS)
+        // B3 07 Show: 300 ms; 1A v2 S3 inspector reveal: 260 ms
+        val duration = when (request.mode) {
+            TalentTreeFocusMode.CENTRE -> TalentInspectorMetrics.SHOW_PAN_MS
+            TalentTreeFocusMode.REVEAL -> TalentInspectorMetrics.REVEAL_PAN_MS
+        }
+        animateCamera(viewportState, current, target, duration)
     }
 
     // 1A v2 S3 FIT: back to the fit camera in 280 ms; a gesture interrupts it

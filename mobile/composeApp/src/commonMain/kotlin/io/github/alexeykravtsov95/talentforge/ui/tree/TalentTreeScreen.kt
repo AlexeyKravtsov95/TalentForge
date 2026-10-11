@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -211,7 +212,7 @@ fun TalentTreeScreen(
     // System-UI rule: the TalentForge background paints to the physical
     // window edges (background modifier first), and only the *content* is
     // inset by the safe drawing areas (status bar, navigation/gesture bar,
-    // display cutouts). The 44 dp header stays a component inside the safe
+    // display cutouts). The editor header stays a component inside the safe
     // region — the system inset is outside its height. Hosts draw edge to
     // edge (Android enableEdgeToEdge / SwiftUI ignoresSafeArea), so this one
     // padding is the single place insets are applied on every platform.
@@ -365,6 +366,12 @@ private fun ReadyTalentTreeScreen(
     var tabHighlight by remember { mutableStateOf<TalentTabHighlight?>(null) }
     var tabHighlightToken by remember { mutableStateOf(0) }
     val sectionEnterMemory = remember { TalentSectionEnterMemory() }
+    // M5.UX.2a: the portrait inspector's MEASURED covered height (never an
+    // estimate) and the policy deciding when a new measurement may move the
+    // camera. View state only — never part of the build or of autosave.
+    var measuredInspector by remember { mutableStateOf<TalentInspectorMeasurement?>(null) }
+    val inspectorSink = remember { TalentInspectorMeasureSink() }
+    val revealTracker = remember { TalentInspectorRevealTracker() }
 
     // B3 07: "A blocked refund shows its reason in the state line for 2.6 s."
     LaunchedEffect(blockedNotice) {
@@ -474,7 +481,10 @@ private fun ReadyTalentTreeScreen(
         applyEdit(editing.spendToMax(current.engine, nodeId), purchasedNodeId = nodeId)
     }
 
-    Box(modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier.fillMaxSize()) {
+        // 1A v2 02: H of the sheet's "min(66% H, H − top − 104)" — the editor
+        // inside the system safe area
+        val screenHeight = maxHeight
         Column(Modifier.fillMaxSize()) {
             TalentTreeHeaderBar(
                 title = current.buildTitle,
@@ -521,25 +531,38 @@ private fun ReadyTalentTreeScreen(
                 } else {
                     maxHeight
                 }
-                // B3 06/UX spec 03-04: the expanded sheet occupies its
-                // preferred 448 dp height, capped at the available height
-                // minus 96 dp. This is the sheet's ACTUAL geometry (and
-                // therefore exactly the covered canvas region the expand
-                // focus uses — never a mismatched estimate).
-                val expandedSheetHeight = minOf(
-                    TalentInspectorMetrics.EXPANDED_SHEET_PREFERRED_DP,
-                    areaHeight - TalentInspectorMetrics.SHEET_BOTTOM_CLEARANCE_DP,
-                )
+                // M5.UX.2a (1A v2 02): the expanded sheet wraps its content
+                // between 260 dp and min(66 % H, H − top − 104), where
+                // H − top is the canvas region below the header and tabs.
+                val sheetLimits = expandedSheetLimits(screenHeight = screenHeight, areaHeight = areaHeight)
+                val portrait = layoutClass == TalentTreeLayoutClass.PORTRAIT
+                // The measurement of what is on screen right now: same talent,
+                // same presentation (a stale height of another talent or of
+                // the other presentation is never used).
+                val liveMeasurement = measuredInspector?.takeIf {
+                    portrait && inspectorContent != null &&
+                        it.nodeId == selectedNodeId && it.expanded == inspectorExpanded
+                }
+                // Before the first measurement of a presentation (one frame):
+                // the compact strip's nominal 76 dp (1A v2 02), or the sheet ceiling.
+                val compactNominalDp = TalentInspectorMetrics.COMPACT_STRIP_DP.value
                 // Portrait height of the canvas bottom the overlaid inspector
                 // covers: the camera clamp lets the content move above it.
-                val compactCoveredDp = TalentInspectorMetrics.COMPACT_INSET_DP.value * 2f +
-                    TalentInspectorMetrics.COMPACT_HEIGHT_DP.value
                 val coveredBottomDp = when {
-                    layoutClass != TalentTreeLayoutClass.PORTRAIT || inspectorContent == null -> 0f
-                    inspectorExpanded -> expandedSheetHeight.value
-                    else -> compactCoveredDp
+                    !portrait || inspectorContent == null -> 0f
+                    liveMeasurement != null -> liveMeasurement.coveredDp
+                    inspectorExpanded -> sheetLimits.max.value
+                    else -> inspectorSink.lastCompactDp ?: compactNominalDp
                 }
-                SideEffect { activeCamera.coveredBottomDp = coveredBottomDp }
+                // Show collapses to the compact bar: centre above its real height.
+                val compactCoveredDp = inspectorSink.lastCompactDp ?: compactNominalDp
+                SideEffect {
+                    activeCamera.coveredBottomDp = coveredBottomDp
+                    if (!portrait || inspectorContent == null) revealTracker.reset()
+                }
+                val reportInspector: (TalentInspectorMeasurement) -> Unit = { measurement ->
+                    if (inspectorSink.accept(measurement)) measuredInspector = measurement
+                }
 
                 /**
                  * Pans (animated by the canvas) so [nodeId] is fully visible
@@ -566,6 +589,21 @@ private fun ReadyTalentTreeScreen(
                         ),
                         mode = if (reveal) TalentTreeFocusMode.REVEAL else TalentTreeFocusMode.CENTRE,
                     )
+                }
+
+                // M5.UX.2a: every new real measurement of the portrait
+                // inspector goes through the reveal policy; when it says so
+                // the camera pans the B3 08 minimum (scale untouched, no-op
+                // while the talent is visible) above the MEASURED height.
+                LaunchedEffect(liveMeasurement) {
+                    val measurement = liveMeasurement ?: return@LaunchedEffect
+                    if (revealTracker.onMeasured(measurement, activeCamera.gestureEpoch)) {
+                        focusNode(
+                            nodeId = measurement.nodeId,
+                            coveredBottomDp = measurement.coveredDp,
+                            reveal = true,
+                        )
+                    }
                 }
 
                 /** B3: a plain selection clears any active Show guide (and the Back chip). */
@@ -619,6 +657,9 @@ private fun ReadyTalentTreeScreen(
                 val onShowPrerequisite: (Int) -> Unit = { prerequisiteId ->
                     val originId = selectedNodeId
                     if (originId != null && originId != prerequisiteId) {
+                        // Show places the target itself (B3 07 centring): the
+                        // compact bar's own measurement must not pan it again
+                        revealTracker.suppressNextOpen(prerequisiteId)
                         onShowGuideChange(
                             TalentShowGuide(originNodeId = originId, targetNodeId = prerequisiteId),
                         )
@@ -659,6 +700,8 @@ private fun ReadyTalentTreeScreen(
 
                 /** 1A v2 04 Back chip: back to the origin talent and its untouched camera. */
                 val onReturnToOrigin: (TalentSectionReturn) -> Unit = { origin ->
+                    // the origin's camera is restored untouched — no reveal on reopen
+                    revealTracker.suppressNextOpen(origin.originNodeId)
                     onShowGuideChange(null)
                     onInspectorExpandedChange(false)
                     sectionReturn = null
@@ -808,19 +851,25 @@ private fun ReadyTalentTreeScreen(
                                     TreeCanvas(current.model, viewportState, Modifier.fillMaxSize())
                                 }
                                 Column(Modifier.align(Alignment.BottomCenter)) {
-                                    if (inspectorExpanded && inspectorContent != null) {
+                                    val shownNodeId = selectedNodeId
+                                    if (inspectorExpanded && inspectorContent != null && shownNodeId != null) {
                                         TalentInspectorExpandedSheet(
                                             accent = current.classAccent,
                                             content = inspectorContent,
                                             icon = selectedIcon,
                                             actions = selectedActions,
-                                            height = expandedSheetHeight,
+                                            limits = sheetLimits,
                                             onCollapse = { onInspectorExpandedChange(false) },
                                             onDeselect = onSelectionCleared,
                                             onShowPrerequisite = onShowPrerequisite,
                                             onSpendRank = onSpendRank,
                                             onRefundRank = onRefundRank,
                                             onMaxRank = onMaxRank,
+                                            modifier = Modifier.reportCoveredHeight(
+                                                nodeId = shownNodeId,
+                                                expanded = true,
+                                                onMeasured = reportInspector,
+                                            ),
                                         )
                                     } else {
                                         TalentInspectorCompactBar(
@@ -830,23 +879,21 @@ private fun ReadyTalentTreeScreen(
                                             actions = selectedActions,
                                             onSpendRank = onSpendRank,
                                             onRefundRank = onRefundRank,
-                                            onToggleExpanded = {
-                                                val expanding = !inspectorExpanded
-                                                onInspectorExpandedChange(expanding)
-                                                val target = selectedNodeId
-                                                if (expanding && target != null) {
-                                                    // B3 08: "Expanding pans the canvas the
-                                                    // minimum amount needed, and only when
-                                                    // the node would be covered" — the covered
-                                                    // region is the sheet's actual height.
-                                                    focusNode(
-                                                        nodeId = target,
-                                                        coveredBottomDp = expandedSheetHeight.value,
-                                                        reveal = true,
-                                                    )
-                                                }
-                                            },
+                                            // B3 08: "Expanding pans the canvas the minimum
+                                            // amount needed, and only when the node would be
+                                            // covered" — done once the sheet's REAL height is
+                                            // measured (the reveal policy above).
+                                            onToggleExpanded = { onInspectorExpandedChange(!inspectorExpanded) },
                                             onShowPrerequisite = onShowPrerequisite,
+                                            modifier = if (shownNodeId != null && inspectorContent != null) {
+                                                Modifier.reportCoveredHeight(
+                                                    nodeId = shownNodeId,
+                                                    expanded = false,
+                                                    onMeasured = reportInspector,
+                                                )
+                                            } else {
+                                                Modifier
+                                            },
                                         )
                                     }
                                 }
@@ -979,6 +1026,46 @@ private data class TalentTabHighlight(
 /** Which section was shown last, so a newly shown one enters from the chosen side (1A v2 S4). */
 private class TalentSectionEnterMemory {
     var previousOrdinal: Int? = null
+}
+
+/**
+ * M5.UX.2a: plain (non-snapshot) memory of the inspector heights reported from
+ * the layout pass — it filters repeats, so only a CHANGED measurement reaches
+ * the snapshot state (one recomposition per real change, never per frame), and
+ * keeps the last compact height for Show, which centres above the bar it is
+ * about to show.
+ */
+private class TalentInspectorMeasureSink {
+    private var last: TalentInspectorMeasurement? = null
+
+    /** The last measured compact-bar height (dp), whichever talent it showed. */
+    var lastCompactDp: Float? = null
+        private set
+
+    /** Records [measurement]; `true` when it differs from the previous one. */
+    fun accept(measurement: TalentInspectorMeasurement): Boolean {
+        if (!measurement.expanded) lastCompactDp = measurement.coveredDp
+        if (measurement == last) return false
+        last = measurement
+        return true
+    }
+}
+
+/**
+ * Reports this layout's real height as the inspector measurement of
+ * [nodeId] / [expanded] on every measure pass. A layout modifier (rather than
+ * `onSizeChanged`) on purpose: the lambda captures the talent it shows, so a
+ * selection change re-measures and re-reports even when the height did not
+ * change — a measurement is never attributed to the previous talent.
+ */
+private fun Modifier.reportCoveredHeight(
+    nodeId: Int,
+    expanded: Boolean,
+    onMeasured: (TalentInspectorMeasurement) -> Unit,
+): Modifier = layout { measurable, constraints ->
+    val placeable = measurable.measure(constraints)
+    onMeasured(TalentInspectorMeasurement(nodeId, expanded, placeable.height.toDp().value))
+    layout(placeable.width, placeable.height) { placeable.place(0, 0) }
 }
 
 /**
