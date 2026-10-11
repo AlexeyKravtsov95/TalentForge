@@ -10,6 +10,11 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
+import kotlin.math.abs
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -109,6 +114,9 @@ const val TALENT_INSPECTOR_SHEET_TAG: String = "talent-inspector-sheet"
 /** Test tag of the expanded sheet's scrolling detail region (M5.UX.2a). */
 const val TALENT_INSPECTOR_DETAIL_SCROLL_TAG: String = "talent-inspector-detail-scroll"
 
+/** Test tag of the expanded sheet's header — its swipe-down drag area (PR #19). */
+const val TALENT_INSPECTOR_SHEET_HEADER_TAG: String = "talent-inspector-sheet-header"
+
 /** Test tag of the expanded sheet's pinned action area (M5.UX.2a). */
 const val TALENT_INSPECTOR_SHEET_ACTIONS_TAG: String = "talent-inspector-sheet-actions"
 
@@ -174,6 +182,10 @@ fun TalentInspectorCompactBar(
                             talentForgeColors().surfaceElevated,
                             RoundedCornerShape(topStart = TalentForgeRadius.large, topEnd = TalentForgeRadius.large),
                         )
+                        // PR #19: the WHOLE 76 dp strip is the swipe area (not only the
+                        // 12 dp handle) — a swipe up expands; taps still reach the
+                        // handle, the name and the buttons
+                        .inspectorVerticalSwipe { swipe -> if (swipe == TalentInspectorSwipe.UP) onToggleExpanded() }
                         .padding(horizontal = TalentInspectorMetrics.COMPACT_PADDING_X_DP)
                         .testTag(TALENT_INSPECTOR_COMPACT_TAG),
                 ) {
@@ -287,35 +299,44 @@ fun TalentInspectorExpandedSheet(
         verticalArrangement = Arrangement.SpaceBetween,
     ) {
         Column(Modifier.weight(1f, fill = false)) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(TalentInspectorMetrics.SHEET_HEADER_DP),
-                verticalAlignment = Alignment.CenterVertically,
+            // PR #19: the sheet's header (⌄ · handle · × bar + identity row) is its
+            // drag handle — a swipe down collapses. The scrolling description below
+            // is outside it, so reading a long text never collapses the sheet.
+            Column(
+                Modifier
+                    .inspectorVerticalSwipe { swipe -> if (swipe == TalentInspectorSwipe.DOWN) onCollapse() }
+                    .testTag(TALENT_INSPECTOR_SHEET_HEADER_TAG),
             ) {
-                ChevronButton(expanded = true, onToggle = onCollapse, targetSize = TalentInspectorMetrics.SHEET_CONTROL_DP)
-                Box(Modifier.weight(1f), contentAlignment = Alignment.Center) { HandleBar() }
-                CloseButton(onClose = onDeselect, targetSize = TalentInspectorMetrics.SHEET_CONTROL_DP)
-            }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.rowGap),
-                modifier = Modifier.padding(bottom = TalentForgeSpacing.inline),
-            ) {
-                InspectorTalentIcon(icon = icon, size = TalentInspectorMetrics.COMPACT_ICON_DP)
-                // very large text (1A v2 S8): the rank goes under the name, so the
-                // name keeps the row's width and a long word is never split
-                val rankBelow = LocalDensity.current.fontScale >= TalentInspectorMetrics.COMPACT_STACK_FONT_SCALE
-                Column(Modifier.weight(1f)) {
-                    BasicText(
-                        text = content.name,
-                        style = InspectorNameStyle.copy(color = talentForgeColors().textPrimary),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    if (rankBelow) SheetRank(content.rankText)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(TalentInspectorMetrics.SHEET_HEADER_DP),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    ChevronButton(expanded = true, onToggle = onCollapse, targetSize = TalentInspectorMetrics.SHEET_CONTROL_DP)
+                    Box(Modifier.weight(1f), contentAlignment = Alignment.Center) { HandleBar() }
+                    CloseButton(onClose = onDeselect, targetSize = TalentInspectorMetrics.SHEET_CONTROL_DP)
                 }
-                if (!rankBelow) SheetRank(content.rankText)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.rowGap),
+                    modifier = Modifier.padding(bottom = TalentForgeSpacing.inline),
+                ) {
+                    InspectorTalentIcon(icon = icon, size = TalentInspectorMetrics.COMPACT_ICON_DP)
+                    // very large text (1A v2 S8): the rank goes under the name, so the
+                    // name keeps the row's width and a long word is never split
+                    val rankBelow = LocalDensity.current.fontScale >= TalentInspectorMetrics.COMPACT_STACK_FONT_SCALE
+                    Column(Modifier.weight(1f)) {
+                        BasicText(
+                            text = content.name,
+                            style = InspectorNameStyle.copy(color = talentForgeColors().textPrimary),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        if (rankBelow) SheetRank(content.rankText)
+                    }
+                    if (!rankBelow) SheetRank(content.rankText)
+                }
             }
             // wraps a short detail; a long one takes the remaining height and scrolls
             Column(
@@ -807,6 +828,46 @@ private fun SheetRank(rankText: String) {
     )
 }
 
+/**
+ * PR #19: the vertical swipe of the bottom inspector, observed AFTER the
+ * children (Main pass, bubbling up), so taps on the handle, the name and the
+ * − / + / Max / Show buttons work as before. Once the finger moved more than
+ * [TalentTreeGestureMetrics.SHEET_DRAG_SLOP_DP] mostly vertically the drag is
+ * taken: its moves are consumed, which cancels the press of any button under
+ * it (a drag never spends, refunds, maxes or shows). At the release
+ * [talentInspectorSwipe] decides UP / DOWN / NONE. The canvas below never sees
+ * these pointers (the inspector is the topmost hit).
+ */
+private fun Modifier.inspectorVerticalSwipe(onSwipe: (TalentInspectorSwipe) -> Unit): Modifier =
+    pointerInput(Unit) {
+        val slop = TalentTreeGestureMetrics.SHEET_DRAG_SLOP_DP.dp.toPx()
+        awaitEachGesture {
+            val down = awaitFirstDown(requireUnconsumed = false)
+            var dragging = false
+            var multiTouch = false
+            var last = down.position
+            while (true) {
+                val event = awaitPointerEvent(PointerEventPass.Main)
+                if (event.changes.count { it.pressed } > 1) multiTouch = true
+                val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                last = change.position
+                val total = last - down.position
+                if (!dragging && !multiTouch && abs(total.y) > slop &&
+                    abs(total.x) <= abs(total.y) * TalentTreeGestureMetrics.SHEET_SWIPE_MAX_SLOPE
+                ) {
+                    dragging = true
+                }
+                if (dragging) change.consume()
+                if (!change.pressed) break
+            }
+            if (dragging && !multiTouch) {
+                val total = last - down.position
+                val swipe = talentInspectorSwipe(totalDxDp = total.x / density, totalDyDp = total.y / density)
+                if (swipe != TalentInspectorSwipe.NONE) onSwipe(swipe)
+            }
+        }
+    }
+
 /** The 36 × 4 dp grab handle mark (1A v2 02). */
 @Composable
 private fun HandleBar() {
@@ -819,8 +880,8 @@ private fun HandleBar() {
 
 /**
  * The compact strip's 12 dp handle (1A v2 S1): tapping it expands, like the
- * name. Its touch area spans the handle row over 96 dp; the name column next
- * to the icon is the large expand target.
+ * name; its tap area spans the strip's whole width (PR #19), and a swipe up
+ * anywhere on the strip expands too ([inspectorVerticalSwipe]).
  */
 @Composable
 private fun InspectorHandle(onClick: () -> Unit) {
@@ -832,7 +893,8 @@ private fun InspectorHandle(onClick: () -> Unit) {
     ) {
         Box(
             modifier = Modifier
-                .size(width = 96.dp, height = TalentInspectorMetrics.COMPACT_HANDLE_DP)
+                .fillMaxWidth()
+                .height(TalentInspectorMetrics.COMPACT_HANDLE_DP)
                 .clickable(role = Role.Button, onClickLabel = "expand inspector", onClick = onClick)
                 .semantics { contentDescription = INSPECTOR_EXPAND_LABEL },
             contentAlignment = Alignment.Center,
