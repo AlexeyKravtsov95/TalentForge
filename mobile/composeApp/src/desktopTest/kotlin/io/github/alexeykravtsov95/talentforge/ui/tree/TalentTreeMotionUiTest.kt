@@ -266,6 +266,28 @@ class TalentTreeMotionUiTest {
         }
     }
 
+    @Test
+    fun aFlickSwitchesButAFingerThatRestedBeforeTheLiftLetsGoWithoutSpeed() {
+        onPhone { session ->
+            val (a, b) = session.sections
+            // 45 dp: past the flick minimum (32 dp), short of the distance rule (56 dp), so only the speed decides
+            drag(dx = -15f, steps = 3) // ≈ 940 dp/s, lifted while still moving
+            rest()
+            assertSettledOn(session, b, "a quick flick switches")
+
+            drag(dx = 15f, steps = 3, release = false) // the same flick back towards Tree 1 …
+            advance(120)
+            onRoot().performTouchInput {
+                advanceEventTime(120) // … but the finger rests before it lifts
+                up()
+            }
+            rest()
+            assertSettledOn(session, b, "a finger that rested before the lift has no speed: the pages ease back")
+            assertNull(page(a))
+            assertTrue(session.reported.isEmpty())
+        }
+    }
+
     // ------------------------------------------------------------------ interruption, 4. fast repeats, 5. tab mid-motion
 
     @Test

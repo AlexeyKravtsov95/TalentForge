@@ -48,6 +48,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.input.pointer.util.VelocityTracker
+import androidx.compose.ui.input.pointer.util.addPointerInputChange
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -472,8 +473,11 @@ private suspend fun PointerInputScope.talentTreeGestures(
         // edge model: where the finger was when the content edge was reached
         var edgeAnchor: Offset? = null
         var swipeReported = false
+        // Every touch sample, not one per frame: Android batches the touch samples between two
+        // frames into one event's history, so at 60 Hz a frame carries several of them. Compose's
+        // own tracking also applies the platform rule that a finger resting before the lift has no speed.
         val velocity = VelocityTracker()
-        velocity.addPosition(down.uptimeMillis, down.position)
+        velocity.addPointerInputChange(down)
 
         try {
             while (true) {
@@ -501,8 +505,14 @@ private suspend fun PointerInputScope.talentTreeGestures(
                     // PR #19: the release confirms (or not) a section switch
                     val onSwipe = sectionSwipe()
                     if (onSwipe != null) {
-                        // the finger's speed at the release carries into the pages' motion (never after a pinch)
-                        val releaseVelocity = if (multiTouchSeen) 0f else velocity.calculateVelocity().x / densityScale
+                        // the finger's speed at the release carries into the pages' motion (never after a pinch);
+                        // the lift itself is tracked too, so a finger that rested first lets go without speed
+                        val releaseVelocity = if (multiTouchSeen) {
+                            0f
+                        } else {
+                            event.changes.firstOrNull { it.id == down.id }?.let { velocity.addPointerInputChange(it) }
+                            velocity.calculateVelocity().x / densityScale
+                        }
                         val direction = if (fitSwipe) {
                             val total = screenPxToDp(lastSinglePosition - down.position)
                             talentSectionFitSwipeDirection(
@@ -543,7 +553,7 @@ private suspend fun PointerInputScope.talentTreeGestures(
                 } else {
                     val single = pressedChanges.first()
                     lastSinglePosition = single.position
-                    velocity.addPosition(single.uptimeMillis, single.position)
+                    velocity.addPointerInputChange(single)
                 }
 
                 val centroid = centroidOf(pressedChanges)
