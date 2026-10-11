@@ -78,6 +78,18 @@ class TalentSectionPagingTest {
     }
 
     @Test
+    fun theWarmUpBatchShrinksAfterASlowFrameAndGrowsAfterAFastOne() {
+        val max = TalentMotionMetrics.WARM_BATCH_MAX
+        assertEquals(1, talentSectionWarmBatch(previous = 1, frameIntervalNanos = 0L), "unknown interval: keep")
+        assertEquals(2, talentSectionWarmBatch(previous = 1, frameIntervalNanos = 16_666_667L), "a 60 Hz frame: double")
+        assertEquals(max, talentSectionWarmBatch(previous = max, frameIntervalNanos = 8_333_333L), "never above the cap")
+        assertEquals(2, talentSectionWarmBatch(previous = 4, frameIntervalNanos = 50_000_000L), "a slow frame: halve")
+        assertEquals(1, talentSectionWarmBatch(previous = 1, frameIntervalNanos = 300_000_000L), "never below one")
+        assertEquals(4, talentSectionWarmBatch(previous = 4, frameIntervalNanos = 25_000_000L), "in between: keep")
+        assertEquals(max, talentSectionWarmBatch(previous = 99, frameIntervalNanos = 25_000_000L), "out of range is clamped")
+    }
+
+    @Test
     fun theNearestPageIsComposedAheadFirstAndTheNextTabBeforeThePrevious() {
         assertEquals(1, talentSectionNextWarmPage(activeOrdinal = 0, count = 3, warm = emptySet()))
         assertEquals(2, talentSectionNextWarmPage(activeOrdinal = 0, count = 3, warm = setOf(1)))

@@ -72,6 +72,19 @@ object TalentMotionMetrics {
      */
     const val PAGE_ARRIVED_THRESHOLD: Float = 0.25f
 
+    /**
+     * Round 7: a page composed ahead grows by at most this many talent nodes per frame
+     * (the bundled sections hold 16-18), so composing ahead never holds the main thread for a
+     * whole page while the editor opens or between gestures.
+     */
+    const val WARM_BATCH_MAX: Int = 8
+
+    /** A warm-up frame interval above this (two 60 Hz frames) halves the next batch … */
+    const val WARM_SLOW_FRAME_NANOS: Long = 33_000_000L
+
+    /** … and one below this doubles it (up to [WARM_BATCH_MAX]); in between it stays. */
+    const val WARM_FAST_FRAME_NANOS: Long = 20_000_000L
+
     /** Brief: the inspector sheet opens and closes in ≈ 220–260 ms. */
     const val SHEET_MS: Int = 240
 
@@ -180,6 +193,23 @@ fun talentSectionComposedPages(
         .filter { it in 0 until count }
         .distinct()
         .sorted()
+}
+
+/**
+ * Round 7: how many nodes the next warm-up frame composes, from the previous batch and the
+ * frame interval that batch cost ([frameIntervalNanos], `<= 0` when unknown): halved after a
+ * slow frame (never below 1), doubled after a fast one (never above
+ * [TalentMotionMetrics.WARM_BATCH_MAX]). A slow phone composes ahead in small steps and
+ * stays responsive; a fast one finishes in a few frames.
+ */
+fun talentSectionWarmBatch(previous: Int, frameIntervalNanos: Long): Int {
+    val batch = previous.coerceIn(1, TalentMotionMetrics.WARM_BATCH_MAX)
+    return when {
+        frameIntervalNanos <= 0L -> batch
+        frameIntervalNanos > TalentMotionMetrics.WARM_SLOW_FRAME_NANOS -> (batch / 2).coerceAtLeast(1)
+        frameIntervalNanos < TalentMotionMetrics.WARM_FAST_FRAME_NANOS -> (batch * 2).coerceAtMost(TalentMotionMetrics.WARM_BATCH_MAX)
+        else -> batch
+    }
 }
 
 /**

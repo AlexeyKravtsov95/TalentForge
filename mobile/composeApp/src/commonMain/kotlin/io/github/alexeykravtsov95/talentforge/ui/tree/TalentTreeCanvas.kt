@@ -134,6 +134,12 @@ fun TalentTreeCanvas(
     pageOffsetPx: (() -> Float)? = null,
     /** Test tag of the moving page layer (its bounds follow [pageOffsetPx]). */
     pageTag: String? = null,
+    /**
+     * PR #19 round 7: how many of [model]'s nodes to compose, in model order. A page being
+     * composed ahead off screen grows a few nodes per frame instead of all at once; every
+     * page on screen composes all of them (the default).
+     */
+    composedNodeCount: Int = Int.MAX_VALUE,
 ) {
     val localDensity = LocalDensity.current
     val sectionSwipe by rememberUpdatedState(onSectionSwipe)
@@ -353,7 +359,12 @@ fun TalentTreeCanvas(
                     TalentTreeCanvasMetrics.SELECTION_RING_GAP_DP +
                     TalentTreeCanvasMetrics.SELECTION_RING_WIDTH_DP).dp
 
-            for (node in model.nodes) {
+            val composedNodes = if (composedNodeCount >= model.nodes.size) {
+                model.nodes
+            } else {
+                model.nodes.subList(0, composedNodeCount.coerceAtLeast(0))
+            }
+            for (node in composedNodes) {
                 key(node.id) {
                     val nodeIsSelected = node.id == selectedNodeId
                     val nodePresentation = presentation.nodes[node.id]

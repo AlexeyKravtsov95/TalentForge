@@ -65,6 +65,7 @@ class TalentTreeMotionUiTest {
     private fun onPhone(
         state: TalentTreeUiState.Ready = productState("WARRIOR"),
         reducedMotion: Boolean? = null,
+        settle: Boolean = true,
         block: ComposeUiTest.(Session) -> Unit,
     ) = runDesktopComposeUiTest(width = w.toInt(), height = h) {
         mainClock.autoAdvance = false
@@ -89,7 +90,7 @@ class TalentTreeMotionUiTest {
                 }
             }
         }
-        rest()
+        if (settle) rest()
         block(session)
     }
 
@@ -452,6 +453,47 @@ class TalentTreeMotionUiTest {
             onNodeWithContentDescription(tree2Talent).assertExists()
             assertTrue(onAllNodesWithContentDescription(tree1Talent).fetchSemanticsNodes().isEmpty(), "Tree 1 left the accessibility tree")
             assertTrue(session.reported.isEmpty(), "composing ahead never reaches the build or autosave")
+        }
+    }
+
+    /** The talent names that exist only in the section at [ordinal] (unique across the tree). */
+    private fun talentsOnlyOf(session: Session, ordinal: Int): List<String> {
+        val warrior = productState("WARRIOR")
+        val sections = (buildTalentTreeSections(warrior.engine.tree, warrior.model) as TalentTreeSectionsResult.Sectioned).sections
+        val names = sections.first { it.index == session.sections[ordinal] }.model.nodes.mapNotNull { it.name }
+        val elsewhere = sections.filter { it.index != session.sections[ordinal] }.flatMap { s -> s.model.nodes.mapNotNull { it.name } }.toSet()
+        return names.filter { it !in elsewhere }.distinct()
+    }
+
+    /** How many of [names] are composed anywhere (unmerged tree: an off-screen page's talents too). */
+    private fun ComposeUiTest.composedTalents(names: List<String>): Int =
+        names.count { onAllNodesWithContentDescription(it, useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
+
+    @Test
+    fun aPageIsComposedAheadAFewTalentsPerFrameAndATouchPausesIt() {
+        onPhone(settle = false) { session ->
+            val tree2 = talentsOnlyOf(session, 1)
+            assertTrue(tree2.size >= 10, "Tree 2 has talents of its own: $tree2")
+            val counts = mutableListOf<Int>()
+            repeat(3) { // batches 1, 2, 4 at a 16 ms frame: at most 7 talents, never the whole page
+                mainClock.advanceTimeByFrame()
+                counts += composedTalents(tree2)
+            }
+            assertTrue(counts.last() in 1 until tree2.size, "Tree 2 is part-way composed after a few frames: $counts")
+            assertTrue(
+                counts.zipWithNext().all { (x, y) -> y - x in 0..TalentMotionMetrics.WARM_BATCH_MAX },
+                "never more than ${TalentMotionMetrics.WARM_BATCH_MAX} talents in one frame: $counts",
+            )
+            // a finger on the pages pauses composing ahead
+            onRoot().performTouchInput { down(centre) }
+            val held = composedTalents(tree2)
+            repeat(10) { mainClock.advanceTimeByFrame() }
+            assertEquals(held, composedTalents(tree2), "no composing ahead while a finger holds the pages")
+            onRoot().performTouchInput { up() }
+            rest()
+            assertEquals(tree2.size, composedTalents(tree2), "after the touch, Tree 2 is completed")
+            assertSettledOn(session, session.sections[0], "the touch alone switched nothing")
+            assertTrue(session.reported.isEmpty())
         }
     }
 
