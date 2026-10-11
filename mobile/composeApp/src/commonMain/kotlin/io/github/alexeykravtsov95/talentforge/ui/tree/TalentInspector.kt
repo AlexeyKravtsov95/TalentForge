@@ -1,6 +1,8 @@
 package io.github.alexeykravtsov95.talentforge.ui.tree
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -56,6 +58,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.alexeykravtsov95.talentforge.ui.motion.prefersReducedMotion
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeMotion
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeRadius
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
@@ -151,12 +154,22 @@ fun TalentInspectorCompactBar(
     onShowPrerequisite: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // PR #19 motion accessibility: with reduced motion the strip simply appears
+    val reducedMotion = prefersReducedMotion()
     AnimatedVisibility(
         visible = content != null,
-        enter = slideInVertically(tween(TalentForgeMotion.SHEET_IN_MS)) { it } +
-            fadeIn(tween(TalentForgeMotion.SHEET_IN_MS)),
-        exit = slideOutVertically(tween(TalentForgeMotion.SHEET_OUT_MS)) { it } +
-            fadeOut(tween(TalentForgeMotion.SHEET_OUT_MS)),
+        enter = if (reducedMotion) {
+            EnterTransition.None
+        } else {
+            slideInVertically(tween(TalentForgeMotion.SHEET_IN_MS)) { it } +
+                fadeIn(tween(TalentForgeMotion.SHEET_IN_MS))
+        },
+        exit = if (reducedMotion) {
+            ExitTransition.None
+        } else {
+            slideOutVertically(tween(TalentForgeMotion.SHEET_OUT_MS)) { it } +
+                fadeOut(tween(TalentForgeMotion.SHEET_OUT_MS))
+        },
         modifier = modifier,
     ) {
         if (content != null) {

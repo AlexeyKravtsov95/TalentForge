@@ -45,6 +45,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
@@ -114,9 +115,22 @@ fun TalentTreeCanvas(
      * swipe anywhere in the canvas ([talentSectionFitSwipeDirection]), when
      * zoomed an overscroll past the content's horizontal bound
      * ([talentSectionSwipeDirection]) — `+1` next section, `-1` previous
-     * ([sectionSwipeDirectionOf]). `null` (landscape/tablet whole tree) disables it.
+     * ([sectionSwipeDirectionOf]), `0` none — with the drag the release left
+     * (dp), so the pages can finish (or ease back) from where the finger let
+     * go. Called for every release that moved the pages, including `0`.
+     * `null` (landscape/tablet whole tree) disables it.
      */
-    onSectionSwipe: ((Int) -> Unit)? = null,
+    onSectionSwipe: ((direction: Int, releaseDragDp: Float) -> Unit)? = null,
+    /**
+     * PR #19 motion: `false` for a page that is only shown (the section
+     * leaving, or the neighbour peeking in): no pointer input and no node
+     * semantics, so only ONE canvas is ever interactive.
+     */
+    interactive: Boolean = true,
+    /** The page's horizontal offset (px), applied after the pointer input (`null`: the rubber band only). */
+    pageOffsetPx: (() -> Float)? = null,
+    /** Test tag of the moving page layer (its bounds follow [pageOffsetPx]). */
+    pageTag: String? = null,
 ) {
     val localDensity = LocalDensity.current
     val sectionSwipe by rememberUpdatedState(onSectionSwipe)
@@ -194,29 +208,37 @@ fun TalentTreeCanvas(
                     density = localDensity.density,
                 )
             }
-            .semantics {
-                if (selectedNodeId != null) {
-                    onClick(label = "clear selection") {
-                        onSelectionCleared()
-                        true
-                    }
-                }
-            }
-            .pointerInput(model, viewportState) {
-                talentTreeGestures(
-                    model = model,
-                    viewportState = viewportState,
-                    onNodeTap = onNodeSelected,
-                    onEmptyTap = onSelectionCleared,
-                    sectionSwipe = { sectionSwipe },
-                    inSystemGestureZone = inSystemGestureZone,
-                    isRtl = { rtl },
-                )
-            }
-            // PR #19 rubber band: AFTER the pointer input in the chain, so the
-            // shifted drawing never moves the gesture's own coordinates
+            .then(
+                if (interactive) {
+                    Modifier
+                        .semantics {
+                            if (selectedNodeId != null) {
+                                onClick(label = "clear selection") {
+                                    onSelectionCleared()
+                                    true
+                                }
+                            }
+                        }
+                        .pointerInput(model, viewportState) {
+                            talentTreeGestures(
+                                model = model,
+                                viewportState = viewportState,
+                                onNodeTap = onNodeSelected,
+                                onEmptyTap = onSelectionCleared,
+                                sectionSwipe = { sectionSwipe },
+                                inSystemGestureZone = inSystemGestureZone,
+                                isRtl = { rtl },
+                            )
+                        }
+                } else {
+                    Modifier
+                },
+            )
+            // PR #19 page offset / rubber band: AFTER the pointer input in the
+            // chain, so the moving drawing never moves the gesture's own coordinates
             .graphicsLayer {
-                translationX = talentSectionSwipeFeedbackDp(viewportState.sectionOverscrollDp) * density
+                translationX = pageOffsetPx?.invoke()
+                    ?: (talentSectionSwipeFeedbackDp(viewportState.sectionOverscrollDp) * density)
             },
     ) {
         val connectorColor = colors.borderStrong
@@ -226,6 +248,7 @@ fun TalentTreeCanvas(
         Box(
             Modifier
                 .matchParentSize()
+                .then(if (pageTag != null) Modifier.testTag(pageTag) else Modifier)
                 .drawBehind {
                     val viewport = viewportState.viewport ?: return@drawBehind
                     val guideEdge = showGuide?.let { guide ->
@@ -338,17 +361,24 @@ fun TalentTreeCanvas(
                                         (node.centerY.dp - containerHalfSide).roundToPx(),
                                     )
                                 }
-                                .semantics {
-                                    contentDescription = node.name ?: "talent ${node.id}"
-                                    stateDescription =
-                                        nodePresentation.accessibilityStateDescription()
-                                    role = Role.Button
-                                    selected = nodeIsSelected
-                                    onClick(label = "select talent") {
-                                        onNodeSelected(node.id)
-                                        true
-                                    }
-                                },
+                                // a shown-only page (PR #19 motion) exposes no talents to accessibility
+                                .then(
+                                    if (!interactive) {
+                                        Modifier
+                                    } else {
+                                        Modifier.semantics {
+                                            contentDescription = node.name ?: "talent ${node.id}"
+                                            stateDescription =
+                                                nodePresentation.accessibilityStateDescription()
+                                            role = Role.Button
+                                            selected = nodeIsSelected
+                                            onClick(label = "select talent") {
+                                                onNodeSelected(node.id)
+                                                true
+                                            }
+                                        }
+                                    },
+                                ),
                         ) {
                             TalentNodeVisual(
                                 node = node,
@@ -400,7 +430,7 @@ private suspend fun PointerInputScope.talentTreeGestures(
     viewportState: TalentTreeViewportState,
     onNodeTap: (Int) -> Unit,
     onEmptyTap: () -> Unit,
-    sectionSwipe: () -> ((Int) -> Unit)?,
+    sectionSwipe: () -> ((Int, Float) -> Unit)?,
     inSystemGestureZone: (Offset) -> Boolean,
     isRtl: () -> Boolean,
 ) {
@@ -436,6 +466,7 @@ private suspend fun PointerInputScope.talentTreeGestures(
         var lockSideways = false
         // edge model: where the finger was when the content edge was reached
         var edgeAnchor: Offset? = null
+        var swipeReported = false
         val velocity = VelocityTracker()
         velocity.addPosition(down.uptimeMillis, down.position)
 
@@ -487,8 +518,11 @@ private suspend fun PointerInputScope.talentTreeGestures(
                                 rtl = isRtl(),
                             )
                         }
+                        val releaseDrag = viewportState.sectionOverscrollDp
                         viewportState.sectionOverscrollDp = 0f
-                        if (direction != 0) onSwipe(direction)
+                        swipeReported = true
+                        // the pages finish the switch, or ease back, from where they were let go
+                        if (direction != 0 || releaseDrag != 0f) onSwipe(direction, releaseDrag)
                     }
                     break
                 }
@@ -576,8 +610,11 @@ private suspend fun PointerInputScope.talentTreeGestures(
                 previousSpan = span
             }
         } finally {
-            // a cancelled gesture (the system took the pointer) never leaves a rubber band behind
+            // a cancelled gesture (the system took the pointer) never leaves a
+            // page half-way: it eases back like a released, unconfirmed swipe
+            val leftOver = viewportState.sectionOverscrollDp
             viewportState.sectionOverscrollDp = 0f
+            if (!swipeReported && leftOver != 0f) sectionSwipe()?.invoke(0, leftOver)
         }
     }
 }

@@ -31,6 +31,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,6 +51,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeRadius
@@ -84,11 +86,8 @@ object TalentTreeSectionTabsMetrics {
     /** 1A v2 S4: indicator 200 ms, cubic(.2, .8, .2, 1). */
     const val INDICATOR_MS: Int = 200
 
-    /** 1A v2 S4: on a tab change the content fades in over 180 ms … */
-    const val CONTENT_FADE_MS: Int = 180
-
-    /** 1A v2 S4: … shifting 24 dp from the side of the chosen tab. */
-    val CONTENT_SHIFT_DP: Dp = 24.dp
+    // 1A v2 S4's tab-change entry (180 ms fade + 24 dp shift of the new section)
+    // is replaced by the PR #19 page transition: see TalentMotionMetrics.
 
     /** 1A v2 03/S1: below 360 dp of width the tab icons are hidden. */
     val ICONS_MIN_WIDTH_DP: Dp = 360.dp
@@ -124,6 +123,9 @@ object TalentTreeSectionTabsMetrics {
 
 /** Test tag of a tab's talent icon (distinct from the canvas node icon tag). */
 const val TALENT_SECTION_TAB_ICON_TAG = "talent-section-tab-icon"
+
+/** Test tag of the tab indicator (its bounds follow the pages, PR #19 motion). */
+const val TALENT_SECTION_INDICATOR_TAG = "talent-section-indicator"
 
 /** One tab: the section, its data-driven label, its live spent points and its icon node. */
 data class TalentSectionTab(
@@ -168,6 +170,14 @@ fun TalentTreeSectionTabs(
     highlightToken: Int,
     onSelectSection: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * PR #19 motion: the indicator's live position (fractional tab ordinal,
+     * see [talentSectionIndicatorPosition]) read at layout time — it travels
+     * with the pages instead of animating on its own, and the label emphasis
+     * follows the tab the screen mostly shows. `selected` (accessibility)
+     * stays the logical section. `null`: the 1A v2 S4 200 ms animation.
+     */
+    indicatorPosition: (() -> Float)? = null,
 ) {
     val colors = talentForgeColors()
     BoxWithConstraints(
@@ -202,6 +212,11 @@ fun TalentTreeSectionTabs(
             ),
             label = "sectionTabIndicator",
         )
+        val livePosition by rememberUpdatedState(indicatorPosition)
+        // recomposes only when the mostly shown tab changes, never per frame
+        val emphasisedOrdinal by remember {
+            derivedStateOf { livePosition?.invoke()?.let { kotlin.math.round(it).toInt() } }
+        }
 
         Box(
             Modifier
@@ -214,6 +229,7 @@ fun TalentTreeSectionTabs(
                         tab = tab,
                         shortLabel = if (numberOnly) "${ordinal + 1}" else null,
                         selected = tab.index == selectedIndex,
+                        emphasised = (emphasisedOrdinal ?: selectedOrdinal) == ordinal,
                         accent = accent,
                         icon = if (showIcons) tab.iconNodeId?.let { icons.iconOf(it) } else null,
                         highlightToken = if (tab.index in highlightedSections) highlightToken else 0,
@@ -225,7 +241,16 @@ fun TalentTreeSectionTabs(
             Box(
                 Modifier
                     .align(Alignment.BottomStart)
-                    .offset(x = indicatorX)
+                    .offset {
+                        val live = livePosition
+                        val x = if (live != null) {
+                            tabWidth * live() + (tabWidth - indicatorWidth) / 2
+                        } else {
+                            indicatorX
+                        }
+                        IntOffset(x.roundToPx(), 0)
+                    }
+                    .testTag(TALENT_SECTION_INDICATOR_TAG)
                     .width(indicatorWidth)
                     .height(TalentTreeSectionTabsMetrics.INDICATOR_HEIGHT_DP)
                     .background(accent),
@@ -239,6 +264,8 @@ private fun SectionTab(
     tab: TalentSectionTab,
     shortLabel: String?,
     selected: Boolean,
+    /** The label's emphasis: the tab the screen mostly shows (follows the pages, PR #19). */
+    emphasised: Boolean,
     accent: Color,
     icon: ImageBitmap?,
     highlightToken: Int,
@@ -285,8 +312,8 @@ private fun SectionTab(
         BasicText(
             text = shortLabel ?: tab.label,
             style = TabLabelStyle.copy(
-                color = if (selected) colors.textPrimary else colors.textSecondary,
-                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
+                color = if (emphasised) colors.textPrimary else colors.textSecondary,
+                fontWeight = if (emphasised) FontWeight.SemiBold else FontWeight.Medium,
             ),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
