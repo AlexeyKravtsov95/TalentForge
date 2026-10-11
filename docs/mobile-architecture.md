@@ -128,12 +128,10 @@ Compose Multiplatform application/UI host. Depends on `shared`. Contains:
     section names, so the B3 tier line reads "Spend N more points in this
     tree" without "in Arms");
   - `TalentInspector` — the **M4.2 adaptive inspector**, one content model in
-    three presentations: portrait 64 dp compact bar (14 dp inset, grows at
-    large text) expanding into the B3 448 dp sheet — it *occupies*
-    min(448 dp, available height − 96 dp), scrolls internally at large text
-    sizes and pins its actions to the bottom; because that is the sheet's
-    actual geometry, the expand focus covers exactly this height (never a
-    mismatched estimate) and pans the minimum amount needed (B3 08);
+    three presentations: portrait compact strip expanding into a sheet
+    (since M5.UX.2a the 1A v2 docked strip and the content-sized sheet — see
+    "M5.UX.2a adaptive inspector and header" below; M4.2 had the B3 64 dp
+    card and a sheet that occupied min(448 dp, available − 96 dp));
     landscape 300 dp side panel
     laid out **beside** the canvas (never painted under it — the tree pans
     only if the panel would cover the node); tablet (840 dp+) persistent
@@ -341,6 +339,66 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
   Tab switches, pan, zoom, FIT, selection and Show are view state only: the
   autosave observer (`onBuildStateChanged`) never sees them; undo/redo,
   reset and the point budget stay global to the one build.
+
+- **M5.UX.2a adaptive inspector and header** (approved direction 1A v2,
+  pages 02–03 and S1/S2/S3/S8; portrait phones — landscape and tablet keep
+  their M4.2 panels until M5.UX.2b):
+
+  - compact strip (`TalentInspectorCompactBar`): docked to the bottom, a
+    12 dp handle over one 64 dp row `[icon 44] name … rank / state
+    [actions]` (76 dp; the safe area below is the screen root's). The handle
+    or the name expands — the B3 chevron button is gone, which is what keeps
+    a readable name column next to `− 48×48 + 56×48` at 320 dp. Actions by
+    state come from the engine-backed `TalentNodeActions`: Available `+`,
+    Partial `− +`, Maxed `− ✓`, no points `+` disabled (`−` if ranked),
+    refund blocked `−` disabled, prerequisite lock an amber `↑ Show`, tier
+    lock the real gate counter chip `13/15`. The state line is the existing
+    `TalentInspectorContent` wording (lock line, else the state line with a
+    disabled control's `disabledActionExplanation`), toned by
+    `talentInspectorStateTone` (green Available, class accent for invested
+    ranks, amber for every lock/denial — never colour alone).
+    `talentInspectorCompactLayout` keeps the single row while the text
+    column keeps ≥ 88 dp per font scale (320 dp at 130 % stays one row,
+    1A v2 03) and switches to the two-line form at ≥ 175 % text (1A v2 S8):
+    the name takes the full width on up to two lines with the rank under it,
+    so a long word is never split, and the state line sits next to the
+    actions; at that size the section tabs show only their number and points
+    (`NUMBER_ONLY_FONT_SCALE`, 1A v2 S8 «N» и очки; the label stays the tab's
+    accessibility description);
+  - expanded sheet (`TalentInspectorExpandedSheet`): sized by its content
+    between `min = 260 dp` and `max = min(66 % H, H − top − 104)`
+    (`expandedSheetLimits`; H = editor height inside the safe area, H − top
+    = the canvas region below header and tabs). Top bar 48 dp (`⌄ · handle
+    · ×`), 18 dp padding, identity row, then the detail, which scrolls
+    inside the sheet once taller than `max`; the actions (`− 56×52`,
+    `+ Rank` flex × 52, `Max 68×52`, or a full-width Show) are pinned below
+    the scroll region. Slack of the 260 dp floor sits above the actions.
+    At ≥ 175 % text the rank moves under the name, `Max` grows past 68 dp
+    instead of clipping and `+ Rank` shows only `+` (its accessibility label
+    is unchanged);
+  - camera integration: the strip and the sheet report their **measured**
+    height from the layout pass (a layout modifier capturing the talent it
+    shows, so a measurement is never attributed to another talent); that
+    height is the camera's `coveredBottomDp` (clamp, FIT position, Show
+    centring). `TalentInspectorRevealTracker` (pure) decides when a new
+    measurement moves the camera: a new presentation reveals once (opening,
+    expanding — B3 08 / 1A v2 S3 "при выделении и смене высоты листа"),
+    collapsing never does, Show and the Back chip place their own target,
+    growth within a presentation reveals again only while the user has not
+    moved the camera. The move is `panToReveal` over 260 ms: scale
+    untouched, no-op while the talent is visible. A reveal never changes the
+    inspector's height, so measure → reveal cannot loop;
+  - header (`TalentTreeHeaderBar`, 1A v2 S1): ≥ 52 dp (grows with the
+    font), back/undo/redo/⋯ 48 × 48, name 15 sp / meta 12 sp / counter mono
+    16 sp, the title column takes all free width (the M5.1 second weighted
+    spacer that halved it is gone); the counter leads the meta line
+    (`21 / 51 · Druid · Forever`) when `W < 360`, or the font is above
+    115 % and `W < 400` (plus an implementation-safe `W ÷ fontScale < 300`
+    guard) — `talentTreeHeaderLayout`.
+
+  None of this touches the engine, `BuildState`, `allocation-build.v1`,
+  storage or autosave: expand, collapse, reveal and the header layout are
+  view state only.
 
 ### `iosApp`
 
