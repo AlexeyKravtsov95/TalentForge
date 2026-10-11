@@ -456,37 +456,48 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
 - **PR #19 motion** (`TalentSectionPaging.kt`, all values implementation-safe).
   It replaces the 1A v2 S4 tab-change entry (180 ms fade + 24 dp shift of the
   new section only) at the brief's request:
-  - section pages. Every section change — tab, swipe, cross-section Show,
-    Back chip — calls `TalentSectionPager.switchTo` in the same event that
-    changes `cameras.selectedSection`. From the first frame both pages are
-    composed: the new active page starts where the gesture left it (one page
-    off for a tap) and both ease to rest (260 ms for a whole page,
-    proportionally less after a swipe, never below 120 ms;
-    `cubic(.2, .8, .2, 1)`). The old page leaves towards the gesture, and the
-    new one arrives from the chosen tab's side (RTL mirrored);
-  - finger-follow. The canvas's single gesture handler publishes
-    `sectionOverscrollDp` (finger travel at FIT, overscroll when zoomed).
-    `talentSectionDragFrame` turns it into page offsets: the active page
-    follows 1:1 and the neighbour comes in from the opposite edge, while the
-    first and last section only rubber-band. At the release the canvas
-    reports `(direction, releaseDragDp)`: a confirmed swipe continues from
-    the release, and an unconfirmed (or system-cancelled) one eases back
-    (`settleBack`);
-  - one interactive canvas. Pages are keyed by section, so a page keeps its
-    instance as it changes role. Only the active page has pointer input and
-    node semantics (`interactive`); the other is drawn only. The offset is
-    applied after the pointer input, so it never shifts gesture coordinates.
-    A touch on the pages (Initial pass, nothing consumed) or a new switch
-    ends a running transition at once: fast swipes and tab taps never queue.
-    The neighbours' cameras are fitted ahead of time with `prepare` (an
-    existing camera is never reset), and no camera, `BuildState` or autosave
-    is touched by the motion;
+  - one pager position (round 4, HorizontalPager-like). A single continuous
+    `TalentSectionPager.position` in tab ordinals drives everything: section
+    *i* is drawn at `(i − position) · width` (RTL mirrored), and the tab
+    indicator sits at `position`. Both are read at draw/layout time.
+    - drag: the finger moves it 1:1 from wherever it was, counted from where
+      the canvas locked the swipe (`talentSectionHeldPosition`, with the
+      rubber band past the first/last tab);
+    - release: the canvas reports `(direction, releaseDragDp,
+      releaseVelocity)`. The motion continues from the drawn position with the
+      finger's velocity on HorizontalPager's snap spring (`StiffnessMediumLow`,
+      no bounce: 95 % of a page by ≈ 240 ms, 99 % by ≈ 330 ms), one frame ahead
+      so the speed has no gap, and clamped so it never passes its rest
+      (`talentSectionReleaseTarget`: the next boundary in the swipe direction,
+      within ¼ page of the motion's tab it counts as arrived, an unconfirmed
+      touch rests on the active tab);
+    - touch: a touch stops the motion exactly where it is drawn
+      (`grab`/`heldFrom`), and a tap that only caught moving pages never selects;
+    - section changes: tab, Show and Back chip call `pager.settle` from the
+      drawn position, carrying the running velocity (passing the tab between, as
+      `animateScrollToPage` does), in the same event that changes
+      `cameras.selectedSection`;
+    - one coroutine job, cancelled synchronously by the next motion, so two
+      animations never fight. The system animator scale (`MotionDurationScale`)
+      is honoured;
+  - one interactive canvas. Pages are keyed by section; a page is composed
+    while any part of it is on screen (plus the active one), like
+    HorizontalPager's `beyondViewportPageCount = 0`. Only the active page has
+    pointer input and talent semantics; the others are drawn only, with their
+    node layer cleared from semantics. The page offset is applied after the
+    pointer input, so it never shifts gesture coordinates. The pages' touch
+    observer only watches (Initial/Final passes) and never consumes. The
+    neighbours' cameras are fitted ahead of time with `prepare` (an existing
+    camera is never reset), and no camera, `BuildState` or autosave is touched
+    by the motion;
   - tab indicator. `TalentTreeSectionTabs(indicatorPosition = …)` reads
-    `talentSectionIndicatorPosition` at layout time, so it travels with the
-    visible share of the pages. The label emphasis follows the mostly shown
+    the pager position at layout time, so it travels with the visible share of
+    the pages. The label emphasis follows the mostly shown
     tab, while the `selected` semantics stay the logical section;
   - inspector sheet. It slides up from the strip's top edge and back down
-    (240 ms, the same curve) by `graphicsLayer` translation only. Its layout,
+    (240 ms, Material `FastOutSlowInEasing`: it starts from rest, without the
+    first-frame jump the earlier `cubic(.2, .8, .2, 1)` had) by `graphicsLayer`
+    translation only. Its layout,
     and therefore the measured covered height and `TalentInspectorRevealTracker`,
     is the final geometry from the first measured frame, so the camera
     reveals the talent once and never per animation frame. A closing sheet
