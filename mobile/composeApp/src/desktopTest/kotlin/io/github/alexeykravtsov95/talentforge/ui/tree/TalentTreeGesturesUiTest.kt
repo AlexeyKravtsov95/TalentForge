@@ -29,17 +29,21 @@ import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.alexeykravtsov95.talentforge.allocation.BuildState
+import io.github.alexeykravtsov95.talentforge.ui.library.ALL_BUNDLES
 import io.github.alexeykravtsov95.talentforge.ui.navigation.DesktopBackDispatcher
 import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
  * PR #19 on the REAL screen (product Warrior, 360 × 800 dp, density 1 so
- * px = dp): the overscroll section swipe of the canvas, the bottom inspector's
+ * px = dp, gestures injected at real canvas coordinates through the root):
+ * the section swipe of the canvas — direct at FIT, edge overscroll when
+ * zoomed or moved (see [TalentSectionSwipeModel]) — the bottom inspector's
  * vertical swipes and the 1A v2 S6 system Back order — with the independent
  * cameras, undo/redo and the autosave observer around them.
  *
@@ -98,6 +102,12 @@ class TalentTreeGesturesUiTest {
 
     private val centre = Offset(180f, 420f)
 
+    private companion object {
+        val CLASS_TOKENS = listOf(
+            "DRUID", "HUNTER", "MAGE", "PALADIN", "PRIEST", "ROGUE", "SHAMAN", "WARLOCK", "WARRIOR",
+        )
+    }
+
     private fun Session.open(): Int = cameras.selectedSection ?: sections.first()
 
     /** A single-finger drag of ([dx], [dy]) dp from [start] in 20 steps, released at the end. */
@@ -111,6 +121,22 @@ class TalentTreeGesturesUiTest {
         settle()
     }
 
+    /** A quick flick of [dx] dp in [steps] moves 16 ms apart (≈ 940 dp/s for 45 dp in 3). */
+    private fun ComposeUiTest.flick(dx: Float, start: Offset = centre, steps: Int = 3) {
+        onRoot().performTouchInput {
+            down(start)
+            repeat(steps) { moveBy(Offset(dx / steps, 0f), delayMillis = 16) }
+            up()
+        }
+        settle()
+    }
+
+    private fun Session.assertAtFit(section: Int, message: String) {
+        val camera = cameras.stateOf(section)
+        assertFalse(camera.userMoved, "$message: still at FIT")
+        assertEquals(camera.fitViewport(), camera.viewport, "$message: the camera never moved")
+    }
+
     /** Zooms the open section's camera to 1.4× (a user move, like a pinch). */
     private fun ComposeUiTest.zoomIn(session: Session): TalentTreeViewportState {
         val camera = session.cameras.stateOf(session.open())
@@ -122,7 +148,176 @@ class TalentTreeGesturesUiTest {
         return camera
     }
 
-    // ------------------------------------------------------------------ section swipe
+    // ------------------------------------------------------------------ section swipe: FIT model
+
+    @Test
+    fun atFitASwipeAnywhereInsideTheCanvasSwitchesWithoutPanningFirst() {
+        onPhone(productState("WARRIOR")) { session ->
+            val (a, b, c) = session.sections
+            val cameraA = session.cameras.stateOf(a)
+            assertEquals(
+                TalentSectionSwipeModel.FIT_SWIPE,
+                talentSectionSwipeModel(
+                    assertNotNull(cameraA.viewport).scale,
+                    assertNotNull(cameraA.fitViewport()).scale,
+                    assertNotNull(cameraA.contentBounds).width,
+                    cameraA.canvasSize.width,
+                ),
+                "a Warrior section fits a 360 dp phone at FIT",
+            )
+            // mid-gesture: the camera stays where it is, only the rubber band follows the finger
+            onRoot().performTouchInput {
+                down(centre)
+                repeat(8) { moveBy(Offset(-10f, 0f)) }
+            }
+            waitForIdle()
+            session.assertAtFit(a, "during the swipe")
+            assertTrue(cameraA.sectionOverscrollDp < 0f, "the canvas follows the finger: ${cameraA.sectionOverscrollDp}")
+            onRoot().performTouchInput { up() }
+            settle()
+            assertEquals(b, session.open(), "80 dp left from the centre → Tree 2, no pan to an edge first")
+            assertEquals(0f, cameraA.sectionOverscrollDp)
+            session.assertAtFit(a, "Tree 1 after leaving")
+
+            // from the left third of the canvas, then from the right third
+            drag(dx = -80f, start = Offset(110f, 300f))
+            assertEquals(c, session.open(), "left third → Tree 3")
+            drag(dx = 80f, start = Offset(260f, 600f))
+            assertEquals(b, session.open(), "right third, finger right → back to Tree 2")
+            // a quick 45 dp flick
+            flick(dx = 45f)
+            assertEquals(a, session.open(), "a flick → Tree 1")
+            onNodeWithText("Tree 1").assertIsSelected()
+            for (section in session.sections) session.assertAtFit(section, "section $section")
+            assertTrue(session.reported.isEmpty(), "switching sections never touches the BuildState or autosave")
+        }
+    }
+
+    @Test
+    fun everyBundledClassSwitchesFromTreeOneToTreeTwoBySwipe() {
+        val edgeModel = mutableListOf<String>()
+        for (bundle in ALL_BUNDLES) {
+            for (token in CLASS_TOKENS) {
+                onPhone(readyStateOnBundle(bundle.clientBuild, token)) { session ->
+                    val label = "${bundle.clientBuild} $token"
+                    val camera = session.cameras.stateOf(session.open())
+                    val model = talentSectionSwipeModel(
+                        assertNotNull(camera.viewport, label).scale,
+                        assertNotNull(camera.fitViewport(), label).scale,
+                        assertNotNull(camera.contentBounds, label).width,
+                        camera.canvasSize.width,
+                    )
+                    if (model == TalentSectionSwipeModel.FIT_SWIPE) {
+                        drag(dx = -80f)
+                    } else {
+                        // a section wider than the phone at FIT: it pans to its edge, then overscrolls
+                        edgeModel += label
+                        drag(dx = -340f, start = Offset(350f, 420f))
+                    }
+                    assertEquals(session.sections[1], session.open(), "$label: Tree 1 → Tree 2 ($model)")
+                    assertTrue(session.reported.isEmpty(), label)
+                }
+            }
+        }
+        println("PR #19 sections wider than a 360 dp phone at FIT (edge model): ${edgeModel.ifEmpty { listOf("none") }}")
+    }
+
+    @Test
+    fun atFitASwipeThatStartsOnATalentSwitchesAndSelectsNothing() {
+        onPhone(productState("WARRIOR")) { session ->
+            val talent = onNodeWithContentDescription(SHORT_DESCRIPTION_TALENT).fetchSemanticsNode().boundsInRoot
+            drag(dx = -90f, start = talent.center)
+            assertEquals(session.sections[1], session.open(), "a swipe from a node still switches")
+            onNodeWithTag(TALENT_INSPECTOR_COMPACT_TAG).assertDoesNotExist()
+            assertTrue(session.reported.isEmpty())
+        }
+    }
+
+    @Test
+    fun atFitAVerticalDragScrollsWithoutSidewaysPanAndKeepsTheSwipe() {
+        onPhone(productState("WARRIOR")) { session ->
+            val (a, b) = session.sections
+            val camera = session.cameras.stateOf(a)
+            val fitX = assertNotNull(camera.viewport).offset.x
+            drag(dx = -30f, dy = -160f)
+            assertEquals(a, session.open(), "a vertical drag never switches")
+            assertEquals(fitX, assertNotNull(camera.viewport).offset.x, "sideways locked while scrolling at FIT")
+            drag(dx = -80f)
+            assertEquals(b, session.open(), "a scrolled section at the fit zoom still swipes directly")
+            assertTrue(session.reported.isEmpty())
+        }
+    }
+
+    @Test
+    fun aPinchAtFitZoomsAndNeverSwitches() {
+        onPhone(productState("WARRIOR")) { session ->
+            val first = session.open()
+            val camera = session.cameras.stateOf(first)
+            val fitScale = assertNotNull(camera.viewport).scale
+            // both fingers drift left by a lot: still a pinch
+            onRoot().performTouchInput {
+                pinch(
+                    start0 = centre - Offset(20f, 0f), end0 = centre - Offset(170f, 0f),
+                    start1 = centre + Offset(20f, 0f), end1 = centre + Offset(10f, 0f),
+                    durationMillis = 400,
+                )
+            }
+            settle()
+            assertEquals(first, session.open(), "a pinch never switches")
+            assertTrue(assertNotNull(camera.viewport).scale > fitScale, "the pinch zoomed")
+            assertEquals(0f, camera.sectionOverscrollDp)
+        }
+    }
+
+    // ------------------------------------------------------------------ section swipe: zoomed / moved (edge model)
+
+    @Test
+    fun zoomedOneFingerPansAndFitRestoresTheDirectSwipe() {
+        onPhone(productState("WARRIOR")) { session ->
+            val (a, b) = session.sections
+            val camera = zoomIn(session)
+            val before = assertNotNull(camera.viewport).offset.x
+            drag(dx = -30f)
+            assertEquals(a, session.open(), "zoomed: a short drag pans")
+            assertTrue(assertNotNull(camera.viewport).offset.x < before, "the camera followed the finger")
+            onNodeWithContentDescription("Fit tree").performClick()
+            settle()
+            session.assertAtFit(a, "after FIT")
+            drag(dx = -80f)
+            assertEquals(b, session.open(), "FIT brings back the direct swipe")
+            assertTrue(session.reported.isEmpty())
+        }
+    }
+
+    @Test
+    fun zoomedTheEdgePushCountsFromWhereTheEdgeWasReached() {
+        onPhone(productState("WARRIOR")) { session ->
+            val b = session.sections[1]
+            val camera = zoomIn(session)
+            // a steep pan first (inside the content), then a horizontal push past
+            // the edge: only the push is judged (the whole path is steeper than 0.5)
+            onRoot().performTouchInput {
+                down(centre)
+                repeat(6) { moveBy(Offset(-2f, -12f)) }
+                repeat(10) { moveBy(Offset(-10f, 0f)) }
+                up()
+            }
+            settle()
+            assertEquals(b, session.open(), "any pan, then ≥ 40 dp past the edge → next")
+            assertTrue(camera.userMoved, "Tree 1 keeps the user's camera")
+            // zoomed Tree 2: past the right bound, then pulled back below the threshold before the release
+            zoomIn(session)
+            onRoot().performTouchInput {
+                down(centre)
+                repeat(12) { moveBy(Offset(-10f, 0f)) }
+                repeat(6) { moveBy(Offset(10f, 0f)) }
+                up()
+            }
+            settle()
+            assertEquals(b, session.open(), "pulled back: cancelled")
+            assertTrue(session.reported.isEmpty())
+        }
+    }
 
     @Test
     fun panToTheEdgeAloneNeverSwitchesAndTheOverscrollThenDoes() {
@@ -175,10 +370,10 @@ class TalentTreeGesturesUiTest {
             assertEquals(a, session.open(), "no wrap-around before the first section")
             drag(dx = -220f)
             assertEquals(b, session.open())
-            drag(dx = -220f) // first pans Tree 2 to its bound, then overscrolls into Tree 3
+            drag(dx = -220f) // at FIT: a direct swipe, Tree 2's camera does not move
             assertEquals(c, session.open())
-            // Tree 2's camera as the swipe left it
             val cameraB = assertNotNull(session.cameras.stateOf(b).viewport)
+            assertEquals(session.cameras.stateOf(b).fitViewport(), cameraB, "Tree 2 is left at FIT")
             drag(dx = -220f)
             assertEquals(c, session.open(), "no wrap-around past the last section")
             drag(dx = 220f)

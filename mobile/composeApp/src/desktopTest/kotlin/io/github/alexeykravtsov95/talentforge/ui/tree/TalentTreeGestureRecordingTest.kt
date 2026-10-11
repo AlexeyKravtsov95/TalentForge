@@ -27,8 +27,8 @@ import org.junit.Assume.assumeTrue
 
 /**
  * PR #19 evidence: frame-by-frame renders of the REAL screen (desktop, product
- * Warrior, 360 × 800 dp at density 2) while the gestures are injected — an
- * overscroll swipe Tree 1 → Tree 2 → Tree 1, then the bottom inspector
+ * Warrior, 360 × 800 dp at density 2) while the gestures are injected — a
+ * FIT swipe Tree 1 → Tree 2 → Tree 1, then the bottom inspector
  * swiped up and down. Frames are numbered PNGs (assembled into a GIF for the
  * PR). Desktop-rendered: it shows the app's own behaviour, not Android's
  * system gesture handling, which needs a device.
@@ -97,11 +97,11 @@ class TalentTreeGestureRecordingTest {
             }
             advance(900)
             shoot(hold = 8)
-            // Tree 1 → Tree 2: swipe left, past the content's right edge
-            recordedDrag(start = Offset(260f, 420f), delta = Offset(-220f, 0f))
+            // at FIT, Tree 1 → Tree 2: an ordinary swipe left from inside the canvas (no pan to an edge)
+            recordedDrag(start = Offset(240f, 420f), delta = Offset(-140f, 0f))
             shoot(hold = 6)
-            // Tree 2 → Tree 1: swipe right, past the left edge
-            recordedDrag(start = Offset(100f, 420f), delta = Offset(220f, 0f))
+            // Tree 2 → Tree 1: swipe right
+            recordedDrag(start = Offset(120f, 420f), delta = Offset(140f, 0f))
             shoot(hold = 6)
             // select a talent: the compact strip appears
             onNodeWithContentDescription(SHORT_DESCRIPTION_TALENT).performClick()
