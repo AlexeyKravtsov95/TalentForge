@@ -404,19 +404,36 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
   `TalentTreeGestureRules.kt`, all thresholds implementation-safe):
 
   - section swipe — inside the canvas's ONE gesture handler
-    (`talentTreeGestures`), not a second detector: while a single finger
-    pans, the horizontal movement the content clamp refuses accumulates as
-    overscroll (`TalentSectionOverscroll`; a movement back first unwinds it)
-    and shows as a bounded rubber band (0.35×, ≤ 32 dp, drawn after the
-    pointer-input node so it never shifts the gesture's coordinates). At the
-    release `talentSectionSwipeDirection` switches to the neighbouring
-    section only when the overscroll is still ≥ 64 dp, the path is at most
-    ≈ 27° (|dy| ≤ 0.5·|dx|), the gesture never had a second finger, passed the
-    tap slop, and did not start in `WindowInsets.systemGestures` (Android's
-    edge Back stays the OS's). Swipe left at the right edge → next, right at
-    the left edge → previous, no wrap-around (`neighbourSection`). The switch
-    is the tab tap path (`onSectionSelected`): selection cleared, every
-    section keeps its own camera, no `BuildState` change, no autosave;
+    (`talentTreeGestures`), not a second detector. The model is chosen when
+    the gesture passes the 7 dp tap slop (`TalentSectionSwipeModel`):
+    - **FIT** — the camera is at its fit zoom and the section fits the width
+      (every bundled class at 360 dp): a gesture more horizontal than
+      vertical is locked as a section swipe. The camera does not move; the
+      canvas follows the finger as a bounded rubber band (0.35×, ≤ 32 dp,
+      drawn after the pointer-input node). The release switches
+      (`talentSectionFitSwipeDirection`) after ≥ 56 dp, or a ≥ 32 dp flick
+      still moving ≥ 600 dp/s the same way; the path must stay within
+      |dy| ≤ 0.5·|dx|. A more vertical gesture scrolls a tall section with the
+      sideways movement locked, so scrolling keeps the FIT model. A second
+      finger ends the lock and the gesture pinches as usual;
+    - **edge** — zoomed in or out, or a section wider than the canvas: one
+      finger pans as always. The movement the content clamp refuses
+      accumulates as overscroll (`TalentSectionOverscroll`; moving back
+      unwinds it). `talentSectionSwipeDirection` switches when it is still
+      ≥ 40 dp at the release (64 dp before the device check), judging the
+      slope only on the movement since the edge was reached. FIT (or a
+      re-tap of the tab) returns the FIT model;
+    - never for a tap, a pinch, a diagonal/short/pulled-back gesture, or one
+      that started in `WindowInsets.systemGestures`: Android's edge Back
+      stays the OS's, and nothing calls `systemGestureExclusion`;
+    - direction (`sectionSwipeDirectionOf`): the content follows the finger,
+      like a platform pager. Finger left → the tree whose tab is on the right
+      (next); finger right → previous. A right-to-left layout is mirrored, and
+      there is no wrap-around (`neighbourSection`). "Swipe right to the next
+      tree" is read as moving right along the tabs, matching the 1A v2 S4 entry
+      shift (the new tree arrives from the chosen tab's side);
+    - the switch is the tab tap path (`onSectionSelected`): selection cleared,
+      every section keeps its own camera, no `BuildState` change, no autosave;
   - bottom inspector — `inspectorVerticalSwipe` on the whole 76 dp compact
     strip (swipe up expands) and on the sheet's header (top bar + identity
     row; swipe down collapses). It observes after the children, takes the
