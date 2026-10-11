@@ -487,11 +487,18 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
     - one coroutine job, cancelled synchronously by the next motion, so two
       animations never fight. The system animator scale (`MotionDurationScale`)
       is honoured;
-  - one interactive canvas. Pages are keyed by section; a page is composed
-    while any part of it is on screen (plus the active one), like
-    HorizontalPager's `beyondViewportPageCount = 0`. Only the active page has
-    pointer input and talent semantics; the others are drawn only, with their
-    node layer cleared from semantics. The page offset is applied after the
+  - one interactive canvas. Pages are keyed by section. Round 6 (measured on
+    the TECNO Spark 40, debug build): composing a page on the frame a swipe
+    starts cost 240–360 ms of main-thread work (composition ≈ 140, first
+    measure ≈ 105, first draw ≈ 45), and the end of every motion disposed the
+    old page and re-diffed every node's modifiers (50–90 ms). So the other
+    pages are composed ahead, at rest, one per frame, nearest first
+    (`talentSectionNextWarmPage`), and kept (`talentSectionComposedPages(…,
+    warm)`): a motion only moves pages that already exist. Only the active
+    page has pointer input and exposes talents to accessibility; the others
+    are drawn only, with ONE `clearAndSetSemantics` on their node layer (the
+    per-node modifiers are the same on every page, so switching the active
+    page does not touch the nodes). The page offset is applied after the
     pointer input, so it never shifts gesture coordinates. The pages' touch
     observer only watches (Initial/Final passes) and never consumes. The
     neighbours' cameras are fitted ahead of time with `prepare` (an existing
