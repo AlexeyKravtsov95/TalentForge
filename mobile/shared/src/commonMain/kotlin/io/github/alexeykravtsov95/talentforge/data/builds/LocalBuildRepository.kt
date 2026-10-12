@@ -28,6 +28,23 @@ sealed interface BuildLibraryError {
     data class UnknownRecord(val localId: String) : BuildLibraryError
 
     /**
+     * A requested build name failed validation (blank after trimming, or
+     * longer than the limit). No write happened; the stored library is
+     * untouched.
+     */
+    data class InvalidBuildName(val reason: Reason, val maxLength: Int) : BuildLibraryError {
+
+        sealed interface Reason {
+
+            /** Blank (or whitespace-only) after trimming. */
+            data object Blank : Reason
+
+            /** Longer than [InvalidBuildName.maxLength] after trimming. */
+            data class TooLong(val length: Int) : Reason
+        }
+    }
+
+    /**
      * The id generator kept returning ids the library already contains for the
      * whole bounded retry policy — a new record was NOT persisted and the
      * stored payload is untouched.
@@ -75,7 +92,8 @@ class RandomLocalBuildIdGenerator(
 
 /**
  * Owner of the app-private local build library: parsing, deterministic
- * serialization, create/update/open/list, typed failures.
+ * serialization, create/update/open/list/rename/duplicate/delete, typed
+ * failures.
  *
  * Every operation is a full read–modify–write over [BuildLibraryStorage] (the
  * payload is small and preferences-backed), so two repository instances over
@@ -96,14 +114,30 @@ class LocalBuildRepository(
     private val idGenerator: LocalBuildIdGenerator,
 ) {
 
-    private companion object {
+    companion object {
+
+        /**
+         * Maximum build-name length after trimming — one rule shared by the
+         * domain and the rename dialog (the UI reads this constant; it never
+         * re-declares the limit).
+         */
+        const val MAX_BUILD_NAME_LENGTH: Int = 60
 
         /**
          * Bounded id-regeneration policy: with a real random generator a
          * second collision is astronomically unlikely; the bound exists so a
          * broken/fixed generator fails typed instead of looping forever.
          */
-        const val MAX_ID_ATTEMPTS = 8
+        private const val MAX_ID_ATTEMPTS = 8
+
+        /** Suffix of a duplicated build's initial name. */
+        private const val COPY_NAME_SUFFIX = " (copy)"
+
+        /**
+         * The fallback title of an unnamed record — the same "Draft" the card
+         * model shows; the duplicate's initial name is derived from it.
+         */
+        private const val DRAFT_TITLE = "Draft"
     }
 
     /** The whole library in canonical domain order; empty when nothing was stored. */
@@ -144,19 +178,24 @@ class LocalBuildRepository(
 
     /** A draft record whose generated id is nonblank and absent from [existing], or `null` after the bounded retries. */
     private fun newUniqueRecord(build: BuildFile, existing: List<LocalBuildRecord>): LocalBuildRecord? {
-        val taken = existing.mapTo(HashSet(existing.size)) { it.localId }
+        val localId = newUniqueId(existing.mapTo(HashSet(existing.size)) { it.localId }) ?: return null
         val now = clock.nowMillis()
+        return LocalBuildRecord(
+            localId = localId,
+            name = null,
+            createdAt = now,
+            updatedAt = now,
+            lastOpenedAt = null,
+            build = build,
+        )
+    }
+
+    /** A generated candidate that is nonblank and absent from [taken], or `null` after the bounded retries. */
+    private fun newUniqueId(taken: Set<String>): String? {
         repeat(MAX_ID_ATTEMPTS) {
             val candidate = idGenerator.next()
             if (candidate.isNotBlank() && candidate !in taken) {
-                return LocalBuildRecord(
-                    localId = candidate,
-                    name = null,
-                    createdAt = now,
-                    updatedAt = now,
-                    lastOpenedAt = null,
-                    build = build,
-                )
+                return candidate
             }
         }
         return null
@@ -179,6 +218,102 @@ class LocalBuildRepository(
     fun open(localId: String): BuildLibraryOutcome<LocalBuildRecord> =
         mutate(localId) { record ->
             record.copy(lastOpenedAt = clock.nowMillis())
+        }
+
+    /**
+     * Renames a record (M5.2a). The name is trimmed; a blank result or a name
+     * longer than [MAX_BUILD_NAME_LENGTH] is a typed
+     * [BuildLibraryError.InvalidBuildName] that never reads or writes storage.
+     * Renaming is metadata: `localId`, the [BuildFile], `createdAt` and
+     * `lastOpenedAt` are preserved exactly, and — deliberately — so is
+     * `updatedAt`: a rename must not masquerade as a talent change, reordering
+     * the "last edited first" list. Renaming to the record's current name is a
+     * successful no-op that does not write.
+     */
+    fun renameBuild(localId: String, newName: String): BuildLibraryOutcome<LocalBuildRecord> {
+        val trimmed = newName.trim()
+        if (trimmed.isEmpty()) {
+            return BuildLibraryOutcome.Failed(
+                BuildLibraryError.InvalidBuildName(
+                    reason = BuildLibraryError.InvalidBuildName.Reason.Blank,
+                    maxLength = MAX_BUILD_NAME_LENGTH,
+                ),
+            )
+        }
+        if (trimmed.length > MAX_BUILD_NAME_LENGTH) {
+            return BuildLibraryOutcome.Failed(
+                BuildLibraryError.InvalidBuildName(
+                    reason = BuildLibraryError.InvalidBuildName.Reason.TooLong(trimmed.length),
+                    maxLength = MAX_BUILD_NAME_LENGTH,
+                ),
+            )
+        }
+        return mutate(localId) { record ->
+            if (record.name == trimmed) record else record.copy(name = trimmed)
+        }
+    }
+
+    /**
+     * Duplicates a record into an INDEPENDENT new record (M5.2a): a fresh
+     * unique `localId` (the same bounded collision policy as
+     * [createDraft]), the source's exact [BuildFile] payload,
+     * `createdAt`/`updatedAt` = now, `lastOpenedAt = null`, and the initial
+     * name `<name> (copy)` — `Draft (copy)` for an unnamed source — shortened
+     * to [MAX_BUILD_NAME_LENGTH] while always keeping the suffix. Duplicate
+     * names are allowed: identity is `localId`, never the name. The source
+     * record and its neighbours are untouched; later edits of either build
+     * never reach the other.
+     */
+    fun duplicateBuild(localId: String): BuildLibraryOutcome<LocalBuildRecord> =
+        when (val outcome = readAll()) {
+            is ReadOutcome.Failed -> BuildLibraryOutcome.Failed(outcome.error)
+            is ReadOutcome.Records -> {
+                val source = outcome.records.firstOrNull { it.localId == localId }
+                    ?: return BuildLibraryOutcome.Failed(BuildLibraryError.UnknownRecord(localId))
+                val copyId = newUniqueId(outcome.records.mapTo(HashSet(outcome.records.size)) { it.localId })
+                    ?: return BuildLibraryOutcome.Failed(
+                        BuildLibraryError.IdCollision(attempts = MAX_ID_ATTEMPTS),
+                    )
+                val now = clock.nowMillis()
+                val copy = LocalBuildRecord(
+                    localId = copyId,
+                    name = copyNameOf(source.name),
+                    createdAt = now,
+                    updatedAt = now,
+                    lastOpenedAt = null,
+                    build = source.build,
+                )
+                when (val written = writeAll(outcome.records + copy)) {
+                    is BuildLibraryOutcome.Failed -> BuildLibraryOutcome.Failed(written.error)
+                    is BuildLibraryOutcome.Loaded -> BuildLibraryOutcome.Loaded(copy)
+                }
+            }
+        }
+
+    /** `<name> (copy)` (`Draft (copy)` for a Draft), within the name-length limit and always keeping the suffix. */
+    private fun copyNameOf(name: String?): String =
+        (name ?: DRAFT_TITLE).take(MAX_BUILD_NAME_LENGTH - COPY_NAME_SUFFIX.length) + COPY_NAME_SUFFIX
+
+    /**
+     * Deletes exactly one record (M5.2a). Every other record is untouched; a
+     * missing record is a typed [BuildLibraryError.UnknownRecord]. A failed
+     * read or write leaves the stored payload byte-for-byte intact — a failed
+     * delete is never reported as a successful one.
+     */
+    fun deleteBuild(localId: String): BuildLibraryOutcome<Unit> =
+        when (val outcome = readAll()) {
+            is ReadOutcome.Failed -> BuildLibraryOutcome.Failed(outcome.error)
+            is ReadOutcome.Records -> {
+                val index = outcome.records.indexOfFirst { it.localId == localId }
+                if (index < 0) {
+                    return BuildLibraryOutcome.Failed(BuildLibraryError.UnknownRecord(localId))
+                }
+                val remaining = outcome.records.toMutableList().apply { removeAt(index) }
+                when (val written = writeAll(remaining)) {
+                    is BuildLibraryOutcome.Failed -> BuildLibraryOutcome.Failed(written.error)
+                    is BuildLibraryOutcome.Loaded -> BuildLibraryOutcome.Loaded(Unit)
+                }
+            }
         }
 
     // ------------------------------------------------------------------ internals
@@ -239,7 +374,14 @@ class LocalBuildRepository(
             if (index < 0) {
                 return BuildLibraryOutcome.Failed(BuildLibraryError.UnknownRecord(localId))
             }
-            val updated = transform(outcome.records[index])
+            val source = outcome.records[index]
+            val updated = transform(source)
+            if (updated == source) {
+                // a transform that changes nothing (e.g. renaming to the
+                // record's current name) is a successful no-op: no write, no
+                // timestamp churn, no neighbour risk
+                return BuildLibraryOutcome.Loaded(updated)
+            }
             val next = outcome.records.toMutableList().apply { set(index, updated) }
             when (val written = writeAll(next)) {
                 is BuildLibraryOutcome.Failed -> BuildLibraryOutcome.Failed(written.error)
