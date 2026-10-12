@@ -500,7 +500,12 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
     halves the batch after a frame over two 60 Hz vsyncs, doubles it after one
     under 20 ms, 1–8 nodes), never a whole page in one frame, so the editor
     answers a touch right after it opens; a touch or a motion pauses it, and a
-    page that comes on screen before it is complete is composed whole. Only the active
+    page that comes on screen before it is complete is composed whole. The node
+    count is read only inside the page's node layer (`TalentTreeNodeLayer`), so a
+    step recomposes that layer alone, not the screen or the other pages (the
+    editor-opening traces measured ≈ 53 ms per step when the screen read it), and
+    the page the editor opened on counts as composed, so the first switch never
+    disposes it and composes it again (≈ 300 ms). Only the active
     page has pointer input and exposes talents to accessibility; the others
     are drawn only, with ONE `clearAndSetSemantics` on their node layer (the
     per-node modifiers are the same on every page, so switching the active
