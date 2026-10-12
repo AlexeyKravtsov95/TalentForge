@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
@@ -23,18 +24,23 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.alexeykravtsov95.talentforge.data.TalentDatasetRepository
+import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildCardModel
 import io.github.alexeykravtsov95.talentforge.ui.library.ClassMonogramMark
 import io.github.alexeykravtsov95.talentforge.ui.library.InlineNotice
+import io.github.alexeykravtsov95.talentforge.ui.library.InlineNoticeTone
 import io.github.alexeykravtsov95.talentforge.ui.library.LibraryData
 import io.github.alexeykravtsov95.talentforge.ui.library.PrimaryActionButton
 import io.github.alexeykravtsov95.talentforge.ui.library.classMonogramOf
@@ -47,15 +53,46 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.classAccentFor
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
 import io.github.alexeykravtsov95.talentforge.ui.tree.BackChevronButton
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * All Builds — the M5.1 BASIC Saved Builds list (spec D.1, management
- * actions deliberately absent until M5.2): every local record as a row
- * ("rows, not cards"), newest edited first, honest metadata (real class
- * name, version context, relative time, engine-computed spent/budget), tap
- * opens the build, Back returns here. No overflow menu, no rename/duplicate/
- * delete — no dead controls.
+ * Which management overlay (M5.2a) is open, and for which record. The overlay
+ * targets a record by its opaque `localId` — never by list position — so a
+ * refresh underneath cannot redirect an action to the wrong build.
+ */
+private sealed interface ManagementOverlay {
+    data object Hidden : ManagementOverlay
+
+    data class Actions(val localId: String) : ManagementOverlay
+
+    data class Rename(val localId: String) : ManagementOverlay
+
+    data class DeleteConfirm(val localId: String) : ManagementOverlay
+}
+
+/** The screen-level notice strip: duplicate success (auto-dismisses) or retryable duplicate failure. */
+private sealed interface ManagementNotice {
+    data object None : ManagementNotice
+
+    /** `id` changes per event so the auto-dismiss timer restarts on repeated duplicates. */
+    data class Duplicated(val id: Int) : ManagementNotice
+
+    data class DuplicateFailed(val localId: String) : ManagementNotice
+}
+
+/**
+ * All Builds — the Saved Builds list (spec D.1) and, since M5.2a, the ONE
+ * place builds are managed: every row ends in a `⋯` button opening the
+ * Rename / Duplicate / Delete sheet. Tap on the row still opens the build;
+ * tap on `⋯` never does. Management operations run off the main thread, one
+ * at a time (repeated presses are ignored while one is in flight), and every
+ * success reloads the list from the repository — the screen never keeps a
+ * second copy of the library as its source of truth. Rename/delete failures
+ * keep their dialog open with a retryable error; a failed duplicate shows a
+ * retryable notice. The list count, order and empty state all come from the
+ * reload.
  */
 @Composable
 fun AllBuildsScreen(
@@ -73,100 +110,251 @@ fun AllBuildsScreen(
         data = withContext(Dispatchers.Default) { loadBuildsModel(repository, datasets) }
     }
 
+    val scope = rememberCoroutineScope()
+    var overlay by remember { mutableStateOf<ManagementOverlay>(ManagementOverlay.Hidden) }
+    var renameText by remember { mutableStateOf("") }
+    var overlayError by remember { mutableStateOf(false) }
+    var operationInFlight by remember { mutableStateOf(false) }
+    var notice by remember { mutableStateOf<ManagementNotice>(ManagementNotice.None) }
+    var noticeEvent by remember { mutableStateOf(0) }
+
+    LaunchedEffect(notice) {
+        if (notice is ManagementNotice.Duplicated) {
+            delay(BuildManagementMetrics.SUCCESS_NOTICE_MS.toLong())
+            if (notice is ManagementNotice.Duplicated) notice = ManagementNotice.None
+        }
+    }
+
+    /** One management operation at a time; repeated presses are ignored while one runs. */
+    fun launchManagement(action: suspend () -> Unit) {
+        if (operationInFlight) return
+        operationInFlight = true
+        scope.launch {
+            try {
+                action()
+            } finally {
+                operationInFlight = false
+            }
+        }
+    }
+
+    fun rename(localId: String, newName: String) {
+        launchManagement {
+            when (withContext(Dispatchers.Default) { repository.renameBuild(localId, newName) }) {
+                is BuildLibraryOutcome.Loaded -> {
+                    overlay = ManagementOverlay.Hidden
+                    overlayError = false
+                    reloadToken += 1
+                }
+                is BuildLibraryOutcome.Failed -> overlayError = true
+            }
+        }
+    }
+
+    fun duplicate(localId: String) {
+        launchManagement {
+            when (withContext(Dispatchers.Default) { repository.duplicateBuild(localId) }) {
+                is BuildLibraryOutcome.Loaded -> {
+                    overlay = ManagementOverlay.Hidden
+                    noticeEvent += 1
+                    notice = ManagementNotice.Duplicated(noticeEvent)
+                    reloadToken += 1
+                }
+                is BuildLibraryOutcome.Failed -> {
+                    // close the sheet first: the retryable notice must be the
+                    // visible answer, never text trapped under the sheet's scrim
+                    overlay = ManagementOverlay.Hidden
+                    notice = ManagementNotice.DuplicateFailed(localId)
+                }
+            }
+        }
+    }
+
+    fun delete(localId: String) {
+        launchManagement {
+            when (withContext(Dispatchers.Default) { repository.deleteBuild(localId) }) {
+                is BuildLibraryOutcome.Loaded -> {
+                    overlay = ManagementOverlay.Hidden
+                    overlayError = false
+                    reloadToken += 1
+                }
+                is BuildLibraryOutcome.Failed -> overlayError = true
+            }
+        }
+    }
+
     val colors = talentForgeColors()
-    Column(
+    Box(
         Modifier
             .fillMaxSize()
-            .background(colors.background)
-            .windowInsetsPadding(WindowInsets.safeDrawing),
+            .background(colors.background),
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(44.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            BackChevronButton(onClick = onBack)
-            BasicText(
-                text = when (val current = data) {
-                    is LibraryData.Ready -> "Builds ${current.value.size}"
-                    else -> "Builds"
-                },
-                style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary),
-                modifier = Modifier.weight(1f),
-            )
-            BasicText(
-                text = "+",
-                style = BuildsNewButtonStyle.copy(color = colors.textPrimary),
-                modifier = Modifier
-                    .heightIn(min = 44.dp)
-                    .padding(horizontal = TalentForgeSpacing.screenX)
-                    .clickable(role = Role.Button, onClickLabel = "start a new build", onClick = onNewBuild),
-            )
-        }
         Column(
             Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = TalentForgeSpacing.screenX),
-            verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.safeDrawing),
         ) {
-            Spacer(Modifier.height(TalentForgeSpacing.inline))
-            when (val current = data) {
-                LibraryData.Loading -> BasicText(
-                    "Loading your builds…",
-                    style = TalentForgeTypography.bodySmall.copy(color = colors.textSecondary),
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(44.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                BackChevronButton(onClick = onBack)
+                BasicText(
+                    text = when (val current = data) {
+                        is LibraryData.Ready -> "Builds ${current.value.size}"
+                        else -> "Builds"
+                    },
+                    style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary),
+                    modifier = Modifier.weight(1f),
+                )
+                BasicText(
+                    text = "+",
+                    style = BuildsNewButtonStyle.copy(color = colors.textPrimary),
+                    modifier = Modifier
+                        .heightIn(min = 44.dp)
+                        .padding(horizontal = TalentForgeSpacing.screenX)
+                        .clickable(role = Role.Button, onClickLabel = "start a new build", onClick = onNewBuild),
+                )
+            }
+            when (val current = notice) {
+                is ManagementNotice.Duplicated -> InlineNotice(
+                    text = "Build duplicated",
+                    actionText = null,
+                    onAction = null,
+                    tone = InlineNoticeTone.Positive,
                 )
 
-                is LibraryData.Failed -> Column(
-                    verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.rowGap),
-                ) {
-                    BasicText(
-                        "Couldn't load your builds",
-                        style = TalentForgeTypography.componentTitle.copy(color = colors.danger),
-                    )
-                    InlineNotice(
-                        text = "The local build library could not be read",
-                        actionText = "Retry",
-                        onAction = { reloadToken += 1 },
-                    )
-                }
+                is ManagementNotice.DuplicateFailed -> InlineNotice(
+                    text = "Couldn't duplicate the build",
+                    actionText = "Retry",
+                    onAction = { duplicate(current.localId) },
+                )
 
-                is LibraryData.Ready -> if (current.value.isEmpty()) {
-                    // D.6 empty: one line, one hint, one action.
-                    Spacer(Modifier.height(TalentForgeSpacing.group))
-                    BasicText(
-                        "No saved builds yet.",
-                        style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary),
-                    )
-                    BasicText(
-                        "Create a build to start planning talents.",
+                ManagementNotice.None -> {}
+            }
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = TalentForgeSpacing.screenX),
+                verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
+            ) {
+                Spacer(Modifier.height(TalentForgeSpacing.inline))
+                when (val current = data) {
+                    LibraryData.Loading -> BasicText(
+                        "Loading your builds…",
                         style = TalentForgeTypography.bodySmall.copy(color = colors.textSecondary),
                     )
-                    PrimaryActionButton(
-                        text = "+ New build",
-                        onClickLabel = "start a new build",
-                        onClick = onNewBuild,
-                    )
-                } else {
-                    for (card in current.value) {
-                        BuildRow(card = card, clockMillis = clockMillis) {
-                            onOpenBuild(card.record.localId)
+
+                    is LibraryData.Failed -> Column(
+                        verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.rowGap),
+                    ) {
+                        BasicText(
+                            "Couldn't load your builds",
+                            style = TalentForgeTypography.componentTitle.copy(color = colors.danger),
+                        )
+                        InlineNotice(
+                            text = "The local build library could not be read",
+                            actionText = "Retry",
+                            onAction = { reloadToken += 1 },
+                        )
+                    }
+
+                    is LibraryData.Ready -> if (current.value.isEmpty()) {
+                        // D.6 empty: one line, one hint, one action.
+                        Spacer(Modifier.height(TalentForgeSpacing.group))
+                        BasicText(
+                            "No saved builds yet.",
+                            style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary),
+                        )
+                        BasicText(
+                            "Create a build to start planning talents.",
+                            style = TalentForgeTypography.bodySmall.copy(color = colors.textSecondary),
+                        )
+                        PrimaryActionButton(
+                            text = "+ New build",
+                            onClickLabel = "start a new build",
+                            onClick = onNewBuild,
+                        )
+                    } else {
+                        for (card in current.value) {
+                            BuildRow(
+                                card = card,
+                                clockMillis = clockMillis,
+                                onClick = { onOpenBuild(card.record.localId) },
+                                onActions = { overlay = ManagementOverlay.Actions(card.record.localId) },
+                            )
                         }
                     }
                 }
+                Spacer(Modifier.height(TalentForgeSpacing.group))
             }
-            Spacer(Modifier.height(TalentForgeSpacing.group))
+        }
+
+        // -------------------------------------------------- M5.2a management overlays
+        val readyCards = (data as? LibraryData.Ready<List<BuildCardModel>>)?.value
+        when (val current = overlay) {
+            ManagementOverlay.Hidden -> {}
+
+            is ManagementOverlay.Actions -> {
+                val card = readyCards?.firstOrNull { it.record.localId == current.localId }
+                if (card != null) {
+                    BuildRowActionsSheet(
+                        buildTitle = card.title,
+                        busy = operationInFlight,
+                        onDismiss = { overlay = ManagementOverlay.Hidden },
+                        onRename = {
+                            renameText = card.record.name.orEmpty() // a Draft starts with an empty field
+                            overlayError = false
+                            overlay = ManagementOverlay.Rename(current.localId)
+                        },
+                        onDuplicate = { duplicate(current.localId) },
+                        onDelete = {
+                            overlayError = false
+                            overlay = ManagementOverlay.DeleteConfirm(current.localId)
+                        },
+                    )
+                }
+            }
+
+            is ManagementOverlay.Rename -> RenameBuildDialog(
+                text = renameText,
+                onTextChange = {
+                    renameText = it
+                    overlayError = false
+                },
+                maxLength = LocalBuildRepository.MAX_BUILD_NAME_LENGTH,
+                busy = operationInFlight,
+                error = overlayError,
+                onSave = { rename(current.localId, renameText) },
+                onCancel = { overlay = ManagementOverlay.Hidden },
+            )
+
+            is ManagementOverlay.DeleteConfirm -> {
+                val card = readyCards?.firstOrNull { it.record.localId == current.localId }
+                if (card != null) {
+                    DeleteBuildDialog(
+                        buildTitle = card.title,
+                        busy = operationInFlight,
+                        error = overlayError,
+                        onDelete = { delete(current.localId) },
+                        onCancel = { overlay = ManagementOverlay.Hidden },
+                    )
+                }
+            }
         }
     }
 }
 
-/** D.1 row: name, `class · version · recency`, and the spent/budget column. */
+/** D.1 row: name, `class · version · recency`, the spent/budget column and the `⋯` management button. */
 @Composable
 private fun BuildRow(
     card: BuildCardModel,
     clockMillis: () -> Long,
     onClick: () -> Unit,
+    onActions: () -> Unit,
 ) {
     val colors = talentForgeColors()
     Row(
@@ -204,6 +392,28 @@ private fun BuildRow(
                 style = BuildsPointsStyle.copy(color = colors.textPrimary),
             )
         }
+        RowActionsButton(title = card.title, onClick = onActions)
+    }
+}
+
+/**
+ * The row's `⋯` button — its own 48 dp click target, so pressing it opens the
+ * management sheet and NEVER the build (the button's click target is a
+ * sibling of the row's, not nested inside it).
+ */
+@Composable
+private fun RowActionsButton(title: String, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(48.dp)
+            .semantics { contentDescription = "build actions for $title" }
+            .clickable(role = Role.Button, onClickLabel = "manage $title", onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        BasicText(
+            text = "⋯",
+            style = BuildsNewButtonStyle.copy(color = talentForgeColors().textPrimary),
+        )
     }
 }
 

@@ -120,19 +120,27 @@ fun SectionLabel(text: String, modifier: Modifier = Modifier) {
     )
 }
 
-/** A compact inline notice with an optional action (used for recoverable errors). */
+/** Visual tone of an [InlineNotice]: recoverable-problem (warning) or success (positive). */
+enum class InlineNoticeTone { Warning, Positive }
+
+/** A compact inline notice with an optional action (used for recoverable errors and confirmations). */
 @Composable
 fun InlineNotice(
     text: String,
     actionText: String?,
     onAction: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    tone: InlineNoticeTone = InlineNoticeTone.Warning,
 ) {
     val colors = talentForgeColors()
+    val toneColor = when (tone) {
+        InlineNoticeTone.Warning -> colors.warning
+        InlineNoticeTone.Positive -> colors.positive
+    }
     Row(
         modifier = modifier
             .background(colors.surfaceElevated, RoundedCornerShape(TalentForgeRadius.medium))
-            .border(1.dp, colors.warning.copy(alpha = 0.55f), RoundedCornerShape(TalentForgeRadius.medium))
+            .border(1.dp, toneColor.copy(alpha = 0.55f), RoundedCornerShape(TalentForgeRadius.medium))
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -152,7 +160,7 @@ fun InlineNotice(
             ) {
                 BasicText(
                     text = actionText,
-                    style = NoticeActionStyle.copy(color = colors.warning),
+                    style = NoticeActionStyle.copy(color = toneColor),
                 )
             }
         }
