@@ -505,16 +505,26 @@ class TalentTreeMotionUiTest {
             repeat(2) { mainClock.advanceTimeByFrame() }
             val before = composedTalents(tree2)
             assertTrue(before < tree2.size, "Tree 2 is not warm yet: $before of ${tree2.size}")
-            drag(dx = -10f, steps = 10)
             // the swipe brings Tree 2 on screen part-way composed: it keeps growing a few talents
-            // per frame through the motion, never the rest of the page in one frame
+            // per frame through the drag and the motion, never the rest of the page in one frame.
+            // Each move is injected on its own (the test clock runs the frames up to its time),
+            // so Tree 2 is counted after every one of them.
             val counts = mutableListOf(before)
             var shownPartly = false
-            repeat(40) {
-                mainClock.advanceTimeByFrame()
+            fun sample() {
                 val composed = composedTalents(tree2)
                 if (page(b) != null && composed < tree2.size) shownPartly = true
                 counts += composed
+            }
+            onRoot().performTouchInput { down(centre) }
+            repeat(10) {
+                onRoot().performTouchInput { moveBy(Offset(-10f, 0f), delayMillis = 16) }
+                sample()
+            }
+            onRoot().performTouchInput { up() }
+            repeat(40) {
+                mainClock.advanceTimeByFrame()
+                sample()
             }
             assertTrue(shownPartly, "Tree 2 slid in before it was complete: $counts")
             assertTrue(
