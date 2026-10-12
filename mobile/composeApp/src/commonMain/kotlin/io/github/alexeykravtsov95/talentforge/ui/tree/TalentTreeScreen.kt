@@ -3,6 +3,8 @@ package io.github.alexeykravtsov95.talentforge.ui.tree
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -20,21 +22,33 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.mapSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.LayoutDirection
 import io.github.alexeykravtsov95.talentforge.allocation.AllocationEngineException
 import io.github.alexeykravtsov95.talentforge.allocation.BuildState
 import io.github.alexeykravtsov95.talentforge.allocation.TalentAllocationEngine
@@ -49,11 +63,14 @@ import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAs
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentDescriptionsLoader
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentIconsLoader
 import io.github.alexeykravtsov95.talentforge.ui.library.REFERENCE_BUNDLE
+import io.github.alexeykravtsov95.talentforge.ui.motion.prefersReducedMotion
+import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTypography
 import io.github.alexeykravtsov95.talentforge.ui.theme.classAccentFor
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 
 /**
  * The M4.3/M5.1 production screen: the Talent Tree as an interactive **local
@@ -211,7 +228,7 @@ fun TalentTreeScreen(
     // System-UI rule: the TalentForge background paints to the physical
     // window edges (background modifier first), and only the *content* is
     // inset by the safe drawing areas (status bar, navigation/gesture bar,
-    // display cutouts). The 44 dp header stays a component inside the safe
+    // display cutouts). The editor header stays a component inside the safe
     // region — the system inset is outside its height. Hosts draw edge to
     // edge (Android enableEdgeToEdge / SwiftUI ignoresSafeArea), so this one
     // padding is the single place insets are applied on every platform.
@@ -364,7 +381,17 @@ private fun ReadyTalentTreeScreen(
     // 1A v2 S8: undo/redo that changed another tab highlights it (transient)
     var tabHighlight by remember { mutableStateOf<TalentTabHighlight?>(null) }
     var tabHighlightToken by remember { mutableStateOf(0) }
-    val sectionEnterMemory = remember { TalentSectionEnterMemory() }
+    // PR #19 motion: the section page transition (view state only, never saved)
+    val pagerScope = rememberCoroutineScope()
+    val pager = remember { TalentSectionPager(pagerScope) }
+    val reducedMotion = prefersReducedMotion()
+    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    // M5.UX.2a: the portrait inspector's MEASURED covered height (never an
+    // estimate) and the policy deciding when a new measurement may move the
+    // camera. View state only — never part of the build or of autosave.
+    var measuredInspector by remember { mutableStateOf<TalentInspectorMeasurement?>(null) }
+    val inspectorSink = remember { TalentInspectorMeasureSink() }
+    val revealTracker = remember { TalentInspectorRevealTracker() }
 
     // B3 07: "A blocked refund shows its reason in the state line for 2.6 s."
     LaunchedEffect(blockedNotice) {
@@ -474,7 +501,29 @@ private fun ReadyTalentTreeScreen(
         applyEdit(editing.spendToMax(current.engine, nodeId), purchasedNodeId = nodeId)
     }
 
-    Box(modifier.fillMaxSize()) {
+    // PR #19 / 1A v2 S6 system Back: close the ⋯ sheet, else collapse the
+    // inspector, else clear the selection — one step per Back. Registered
+    // after the app's navigation handler, so it takes precedence while
+    // enabled; with nothing open the app's own Back (autosave flush,
+    // re-entrancy guard) navigates as before. View state only: never the build.
+    PlatformBackHandler(enabled = buildActionsOpen || selectedNodeId != null) {
+        when (editorBackStep(inspectorExpanded, selectedNodeId != null, buildActionsOpen)) {
+            EditorBackStep.CLOSE_BUILD_ACTIONS -> buildActionsOpen = false
+            EditorBackStep.COLLAPSE_INSPECTOR -> onInspectorExpandedChange(false)
+            EditorBackStep.CLEAR_SELECTION -> {
+                onShowGuideChange(null)
+                onInspectorExpandedChange(false)
+                onSelectedNodeIdChange(null)
+                sectionReturn = null
+            }
+            EditorBackStep.NAVIGATE -> Unit // disabled in this state: the app's handler receives it
+        }
+    }
+
+    BoxWithConstraints(modifier.fillMaxSize()) {
+        // 1A v2 02: H of the sheet's "min(66% H, H − top − 104)" — the editor
+        // inside the system safe area
+        val screenHeight = maxHeight
         Column(Modifier.fillMaxSize()) {
             TalentTreeHeaderBar(
                 title = current.buildTitle,
@@ -521,25 +570,38 @@ private fun ReadyTalentTreeScreen(
                 } else {
                     maxHeight
                 }
-                // B3 06/UX spec 03-04: the expanded sheet occupies its
-                // preferred 448 dp height, capped at the available height
-                // minus 96 dp. This is the sheet's ACTUAL geometry (and
-                // therefore exactly the covered canvas region the expand
-                // focus uses — never a mismatched estimate).
-                val expandedSheetHeight = minOf(
-                    TalentInspectorMetrics.EXPANDED_SHEET_PREFERRED_DP,
-                    areaHeight - TalentInspectorMetrics.SHEET_BOTTOM_CLEARANCE_DP,
-                )
+                // M5.UX.2a (1A v2 02): the expanded sheet wraps its content
+                // between 260 dp and min(66 % H, H − top − 104), where
+                // H − top is the canvas region below the header and tabs.
+                val sheetLimits = expandedSheetLimits(screenHeight = screenHeight, areaHeight = areaHeight)
+                val portrait = layoutClass == TalentTreeLayoutClass.PORTRAIT
+                // The measurement of what is on screen right now: same talent,
+                // same presentation (a stale height of another talent or of
+                // the other presentation is never used).
+                val liveMeasurement = measuredInspector?.takeIf {
+                    portrait && inspectorContent != null &&
+                        it.nodeId == selectedNodeId && it.expanded == inspectorExpanded
+                }
+                // Before the first measurement of a presentation (one frame):
+                // the compact strip's nominal 76 dp (1A v2 02), or the sheet ceiling.
+                val compactNominalDp = TalentInspectorMetrics.COMPACT_STRIP_DP.value
                 // Portrait height of the canvas bottom the overlaid inspector
                 // covers: the camera clamp lets the content move above it.
-                val compactCoveredDp = TalentInspectorMetrics.COMPACT_INSET_DP.value * 2f +
-                    TalentInspectorMetrics.COMPACT_HEIGHT_DP.value
                 val coveredBottomDp = when {
-                    layoutClass != TalentTreeLayoutClass.PORTRAIT || inspectorContent == null -> 0f
-                    inspectorExpanded -> expandedSheetHeight.value
-                    else -> compactCoveredDp
+                    !portrait || inspectorContent == null -> 0f
+                    liveMeasurement != null -> liveMeasurement.coveredDp
+                    inspectorExpanded -> sheetLimits.max.value
+                    else -> inspectorSink.lastCompactDp ?: compactNominalDp
                 }
-                SideEffect { activeCamera.coveredBottomDp = coveredBottomDp }
+                // Show collapses to the compact bar: centre above its real height.
+                val compactCoveredDp = inspectorSink.lastCompactDp ?: compactNominalDp
+                SideEffect {
+                    activeCamera.coveredBottomDp = coveredBottomDp
+                    if (!portrait || inspectorContent == null) revealTracker.reset()
+                }
+                val reportInspector: (TalentInspectorMeasurement) -> Unit = { measurement ->
+                    if (inspectorSink.accept(measurement)) measuredInspector = measurement
+                }
 
                 /**
                  * Pans (animated by the canvas) so [nodeId] is fully visible
@@ -566,6 +628,21 @@ private fun ReadyTalentTreeScreen(
                         ),
                         mode = if (reveal) TalentTreeFocusMode.REVEAL else TalentTreeFocusMode.CENTRE,
                     )
+                }
+
+                // M5.UX.2a: every new real measurement of the portrait
+                // inspector goes through the reveal policy; when it says so
+                // the camera pans the B3 08 minimum (scale untouched, no-op
+                // while the talent is visible) above the MEASURED height.
+                LaunchedEffect(liveMeasurement) {
+                    val measurement = liveMeasurement ?: return@LaunchedEffect
+                    if (revealTracker.onMeasured(measurement, activeCamera.gestureEpoch)) {
+                        focusNode(
+                            nodeId = measurement.nodeId,
+                            coveredBottomDp = measurement.coveredDp,
+                            reveal = true,
+                        )
+                    }
                 }
 
                 /** B3: a plain selection clears any active Show guide (and the Back chip). */
@@ -599,12 +676,125 @@ private fun ReadyTalentTreeScreen(
                  * autosave. A tap on the active tab returns its camera to
                  * the fit (1A v2 01).
                  */
+                val sectionOrder = portraitSections?.sections?.map { it.index }.orEmpty()
+
+                // the pages' width (the canvas region spans the whole workspace width)
+                val pageWidthDp = maxWidth.value
+                val pageWidthPx = with(LocalDensity.current) { maxWidth.toPx() }
+                // PR #19 motion: ONE pager position (tab ordinals) drives every page
+                // and the tab indicator; a change made without motion just rests there
+                val sectionCount = sectionOrder.size
+                val activeOrdinal = activeSection?.let { sectionOrder.indexOf(it) } ?: -1
+                if (activeOrdinal >= 0) pager.sync(activeOrdinal)
+
+                // PR #19 round 6: the other pages are composed ahead, at rest (nearest
+                // first), and kept, so no motion composes or disposes a page
+                // (talentSectionComposedPages). Round 7: a page grows by a few nodes per
+                // frame (talentSectionWarmBatch adapts the batch to the frame time) instead
+                // of a whole page in one frame, so the editor answers a touch right after it
+                // opens; a touch or a motion pauses it for the pages off screen (the warm-up loop
+                // below). Section index -> composed nodes; a page
+                // that is not in it composes none. The page the editor opens on is composed whole
+                // from the first frame, and is kept when the first switch leaves it.
+                var warmProgress by remember(portraitSections) {
+                    val opening = activeSection?.let { section -> portraitSections?.section(section)?.model?.nodes?.size?.let { section to it } }
+                    mutableStateOf(listOfNotNull(opening).toMap())
+                }
+                /**
+                 * The pager position as drawn now: the holding finger's (from
+                 * where it grabbed the pages, 1:1), or the motion's. Read at draw
+                 * / layout time only, never per frame in composition.
+                 */
+                fun currentPosition(): Float {
+                    val held = pager.heldFrom
+                    return if (held != null) {
+                        talentSectionHeldPosition(held, activeCamera.sectionOverscrollDp, pageWidthDp, sectionCount, rtl)
+                    } else {
+                        pager.position
+                    }
+                }
+
+                // the warm-up loop (round 7): one page grows by `batch` talents per frame. A page on
+                // screen comes first, also while the pages move, so a page that slides in before it is
+                // warm grows a few talents per frame instead of a whole page in one frame (the opening
+                // traces measured that frame at 224-240 ms, in the middle of the first swipe). Pages off
+                // screen grow only at rest.
+                LaunchedEffect(portraitSections, activeSection) {
+                    val order = sectionOrder
+                    val sizes = order.map { portraitSections?.section(it)?.model?.nodes?.size ?: 0 }
+                    val active = order.indexOf(activeSection)
+                    fun complete(): Set<Int> = order.indices.filter { (warmProgress[order[it]] ?: 0) >= sizes[it] }.toSet()
+                    fun nextPage(): Int? {
+                        val done = complete()
+                        val shown = talentSectionComposedPages(currentPosition(), active, order.size).firstOrNull { it !in done }
+                        return when {
+                            shown != null -> shown
+                            pager.moving || pager.heldFrom != null -> null
+                            else -> talentSectionNextWarmPage(active, order.size, done)
+                        }
+                    }
+                    var batch = 1
+                    var previousFrame = 0L
+                    while (complete().size < order.size) {
+                        if (nextPage() == null) {
+                            previousFrame = 0L
+                            snapshotFlow { nextPage() != null || complete().size == order.size }.first { it }
+                            continue
+                        }
+                        val frame = withFrameNanos { it } // the frame that is due first: the active page's own
+                        batch = talentSectionWarmBatch(batch, if (previousFrame == 0L) 0L else frame - previousFrame)
+                        previousFrame = frame
+                        val next = nextPage()
+                        if (next == null) {
+                            previousFrame = 0L
+                            continue
+                        }
+                        val section = order[next]
+                        warmProgress = warmProgress + (section to ((warmProgress[section] ?: 0) + batch).coerceAtMost(sizes[next]))
+                    }
+                }
+
+                /**
+                 * PR #19 motion: a section change (tab, Show, Back chip) moves the
+                 * ONE pager position from where it is drawn now, carrying the
+                 * running motion's velocity — from rest the old page slides out
+                 * and the new one in; mid-motion nothing jumps.
+                 */
+                fun beginSectionTransition(from: Int?, to: Int) {
+                    val toOrdinal = sectionOrder.indexOf(to)
+                    if (from == null || from == to || toOrdinal < 0) return
+                    pager.settle(
+                        from = currentPosition(),
+                        to = toOrdinal,
+                        initialVelocity = if (pager.moving) pager.velocity else 0f,
+                        reducedMotion = reducedMotion,
+                        count = sectionCount,
+                    )
+                }
+
+                // a tap that only caught moving pages never selects (as on a native pager)
+                val onCanvasNodeSelected: (Int) -> Unit = { nodeId -> if (!pager.caughtMotion) onNodeSelected(nodeId) }
+                val onCanvasSelectionCleared: () -> Unit = { if (!pager.caughtMotion) onSelectionCleared() }
+
                 val onSectionSelected: (Int) -> Unit = { index ->
                     if (index == activeSection) {
                         cameras.stateOf(index).requestFit()
                     } else {
+                        beginSectionTransition(activeSection, index)
                         onSelectionCleared()
                         cameras.selectedSection = index
+                    }
+                }
+
+                // the neighbours' cameras are fitted ahead of time, so a page that
+                // slides in is laid out already (an existing camera is never reset)
+                LaunchedEffect(portraitSections, activeCamera.canvasSize, layoutClass) {
+                    val size = activeCamera.canvasSize
+                    if (size == Size.Zero) return@LaunchedEffect
+                    portraitSections?.sections?.forEach { section ->
+                        if (section.index != activeSection) {
+                            cameras.stateOf(section.index).prepare(section.model.bounds, size, layoutClass)
+                        }
                     }
                 }
 
@@ -619,6 +809,9 @@ private fun ReadyTalentTreeScreen(
                 val onShowPrerequisite: (Int) -> Unit = { prerequisiteId ->
                     val originId = selectedNodeId
                     if (originId != null && originId != prerequisiteId) {
+                        // Show places the target itself (B3 07 centring): the
+                        // compact bar's own measurement must not pan it again
+                        revealTracker.suppressNextOpen(prerequisiteId)
                         onShowGuideChange(
                             TalentShowGuide(originNodeId = originId, targetNodeId = prerequisiteId),
                         )
@@ -647,6 +840,7 @@ private fun ReadyTalentTreeScreen(
                                 originNodeId = originId,
                                 originSection = activeSection ?: targetSection,
                             )
+                            beginSectionTransition(activeSection, targetSection)
                             cameras.selectedSection = targetSection
                             onSelectedNodeIdChange(prerequisiteId)
                             focusNode(prerequisiteId, camera = targetCamera, coveredBottomDp = coveredBottom)
@@ -659,9 +853,12 @@ private fun ReadyTalentTreeScreen(
 
                 /** 1A v2 04 Back chip: back to the origin talent and its untouched camera. */
                 val onReturnToOrigin: (TalentSectionReturn) -> Unit = { origin ->
+                    // the origin's camera is restored untouched — no reveal on reopen
+                    revealTracker.suppressNextOpen(origin.originNodeId)
                     onShowGuideChange(null)
                     onInspectorExpandedChange(false)
                     sectionReturn = null
+                    beginSectionTransition(activeSection, origin.originSection)
                     cameras.selectedSection = origin.originSection
                     onSelectedNodeIdChange(origin.originNodeId)
                 }
@@ -671,6 +868,11 @@ private fun ReadyTalentTreeScreen(
                     model: TalentTreeUiModel,
                     camera: TalentTreeViewportState,
                     modifier: Modifier,
+                    onSectionSwipe: ((Int, Float, Float) -> Unit)? = null,
+                    interactive: Boolean = true,
+                    pageOffsetPx: (() -> Float)? = null,
+                    pageTag: String? = null,
+                    composedNodeCount: () -> Int = { Int.MAX_VALUE },
                 ) {
                     TalentTreeCanvas(
                         model = model,
@@ -684,10 +886,45 @@ private fun ReadyTalentTreeScreen(
                         guideToken = guideToken,
                         purchaseNodeId = purchaseFeedback?.nodeId,
                         purchaseToken = purchaseFeedback?.token ?: 0,
-                        onNodeSelected = onNodeSelected,
-                        onSelectionCleared = onSelectionCleared,
+                        onNodeSelected = onCanvasNodeSelected,
+                        onSelectionCleared = onCanvasSelectionCleared,
                         modifier = modifier,
+                        onSectionSwipe = onSectionSwipe,
+                        interactive = interactive,
+                        pageOffsetPx = pageOffsetPx,
+                        pageTag = pageTag,
+                        composedNodeCount = composedNodeCount,
                     )
+                }
+
+                /**
+                 * PR #19: a confirmed section swipe opens the neighbouring
+                 * section through the SAME path as a tab tap (selection cleared,
+                 * cameras kept, BuildState untouched); none past the first/last.
+                 * The motion continues from where the finger let go, with its
+                 * velocity: one tab on from the tab the touch started on, or
+                 * back to rest when the swipe was not confirmed.
+                 */
+                val onSectionSwipe: (Int, Float, Float) -> Unit = { direction, releaseDragDp, releaseVelocity ->
+                    val from = activeSection
+                    if (from != null && activeOrdinal >= 0 && pageWidthDp > 0f) {
+                        val grabbedAt = pager.heldFrom ?: pager.position
+                        val released = talentSectionHeldPosition(grabbedAt, releaseDragDp, pageWidthDp, sectionCount, rtl)
+                        // past the first / last tab only the rubber band moved: it returns without speed
+                        val outside = released < 0f || released > sectionCount - 1
+                        val speed = if (outside) 0f else talentSectionPositionVelocity(releaseVelocity, pageWidthDp, rtl)
+                        val target = talentSectionReleaseTarget(grabbedAt, activeOrdinal, direction, sectionCount)
+                        pager.settle(released, target, speed, reducedMotion, sectionCount)
+                        val to = sectionOrder[target]
+                        if (to != from) {
+                            onSelectionCleared()
+                            cameras.selectedSection = to
+                        }
+                    }
+                }
+
+                val indicatorPosition: () -> Float = {
+                    currentPosition().coerceIn(0f, (sectionCount - 1).coerceAtLeast(0).toFloat())
                 }
 
                 // The workspace below the header, with the reset notice as its
@@ -735,44 +972,76 @@ private fun ReadyTalentTreeScreen(
                                     highlightedSections = tabHighlight?.sections.orEmpty(),
                                     highlightToken = tabHighlight?.token ?: 0,
                                     onSelectSection = onSectionSelected,
+                                    indicatorPosition = indicatorPosition,
                                 )
                             }
                             Box(Modifier.fillMaxSize()) {
                                 if (activeSectionModel != null) {
-                                    // One canvas per section (keyed): its own camera,
-                                    // laid out afresh, entering with the 1A v2 S4
-                                    // 180 ms fade + 24 dp shift from the chosen side.
-                                    key(activeSectionModel.index) {
-                                        val ordinal = activeSectionModel.ordinal
-                                        val direction = remember {
-                                            val previous = sectionEnterMemory.previousOrdinal
-                                            sectionEnterMemory.previousOrdinal = ordinal
-                                            when {
-                                                previous == null || previous == ordinal -> 0
-                                                ordinal > previous -> 1
-                                                else -> -1
-                                            }
-                                        }
-                                        val enter = remember { Animatable(if (direction == 0) 1f else 0f) }
-                                        LaunchedEffect(Unit) {
-                                            enter.animateTo(
-                                                1f,
-                                                tween(TalentTreeSectionTabsMetrics.CONTENT_FADE_MS),
+                                    // PR #19 motion: the section pages. One canvas per
+                                    // section (keyed, its own camera): the active page is
+                                    // the ONLY interactive one; the others are drawn only,
+                                    // invisible to accessibility. They are composed ahead,
+                                    // at rest (round 6: composing one costs 240-360 ms on a
+                                    // phone), so a motion never composes or disposes a page.
+                                    // All of them move by ONE position, read at draw time.
+                                    // A touch stops a running motion where it is drawn; the
+                                    // finger carries it.
+                                    val composedPages by remember(pager, activeCamera, activeOrdinal, sectionOrder, pageWidthDp, portraitSections) {
+                                        derivedStateOf {
+                                            talentSectionComposedPages(
+                                                currentPosition(),
+                                                activeOrdinal,
+                                                sectionCount,
+                                                warm = warmProgress.keys.map { sectionOrder.indexOf(it) },
                                             )
                                         }
-                                        val shiftPx = with(LocalDensity.current) {
-                                            TalentTreeSectionTabsMetrics.CONTENT_SHIFT_DP.toPx()
+                                    }
+                                    Box(
+                                        Modifier
+                                            .fillMaxSize()
+                                            .clipToBounds()
+                                            .pointerInput(pager, reducedMotion, sectionCount) {
+                                                awaitEachGesture {
+                                                    awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                                                    pager.grab()
+                                                    // after the canvas has handled the release (Final pass): a touch
+                                                    // that did not swipe lets the motion it stopped go on
+                                                    do {
+                                                        val event = awaitPointerEvent(PointerEventPass.Final)
+                                                    } while (event.changes.any { it.pressed })
+                                                    pager.heldFrom?.let { held ->
+                                                        pager.settle(held, pager.target, 0f, reducedMotion, sectionCount)
+                                                    }
+                                                    pager.endTouch()
+                                                }
+                                            },
+                                    ) {
+                                        for (ordinal in composedPages) {
+                                            val section = sectionOrder[ordinal]
+                                            key(section) {
+                                                val pageModel = portraitSections?.section(section)
+                                                val isActive = section == activeSectionModel.index
+                                                if (pageModel != null) {
+                                                    TreeCanvas(
+                                                        model = pageModel.model,
+                                                        camera = cameras.stateOf(section),
+                                                        onSectionSwipe = if (isActive) onSectionSwipe else null,
+                                                        interactive = isActive,
+                                                        pageOffsetPx = {
+                                                            talentSectionPageX(ordinal, currentPosition(), rtl) * pageWidthPx
+                                                        },
+                                                        pageTag = talentSectionPageTag(section),
+                                                        // read only by the page's node layer: a warm-up step
+                                                        // recomposes that layer, not the screen or the other pages
+                                                        composedNodeCount = remember(section, portraitSections) {
+                                                            val read: () -> Int = { warmProgress[section] ?: 0 }
+                                                            read
+                                                        },
+                                                        modifier = Modifier.fillMaxSize(),
+                                                    )
+                                                }
+                                            }
                                         }
-                                        TreeCanvas(
-                                            model = activeSectionModel.model,
-                                            camera = activeCamera,
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .graphicsLayer {
-                                                    alpha = enter.value
-                                                    translationX = (1f - enter.value) * shiftPx * direction
-                                                },
-                                        )
                                     }
                                     val origin = sectionReturn
                                     if (origin != null && origin.originSection != activeSection) {
@@ -807,22 +1076,38 @@ private fun ReadyTalentTreeScreen(
                                 } else {
                                     TreeCanvas(current.model, viewportState, Modifier.fillMaxSize())
                                 }
-                                Column(Modifier.align(Alignment.BottomCenter)) {
-                                    if (inspectorExpanded && inspectorContent != null) {
-                                        TalentInspectorExpandedSheet(
-                                            accent = current.classAccent,
-                                            content = inspectorContent,
-                                            icon = selectedIcon,
-                                            actions = selectedActions,
-                                            height = expandedSheetHeight,
-                                            onCollapse = { onInspectorExpandedChange(false) },
-                                            onDeselect = onSelectionCleared,
-                                            onShowPrerequisite = onShowPrerequisite,
-                                            onSpendRank = onSpendRank,
-                                            onRefundRank = onRefundRank,
-                                            onMaxRank = onMaxRank,
-                                        )
-                                    } else {
+                                // PR #19 motion: the sheet slides up from the strip's top
+                                // edge and back down (≈ 240 ms ease-out). Only its
+                                // drawing moves: the layout — and so the measured,
+                                // covered height the camera and the reveal policy use —
+                                // is the FINAL geometry from the first frame, so the
+                                // camera pans at most once and never per animation frame.
+                                val shownNodeId = selectedNodeId
+                                val sheetOpen = inspectorExpanded && inspectorContent != null && shownNodeId != null
+                                val sheetProgress = remember { Animatable(if (sheetOpen) 1f else 0f) }
+                                LaunchedEffect(sheetOpen) {
+                                    val spec = tween<Float>(
+                                        durationMillis = if (reducedMotion) 0 else TalentMotionMetrics.SHEET_MS,
+                                        easing = TalentMotionMetrics.SHEET_EASING,
+                                    )
+                                    sheetProgress.animateTo(if (sheetOpen) 1f else 0f, spec)
+                                }
+                                // closing: the SAME talent's sheet slides down over the strip (another
+                                // selection or Show simply shows its strip); derived: recomposes when the
+                                // sheet leaves rest, never per frame
+                                val sheetOpenedFor = remember { IntArray(1) { NO_NODE } }
+                                if (sheetOpen && shownNodeId != null) sheetOpenedFor[0] = shownNodeId
+                                val sheetDrawn by remember { derivedStateOf { sheetProgress.value > 0f } }
+                                val sheetClosing = !sheetOpen && sheetDrawn && inspectorContent != null &&
+                                    shownNodeId != null && shownNodeId == sheetOpenedFor[0]
+                                val stripPx = with(LocalDensity.current) { compactCoveredDp.dp.toPx() }
+                                Box(
+                                    Modifier
+                                        .align(Alignment.BottomCenter)
+                                        // the sheet's lower part, still below its rest, is never drawn under the system bar
+                                        .clipToBounds(),
+                                ) {
+                                    if (!sheetOpen) {
                                         TalentInspectorCompactBar(
                                             accent = current.classAccent,
                                             content = inspectorContent,
@@ -830,24 +1115,79 @@ private fun ReadyTalentTreeScreen(
                                             actions = selectedActions,
                                             onSpendRank = onSpendRank,
                                             onRefundRank = onRefundRank,
-                                            onToggleExpanded = {
-                                                val expanding = !inspectorExpanded
-                                                onInspectorExpandedChange(expanding)
-                                                val target = selectedNodeId
-                                                if (expanding && target != null) {
-                                                    // B3 08: "Expanding pans the canvas the
-                                                    // minimum amount needed, and only when
-                                                    // the node would be covered" — the covered
-                                                    // region is the sheet's actual height.
-                                                    focusNode(
-                                                        nodeId = target,
-                                                        coveredBottomDp = expandedSheetHeight.value,
-                                                        reveal = true,
-                                                    )
-                                                }
-                                            },
+                                            // B3 08: "Expanding pans the canvas the minimum
+                                            // amount needed, and only when the node would be
+                                            // covered" — done once the sheet's REAL height is
+                                            // measured (the reveal policy above).
+                                            onToggleExpanded = { onInspectorExpandedChange(!inspectorExpanded) },
                                             onShowPrerequisite = onShowPrerequisite,
+                                            modifier = (
+                                                if (shownNodeId != null && inspectorContent != null) {
+                                                    Modifier.reportCoveredHeight(
+                                                        nodeId = shownNodeId,
+                                                        expanded = false,
+                                                        onMeasured = reportInspector,
+                                                    )
+                                                } else {
+                                                    Modifier
+                                                }
+                                                ).align(Alignment.BottomCenter),
                                         )
+                                    }
+                                    if ((sheetOpen || sheetClosing) && inspectorContent != null && shownNodeId != null) {
+                                        Box(
+                                            Modifier
+                                                .align(Alignment.BottomCenter)
+                                                .graphicsLayer {
+                                                    // 0: its top at the strip's top · 1: at rest
+                                                    translationY = (1f - sheetProgress.value) *
+                                                        (size.height - stripPx).coerceAtLeast(0f)
+                                                }
+                                                // a closing sheet is a picture: no semantics, no input
+                                                .then(
+                                                    if (sheetClosing) {
+                                                        Modifier.clearAndSetSemantics { testTag = TALENT_INSPECTOR_SHEET_CLOSING_TAG }
+                                                    } else {
+                                                        Modifier
+                                                    },
+                                                ),
+                                        ) {
+                                            TalentInspectorExpandedSheet(
+                                                accent = current.classAccent,
+                                                content = inspectorContent,
+                                                icon = selectedIcon,
+                                                actions = selectedActions,
+                                                limits = sheetLimits,
+                                                onCollapse = { onInspectorExpandedChange(false) },
+                                                onDeselect = onSelectionCleared,
+                                                onShowPrerequisite = onShowPrerequisite,
+                                                onSpendRank = onSpendRank,
+                                                onRefundRank = onRefundRank,
+                                                onMaxRank = onMaxRank,
+                                                modifier = if (sheetOpen) {
+                                                    Modifier.reportCoveredHeight(
+                                                        nodeId = shownNodeId,
+                                                        expanded = true,
+                                                        onMeasured = reportInspector,
+                                                    )
+                                                } else {
+                                                    Modifier
+                                                },
+                                            )
+                                            if (sheetClosing) {
+                                                Box(
+                                                    Modifier
+                                                        .matchParentSize()
+                                                        .pointerInput(Unit) {
+                                                            awaitPointerEventScope {
+                                                                while (true) {
+                                                                    awaitPointerEvent().changes.forEach { it.consume() }
+                                                                }
+                                                            }
+                                                        },
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -929,6 +1269,9 @@ private fun ReadyTalentTreeScreen(
     }
 }
 
+/** No talent (the sheet was never opened). */
+private const val NO_NODE: Int = Int.MIN_VALUE
+
 /** Saveable [TalentShowGuide] (survives recomposition and configuration change). */
 private val TalentShowGuideSaver = mapSaver<TalentShowGuide?>(
     save = { guide ->
@@ -976,9 +1319,44 @@ private data class TalentTabHighlight(
     val token: Int,
 )
 
-/** Which section was shown last, so a newly shown one enters from the chosen side (1A v2 S4). */
-private class TalentSectionEnterMemory {
-    var previousOrdinal: Int? = null
+/**
+ * M5.UX.2a: plain (non-snapshot) memory of the inspector heights reported from
+ * the layout pass — it filters repeats, so only a CHANGED measurement reaches
+ * the snapshot state (one recomposition per real change, never per frame), and
+ * keeps the last compact height for Show, which centres above the bar it is
+ * about to show.
+ */
+private class TalentInspectorMeasureSink {
+    private var last: TalentInspectorMeasurement? = null
+
+    /** The last measured compact-bar height (dp), whichever talent it showed. */
+    var lastCompactDp: Float? = null
+        private set
+
+    /** Records [measurement]; `true` when it differs from the previous one. */
+    fun accept(measurement: TalentInspectorMeasurement): Boolean {
+        if (!measurement.expanded) lastCompactDp = measurement.coveredDp
+        if (measurement == last) return false
+        last = measurement
+        return true
+    }
+}
+
+/**
+ * Reports this layout's real height as the inspector measurement of
+ * [nodeId] / [expanded] on every measure pass. A layout modifier (rather than
+ * `onSizeChanged`) on purpose: the lambda captures the talent it shows, so a
+ * selection change re-measures and re-reports even when the height did not
+ * change — a measurement is never attributed to the previous talent.
+ */
+private fun Modifier.reportCoveredHeight(
+    nodeId: Int,
+    expanded: Boolean,
+    onMeasured: (TalentInspectorMeasurement) -> Unit,
+): Modifier = layout { measurable, constraints ->
+    val placeable = measurable.measure(constraints)
+    onMeasured(TalentInspectorMeasurement(nodeId, expanded, placeable.height.toDp().value))
+    layout(placeable.width, placeable.height) { placeable.place(0, 0) }
 }
 
 /**

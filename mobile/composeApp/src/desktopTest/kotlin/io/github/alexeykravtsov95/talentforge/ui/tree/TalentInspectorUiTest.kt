@@ -13,7 +13,9 @@ import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.hasTextExactly
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.Density
@@ -312,7 +314,7 @@ class TalentInspectorUiTest {
     fun expandingWithTheNodeAboveTheRealSheetLeavesTheViewportUntouched() {
         val viewportState = compose(readyState)
 
-        // Improved Rend sits in the visible band above the 448 dp sheet.
+        // Improved Rend sits in the visible band above the real (measured) sheet.
         composeRule.onNodeWithContentDescription("Improved Rend").performClick()
         settleFocusAnimation()
         val beforeExpand = assertNotNull(viewportState.viewport)
@@ -331,7 +333,7 @@ class TalentInspectorUiTest {
     fun expandingOverACoveredNodePansOnlyTheMinimumAmountNeeded() {
         val viewportState = compose(readyState)
 
-        // Improved Hamstring lies inside the region the real 448 dp sheet
+        // Improved Hamstring lies inside the region the real, measured sheet
         // covers at the initial viewport.
         composeRule.onNodeWithContentDescription("Improved Hamstring").performClick()
         settleFocusAnimation()
@@ -348,9 +350,11 @@ class TalentInspectorUiTest {
         // the amount that brings the node into the visible (uncovered) band.
         val canvas = viewportState.canvasSize
         val node = assertNotNull(readyState.model.nodes.firstOrNull { it.name == "Improved Hamstring" })
-        val sheetHeight = minOf(
-            TalentInspectorMetrics.EXPANDED_SHEET_PREFERRED_DP.value,
-            canvas.height - TalentInspectorMetrics.SHEET_BOTTOM_CLEARANCE_DP.value,
+        // M5.UX.2a: the covered region is the sheet's MEASURED (content-sized) height
+        val sheetHeight = composeRule.onNodeWithTag(TALENT_INSPECTOR_SHEET_TAG).getBoundsInRoot().let { it.bottom - it.top }.value
+        assertTrue(
+            sheetHeight <= canvas.height - TalentInspectorMetrics.EXPANDED_SHEET_CANVAS_RESERVE_DP.value + 0.5f,
+            "the sheet keeps the 1A v2 104 dp of canvas above it: $sheetHeight",
         )
         val expected = beforeExpand.panToReveal(
             Offset(node.centerX, node.centerY),

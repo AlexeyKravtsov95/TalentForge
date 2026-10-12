@@ -99,8 +99,13 @@ class TalentTreeIconUiTest {
         composeRule.waitForIdle()
     }
 
+    /**
+     * The tagged nodes on screen. The portrait screen composes the other section
+     * pages ahead, off screen (PR #19 round 6); their bounds are clipped to nothing.
+     */
     private fun count(tag: String): Int =
-        composeRule.onAllNodes(hasTestTag(tag), useUnmergedTree = true).fetchSemanticsNodes().size
+        composeRule.onAllNodes(hasTestTag(tag), useUnmergedTree = true).fetchSemanticsNodes()
+            .count { it.boundsInRoot.width > 0f && it.boundsInRoot.height > 0f }
 
     private fun select(name: String) {
         composeRule.onNodeWithContentDescription(name).performClick()

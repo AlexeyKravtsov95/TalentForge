@@ -1,5 +1,6 @@
 package io.github.alexeykravtsov95.talentforge.ui.tree
 
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeMotion
 
@@ -11,7 +12,11 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeMotion
  * - `TalentForge_TalentTree_B3.pdf` pages 03–08 (inspector chrome, rank chip,
  *   connection treatments, Show motion);
  * - `TalentForge_UX_UI_Spec_v1.pdf` pages 03–04 and 13 (adaptive inspector
- *   sizes/caps, the 840 dp tablet class, expanded-sheet cap).
+ *   sizes/caps, the 840 dp tablet class, expanded-sheet cap);
+ * - the approved M5.UX direction "1A v2 · Specialization Tabs"
+ *   (`Talent_tree_direction_comparison.pdf`, pages 02–03 and S1/S3/S8) for the
+ *   portrait compact strip and the content-sized sheet since M5.UX.2a — it
+ *   revises the B3 compact card and the 448 dp sheet for portrait phones.
  *
  * Entries marked *implementation-safe* are not frozen by any spec page; they
  * are the smallest constants that keep the read-only presentation legible and
@@ -19,38 +24,77 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeMotion
  */
 object TalentInspectorMetrics {
 
-    /** B3 06 CHROME: "Compact inspector 64 + 14 dp inset." */
+    /**
+     * 1A v2 S1 / 02: "Полоса 76 dp плюс safe area: строка 64 dp" — the row of
+     * the compact strip (B3 06 froze the same 64 dp).
+     */
     val COMPACT_HEIGHT_DP = 64.dp
 
-    /** B3 06 CHROME: "Compact inspector 64 + 14 dp inset." */
-    val COMPACT_INSET_DP = 14.dp
+    /** 1A v2 S1: "12 dp ручка + 64 dp строка" — the grab handle above the row. */
+    val COMPACT_HANDLE_DP = 12.dp
 
     /**
-     * Implementation-safe (M5.V1): the talent icon in the compact bar. Not
-     * frozen by a spec page; 36 dp fits the 64 dp bar with its padding and
-     * leaves the bar's height unchanged.
+     * 1A v2 02: the whole docked strip, handle + row = 76 dp (the system
+     * safe area below it is applied by the screen root). M5.UX.2a replaces
+     * the floating B3 card (64 dp + 2 × 14 dp inset).
      */
-    val COMPACT_ICON_DP = 36.dp
+    val COMPACT_STRIP_DP = 76.dp
+
+    /** Implementation-safe: the strip's horizontal padding (1A v2 draws ≈ 12 dp). */
+    val COMPACT_PADDING_X_DP = 12.dp
+
+    /** 1A v2 S1: "Иконка 44" — the talent icon of the compact strip and the sheet. */
+    val COMPACT_ICON_DP = 44.dp
 
     /**
-     * Implementation-safe (M5.V1): the talent icon in the full-detail headers
-     * (expanded sheet, side panel, tablet panel). 40 dp shows the 64 px client
-     * texture below its native size on every density bucket ≥ 1.6×, and
-     * modestly scaled on lower ones.
+     * Implementation-safe (M5.V1): the talent icon in the side and tablet
+     * panel headers. 40 dp shows the 64 px client texture below its native
+     * size on every density bucket ≥ 1.6× (those panels are M5.UX.2b).
      */
     val DETAIL_ICON_DP = 40.dp
 
     /**
-     * B3 06 CHROME / UX/UI spec 03: "Expanded sheet 448 dp" — the preferred
-     * height, capped by the available height (see [SHEET_BOTTOM_CLEARANCE_DP]).
+     * 1A v2 02: "Развёрнутый лист подстраивается под контент: минимум 260 dp"
+     * (S9: `heightIn(min = 260.dp, max = …)`). See [expandedSheetLimits].
      */
-    val EXPANDED_SHEET_PREFERRED_DP = 448.dp
+    val EXPANDED_SHEET_MIN_DP = 260.dp
+
+    /** 1A v2 02: "максимум min(66% H, H − top − 104)" — the 66 % of the screen height. */
+    const val EXPANDED_SHEET_MAX_SCREEN_FRACTION: Float = 0.66f
 
     /**
-     * UX/UI spec 04: the expanded sheet "is capped at the available height
-     * minus 96 dp so the selection stays visible, and scrolls internally".
+     * 1A v2 02: "… H − top − 104" — the canvas height that always stays
+     * visible above the sheet (the row of the selected talent, 1A v2 03 3.2).
      */
-    val SHEET_BOTTOM_CLEARANCE_DP = 96.dp
+    val EXPANDED_SHEET_CANVAS_RESERVE_DP = 104.dp
+
+    /** 1A v2 S1: "Развёрнутый · Шапка 48" — the sheet's top bar (⌄ · handle · ×). */
+    val SHEET_HEADER_DP = 48.dp
+
+    /** 1A v2 S1: "поля 18 dp" — the sheet's horizontal padding. */
+    val SHEET_PADDING_X_DP = 18.dp
+
+    /** 1A v2 S1: Back, Undo, Redo, menu and the sheet's ⌄ / × are 48 × 48 dp targets. */
+    val SHEET_CONTROL_DP = 48.dp
+
+    /**
+     * Implementation-safe (M5.UX.2a): the compact strip keeps the 1A v2 02
+     * single row `[icon] name rank / state [actions]` while its text column
+     * keeps at least this width per font scale (`width ÷ fontScale`) next to
+     * the widest action cluster — 1A v2 03 keeps one row at 320 dp and 130 %.
+     * Below it, and at very large text ([COMPACT_STACK_FONT_SCALE]), the row
+     * grows to two lines (1A v2 S8 "Шрифт 200%: компактная строка до 2 строк").
+     */
+    val COMPACT_TEXT_MIN_DP = 88.dp
+
+    /** 1A v2 S8: from this font scale on the compact row always uses its two-line form. */
+    const val COMPACT_STACK_FONT_SCALE: Float = 1.75f
+
+    /**
+     * The fixed part of the single compact row: icon 44 + gap 8 + the widest
+     * cluster (− 48 + 4 + + 56) + gap 8.
+     */
+    val COMPACT_FIXED_ROW_DP = 168.dp
 
     /** B3 05 / UX/UI spec 03: "Landscape: 300 dp side panel." */
     val LANDSCAPE_PANEL_WIDTH_DP = 300.dp
@@ -67,6 +111,9 @@ object TalentInspectorMetrics {
     /** B3 08: "All buttons at least 44 × 44 dp" (the read-only Show action included). */
     val ACTION_MIN_DP = 44.dp
 
+    /** 1A v2 S1: the compact strip's action height (− 48 × 48, + 56 × 48, Show, tier chip). */
+    val COMPACT_ACTION_DP = 48.dp
+
     /**
      * B3 06 RANK CHIP: "15 dp tall, 10.5 sp mono, overlapping the node's bottom
      * edge by 8 dp. Connections start below the chip."
@@ -81,6 +128,12 @@ object TalentInspectorMetrics {
 
     /** UX/UI spec G motion: "Show pan + pulse 300 · 900 ms. From B3." */
     const val SHOW_PAN_MS: Int = TalentForgeMotion.SHOW_PAN_MS
+
+    /**
+     * 1A v2 S3: "При выделении и смене высоты листа узел подтягивается в
+     * видимую область (260 мс)" — the inspector-driven reveal pan.
+     */
+    const val REVEAL_PAN_MS: Int = 260
 
     /** UX/UI spec G motion: "Show pan + pulse 300 · 900 ms. From B3." */
     const val SHOW_PULSE_MS: Int = TalentForgeMotion.SHOW_PULSE_MS
@@ -127,4 +180,52 @@ object TalentInspectorMetrics {
      * 1A v2 S3 0.62–1.6 zoom bounds and below its 1.1 tablet cap.
      */
     val INITIAL_SCALE_TABLET: Float = TABLET_NODE_VISUAL_DP / TalentTreeCanvasMetrics.NODE_VISUAL_DP
+}
+
+/**
+ * M5.UX.2a height limits of the content-sized expanded sheet. The sheet wraps
+ * its content between [min] and [max]; content taller than [max] scrolls
+ * inside the sheet while the actions stay pinned.
+ */
+data class TalentInspectorSheetLimits(val min: Dp, val max: Dp)
+
+/**
+ * 1A v2 02: `max = min(66 % H, H − top − 104)` and `min = 260 dp`, where
+ * [screenHeight] is H (the editor's height inside the system safe area) and
+ * [areaHeight] is `H − top` (the canvas region below the header and tabs the
+ * sheet overlays). `min` never exceeds `max` and neither is negative, so a
+ * very short screen degrades to a smaller, still scrolling sheet.
+ */
+fun expandedSheetLimits(screenHeight: Dp, areaHeight: Dp): TalentInspectorSheetLimits {
+    val max = minOf(
+        screenHeight * TalentInspectorMetrics.EXPANDED_SHEET_MAX_SCREEN_FRACTION,
+        areaHeight - TalentInspectorMetrics.EXPANDED_SHEET_CANVAS_RESERVE_DP,
+    ).coerceAtLeast(0.dp)
+    return TalentInspectorSheetLimits(min = minOf(TalentInspectorMetrics.EXPANDED_SHEET_MIN_DP, max), max = max)
+}
+
+/** The two arrangements of the compact strip (M5.UX.2a). */
+enum class TalentInspectorCompactLayout {
+    /** 1A v2 02: `[icon] name rank / state [actions]` in one 64 dp row. */
+    SINGLE_ROW,
+
+    /** 1A v2 S8 large text / very narrow: `[icon] name rank` over `state [actions]`. */
+    TWO_LINE,
+}
+
+/**
+ * Picks the compact arrangement from the strip's width and the font scale
+ * (see [TalentInspectorMetrics.COMPACT_TEXT_MIN_DP]). Pure: the same inputs
+ * always give the same layout, whichever talent is selected.
+ */
+fun talentInspectorCompactLayout(stripWidth: Dp, fontScale: Float): TalentInspectorCompactLayout {
+    val scale = if (fontScale.isFinite() && fontScale > 0f) fontScale else 1f
+    val textColumn = stripWidth - TalentInspectorMetrics.COMPACT_PADDING_X_DP * 2 - TalentInspectorMetrics.COMPACT_FIXED_ROW_DP
+    return if (scale >= TalentInspectorMetrics.COMPACT_STACK_FONT_SCALE ||
+        textColumn / scale < TalentInspectorMetrics.COMPACT_TEXT_MIN_DP
+    ) {
+        TalentInspectorCompactLayout.TWO_LINE
+    } else {
+        TalentInspectorCompactLayout.SINGLE_ROW
+    }
 }

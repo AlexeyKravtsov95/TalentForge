@@ -128,12 +128,10 @@ Compose Multiplatform application/UI host. Depends on `shared`. Contains:
     section names, so the B3 tier line reads "Spend N more points in this
     tree" without "in Arms");
   - `TalentInspector` — the **M4.2 adaptive inspector**, one content model in
-    three presentations: portrait 64 dp compact bar (14 dp inset, grows at
-    large text) expanding into the B3 448 dp sheet — it *occupies*
-    min(448 dp, available height − 96 dp), scrolls internally at large text
-    sizes and pins its actions to the bottom; because that is the sheet's
-    actual geometry, the expand focus covers exactly this height (never a
-    mismatched estimate) and pans the minimum amount needed (B3 08);
+    three presentations: portrait compact strip expanding into a sheet
+    (since M5.UX.2a the 1A v2 docked strip and the content-sized sheet — see
+    "M5.UX.2a adaptive inspector and header" below; M4.2 had the B3 64 dp
+    card and a sheet that occupied min(448 dp, available − 96 dp));
     landscape 300 dp side panel
     laid out **beside** the canvas (never painted under it — the tree pans
     only if the panel would cover the node); tablet (840 dp+) persistent
@@ -341,6 +339,204 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
   Tab switches, pan, zoom, FIT, selection and Show are view state only: the
   autosave observer (`onBuildStateChanged`) never sees them; undo/redo,
   reset and the point budget stay global to the one build.
+
+- **M5.UX.2a adaptive inspector and header** (approved direction 1A v2,
+  pages 02–03 and S1/S2/S3/S8; portrait phones — landscape and tablet keep
+  their M4.2 panels until M5.UX.2b):
+
+  - compact strip (`TalentInspectorCompactBar`): docked to the bottom, a
+    12 dp handle over one 64 dp row `[icon 44] name … rank / state
+    [actions]` (76 dp; the safe area below is the screen root's). The handle
+    or the name expands — the B3 chevron button is gone, which is what keeps
+    a readable name column next to `− 48×48 + 56×48` at 320 dp. Actions by
+    state come from the engine-backed `TalentNodeActions`: Available `+`,
+    Partial `− +`, Maxed `− ✓`, no points `+` disabled (`−` if ranked),
+    refund blocked `−` disabled, prerequisite lock an amber `↑ Show`, tier
+    lock the real gate counter chip `13/15`. The state line is the existing
+    `TalentInspectorContent` wording (lock line, else the state line with a
+    disabled control's `disabledActionExplanation`), toned by
+    `talentInspectorStateTone` (green Available, class accent for invested
+    ranks, amber for every lock/denial — never colour alone).
+    `talentInspectorCompactLayout` keeps the single row while the text
+    column keeps ≥ 88 dp per font scale (320 dp at 130 % stays one row,
+    1A v2 03) and switches to the two-line form at ≥ 175 % text (1A v2 S8):
+    the name takes the full width on up to two lines with the rank under it,
+    so a long word is never split, and the state line sits next to the
+    actions; at that size the section tabs show only their number and points
+    (`NUMBER_ONLY_FONT_SCALE`, 1A v2 S8 «N» и очки; the label stays the tab's
+    accessibility description);
+  - expanded sheet (`TalentInspectorExpandedSheet`): sized by its content
+    between `min = 260 dp` and `max = min(66 % H, H − top − 104)`
+    (`expandedSheetLimits`; H = editor height inside the safe area, H − top
+    = the canvas region below header and tabs). Top bar 48 dp (`⌄ · handle
+    · ×`), 18 dp padding, identity row, then the detail, which scrolls
+    inside the sheet once taller than `max`; the actions (`− 56×52`,
+    `+ Rank` flex × 52, `Max 68×52`, or a full-width Show) are pinned below
+    the scroll region. Slack of the 260 dp floor sits above the actions.
+    At ≥ 175 % text the rank moves under the name, `Max` grows past 68 dp
+    instead of clipping and `+ Rank` shows only `+` (its accessibility label
+    is unchanged);
+  - camera integration: the strip and the sheet report their **measured**
+    height from the layout pass (a layout modifier capturing the talent it
+    shows, so a measurement is never attributed to another talent); that
+    height is the camera's `coveredBottomDp` (clamp, FIT position, Show
+    centring). `TalentInspectorRevealTracker` (pure) decides when a new
+    measurement moves the camera: a new presentation reveals once (opening,
+    expanding — B3 08 / 1A v2 S3 "при выделении и смене высоты листа"),
+    collapsing never does, Show and the Back chip place their own target,
+    growth within a presentation reveals again only while the user has not
+    moved the camera. The move is `panToReveal` over 260 ms: scale
+    untouched, no-op while the talent is visible. A reveal never changes the
+    inspector's height, so measure → reveal cannot loop;
+  - header (`TalentTreeHeaderBar`, 1A v2 S1): ≥ 52 dp (grows with the
+    font), back/undo/redo/⋯ 48 × 48, name 15 sp / meta 12 sp / counter mono
+    16 sp, the title column takes all free width (the M5.1 second weighted
+    spacer that halved it is gone); the counter leads the meta line
+    (`21 / 51 · Druid · Forever`) when `W < 360`, or the font is above
+    115 % and `W < 400` (plus an implementation-safe `W ÷ fontScale < 300`
+    guard) — `talentTreeHeaderLayout`.
+
+  None of this touches the engine, `BuildState`, `allocation-build.v1`,
+  storage or autosave: expand, collapse, reveal and the header layout are
+  view state only.
+
+- **PR #19 gesture arbitration** (found on a real Android device; rules in
+  `TalentTreeGestureRules.kt`, all thresholds implementation-safe):
+
+  - section swipe — inside the canvas's ONE gesture handler
+    (`talentTreeGestures`), not a second detector. The model is chosen when
+    the gesture passes the 7 dp tap slop (`TalentSectionSwipeModel`):
+    - **FIT** — the camera is at its fit zoom and the section fits the width
+      (every bundled class at 360 dp): a gesture more horizontal than
+      vertical is locked as a section swipe. The camera does not move; the
+      canvas follows the finger as a bounded rubber band (0.35×, ≤ 32 dp,
+      drawn after the pointer-input node). The release switches
+      (`talentSectionFitSwipeDirection`) after ≥ 56 dp, or a ≥ 32 dp flick
+      still moving ≥ 600 dp/s the same way; the path must stay within
+      |dy| ≤ 0.5·|dx|. A more vertical gesture scrolls a tall section with the
+      sideways movement locked, so scrolling keeps the FIT model. A second
+      finger ends the lock and the gesture pinches as usual;
+    - **edge** — zoomed in or out, or a section wider than the canvas: one
+      finger pans as always. The movement the content clamp refuses
+      accumulates as overscroll (`TalentSectionOverscroll`; moving back
+      unwinds it). `talentSectionSwipeDirection` switches when it is still
+      ≥ 40 dp at the release (64 dp before the device check), judging the
+      slope only on the movement since the edge was reached. FIT (or a
+      re-tap of the tab) returns the FIT model;
+    - never for a tap, a pinch, a diagonal/short/pulled-back gesture, or one
+      that started in `WindowInsets.systemGestures`: Android's edge Back
+      stays the OS's, and nothing calls `systemGestureExclusion`;
+    - direction (`sectionSwipeDirectionOf`): the content follows the finger,
+      like a platform pager. Finger left → the tree whose tab is on the right
+      (next); finger right → previous. A right-to-left layout is mirrored, and
+      there is no wrap-around (`neighbourSection`). "Swipe right to the next
+      tree" is read as moving right along the tabs, matching the 1A v2 S4 entry
+      shift (the new tree arrives from the chosen tab's side);
+    - the switch is the tab tap path (`onSectionSelected`): selection cleared,
+      every section keeps its own camera, no `BuildState` change, no autosave;
+  - bottom inspector — `inspectorVerticalSwipe` on the whole 76 dp compact
+    strip (swipe up expands) and on the sheet's header (top bar + identity
+    row; swipe down collapses). It observes after the children, takes the
+    pointer only after 8 dp of mostly vertical travel (consuming it cancels
+    any button press under the finger, so a drag never spends, refunds,
+    maxes or shows) and needs 32 dp at the release
+    (`talentInspectorSwipe`). The description's scroll region is outside the
+    header, so scrolling never collapses the sheet. Taps on the handle (now
+    the strip's full width) and the name still expand;
+  - system Back (1A v2 S6, `editorBackStep`) — the editor registers its own
+    `PlatformBackHandler` after the app's: ⋯ sheet open → close it; sheet
+    expanded → collapse; a selection → clear it; otherwise it is disabled and
+    the app's navigation Back runs as before (autosave flush, re-entrancy
+    guard). On Android this is activity-compose `BackHandler`, so the
+    predictive Back gesture follows the same order. The desktop actual is now
+    a real dispatcher with the same last-enabled-wins rule (`DesktopBackDispatcher`,
+    Esc in the desktop window), which makes the order testable; iOS has no
+    system Back.
+
+- **PR #19 motion** (`TalentSectionPaging.kt`, all values implementation-safe).
+  It replaces the 1A v2 S4 tab-change entry (180 ms fade + 24 dp shift of the
+  new section only) at the brief's request:
+  - one pager position (round 4, HorizontalPager-like). A single continuous
+    `TalentSectionPager.position` in tab ordinals drives everything: section
+    *i* is drawn at `(i − position) · width` (RTL mirrored), and the tab
+    indicator sits at `position`. Both are read at draw/layout time.
+    - drag: the finger moves it 1:1 from wherever it was, counted from where
+      the canvas locked the swipe (`talentSectionHeldPosition`, with the
+      rubber band past the first/last tab);
+    - release: the canvas reports `(direction, releaseDragDp,
+      releaseVelocity)`. The motion continues from the drawn position with the
+      finger's velocity on HorizontalPager's snap spring (`StiffnessMediumLow`,
+      no bounce: 95 % of a page by ≈ 240 ms, 99 % by ≈ 330 ms), one frame ahead
+      so the speed has no gap, and clamped so it never passes its rest
+      (`talentSectionReleaseTarget`: the next boundary in the swipe direction,
+      within ¼ page of the motion's tab it counts as arrived, an unconfirmed
+      touch rests on the active tab);
+    - release velocity: Compose's `VelocityTracker` fed through
+      `addPointerInputChange` with the down, every move (including the touch
+      samples Android batches into one event between two frames) and the lift,
+      so the estimate does not depend on the display rate and a finger that
+      rests before the lift releases without speed. The "one frame ahead" lead
+      is `FRAME_LEAD_NANOS`, one 60 Hz frame: at 90/120 Hz the first frame after
+      a release advances by 1.5/2 frames' worth;
+    - touch: a touch stops the motion exactly where it is drawn
+      (`grab`/`heldFrom`), and a tap that only caught moving pages never selects;
+    - section changes: tab, Show and Back chip call `pager.settle` from the
+      drawn position, carrying the running velocity (passing the tab between, as
+      `animateScrollToPage` does), in the same event that changes
+      `cameras.selectedSection`;
+    - one coroutine job, cancelled synchronously by the next motion, so two
+      animations never fight. The system animator scale (`MotionDurationScale`)
+      is honoured;
+  - one interactive canvas. Pages are keyed by section. Round 6 (measured on
+    the TECNO Spark 40, debug build): composing a page on the frame a swipe
+    starts cost 240–360 ms of main-thread work (composition ≈ 140, first
+    measure ≈ 105, first draw ≈ 45), and the end of every motion disposed the
+    old page and re-diffed every node's modifiers (50–90 ms). So the other
+    pages are composed ahead, at rest, nearest first
+    (`talentSectionNextWarmPage`), and kept (`talentSectionComposedPages(…,
+    warm)`): a motion only moves pages that already exist. Round 7: a page
+    composed ahead grows by a few talent nodes per frame
+    (`TalentTreeCanvas(composedNodeCount = …)`; `talentSectionWarmBatch`
+    halves the batch after a frame over two 60 Hz vsyncs, doubles it after one
+    under 20 ms, 1–8 nodes), never a whole page in one frame, so the editor
+    answers a touch right after it opens; a touch or a motion pauses it for the
+    pages off screen, and a page that comes on screen before it is complete
+    keeps growing a few nodes per frame, also during the motion (completing it
+    in one frame cost 224–240 ms in the middle of the first swipe). The node
+    count is read only inside the page's node layer (`TalentTreeNodeLayer`), so a
+    step recomposes that layer alone, not the screen or the other pages (the
+    editor-opening traces measured ≈ 53 ms per step when the screen read it);
+    each talent is its own skippable composable (`TalentTreeNode`), so a step
+    does not rebuild the other talents' modifiers and semantics; and
+    the page the editor opened on counts as composed, so the first switch never
+    disposes it and composes it again (≈ 300 ms). Only the active
+    page has pointer input and exposes talents to accessibility; the others
+    are drawn only, with ONE `clearAndSetSemantics` on their node layer (the
+    per-node modifiers are the same on every page, so switching the active
+    page does not touch the nodes). The page offset is applied after the
+    pointer input, so it never shifts gesture coordinates. The pages' touch
+    observer only watches (Initial/Final passes) and never consumes. The
+    neighbours' cameras are fitted ahead of time with `prepare` (an existing
+    camera is never reset), and no camera, `BuildState` or autosave is touched
+    by the motion;
+  - tab indicator. `TalentTreeSectionTabs(indicatorPosition = …)` reads
+    the pager position at layout time, so it travels with the visible share of
+    the pages. The label emphasis follows the mostly shown
+    tab, while the `selected` semantics stay the logical section;
+  - inspector sheet. It slides up from the strip's top edge and back down
+    (240 ms, Material `FastOutSlowInEasing`: it starts from rest, without the
+    first-frame jump the earlier `cubic(.2, .8, .2, 1)` had) by `graphicsLayer`
+    translation only. Its layout,
+    and therefore the measured covered height and `TalentInspectorRevealTracker`,
+    is the final geometry from the first measured frame, so the camera
+    reveals the talent once and never per animation frame. A closing sheet
+    is a picture: no semantics and no input, with the strip already back
+    underneath;
+  - reduced motion. `prefersReducedMotion()` (expect/actual: Android
+    `ANIMATOR_DURATION_SCALE` = 0, iOS Reduce Motion, desktop none;
+    `LocalReducedMotion` overrides it in tests) makes pages, the sheet and the
+    compact strip's entry instant. Finger-follow stays (direct
+    manipulation), and every action works the same.
 
 ### `iosApp`
 

@@ -5,14 +5,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.disabled
@@ -20,6 +24,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeRadius
@@ -49,6 +54,24 @@ object TalentInspectorActionMetrics {
 
     /** B3 08: "All buttons at least 44 × 44 dp". */
     val ACTION_SIZE_DP = 44.dp
+
+    /** 1A v2 S1 compact strip: "− 48×48". */
+    val COMPACT_REFUND_DP = 48.dp
+
+    /** 1A v2 S1 compact strip: "+ 56×48". */
+    val COMPACT_SPEND_WIDTH_DP = 56.dp
+
+    /** 1A v2 S1 compact strip: the action height (48 dp). */
+    val COMPACT_HEIGHT_DP = 48.dp
+
+    /** 1A v2 S1 expanded sheet: "− 56×52". */
+    val SHEET_REFUND_WIDTH_DP = 56.dp
+
+    /** 1A v2 S1 expanded sheet: "основная flex×52, Max 68×52" — the row height. */
+    val SHEET_HEIGHT_DP = 52.dp
+
+    /** 1A v2 S1 expanded sheet: "Max 68×52". */
+    val SHEET_MAX_WIDTH_DP = 68.dp
 }
 
 /**
@@ -73,22 +96,27 @@ fun TalentInspectorCompactActions(
         // B3 07: "No points [− if ranked, + disabled]" — the refund control
         // stays whenever ranks exist (PARTIAL/MAXED; NO_POINTS always has
         // rank 0 by the state precedence, so it never shows −).
+        val height = TalentInspectorActionMetrics.COMPACT_HEIGHT_DP
         if (actions.rank > 0) {
             RefundButton(
                 talentName = talentName,
                 enabled = actions.canRefund,
                 onClick = { onRefund(actions.nodeId) },
+                width = TalentInspectorActionMetrics.COMPACT_REFUND_DP,
+                height = height,
             )
         }
         if (actions.isMaxed) {
             // B3 03: "+ becomes a check badge (not a button)".
-            MaxedBadge()
+            MaxedBadge(width = TalentInspectorActionMetrics.COMPACT_REFUND_DP, height = height)
         } else {
             SpendButton(
                 talentName = talentName,
                 enabled = actions.canSpend,
                 accent = accent,
                 onClick = { onSpend(actions.nodeId) },
+                width = TalentInspectorActionMetrics.COMPACT_SPEND_WIDTH_DP,
+                height = height,
             )
         }
     }
@@ -143,6 +171,63 @@ fun TalentInspectorRankActions(
     }
 }
 
+/**
+ * The expanded sheet's pinned action row (1A v2 02 / S1): `−` 56 × 52, the
+ * primary `+ Rank` taking the remaining width × 52 (the ✓ badge once maxed)
+ * and `Max` 68 × 52. Same engine-backed enabled states and accessibility
+ * labels as every other rank control; the side and tablet panels keep
+ * [TalentInspectorRankActions] until M5.UX.2b.
+ */
+@Composable
+fun TalentInspectorSheetRankActions(
+    talentName: String,
+    actions: TalentNodeActions,
+    accent: androidx.compose.ui.graphics.Color,
+    onSpend: (Int) -> Unit,
+    onRefund: (Int) -> Unit,
+    onMax: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val height = TalentInspectorActionMetrics.SHEET_HEIGHT_DP
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
+    ) {
+        RefundButton(
+            talentName = talentName,
+            enabled = actions.canRefund,
+            onClick = { onRefund(actions.nodeId) },
+            width = TalentInspectorActionMetrics.SHEET_REFUND_WIDTH_DP,
+            height = height,
+        )
+        if (actions.isMaxed) {
+            MaxedBadge(width = null, height = height, modifier = Modifier.weight(1f))
+        } else {
+            SpendButton(
+                talentName = talentName,
+                enabled = actions.canSpend,
+                accent = accent,
+                onClick = { onSpend(actions.nodeId) },
+                width = null,
+                height = height,
+                // 1A v2 S8 very large text: the glyph alone (the label still names the action)
+                caption = if (LocalDensity.current.fontScale >= TalentInspectorMetrics.COMPACT_STACK_FONT_SCALE) null else "Rank",
+                modifier = Modifier.weight(1f),
+            )
+        }
+        MaxButton(
+            talentName = talentName,
+            enabled = actions.canSpend && !actions.isMaxed,
+            onClick = { onMax(actions.nodeId) },
+            // 68 × 52 at 100 % text; grows with a larger font instead of clipping "Max"
+            modifier = Modifier
+                .height(height)
+                .widthIn(min = TalentInspectorActionMetrics.SHEET_MAX_WIDTH_DP),
+        )
+    }
+}
+
 // ------------------------------------------------------------------ buttons
 
 /**
@@ -157,16 +242,16 @@ fun SpendButton(
     accent: androidx.compose.ui.graphics.Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    width: Dp? = TalentInspectorActionMetrics.SPEND_WIDTH_DP,
+    height: Dp = TalentInspectorActionMetrics.ACTION_SIZE_DP,
+    caption: String? = null,
 ) {
     val colors = talentForgeColors()
     val background = if (enabled) accent else colors.surfaceInteractive
     val glyphColor = if (enabled) colors.background else colors.disabled
     Box(
         modifier = modifier
-            .size(
-                width = TalentInspectorActionMetrics.SPEND_WIDTH_DP,
-                height = TalentInspectorActionMetrics.ACTION_SIZE_DP,
-            )
+            .actionSize(width, height)
             .background(background, RoundedCornerShape(TalentForgeRadius.medium))
             .rankActionSemantics(
                 label = "Add rank to $talentName",
@@ -175,7 +260,18 @@ fun SpendButton(
             ),
         contentAlignment = Alignment.Center,
     ) {
-        BasicText(text = "+", style = InspectorGlyphStyle.copy(color = glyphColor))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            BasicText(text = "+", style = InspectorGlyphStyle.copy(color = glyphColor))
+            // 1A v2 02: the sheet's primary action reads "+ Rank"
+            if (caption != null) {
+                BasicText(
+                    text = caption,
+                    style = InspectorActionTextStyle.copy(color = glyphColor),
+                    maxLines = 1,
+                    modifier = Modifier.padding(start = TalentForgeSpacing.hairline),
+                )
+            }
+        }
     }
 }
 
@@ -191,11 +287,13 @@ fun RefundButton(
     enabled: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    width: Dp = TalentInspectorActionMetrics.ACTION_SIZE_DP,
+    height: Dp = TalentInspectorActionMetrics.ACTION_SIZE_DP,
 ) {
     val colors = talentForgeColors()
     Box(
         modifier = modifier
-            .size(TalentInspectorActionMetrics.ACTION_SIZE_DP)
+            .size(width = width, height = height)
             .background(colors.surfaceInteractive, RoundedCornerShape(TalentForgeRadius.medium))
             .rankActionSemantics(
                 label = "Remove rank from $talentName",
@@ -251,11 +349,15 @@ fun MaxButton(
  * non-interactive completion mark layered into the action row.
  */
 @Composable
-fun MaxedBadge(modifier: Modifier = Modifier) {
+fun MaxedBadge(
+    modifier: Modifier = Modifier,
+    width: Dp? = TalentInspectorActionMetrics.ACTION_SIZE_DP,
+    height: Dp = TalentInspectorActionMetrics.ACTION_SIZE_DP,
+) {
     val colors = talentForgeColors()
     Box(
         modifier = modifier
-            .size(TalentInspectorActionMetrics.ACTION_SIZE_DP)
+            .actionSize(width, height)
             .background(colors.surfaceElevated, RoundedCornerShape(TalentForgeRadius.medium))
             .semantics(mergeDescendants = true) { contentDescription = "Max rank reached" },
         contentAlignment = Alignment.Center,
@@ -263,6 +365,10 @@ fun MaxedBadge(modifier: Modifier = Modifier) {
         BasicText(text = "✓", style = InspectorGlyphStyle.copy(color = colors.positive))
     }
 }
+
+/** A fixed [width] × [height] action, or — `width == null` — a flexible one sized by its parent (1A v2 "flex"). */
+private fun Modifier.actionSize(width: Dp?, height: Dp): Modifier =
+    if (width != null) size(width = width, height = height) else height(height)
 
 /** Shared semantics of a rank-action button: labelled, roled, disabled-aware. */
 private fun Modifier.rankActionSemantics(

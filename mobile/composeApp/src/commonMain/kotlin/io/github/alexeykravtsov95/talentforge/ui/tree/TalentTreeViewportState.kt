@@ -68,6 +68,14 @@ class TalentTreeViewportState(
     var coveredBottomDp: Float by mutableStateOf(0f)
 
     /**
+     * PR #19: the horizontal overscroll (dp, signed like the finger) of the
+     * single-finger gesture in progress, past the content's horizontal bound —
+     * the rubber-band feedback of the section swipe; 0 outside such a gesture.
+     * Never saved; never part of the camera transform.
+     */
+    var sectionOverscrollDp: Float by mutableStateOf(0f)
+
+    /**
      * Incremented by every user gesture step: a running camera animation
      * (Show focus, FIT) stops as soon as it changes, so animations never
      * block or fight new gestures (1A v2 S4: "the gesture interrupts the animation").
