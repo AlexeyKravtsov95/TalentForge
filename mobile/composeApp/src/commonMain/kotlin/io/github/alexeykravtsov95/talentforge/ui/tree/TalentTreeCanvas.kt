@@ -174,11 +174,18 @@ fun TalentTreeCanvas(
         val current = viewportState.viewport ?: return@LaunchedEffect
         // each request runs once, even if this canvas re-enters composition
         if (!viewportState.consumeFocusRequest(request)) return@LaunchedEffect
+        // M5.UX.2b.1: the visible region may start right of a side panel (RTL):
+        // resolved in the region's own frame, then back in canvas coordinates
+        // (an unchanged result stays exactly the current camera)
+        val origin = request.visibleOrigin
+        val inRegion = if (origin == Offset.Zero) current else current.panBy(Offset(-origin.x, -origin.y))
+        fun toCanvas(resolved: TalentTreeViewport): TalentTreeViewport =
+            if (resolved === inRegion) current else resolved.panBy(origin)
         val target = when (request.mode) {
             // 1A v2 04: the Show target is centred within the content bounds
             TalentTreeFocusMode.CENTRE ->
-                viewportState.clampTarget(current.focusedOn(request.world, request.visibleSize))
-            TalentTreeFocusMode.REVEAL -> current.panToReveal(request.world, request.visibleSize)
+                viewportState.clampTarget(toCanvas(inRegion.focusedOn(request.world, request.visibleSize)))
+            TalentTreeFocusMode.REVEAL -> toCanvas(inRegion.panToReveal(request.world, request.visibleSize))
         }
         if (target == current) return@LaunchedEffect
         // B3 07 Show: 300 ms; 1A v2 S3 inspector reveal: 260 ms
