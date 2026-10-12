@@ -108,6 +108,15 @@ object TalentInspectorMetrics {
      */
     val TABLET_MIN_WIDTH_DP = 840.dp
 
+    /**
+     * M5.UX.2b.1, implementation-safe (Material's compact-height window class
+     * ends at 480 dp; the design sources freeze no value): a canvas region
+     * shorter than this is a phone held sideways — the spec's separate "Phone
+     * landscape" column — even when it is 840+ dp wide, as most modern phones
+     * are in landscape (e.g. 915 × 412, 932 × 430).
+     */
+    val TABLET_MIN_HEIGHT_DP = 480.dp
+
     /** B3 08: "All buttons at least 44 × 44 dp" (the read-only Show action included). */
     val ACTION_MIN_DP = 44.dp
 
