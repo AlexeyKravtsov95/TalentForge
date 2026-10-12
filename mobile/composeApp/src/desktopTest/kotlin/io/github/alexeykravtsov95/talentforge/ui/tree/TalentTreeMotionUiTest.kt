@@ -497,6 +497,28 @@ class TalentTreeMotionUiTest {
         }
     }
 
+    @Test
+    fun thePageTheEditorOpenedOnStaysComposedThroughTheFirstSwitch() {
+        onPhone { session ->
+            val (a, b) = session.sections
+            val tree1 = talentsOnlyOf(session, 0)
+            assertTrue(tree1.size >= 10, "Tree 1 has talents of its own: $tree1")
+            assertEquals(tree1.size, composedTalents(tree1), "the opening page is composed whole")
+            drag(dx = -10f, steps = 10)
+            // every frame of the motion, its end and the rest after it: Tree 1 is never
+            // disposed (and so never composed again in one long frame)
+            repeat(90) {
+                mainClock.advanceTimeByFrame()
+                assertEquals(tree1.size, composedTalents(tree1), "frame $it: Tree 1 stays composed whole")
+            }
+            rest()
+            assertSettledOn(session, b, "switched")
+            assertNull(page(a))
+            assertEquals(tree1.size, composedTalents(tree1), "Tree 1 is kept off screen after the switch")
+            assertTrue(session.reported.isEmpty())
+        }
+    }
+
     // ------------------------------------------------------------------ 6. cameras + 7. autosave
 
     private fun Session.assertCameraAtFit(section: Int) {

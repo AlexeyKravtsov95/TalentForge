@@ -137,9 +137,10 @@ fun TalentTreeCanvas(
     /**
      * PR #19 round 7: how many of [model]'s nodes to compose, in model order. A page being
      * composed ahead off screen grows a few nodes per frame instead of all at once; every
-     * page on screen composes all of them (the default).
+     * page on screen composes all of them (the default). Read only inside the node layer
+     * ([TalentTreeNodeLayer]), so a warm-up step recomposes that layer and nothing else.
      */
-    composedNodeCount: Int = Int.MAX_VALUE,
+    composedNodeCount: () -> Int = { Int.MAX_VALUE },
 ) {
     val localDensity = LocalDensity.current
     val sectionSwipe by rememberUpdatedState(onSectionSwipe)
@@ -354,61 +355,96 @@ fun TalentTreeCanvas(
                     transformOrigin = TransformOrigin(0f, 0f)
                 },
         ) {
-            val containerHalfSide =
-                (TalentTreeCanvasMetrics.NODE_VISUAL_DP / 2f +
-                    TalentTreeCanvasMetrics.SELECTION_RING_GAP_DP +
-                    TalentTreeCanvasMetrics.SELECTION_RING_WIDTH_DP).dp
+            TalentTreeNodeLayer(
+                model = model,
+                presentation = presentation,
+                icons = icons,
+                accent = accent,
+                selectedNodeId = selectedNodeId,
+                showGuide = showGuide,
+                guideToken = guideToken,
+                purchaseNodeId = purchaseNodeId,
+                purchaseToken = purchaseToken,
+                onNodeSelected = onNodeSelected,
+                composedNodeCount = composedNodeCount,
+            )
+        }
+    }
+}
 
-            val composedNodes = if (composedNodeCount >= model.nodes.size) {
-                model.nodes
-            } else {
-                model.nodes.subList(0, composedNodeCount.coerceAtLeast(0))
-            }
-            for (node in composedNodes) {
-                key(node.id) {
-                    val nodeIsSelected = node.id == selectedNodeId
-                    val nodePresentation = presentation.nodes[node.id]
-                    if (nodePresentation != null) {
-                        Box(
-                            modifier = Modifier
-                                .offset {
-                                    IntOffset(
-                                        (node.centerX.dp - containerHalfSide).roundToPx(),
-                                        (node.centerY.dp - containerHalfSide).roundToPx(),
-                                    )
-                                }
-                                // Always the same modifiers, active page or not: a shown-only page
-                                // (PR #19 motion) hides its talents from accessibility with ONE
-                                // clearAndSetSemantics on the node layer above, so making a page
-                                // active or inactive never rediffs every node's modifier chain
-                                // (the switch frames measured 30-55 ms of applyChanges on a phone).
-                                .semantics {
-                                    contentDescription = node.name ?: "talent ${node.id}"
-                                    stateDescription =
-                                        nodePresentation.accessibilityStateDescription()
-                                    role = Role.Button
-                                    selected = nodeIsSelected
-                                    onClick(label = "select talent") {
-                                        onNodeSelected(node.id)
-                                        true
-                                    }
-                                },
-                        ) {
-                            TalentNodeVisual(
-                                node = node,
-                                presentation = nodePresentation,
-                                icon = icons.iconOf(node.id),
-                                accent = accent,
-                                selected = nodeIsSelected,
-                                showOrigin = showGuide?.originNodeId == node.id,
-                                pulseToken = if (showGuide?.targetNodeId == node.id) guideToken else 0,
-                                purchaseToken = if (purchaseNodeId == node.id) purchaseToken else 0,
+/**
+ * The canvas's talent nodes, laid out in world dp inside the node layer. Its own recomposition
+ * scope (PR #19 round 7): [composedNodeCount] is read here only, so composing a page ahead a few
+ * nodes per frame recomposes this layer, never the canvas, the screen or the other pages.
+ */
+@Composable
+private fun TalentTreeNodeLayer(
+    model: TalentTreeUiModel,
+    presentation: TalentTreePresentation,
+    icons: TalentNodeIcons,
+    accent: androidx.compose.ui.graphics.Color,
+    selectedNodeId: Int?,
+    showGuide: TalentShowGuide?,
+    guideToken: Int,
+    purchaseNodeId: Int?,
+    purchaseToken: Int,
+    onNodeSelected: (Int) -> Unit,
+    composedNodeCount: () -> Int,
+) {
+    val containerHalfSide =
+        (TalentTreeCanvasMetrics.NODE_VISUAL_DP / 2f +
+            TalentTreeCanvasMetrics.SELECTION_RING_GAP_DP +
+            TalentTreeCanvasMetrics.SELECTION_RING_WIDTH_DP).dp
+
+    val count = composedNodeCount()
+    val composedNodes = if (count >= model.nodes.size) {
+        model.nodes
+    } else {
+        model.nodes.subList(0, count.coerceAtLeast(0))
+    }
+    for (node in composedNodes) {
+        key(node.id) {
+            val nodeIsSelected = node.id == selectedNodeId
+            val nodePresentation = presentation.nodes[node.id]
+            if (nodePresentation != null) {
+                Box(
+                    modifier = Modifier
+                        .offset {
+                            IntOffset(
+                                (node.centerX.dp - containerHalfSide).roundToPx(),
+                                (node.centerY.dp - containerHalfSide).roundToPx(),
                             )
                         }
-                    }
-                    // fail closed: a node without an engine projection is not rendered
+                        // Always the same modifiers, active page or not: a shown-only page
+                        // (PR #19 motion) hides its talents from accessibility with ONE
+                        // clearAndSetSemantics on the node layer above, so making a page
+                        // active or inactive never rediffs every node's modifier chain
+                        // (the switch frames measured 30-55 ms of applyChanges on a phone).
+                        .semantics {
+                            contentDescription = node.name ?: "talent ${node.id}"
+                            stateDescription =
+                                nodePresentation.accessibilityStateDescription()
+                            role = Role.Button
+                            selected = nodeIsSelected
+                            onClick(label = "select talent") {
+                                onNodeSelected(node.id)
+                                true
+                            }
+                        },
+                ) {
+                    TalentNodeVisual(
+                        node = node,
+                        presentation = nodePresentation,
+                        icon = icons.iconOf(node.id),
+                        accent = accent,
+                        selected = nodeIsSelected,
+                        showOrigin = showGuide?.originNodeId == node.id,
+                        pulseToken = if (showGuide?.targetNodeId == node.id) guideToken else 0,
+                        purchaseToken = if (purchaseNodeId == node.id) purchaseToken else 0,
+                    )
                 }
             }
+            // fail closed: a node without an engine projection is not rendered
         }
     }
 }

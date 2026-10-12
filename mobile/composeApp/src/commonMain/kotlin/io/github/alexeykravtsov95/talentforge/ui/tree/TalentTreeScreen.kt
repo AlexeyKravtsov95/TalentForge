@@ -697,6 +697,12 @@ private fun ReadyTalentTreeScreen(
                 LaunchedEffect(portraitSections, activeSection) {
                     val order = sectionOrder
                     val sizes = order.map { portraitSections?.section(it)?.model?.nodes?.size ?: 0 }
+                    // the active page is composed whole already: it counts as warm, so it is
+                    // kept (not disposed and composed again) when the first switch leaves it
+                    val activeIndex = order.indexOf(activeSection)
+                    if (activeIndex >= 0 && (warmProgress[order[activeIndex]] ?: 0) < sizes[activeIndex]) {
+                        warmProgress = warmProgress + (order[activeIndex] to sizes[activeIndex])
+                    }
                     var batch = 1
                     var previousFrame = 0L
                     while (true) {
@@ -849,7 +855,7 @@ private fun ReadyTalentTreeScreen(
                     interactive: Boolean = true,
                     pageOffsetPx: (() -> Float)? = null,
                     pageTag: String? = null,
-                    composedNodeCount: Int = Int.MAX_VALUE,
+                    composedNodeCount: () -> Int = { Int.MAX_VALUE },
                 ) {
                     TalentTreeCanvas(
                         model = model,
@@ -977,6 +983,18 @@ private fun ReadyTalentTreeScreen(
                                     val visiblePages by remember(pager, activeCamera, activeOrdinal, sectionOrder, pageWidthDp, portraitSections) {
                                         derivedStateOf { talentSectionComposedPages(currentPosition(), activeOrdinal, sectionCount) }
                                     }
+                                    // a page that comes on screen before it is warm is completed and stays so
+                                    // (read in a flow, not here: the screen is not recomposed by a motion)
+                                    LaunchedEffect(pager, activeCamera, activeOrdinal, sectionOrder, pageWidthDp, portraitSections) {
+                                        snapshotFlow { visiblePages }.collect { pages ->
+                                            val incomplete = pages.mapNotNull { ordinal ->
+                                                val section = sectionOrder[ordinal]
+                                                val size = portraitSections?.section(section)?.model?.nodes?.size ?: 0
+                                                if ((warmProgress[section] ?: 0) < size) section to size else null
+                                            }
+                                            if (incomplete.isNotEmpty()) warmProgress = warmProgress + incomplete
+                                        }
+                                    }
                                     Box(
                                         Modifier
                                             .fillMaxSize()
@@ -1012,10 +1030,17 @@ private fun ReadyTalentTreeScreen(
                                                             talentSectionPageX(ordinal, currentPosition(), rtl) * pageWidthPx
                                                         },
                                                         pageTag = talentSectionPageTag(section),
-                                                        composedNodeCount = if (ordinal in visiblePages) {
-                                                            Int.MAX_VALUE
-                                                        } else {
-                                                            warmProgress[section] ?: Int.MAX_VALUE
+                                                        // read only by the page's node layer: a warm-up step
+                                                        // recomposes that layer, not the screen or the other pages
+                                                        composedNodeCount = remember(
+                                                            section, ordinal, pager, activeCamera, activeOrdinal,
+                                                            sectionOrder, pageWidthDp, portraitSections,
+                                                        ) {
+                                                            val count = derivedStateOf {
+                                                                if (ordinal in visiblePages) Int.MAX_VALUE else warmProgress[section] ?: Int.MAX_VALUE
+                                                            }
+                                                            val read: () -> Int = { count.value }
+                                                            read
                                                         },
                                                         modifier = Modifier.fillMaxSize(),
                                                     )
