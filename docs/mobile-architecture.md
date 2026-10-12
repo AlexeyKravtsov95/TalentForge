@@ -297,7 +297,12 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
   colour). Operations run off the main thread, one at a time; every success
   reloads the list from the repository (count, order and empty state included),
   and failures keep their dialog — or show a retryable notice for duplicate —
-  open, never half-completing.
+  open, never half-completing. The modal surface and its scrim consume stray
+  touches (nothing reaches the interface underneath, and touching the surface
+  itself never dismisses — only the explicit actions do), and the system Back
+  button closes the open modal first (as a cancel: no write) — a Back with no
+  modal open navigates as usual, and a Back while an operation is in flight
+  is consumed but does nothing.
 
 - **M5.UX.1 section tabs and per-section cameras** (approved direction
   "1A v2 · Specialization Tabs"; portrait phones only — landscape and tablet
@@ -602,10 +607,12 @@ read–modify–write with the same fail-closed guarantees:
 - `duplicateBuild` creates an independent record: a fresh id under the same
   bounded collision policy as create-draft, the source's exact `BuildFile`
   payload, fresh `createdAt`/`updatedAt`, `lastOpenedAt = null`, and the
-  initial name `<name> (copy)` (`Draft (copy)` for a Draft) shortened to the
-  60-character limit while always keeping the suffix. Duplicate names are
-  allowed — identity is the `localId`, never the name — and the source
-  record is untouched.
+  initial name derived from the source's CURRENT name with ` (copy)`
+  appended (`Draft (copy)` for a Draft). A duplicate of a duplicate
+  therefore appends once per copy (`Build (copy)` → `Build (copy) (copy)`) —
+  the documented policy — always shortened to the 60-character limit while
+  keeping the suffix. Duplicate names are allowed — identity is the
+  `localId`, never the name — and the source record is untouched.
 - `deleteBuild` removes exactly one record; a missing id is
   `UnknownRecord`, and a failed read or write leaves the stored payload
   byte-for-byte intact (a failed delete never looks successful).

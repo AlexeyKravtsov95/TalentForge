@@ -316,6 +316,33 @@ class LocalBuildRepositoryManagementTest {
     }
 
     @Test
+    fun duplicateOfADuplicateAppendsTheSuffixOncePerCopy() {
+        val harness = repository()
+        val original = namedDraft(harness, "Build")
+
+        val firstCopy = loaded(harness.repo.duplicateBuild(original.localId))
+        val secondCopy = loaded(harness.repo.duplicateBuild(firstCopy.localId))
+
+        // the copy's name derives from the source's CURRENT name: a copy of a
+        // copy accumulates one suffix per copy (documented policy, not a bug)
+        assertEquals("Build (copy)", firstCopy.name)
+        assertEquals("Build (copy) (copy)", secondCopy.name)
+    }
+
+    @Test
+    fun repeatedDuplicationStaysWithinTheLimitWithTheSuffixAlwaysKept() {
+        val harness = repository()
+        var current = namedDraft(harness, "y".repeat(LocalBuildRepository.MAX_BUILD_NAME_LENGTH))
+
+        repeat(5) {
+            current = loaded(harness.repo.duplicateBuild(current.localId))
+            assertNotNull(current.name)
+            assertEquals(LocalBuildRepository.MAX_BUILD_NAME_LENGTH, current.name.length)
+            assertTrue(current.name.endsWith(" (copy)"))
+        }
+    }
+
+    @Test
     fun duplicateNamesAreAllowedBecauseIdentityIsTheLocalId() {
         val harness = repository()
         val original = loaded(harness.repo.createDraft(buildFile()))

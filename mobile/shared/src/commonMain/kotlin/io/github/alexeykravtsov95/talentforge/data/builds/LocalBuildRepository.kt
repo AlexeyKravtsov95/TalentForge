@@ -258,11 +258,13 @@ class LocalBuildRepository(
      * unique `localId` (the same bounded collision policy as
      * [createDraft]), the source's exact [BuildFile] payload,
      * `createdAt`/`updatedAt` = now, `lastOpenedAt = null`, and the initial
-     * name `<name> (copy)` — `Draft (copy)` for an unnamed source — shortened
-     * to [MAX_BUILD_NAME_LENGTH] while always keeping the suffix. Duplicate
-     * names are allowed: identity is `localId`, never the name. The source
-     * record and its neighbours are untouched; later edits of either build
-     * never reach the other.
+     * name derived from the source's CURRENT name with ` (copy)` appended —
+     * `Draft (copy)` for a Draft, and a copy of a copy appends once more
+     * (`Build (copy)` → `Build (copy) (copy)`), always shortened to
+     * [MAX_BUILD_NAME_LENGTH] while keeping the suffix. Duplicate names are
+     * allowed: identity is `localId`, never the name. The source record and
+     * its neighbours are untouched; later edits of either build never reach
+     * the other.
      */
     fun duplicateBuild(localId: String): BuildLibraryOutcome<LocalBuildRecord> =
         when (val outcome = readAll()) {
@@ -290,7 +292,12 @@ class LocalBuildRepository(
             }
         }
 
-    /** `<name> (copy)` (`Draft (copy)` for a Draft), within the name-length limit and always keeping the suffix. */
+    /**
+     * The copy's initial name: the source's CURRENT name with ` (copy)`
+     * appended — so a duplicate of a duplicate accumulates one suffix per
+     * copy (`Build (copy)` → `Build (copy) (copy)`) — shortened to the
+     * name-length limit while always keeping the suffix.
+     */
     private fun copyNameOf(name: String?): String =
         (name ?: DRAFT_TITLE).take(MAX_BUILD_NAME_LENGTH - COPY_NAME_SUFFIX.length) + COPY_NAME_SUFFIX
 
