@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -12,15 +13,18 @@ import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.alexeykravtsov95.talentforge.data.ClassToken
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.ui.library.DraftCreation
 import io.github.alexeykravtsov95.talentforge.ui.library.createClassDraft
+import io.github.alexeykravtsov95.talentforge.ui.navigation.DesktopBackDispatcher
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -119,6 +123,18 @@ class BuildManagementUiTest {
     private fun openRowActions(rowTitle: String) {
         composeRule.onNodeWithContentDescription("build actions for $rowTitle").performClick()
         awaitText("Duplicate")
+    }
+
+    /**
+     * One system Back through the desktop dispatcher — the same
+     * registration rules as Android's `OnBackPressedDispatcher` (newest
+     * enabled handler wins). Returns whether any handler consumed it.
+     */
+    private fun systemBack(): Boolean {
+        var handled = false
+        composeRule.runOnIdle { handled = DesktopBackDispatcher.dispatch() }
+        composeRule.waitForIdle()
+        return handled
     }
 
     // ------------------------------------------------------------------ the ⋯ sheet
@@ -400,5 +416,167 @@ class BuildManagementUiTest {
         }
         composeRule.onNodeWithContentDescription("go back").performClick()
         awaitText("Builds 2")
+    }
+
+    // ------------------------------------------------------------------ system Back
+
+    @Test
+    fun systemBackClosesTheSheetWithoutNavigating() {
+        seedSpareAndTarget()
+        composeApp()
+        openAllBuilds(expectedCount = 2)
+        openRowActions("Draft")
+
+        assertTrue(systemBack())
+
+        composeRule.onNodeWithText("Duplicate").assertDoesNotExist() // the sheet closed
+        composeRule.onNodeWithText("Builds 2").assertExists() // …and All Builds stayed
+    }
+
+    @Test
+    fun systemBackCancelsTheRenameDialogWithoutWriting() {
+        seedSpareAndTarget()
+        composeApp()
+        openAllBuilds(expectedCount = 2)
+        openRowActions("Draft")
+        composeRule.onNodeWithText("Rename").performClick()
+        awaitText("Rename build")
+        composeRule.onNodeWithContentDescription("build name").performTextInput("Typed")
+        val writesBefore = storage.writeCount
+
+        assertTrue(systemBack())
+
+        awaitGone("Rename build")
+        assertEquals(writesBefore, storage.writeCount, "Back is a cancel: no write")
+        composeRule.onNodeWithText("Typed").assertDoesNotExist()
+        composeRule.onNodeWithText("Builds 2").assertExists()
+    }
+
+    @Test
+    fun systemBackCancelsTheDeleteConfirmation() {
+        seedSpareAndTarget()
+        composeApp()
+        openAllBuilds(expectedCount = 2)
+        openRowActions("Draft")
+        composeRule.onNodeWithText("Delete").performClick()
+        awaitText("Delete \"Draft\"?")
+
+        assertTrue(systemBack())
+
+        awaitGone("Delete \"Draft\"?")
+        composeRule.onNodeWithText("Builds 2").assertExists()
+        composeRule.onNodeWithContentDescription("build actions for Draft").assertExists()
+    }
+
+    @Test
+    fun systemBackWithoutAModalNavigatesToHome() {
+        seedSpareAndTarget()
+        composeApp()
+        openAllBuilds(expectedCount = 2)
+
+        assertTrue(systemBack())
+
+        awaitText("CONTINUE")
+        composeRule.onNodeWithText("Builds 2").assertDoesNotExist()
+    }
+
+    @Test
+    fun systemBackWhileAnOperationRunsIsConsumedAndChangesNothing() {
+        seedSpareAndTarget()
+        composeApp()
+        openAllBuilds(expectedCount = 2)
+        openRowActions("Draft")
+        storage.writeDelayMillis = 2_500
+        composeRule.onNodeWithText("Duplicate").performClick()
+
+        // mid-operation: Back must be consumed — neither dismissed nor navigated
+        assertTrue(systemBack())
+        composeRule.onNodeWithText("Duplicate").assertExists() // the sheet stayed
+        composeRule.onNodeWithText("Builds 2").assertExists() // no navigation happened
+
+        // the operation finishes on its own; nothing was cancelled by the Back
+        awaitText("Build duplicated")
+        awaitText("Builds 3")
+    }
+
+    // ------------------------------------------------------------------ modal touch handling
+
+    @Test
+    fun aScrimTapDismissesWhileTheButtonUnderneathNeverFires() {
+        seedSpareAndTarget()
+        composeApp()
+        openAllBuilds(expectedCount = 2)
+        openRowActions("Draft")
+
+        // the tap lands ON the scrim, right over the Spare row's ⋯ button: the
+        // sheet must DISMISS (scrim, not busy) and the button underneath must
+        // never fire (if it had, its own sheet would be open instead)
+        composeRule.onNodeWithContentDescription("build actions for Spare").performClick()
+
+        awaitGone("Duplicate")
+        composeRule.onNodeWithText("Builds 2").assertExists()
+    }
+
+    @Test
+    fun tappingTheSheetSurfaceItselfDoesNotDismissIt() {
+        seedSpareAndTarget()
+        composeApp()
+        openAllBuilds(expectedCount = 2)
+        openRowActions("Draft")
+
+        // The caption is NOT its own semantics node (the scrim's clickable
+        // merges it), so address the surface through the first action and
+        // tap a pure surface point: the left gutter beside the caption, one
+        // line above Rename (padding gutter — no action lives there).
+        val rename = composeRule.onNodeWithText("Rename").fetchSemanticsNode()
+        val surfacePoint = androidx.compose.ui.geometry.Offset(
+            x = 10f,
+            y = rename.positionInRoot.y - 16f,
+        )
+        composeRule.onRoot().performTouchInput { click(surfacePoint) }
+
+        composeRule.onNodeWithText("Duplicate").assertExists() // still open
+        composeRule.onNodeWithText("Builds 2").assertExists()
+    }
+
+    @Test
+    fun tappingTheDialogSurfaceDoesNotDismissItOrLoseInput() {
+        seedSpareAndTarget()
+        composeApp()
+        openAllBuilds(expectedCount = 2)
+        openRowActions("Draft")
+        composeRule.onNodeWithText("Rename").performClick()
+        awaitText("Rename build")
+        composeRule.onNodeWithContentDescription("build name").performTextInput("My build")
+
+        // a pure surface point: the dialog's left gutter beside the input
+        // field (the field's own semantics node is addressable)
+        val field = composeRule.onNodeWithContentDescription("build name").fetchSemanticsNode()
+        val surfacePoint = androidx.compose.ui.geometry.Offset(
+            x = field.positionInRoot.x - 8f,
+            y = field.positionInRoot.y + field.size.height / 2f,
+        )
+        composeRule.onRoot().performTouchInput { click(surfacePoint) }
+
+        composeRule.onNodeWithText("Rename build").assertExists() // still open
+        composeRule.onNodeWithText("My build").assertExists() // …and the input survived
+    }
+
+    @Test
+    fun whileBusyTouchesNeverReachTheInterfaceUnderneath() {
+        seedSpareAndTarget()
+        composeApp()
+        openAllBuilds(expectedCount = 2)
+        openRowActions("Draft")
+        storage.writeDelayMillis = 2_500
+        composeRule.onNodeWithText("Duplicate").performClick() // the write is held in flight
+
+        // a row tap under the scrim is swallowed: no editor opens mid-operation
+        composeRule.onNodeWithText("Spare").performClick()
+        composeRule.onNodeWithText("Duplicate").assertExists() // the sheet stayed open
+        composeRule.onNodeWithContentDescription("open build actions").assertDoesNotExist()
+
+        awaitText("Build duplicated")
+        awaitText("Builds 3")
     }
 }

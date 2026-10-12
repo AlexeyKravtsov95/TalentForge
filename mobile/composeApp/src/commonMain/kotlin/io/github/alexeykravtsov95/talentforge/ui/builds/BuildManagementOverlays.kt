@@ -3,6 +3,7 @@ package io.github.alexeykravtsov95.talentforge.ui.builds
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -41,9 +43,15 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
  * stable primitives as the editor's build-action sheet (no Material
  * component): the row `⋯` bottom sheet (Rename / Duplicate / Delete — Delete
  * separated and in the danger colour, the one irreversible action) plus two
- * centered confirmation dialogs. Every overlay dismisses on its scrim; the
- * caller disables actions and scrim dismissal while a repository operation is
- * in flight so a retry is always possible and nothing half-completes.
+ * centered confirmation dialogs.
+ *
+ * Input rules of every overlay: the SCRIM always consumes touches, so the
+ * interface underneath is unreachable while a modal is open — but it only
+ * DISMISSES when no operation is in flight; the SURFACE itself also consumes
+ * stray taps, so touching the sheet/dialog anywhere outside an explicit
+ * action (Rename / Duplicate / Delete / Cancel / Save) never closes it. The
+ * caller additionally disables the actions while a repository operation is
+ * running, so a retry is always possible and nothing half-completes.
  */
 object BuildManagementMetrics {
 
@@ -53,7 +61,7 @@ object BuildManagementMetrics {
 
 /**
  * The `⋯` bottom sheet. Rendered by the screen inside a full-size scrim Box;
- * tapping the scrim dismisses without acting.
+ * tapping the scrim dismisses without acting (unless an operation runs).
  */
 @Composable
 fun BuildRowActionsSheet(
@@ -74,10 +82,8 @@ fun BuildRowActionsSheet(
                 interactionSource = null,
                 indication = null,
                 role = Role.Button,
-                onClickLabel = "close build actions",
-                onClick = onDismiss,
-                enabled = !busy,
-            ),
+                onClickLabel = if (busy) null else "close build actions",
+            ) { if (!busy) onDismiss() },
     ) {
         Column(
             modifier = Modifier
@@ -91,6 +97,11 @@ fun BuildRowActionsSheet(
                         topEnd = TalentForgeRadius.sheet,
                     ),
                 )
+                .pointerInput(Unit) {
+                    // a tap on the surface itself is never a dismiss — only
+                    // the explicit actions below act
+                    detectTapGestures { }
+                }
                 .padding(
                     horizontal = TalentForgeSpacing.sheetX,
                     vertical = TalentForgeSpacing.group,
@@ -178,6 +189,11 @@ fun RenameBuildDialog(
                 .widthIn(max = 340.dp)
                 .background(colors.surfaceElevated, RoundedCornerShape(TalentForgeRadius.large))
                 .border(1.dp, colors.borderDefault, RoundedCornerShape(TalentForgeRadius.large))
+                .pointerInput(Unit) {
+                    // a tap on the dialog surface itself is never a dismiss
+                    // — only Cancel and Save act
+                    detectTapGestures { }
+                }
                 .padding(TalentForgeSpacing.group),
             verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
         ) {
@@ -256,6 +272,11 @@ fun DeleteBuildDialog(
                 .widthIn(max = 340.dp)
                 .background(colors.surfaceElevated, RoundedCornerShape(TalentForgeRadius.large))
                 .border(1.dp, colors.borderDefault, RoundedCornerShape(TalentForgeRadius.large))
+                .pointerInput(Unit) {
+                    // a tap on the dialog surface itself is never a dismiss
+                    // — only Cancel and Delete act
+                    detectTapGestures { }
+                }
                 .padding(TalentForgeSpacing.group),
             verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
         ) {
@@ -295,7 +316,12 @@ fun DeleteBuildDialog(
     }
 }
 
-/** Centered dialog content over a full-size scrim that dismisses on tap. */
+/**
+ * Centered dialog content over a full-size scrim. The scrim ALWAYS consumes
+ * touches (the interface underneath is unreachable while the dialog is
+ * open), but dismisses on tap only while [busy] is `false` — during an
+ * operation a scrim tap is swallowed, never a dismiss.
+ */
 @Composable
 private fun DialogScrim(
     busy: Boolean,
@@ -311,10 +337,8 @@ private fun DialogScrim(
                 interactionSource = null,
                 indication = null,
                 role = Role.Button,
-                onClickLabel = "close dialog",
-                enabled = !busy,
-                onClick = onDismiss,
-            ),
+                onClickLabel = if (busy) null else "close dialog",
+            ) { if (!busy) onDismiss() },
         contentAlignment = Alignment.Center,
     ) {
         Box(Modifier.padding(horizontal = TalentForgeSpacing.screenX)) { content() }

@@ -47,6 +47,7 @@ import io.github.alexeykravtsov95.talentforge.ui.library.classMonogramOf
 import io.github.alexeykravtsov95.talentforge.ui.library.gameDisplayName
 import io.github.alexeykravtsov95.talentforge.ui.library.loadBuildsModel
 import io.github.alexeykravtsov95.talentforge.ui.library.relativeBuildTime
+import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTypography
 import io.github.alexeykravtsov95.talentforge.ui.theme.classAccentFor
@@ -137,6 +138,22 @@ fun AllBuildsScreen(
             }
         }
     }
+
+    /**
+     * System Back closes the open modal first (the sheet or a dialog — same
+     * as Cancel: never a write), and only a Back with NO modal open reaches
+     * the app's navigation handler and returns to Home. Registered inside
+     * this screen — i.e. AFTER the app-level handler — so Android's
+     * newest-enabled-handler rule gives it precedence while a modal is open.
+     * While an operation is in flight the handler stays ENABLED but does
+     * nothing: Back is consumed, yet neither navigates nor cancels.
+     */
+    PlatformBackHandler(
+        enabled = overlay != ManagementOverlay.Hidden,
+        onBack = {
+            if (!operationInFlight) overlay = ManagementOverlay.Hidden
+        },
+    )
 
     fun rename(localId: String, newName: String) {
         launchManagement {
