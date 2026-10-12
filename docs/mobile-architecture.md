@@ -499,8 +499,10 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
     (`TalentTreeCanvas(composedNodeCount = …)`; `talentSectionWarmBatch`
     halves the batch after a frame over two 60 Hz vsyncs, doubles it after one
     under 20 ms, 1–8 nodes), never a whole page in one frame, so the editor
-    answers a touch right after it opens; a touch or a motion pauses it, and a
-    page that comes on screen before it is complete is composed whole. The node
+    answers a touch right after it opens; a touch or a motion pauses it for the
+    pages off screen, and a page that comes on screen before it is complete
+    keeps growing a few nodes per frame, also during the motion (completing it
+    in one frame cost 224–240 ms in the middle of the first swipe). The node
     count is read only inside the page's node layer (`TalentTreeNodeLayer`), so a
     step recomposes that layer alone, not the screen or the other pages (the
     editor-opening traces measured ≈ 53 ms per step when the screen read it), and
