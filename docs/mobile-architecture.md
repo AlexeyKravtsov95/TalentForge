@@ -1,4 +1,4 @@
-# Mobile architecture (M3A foundation, M4.1–M4.3 tree screen, M5.1 local build library)
+# Mobile architecture (M3A foundation, M4.1–M4.3 tree screen, M5.1 local build library, M5.2a build management)
 
 This document describes the Kotlin Multiplatform foundation introduced by M3A,
 the M4.1–M4.3 production Talent Tree screen (read-only rendering since M4.1,
@@ -288,8 +288,21 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
   persisted draft is "created"), the editor session loader, the relative-time
   wording, shared shell controls and the platform clock expect/actual;
 - `ui/home`, `ui/newbuild`, `ui/builds` — the M5.1 shell screens
-  (Home / New Build / the basic All Builds list; see the design sections
-  above for their frozen behaviour).
+  (Home / New Build / All Builds; see the design sections above for their
+  frozen behaviour). Since M5.2a, All Builds is also the ONE build-management
+  surface: each row ends in a `⋯` button (its own 48 dp target — pressing it
+  never opens the build) that opens a Rename / Duplicate / Delete sheet
+  (`ui/builds/BuildManagementOverlays.kt`), with rename and delete each
+  confirming in a dialog (delete states irreversibility and uses the danger
+  colour). Operations run off the main thread, one at a time; every success
+  reloads the list from the repository (count, order and empty state included),
+  and failures keep their dialog — or show a retryable notice for duplicate —
+  open, never half-completing. The modal surface and its scrim consume stray
+  touches (nothing reaches the interface underneath, and touching the surface
+  itself never dismisses — only the explicit actions do), and the system Back
+  button closes the open modal first (as a cancel: no write) — a Back with no
+  modal open navigates as usual, and a Back while an operation is in flight
+  is consumed but does nothing.
 
 - **M5.UX.1 section tabs and per-section cameras** (approved direction
   "1A v2 · Specialization Tabs"; portrait phones only — landscape and tablet
@@ -579,6 +592,30 @@ the last persisted payload and a fresh instance (a relaunched app) observes
 prior writes. Time and id generation are injected (`BuildClock`,
 `LocalBuildIdGenerator`; default: platform clock + a random time-ordered
 prefix — no UUID dependency).
+
+**Build management (M5.2a).** The repository also owns
+`renameBuild` / `duplicateBuild` / `deleteBuild`, each the same full
+read–modify–write with the same fail-closed guarantees:
+
+- `renameBuild` trims the requested name; blank or longer than
+  `MAX_BUILD_NAME_LENGTH` (60, the one constant the rename dialog enforces)
+  is a typed `BuildLibraryError.InvalidBuildName` that never touches storage.
+  The rename preserves `localId`, the `BuildFile`, `createdAt`,
+  `lastOpenedAt` **and `updatedAt`** — renaming is metadata, not a talent
+  change, so it must not reorder the "last edited first" list — and renaming
+  to the current name writes nothing.
+- `duplicateBuild` creates an independent record: a fresh id under the same
+  bounded collision policy as create-draft, the source's exact `BuildFile`
+  payload, fresh `createdAt`/`updatedAt`, `lastOpenedAt = null`, and the
+  initial name derived from the source's CURRENT name with ` (copy)`
+  appended (`Draft (copy)` for a Draft). A duplicate of a duplicate
+  therefore appends once per copy (`Build (copy)` → `Build (copy) (copy)`) —
+  the documented policy — always shortened to the 60-character limit while
+  keeping the suffix. Duplicate names are allowed — identity is the
+  `localId`, never the name — and the source record is untouched.
+- `deleteBuild` removes exactly one record; a missing id is
+  `UnknownRecord`, and a failed read or write leaves the stored payload
+  byte-for-byte intact (a failed delete never looks successful).
 
 **Platform storage stays at the edge.** `BuildLibraryStorage` is a one-string
 cell (`read(): String?` / `write(payload)`); the hosts inject their

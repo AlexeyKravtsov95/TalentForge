@@ -218,4 +218,5 @@ fun BuildLibraryError.describeLibraryError(): String = when (this) {
     is BuildLibraryError.UnsupportedStorageVersion -> "stored data uses storage version $actual"
     is BuildLibraryError.UnknownRecord -> "this build no longer exists on this device"
     is BuildLibraryError.IdCollision -> "a unique build id could not be generated ($attempts attempts)"
+    is BuildLibraryError.InvalidBuildName -> "the build name was rejected (blank or over $maxLength characters)"
 }
