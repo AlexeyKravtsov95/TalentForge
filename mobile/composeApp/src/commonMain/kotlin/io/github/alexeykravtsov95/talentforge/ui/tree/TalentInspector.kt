@@ -126,6 +126,9 @@ const val TALENT_INSPECTOR_SHEET_ACTIONS_TAG: String = "talent-inspector-sheet-a
 /** Accessibility label of the compact strip's expand handle (M5.UX.2a). */
 const val INSPECTOR_EXPAND_LABEL: String = "Expand inspector"
 
+/** Test tag of the landscape side panel (M5.UX.2b.1: it overlays the section canvas). */
+const val TALENT_INSPECTOR_SIDE_PANEL_TAG: String = "talent-inspector-side-panel"
+
 /** Accessibility label of the sheet's ⌄ collapse control. */
 const val INSPECTOR_COLLAPSE_LABEL: String = "Collapse inspector"
 
@@ -424,7 +427,11 @@ fun TalentInspectorSidePanel(
             horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
             modifier = Modifier.padding(vertical = TalentForgeSpacing.inline),
         ) {
-            InspectorTalentIcon(icon = icon, size = TalentInspectorMetrics.DETAIL_ICON_DP)
+            // M5.UX.2b.1, very large text (1A v2 S8, as in the sheet): the decorative
+            // icon gives its width to the name, so a long word is never split
+            if (LocalDensity.current.fontScale < TalentInspectorMetrics.COMPACT_STACK_FONT_SCALE) {
+                InspectorTalentIcon(icon = icon, size = TalentInspectorMetrics.DETAIL_ICON_DP)
+            }
             Column(Modifier.weight(1f)) {
                 BasicText(
                     text = content.name,
@@ -454,6 +461,7 @@ fun TalentInspectorSidePanel(
             onSpendRank = onSpendRank,
             onRefundRank = onRefundRank,
             onMaxRank = onMaxRank,
+            sheetRow = true,
         )
     }
 }
@@ -533,6 +541,9 @@ fun TalentInspectorPersistentPanel(
  * `− + Rank Max` row and, for a prerequisite-locked node, its single Show
  * action — outside the scrolling detail, so they stay reachable however long
  * the description is (same placement as the expanded sheet, UX/UI spec 04).
+ * [sheetRow] (M5.UX.2b.1, the landscape side panel): the expanded sheet's
+ * 1A v2 row, whose `+ Rank` flexes and whose `Max` grows with large text
+ * instead of wrapping; the tablet panel keeps the M4 row (its own milestone).
  */
 @Composable
 private fun InspectorPinnedActions(
@@ -543,8 +554,19 @@ private fun InspectorPinnedActions(
     onSpendRank: (Int) -> Unit,
     onRefundRank: (Int) -> Unit,
     onMaxRank: (Int) -> Unit,
+    sheetRow: Boolean = false,
 ) {
-    if (actions != null && actions.offersRankControls) {
+    if (actions != null && actions.offersRankControls && sheetRow) {
+        TalentInspectorSheetRankActions(
+            talentName = content.name,
+            actions = actions,
+            accent = accent,
+            onSpend = onSpendRank,
+            onRefund = onRefundRank,
+            onMax = onMaxRank,
+            modifier = Modifier.padding(vertical = TalentForgeSpacing.inline),
+        )
+    } else if (actions != null && actions.offersRankControls) {
         TalentInspectorRankActions(
             talentName = content.name,
             actions = actions,
