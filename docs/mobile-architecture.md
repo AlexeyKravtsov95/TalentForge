@@ -505,7 +505,9 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
     in one frame cost 224–240 ms in the middle of the first swipe). The node
     count is read only inside the page's node layer (`TalentTreeNodeLayer`), so a
     step recomposes that layer alone, not the screen or the other pages (the
-    editor-opening traces measured ≈ 53 ms per step when the screen read it), and
+    editor-opening traces measured ≈ 53 ms per step when the screen read it);
+    each talent is its own skippable composable (`TalentTreeNode`), so a step
+    does not rebuild the other talents' modifiers and semantics; and
     the page the editor opened on counts as composed, so the first switch never
     disposes it and composes it again (≈ 300 ms). Only the active
     page has pointer input and exposes talents to accessibility; the others
