@@ -692,37 +692,14 @@ private fun ReadyTalentTreeScreen(
                 // (talentSectionComposedPages). Round 7: a page grows by a few nodes per
                 // frame (talentSectionWarmBatch adapts the batch to the frame time) instead
                 // of a whole page in one frame, so the editor answers a touch right after it
-                // opens; a touch or a motion pauses it. Section index -> composed nodes.
-                var warmProgress by remember(portraitSections) { mutableStateOf(emptyMap<Int, Int>()) }
-                LaunchedEffect(portraitSections, activeSection) {
-                    val order = sectionOrder
-                    val sizes = order.map { portraitSections?.section(it)?.model?.nodes?.size ?: 0 }
-                    // the active page is composed whole already: it counts as warm, so it is
-                    // kept (not disposed and composed again) when the first switch leaves it
-                    val activeIndex = order.indexOf(activeSection)
-                    if (activeIndex >= 0 && (warmProgress[order[activeIndex]] ?: 0) < sizes[activeIndex]) {
-                        warmProgress = warmProgress + (order[activeIndex] to sizes[activeIndex])
-                    }
-                    var batch = 1
-                    var previousFrame = 0L
-                    while (true) {
-                        snapshotFlow { !pager.moving && pager.heldFrom == null }.first { it }
-                        val frame = withFrameNanos { it } // the frame that is due first: the active page's own
-                        if (pager.moving || pager.heldFrom != null) {
-                            previousFrame = 0L
-                            continue
-                        }
-                        batch = talentSectionWarmBatch(batch, if (previousFrame == 0L) 0L else frame - previousFrame)
-                        previousFrame = frame
-                        val active = order.indexOf(activeSection)
-                        val complete = order.indices.filter { (warmProgress[order[it]] ?: 0) >= sizes[it] }.toSet()
-                        val next = talentSectionNextWarmPage(active, order.size, complete) ?: break
-                        val section = order[next]
-                        val composed = ((warmProgress[section] ?: 0) + batch).coerceAtMost(sizes[next])
-                        warmProgress = warmProgress + (section to composed)
-                    }
+                // opens; a touch or a motion pauses it for the pages off screen (the warm-up loop
+                // below). Section index -> composed nodes; a page
+                // that is not in it composes none. The page the editor opens on is composed whole
+                // from the first frame, and is kept when the first switch leaves it.
+                var warmProgress by remember(portraitSections) {
+                    val opening = activeSection?.let { section -> portraitSections?.section(section)?.model?.nodes?.size?.let { section to it } }
+                    mutableStateOf(listOfNotNull(opening).toMap())
                 }
-
                 /**
                  * The pager position as drawn now: the holding finger's (from
                  * where it grabbed the pages, 1:1), or the motion's. Read at draw
@@ -734,6 +711,46 @@ private fun ReadyTalentTreeScreen(
                         talentSectionHeldPosition(held, activeCamera.sectionOverscrollDp, pageWidthDp, sectionCount, rtl)
                     } else {
                         pager.position
+                    }
+                }
+
+                // the warm-up loop (round 7): one page grows by `batch` talents per frame. A page on
+                // screen comes first, also while the pages move, so a page that slides in before it is
+                // warm grows a few talents per frame instead of a whole page in one frame (the opening
+                // traces measured that frame at 224-240 ms, in the middle of the first swipe). Pages off
+                // screen grow only at rest.
+                LaunchedEffect(portraitSections, activeSection) {
+                    val order = sectionOrder
+                    val sizes = order.map { portraitSections?.section(it)?.model?.nodes?.size ?: 0 }
+                    val active = order.indexOf(activeSection)
+                    fun complete(): Set<Int> = order.indices.filter { (warmProgress[order[it]] ?: 0) >= sizes[it] }.toSet()
+                    fun nextPage(): Int? {
+                        val done = complete()
+                        val shown = talentSectionComposedPages(currentPosition(), active, order.size).firstOrNull { it !in done }
+                        return when {
+                            shown != null -> shown
+                            pager.moving || pager.heldFrom != null -> null
+                            else -> talentSectionNextWarmPage(active, order.size, done)
+                        }
+                    }
+                    var batch = 1
+                    var previousFrame = 0L
+                    while (complete().size < order.size) {
+                        if (nextPage() == null) {
+                            previousFrame = 0L
+                            snapshotFlow { nextPage() != null || complete().size == order.size }.first { it }
+                            continue
+                        }
+                        val frame = withFrameNanos { it } // the frame that is due first: the active page's own
+                        batch = talentSectionWarmBatch(batch, if (previousFrame == 0L) 0L else frame - previousFrame)
+                        previousFrame = frame
+                        val next = nextPage()
+                        if (next == null) {
+                            previousFrame = 0L
+                            continue
+                        }
+                        val section = order[next]
+                        warmProgress = warmProgress + (section to ((warmProgress[section] ?: 0) + batch).coerceAtMost(sizes[next]))
                     }
                 }
 
@@ -979,22 +996,6 @@ private fun ReadyTalentTreeScreen(
                                             )
                                         }
                                     }
-                                    // the pages on screen (and the active one) are always composed whole
-                                    val visiblePages by remember(pager, activeCamera, activeOrdinal, sectionOrder, pageWidthDp, portraitSections) {
-                                        derivedStateOf { talentSectionComposedPages(currentPosition(), activeOrdinal, sectionCount) }
-                                    }
-                                    // a page that comes on screen before it is warm is completed and stays so
-                                    // (read in a flow, not here: the screen is not recomposed by a motion)
-                                    LaunchedEffect(pager, activeCamera, activeOrdinal, sectionOrder, pageWidthDp, portraitSections) {
-                                        snapshotFlow { visiblePages }.collect { pages ->
-                                            val incomplete = pages.mapNotNull { ordinal ->
-                                                val section = sectionOrder[ordinal]
-                                                val size = portraitSections?.section(section)?.model?.nodes?.size ?: 0
-                                                if ((warmProgress[section] ?: 0) < size) section to size else null
-                                            }
-                                            if (incomplete.isNotEmpty()) warmProgress = warmProgress + incomplete
-                                        }
-                                    }
                                     Box(
                                         Modifier
                                             .fillMaxSize()
@@ -1032,14 +1033,8 @@ private fun ReadyTalentTreeScreen(
                                                         pageTag = talentSectionPageTag(section),
                                                         // read only by the page's node layer: a warm-up step
                                                         // recomposes that layer, not the screen or the other pages
-                                                        composedNodeCount = remember(
-                                                            section, ordinal, pager, activeCamera, activeOrdinal,
-                                                            sectionOrder, pageWidthDp, portraitSections,
-                                                        ) {
-                                                            val count = derivedStateOf {
-                                                                if (ordinal in visiblePages) Int.MAX_VALUE else warmProgress[section] ?: Int.MAX_VALUE
-                                                            }
-                                                            val read: () -> Int = { count.value }
+                                                        composedNodeCount = remember(section, portraitSections) {
+                                                            val read: () -> Int = { warmProgress[section] ?: 0 }
                                                             read
                                                         },
                                                         modifier = Modifier.fillMaxSize(),

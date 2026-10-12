@@ -498,6 +498,37 @@ class TalentTreeMotionUiTest {
     }
 
     @Test
+    fun aSwipeBeforeTheNextPageIsWarmGrowsItAFewTalentsPerFrame() {
+        onPhone(settle = false) { session ->
+            val b = session.sections[1]
+            val tree2 = talentsOnlyOf(session, 1)
+            repeat(2) { mainClock.advanceTimeByFrame() }
+            val before = composedTalents(tree2)
+            assertTrue(before < tree2.size, "Tree 2 is not warm yet: $before of ${tree2.size}")
+            drag(dx = -10f, steps = 10)
+            // the swipe brings Tree 2 on screen part-way composed: it keeps growing a few talents
+            // per frame through the motion, never the rest of the page in one frame
+            val counts = mutableListOf(before)
+            var shownPartly = false
+            repeat(40) {
+                mainClock.advanceTimeByFrame()
+                val composed = composedTalents(tree2)
+                if (page(b) != null && composed < tree2.size) shownPartly = true
+                counts += composed
+            }
+            assertTrue(shownPartly, "Tree 2 slid in before it was complete: $counts")
+            assertTrue(
+                counts.zipWithNext().all { (x, y) -> y - x in 0..TalentMotionMetrics.WARM_BATCH_MAX },
+                "never more than ${TalentMotionMetrics.WARM_BATCH_MAX} talents in one frame: $counts",
+            )
+            rest()
+            assertSettledOn(session, b, "the first swipe landed")
+            assertEquals(tree2.size, composedTalents(tree2), "Tree 2 is completed")
+            assertTrue(session.reported.isEmpty())
+        }
+    }
+
+    @Test
     fun thePageTheEditorOpenedOnStaysComposedThroughTheFirstSwitch() {
         onPhone { session ->
             val (a, b) = session.sections
