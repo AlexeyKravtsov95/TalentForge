@@ -178,7 +178,10 @@ data class TalentTreeViewport(
      * sides) stays fully inside it, keeping the field; larger content may not
      * open a gap wider than the field at either edge. The vertical extent
      * excludes [coveredBottomDp] (the region an overlaid inspector covers),
-     * so a bottom node can always be pulled above the inspector.
+     * so a bottom node can always be pulled above the inspector; likewise the
+     * horizontal extent excludes [coveredLeftDp] / [coveredRightDp] (M5.UX.2b.1:
+     * the landscape side panel overlaid on one side), so a node can always be
+     * pulled out from under the panel.
      *
      * [reference] (the camera before this change) relaxes every bound to
      * where the reference already sat: a camera that is outside the bounds
@@ -195,18 +198,23 @@ data class TalentTreeViewport(
         canvasSize: Size,
         coveredBottomDp: Float = 0f,
         reference: TalentTreeViewport? = null,
+        coveredLeftDp: Float = 0f,
+        coveredRightDp: Float = 0f,
     ): TalentTreeViewport {
-        val covered = if (coveredBottomDp.isFinite()) coveredBottomDp.coerceAtLeast(0f) else 0f
-        val extentX = canvasSize.width
+        fun cover(value: Float) = if (value.isFinite()) value.coerceAtLeast(0f) else 0f
+        val covered = cover(coveredBottomDp)
+        val left = cover(coveredLeftDp)
+        val extentX = canvasSize.width - left - cover(coveredRightDp)
         val extentY = canvasSize.height - covered
         if (!extentX.isFinite() || !extentY.isFinite() || extentX <= 0f || extentY <= 0f) return this
-        val x = clampAxis(
-            offset = offset.x,
+        // the visible region starts `left` dp into the canvas: clamp in its own frame
+        val x = left + clampAxis(
+            offset = offset.x - left,
             min = content.minX,
             max = content.maxX,
             extent = extentX,
             referenceScale = reference?.scale,
-            referenceOffset = reference?.offset?.x,
+            referenceOffset = reference?.offset?.x?.minus(left),
         )
         val y = clampAxis(
             offset = offset.y,

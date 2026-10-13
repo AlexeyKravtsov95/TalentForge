@@ -44,6 +44,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.style.TextOverflow
@@ -501,29 +502,156 @@ private fun ReadyTalentTreeScreen(
         applyEdit(editing.spendToMax(current.engine, nodeId), purchasedNodeId = nodeId)
     }
 
-    // PR #19 / 1A v2 S6 system Back: close the ⋯ sheet, else collapse the
-    // inspector, else clear the selection — one step per Back. Registered
-    // after the app's navigation handler, so it takes precedence while
-    // enabled; with nothing open the app's own Back (autosave flush,
-    // re-entrancy guard) navigates as before. View state only: never the build.
-    PlatformBackHandler(enabled = buildActionsOpen || selectedNodeId != null) {
-        when (editorBackStep(inspectorExpanded, selectedNodeId != null, buildActionsOpen)) {
-            EditorBackStep.CLOSE_BUILD_ACTIONS -> buildActionsOpen = false
-            EditorBackStep.COLLAPSE_INSPECTOR -> onInspectorExpandedChange(false)
-            EditorBackStep.CLEAR_SELECTION -> {
-                onShowGuideChange(null)
-                onInspectorExpandedChange(false)
-                onSelectedNodeIdChange(null)
-                sectionReturn = null
-            }
-            EditorBackStep.NAVIGATE -> Unit // disabled in this state: the app's handler receives it
-        }
-    }
-
     BoxWithConstraints(modifier.fillMaxSize()) {
         // 1A v2 02: H of the sheet's "min(66% H, H − top − 104)" — the editor
         // inside the system safe area
         val screenHeight = maxHeight
+        // M5.UX.2b.1: ONE layout class for the header and the canvas region
+        // below it, from the whole workspace (the header hosts the landscape tabs).
+        val layoutClass = talentTreeWorkspaceLayoutClass(maxWidth.value, maxHeight.value)
+        // M5.UX.1 (portrait) and M5.UX.2b.1 (landscape phones): one section
+        // per tab (1A v2 / B3 05), all over the ONE BuildState. Tablet keeps
+        // the whole-tree canvas (its own milestone), and so does a tree whose
+        // sections cannot be resolved (typed fallback — no node is ever hidden).
+        val pagedSections = if (layoutClass != TalentTreeLayoutClass.TABLET) sectioned else null
+        val activeSection = pagedSections?.let { sections ->
+            // the selected talent's own section wins (a cross-section
+            // Show, or a selection carried over from another layout —
+            // 1A v2 S5 "rotation keeps the section and the selection")
+            selectedNodeId?.let { sections.sectionOfNode[it] }
+                ?: cameras.selectedSection?.takeIf { sections.section(it) != null }
+                ?: sections.sections.first().index
+        }
+        val activeSectionModel = activeSection?.let { pagedSections?.section(it) }
+        // The camera of what the canvas shows: one section's own camera on
+        // phones, the whole-tree viewport otherwise.
+        val activeCamera = if (activeSection != null) cameras.stateOf(activeSection) else viewportState
+        LaunchedEffect(activeSection) {
+            if (activeSection != null && cameras.selectedSection != activeSection) {
+                cameras.selectedSection = activeSection
+            }
+        }
+
+        // PR #19 / 1A v2 S6 system Back: close the ⋯ sheet, else collapse the
+        // inspector, else clear the selection — one step per Back. Registered
+        // after the app's navigation handler, so it takes precedence while
+        // enabled; with nothing open the app's own Back (autosave flush,
+        // re-entrancy guard) navigates as before. View state only: never the build.
+        // M5.UX.2b.1: only the portrait sheet expands — the landscape side panel
+        // is the full detail already, so there Back clears the selection at once
+        // (an expansion carried over from portrait is kept for the way back).
+        PlatformBackHandler(enabled = buildActionsOpen || selectedNodeId != null) {
+            val expanded = inspectorExpanded && layoutClass == TalentTreeLayoutClass.PORTRAIT
+            when (editorBackStep(expanded, selectedNodeId != null, buildActionsOpen)) {
+                EditorBackStep.CLOSE_BUILD_ACTIONS -> buildActionsOpen = false
+                EditorBackStep.COLLAPSE_INSPECTOR -> onInspectorExpandedChange(false)
+                EditorBackStep.CLEAR_SELECTION -> {
+                    onShowGuideChange(null)
+                    onInspectorExpandedChange(false)
+                    onSelectedNodeIdChange(null)
+                    sectionReturn = null
+                }
+                EditorBackStep.NAVIGATE -> Unit // disabled in this state: the app's handler receives it
+            }
+        }
+
+        val onSelectionCleared: () -> Unit = {
+            onShowGuideChange(null)
+            onInspectorExpandedChange(false)
+            onSelectedNodeIdChange(null)
+            sectionReturn = null
+        }
+
+        val sectionOrder = pagedSections?.sections?.map { it.index }.orEmpty()
+
+        // the pages' width (the canvas region spans the whole workspace width;
+        // the landscape side panel overlays it and never narrows the pages)
+        val pageWidthDp = maxWidth.value
+        val pageWidthPx = with(LocalDensity.current) { maxWidth.toPx() }
+        // PR #19 motion: ONE pager position (tab ordinals) drives every page
+        // and the tab indicator; a change made without motion just rests there
+        val sectionCount = sectionOrder.size
+        val activeOrdinal = activeSection?.let { sectionOrder.indexOf(it) } ?: -1
+        if (activeOrdinal >= 0) pager.sync(activeOrdinal)
+
+        /**
+         * The pager position as drawn now: the holding finger's (from
+         * where it grabbed the pages, 1:1), or the motion's. Read at draw
+         * / layout time only, never per frame in composition.
+         */
+        fun currentPosition(): Float {
+            val held = pager.heldFrom
+            return if (held != null) {
+                talentSectionHeldPosition(held, activeCamera.sectionOverscrollDp, pageWidthDp, sectionCount, rtl)
+            } else {
+                pager.position
+            }
+        }
+
+        /**
+         * PR #19 motion: a section change (tab, Show, Back chip) moves the
+         * ONE pager position from where it is drawn now, carrying the
+         * running motion's velocity — from rest the old page slides out
+         * and the new one in; mid-motion nothing jumps.
+         */
+        fun beginSectionTransition(from: Int?, to: Int) {
+            val toOrdinal = sectionOrder.indexOf(to)
+            if (from == null || from == to || toOrdinal < 0) return
+            pager.settle(
+                from = currentPosition(),
+                to = toOrdinal,
+                initialVelocity = if (pager.moving) pager.velocity else 0f,
+                reducedMotion = reducedMotion,
+                count = sectionCount,
+            )
+        }
+
+        /**
+         * 1A v2 S6 tab change: one tap; deselects and closes the
+         * inspector; never touches the BuildState, undo/redo or the
+         * autosave. A tap on the active tab returns its camera to
+         * the fit (1A v2 01).
+         */
+        val onSectionSelected: (Int) -> Unit = { index ->
+            if (index == activeSection) {
+                cameras.stateOf(index).requestFit()
+            } else {
+                beginSectionTransition(activeSection, index)
+                onSelectionCleared()
+                cameras.selectedSection = index
+            }
+        }
+
+        val indicatorPosition: () -> Float = {
+            currentPosition().coerceIn(0f, (sectionCount - 1).coerceAtLeast(0).toFloat())
+        }
+
+        // M5.UX.2b.1 (B3 05): a landscape phone merges the tabs into the one
+        // header bar when they fit, otherwise they keep the portrait row below it.
+        val landscapeTabs = if (layoutClass == TalentTreeLayoutClass.LANDSCAPE && pagedSections != null) {
+            talentTreeLandscapeTabs(maxWidth.value, LocalDensity.current.fontScale, pagedSections.sections.size)
+        } else {
+            null
+        }
+        val tabsInHeader = landscapeTabs?.placement == TalentTreeLandscapeTabsPlacement.IN_HEADER
+
+        /** The section tabs (one tab per real section), wherever the layout puts them. */
+        @Composable
+        fun SectionTabs() {
+            if (pagedSections != null && activeSection != null) {
+                TalentTreeSectionTabs(
+                    tabs = talentSectionTabs(pagedSections, sectionPoints, current.icons),
+                    selectedIndex = activeSection,
+                    accent = current.classAccent,
+                    icons = current.icons,
+                    highlightedSections = tabHighlight?.sections.orEmpty(),
+                    highlightToken = tabHighlight?.token ?: 0,
+                    onSelectSection = onSectionSelected,
+                    indicatorPosition = indicatorPosition,
+                )
+            }
+        }
+
         Column(Modifier.fillMaxSize()) {
             TalentTreeHeaderBar(
                 title = current.buildTitle,
@@ -535,32 +663,15 @@ private fun ReadyTalentTreeScreen(
                 onRedo = ::performRedo,
                 onOpenBuildActions = { buildActionsOpen = true },
                 onBack = onBack,
+                tabs = if (tabsInHeader) {
+                    { SectionTabs() }
+                } else {
+                    null
+                },
+                tabsWidth = (landscapeTabs?.tabsWidthDp ?: 0f).dp,
             )
 
             BoxWithConstraints(Modifier.fillMaxSize()) {
-                val layoutClass = talentTreeLayoutClass(maxWidth.value, maxHeight.value)
-                // M5.UX.1: portrait phones show one section per tab (1A v2);
-                // landscape and tablet keep the whole-tree canvas until
-                // M5.UX.2, and so does a tree whose sections cannot be
-                // resolved (typed fallback — no node is ever hidden).
-                val portraitSections = if (layoutClass == TalentTreeLayoutClass.PORTRAIT) sectioned else null
-                val activeSection = portraitSections?.let { sections ->
-                    // the selected talent's own section wins (a cross-section
-                    // Show, or a selection carried over from another layout —
-                    // 1A v2 S5 "rotation keeps the section and the selection")
-                    selectedNodeId?.let { sections.sectionOfNode[it] }
-                        ?: cameras.selectedSection?.takeIf { sections.section(it) != null }
-                        ?: sections.sections.first().index
-                }
-                val activeSectionModel = activeSection?.let { portraitSections?.section(it) }
-                // The camera of what the canvas shows: one section's own
-                // camera in portrait, the whole-tree viewport otherwise.
-                val activeCamera = if (activeSection != null) cameras.stateOf(activeSection) else viewportState
-                LaunchedEffect(activeSection) {
-                    if (activeSection != null && cameras.selectedSection != activeSection) {
-                        cameras.selectedSection = activeSection
-                    }
-                }
                 // Captured before the nested layout lambdas: the scope's
                 // constraints are only implicitly available at this level.
                 // In sectioned portrait the tab row sits above the canvas
@@ -595,8 +706,19 @@ private fun ReadyTalentTreeScreen(
                 }
                 // Show collapses to the compact bar: centre above its real height.
                 val compactCoveredDp = inspectorSink.lastCompactDp ?: compactNominalDp
+                // M5.UX.2b.1: the landscape side panel overlays the canvas at the
+                // layout end (right; left in RTL) while a talent is selected
+                val sidePanelWidth = if (layoutClass == TalentTreeLayoutClass.LANDSCAPE && inspectorContent != null) {
+                    TalentInspectorMetrics.LANDSCAPE_PANEL_WIDTH_DP
+                } else {
+                    0.dp
+                }
+                val coveredLeftDp = if (rtl) sidePanelWidth.value else 0f
+                val coveredRightDp = if (rtl) 0f else sidePanelWidth.value
                 SideEffect {
                     activeCamera.coveredBottomDp = coveredBottomDp
+                    activeCamera.coveredLeftDp = coveredLeftDp
+                    activeCamera.coveredRightDp = coveredRightDp
                     if (!portrait || inspectorContent == null) revealTracker.reset()
                 }
                 val reportInspector: (TalentInspectorMeasurement) -> Unit = { measurement ->
@@ -613,6 +735,7 @@ private fun ReadyTalentTreeScreen(
                 fun focusNode(
                     nodeId: Int,
                     camera: TalentTreeViewportState = activeCamera,
+                    coveredLeftDp: Float = 0f,
                     coveredRightDp: Float = 0f,
                     coveredBottomDp: Float = 0f,
                     reveal: Boolean = false,
@@ -623,12 +746,18 @@ private fun ReadyTalentTreeScreen(
                     camera.requestFocus(
                         world = Offset(node.centerX, node.centerY),
                         visibleSize = Size(
-                            (canvas.width - coveredRightDp).coerceAtLeast(0f),
+                            (canvas.width - coveredLeftDp - coveredRightDp).coerceAtLeast(0f),
                             (canvas.height - coveredBottomDp).coerceAtLeast(0f),
                         ),
                         mode = if (reveal) TalentTreeFocusMode.REVEAL else TalentTreeFocusMode.CENTRE,
+                        visibleOrigin = Offset(coveredLeftDp, 0f),
                     )
                 }
+
+                // M5.UX.2b.1: the side the landscape panel covers once it is open
+                // (a selection or a Show opens it), whether or not it is yet
+                val panelLeftDp = if (rtl) TalentInspectorMetrics.LANDSCAPE_PANEL_WIDTH_DP.value else 0f
+                val panelRightDp = if (rtl) 0f else TalentInspectorMetrics.LANDSCAPE_PANEL_WIDTH_DP.value
 
                 // M5.UX.2a: every new real measurement of the portrait
                 // inspector goes through the reveal policy; when it says so
@@ -650,42 +779,22 @@ private fun ReadyTalentTreeScreen(
                     onShowGuideChange(null)
                     onInspectorExpandedChange(false)
                     sectionReturn = null
-                    // B3 05: when the side panel opens it takes 300 dp of the
+                    // B3 05: when the side panel opens it covers 300 dp of the
                     // canvas; the tree pans only if the panel would cover the
-                    // node. Later selections keep the (already smaller) canvas.
+                    // node. Later selections keep the panel (and the canvas) as is.
                     val panelOpening = selectedNodeId == null
                     onSelectedNodeIdChange(nodeId)
-                    if (layoutClass == TalentTreeLayoutClass.LANDSCAPE && panelOpening) {
+                    if (layoutClass == TalentTreeLayoutClass.LANDSCAPE && panelOpening &&
+                        current.model.sidePanelWouldCover(activeCamera, nodeId, panelLeftDp, panelRightDp)
+                    ) {
                         focusNode(
                             nodeId = nodeId,
-                            coveredRightDp = TalentInspectorMetrics.LANDSCAPE_PANEL_WIDTH_DP.value,
+                            coveredLeftDp = panelLeftDp,
+                            coveredRightDp = panelRightDp,
                             reveal = true,
                         )
                     }
                 }
-                val onSelectionCleared: () -> Unit = {
-                    onShowGuideChange(null)
-                    onInspectorExpandedChange(false)
-                    onSelectedNodeIdChange(null)
-                    sectionReturn = null
-                }
-
-                /**
-                 * 1A v2 S6 tab change: one tap; deselects and closes the
-                 * inspector; never touches the BuildState, undo/redo or the
-                 * autosave. A tap on the active tab returns its camera to
-                 * the fit (1A v2 01).
-                 */
-                val sectionOrder = portraitSections?.sections?.map { it.index }.orEmpty()
-
-                // the pages' width (the canvas region spans the whole workspace width)
-                val pageWidthDp = maxWidth.value
-                val pageWidthPx = with(LocalDensity.current) { maxWidth.toPx() }
-                // PR #19 motion: ONE pager position (tab ordinals) drives every page
-                // and the tab indicator; a change made without motion just rests there
-                val sectionCount = sectionOrder.size
-                val activeOrdinal = activeSection?.let { sectionOrder.indexOf(it) } ?: -1
-                if (activeOrdinal >= 0) pager.sync(activeOrdinal)
 
                 // PR #19 round 6: the other pages are composed ahead, at rest (nearest
                 // first), and kept, so no motion composes or disposes a page
@@ -696,32 +805,18 @@ private fun ReadyTalentTreeScreen(
                 // below). Section index -> composed nodes; a page
                 // that is not in it composes none. The page the editor opens on is composed whole
                 // from the first frame, and is kept when the first switch leaves it.
-                var warmProgress by remember(portraitSections) {
-                    val opening = activeSection?.let { section -> portraitSections?.section(section)?.model?.nodes?.size?.let { section to it } }
+                var warmProgress by remember(pagedSections) {
+                    val opening = activeSection?.let { section -> pagedSections?.section(section)?.model?.nodes?.size?.let { section to it } }
                     mutableStateOf(listOfNotNull(opening).toMap())
                 }
-                /**
-                 * The pager position as drawn now: the holding finger's (from
-                 * where it grabbed the pages, 1:1), or the motion's. Read at draw
-                 * / layout time only, never per frame in composition.
-                 */
-                fun currentPosition(): Float {
-                    val held = pager.heldFrom
-                    return if (held != null) {
-                        talentSectionHeldPosition(held, activeCamera.sectionOverscrollDp, pageWidthDp, sectionCount, rtl)
-                    } else {
-                        pager.position
-                    }
-                }
-
                 // the warm-up loop (round 7): one page grows by `batch` talents per frame. A page on
                 // screen comes first, also while the pages move, so a page that slides in before it is
                 // warm grows a few talents per frame instead of a whole page in one frame (the opening
                 // traces measured that frame at 224-240 ms, in the middle of the first swipe). Pages off
                 // screen grow only at rest.
-                LaunchedEffect(portraitSections, activeSection) {
+                LaunchedEffect(pagedSections, activeSection) {
                     val order = sectionOrder
-                    val sizes = order.map { portraitSections?.section(it)?.model?.nodes?.size ?: 0 }
+                    val sizes = order.map { pagedSections?.section(it)?.model?.nodes?.size ?: 0 }
                     val active = order.indexOf(activeSection)
                     fun complete(): Set<Int> = order.indices.filter { (warmProgress[order[it]] ?: 0) >= sizes[it] }.toSet()
                     fun nextPage(): Int? {
@@ -754,44 +849,16 @@ private fun ReadyTalentTreeScreen(
                     }
                 }
 
-                /**
-                 * PR #19 motion: a section change (tab, Show, Back chip) moves the
-                 * ONE pager position from where it is drawn now, carrying the
-                 * running motion's velocity — from rest the old page slides out
-                 * and the new one in; mid-motion nothing jumps.
-                 */
-                fun beginSectionTransition(from: Int?, to: Int) {
-                    val toOrdinal = sectionOrder.indexOf(to)
-                    if (from == null || from == to || toOrdinal < 0) return
-                    pager.settle(
-                        from = currentPosition(),
-                        to = toOrdinal,
-                        initialVelocity = if (pager.moving) pager.velocity else 0f,
-                        reducedMotion = reducedMotion,
-                        count = sectionCount,
-                    )
-                }
-
                 // a tap that only caught moving pages never selects (as on a native pager)
                 val onCanvasNodeSelected: (Int) -> Unit = { nodeId -> if (!pager.caughtMotion) onNodeSelected(nodeId) }
                 val onCanvasSelectionCleared: () -> Unit = { if (!pager.caughtMotion) onSelectionCleared() }
 
-                val onSectionSelected: (Int) -> Unit = { index ->
-                    if (index == activeSection) {
-                        cameras.stateOf(index).requestFit()
-                    } else {
-                        beginSectionTransition(activeSection, index)
-                        onSelectionCleared()
-                        cameras.selectedSection = index
-                    }
-                }
-
                 // the neighbours' cameras are fitted ahead of time, so a page that
                 // slides in is laid out already (an existing camera is never reset)
-                LaunchedEffect(portraitSections, activeCamera.canvasSize, layoutClass) {
+                LaunchedEffect(pagedSections, activeCamera.canvasSize, layoutClass) {
                     val size = activeCamera.canvasSize
                     if (size == Size.Zero) return@LaunchedEffect
-                    portraitSections?.sections?.forEach { section ->
+                    pagedSections?.sections?.forEach { section ->
                         if (section.index != activeSection) {
                             cameras.stateOf(section.index).prepare(section.model.bounds, size, layoutClass)
                         }
@@ -818,12 +885,17 @@ private fun ReadyTalentTreeScreen(
                         onGuideTokenAdvance()
                         onInspectorExpandedChange(false)
                         val coveredBottom = if (layoutClass == TalentTreeLayoutClass.PORTRAIT) compactCoveredDp else 0f
-                        val targetSection = portraitSections?.sectionOfNode?.get(prerequisiteId)
-                        val targetSectionModel = targetSection?.let { portraitSections?.section(it) }
+                        val landscape = layoutClass == TalentTreeLayoutClass.LANDSCAPE
+                        val coveredLeft = if (landscape) panelLeftDp else 0f
+                        val coveredRight = if (landscape) panelRightDp else 0f
+                        val targetSection = pagedSections?.sectionOfNode?.get(prerequisiteId)
+                        val targetSectionModel = targetSection?.let { pagedSections?.section(it) }
                         if (targetSection != null && targetSectionModel != null && targetSection != activeSection) {
                             val targetCamera = cameras.stateOf(targetSection)
                             targetCamera.prepare(targetSectionModel.model.bounds, activeCamera.canvasSize, layoutClass)
                             targetCamera.coveredBottomDp = coveredBottom
+                            targetCamera.coveredLeftDp = coveredLeft
+                            targetCamera.coveredRightDp = coveredRight
                             // the Back chip floats over the top of the canvas: a target
                             // in the top row is moved below it, never left under it
                             val targetNode = targetSectionModel.model.nodes.firstOrNull { it.id == prerequisiteId }
@@ -843,10 +915,21 @@ private fun ReadyTalentTreeScreen(
                             beginSectionTransition(activeSection, targetSection)
                             cameras.selectedSection = targetSection
                             onSelectedNodeIdChange(prerequisiteId)
-                            focusNode(prerequisiteId, camera = targetCamera, coveredBottomDp = coveredBottom)
+                            focusNode(
+                                prerequisiteId,
+                                camera = targetCamera,
+                                coveredLeftDp = coveredLeft,
+                                coveredRightDp = coveredRight,
+                                coveredBottomDp = coveredBottom,
+                            )
                         } else {
                             onSelectedNodeIdChange(prerequisiteId)
-                            focusNode(prerequisiteId, coveredBottomDp = coveredBottom)
+                            focusNode(
+                                prerequisiteId,
+                                coveredLeftDp = coveredLeft,
+                                coveredRightDp = coveredRight,
+                                coveredBottomDp = coveredBottom,
+                            )
                         }
                     }
                 }
@@ -923,10 +1006,6 @@ private fun ReadyTalentTreeScreen(
                     }
                 }
 
-                val indicatorPosition: () -> Float = {
-                    currentPosition().coerceIn(0f, (sectionCount - 1).coerceAtLeast(0).toFloat())
-                }
-
                 // The workspace below the header, with the reset notice as its
                 // one floating overlay.
                 Box(Modifier.fillMaxSize()) {
@@ -945,36 +1024,12 @@ private fun ReadyTalentTreeScreen(
                             )
                         }
 
-                        TalentTreeLayoutClass.LANDSCAPE -> Row(Modifier.fillMaxSize()) {
-                            TreeCanvas(current.model, viewportState, Modifier.weight(1f))
-                            if (inspectorContent != null) {
-                                TalentInspectorSidePanel(
-                                    accent = current.classAccent,
-                                    content = inspectorContent,
-                                    icon = selectedIcon,
-                                    actions = selectedActions,
-                                    onDeselect = onSelectionCleared,
-                                    onShowPrerequisite = onShowPrerequisite,
-                                    onSpendRank = onSpendRank,
-                                    onRefundRank = onRefundRank,
-                                    onMaxRank = onMaxRank,
-                                )
-                            }
-                        }
-
-                        TalentTreeLayoutClass.PORTRAIT -> Column(Modifier.fillMaxSize()) {
-                            if (portraitSections != null && activeSection != null) {
-                                TalentTreeSectionTabs(
-                                    tabs = talentSectionTabs(portraitSections, sectionPoints, current.icons),
-                                    selectedIndex = activeSection,
-                                    accent = current.classAccent,
-                                    icons = current.icons,
-                                    highlightedSections = tabHighlight?.sections.orEmpty(),
-                                    highlightToken = tabHighlight?.token ?: 0,
-                                    onSelectSection = onSectionSelected,
-                                    indicatorPosition = indicatorPosition,
-                                )
-                            }
+                        // M5.UX.2b.1: landscape phones share the portrait section pages
+                        // (pager, cameras, Show + Back chip, FIT); only the chrome differs —
+                        // tabs in the B3 header bar when they fit, and the B3 05 side panel
+                        // instead of the bottom inspector.
+                        TalentTreeLayoutClass.PORTRAIT, TalentTreeLayoutClass.LANDSCAPE -> Column(Modifier.fillMaxSize()) {
+                            if (!tabsInHeader) SectionTabs()
                             Box(Modifier.fillMaxSize()) {
                                 if (activeSectionModel != null) {
                                     // PR #19 motion: the section pages. One canvas per
@@ -986,7 +1041,7 @@ private fun ReadyTalentTreeScreen(
                                     // All of them move by ONE position, read at draw time.
                                     // A touch stops a running motion where it is drawn; the
                                     // finger carries it.
-                                    val composedPages by remember(pager, activeCamera, activeOrdinal, sectionOrder, pageWidthDp, portraitSections) {
+                                    val composedPages by remember(pager, activeCamera, activeOrdinal, sectionOrder, pageWidthDp, pagedSections) {
                                         derivedStateOf {
                                             talentSectionComposedPages(
                                                 currentPosition(),
@@ -1019,7 +1074,7 @@ private fun ReadyTalentTreeScreen(
                                         for (ordinal in composedPages) {
                                             val section = sectionOrder[ordinal]
                                             key(section) {
-                                                val pageModel = portraitSections?.section(section)
+                                                val pageModel = pagedSections?.section(section)
                                                 val isActive = section == activeSectionModel.index
                                                 if (pageModel != null) {
                                                     TreeCanvas(
@@ -1033,7 +1088,7 @@ private fun ReadyTalentTreeScreen(
                                                         pageTag = talentSectionPageTag(section),
                                                         // read only by the page's node layer: a warm-up step
                                                         // recomposes that layer, not the screen or the other pages
-                                                        composedNodeCount = remember(section, portraitSections) {
+                                                        composedNodeCount = remember(section, pagedSections) {
                                                             val read: () -> Int = { warmProgress[section] ?: 0 }
                                                             read
                                                         },
@@ -1045,7 +1100,7 @@ private fun ReadyTalentTreeScreen(
                                     }
                                     val origin = sectionReturn
                                     if (origin != null && origin.originSection != activeSection) {
-                                        val originLabel = portraitSections?.section(origin.originSection)?.label
+                                        val originLabel = pagedSections?.section(origin.originSection)?.label
                                         TalentSectionReturnChip(
                                             text = listOfNotNull(
                                                 "Back to ${facts.nameOf(origin.originNodeId)}",
@@ -1054,16 +1109,17 @@ private fun ReadyTalentTreeScreen(
                                             onClick = { onReturnToOrigin(origin) },
                                             modifier = Modifier
                                                 .align(Alignment.TopCenter)
+                                                .padding(end = sidePanelWidth)
                                                 .padding(horizontal = TalentForgeSpacing.screenX),
                                         )
                                     }
-                                    if (!(inspectorExpanded && inspectorContent != null)) {
+                                    if (!(portrait && inspectorExpanded && inspectorContent != null)) {
                                         TalentTreeFitButton(
                                             viewportState = activeCamera,
                                             modifier = Modifier
                                                 .align(Alignment.BottomEnd)
                                                 .padding(
-                                                    end = TalentTreeSectionTabsMetrics.FIT_INSET_DP -
+                                                    end = sidePanelWidth + TalentTreeSectionTabsMetrics.FIT_INSET_DP -
                                                         (TalentTreeSectionTabsMetrics.FIT_TARGET_DP -
                                                             TalentTreeSectionTabsMetrics.FIT_VISUAL_DP) / 2,
                                                     bottom = coveredBottomDp.dp +
@@ -1083,7 +1139,7 @@ private fun ReadyTalentTreeScreen(
                                 // is the FINAL geometry from the first frame, so the
                                 // camera pans at most once and never per animation frame.
                                 val shownNodeId = selectedNodeId
-                                val sheetOpen = inspectorExpanded && inspectorContent != null && shownNodeId != null
+                                val sheetOpen = portrait && inspectorExpanded && inspectorContent != null && shownNodeId != null
                                 val sheetProgress = remember { Animatable(if (sheetOpen) 1f else 0f) }
                                 LaunchedEffect(sheetOpen) {
                                     val spec = tween<Float>(
@@ -1101,7 +1157,8 @@ private fun ReadyTalentTreeScreen(
                                 val sheetClosing = !sheetOpen && sheetDrawn && inspectorContent != null &&
                                     shownNodeId != null && shownNodeId == sheetOpenedFor[0]
                                 val stripPx = with(LocalDensity.current) { compactCoveredDp.dp.toPx() }
-                                Box(
+                                // the compact bar and the sheet are the portrait inspector only
+                                if (portrait) Box(
                                     Modifier
                                         .align(Alignment.BottomCenter)
                                         // the sheet's lower part, still below its rest, is never drawn under the system bar
@@ -1190,6 +1247,35 @@ private fun ReadyTalentTreeScreen(
                                         }
                                     }
                                 }
+                                // B3 05 landscape: "Selecting opens a 300 dp side panel with the
+                                // full detail" — over the canvas, so the canvas (and its camera)
+                                // keeps its size and "moves only if the panel would cover the
+                                // selected node" (the reveal in onNodeSelected). Below the header,
+                                // so it never covers the tabs, undo / redo or the counter.
+                                if (!portrait && inspectorContent != null) {
+                                    TalentInspectorSidePanel(
+                                        accent = current.classAccent,
+                                        content = inspectorContent,
+                                        icon = selectedIcon,
+                                        actions = selectedActions,
+                                        onDeselect = onSelectionCleared,
+                                        onShowPrerequisite = onShowPrerequisite,
+                                        onSpendRank = onSpendRank,
+                                        onRefundRank = onRefundRank,
+                                        onMaxRank = onMaxRank,
+                                        modifier = Modifier
+                                            .align(Alignment.CenterEnd)
+                                            .testTag(TALENT_INSPECTOR_SIDE_PANEL_TAG)
+                                            // a touch on the panel never reaches the canvas or the pages below
+                                            .pointerInput(Unit) {
+                                                awaitPointerEventScope {
+                                                    while (true) {
+                                                        awaitPointerEvent().changes.forEach { it.consume() }
+                                                    }
+                                                }
+                                            },
+                                    )
+                                }
                             }
                         }
                     }
@@ -1224,7 +1310,9 @@ private fun ReadyTalentTreeScreen(
                             .fillMaxWidth()
                             .padding(end = sideInspectorWidth)
                             // M5.UX.1: below the section tabs, which stay usable
-                            .padding(top = if (activeSection != null) TalentTreeSectionTabsMetrics.TAB_HEIGHT_DP else 0.dp)
+                            .padding(
+                                top = if (activeSection != null && !tabsInHeader) TalentTreeSectionTabsMetrics.TAB_HEIGHT_DP else 0.dp,
+                            )
                             .padding(
                                 top = TalentForgeSpacing.rowGap,
                                 start = TalentForgeSpacing.screenX,
@@ -1271,6 +1359,25 @@ private fun ReadyTalentTreeScreen(
 
 /** No talent (the sheet was never opened). */
 private const val NO_NODE: Int = Int.MIN_VALUE
+
+/**
+ * M5.UX.2b.1 (B3 05 "The canvas moves only if the panel would cover the
+ * selected node"): whether [nodeId], as [camera] shows it now, lies under a
+ * side panel covering [panelLeftDp] / [panelRightDp] of the canvas (with the
+ * Show clearance). Only then does opening the panel move the canvas.
+ */
+private fun TalentTreeUiModel.sidePanelWouldCover(
+    camera: TalentTreeViewportState,
+    nodeId: Int,
+    panelLeftDp: Float,
+    panelRightDp: Float,
+): Boolean {
+    val viewport = camera.viewport ?: return false
+    val node = nodes.firstOrNull { it.id == nodeId } ?: return false
+    val x = viewport.worldToScreen(Offset(node.centerX, node.centerY)).x
+    val clearance = TalentInspectorMetrics.FOCUS_CLEARANCE_DP
+    return x < panelLeftDp + clearance || x > camera.canvasSize.width - panelRightDp - clearance
+}
 
 /** Saveable [TalentShowGuide] (survives recomposition and configuration change). */
 private val TalentShowGuideSaver = mapSaver<TalentShowGuide?>(

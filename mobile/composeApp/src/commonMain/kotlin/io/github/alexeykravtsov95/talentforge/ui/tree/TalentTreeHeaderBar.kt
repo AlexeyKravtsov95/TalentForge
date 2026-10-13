@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -136,6 +137,13 @@ fun TalentTreeHeaderBar(
     onOpenBuildActions: () -> Unit,
     onBack: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
+    /**
+     * M5.UX.2b.1 landscape (B3 05): the section tabs merged into this bar,
+     * between the title and undo, [tabsWidth] wide; the bar is then the B3
+     * 48 dp one. `null`: the portrait header (tabs, if any, in their own row).
+     */
+    tabs: (@Composable () -> Unit)? = null,
+    tabsWidth: Dp = 0.dp,
 ) {
     BoxWithConstraints(modifier.fillMaxWidth()) {
         val layout = talentTreeHeaderLayout(maxWidth, LocalDensity.current.fontScale)
@@ -143,7 +151,13 @@ fun TalentTreeHeaderBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = TalentTreeHeaderMetrics.HEADER_HEIGHT_DP)
+                .heightIn(
+                    min = if (tabs != null) {
+                        TalentTreeLandscapeHeaderMetrics.HEADER_HEIGHT_DP.dp
+                    } else {
+                        TalentTreeHeaderMetrics.HEADER_HEIGHT_DP
+                    },
+                )
                 .padding(
                     start = if (onBack != null) TalentTreeHeaderMetrics.EDGE_DP else TalentForgeSpacing.screenX,
                     end = TalentTreeHeaderMetrics.EDGE_DP,
@@ -194,6 +208,15 @@ fun TalentTreeHeaderBar(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
+                }
+            }
+            if (tabs != null) {
+                Box(
+                    Modifier
+                        .padding(end = TalentTreeLandscapeHeaderMetrics.TABS_GAP_DP.dp)
+                        .width(tabsWidth),
+                ) {
+                    tabs()
                 }
             }
             // Undo = ↺ (counterclockwise), redo = ↻: the arc is symmetric, so the

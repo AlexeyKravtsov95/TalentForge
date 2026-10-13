@@ -68,6 +68,15 @@ class TalentTreeViewportState(
     var coveredBottomDp: Float by mutableStateOf(0f)
 
     /**
+     * M5.UX.2b.1: width (dp) of the canvas's left / right edge the landscape
+     * side panel covers while it is open (the panel overlays the canvas, so
+     * opening it never resizes — and so never re-fits — the camera); the clamp
+     * lets content move out from under it. Set by the screen, never saved.
+     */
+    var coveredLeftDp: Float by mutableStateOf(0f)
+    var coveredRightDp: Float by mutableStateOf(0f)
+
+    /**
      * PR #19: the horizontal overscroll (dp, signed like the finger) of the
      * single-finger gesture in progress, past the content's horizontal bound —
      * the rubber-band feedback of the section swipe; 0 outside such a gesture.
@@ -188,7 +197,14 @@ class TalentTreeViewportState(
     fun applyUserTransform(transform: TalentTreeViewport) {
         val bounds = contentBounds
         val clamped = if (bounds != null && canvasSize != Size.Zero) {
-            transform.clampedTo(bounds, canvasSize, coveredBottomDp, reference = viewport)
+            transform.clampedTo(
+                bounds,
+                canvasSize,
+                coveredBottomDp,
+                reference = viewport,
+                coveredLeftDp = coveredLeftDp,
+                coveredRightDp = coveredRightDp,
+            )
         } else {
             transform
         }
@@ -205,7 +221,14 @@ class TalentTreeViewportState(
     fun clampTarget(target: TalentTreeViewport): TalentTreeViewport {
         val bounds = contentBounds ?: return target
         if (canvasSize == Size.Zero) return target
-        return target.clampedTo(bounds, canvasSize, coveredBottomDp, reference = viewport)
+        return target.clampedTo(
+            bounds,
+            canvasSize,
+            coveredBottomDp,
+            reference = viewport,
+            coveredLeftDp = coveredLeftDp,
+            coveredRightDp = coveredRightDp,
+        )
     }
 
     /** Called from the canvas's size change callback (input in px). */
@@ -239,12 +262,14 @@ class TalentTreeViewportState(
     /**
      * One-shot focus request of the inspector-driven Show action: make [world]
      * (the prerequisite node's real canvas position) visible inside
-     * [visibleSize] — the canvas area not covered by the inspector.
+     * [visibleSize] — the canvas area not covered by the inspector, starting
+     * at [visibleOrigin] (M5.UX.2b.1: right of a side panel on the left, RTL).
      */
     fun requestFocus(
         world: Offset,
         visibleSize: Size,
         mode: TalentTreeFocusMode = TalentTreeFocusMode.CENTRE,
+        visibleOrigin: Offset = Offset.Zero,
     ) {
         if (!world.x.isFinite() || !world.y.isFinite()) return
         if (visibleSize.width.isFinite() && visibleSize.height.isFinite() &&
@@ -257,6 +282,7 @@ class TalentTreeViewportState(
             visibleSize = visibleSize,
             id = nextFocusId++,
             mode = mode,
+            visibleOrigin = if (visibleOrigin.x.isFinite() && visibleOrigin.y.isFinite()) visibleOrigin else Offset.Zero,
         )
     }
 
@@ -371,6 +397,8 @@ data class TalentTreeFocusRequest(
     val visibleSize: Size,
     val id: Int,
     val mode: TalentTreeFocusMode = TalentTreeFocusMode.CENTRE,
+    /** Canvas position (dp) where [visibleSize] starts; zero unless a side panel covers the left edge. */
+    val visibleOrigin: Offset = Offset.Zero,
 )
 
 /** Creates a [TalentTreeViewportState] whose transform survives recomposition and rotation. */

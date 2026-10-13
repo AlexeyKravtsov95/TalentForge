@@ -175,8 +175,9 @@ fun TalentInspectorRankActions(
  * The expanded sheet's pinned action row (1A v2 02 / S1): `−` 56 × 52, the
  * primary `+ Rank` taking the remaining width × 52 (the ✓ badge once maxed)
  * and `Max` 68 × 52. Same engine-backed enabled states and accessibility
- * labels as every other rank control; the side and tablet panels keep
- * [TalentInspectorRankActions] until M5.UX.2b.
+ * labels as every other rank control. M5.UX.2b.1: the landscape side panel
+ * uses it too; the tablet panel keeps [TalentInspectorRankActions] until its
+ * own milestone.
  */
 @Composable
 fun TalentInspectorSheetRankActions(

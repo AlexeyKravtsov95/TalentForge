@@ -305,8 +305,8 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
   is consumed but does nothing.
 
 - **M5.UX.1 section tabs and per-section cameras** (approved direction
-  "1A v2 · Specialization Tabs"; portrait phones only — landscape and tablet
-  keep the whole-tree canvas until M5.UX.2):
+  "1A v2 · Specialization Tabs"; portrait phones — landscape phones since
+  M5.UX.2b.1, below; tablet keeps the whole-tree canvas):
 
   - `TalentTreeSections` — a pure projection of the real tree's
     `sections` onto the UI model, never a second game model: each
@@ -354,8 +354,8 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
   reset and the point budget stay global to the one build.
 
 - **M5.UX.2a adaptive inspector and header** (approved direction 1A v2,
-  pages 02–03 and S1/S2/S3/S8; portrait phones — landscape and tablet keep
-  their M4.2 panels until M5.UX.2b):
+  pages 02–03 and S1/S2/S3/S8; portrait phones — landscape phones get the
+  B3 05 side panel in M5.UX.2b.1, below; tablet keeps its M4.2 panel):
 
   - compact strip (`TalentInspectorCompactBar`): docked to the bottom, a
     12 dp handle over one 64 dp row `[icon 44] name … rank / state
@@ -550,6 +550,73 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
     `LocalReducedMotion` overrides it in tests) makes pages, the sheet and the
     compact strip's entry instant. Finger-follow stays (direct
     manipulation), and every action works the same.
+
+- **M5.UX.2b.1 landscape phones** (B3 05 / 08 "Landscape behaviour", UX/UI
+  spec 03 §5 "Landscape: 300 dp side panel"; tablet unchanged — its own
+  milestone):
+
+  - classification. `talentTreeWorkspaceLayoutClass` classifies the editor
+    ONCE from its whole workspace (the canvas region = workspace − the
+    nominal 52 dp header), so the header and the body always agree.
+    `talentTreeLayoutClass` now requires a tablet to be tall as well as
+    wide (`TABLET_MIN_HEIGHT_DP` = 480, implementation-safe: Material's
+    compact-height bound; the sources freeze no value): most modern phones
+    are 840+ dp wide in landscape (915 × 412, 932 × 430) and used to fall
+    into the tablet layout. 840 × 600 and larger keep the tablet layout;
+  - one paged layout for phones. Portrait and landscape share the section
+    pages, the ONE pager position, the per-section cameras, the Back chip,
+    FIT and the warm-up of off-screen pages unchanged (PR #19); only the
+    chrome differs. The section navigation (active section, pager position,
+    tab change, indicator) is computed once above the header, because the
+    landscape header hosts the tabs; the canvas region below uses it;
+  - tabs. `talentTreeLandscapeTabs` (pure) puts them in the header — B3's
+    one 48 dp bar `back · title · tabs · undo · redo · x / 51 · ⋯`
+    (`TalentTreeHeaderBar(tabs = …)`) — when every tab keeps its 72 dp
+    minimum (scaled with the font until the number-only tabs) next to the
+    controls, the counter and a 120 dp title; otherwise (568 × 320, a
+    cutout-narrowed 640 dp phone, 130 % text on 640 dp) the portrait tab row
+    stays below the header. Both use the same `TalentTreeSectionTabs`;
+  - side panel. Selecting opens `TalentInspectorSidePanel` (300 dp, full
+    detail, pinned actions) OVER the canvas at the layout end (left in RTL),
+    below the header, so it never covers the tabs, undo / redo or the
+    counter. The canvas therefore keeps its size — no section camera re-fits
+    when the panel opens or closes — and "moves only if the panel would
+    cover the selected node" (`sidePanelWouldCover`, then the B3 08 minimal
+    `panToReveal` within the uncovered region). The camera excludes the
+    covered side from its clamp (`coveredLeftDp` / `coveredRightDp`, like
+    `coveredBottomDp` for the portrait strip), and a focus request carries
+    the visible region's origin (`visibleOrigin`) for a left panel. The
+    panel consumes its touches, so nothing reaches the canvas below. Its
+    actions are now the expanded sheet's 1A v2 row (`+ Rank` flexes, `Max`
+    grows with large text; the M5.UX.2a note deferred this to 2b) and at
+    ≥ 175 % text the decorative icon gives its width to the name, so a word
+    is never split. The Back chip and FIT sit over the visible canvas, left
+    of the panel; the reset notice keeps its existing inset;
+  - Show / Back. Cross-section Show switches the tab exactly as in portrait
+    and keeps the panel open on the prerequisite; the Back chip returns to
+    the origin and its untouched camera. System Back clears the landscape
+    selection in one step (only the portrait sheet expands, so an expansion
+    carried over from portrait is ignored there, not a hidden extra step);
+  - rotation. Section, selection, Show guide, Back chip, cameras and the
+    editing session are the same saved state in both orientations: the open
+    section and the selection survive, the open section's camera re-fits to
+    the new canvas (1A v2 S5, `SECTION` policy) and the neighbours are
+    prepared for it. Nothing about an orientation change reaches
+    `onBuildStateChanged`; on Android (activity recreation) the restored
+    session equals the persisted build, so the M5.1 restore safety net stays
+    silent;
+  - talent layer extent (found on a TECNO KM5n, Android 15). Android
+    accessibility skips every child of a node whose own transformed bounds
+    are off screen. The node layer used to be canvas-sized at world 0,0, so
+    for a section far from the origin (Tree 2 in portrait, Tree 3 in
+    landscape) the camera moved the layer itself off screen and no talent
+    of the open section reached accessibility, although all were drawn and
+    tappable. The layer now spans its talents' world extent from world 0,0
+    (`talentNodeLayerExtent`: the furthest node centre plus the container
+    half side), top-start, so the viewport mapping, the per-node modifiers
+    and the inactive pages' single `clearAndSetSemantics` are unchanged.
+    Desktop semantics never showed this; `scripts/android_section_check.py`
+    checks it on a device.
 
 ### `iosApp`
 
@@ -1128,8 +1195,18 @@ cd mobile
 ./gradlew :composeApp:desktopTest --tests "*TalentTreeM5V1ScreenshotTest*" \
     -Dtalentforge.m5v1.screenshots=<output-dir>
 
+# opt-in M5.UX.2b.1 landscape screenshot evidence (desktop-rendered; cutouts emulated)
+./gradlew :composeApp:desktopTest --tests "*TalentTreeM5Ux2b1ScreenshotTest*" \
+    -Dtalentforge.m5ux2b1.screenshots=<output-dir>
+
 # Android
 ./gradlew :composeApp:assembleDebug    # -> composeApp/build/outputs/apk/debug/
+
+# M5.UX.2b.1 section navigation on a USB device (from the repository root; adb on PATH).
+# Builds and installs the isolated `.devcheck` application, runs the scenarios
+# (tabs, rotation, swipe, side panel, Back, relaunch) with real `adb input` taps,
+# then restores rotation and uninstalls it. Report: .cache/android-section-check/
+python3 scripts/android_section_check.py --runs 2
 
 # iOS
 ./gradlew :composeApp:linkDebugFrameworkIosArm64 :composeApp:linkDebugFrameworkIosSimulatorArm64

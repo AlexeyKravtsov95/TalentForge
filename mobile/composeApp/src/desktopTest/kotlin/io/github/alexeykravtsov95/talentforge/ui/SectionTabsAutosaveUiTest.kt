@@ -3,6 +3,9 @@ package io.github.alexeykravtsov95.talentforge.ui
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
@@ -17,6 +20,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipe
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import io.github.alexeykravtsov95.talentforge.data.BundledTalentDatasetRepository
 import io.github.alexeykravtsov95.talentforge.data.ClassToken
@@ -58,11 +62,14 @@ class SectionTabsAutosaveUiTest {
 
     private fun repository() = LocalBuildRepository(storage, clock, ids)
 
+    /** M5.UX.2b.1: the phone's window; a rotation swaps it in place. */
+    private var window by mutableStateOf(IntSize(360, 760))
+
     private fun composeApp() {
         composeRule.setContent {
             TalentForgeTheme {
                 CompositionLocalProvider(LocalDensity provides Density(1f)) {
-                    Box(Modifier.size(360.dp, 760.dp)) {
+                    Box(Modifier.size(window.width.dp, window.height.dp)) {
                         App(storage = storage, clock = clock, ids = ids)
                     }
                 }
@@ -129,5 +136,38 @@ class SectionTabsAutosaveUiTest {
         assertEquals("1 point spent", tabState("Tree 1"))
         assertEquals("0 points spent", tabState("Tree 2"))
         composeRule.onNodeWithText("1 / 51").assertExists()
+    }
+
+    @Test
+    fun rotatingAndLandscapeNavigationNeverWriteTheLibrary() {
+        assertIs<DraftCreation.Created>(runBlocking { createClassDraft(repository(), datasets, ClassToken("WARRIOR")) })
+        composeApp()
+        openEditorFromHome()
+        composeRule.onNodeWithContentDescription("Improved Rend").performClick()
+        composeRule.onNodeWithText("+").performClick()
+        composeRule.waitUntil(10_000) { storage.writeCount > 0 }
+        composeRule.mainClock.advanceTimeBy(600)
+        composeRule.waitForIdle()
+        val writesAfterSpend = storage.writeCount
+
+        // portrait → landscape → portrait, with landscape tab switches and a
+        // selection in between: view state only, so no save is ever written
+        composeRule.runOnIdle { window = IntSize(760, 360) }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Tree 1").assertIsSelected()
+        composeRule.onNodeWithText("Tree 2").performClick()
+        composeRule.onNodeWithText("Tree 1").performClick()
+        composeRule.onNodeWithContentDescription("Improved Rend").performClick()
+        composeRule.runOnIdle { window = IntSize(360, 760) }
+        composeRule.waitForIdle()
+        composeRule.mainClock.advanceTimeBy(600)
+        composeRule.waitForIdle()
+        assertEquals(writesAfterSpend, storage.writeCount, "an orientation change is not a build change")
+        assertEquals("1 point spent", tabState("Tree 1"))
+
+        // and the saved build is exactly the one explicit spend
+        composeRule.onNodeWithContentDescription("go back").performClick()
+        awaitText("CONTINUE")
+        assertEquals(1, records().single().build.allocations.single().rank)
     }
 }

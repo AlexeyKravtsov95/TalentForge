@@ -16,12 +16,15 @@ import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
+import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawBehind
@@ -174,11 +177,18 @@ fun TalentTreeCanvas(
         val current = viewportState.viewport ?: return@LaunchedEffect
         // each request runs once, even if this canvas re-enters composition
         if (!viewportState.consumeFocusRequest(request)) return@LaunchedEffect
+        // M5.UX.2b.1: the visible region may start right of a side panel (RTL):
+        // resolved in the region's own frame, then back in canvas coordinates
+        // (an unchanged result stays exactly the current camera)
+        val origin = request.visibleOrigin
+        val inRegion = if (origin == Offset.Zero) current else current.panBy(Offset(-origin.x, -origin.y))
+        fun toCanvas(resolved: TalentTreeViewport): TalentTreeViewport =
+            if (resolved === inRegion) current else resolved.panBy(origin)
         val target = when (request.mode) {
             // 1A v2 04: the Show target is centred within the content bounds
             TalentTreeFocusMode.CENTRE ->
-                viewportState.clampTarget(current.focusedOn(request.world, request.visibleSize))
-            TalentTreeFocusMode.REVEAL -> current.panToReveal(request.world, request.visibleSize)
+                viewportState.clampTarget(toCanvas(inRegion.focusedOn(request.world, request.visibleSize)))
+            TalentTreeFocusMode.REVEAL -> toCanvas(inRegion.panToReveal(request.world, request.visibleSize))
         }
         if (target == current) return@LaunchedEffect
         // B3 07 Show: 300 ms; 1A v2 S3 inspector reveal: 260 ms
@@ -341,9 +351,19 @@ fun TalentTreeCanvas(
         // viewport transform at draw time (no per-node recomposition on pan).
         // Transform origin is the top-left corner so the layer's mapping is
         // exactly the viewport's `screenDp = worldDp * scale + offset`.
+        val layerExtent = remember(model) { talentNodeLayerExtent(model.nodes) }
         Box(
             Modifier
                 .matchParentSize()
+                // M5.UX.2b.1 (TECNO KM5n, Android 15): the layer spans its talents' WORLD extent
+                // from world 0,0, not the canvas size. At the canvas size, a section far from the
+                // origin (Tree 2 in portrait, Tree 3 in landscape) moved the layer's own bounds off
+                // screen, and Android accessibility skipped every talent in it although they were
+                // drawn on screen. Pinned top-left in both layout directions (like the viewport
+                // mapping below), so the layer's transformed bounds are always the talents' world
+                // extent on screen.
+                .wrapContentSize(AbsoluteAlignment.TopLeft, unbounded = true)
+                .requiredSize(layerExtent.width.dp, layerExtent.height.dp)
                 // a shown-only page (PR #19 motion) is a picture: nothing in it reaches semantics
                 .then(if (interactive) Modifier else Modifier.clearAndSetSemantics {})
                 .graphicsLayer {
@@ -373,6 +393,28 @@ fun TalentTreeCanvas(
 }
 
 /**
+ * M5.UX.2b.1: the size (world dp, from world 0,0) of the canvas's node layer — far enough
+ * right and down to contain every talent's whole container (visual + selection-ring room),
+ * so the layer's transformed bounds cover every talent the camera brings on screen.
+ */
+internal fun talentNodeLayerExtent(nodes: List<TalentTreeNodeUiModel>): Size {
+    val half = talentNodeContainerHalfSideDp()
+    var width = 0f
+    var height = 0f
+    for (node in nodes) {
+        if (node.centerX.isFinite()) width = maxOf(width, node.centerX + half)
+        if (node.centerY.isFinite()) height = maxOf(height, node.centerY + half)
+    }
+    return Size(width, height)
+}
+
+/** Half the side of one talent's container: the visual plus the selection ring and its gap. */
+internal fun talentNodeContainerHalfSideDp(): Float =
+    TalentTreeCanvasMetrics.NODE_VISUAL_DP / 2f +
+        TalentTreeCanvasMetrics.SELECTION_RING_GAP_DP +
+        TalentTreeCanvasMetrics.SELECTION_RING_WIDTH_DP
+
+/**
  * The canvas's talent nodes, laid out in world dp inside the node layer. Its own recomposition
  * scope (PR #19 round 7): [composedNodeCount] is read here only, so composing a page ahead a few
  * nodes per frame recomposes this layer, never the canvas, the screen or the other pages.
@@ -391,10 +433,7 @@ private fun TalentTreeNodeLayer(
     onNodeSelected: (Int) -> Unit,
     composedNodeCount: () -> Int,
 ) {
-    val containerHalfSide =
-        (TalentTreeCanvasMetrics.NODE_VISUAL_DP / 2f +
-            TalentTreeCanvasMetrics.SELECTION_RING_GAP_DP +
-            TalentTreeCanvasMetrics.SELECTION_RING_WIDTH_DP).dp
+    val containerHalfSide = talentNodeContainerHalfSideDp().dp
 
     val count = composedNodeCount()
     val composedNodes = if (count >= model.nodes.size) {

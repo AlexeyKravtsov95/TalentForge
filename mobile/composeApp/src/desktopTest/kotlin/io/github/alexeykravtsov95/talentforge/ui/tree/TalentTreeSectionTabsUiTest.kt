@@ -441,7 +441,7 @@ class TalentTreeSectionTabsUiTest {
     }
 
     @Test
-    fun rotatingKeepsTheSectionAndSelectionAndLandscapeKeepsTheWholeTree() {
+    fun rotatingKeepsTheSectionAndSelectionInBothOrientations() {
         var window by mutableStateOf(IntSize(360, 760))
         cameras = TalentTreeSectionCameras(sessionKey = "rotate", treeId = readyState.model.treeId)
         composeRule.setContent {
@@ -458,11 +458,10 @@ class TalentTreeSectionTabsUiTest {
         openTab("Tree 2")
         select(fury)
 
-        // landscape (M5.UX.2 territory): unchanged whole-tree canvas, no tabs
+        // landscape (M5.UX.2b.1): the same section tabs, the same section and selection
         composeRule.runOnIdle { window = IntSize(760, 360) }
         composeRule.waitForIdle()
-        composeRule.onNodeWithText("Tree 2").assertDoesNotExist()
-        composeRule.onNodeWithContentDescription("Improved Rend").assertExists()
+        composeRule.onNodeWithText("Tree 2").assertIsSelected()
         composeRule.onNodeWithContentDescription(fury).assertIsSelected()
 
         // back to portrait: the same section and the same selection

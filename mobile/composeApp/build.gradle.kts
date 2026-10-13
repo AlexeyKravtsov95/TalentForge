@@ -73,6 +73,16 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
+    // Opt-in isolated debug install for device checks (M5.UX.2b.1):
+    // `-Ptalentforge.applicationIdSuffix=.devcheck` installs next to the real
+    // app with its own data, so a scripted check never sees or changes the
+    // user's saved builds. Unset (the default): the unchanged application id.
+    buildTypes {
+        getByName("debug") {
+            providers.gradleProperty("talentforge.applicationIdSuffix").orNull?.let { applicationIdSuffix = it }
+        }
+    }
 }
 
 // Opt-in screenshot evidence: `./gradlew :composeApp:desktopTest \
@@ -81,7 +91,8 @@ android {
 // `-Dtalentforge.m51.screenshots` (M5.1) or `-Dtalentforge.m5v1.screenshots`
 // (M5.V1, desktop-rendered) or `-Dtalentforge.m5ux.screenshots` (M5.UX.1,
 // desktop-rendered section tabs) or `-Dtalentforge.m5ux2.screenshots`
-// (M5.UX.2a, adaptive inspector and header) or `-Dtalentforge.pr19.recording`
+// (M5.UX.2a, adaptive inspector and header) or `-Dtalentforge.m5ux2b1.screenshots`
+// (M5.UX.2b.1, landscape phones) or `-Dtalentforge.pr19.recording`
 // (PR #19, gesture frames) — skipped by default.
 tasks.named<Test>("desktopTest") {
     System.getProperty("talentforge.m41.screenshots")?.let {
@@ -107,6 +118,9 @@ tasks.named<Test>("desktopTest") {
     }
     System.getProperty("talentforge.m5ux2.screenshots")?.let {
         systemProperty("talentforge.m5ux2.screenshots", it)
+    }
+    System.getProperty("talentforge.m5ux2b1.screenshots")?.let {
+        systemProperty("talentforge.m5ux2b1.screenshots", it)
     }
     System.getProperty("talentforge.pr19.recording")?.let {
         systemProperty("talentforge.pr19.recording", it)
