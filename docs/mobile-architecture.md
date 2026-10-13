@@ -318,8 +318,11 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
     section, and bounds from its actual nodes; connectors between sections
     are reported (`crossSectionEdges`, none in the published data) and never
     drawn, while the engine keeps enforcing them on the one `BuildState`.
-    Labels are the dataset's section name or "Tree N" (the datasets publish
-    no names — no spec name is guessed). A missing/unknown `sectionIndex` or a
+    Labels are the dataset's section name, else the approved specialization
+    name resolved at presentation time from (class token, section index)
+    — M5.REL.1, `TalentSpecializationNames`; only a pair outside that table
+    reads the localized generic "Tree N" / "Ветка N". No spec name is ever
+    guessed from order or node names at runtime. A missing/unknown `sectionIndex` or a
     `nodeIds` list that disagrees with the nodes is a typed
     `TalentTreeSectionsResult.Unsectioned` reason: the screen then shows the
     whole tree on one canvas without tabs — nothing hidden or re-assigned.
@@ -933,6 +936,51 @@ Opt-in screenshot evidence: `M5Ui2ScreenshotTest`
 (`-Dtalentforge.m5ui2.screenshots=<dir>`) — the responsive matrix
 (393×852, 360×800, 320×568, 130 %, 200 %), the unavailable class, the
 loading failure, creation in flight and the creation failure.
+
+## Localized specialization names (M5.REL.1)
+
+Presentation-only milestone: the section tabs (portrait row, landscape
+header row, the Back chip and the accessibility descriptions) show real
+specialization names instead of the generic "Tree N".
+
+- `ui/lang/AppLanguage` — the display-language choice: Russian only when the
+  device's primary language is Russian (`ru`, `ru-RU`, `ru-KZ`, …; read once
+  from `LocaleList` on Android, `NSLocale.preferredLanguages` on iOS, the JVM
+  default locale on desktop), English for every other primary language. No
+  in-app selector; `LocalAppLanguage` overrides it in tests and previews.
+  The next milestone widens this from the specialization names to all
+  visible UI copy;
+- `TalentSpecializationNames` — the ONE approved mapping
+  (class token × `TalentSection.index` → English/Russian name), verified in
+  this repository against every section's node membership on every bundled
+  client build (each section holds exactly its spec's talents — Warrior 0 =
+  Mortal Strike/Impale/… = Arms, Paladin 0 = Holy Shock/… = Holy, Druid 1 =
+  Feral Charge/… = Feral Combat, …). `talentSectionDisplayLabel` is the
+  single resolution chain every editor surface reads: the dataset's own
+  published `TalentSection.name` still wins, the approved name follows, and
+  a pair the table does not name falls back to the localized generic
+  "Tree N" / "Ветка N" — never a guessed specialization;
+- wiring: `TalentTreeUiState.Ready` carries the build's `classToken`
+  (presentation input only), the screen reads `appLanguage()` once, and
+  `talentSectionTabs` resolves the labels. Identity is untouched — section
+  indices, node ids, the pager, cameras, the one `BuildState` and saved
+  builds never see a localized label; at 200 % font scale a tab keeps its
+  position number while its full resolved name stays the accessibility
+  description.
+
+**Tests added:** `TalentSpecializationNamesTest` (all 27 mappings in both
+languages, unknown class/section → the localized generic fallback, the
+dataset-name-wins chain, the `ru`/`ru-RU`/`ru-KZ` vs `en`/`de`/… language
+rule) and `TalentSpecializationNamesUiTest` (the real screen: EN default
+and RU tabs, the unresolvable-class fallback on screen, a language switch
+changing ONLY labels — selection, camera, build, autosave observer and
+section ids untouched, 200 % font scale numbers + full a11y names in both
+languages, 320 dp long labels, rotation keeping the resolved label and the
+open section). The existing tree suites keep their behaviour assertions
+with the resolved labels (Warrior: Arms/Fury/Protection). Opt-in screenshot
+evidence: `TalentSpecializationNamesScreenshotTest`
+(`-Dtalentforge.m5rel1.screenshots=<dir>`) — Paladin and Mage in EN and RU,
+landscape navigation, 320 dp, 200 % font scale.
 
 ## Version stack (all stable)
 
