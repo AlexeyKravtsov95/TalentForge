@@ -65,7 +65,9 @@ data class HomeModel(
 /** The New Build screen's real class list, resolved from the bundle manifest. */
 data class NewBuildChoices(
     val gameDisplayName: String,
-    val versionDetail: String,
+
+    /** Human data version of the bundle's client build (`1.60.1.70338` → `1.60.1`). */
+    val dataVersion: String,
     val classes: List<NewBuildClassChoice>,
 )
 
@@ -258,9 +260,9 @@ private suspend fun <T> loadCardList(
 /**
  * New Build's class list, from the product dataset ([PRODUCT_BUNDLE]): the
  * manifest defines the tokens (never hardcoded filenames); display names come
- * from the real class documents. The version line names the exact client
- * build the drafts will be created on — nothing claims it is "latest" or
- * "up to date". One class
+ * from the real class documents. The version line shows the data version
+ * derived from the exact client build the drafts are created on — nothing
+ * claims it is "latest" or "up to date". One class
  * document failing loads fails THAT class conservatively (disabled card, no
  * invented name) — the other classes are unaffected. Returns `null` when the
  * manifest itself cannot load (the screen's Failed state).
@@ -280,7 +282,7 @@ suspend fun loadNewBuildChoices(datasets: TalentDatasetRepository): NewBuildChoi
     }
     return NewBuildChoices(
         gameDisplayName = gameDisplayName(manifest.game),
-        versionDetail = "Talent data ${manifest.clientBuild}",
+        dataVersion = dataVersionOf(manifest.clientBuild),
         classes = classes,
     )
 }

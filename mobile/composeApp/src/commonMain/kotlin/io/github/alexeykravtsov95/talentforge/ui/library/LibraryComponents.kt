@@ -90,8 +90,8 @@ fun SecondaryActionButton(
  *
  * Since M5.UI.1 this mark is the FALLBACK of [ClassArtworkMark] (a class
  * without bundled artwork); [size] lets it match the artwork slot it stands
- * in for. It stays the primary mark of the New Build class picker until the
- * B+ Class Selection screen lands.
+ * in for. The B+ Class Selection picker (M5.UI.2) uses it the same way —
+ * only for class tokens without bundled artwork.
  */
 @Composable
 fun ClassMonogramMark(
