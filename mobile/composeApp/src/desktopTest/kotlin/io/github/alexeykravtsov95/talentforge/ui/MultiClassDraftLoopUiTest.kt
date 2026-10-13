@@ -84,8 +84,8 @@ class MultiClassDraftLoopUiTest(
     @Test
     fun fullDraftLoopThroughTheRealApp() {
         composeApp()
-        awaitText("+ New build")
-        composeRule.onNodeWithText("+ New build").performClick()
+        awaitText("New build")
+        composeRule.onNodeWithText("New build").performClick()
         awaitText(classDisplayName)
 
         // class tap → editor with the correct real class name

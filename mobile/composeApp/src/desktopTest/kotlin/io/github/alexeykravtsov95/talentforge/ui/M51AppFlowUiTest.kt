@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.captureToImage
@@ -110,8 +109,8 @@ class M51AppFlowUiTest {
     fun emptyLibraryHomeOffersNewBuildAndNothingFake() {
         composeApp()
 
-        awaitText("+ New build")
-        composeRule.onNodeWithText("Plan your first build").assertExists()
+        awaitText("New build")
+        composeRule.onNodeWithText("No builds yet").assertExists()
         composeRule.onNodeWithText("CONTINUE").assertDoesNotExist()
         composeRule.onNodeWithText("RECENT").assertDoesNotExist()
         composeRule.onNodeWithText("Forever talent data 1.60.1").assertExists()
@@ -124,7 +123,7 @@ class M51AppFlowUiTest {
 
         awaitText("CONTINUE")
         composeRule.onNodeWithText("Continue editing").assertExists()
-        composeRule.onNodeWithText("Draft").assertExists()
+        composeRule.onNodeWithText("Warrior build").assertExists()
         composeRule.onNodeWithText("0 / 51").assertExists()
         composeRule.onNodeWithText("Warrior · Forever · Just now").assertExists()
     }
@@ -148,9 +147,9 @@ class M51AppFlowUiTest {
     @Test
     fun newBuildShowsForeverContextAndTheRealNineClasses() {
         composeApp()
-        awaitText("+ New build")
+        awaitText("New build")
 
-        composeRule.onNodeWithText("+ New build").performClick()
+        composeRule.onNodeWithText("New build").performClick()
         awaitText("GAME VERSION")
 
         composeRule.onNodeWithText("New build").assertExists()
@@ -168,8 +167,8 @@ class M51AppFlowUiTest {
     @Test
     fun theVersionRowIsPlainContextWhileForeverIsTheOnlyVersion() {
         composeApp()
-        awaitText("+ New build")
-        composeRule.onNodeWithText("+ New build").performClick()
+        awaitText("New build")
+        composeRule.onNodeWithText("New build").performClick()
         awaitText("GAME VERSION")
 
         composeRule.onNodeWithText("Change").assertDoesNotExist()
@@ -178,8 +177,8 @@ class M51AppFlowUiTest {
     @Test
     fun choosingWarriorPersistsTheDraftBeforeTheEditorOpens() {
         composeApp()
-        awaitText("+ New build")
-        composeRule.onNodeWithText("+ New build").performClick()
+        awaitText("New build")
+        composeRule.onNodeWithText("New build").performClick()
         awaitText("Warrior")
 
         composeRule.onNodeWithText("Warrior").performClick()
@@ -196,8 +195,8 @@ class M51AppFlowUiTest {
     @Test
     fun choosingANonWarriorClassPersistsAndOpensTheSameWay() {
         composeApp()
-        awaitText("+ New build")
-        composeRule.onNodeWithText("+ New build").performClick()
+        awaitText("New build")
+        composeRule.onNodeWithText("New build").performClick()
         awaitText("Mage")
 
         composeRule.onNodeWithText("Mage").performClick()
@@ -211,8 +210,8 @@ class M51AppFlowUiTest {
     @Test
     fun backFromANewDraftGoesHomeAndHomeShowsTheDraft() {
         composeApp()
-        awaitText("+ New build")
-        composeRule.onNodeWithText("+ New build").performClick()
+        awaitText("New build")
+        composeRule.onNodeWithText("New build").performClick()
         awaitText("Warrior")
         composeRule.onNodeWithText("Warrior").performClick()
         composeRule.waitUntil(10_000) {
@@ -222,7 +221,7 @@ class M51AppFlowUiTest {
         composeRule.onNodeWithContentDescription("go back").performClick()
 
         awaitText("CONTINUE")
-        composeRule.onNodeWithText("Draft").assertExists()
+        composeRule.onNodeWithText("Warrior build").assertExists()
     }
 
     // ------------------------------------------------------------------ All Builds
@@ -240,8 +239,11 @@ class M51AppFlowUiTest {
         composeRule.onNodeWithText("All builds 3").performClick()
         awaitText("Builds 3")
 
-        // three rows (clickable rows merge their texts; substring match)
-        composeRule.onAllNodesWithText("Draft").assertCountEquals(3)
+        // three rows, one per persisted build — unnamed builds display the
+        // descriptive class fallback, so the three titles are distinct
+        composeRule.onNodeWithText("Warrior build").assertExists()
+        composeRule.onNodeWithText("Mage build").assertExists()
+        composeRule.onNodeWithText("Rogue build").assertExists()
         composeRule.onNodeWithText("Mage · Forever · Just now").assertExists()
     }
 
@@ -258,7 +260,8 @@ class M51AppFlowUiTest {
         awaitText("CONTINUE")
         composeRule.onNodeWithText("All builds 2").performClick()
         awaitText("Builds 2")
-        composeRule.onAllNodesWithText("Draft").assertCountEquals(2)
+        composeRule.onNodeWithText("Warrior build").assertExists()
+        composeRule.onNodeWithText("Mage build").assertExists()
     }
 
     // ------------------------------------------------------------------ autosave

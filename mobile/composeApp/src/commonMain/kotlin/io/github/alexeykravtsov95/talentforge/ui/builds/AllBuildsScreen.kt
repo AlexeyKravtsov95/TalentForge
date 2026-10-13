@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -28,17 +30,20 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.alexeykravtsov95.talentforge.data.TalentDatasetRepository
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildCardModel
-import io.github.alexeykravtsov95.talentforge.ui.library.ClassMonogramMark
+import io.github.alexeykravtsov95.talentforge.ui.library.ClassArtworkMark
+import io.github.alexeykravtsov95.talentforge.ui.library.ClassArtworkSlot
 import io.github.alexeykravtsov95.talentforge.ui.library.InlineNotice
 import io.github.alexeykravtsov95.talentforge.ui.library.InlineNoticeTone
 import io.github.alexeykravtsov95.talentforge.ui.library.LibraryData
@@ -291,7 +296,7 @@ fun AllBuildsScreen(
                             style = TalentForgeTypography.bodySmall.copy(color = colors.textSecondary),
                         )
                         PrimaryActionButton(
-                            text = "+ New build",
+                            text = "New build",
                             onClickLabel = "start a new build",
                             onClick = onNewBuild,
                         )
@@ -365,11 +370,61 @@ fun AllBuildsScreen(
     }
 }
 
-/** D.1 row: name, `class · version · recency`, the spent/budget column and the `⋯` management button. */
+/**
+ * D.1 row: name, `class · version · recency`, the spent/budget column and the `⋯` management button.
+ *
+ * Responsive arrangement (PR #22 review): the artwork tile, the points
+ * column and the 48 dp `⋯` button are fixed widths, so at large font scales
+ * on narrow screens the full arrangement would crowd the build name into
+ * unreadability. The row measures the WIDEST points label at the current
+ * font scale and, when the title column would fall below
+ * [MinBuildTitleWidth], switches to the compact arrangement: the points
+ * become their OWN single-line element on the metadata row — measured at
+ * natural width, never ellipsized — and the class/version/time meta line
+ * takes what remains and ellipsizes where space does not permit. Layout
+ * priority is exactly the review's: build name, spent/total points, then
+ * class · version · recency. The artwork, the 48 dp actions target and the
+ * click-to-open row are identical in both arrangements.
+ */
 @Composable
 private fun BuildRow(
     card: BuildCardModel,
     clockMillis: () -> Long,
+    onClick: () -> Unit,
+    onActions: () -> Unit,
+) {
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val compact = isCompactRow(hasPoints = card.spentPoints != null && card.pointBudget != null)
+        BuildRowContent(
+            card = card,
+            clockMillis = clockMillis,
+            compact = compact,
+            onClick = onClick,
+            onActions = onActions,
+        )
+    }
+}
+
+/** True when the full row arrangement would starve the title column. */
+@Composable
+private fun BoxWithConstraintsScope.isCompactRow(hasPoints: Boolean): Boolean {
+    if (!hasPoints) return false
+    val density = LocalDensity.current
+    val textMeasurer = rememberTextMeasurer()
+    // the widest possible label ("51 / 51") measured at the CURRENT font scale
+    val pointsWidth = with(density) {
+        textMeasurer.measure("51 / 51", BuildsPointsStyle).size.width.toDp()
+    }
+    val fixedWidth = ClassArtworkSlot.Row.size + TalentForgeSpacing.inline + // artwork + gap
+        pointsWidth + TalentForgeSpacing.inline + RowActionsButtonSize // points + gap + ⋯
+    return maxWidth - fixedWidth < MinBuildTitleWidth
+}
+
+@Composable
+private fun BuildRowContent(
+    card: BuildCardModel,
+    clockMillis: () -> Long,
+    compact: Boolean,
     onClick: () -> Unit,
     onActions: () -> Unit,
 ) {
@@ -383,7 +438,9 @@ private fun BuildRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
     ) {
-        ClassMonogramMark(
+        ClassArtworkMark(
+            classToken = card.record.build.classToken,
+            slot = ClassArtworkSlot.Row,
             monogram = classMonogramOf(card.classDisplayName ?: card.record.build.classToken.value),
             accent = classAccentFor(card.record.build.classToken).color,
         )
@@ -392,18 +449,40 @@ private fun BuildRow(
                 text = card.title,
                 style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary),
                 maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
             )
-            BasicText(
-                text = listOfNotNull(
-                    card.classDisplayName ?: card.record.build.classToken.value,
-                    gameDisplayName(card.record.build.game),
-                    relativeBuildTime(clockMillis(), card.record.updatedAt),
-                ).joinToString(" · "),
-                style = TalentForgeTypography.meta.copy(color = colors.textSecondary),
-                maxLines = 1,
-            )
+            if (compact) {
+                // the review's priority: the points are their OWN element,
+                // measured at natural width and never ellipsized; the meta
+                // line takes what remains and yields first
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
+                ) {
+                    BasicText(
+                        text = "${card.spentPoints} / ${card.pointBudget}",
+                        style = BuildsPointsStyle.copy(color = colors.textPrimary),
+                        maxLines = 1,
+                        softWrap = false,
+                    )
+                    BasicText(
+                        text = rowMetaLine(card, clockMillis),
+                        style = TalentForgeTypography.meta.copy(color = colors.textSecondary),
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            } else {
+                BasicText(
+                    text = rowMetaLine(card, clockMillis),
+                    style = TalentForgeTypography.meta.copy(color = colors.textSecondary),
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                )
+            }
         }
-        if (card.spentPoints != null && card.pointBudget != null) {
+        if (!compact && card.spentPoints != null && card.pointBudget != null) {
             BasicText(
                 text = "${card.spentPoints} / ${card.pointBudget}",
                 style = BuildsPointsStyle.copy(color = colors.textPrimary),
@@ -412,6 +491,16 @@ private fun BuildRow(
         RowActionsButton(title = card.title, onClick = onActions)
     }
 }
+
+/** `Warrior · Forever · Just now` — only resolved fields, in fixed order. */
+private fun rowMetaLine(
+    card: BuildCardModel,
+    clockMillis: () -> Long,
+): String = listOfNotNull(
+    card.classDisplayName ?: card.record.build.classToken.value,
+    gameDisplayName(card.record.build.game),
+    relativeBuildTime(clockMillis(), card.record.updatedAt),
+).joinToString(" · ")
 
 /**
  * The row's `⋯` button — its own 48 dp click target, so pressing it opens the
@@ -422,7 +511,7 @@ private fun BuildRow(
 private fun RowActionsButton(title: String, onClick: () -> Unit) {
     Box(
         modifier = Modifier
-            .size(48.dp)
+            .size(RowActionsButtonSize)
             .semantics { contentDescription = "build actions for $title" }
             .clickable(role = Role.Button, onClickLabel = "manage $title", onClick = onClick),
         contentAlignment = Alignment.Center,
@@ -434,7 +523,18 @@ private fun RowActionsButton(title: String, onClick: () -> Unit) {
     }
 }
 
-private val BuildsPointsStyle = androidx.compose.ui.text.TextStyle(
+/** The `⋯` button's own touch target width. */
+private val RowActionsButtonSize = 48.dp
+
+/**
+ * The narrowest build-title column the full row arrangement may leave
+ * readable (≈ 8 characters of ComponentTitle at 100 %) before the points
+ * fold into the meta line.
+ */
+private val MinBuildTitleWidth = 112.dp
+
+/** UX spec G numeric mono 17 · 600 — `internal` so the layout test measures the same style. */
+internal val BuildsPointsStyle = androidx.compose.ui.text.TextStyle(
     fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
     fontSize = 17.sp,
     lineHeight = 22.sp,

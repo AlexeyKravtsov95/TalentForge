@@ -1,9 +1,11 @@
-# Mobile architecture (M3A foundation, M4.1–M4.3 tree screen, M5.1 local build library, M5.2a build management)
+# Mobile architecture (M3A foundation, M4.1–M4.3 tree screen, M5.1 local build library, M5.2a build management, M5.UI.1 B+ shell)
 
 This document describes the Kotlin Multiplatform foundation introduced by M3A,
 the M4.1–M4.3 production Talent Tree screen (read-only rendering since M4.1,
-adaptive inspector since M4.2, interactive allocation since M4.3) and the M5.1
-local build library with the app root (Home, New Build, All Builds, autosave):
+adaptive inspector since M4.2, interactive allocation since M4.3), the M5.1
+local build library with the app root (Home, New Build, All Builds, autosave),
+and the M5.UI.1 B+ redesign of Home and All Builds with the shared class
+artwork:
 module boundaries, dataset flow, strict JSON policy, conformance strategy,
 persistence architecture and local build commands. It is the orientation map
 for later milestones — none should require restructuring what is described
@@ -735,6 +737,115 @@ sources so nothing can read the Warrior-only token directly again.
 flow, Duplicate, Delete + irreversible confirmation, and the Saved Builds
 management polish. There is no dead overflow control anywhere in M5.1.
 
+## B+ shell redesign (M5.UI.1)
+
+> **Verification.** Run locally on macOS 26.3.1 / Xcode 26.4.1 on this branch:
+> `:shared:jvmTest` (244 tests), `:composeApp:desktopTest` (493, of which the
+> opt-in screenshot tests are skipped), `:composeApp:assembleDebug`, both iOS
+> debug framework links and the `iosApp` simulator `xcodebuild` — all green.
+> Desktop-rendered screenshots of every state named below are in
+> `docs/screenshots/m5ui1/`.
+
+Home and All Builds were restyled to the approved B+ "Modern Fantasy Utility"
+design. This is a visual milestone: navigation, loaders, the repository and
+the editor are untouched, and the M5.2a build-management behaviour (rename /
+duplicate / delete, operation-in-flight guards, modal Back handling) is
+preserved as delivered.
+
+**Class artwork (shared component).** The nine approved TalentForge class
+paintings are bundled as Compose Multiplatform drawables
+(`composeResources/drawable/class_*.png`) at their native 118×118 px,
+imported byte-exact from the supplied masters — no upscaling, no re-encode,
+single density bucket (512 px re-renders will drop in under the same names
+later; no code change will be needed). `ui/library/ClassArtwork.kt` owns the
+one shared `ClassToken → drawable` lookup (token string = filename suffix)
+and the `ClassArtworkMark` tile, used by Home and All Builds and reserved for
+the next milestone's Class Selection screen. The tile renders the art
+unmodified — no tint, no colour filter, the painting supplies its own colour —
+cropped with high-quality filtering into the slot's rounded rect over the
+spec's ground, with the spec's 1 dp inner hairline drawn on top. The image is
+decorative (no content description); the accessible class name comes from the
+surrounding text. An unknown class token falls back to the existing
+`ClassMonogramMark` at the same slot size (its new `size` parameter); the
+monogram remains the primary mark of the M5.1 New Build picker until its B+
+replacement lands. There is no network fetch and no Blizzard-hosted URL
+anywhere: the artwork is a bundled resource, full stop. Slots frozen by the
+supplied asset spec: Continue card 44 dp / 9 dp radius, Recent and All-Builds
+rows 36 dp / 8 dp radius; class-picker slots (56/46 dp, 10 dp) arrive with
+the Class Selection milestone.
+
+**Intentional token additions.** Three constants were added to
+`TalentForgeColors`, documented in source as NOT UX/UI-spec section G tokens:
+`primaryAction` (oklch(0.83 0.12 68) — the B+ primary-action amber, same value
+the asset spec uses for its accent spinner; hue 68 stays distinct from
+`warning`'s 75 so warning semantics remain unambiguous), `classArtworkHairline`
+(`#3E424A`) and `classArtworkGround` (`#16181C`). All three are pinned by
+`DesignTokenTest`. `PrimaryActionButton` now uses the amber (its M5.1
+"neutral light" reading is retired with the design it belonged to); the
+editor's token set is deliberately untouched.
+
+**Home (B+).** The empty state is typography only: the brand header, the
+`No builds yet` heading (aligned in the upper-middle of the usable content,
+≈16 % of the screen height below the header — PR #22 review), one workflow
+sentence ("Pick a class and spend points on its talent tree…" — the class is
+the actual New Build choice; no misleading version wording), the real
+bundled data version line — and a single PRIMARY pinned `New build` action;
+no illustration, no decorative tree fragment, no fake builds. The populated
+state keeps the M5.1 hierarchy (Continue → Recent 3/4 → All builds · N) in
+B+ clothing: the Continue card carries the 44 dp artwork tile, title,
+`class · version · recency` metadata, the engine-computed `spent / budget`
+beside a simple 4 dp progress bar (amber fill on the interactive track), and
+the amber `Continue editing` action; RECENT rows carry the 36 dp tile. All
+Builds is reachable at EVERY library size — with exactly one build (no
+RECENT section) the `All builds 1` link renders as its own row after the
+Continue card, a fix for the M5.1 behaviour where the link existed only
+inside the RECENT header. The pinned `New build` becomes a neutral
+secondary once builds exist. A failed library load stays the recoverable
+Retry state — never a faked empty Home.
+
+**Display-only build names.** `BuildCardModel.title` now shows the descriptive
+`<Class> build` fallback (`Mage build`) for a persisted `name == null`, using
+the real class display name (or the capitalized token when the class document
+failed to load). The rule is display-only and consistent across Home, All
+Builds and the management overlays: nothing is written back, the rename
+dialog still opens empty for an unnamed build, and a user-provided name — an
+explicitly entered `Draft` included — always wins. The M5.2a copy naming
+(`Draft (copy)`, persisted by the repository when duplicating an unnamed
+build) is unchanged repository semantics.
+
+**All Builds (B+).** Same list, count, order and management as M5.2a; the row
+mark is the 36 dp artwork tile and the empty-state action label matches
+Home's `New build`. The row is RESPONSIVE (PR #22 review): its fixed-width
+elements (artwork tile, mono points column, 48 dp `⋯` button) would crowd a
+long build name into unreadability at large font scales, so the row measures
+the widest points label at the current font scale and, when the title column
+would fall below ~112 dp, switches to the compact arrangement with the
+review's exact priority — build name, then the points as their OWN
+single-line element on the metadata row (natural width, never ellipsized,
+never wrapped), then `class · version · recency` taking the remainder and
+ellipsizing where space does not permit. The artwork, the 48 dp actions
+target and the click-to-open row are identical in both arrangements.
+`AllBuildsRowLayoutUiTest` pins VISIBILITY, not just semantics: the points
+element's laid-out width must cover the label's full intrinsic width
+(measured with the production style at the exact font scale), it must have
+nonzero bounds and stay inside the screen — an ellipsized/truncated element
+would report a narrower box.
+
+**Tests added/updated:** `HomeRedesignUiTest`, `ClassArtworkTest`,
+`AllBuildsRowLayoutUiTest` (the responsive row of the PR #22 review)
+(`composeApp/desktopTest`), the display-name cases in `BuildCardMetadataTest`,
+and the M5.1/M5.2a suites' expectations (button label, empty-state heading,
+fallback titles). Opt-in screenshot evidence:
+`M5Ui1ScreenshotTest` (`-Dtalentforge.m5ui1.screenshots=<dir>`).
+
+> **PR #22 review verification.** `:shared:jvmTest` (244 tests),
+> `:composeApp:desktopTest` (497, of which the opt-in screenshot tests are
+> skipped), `:composeApp:assembleDebug`, both iOS debug framework links and
+> the `iosApp` simulator `xcodebuild` — all green. Review evidence in
+> `docs/screenshots/m5ui1/`: the All Builds row at 200 % font scale on
+> 360×800 and 320×568 (long name, two-digit points as a separate, fully
+> visible element), and the realigned empty state at 320×568 / 130 % / 200 %.
+
 ## Version stack (all stable)
 
 | Component | Version |
@@ -1002,7 +1113,10 @@ longer fit on one line of a 360 dp screen — on a real device the rank wrapped
 one character per line — so the name keeps the first line and the rank is
 single-line. Home / New
 Build / Saved Builds are unchanged — class marks stay monograms (they identify
-classes, not talents).
+classes, not talents). *(Superseded for Home and All Builds by M5.UI.1, which
+replaces those class monograms with the bundled class artwork — see
+[B+ shell redesign (M5.UI.1)](#b-shell-redesign-m5ui1); New Build keeps its
+monogram until its B+ Class Selection screen lands.)*
 
 **Descriptions** were not rendered in M5.V1; M5.V2 adds them from a separate
 sidecar - see [Talent descriptions (M5.V2)](#talent-descriptions-m5v2). The raw
@@ -1198,6 +1312,10 @@ cd mobile
 # opt-in M5.UX.2b.1 landscape screenshot evidence (desktop-rendered; cutouts emulated)
 ./gradlew :composeApp:desktopTest --tests "*TalentTreeM5Ux2b1ScreenshotTest*" \
     -Dtalentforge.m5ux2b1.screenshots=<output-dir>
+
+# opt-in M5.UI.1 B+ Home / All Builds screenshot evidence (desktop-rendered)
+./gradlew :composeApp:desktopTest --tests "*M5Ui1ScreenshotTest*" \
+    -Dtalentforge.m5ui1.screenshots=<output-dir>
 
 # Android
 ./gradlew :composeApp:assembleDebug    # -> composeApp/build/outputs/apk/debug/
