@@ -64,4 +64,26 @@ object TalentForgeColors {
 
     /** rgba(5, 6, 10, 0.55) */
     val scrim = Color(red = 5f / 255f, green = 6f / 255f, blue = 10f / 255f, alpha = 0.55f)
+
+    // ------------------------------------------------------- M5.UI.1 (B+) additions
+    //
+    // The three constants below are NOT UX/UI-spec section G tokens. They are
+    // frozen by the supplied M5.UI.1 asset integration specification
+    // (`TalentForge_Class_Icons_Approved/INTEGRATION.md`), which is this
+    // milestone's committed design source for the B+ class-artwork tiles, and
+    // are pinned by `DesignTokenTest` exactly like the section G set.
+
+    /**
+     * oklch(0.83 0.12 68) — the B+ primary-action amber. Same value the B+
+     * class-artwork spec uses for its accent spinner; distinct hue from
+     * [warning] (75) so warning semantics stay unambiguous. Shell primary
+     * actions only (`PrimaryActionButton`); never the editor.
+     */
+    val primaryAction = Color(0xFFFBB86D)
+
+    /** `#3E424A` (≈ oklch 0.36 0.01 260) — the 1 dp inner hairline of a class-artwork tile. */
+    val classArtworkHairline = Color(0xFF3E424A)
+
+    /** `#16181C` — the reserved ground of a class-artwork tile. */
+    val classArtworkGround = Color(0xFF16181C)
 }

@@ -26,7 +26,17 @@ class DesignTokenTest {
         TalentForgeColors.warning.toArgbLong() to Triple(0.84, 0.12, 75.0),
         TalentForgeColors.danger.toArgbLong() to Triple(0.6, 0.19, 22.0),
         TalentForgeColors.disabled.toArgbLong() to Triple(0.42, 0.01, 260.0),
+        // M5.UI.1 B+ additions — source: the supplied class-artwork
+        // integration specification, not UX/UI-spec section G.
+        TalentForgeColors.primaryAction.toArgbLong() to Triple(0.83, 0.12, 68.0),
     )
+
+    /** Hex constants the B+ asset spec states directly (no OKLCH source). */
+    @Test
+    fun bPlusClassArtworkConstantsMatchTheAssetIntegrationSpec() {
+        assertEquals(0xFF3E424AL, TalentForgeColors.classArtworkHairline.toArgbLong())
+        assertEquals(0xFF16181CL, TalentForgeColors.classArtworkGround.toArgbLong())
+    }
 
     @Test
     fun colourConstantsMatchSpecOklchValues() {

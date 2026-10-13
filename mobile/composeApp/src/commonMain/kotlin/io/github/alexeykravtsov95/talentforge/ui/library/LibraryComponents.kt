@@ -19,16 +19,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeRadius
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
 
 /**
- * Small shared controls of the M5.1 shell screens (Home, New Build, Builds).
- * The primary button is neutral light (UX/UI spec G: "The primary button is
- * neutral light"), the secondary sits on the interactive surface; both keep
- * ≥ 48 dp targets.
+ * Small shared controls of the shell screens (Home, New Build, Builds).
+ * Since M5.UI.1 (B+) the primary button is the amber accent
+ * ([TalentForgeColors.primaryAction], frozen by the supplied class-artwork
+ * integration spec — the M5.1 "neutral light" primary is retired with the
+ * B+ Home it belonged to); the secondary stays neutral on the interactive
+ * surface; both keep ≥ 48 dp targets. Amber marks PRIMARY actions only —
+ * the editor keeps its neutral token set untouched.
  */
 @Composable
 fun PrimaryActionButton(
@@ -41,7 +45,7 @@ fun PrimaryActionButton(
     Box(
         modifier = modifier
             .heightIn(min = 48.dp)
-            .background(colors.focus, RoundedCornerShape(TalentForgeRadius.medium))
+            .background(colors.primaryAction, RoundedCornerShape(TalentForgeRadius.medium))
             .clickable(role = Role.Button, onClickLabel = onClickLabel, onClick = onClick)
             .padding(horizontal = 24.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center,
@@ -83,6 +87,11 @@ fun SecondaryActionButton(
  * Warrior → WA, Death Knight → DK), shown in the class accent. The accent is
  * an explicit input (Warrior: spec-frozen; others: the documented neutral
  * fallback), never a Warrior-coloured theme lookup.
+ *
+ * Since M5.UI.1 this mark is the FALLBACK of [ClassArtworkMark] (a class
+ * without bundled artwork); [size] lets it match the artwork slot it stands
+ * in for. It stays the primary mark of the New Build class picker until the
+ * B+ Class Selection screen lands.
  */
 @Composable
 fun ClassMonogramMark(
@@ -90,12 +99,13 @@ fun ClassMonogramMark(
     accent: Color,
     modifier: Modifier = Modifier,
     dimmed: Boolean = false,
+    size: Dp = 44.dp,
 ) {
     val colors = talentForgeColors()
     val glyphColor = if (dimmed) colors.textMuted else accent
     Box(
         modifier = modifier
-            .size(44.dp)
+            .size(size)
             .background(
                 if (dimmed) colors.surface else accent.copy(alpha = 0.16f),
                 CircleShape,
