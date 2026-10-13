@@ -604,7 +604,19 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
     prepared for it. Nothing about an orientation change reaches
     `onBuildStateChanged`; on Android (activity recreation) the restored
     session equals the persisted build, so the M5.1 restore safety net stays
-    silent.
+    silent;
+  - talent layer extent (found on a TECNO KM5n, Android 15). Android
+    accessibility skips every child of a node whose own transformed bounds
+    are off screen. The node layer used to be canvas-sized at world 0,0, so
+    for a section far from the origin (Tree 2 in portrait, Tree 3 in
+    landscape) the camera moved the layer itself off screen and no talent
+    of the open section reached accessibility, although all were drawn and
+    tappable. The layer now spans its talents' world extent from world 0,0
+    (`talentNodeLayerExtent`: the furthest node centre plus the container
+    half side), top-start, so the viewport mapping, the per-node modifiers
+    and the inactive pages' single `clearAndSetSemantics` are unchanged.
+    Desktop semantics never showed this; `scripts/android_section_check.py`
+    checks it on a device.
 
 ### `iosApp`
 
@@ -1189,6 +1201,12 @@ cd mobile
 
 # Android
 ./gradlew :composeApp:assembleDebug    # -> composeApp/build/outputs/apk/debug/
+
+# M5.UX.2b.1 section navigation on a USB device (from the repository root; adb on PATH).
+# Builds and installs the isolated `.devcheck` application, runs the scenarios
+# (tabs, rotation, swipe, side panel, Back, relaunch) with real `adb input` taps,
+# then restores rotation and uninstalls it. Report: .cache/android-section-check/
+python3 scripts/android_section_check.py --runs 2
 
 # iOS
 ./gradlew :composeApp:linkDebugFrameworkIosArm64 :composeApp:linkDebugFrameworkIosSimulatorArm64

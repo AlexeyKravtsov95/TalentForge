@@ -11,6 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
@@ -264,6 +265,38 @@ class TalentTreeLandscapeSectionsUiTest {
             tab("Tree 1")
             assertFalse(session.cameras.stateOf(0).isAwayFromFit)
             assertTrue(session.reported.isEmpty(), "navigation never changes the build")
+        }
+    }
+
+    /**
+     * Device finding (TECNO KM5n, Android 15): Android accessibility skips every talent of a node
+     * layer whose own transformed bounds are off screen. The layer must therefore contain every
+     * talent of the open section, in both orientations — with a canvas-sized layer, Tree 2 in
+     * portrait and Tree 3 in landscape lay outside it (desktop semantics never showed this).
+     */
+    @Test
+    fun theTalentLayerContainsEveryTalentOfTheOpenSectionInBothOrientations() {
+        val extent = talentNodeLayerExtent(readyState.model.nodes)
+        val half = talentNodeContainerHalfSideDp()
+        for ((width, height) in listOf(412 to 915, 915 to 412)) {
+            onEditor(width = width, height = height) { session ->
+                for (section in 0..2) {
+                    tab("Tree ${section + 1}")
+                    val viewport = assertNotNull(session.cameras.stateOf(section).viewport)
+                    val layer = Rect(viewport.offset, Size(extent.width * viewport.scale, extent.height * viewport.scale))
+                    val ids = sections().section(section)!!.readingOrderNodeIds.toSet()
+                    for (node in readyState.model.nodes.filter { it.id in ids }) {
+                        val center = viewport.worldToScreen(Offset(node.centerX, node.centerY))
+                        val r = half * viewport.scale
+                        assertTrue(
+                            center.x - r >= layer.left - 0.01f && center.x + r <= layer.right + 0.01f &&
+                                center.y - r >= layer.top - 0.01f && center.y + r <= layer.bottom + 0.01f,
+                            "${width}x$height Tree ${section + 1}: ${node.name} at $center lies in the layer $layer",
+                        )
+                    }
+                    assertTrue(isShown(firstBuyableTalentOf(section)), "${width}x$height Tree ${section + 1} is exposed")
+                }
+            }
         }
     }
 
