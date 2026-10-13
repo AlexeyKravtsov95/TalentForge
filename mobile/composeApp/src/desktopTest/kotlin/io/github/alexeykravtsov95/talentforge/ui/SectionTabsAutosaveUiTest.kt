@@ -37,6 +37,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
 
 /**
  * M5.UX.1 × M5.1 autosave/opening regression, on the real app: switching
@@ -68,7 +70,7 @@ class SectionTabsAutosaveUiTest {
     private fun composeApp() {
         composeRule.setContent {
             TalentForgeTheme {
-                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                CompositionLocalProvider(LocalDensity provides Density(1f), LocalAppLanguage provides AppLanguage.ENGLISH) {
                     Box(Modifier.size(window.width.dp, window.height.dp)) {
                         App(storage = storage, clock = clock, ids = ids)
                     }
@@ -87,7 +89,7 @@ class SectionTabsAutosaveUiTest {
         awaitText("Continue editing")
         composeRule.onNodeWithText("Continue editing").performClick()
         awaitText("Warrior · Forever")
-        awaitText("Tree 1")
+        awaitText("Arms")
         composeRule.waitForIdle()
     }
 
@@ -107,13 +109,13 @@ class SectionTabsAutosaveUiTest {
         val writesAfterOpen = storage.writeCount
 
         // tab switches, a drag, a re-tap FIT: view state only
-        composeRule.onNodeWithText("Tree 2").performClick()
-        composeRule.onNodeWithText("Tree 3").performClick()
-        composeRule.onNodeWithText("Tree 1").performClick()
+        composeRule.onNodeWithText("Fury").performClick()
+        composeRule.onNodeWithText("Protection").performClick()
+        composeRule.onNodeWithText("Arms").performClick()
         composeRule.onRoot().performTouchInput {
             swipe(Offset(300f, 300f), Offset(300f, 380f), durationMillis = 300)
         }
-        composeRule.onNodeWithText("Tree 1").performClick() // active tab → FIT
+        composeRule.onNodeWithText("Arms").performClick() // active tab → FIT
         composeRule.waitForIdle()
         composeRule.mainClock.advanceTimeBy(600)
         composeRule.waitForIdle()
@@ -123,18 +125,18 @@ class SectionTabsAutosaveUiTest {
         composeRule.onNodeWithContentDescription("Improved Rend").performClick()
         composeRule.onNodeWithText("+").performClick()
         composeRule.waitUntil(10_000) { storage.writeCount > writesAfterOpen }
-        composeRule.onNodeWithText("Tree 2").performClick() // switching away keeps the build
+        composeRule.onNodeWithText("Fury").performClick() // switching away keeps the build
         composeRule.onNodeWithContentDescription("go back").performClick()
         awaitText("CONTINUE")
 
         val record = records().single()
         assertEquals(1, record.build.allocations.single().rank)
 
-        // reopening the saved build: tabs again, Tree 1 first, the same points
+        // reopening the saved build: tabs again, Arms first, the same points
         openEditorFromHome()
-        composeRule.onNodeWithText("Tree 1").assertIsSelected()
-        assertEquals("1 point spent", tabState("Tree 1"))
-        assertEquals("0 points spent", tabState("Tree 2"))
+        composeRule.onNodeWithText("Arms").assertIsSelected()
+        assertEquals("1 point spent", tabState("Arms"))
+        assertEquals("0 points spent", tabState("Fury"))
         composeRule.onNodeWithText("1 / 51").assertExists()
     }
 
@@ -154,16 +156,16 @@ class SectionTabsAutosaveUiTest {
         // selection in between: view state only, so no save is ever written
         composeRule.runOnIdle { window = IntSize(760, 360) }
         composeRule.waitForIdle()
-        composeRule.onNodeWithText("Tree 1").assertIsSelected()
-        composeRule.onNodeWithText("Tree 2").performClick()
-        composeRule.onNodeWithText("Tree 1").performClick()
+        composeRule.onNodeWithText("Arms").assertIsSelected()
+        composeRule.onNodeWithText("Fury").performClick()
+        composeRule.onNodeWithText("Arms").performClick()
         composeRule.onNodeWithContentDescription("Improved Rend").performClick()
         composeRule.runOnIdle { window = IntSize(360, 760) }
         composeRule.waitForIdle()
         composeRule.mainClock.advanceTimeBy(600)
         composeRule.waitForIdle()
         assertEquals(writesAfterSpend, storage.writeCount, "an orientation change is not a build change")
-        assertEquals("1 point spent", tabState("Tree 1"))
+        assertEquals("1 point spent", tabState("Arms"))
 
         // and the saved build is exactly the one explicit spend
         composeRule.onNodeWithContentDescription("go back").performClick()

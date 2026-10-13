@@ -52,6 +52,8 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.Assume.assumeTrue
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
 
 /**
  * M5.UX.2b.1 PR evidence from the REAL screen (desktop-rendered, product
@@ -95,6 +97,7 @@ class TalentTreeM5Ux2b1ScreenshotTest {
         TalentTreeUiState.Ready(
             classDisplayName = document.classInfo.name,
             gameDisplayName = "Forever",
+            classToken = document.classInfo.token,
             model = assertIs<TalentTreeUiBuildResult.Ready>(buildTalentTreeUiModel(document)).model,
             engine = engine,
             buildState = engine.emptyState(),
@@ -151,7 +154,7 @@ class TalentTreeM5Ux2b1ScreenshotTest {
         val cameras = TalentTreeSectionCameras(sessionKey = "m5ux2b1-shots", treeId = state.model.treeId)
         setContent {
             TalentForgeTheme {
-                CompositionLocalProvider(LocalDensity provides Density(DENSITY, fontScale)) {
+                CompositionLocalProvider(LocalDensity provides Density(DENSITY, fontScale), LocalAppLanguage provides AppLanguage.ENGLISH) {
                     Box(Modifier.size(width.dp, height.dp).background(talentForgeColors().background)) {
                         Box(Modifier.fillMaxSize().padding(safeArea ?: PaddingValues(0.dp))) {
                             TalentTreeScreen(state, onBack = {}, sectionCameras = cameras)
@@ -214,11 +217,11 @@ class TalentTreeM5Ux2b1ScreenshotTest {
 
         onPhone(state, 915, 412) { cameras ->
             shoot("m5ux2b1-915x412-1-tree1.png")
-            tab("Tree 2")
+            tab("Feral Combat")
             shoot("m5ux2b1-915x412-2-tree2.png")
             select(tree2Talent)
             shoot("m5ux2b1-915x412-3-tree2-selected.png")
-            tab("Tree 3")
+            tab("Restoration")
             // pinch-zoom with the real gesture (px = dp × density), then FIT is offered
             onRoot().performTouchInput {
                 val centre = Offset(457f * DENSITY, 230f * DENSITY)
@@ -298,7 +301,7 @@ class TalentTreeM5Ux2b1ScreenshotTest {
         val origin = model.nodes.first { it.id == fixture.targetId }.name!!
 
         onPhone(state, 915, 412) {
-            tab("Tree 3")
+            tab("Protection")
             select(origin)
             shoot("m5ux2b1-915x412-5-show-origin-tree3.png")
             onNodeWithText("Show").performClick()

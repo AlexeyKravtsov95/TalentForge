@@ -42,6 +42,7 @@ internal fun readyStateOnBundle(clientBuild: String, classToken: String): Talent
     TalentTreeUiState.Ready(
         classDisplayName = document.classInfo.name,
         gameDisplayName = "Forever",
+        classToken = document.classInfo.token,
         model = assertIs<TalentTreeUiBuildResult.Ready>(buildTalentTreeUiModel(document)).model,
         engine = engine,
         buildState = engine.emptyState(),

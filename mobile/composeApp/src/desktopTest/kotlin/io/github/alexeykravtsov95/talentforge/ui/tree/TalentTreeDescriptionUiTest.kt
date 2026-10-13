@@ -57,6 +57,7 @@ class TalentTreeDescriptionUiTest {
         TalentTreeUiState.Ready(
             classDisplayName = document.classInfo.name,
             gameDisplayName = "Forever",
+            classToken = document.classInfo.token,
             model = model,
             engine = engine,
             buildState = engine.emptyState(),
