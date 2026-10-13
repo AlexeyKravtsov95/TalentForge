@@ -1,11 +1,11 @@
-# Mobile architecture (M3A foundation, M4.1–M4.3 tree screen, M5.1 local build library, M5.2a build management, M5.UI.1 B+ shell)
+# Mobile architecture (M3A foundation, M4.1–M4.3 tree screen, M5.1 local build library, M5.2a build management, M5.UI.1 B+ shell, M5.UI.2 B+ class selection)
 
 This document describes the Kotlin Multiplatform foundation introduced by M3A,
 the M4.1–M4.3 production Talent Tree screen (read-only rendering since M4.1,
 adaptive inspector since M4.2, interactive allocation since M4.3), the M5.1
 local build library with the app root (Home, New Build, All Builds, autosave),
-and the M5.UI.1 B+ redesign of Home and All Builds with the shared class
-artwork:
+the M5.UI.1 B+ redesign of Home and All Builds with the shared class
+artwork, and the M5.UI.2 B+ redesign of the New Build class selection:
 module boundaries, dataset flow, strict JSON policy, conformance strategy,
 persistence architecture and local build commands. It is the orientation map
 for later milestones — none should require restructuring what is described
@@ -281,8 +281,9 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
   absent, never faked), the New Build class list (tokens from the product
   dataset's manifest, display names from the nine real documents; a failed class
   document disables that class conservatively — no invented name, no
-  substitution; the version line names the exact client build drafts are created
-  on, "Talent data 1.60.1.70338" — no "up to date" / "latest" claim, since the app
+  substitution; the header context names the data version the drafts are
+  created on, "talent data 1.60.1", derived from the product manifest's exact
+  client build 1.60.1.70338 — no "up to date" / "latest" claim, since the app
   has no runtime freshness mechanism; the repository-side check is
   `scripts/check_product_freshness.py`), draft creation on the product
   dataset (document → engine → `emptyState()` →
@@ -766,13 +767,13 @@ cropped with high-quality filtering into the slot's rounded rect over the
 spec's ground, with the spec's 1 dp inner hairline drawn on top. The image is
 decorative (no content description); the accessible class name comes from the
 surrounding text. An unknown class token falls back to the existing
-`ClassMonogramMark` at the same slot size (its new `size` parameter); the
-monogram remains the primary mark of the M5.1 New Build picker until its B+
-replacement lands. There is no network fetch and no Blizzard-hosted URL
+`ClassMonogramMark` at the same slot size (its new `size` parameter); since
+M5.UI.2 the monogram is only the picker's unknown-token fallback (below).
+There is no network fetch and no Blizzard-hosted URL
 anywhere: the artwork is a bundled resource, full stop. Slots frozen by the
 supplied asset spec: Continue card 44 dp / 9 dp radius, Recent and All-Builds
-rows 36 dp / 8 dp radius; class-picker slots (56/46 dp, 10 dp) arrive with
-the Class Selection milestone.
+rows 36 dp / 8 dp radius; the class-picker slots (56/46 dp, 10 dp) landed
+with M5.UI.2 (`ClassArtworkSlot.Picker` / `PickerCompact`).
 
 **Intentional token additions.** Three constants were added to
 `TalentForgeColors`, documented in source as NOT UX/UI-spec section G tokens:
@@ -845,6 +846,93 @@ fallback titles). Opt-in screenshot evidence:
 > `docs/screenshots/m5ui1/`: the All Builds row at 200 % font scale on
 > 360×800 and 320×568 (long name, two-digit points as a separate, fully
 > visible element), and the realigned empty state at 320×568 / 130 % / 200 %.
+
+## B+ class selection (M5.UI.2)
+
+> **Verification.** Run locally on macOS 26.3.1 / Xcode 26.4.1 on this branch:
+> `:shared:jvmTest` (244 tests), `:composeApp:desktopTest` (514, of which the
+> 28 opt-in screenshot/recording tests are skipped), `:composeApp:assembleDebug`,
+> both iOS debug framework links and the `iosApp` simulator `xcodebuild` — all
+> green. Desktop-rendered screenshots of every state named below are in
+> `docs/screenshots/m5ui2/`. An additional Android smoke ran the whole flow on
+> an emulator through the isolated `.devcheck` application (installed next to,
+> never over, the real app, and uninstalled afterwards; evidence in
+> `.cache/android-m5ui2-check/`, not committed).
+
+The M5.1 New Build picker was restyled into the same B+ system. This is again
+a visual milestone: the loader, the draft-creation pipeline and the
+`NewBuild → Editor` navigation replacement are untouched — ONE tap on a class
+still creates and persists the draft and opens the editor only after
+persistence succeeded, with no confirmation step anywhere.
+
+**Header.** A 44 dp back row (`BackChevronButton` — "go back"), the
+`Choose a class` component title and the real data context
+`Forever · talent data 1.60.1` (`NewBuildChoices.dataVersion`, derived from
+the product manifest's exact client build; the build itself stays pinned by
+the read-path tests). The interactive version selector is gone: the app has
+no second game to switch to, so a control implying one would be a lie.
+Loading shows `Loading classes…`; a manifest failure swaps the grid for the
+recoverable `Couldn't load classes` state (danger title, the local-data
+explanation, Retry — Back keeps working). A failed single class document
+never reaches that state; it disables that one class (below).
+
+**Grid and artwork.** The nine classes render in the manifest's own order
+(the M5.1 monogram grid is gone): one `ClassCard` per class on the restrained
+elevated surface (1 dp default border, no gradient, no glow, no ornament)
+with the `ClassArtworkMark` tile — `ClassArtworkSlot.Picker` 56 dp / 10 dp
+radius, or `PickerCompact` 46 dp / 10 dp when the picker is narrow (the same
+two slots the asset spec froze; `ClassArtworkTest` pins them) — the art
+unmodified over the spec's ground, and the class name (bodySmall, up to two
+lines) under it. The column policy is measured, never hardcoded:
+`classPickerLayout(gridWidth, widestLabel)` computes the card content width
+per column count and picks 3 columns only if the widest label (measured with
+the production style at the CURRENT font scale via `rememberTextMeasurer`)
+fits one line, else 2; the standard tile keeps `Picker` only with ≥ 12 dp
+clearance each side, else `PickerCompact`. Result: 393/360 dp at 100 % and
+130 %, and 320 dp at 100 %, are 3 columns (320 compact); 200 % font scale is
+2 columns; the grid scrolls vertically whenever it must, so all nine classes
+are always reachable.
+
+**Creating state.** The tapped card is marked creating IMMEDIATELY (the
+artwork is replaced in place by the compact 24 dp amber spinner — the
+`primaryAction` accent; a static, frame-zero variant composes under reduced
+motion so no infinite animation runs), the other eight cards dim and lose
+their click actions, and both Back paths (header chevron and the nested
+`PlatformBackHandler(enabled = creating)`) are held until the repository call
+settles — a draft can never be orphaned mid-creation. A second tap during
+creation is impossible by construction (the creating guard). On failure the
+screen stays, the cards restore, and the typed error becomes a plain-language
+notice (dataset / engine / library each have their own sentence); retry is a
+normal tap. There is no artificial delay anywhere.
+
+**Unavailable class.** Availability is exactly `NewBuildClassChoice.available`
+(never a hardcoded list): the card stays visible but disabled — the artwork
+falls back to the `ClassMonogramMark` (dimmed, still recognizable as the
+class's own tile), the label is the honest token (`SHAMAN` when the display
+name failed to load — no invented name), `Role.Button` with the Disabled
+semantics property, and a tap does nothing. One failed class document never
+affects the other eight.
+
+**Accessibility.** Each card is ONE merged semantics node: the class name
+text, `Role.Button`, the click label `create a <class> build`, the Disabled
+property when unavailable, and — on the creating card — a `Creating build`
+content description on the spinner overlay. The artwork itself stays
+decorative (no duplicated announcements). Focus order follows the grid rows.
+
+**Tests added/updated:** `NewBuildClassSelectionUiTest` (desktop; 15 tests —
+manifest order by real laid-out positions, the responsive matrix at
+360/320 dp and 130 %/200 % incl. scroll-to-reach, no horizontal overflow,
+the pure `classPickerLayout` policy, one-tap persist → editor, Back → Home,
+repeated taps = exactly one draft, the creating card's progress + dimmed
+others + held Back, the unavailable class (disabled semantics, no click,
+others unaffected), manifest failure + Retry recovery, persistence failure +
+retry success), the picker-slot pins in `ClassArtworkTest`, the
+`dataVersion` rename in `DatasetVersionCompatibilityTest`, and the M5.1 /
+M5.UI.1 suites' navigation expectations (they now await `Choose a class`).
+Opt-in screenshot evidence: `M5Ui2ScreenshotTest`
+(`-Dtalentforge.m5ui2.screenshots=<dir>`) — the responsive matrix
+(393×852, 360×800, 320×568, 130 %, 200 %), the unavailable class, the
+loading failure, creation in flight and the creation failure.
 
 ## Version stack (all stable)
 
@@ -963,10 +1051,13 @@ data equals 70338's) keeps failing with the typed
 `DatasetLoadError.ManifestUnavailable(AssetMissing("dataset/forever/<build>/manifest.json"))`
 and reads nothing else — never a fallback to a bundled dataset.
 
-**What the UI states.** New Build shows "Talent data 1.60.1.70338" (the exact client build);
-Home's first-run line keeps the spec form "Forever talent data 1.60.1". Neither claims
-"latest" or "up to date". Build cards do not show a build yet: the spec's "Built on older
-talent data" notice (UX/UI spec F.1) and any review/migration flow are out of scope.
+**What the UI states.** The New Build header shows "Forever · talent data
+1.60.1" (the data version of the exact client build 1.60.1.70338 the drafts
+are created on; the exact build is still pinned by the read-path tests below);
+Home's first-run line keeps the spec form "Forever talent data 1.60.1". Neither
+claims "latest" or "up to date". Build cards do not show a build yet: the
+spec's "Built on older talent data" notice (UX/UI spec F.1) and any
+review/migration flow are out of scope.
 
 **Package size.** Each bundled build adds ≈ 5 MB of raw resources (dataset 0.98 MB,
 descriptions 0.89 MB, 357–358 PNG icons 3.1 MB); icons are not shared across builds, by
@@ -1115,8 +1206,11 @@ single-line. Home / New
 Build / Saved Builds are unchanged — class marks stay monograms (they identify
 classes, not talents). *(Superseded for Home and All Builds by M5.UI.1, which
 replaces those class monograms with the bundled class artwork — see
-[B+ shell redesign (M5.UI.1)](#b-shell-redesign-m5ui1); New Build keeps its
-monogram until its B+ Class Selection screen lands.)*
+[B+ shell redesign (M5.UI.1)](#b-shell-redesign-m5ui1); New Build's monogram
+picker was superseded by M5.UI.2 — see
+[B+ class selection (M5.UI.2)](#b-class-selection-m5ui2), where the artwork
+tile became the picker's mark and the monogram survives only as the
+unknown-token fallback.)*
 
 **Descriptions** were not rendered in M5.V1; M5.V2 adds them from a separate
 sidecar - see [Talent descriptions (M5.V2)](#talent-descriptions-m5v2). The raw
@@ -1316,6 +1410,10 @@ cd mobile
 # opt-in M5.UI.1 B+ Home / All Builds screenshot evidence (desktop-rendered)
 ./gradlew :composeApp:desktopTest --tests "*M5Ui1ScreenshotTest*" \
     -Dtalentforge.m5ui1.screenshots=<output-dir>
+
+# opt-in M5.UI.2 B+ class selection screenshot evidence (desktop-rendered)
+./gradlew :composeApp:desktopTest --tests "*M5Ui2ScreenshotTest*" \
+    -Dtalentforge.m5ui2.screenshots=<output-dir>
 
 # Android
 ./gradlew :composeApp:assembleDebug    # -> composeApp/build/outputs/apk/debug/
