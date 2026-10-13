@@ -977,7 +977,11 @@ changing ONLY labels — selection, camera, build, autosave observer and
 section ids untouched, 200 % font scale numbers + full a11y names in both
 languages, 320 dp long labels, rotation keeping the resolved label and the
 open section). The existing tree suites keep their behaviour assertions
-with the resolved labels (Warrior: Arms/Fury/Protection). Opt-in screenshot
+with the resolved labels (Warrior: Arms/Fury/Protection). The physical
+device check (`scripts/android_section_check.py`) reads the device's
+primary locale and drives the same scenarios with the matching labels
+(`Arms`/`Fury`/`Protection` or `Оружие`/`Неистовство`/`Защита`), still
+asserting each tab against its dataset section index. Opt-in screenshot
 evidence: `TalentSpecializationNamesScreenshotTest`
 (`-Dtalentforge.m5rel1.screenshots=<dir>`) — Paladin and Mage in EN and RU,
 landscape navigation, 320 dp, 200 % font scale.
