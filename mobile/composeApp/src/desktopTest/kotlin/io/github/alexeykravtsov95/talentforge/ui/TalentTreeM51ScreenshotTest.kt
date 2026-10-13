@@ -152,7 +152,7 @@ class TalentTreeM51ScreenshotTest {
 
         // New Build / class selection
         composeRule.onNodeWithText("New build").performClick()
-        awaitText("GAME VERSION")
+        awaitText("Choose a class")
         shoot("m51-new-build.png")
 
         // back to Home, then a returning user: a spent Warrior build + a Mage draft

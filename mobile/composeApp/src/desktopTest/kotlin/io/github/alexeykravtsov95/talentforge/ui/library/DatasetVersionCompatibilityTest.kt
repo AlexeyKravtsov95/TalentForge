@@ -137,7 +137,9 @@ class DatasetVersionCompatibilityTest {
         val choices = assertNotNull(runBlocking { loadNewBuildChoices(datasets) })
 
         assertEquals("Forever", choices.gameDisplayName)
-        assertEquals("Talent data 1.60.1.70338", choices.versionDetail)
+        // the header's human version, derived from the bundle's exact client
+        // build (1.60.1.70338 → 1.60.1)
+        assertEquals("1.60.1", choices.dataVersion)
         assertEquals(9, choices.classes.size)
         assertTrue(choices.classes.all { it.available })
         assertTrue(assets.paths.allIn(PRODUCT_BUNDLE.clientBuild), "read: ${assets.paths}")

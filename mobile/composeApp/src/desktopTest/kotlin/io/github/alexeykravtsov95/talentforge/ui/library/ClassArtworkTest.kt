@@ -8,6 +8,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.class_druid
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.class_hunter
@@ -103,5 +104,22 @@ class ClassArtworkTest {
         composeRule.onAllNodesWithText("WA").fetchSemanticsNodes().let {
             kotlin.test.assertTrue(it.isEmpty(), "artwork and monogram must never render together")
         }
+    }
+
+    /**
+     * The M5.UI.2 class-picker slots of the integration spec: standard
+     * 56 dp / compact 46 dp, both with the 10 dp corner radius; the M5.UI.1
+     * Home/All-Builds slots stay exactly as frozen.
+     */
+    @Test
+    fun pickerSlotsMatchTheIntegrationSpec() {
+        assertEquals(56.dp, ClassArtworkSlot.Picker.size)
+        assertEquals(10.dp, ClassArtworkSlot.Picker.cornerRadius)
+        assertEquals(46.dp, ClassArtworkSlot.PickerCompact.size)
+        assertEquals(10.dp, ClassArtworkSlot.PickerCompact.cornerRadius)
+        assertEquals(44.dp, ClassArtworkSlot.Continue.size)
+        assertEquals(9.dp, ClassArtworkSlot.Continue.cornerRadius)
+        assertEquals(36.dp, ClassArtworkSlot.Row.size)
+        assertEquals(8.dp, ClassArtworkSlot.Row.cornerRadius)
     }
 }

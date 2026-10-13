@@ -138,7 +138,7 @@ class HomeRedesignUiTest {
 
         composeRule.onNodeWithText("New build").performClick()
 
-        awaitText("GAME VERSION")
+        awaitText("Choose a class")
     }
 
     // ------------------------------------------------------- All Builds reachability
