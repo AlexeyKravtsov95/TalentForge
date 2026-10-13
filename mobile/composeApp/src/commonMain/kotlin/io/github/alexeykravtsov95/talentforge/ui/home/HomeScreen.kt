@@ -44,6 +44,23 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_new_build
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_new_build_action
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_open_build_action
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_retry
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_all_builds_action
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_all_builds_link
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_continue_editing
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_continue_editing_action
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_empty_body
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_empty_data_version
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_empty_title
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_section_continue
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_section_recent
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_load_failed_body
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_load_failed_title
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_loading
 import io.github.alexeykravtsov95.talentforge.data.TalentDatasetRepository
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildCardModel
@@ -56,10 +73,12 @@ import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.library.PrimaryActionButton
 import io.github.alexeykravtsov95.talentforge.ui.library.SectionLabel
 import io.github.alexeykravtsov95.talentforge.ui.library.SecondaryActionButton
+import io.github.alexeykravtsov95.talentforge.ui.library.buildCardTitle
 import io.github.alexeykravtsov95.talentforge.ui.library.classMonogramOf
 import io.github.alexeykravtsov95.talentforge.ui.library.dataVersionOf
 import io.github.alexeykravtsov95.talentforge.ui.library.gameDisplayName
 import io.github.alexeykravtsov95.talentforge.ui.library.loadHomeModel
+import io.github.alexeykravtsov95.talentforge.ui.library.localizedClassName
 import io.github.alexeykravtsov95.talentforge.ui.library.relativeBuildTime
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeRadius
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
@@ -68,6 +87,7 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.classAccentFor
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Home — the app root, redesigned in M5.UI.1 to the approved B+ "Modern
@@ -130,7 +150,7 @@ fun HomeScreen(
                 BrandHeader()
                 when (val current = data) {
                     LibraryData.Loading -> BasicText(
-                        "Loading your builds…",
+                        stringResource(Res.string.library_loading),
                         style = TalentForgeTypography.bodySmall.copy(color = colors.textSecondary),
                     )
 
@@ -138,12 +158,12 @@ fun HomeScreen(
                         verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.rowGap),
                     ) {
                         BasicText(
-                            "Couldn't load your builds",
+                            stringResource(Res.string.library_load_failed_title),
                             style = TalentForgeTypography.componentTitle.copy(color = colors.danger),
                         )
                         InlineNotice(
-                            text = "The local build library could not be read",
-                            actionText = "Retry",
+                            text = stringResource(Res.string.library_load_failed_body),
+                            actionText = stringResource(Res.string.common_retry),
                             onAction = { reloadToken += 1 },
                         )
                     }
@@ -164,8 +184,8 @@ fun HomeScreen(
             // changes identity mid-session.
             if (data is LibraryData.Ready && (data as LibraryData.Ready<HomeModel>).value.continueCard == null) {
                 PrimaryActionButton(
-                    text = "New build",
-                    onClickLabel = "start a new build",
+                    text = stringResource(Res.string.common_new_build),
+                    onClickLabel = stringResource(Res.string.common_new_build_action),
                     onClick = onNewBuild,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -177,8 +197,8 @@ fun HomeScreen(
                 )
             } else {
                 SecondaryActionButton(
-                    text = "New build",
-                    onClickLabel = "start a new build",
+                    text = stringResource(Res.string.common_new_build),
+                    onClickLabel = stringResource(Res.string.common_new_build_action),
                     onClick = onNewBuild,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -206,7 +226,7 @@ private fun HomeContent(
         NewUserContent(emptyCopyTopGap = emptyCopyTopGap)
         return
     }
-    SectionLabel("CONTINUE")
+    SectionLabel(stringResource(Res.string.home_section_continue))
     ContinueCard(card = continueCard, clockMillis = clockMillis, onOpen = onOpenBuild)
 
     if (model.recentCards.isNotEmpty()) {
@@ -214,7 +234,7 @@ private fun HomeContent(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            SectionLabel("RECENT")
+            SectionLabel(stringResource(Res.string.home_section_recent))
             Spacer(Modifier.weight(1f))
             AllBuildsLink(count = model.totalBuilds, onClick = onAllBuilds)
         }
@@ -255,17 +275,19 @@ private fun NewUserContent(emptyCopyTopGap: Dp) {
     Column(verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.rowGap)) {
         Spacer(Modifier.height(emptyCopyTopGap))
         BasicText(
-            "No builds yet",
+            stringResource(Res.string.home_empty_title),
             style = TalentForgeTypography.title.copy(color = colors.textPrimary),
         )
         BasicText(
-            "Pick a class and spend points on its talent tree. " +
-                "Builds are stored on this device; no account is needed.",
+            stringResource(Res.string.home_empty_body),
             style = TalentForgeTypography.body.copy(color = colors.textSecondary),
         )
         BasicText(
-            "${gameDisplayName(PRODUCT_BUNDLE.game)} talent data " +
+            stringResource(
+                Res.string.home_empty_data_version,
+                gameDisplayName(PRODUCT_BUNDLE.game),
                 dataVersionOf(PRODUCT_BUNDLE.clientBuild),
+            ),
             style = TalentForgeTypography.meta.copy(color = colors.textMuted),
         )
     }
@@ -323,6 +345,7 @@ private fun ContinueCard(
     onOpen: (String) -> Unit,
 ) {
     val colors = talentForgeColors()
+    val title = buildCardTitle(card)
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -343,7 +366,7 @@ private fun ContinueCard(
             )
             Column(Modifier.weight(1f)) {
                 BasicText(
-                    text = card.title,
+                    text = title,
                     style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -375,8 +398,8 @@ private fun ContinueCard(
             }
         }
         PrimaryActionButton(
-            text = "Continue editing",
-            onClickLabel = "continue editing ${card.title}",
+            text = stringResource(Res.string.home_continue_editing),
+            onClickLabel = stringResource(Res.string.home_continue_editing_action, title),
             onClick = { onOpen(card.record.localId) },
             modifier = Modifier.fillMaxWidth(),
         )
@@ -419,11 +442,16 @@ private fun RecentBuildRow(
     onClick: () -> Unit,
 ) {
     val colors = talentForgeColors()
+    val title = buildCardTitle(card)
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 56.dp)
-            .clickable(role = Role.Button, onClickLabel = "open ${card.title}", onClick = onClick)
+            .clickable(
+                role = Role.Button,
+                onClickLabel = stringResource(Res.string.common_open_build_action, title),
+                onClick = onClick,
+            )
             .padding(vertical = TalentForgeSpacing.hairline),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
@@ -436,7 +464,7 @@ private fun RecentBuildRow(
         )
         Column(Modifier.weight(1f)) {
             BasicText(
-                text = card.title,
+                text = title,
                 style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -455,24 +483,30 @@ private fun RecentBuildRow(
 @Composable
 private fun AllBuildsLink(count: Int, onClick: () -> Unit) {
     BasicText(
-        text = "All builds $count",
+        text = stringResource(Res.string.home_all_builds_link, count),
         style = HomeLinkStyle.copy(color = talentForgeColors().textSecondary),
         modifier = Modifier
             .heightIn(min = 44.dp)
-            .clickable(role = Role.Button, onClickLabel = "open all builds", onClick = onClick)
+            .clickable(
+                role = Role.Button,
+                onClickLabel = stringResource(Res.string.home_all_builds_action),
+                onClick = onClick,
+            )
             .padding(horizontal = TalentForgeSpacing.inline, vertical = TalentForgeSpacing.hairline),
     )
 }
 
 /** `Warrior · Forever · 2 h ago` — only fields the card actually resolved. */
+@Composable
 private fun cardMetaLine(card: BuildCardModel, clockMillis: () -> Long): String =
     listOfNotNull(
-        card.classDisplayName ?: card.record.build.classToken.value,
+        localizedClassName(card.record.build.classToken, card.classDisplayName) ?: card.record.build.classToken.value,
         gameDisplayName(card.record.build.game),
         relativeBuildTime(clockMillis(), card.record.updatedAt),
     ).joinToString(" · ")
 
 /** `20 / 51 · Yesterday` (the spec's split-count slot holds the single-tree total). */
+@Composable
 private fun recentMetaLine(card: BuildCardModel, clockMillis: () -> Long): String =
     listOfNotNull(
         card.pointsText(),

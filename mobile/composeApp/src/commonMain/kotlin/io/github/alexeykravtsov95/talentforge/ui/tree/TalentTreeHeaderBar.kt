@@ -33,11 +33,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_go_back
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * The M4.3/M5.1 header bar: `back · name / meta · undo · redo · x / 51 · ⋯`
@@ -256,7 +259,8 @@ fun TalentTreeHeaderBar(
  * "native system back everywhere" — on iOS/desktop hosts this chevron IS the
  * frozen back behaviour; on Android it agrees with the system button). 44 × 44
  * dp target by default (the editor header passes its 48 dp, M5.UX.2a), drawn
- * glyph so it renders identically on every platform.
+ * glyph so it renders identically on every platform. Its accessible label is
+ * localized (M5.REL.2a: shared by All Builds, Class Selection and the editor).
  */
 @Composable
 fun BackChevronButton(
@@ -265,15 +269,16 @@ fun BackChevronButton(
     size: Dp = TalentTreeHeaderMetrics.CONTROL_SIZE_DP,
 ) {
     val color = talentForgeColors().textPrimary
+    val label = stringResource(Res.string.common_go_back)
     Box(
         modifier = modifier
             .size(size)
             .clickable(
                 role = Role.Button,
-                onClickLabel = "go back",
+                onClickLabel = label,
                 onClick = onClick,
             )
-            .semantics { contentDescription = "go back" },
+            .semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) {
         Box(

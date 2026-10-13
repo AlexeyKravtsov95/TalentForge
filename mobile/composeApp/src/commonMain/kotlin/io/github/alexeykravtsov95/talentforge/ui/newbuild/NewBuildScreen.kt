@@ -51,6 +51,18 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_retry
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_talent_data_version
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.new_build_create_action
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.new_build_creating
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.new_build_error_dataset
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.new_build_error_engine
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.new_build_error_library
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.new_build_load_failed_body
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.new_build_load_failed_title
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.new_build_loading
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.new_build_title
 import io.github.alexeykravtsov95.talentforge.data.ClassToken
 import io.github.alexeykravtsov95.talentforge.data.TalentDatasetRepository
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
@@ -63,6 +75,7 @@ import io.github.alexeykravtsov95.talentforge.ui.library.NewBuildClassChoice
 import io.github.alexeykravtsov95.talentforge.ui.library.classMonogramOf
 import io.github.alexeykravtsov95.talentforge.ui.library.createClassDraft
 import io.github.alexeykravtsov95.talentforge.ui.library.loadNewBuildChoices
+import io.github.alexeykravtsov95.talentforge.ui.library.localizedClassName
 import io.github.alexeykravtsov95.talentforge.ui.motion.prefersReducedMotion
 import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeRadius
@@ -74,6 +87,7 @@ import io.github.alexeykravtsov95.talentforge.ui.tree.BackChevronButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Class Selection (New Build) — the B+ "Modern Fantasy Utility" redesign
@@ -114,7 +128,7 @@ fun NewBuildScreen(
     // card shows the progress mark); a second tap during it must not produce
     // a second draft
     var creatingToken by remember { mutableStateOf<ClassToken?>(null) }
-    var creationError by remember { mutableStateOf<String?>(null) }
+    var creationError by remember { mutableStateOf<DraftCreation.Failure?>(null) }
     val scope = rememberCoroutineScope()
     val onClassSelected: (ClassToken) -> Unit = { token ->
         val creating = creatingToken
@@ -129,7 +143,7 @@ fun NewBuildScreen(
                 creatingToken = null
                 when (result) {
                     is DraftCreation.Created -> onDraftCreated(result.record.localId)
-                    is DraftCreation.Failed -> creationError = result.failure.describeNewBuildError()
+                    is DraftCreation.Failed -> creationError = result.failure
                 }
             }
         }
@@ -158,12 +172,16 @@ fun NewBuildScreen(
             BackChevronButton(onClick = { if (creatingToken == null) onBack() })
             Column(verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.hairline)) {
                 BasicText(
-                    text = "Choose a class",
+                    text = stringResource(Res.string.new_build_title),
                     style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary),
                 )
                 choices?.let { ready ->
                     BasicText(
-                        text = "${ready.gameDisplayName} · talent data ${ready.dataVersion}",
+                        text = stringResource(
+                            Res.string.common_talent_data_version,
+                            ready.gameDisplayName,
+                            ready.dataVersion,
+                        ),
                         style = TalentForgeTypography.meta.copy(color = colors.textSecondary),
                     )
                 }
@@ -182,26 +200,26 @@ fun NewBuildScreen(
                     verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.rowGap),
                 ) {
                     BasicText(
-                        "Couldn't load classes",
+                        stringResource(Res.string.new_build_load_failed_title),
                         style = TalentForgeTypography.componentTitle.copy(color = colors.danger),
                     )
                     InlineNotice(
-                        text = "The local talent data could not be read.",
-                        actionText = "Retry",
+                        text = stringResource(Res.string.new_build_load_failed_body),
+                        actionText = stringResource(Res.string.common_retry),
                         onAction = { reloadToken += 1 },
                     )
                 }
 
                 choices == null -> BasicText(
-                    "Loading classes…",
+                    stringResource(Res.string.new_build_loading),
                     style = TalentForgeTypography.bodySmall.copy(color = colors.textSecondary),
                 )
 
                 else -> {
                     choices?.let { ready ->
-                        if (creationError != null) {
+                        creationError?.let { failure ->
                             InlineNotice(
-                                text = creationError!!,
+                                text = failure.describeNewBuildError(),
                                 actionText = null,
                                 onAction = null,
                             )
@@ -226,16 +244,23 @@ internal data class ClassPickerLayout(val columns: Int, val slot: ClassArtworkSl
  * The deterministic class-grid policy (no hardcoded screen sizes): three
  * columns while the WIDEST class label — measured with the real text style at
  * the CURRENT font scale — still fits on one line of a three-column card,
- * otherwise the two-column layout (labels may then wrap and cards grow
- * vertically). The standard 56 dp tile is used while it keeps at least
+ * otherwise the two-column layout (labels may then wrap BETWEEN words and
+ * cards grow vertically). Since M5.REL.2a the two-column layout also needs
+ * the widest single WORD ([widestWord]) to fit a card — a label is never
+ * broken mid-word (long Russian names at 200 % font scale) — else one column.
+ * The standard 56 dp tile is used while it keeps at least
  * [PICKER_TILE_CLEARANCE] of clear space on each side of the card; narrower
  * grids drop to the compact 46 dp tile.
  */
-internal fun classPickerLayout(gridWidth: Dp, widestLabel: Dp): ClassPickerLayout {
+internal fun classPickerLayout(gridWidth: Dp, widestLabel: Dp, widestWord: Dp = widestLabel): ClassPickerLayout {
     fun cardContentWidth(columns: Int): Dp =
         (gridWidth - PICKER_COLUMN_GAP * (columns - 1)) / columns - PICKER_CARD_INNER_PADDING * 2
 
-    val columns = if (cardContentWidth(3) >= widestLabel) 3 else 2
+    val columns = when {
+        cardContentWidth(3) >= widestLabel -> 3
+        cardContentWidth(2) >= widestWord -> 2
+        else -> 1
+    }
     val slot = if (cardContentWidth(columns) >= ClassArtworkSlot.Picker.size + PICKER_TILE_CLEARANCE * 2) {
         ClassArtworkSlot.Picker
     } else {
@@ -257,17 +282,26 @@ private fun ClassGrid(
     val nameStyle = TalentForgeTypography.bodySmall
     val textMeasurer = rememberTextMeasurer()
     val density = LocalDensity.current
-    // the honest readability input: the widest label this grid will render,
-    // laid out with the card's real style at the current font scale
-    val widestLabel = remember(classes, nameStyle) {
+    val labels = classes.map { labelOf(it) }
+    // the honest readability inputs: the widest label (and the widest single
+    // word) this grid will render in the UI language, laid out with the
+    // card's real style at the current font scale
+    val widestLabel = remember(labels, nameStyle, density) {
         with(density) {
-            classes.maxOf { choice ->
-                textMeasurer.measure(labelOf(choice), nameStyle).size.width.toDp()
+            labels.maxOf { label ->
+                textMeasurer.measure(label, nameStyle).size.width.toDp()
+            }
+        }
+    }
+    val widestWord = remember(labels, nameStyle, density) {
+        with(density) {
+            labels.flatMap { it.split(' ') }.filter { it.isNotEmpty() }.maxOf { word ->
+                textMeasurer.measure(word, nameStyle).size.width.toDp()
             }
         }
     }
     BoxWithConstraints(Modifier.fillMaxWidth()) {
-        val layout = classPickerLayout(maxWidth, widestLabel)
+        val layout = classPickerLayout(maxWidth, widestLabel, widestWord)
         Column(verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline)) {
             classes.chunked(layout.columns).forEach { rowClasses ->
                 Row(
@@ -293,8 +327,13 @@ private fun ClassGrid(
     }
 }
 
+/**
+ * The card label: the localized class name of a resolved class, or the
+ * locale-independent TOKEN of a class whose document failed to load.
+ */
+@Composable
 private fun labelOf(choice: NewBuildClassChoice): String =
-    choice.displayName ?: choice.token.value
+    localizedClassName(choice.token, choice.displayName) ?: choice.token.value
 
 /**
  * One class card: the supplied artwork (or the monogram fallback for a token
@@ -331,7 +370,7 @@ private fun ClassCard(
                 if (enabled) {
                     Modifier.clickable(
                         role = Role.Button,
-                        onClickLabel = "create a $label build",
+                        onClickLabel = stringResource(Res.string.new_build_create_action, label),
                         onClick = onClick,
                     )
                 } else {
@@ -356,10 +395,11 @@ private fun ClassCard(
                 accent = classAccentFor(choice.token).color,
             )
             if (creatingThis) {
+                val creatingDescription = stringResource(Res.string.new_build_creating)
                 Box(
                     modifier = Modifier
                         .align(Alignment.Center)
-                        .semantics { contentDescription = "Creating build" },
+                        .semantics { contentDescription = creatingDescription },
                 ) {
                     CreatingBuildSpinner()
                 }
@@ -424,10 +464,12 @@ private fun SpinnerCanvas(modifier: Modifier, startAngle: () -> Float) {
     }
 }
 
+/** The localized notice of a typed creation failure (the engine's own reason stays verbatim). */
+@Composable
 private fun DraftCreation.Failure.describeNewBuildError(): String = when (this) {
-    is DraftCreation.Failure.Dataset -> "The class talent data could not be read."
-    is DraftCreation.Failure.Engine -> "The allocation engine rejected this dataset ($reason)."
-    is DraftCreation.Failure.Library -> "The draft could not be saved on this device."
+    is DraftCreation.Failure.Dataset -> stringResource(Res.string.new_build_error_dataset)
+    is DraftCreation.Failure.Engine -> stringResource(Res.string.new_build_error_engine, reason)
+    is DraftCreation.Failure.Library -> stringResource(Res.string.new_build_error_library)
 }
 
 /** Column gap and the horizontal padding inside a picker card (both `inline`). */
