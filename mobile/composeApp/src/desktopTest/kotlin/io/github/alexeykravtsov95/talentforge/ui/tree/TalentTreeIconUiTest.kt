@@ -31,6 +31,7 @@ import io.github.alexeykravtsov95.talentforge.data.GameId
 import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentIconsLoader
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
 import io.github.alexeykravtsov95.talentforge.ui.theme.classAccentFor
 import java.awt.image.BufferedImage
@@ -55,6 +56,10 @@ import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
  * purpose.
  */
 class TalentTreeIconUiTest {
+
+    /** UI copy follows the platform locale since M5.REL.2a: pinned explicitly. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     @get:Rule
     val composeRule = createComposeRule()

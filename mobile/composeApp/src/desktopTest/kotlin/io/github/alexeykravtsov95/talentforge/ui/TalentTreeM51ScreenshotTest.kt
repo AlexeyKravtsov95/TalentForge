@@ -29,6 +29,8 @@ import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildAutosaveCoordinator
 import io.github.alexeykravtsov95.talentforge.ui.tree.TalentTreeBuildScreen
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
@@ -57,6 +59,10 @@ import org.junit.Rule
  * ```
  */
 class TalentTreeM51ScreenshotTest {
+
+    /** UI copy follows the platform locale since M5.REL.2a: pinned explicitly. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     @get:Rule
     val composeRule = createComposeRule()

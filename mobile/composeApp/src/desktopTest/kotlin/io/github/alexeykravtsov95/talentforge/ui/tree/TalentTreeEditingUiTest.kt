@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import io.github.alexeykravtsov95.talentforge.allocation.BuildState
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -46,6 +47,10 @@ import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
  * and selection stability, Show behaviour) still hold.
  */
 class TalentTreeEditingUiTest {
+
+    /** UI copy follows the platform locale since M5.REL.2a: pinned explicitly. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     @get:Rule
     val composeRule = createComposeRule()

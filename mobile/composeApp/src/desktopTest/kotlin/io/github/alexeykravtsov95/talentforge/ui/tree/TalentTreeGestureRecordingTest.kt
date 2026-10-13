@@ -19,6 +19,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
 import java.io.File
 import javax.imageio.ImageIO
@@ -27,6 +28,7 @@ import kotlin.test.Test
 import org.junit.Assume.assumeTrue
 import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
 import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
+import org.junit.Rule
 
 /**
  * PR #19 evidence: frame-by-frame renders of the REAL screen (desktop, product
@@ -44,6 +46,10 @@ import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
  */
 @OptIn(ExperimentalTestApi::class)
 class TalentTreeGestureRecordingTest {
+
+    /** UI copy follows the platform locale since M5.REL.2a: pinned explicitly. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     private val outputDir: File
         get() = File(System.getProperty(PROPERTY)!!)

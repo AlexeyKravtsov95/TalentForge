@@ -28,6 +28,7 @@ import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRecord
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.library.DraftCreation
 import io.github.alexeykravtsov95.talentforge.ui.library.createClassDraft
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
@@ -48,6 +49,10 @@ import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
  * per-section points.
  */
 class SectionTabsAutosaveUiTest {
+
+    /** UI copy follows the platform locale since M5.REL.2a: pinned explicitly. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     @get:Rule
     val composeRule = createComposeRule()

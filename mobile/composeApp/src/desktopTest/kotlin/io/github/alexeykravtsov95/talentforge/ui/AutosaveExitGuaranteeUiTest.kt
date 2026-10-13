@@ -15,6 +15,8 @@ import androidx.compose.ui.unit.dp
 import io.github.alexeykravtsov95.talentforge.data.ClassToken
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.library.EditorLoad
 import io.github.alexeykravtsov95.talentforge.ui.library.createClassDraft
 import io.github.alexeykravtsov95.talentforge.ui.library.loadEditorSession
@@ -35,6 +37,10 @@ import org.junit.Rule
  * save consumer persisted" can no longer lose a build.
  */
 class AutosaveExitGuaranteeUiTest {
+
+    /** UI copy follows the platform locale since M5.REL.2a: pinned explicitly. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     @get:Rule
     val composeRule = createComposeRule()

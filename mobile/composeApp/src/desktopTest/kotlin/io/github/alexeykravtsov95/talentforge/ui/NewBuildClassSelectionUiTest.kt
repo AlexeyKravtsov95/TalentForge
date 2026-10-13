@@ -31,6 +31,8 @@ import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.data.manifest.DatasetManifest
 import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.library.ClassArtworkSlot
 import io.github.alexeykravtsov95.talentforge.ui.motion.LocalReducedMotion
 import io.github.alexeykravtsov95.talentforge.ui.newbuild.ClassPickerLayout
@@ -59,6 +61,10 @@ import org.junit.Rule
  * (no infinite animation while a held write is in flight).
  */
 class NewBuildClassSelectionUiTest {
+
+    /** UI copy follows the platform locale since M5.REL.2a: pinned explicitly. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     @get:Rule
     val composeRule = createComposeRule()
@@ -275,6 +281,11 @@ class NewBuildClassSelectionUiTest {
         // 200 % labels no longer fit three columns → the two-column layout
         assertEquals(ClassPickerLayout(2, ClassArtworkSlot.Picker), classPickerLayout(328.dp, 104.dp))
         assertEquals(ClassPickerLayout(2, ClassArtworkSlot.Picker), classPickerLayout(288.dp, 104.dp))
+        // M5.REL.2a: a word wider than a two-column card (Russian "Чернокнижник"
+        // at 200 %) is never broken mid-word — the grid drops to one column
+        assertEquals(ClassPickerLayout(2, ClassArtworkSlot.Picker), classPickerLayout(288.dp, 124.dp, widestWord = 124.dp))
+        assertEquals(ClassPickerLayout(1, ClassArtworkSlot.Picker), classPickerLayout(288.dp, 190.dp, widestWord = 190.dp))
+        assertEquals(ClassPickerLayout(1, ClassArtworkSlot.Picker), classPickerLayout(361.dp, 190.dp, widestWord = 161.dp))
     }
 
     // ------------------------------------------------------------- creation

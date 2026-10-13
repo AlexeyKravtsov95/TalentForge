@@ -25,6 +25,7 @@ import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAs
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentDescriptionsLoader
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentIconsLoader
 import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
 import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
@@ -36,6 +37,7 @@ import kotlin.test.Test
 import kotlin.test.assertIs
 import kotlinx.coroutines.runBlocking
 import org.junit.Assume.assumeTrue
+import org.junit.Rule
 
 /**
  * M5.REL.1 PR evidence from the real screen (desktop-rendered, product
@@ -54,6 +56,10 @@ import org.junit.Assume.assumeTrue
  */
 @OptIn(ExperimentalTestApi::class)
 class TalentSpecializationNamesScreenshotTest {
+
+    /** UI copy follows the platform locale since M5.REL.2a: pinned explicitly. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     private val outputDir: File
         get() = File(System.getProperty(PROPERTY)!!)
@@ -95,6 +101,7 @@ class TalentSpecializationNamesScreenshotTest {
         fontScale: Float = 1f,
         block: ComposeUiTest.() -> Unit,
     ) = runDesktopComposeUiTest(width = (width * DENSITY).toInt(), height = (height * DENSITY).toInt()) {
+        uiLanguage.language = language
         val cameras = TalentTreeSectionCameras(sessionKey = "m5rel1", treeId = state.model.treeId)
         setContent {
             TalentForgeTheme {

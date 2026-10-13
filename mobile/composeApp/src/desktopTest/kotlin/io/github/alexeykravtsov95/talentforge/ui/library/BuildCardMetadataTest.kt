@@ -1,5 +1,7 @@
 package io.github.alexeykravtsov95.talentforge.ui.library
 
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.runComposeUiTest
 import io.github.alexeykravtsov95.talentforge.allocation.TalentAllocationEngine
 import io.github.alexeykravtsov95.talentforge.allocation.buildFileOf
 import io.github.alexeykravtsov95.talentforge.allocation.toBuildState
@@ -16,12 +18,15 @@ import io.github.alexeykravtsov95.talentforge.ui.FakeBuildLibraryStorage
 import io.github.alexeykravtsov95.talentforge.ui.FixedClock
 import io.github.alexeykravtsov95.talentforge.ui.SequentialIds
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlinx.coroutines.runBlocking
+import org.junit.Rule
 
 /**
  * M5.1 review fix: build cards resolve each record's EXACT dataset identity
@@ -31,6 +36,10 @@ import kotlinx.coroutines.runBlocking
  * engine. Anything else leaves the derived fields honestly absent.
  */
 class BuildCardMetadataTest {
+
+    /** The display titles below are the English copy: pinned explicitly. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     private val game = GameId("forever")
     private val clientBuild = "1.60.1.70009"
@@ -96,8 +105,8 @@ class BuildCardMetadataTest {
         assertEquals(null, card.spentPoints)
         assertEquals(null, card.pointBudget)
         // the persisted facts themselves stay visible; the class document did
-        // not load, so the display fallback capitalizes the class token
-        assertEquals("Warrior build", card.title)
+        // not load, so the display fallback comes from the class token
+        assertEquals("Warrior build", titleOf(card))
         assertEquals("9.9.9.99999", card.record.build.clientBuild)
 
         val homeCard = assertIs<LibraryData.Ready<HomeModel>>(homeModel()).value.continueCard
@@ -168,6 +177,17 @@ class BuildCardMetadataTest {
         assertEquals(mageEngineBudget(), mage.pointBudget)
     }
 
+    /** The card's DISPLAY title as the shell screens render it (UI copy since M5.REL.2a). */
+    @OptIn(ExperimentalTestApi::class)
+    private fun titleOf(card: BuildCardModel): String {
+        var title = ""
+        runComposeUiTest {
+            setContent { title = buildCardTitle(card) }
+            waitForIdle()
+        }
+        return title
+    }
+
     private fun mageEngineBudget(): Int = runBlocking {
         val document = assertIs<DatasetOutcome.Loaded<io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument>>(
             datasets.document(DatasetId(game, clientBuild, ClassToken("MAGE"))),
@@ -185,7 +205,7 @@ class BuildCardMetadataTest {
 
         val card = assertIs<LibraryData.Ready<List<BuildCardModel>>>(buildsModel()).value.single()
 
-        assertEquals("Mage build", card.title)
+        assertEquals("Mage build", titleOf(card))
         // display-only: the persisted record stays unnamed
         assertEquals(null, card.record.name)
     }
@@ -199,7 +219,7 @@ class BuildCardMetadataTest {
 
         val card = assertIs<LibraryData.Ready<List<BuildCardModel>>>(buildsModel()).value.single()
 
-        assertEquals("Draft", card.title)
+        assertEquals("Draft", titleOf(card))
         assertEquals("Draft", card.record.name)
     }
 
@@ -213,7 +233,7 @@ class BuildCardMetadataTest {
         val card = assertIs<LibraryData.Ready<List<BuildCardModel>>>(buildsModel()).value.single()
         val homeCard = assertIs<LibraryData.Ready<HomeModel>>(homeModel()).value.continueCard
 
-        assertEquals("Rend spam levelling", assertNotNull(homeCard).title)
-        assertEquals("Rend spam levelling", card.title)
+        assertEquals("Rend spam levelling", titleOf(assertNotNull(homeCard)))
+        assertEquals("Rend spam levelling", titleOf(card))
     }
 }

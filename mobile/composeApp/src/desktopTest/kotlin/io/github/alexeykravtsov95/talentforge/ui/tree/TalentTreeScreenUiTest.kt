@@ -22,6 +22,7 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.alexeykravtsov95.talentforge.data.DatasetLoadError
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -40,6 +41,10 @@ import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
  * the open section here, and the section tests prove the union covers the tree.
  */
 class TalentTreeScreenUiTest {
+
+    /** UI copy follows the platform locale since M5.REL.2a: pinned explicitly. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     @get:Rule
     val composeRule = createComposeRule()

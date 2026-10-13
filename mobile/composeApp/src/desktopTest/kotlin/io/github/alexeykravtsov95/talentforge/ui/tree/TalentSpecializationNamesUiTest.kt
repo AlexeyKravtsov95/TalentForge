@@ -33,6 +33,7 @@ import io.github.alexeykravtsov95.talentforge.data.DatasetOutcome
 import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
 import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
 import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
@@ -57,6 +58,10 @@ import org.junit.Rule
  * Density is pinned to 1, so px == dp.
  */
 class TalentSpecializationNamesUiTest {
+
+    /** UI copy follows the platform locale since M5.REL.2a: pinned explicitly. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     @get:Rule
     val composeRule = createComposeRule()
@@ -102,6 +107,7 @@ class TalentSpecializationNamesUiTest {
             treeId = state.model.treeId,
         ),
     ) {
+        uiLanguage.language = language
         composeRule.setContent {
             TalentForgeTheme {
                 CompositionLocalProvider(
@@ -220,7 +226,10 @@ class TalentSpecializationNamesUiTest {
         assertEquals(1, reported.size)
         val buildBefore = reported.single()
 
-        composeRule.runOnIdle { language = AppLanguage.RUSSIAN }
+        composeRule.runOnIdle {
+            uiLanguage.language = AppLanguage.RUSSIAN
+            language = AppLanguage.RUSSIAN
+        }
         composeRule.waitForIdle()
 
         // the labels localized, nothing else moved
@@ -234,7 +243,10 @@ class TalentSpecializationNamesUiTest {
         assertEquals(1, cameras.selectedSection)
 
         // and back: the same section stays open, the build stays bought
-        composeRule.runOnIdle { language = AppLanguage.ENGLISH }
+        composeRule.runOnIdle {
+            uiLanguage.language = AppLanguage.ENGLISH
+            language = AppLanguage.ENGLISH
+        }
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Fire").assertIsSelected()
         assertEquals(cameraBefore, cameras.stateOf(1).viewport)
@@ -282,6 +294,7 @@ class TalentSpecializationNamesUiTest {
         val paladin = readyStateOf("PALADIN")
         var window by mutableStateOf(IntSize(393, 852))
         val cameras = TalentTreeSectionCameras(sessionKey = "rotate-ru", treeId = paladin.model.treeId)
+        uiLanguage.language = AppLanguage.RUSSIAN
 
         composeRule.setContent {
             TalentForgeTheme {

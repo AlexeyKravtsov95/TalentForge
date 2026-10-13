@@ -96,6 +96,7 @@ android {
 // (M5.UI.1, B+ Home / All Builds) or `-Dtalentforge.m5ui2.screenshots`
 // (M5.UI.2, B+ Class Selection) or `-Dtalentforge.m5rel1.screenshots`
 // (M5.REL.1, localized specialization names) or
+// `-Dtalentforge.m5rel2a.screenshots` (M5.REL.2a, localized shell screens) or
 // `-Dtalentforge.pr19.recording`
 // (PR #19, gesture frames) — skipped by default.
 tasks.named<Test>("desktopTest") {
@@ -134,6 +135,9 @@ tasks.named<Test>("desktopTest") {
     }
     System.getProperty("talentforge.m5rel1.screenshots")?.let {
         systemProperty("talentforge.m5rel1.screenshots", it)
+    }
+    System.getProperty("talentforge.m5rel2a.screenshots")?.let {
+        systemProperty("talentforge.m5rel2a.screenshots", it)
     }
     System.getProperty("talentforge.pr19.recording")?.let {
         systemProperty("talentforge.pr19.recording", it)
