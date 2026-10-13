@@ -785,20 +785,23 @@ the asset spec uses for its accent spinner; hue 68 stays distinct from
 editor's token set is deliberately untouched.
 
 **Home (B+).** The empty state is typography only: the brand header, the
-`No builds yet` heading, one workflow sentence, the real bundled data version
-line — and a single PRIMARY pinned `New build` action; no illustration, no
-decorative tree fragment, no fake builds. The populated state keeps the M5.1
-hierarchy (Continue → Recent 3/4 → All builds · N) in B+ clothing: the
-Continue card carries the 44 dp artwork tile, title, `class · version ·
-recency` metadata, the engine-computed `spent / budget` beside a simple 4 dp
-progress bar (amber fill on the interactive track), and the amber
-`Continue editing` action; RECENT rows carry the 36 dp tile. All Builds is
-reachable at EVERY library size — with exactly one build (no RECENT section)
-the `All builds 1` link renders as its own row after the Continue card, a
-fix for the M5.1 behaviour where the link existed only inside the RECENT
-header. The pinned `New build` becomes a neutral secondary once builds exist.
-A failed library load stays the recoverable Retry state — never a faked empty
-Home.
+`No builds yet` heading (aligned in the upper-middle of the usable content,
+≈16 % of the screen height below the header — PR #22 review), one workflow
+sentence ("Pick a class and spend points on its talent tree…" — the class is
+the actual New Build choice; no misleading version wording), the real
+bundled data version line — and a single PRIMARY pinned `New build` action;
+no illustration, no decorative tree fragment, no fake builds. The populated
+state keeps the M5.1 hierarchy (Continue → Recent 3/4 → All builds · N) in
+B+ clothing: the Continue card carries the 44 dp artwork tile, title,
+`class · version · recency` metadata, the engine-computed `spent / budget`
+beside a simple 4 dp progress bar (amber fill on the interactive track), and
+the amber `Continue editing` action; RECENT rows carry the 36 dp tile. All
+Builds is reachable at EVERY library size — with exactly one build (no
+RECENT section) the `All builds 1` link renders as its own row after the
+Continue card, a fix for the M5.1 behaviour where the link existed only
+inside the RECENT header. The pinned `New build` becomes a neutral
+secondary once builds exist. A failed library load stays the recoverable
+Retry state — never a faked empty Home.
 
 **Display-only build names.** `BuildCardModel.title` now shows the descriptive
 `<Class> build` fallback (`Mage build`) for a persisted `name == null`, using
@@ -812,13 +815,28 @@ build) is unchanged repository semantics.
 
 **All Builds (B+).** Same list, count, order and management as M5.2a; the row
 mark is the 36 dp artwork tile and the empty-state action label matches
-Home's `New build`.
+Home's `New build`. The row is RESPONSIVE (PR #22 review): its fixed-width
+elements (artwork tile, mono points column, 48 dp `⋯` button) would crowd a
+long build name into unreadability at large font scales, so the row measures
+the widest points label at the current font scale and, when the title column
+would fall below ~112 dp, folds the points into the meta line — the artwork,
+the points FACT and the 48 dp actions target are always preserved
+(`AllBuildsRowLayoutUiTest` pins both arrangements and the button width).
 
-**Tests added/updated:** `HomeRedesignUiTest`, `ClassArtworkTest`
+**Tests added/updated:** `HomeRedesignUiTest`, `ClassArtworkTest`,
+`AllBuildsRowLayoutUiTest` (the responsive row of the PR #22 review)
 (`composeApp/desktopTest`), the display-name cases in `BuildCardMetadataTest`,
 and the M5.1/M5.2a suites' expectations (button label, empty-state heading,
 fallback titles). Opt-in screenshot evidence:
 `M5Ui1ScreenshotTest` (`-Dtalentforge.m5ui1.screenshots=<dir>`).
+
+> **PR #22 review verification.** `:shared:jvmTest` (244 tests),
+> `:composeApp:desktopTest` (497, of which the opt-in screenshot tests are
+> skipped), `:composeApp:assembleDebug`, both iOS debug framework links and
+> the `iosApp` simulator `xcodebuild` — all green. Review evidence in
+> `docs/screenshots/m5ui1/`: the All Builds row at 200 % font scale on
+> 360×800 and 320×568 (long name, two-digit points, folded meta line), and
+> the realigned empty state at 320×568 / 130 % / 200 %.
 
 ## Version stack (all stable)
 
