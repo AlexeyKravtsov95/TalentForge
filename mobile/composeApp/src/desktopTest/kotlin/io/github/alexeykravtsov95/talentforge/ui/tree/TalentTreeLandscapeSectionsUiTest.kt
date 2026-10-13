@@ -51,6 +51,8 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
 
 /**
  * M5.UX.2b.1 landscape phones on the REAL screen (reference Warrior dataset):
@@ -102,6 +104,7 @@ class TalentTreeLandscapeSectionsUiTest {
             TalentForgeTheme {
                 CompositionLocalProvider(
                     LocalDensity provides Density(1f, fontScale),
+                    LocalAppLanguage provides AppLanguage.ENGLISH,
                     LocalLayoutDirection provides if (rtl) LayoutDirection.Rtl else LayoutDirection.Ltr,
                 ) {
                     // stands in for the app's navigation handler (registered first, like App.kt)
@@ -131,6 +134,9 @@ class TalentTreeLandscapeSectionsUiTest {
         runOnIdle { session.window = IntSize(width, height) }
         settle()
     }
+
+    /** The baseline Warrior's resolved tab labels (M5.REL.1), by section ordinal. */
+    private val SECTION_LABELS = listOf("Arms", "Fury", "Protection")
 
     private fun ComposeUiTest.tab(label: String) {
         onNodeWithText(label).performClick()
@@ -177,7 +183,7 @@ class TalentTreeLandscapeSectionsUiTest {
     /** The tabs share the header row with undo (B3 05 merged bar). */
     private fun ComposeUiTest.assertTabsInHeader() {
         val undo = undoBounds()
-        for (label in listOf("Tree 1", "Tree 2", "Tree 3")) {
+        for (label in listOf("Arms", "Fury", "Protection")) {
             val tab = bounds(label)
             assertTrue(tab.top < undo.bottom && tab.bottom > undo.top, "$label sits in the header row: $tab / $undo")
         }
@@ -186,7 +192,7 @@ class TalentTreeLandscapeSectionsUiTest {
     /** The tabs keep their own row below the header (portrait, compact landscape). */
     private fun ComposeUiTest.assertTabsBelowHeader() {
         val undo = undoBounds()
-        for (label in listOf("Tree 1", "Tree 2", "Tree 3")) {
+        for (label in listOf("Arms", "Fury", "Protection")) {
             assertTrue(bounds(label).top >= undo.bottom - 0.5f, "$label is below the header: ${bounds(label)} / $undo")
         }
     }
@@ -197,14 +203,14 @@ class TalentTreeLandscapeSectionsUiTest {
     fun aTypicalLandscapePhoneShowsTheTabsInTheOneHeaderBarAndOneSection() {
         onEditor(width = 915, height = 412) { session ->
             assertTabsInHeader()
-            onNodeWithText("Tree 1").assertIsSelected()
+            onNodeWithText("Arms").assertIsSelected()
             assertTrue(undoBounds().bottom <= TalentTreeLandscapeHeaderMetrics.HEADER_HEIGHT_DP + 0.5f, "one 48 dp bar")
             assertEquals(0, session.cameras.selectedSection)
-            // one section at a time: Tree 1's talents are on the canvas; the other
+            // one section at a time: Arms's talents are on the canvas; the other
             // pages are composed ahead but carry no talent semantics
             assertTrue(isShown("Improved Rend"))
-            assertFalse(isShown(firstBuyableTalentOf(section = 1)), "Tree 2 is not on the canvas")
-            assertFalse(isShown(firstBuyableTalentOf(section = 2)), "Tree 3 is not on the canvas")
+            assertFalse(isShown(firstBuyableTalentOf(section = 1)), "Fury is not on the canvas")
+            assertFalse(isShown(firstBuyableTalentOf(section = 2)), "Protection is not on the canvas")
             assertTrue(session.reported.isEmpty())
         }
     }
@@ -213,11 +219,11 @@ class TalentTreeLandscapeSectionsUiTest {
     fun theSmallestLandscapePhoneKeepsTheTabRowUnderTheHeader() {
         onEditor(width = 568, height = 320) {
             assertTabsBelowHeader()
-            for (label in listOf("Tree 1", "Tree 2", "Tree 3")) {
+            for (label in listOf("Arms", "Fury", "Protection")) {
                 val tab = bounds(label)
                 assertTrue(tab.left >= 0f && tab.right <= 568f, "$label is reachable: $tab")
             }
-            onNodeWithText("Tree 1").assertIsSelected()
+            onNodeWithText("Arms").assertIsSelected()
             assertTrue(isShown("Improved Rend"))
         }
     }
@@ -242,7 +248,7 @@ class TalentTreeLandscapeSectionsUiTest {
     @Test
     fun tabsSwitchSectionsAndEverySectionKeepsItsOwnCamera() {
         onEditor { session ->
-            // scroll Tree 1 down to its lower tiers (a vertical drag pans)
+            // scroll Arms down to its lower tiers (a vertical drag pans)
             onRoot().performTouchInput {
                 down(Offset(450f, 300f))
                 repeat(20) { moveBy(Offset(0f, -3f)) }
@@ -252,17 +258,17 @@ class TalentTreeLandscapeSectionsUiTest {
             val tree1 = session.cameras.stateOf(0).viewport
             assertTrue(session.cameras.stateOf(0).userMoved)
 
-            tab("Tree 2")
-            onNodeWithText("Tree 2").assertIsSelected()
-            onNodeWithText("Tree 1").assertIsNotSelected()
+            tab("Fury")
+            onNodeWithText("Fury").assertIsSelected()
+            onNodeWithText("Arms").assertIsNotSelected()
             assertEquals(1, session.cameras.selectedSection)
             assertTrue(isShown(firstBuyableTalentOf(section = 1)))
-            tab("Tree 3")
-            tab("Tree 1")
-            assertEquals(tree1, session.cameras.stateOf(0).viewport, "Tree 1's camera is restored exactly")
+            tab("Protection")
+            tab("Arms")
+            assertEquals(tree1, session.cameras.stateOf(0).viewport, "Arms's camera is restored exactly")
 
             // a tap on the open tab returns its camera to the fit (1A v2 01)
-            tab("Tree 1")
+            tab("Arms")
             assertFalse(session.cameras.stateOf(0).isAwayFromFit)
             assertTrue(session.reported.isEmpty(), "navigation never changes the build")
         }
@@ -271,8 +277,8 @@ class TalentTreeLandscapeSectionsUiTest {
     /**
      * Device finding (TECNO KM5n, Android 15): Android accessibility skips every talent of a node
      * layer whose own transformed bounds are off screen. The layer must therefore contain every
-     * talent of the open section, in both orientations — with a canvas-sized layer, Tree 2 in
-     * portrait and Tree 3 in landscape lay outside it (desktop semantics never showed this).
+     * talent of the open section, in both orientations — with a canvas-sized layer, Fury in
+     * portrait and Protection in landscape lay outside it (desktop semantics never showed this).
      */
     @Test
     fun theTalentLayerContainsEveryTalentOfTheOpenSectionInBothOrientations() {
@@ -281,7 +287,7 @@ class TalentTreeLandscapeSectionsUiTest {
         for ((width, height) in listOf(412 to 915, 915 to 412)) {
             onEditor(width = width, height = height) { session ->
                 for (section in 0..2) {
-                    tab("Tree ${section + 1}")
+                    tab(SECTION_LABELS[section])
                     val viewport = assertNotNull(session.cameras.stateOf(section).viewport)
                     val layer = Rect(viewport.offset, Size(extent.width * viewport.scale, extent.height * viewport.scale))
                     val ids = sections().section(section)!!.readingOrderNodeIds.toSet()
@@ -291,10 +297,10 @@ class TalentTreeLandscapeSectionsUiTest {
                         assertTrue(
                             center.x - r >= layer.left - 0.01f && center.x + r <= layer.right + 0.01f &&
                                 center.y - r >= layer.top - 0.01f && center.y + r <= layer.bottom + 0.01f,
-                            "${width}x$height Tree ${section + 1}: ${node.name} at $center lies in the layer $layer",
+                            "${width}x$height section ${section + 1}: ${node.name} at $center lies in the layer $layer",
                         )
                     }
-                    assertTrue(isShown(firstBuyableTalentOf(section)), "${width}x$height Tree ${section + 1} is exposed")
+                    assertTrue(isShown(firstBuyableTalentOf(section)), "${width}x$height section ${section + 1} is exposed")
                 }
             }
         }
@@ -309,7 +315,7 @@ class TalentTreeLandscapeSectionsUiTest {
                 up()
             }
             settle()
-            onNodeWithText("Tree 2").assertIsSelected()
+            onNodeWithText("Fury").assertIsSelected()
             assertEquals(1, session.cameras.selectedSection)
             assertTrue(session.reported.isEmpty())
         }
@@ -340,7 +346,7 @@ class TalentTreeLandscapeSectionsUiTest {
             onNodeWithContentDescription("Improved Rend").assertIsSelected()
 
             // the tabs stay usable with the panel open: a tab change deselects
-            tab("Tree 2")
+            tab("Fury")
             assertFalse(hasPanel())
             assertEquals(0f, session.cameras.stateOf(1).coveredRightDp)
             assertTrue(session.reported.isEmpty())
@@ -417,7 +423,7 @@ class TalentTreeLandscapeSectionsUiTest {
             settle()
             assertEquals(2, session.reported.size)
             onNodeWithText("2 / 51").assertExists()
-            assertEquals("2 points spent", tabState("Tree 1"))
+            assertEquals("2 points spent", tabState("Arms"))
 
             onNodeWithContentDescription("Undo talent change").performClick()
             settle()
@@ -439,23 +445,23 @@ class TalentTreeLandscapeSectionsUiTest {
         val target = nameOf(state, fixture.sourceId)
 
         onEditor(state) { session ->
-            tab("Tree 3")
+            tab("Protection")
             select(origin)
             val tree3 = session.cameras.stateOf(2).viewport
             onNodeWithText("Show").performClick()
             settle()
 
-            onNodeWithText("Tree 2").assertIsSelected()
+            onNodeWithText("Fury").assertIsSelected()
             onNodeWithContentDescription(target).assertIsSelected()
             assertTrue(hasPanel(), "the panel shows the prerequisite")
-            val chip = bounds("Back to $origin · Tree 3")
+            val chip = bounds("Back to $origin · Protection")
             assertTrue(chip.right <= 915f - 300f + 0.5f, "the Back chip is never under the panel: $chip")
             assertTrue(chip.top >= undoBounds().bottom - 0.5f, "the Back chip is below the header: $chip")
             assertEquals(tree3, session.cameras.stateOf(2).viewport, "Show leaves the origin's camera untouched")
 
-            onNodeWithText("Back to $origin · Tree 3").performClick()
+            onNodeWithText("Back to $origin · Protection").performClick()
             settle()
-            onNodeWithText("Tree 3").assertIsSelected()
+            onNodeWithText("Protection").assertIsSelected()
             onNodeWithContentDescription(origin).assertIsSelected()
             assertEquals(tree3, session.cameras.stateOf(2).viewport)
             assertTrue(session.reported.isEmpty(), "Show and Back never spend")
@@ -500,15 +506,15 @@ class TalentTreeLandscapeSectionsUiTest {
     fun portraitTree2RotatesToLandscapeTree2AndLandscapeTree3BackToPortraitTree3() {
         onEditor(width = 412, height = 915) { session ->
             assertTabsBelowHeader()
-            tab("Tree 2")
+            tab("Fury")
             rotate(session, 915, 412)
-            onNodeWithText("Tree 2").assertIsSelected()
+            onNodeWithText("Fury").assertIsSelected()
             assertTabsInHeader()
             assertTrue(isShown(firstBuyableTalentOf(section = 1)))
 
-            tab("Tree 3")
+            tab("Protection")
             rotate(session, 412, 915)
-            onNodeWithText("Tree 3").assertIsSelected()
+            onNodeWithText("Protection").assertIsSelected()
             assertTabsBelowHeader()
             assertTrue(isShown(firstBuyableTalentOf(section = 2)))
             assertTrue(session.reported.isEmpty())
@@ -519,13 +525,13 @@ class TalentTreeLandscapeSectionsUiTest {
     fun aSelectionSurvivesRotationAndTheInspectorFollowsTheLayout() {
         val fury = firstBuyableTalentOf(section = 1)
         onEditor(width = 412, height = 915) { session ->
-            tab("Tree 2")
+            tab("Fury")
             select(fury)
             assertTrue(hasCompactBar())
 
             rotate(session, 915, 412)
             onNodeWithContentDescription(fury).assertIsSelected()
-            onNodeWithText("Tree 2").assertIsSelected()
+            onNodeWithText("Fury").assertIsSelected()
             assertTrue(hasPanel(), "landscape: the side panel")
             assertFalse(hasCompactBar(), "never the portrait strip in landscape")
 
@@ -574,7 +580,7 @@ class TalentTreeLandscapeSectionsUiTest {
 
             rotate(session, 412, 915)
             onNodeWithText("2 / 51").assertExists()
-            assertEquals("2 points spent", tabState("Tree 1"))
+            assertEquals("2 points spent", tabState("Arms"))
             rotate(session, 915, 412)
             rotate(session, 568, 320)
             onNodeWithText("2 / 51").assertExists()
@@ -617,7 +623,7 @@ class TalentTreeLandscapeSectionsUiTest {
             var state by mutableStateOf(readyState)
             setContent {
                 TalentForgeTheme {
-                    CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    CompositionLocalProvider(LocalDensity provides Density(1f), LocalAppLanguage provides AppLanguage.ENGLISH) {
                         Box(Modifier.size(window.width.dp, window.height.dp)) {
                             if (shown) {
                                 CompositionLocalProvider(LocalSaveableStateRegistry provides registry) {
@@ -629,7 +635,7 @@ class TalentTreeLandscapeSectionsUiTest {
                 }
             }
             settle()
-            tab("Tree 2")
+            tab("Fury")
             select(fury)
             onNodeWithContentDescription("Add rank to $fury").performClick()
             settle()
@@ -649,7 +655,7 @@ class TalentTreeLandscapeSectionsUiTest {
             }
             settle()
 
-            onNodeWithText("Tree 2").assertIsSelected()
+            onNodeWithText("Fury").assertIsSelected()
             assertTabsInHeader()
             onNodeWithContentDescription(fury).assertIsSelected()
             assertTrue(hasPanel())
@@ -665,8 +671,8 @@ class TalentTreeLandscapeSectionsUiTest {
         onEditor {
             val tabs = onAllNodes(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Tab)).fetchSemanticsNodes()
             assertEquals(3, tabs.size, "one Tab per section, in the header")
-            assertEquals("0 points spent", tabState("Tree 2"))
-            assertTrue(onNodeWithText("Tree 1").fetchSemanticsNode().config.contains(SemanticsActions.OnClick))
+            assertEquals("0 points spent", tabState("Fury"))
+            assertTrue(onNodeWithText("Arms").fetchSemanticsNode().config.contains(SemanticsActions.OnClick))
 
             select("Improved Rend")
             for (label in listOf("Add rank to Improved Rend", "Remove rank from Improved Rend", "Max out Improved Rend")) {

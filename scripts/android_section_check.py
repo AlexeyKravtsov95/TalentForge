@@ -3,8 +3,15 @@
 
 Drives the ISOLATED debug build (application id suffix ``.devcheck``, its own data),
 so the user's real TalentForge app and its saved builds are never seen, changed or
-deleted. Uses adb + uiautomator only: Home -> + New build -> Warrior -> editor, then
+deleted. Uses adb + uiautomator only: Home -> New build -> Warrior -> editor, then
 the portrait <-> landscape section-navigation scenarios of the milestone.
+
+Since M5.REL.1 the section tabs read the Warrior's approved specialization names,
+localized by the device's PRIMARY language: the script reads the locale, picks the
+matching labels (the app's own rule — Russian only for a Russian primary language,
+English for every other one) and runs the same scenarios on an English or a Russian
+phone. Only the tab labels are localized in M5.REL.1; the rest of the copy the
+script reads (Home, class selection, talent names, rank controls) stays English.
 
 Every step records: orientation, display size and density, the tap coordinates and
 the target's bounds, the active tab before/after, the section actually on screen,
@@ -54,7 +61,13 @@ PACKAGE = "io.github.alexeykravtsov95.talentforge.devcheck"
 ACTIVITY = "io.github.alexeykravtsov95.talentforge.ui.MainActivity"
 APK = REPO / "mobile/composeApp/build/outputs/apk/debug/composeApp-debug.apk"
 DATASETS = REPO / "mobile/composeApp/src/commonMain/composeResources/files/dataset/forever"
-TABS = ("Tree 1", "Tree 2", "Tree 3")
+# M5.REL.1: the Warrior's approved specialization names by tab position — the
+# tuple order IS the section-index correspondence the assertions rely on
+# (``tabs.index(label)`` must equal the dataset's ``sectionIndex``).
+TABS_BY_LANGUAGE: dict[str, tuple[str, str, str]] = {
+    "en": ("Arms", "Fury", "Protection"),
+    "ru": ("Оружие", "Неистовство", "Защита"),
+}
 CLOSE = "\u00d7"  # the side panel's close button label
 BOUNDS = re.compile(r"\[(-?\d+),(-?\d+)\]\[(-?\d+),(-?\d+)\]")
 NOT_TALENTS = {
@@ -75,6 +88,14 @@ class GestureError(Exception):
 
 class DeviceError(Exception):
     """adb or uiautomator failed."""
+
+
+def language_of(locale_tag: str) -> str:
+    """The app's language rule (AppLanguage): a Russian PRIMARY language selects
+    the Russian tab labels; every other tag — including an unreadable one —
+    selects the English ones. The first subtag decides, the region never does."""
+    primary = locale_tag.split("-")[0].split("_")[0].strip().lower()
+    return "ru" if primary == "ru" else "en"
 
 
 Rect = tuple[int, int, int, int]
@@ -99,8 +120,9 @@ class UiNode:
 class Hierarchy:
     """One uiautomator dump, with parent links."""
 
-    def __init__(self, xml: str) -> None:
+    def __init__(self, xml: str, tabs: tuple[str, str, str]) -> None:
         self.xml = xml
+        self.tabs = tabs
         self.nodes: list[UiNode] = []
         root = ET.fromstring(xml)
         self._walk(root, None)
@@ -140,7 +162,9 @@ class Hierarchy:
         return node
 
     def active_tab(self) -> str | None:
-        active = [label for label in TABS if (tab := self.tab(label)) is not None and tab.selected]
+        active = [
+            label for label in self.tabs if (tab := self.tab(label)) is not None and tab.selected
+        ]
         return active[0] if len(active) == 1 else None
 
     def talents(self, sections: dict[str, int]) -> list[str]:
@@ -158,6 +182,9 @@ def dataset_sections() -> dict[str, int]:
 class Device:
     serial: str
     adb: str
+    # The tab labels of THIS device's language — set in main() from the primary
+    # locale before any check runs (fail-closed: hierarchy() refuses without them).
+    tabs: tuple[str, str, str] = ()
 
     def run(self, *args: str, check: bool = True, timeout: int = 300) -> bytes:
         cmd = [self.adb, "-s", self.serial, *args]
@@ -170,13 +197,27 @@ class Device:
     def shell(self, command: str, check: bool = True) -> str:
         return self.run("shell", command, check=check).decode(errors="replace").strip()
 
+    def primary_locale(self) -> str:
+        """The device's primary locale tag — the app's language source (e.g. ``ru-RU``)."""
+        for prop in ("persist.sys.locale", "ro.product.locale"):
+            tag = self.shell(f"getprop {prop}", check=False)
+            if tag and tag != "null":
+                return tag
+        return ""
+
     def hierarchy(self) -> Hierarchy:
+        if not self.tabs:
+            raise DeviceError("tab labels not configured: the device locale was not read")
         last = ""
         for _ in range(8):
             last = self.shell("uiautomator dump /sdcard/tf-section-check.xml", check=False)
-            xml = self.shell("cat /sdcard/tf-section-check.xml", check=False)
-            if xml.startswith("<?xml"):
-                return Hierarchy(xml)
+            # exec-out is byte-safe: a Russian dump's Cyrillic labels must not
+            # pass through a shell pty that may re-encode them
+            xml = self.run("exec-out", "cat", "/sdcard/tf-section-check.xml", check=False).decode(
+                errors="replace"
+            )
+            if xml.lstrip().startswith("<?xml"):
+                return Hierarchy(xml, self.tabs)
             time.sleep(0.7)
         raise DeviceError(f"uiautomator dump failed: {last}")
 
@@ -229,10 +270,13 @@ class Step:
 class Check:
     """One full pass of the scenarios on one device."""
 
-    def __init__(self, device: Device, out: Path, sections: dict[str, int]) -> None:
+    def __init__(
+        self, device: Device, out: Path, sections: dict[str, int], tabs: tuple[str, str, str]
+    ) -> None:
         self.device = device
         self.out = out
         self.sections = sections
+        self.tabs = tabs
         self.steps: list[Step] = []
         self.orientation = "portrait"
         self.counter = 0
@@ -294,7 +338,9 @@ class Check:
         if active != expected_tab:
             problems.append(f"active tab is {active}, expected {expected_tab}")
         talents = ui.talents(self.sections)
-        expected_section = TABS.index(expected_tab)
+        # the tab's POSITION is the dataset's section index (M5.REL.1 keeps the
+        # mapping (WARRIOR, index) -> Arms/Fury/Protection / Оружие/… intact)
+        expected_section = self.tabs.index(expected_tab)
         on_screen = {self.sections[t] for t in talents}
         if not talents:
             problems.append("no talent of any section is exposed on screen")
@@ -350,7 +396,7 @@ class Check:
     def swipe_to(self, direction: int, label: str, name: str) -> None:
         ui = self.device.hierarchy()
         before = ui.active_tab()
-        tab = ui.tab("Tree 1")
+        tab = ui.tab(self.tabs[0])
         undo = ui.find("Undo talent change")
         if tab is None or undo is None:
             raise GestureError("tabs or header not on screen")
@@ -399,27 +445,28 @@ class Check:
 
     def run(self, apk: Path) -> None:
         d = self.device
+        tab1, tab2, tab3 = self.tabs  # Arms / Fury / Protection in this device's language
         d.run("install", "-r", "-t", str(apk))
         if PACKAGE not in d.shell(f"pm list packages {PACKAGE}"):
             raise DeviceError(f"{apk} did not install as {PACKAGE}")
         d.shell(f"pm clear {PACKAGE}")  # the isolated package's own data only
         self.rotate(landscape=False)
         d.shell(f"am start -W -n {PACKAGE}/{ACTIVITY}")
-        d.wait_for("+ New build", timeout_s=30)
+        d.wait_for("New build", timeout_s=30)
         self.expect(
             "isolated app opens on an empty Home",
-            {"'+ New build' on Home": self.present("+ New build")},
+            {"'New build' on Home": self.present("New build")},
         )
 
         def create() -> None:
-            _, target, xy = self.tap_label("+ New build")
+            _, target, xy = self.tap_label("New build")
             self.tap_label("Warrior")
-            ui = d.wait_for("Tree 1", timeout_s=30)
+            ui = d.wait_for(tab1, timeout_s=30)
             self.expect(
-                "New build -> Warrior opens the editor on Tree 1",
+                f"New build -> Warrior opens the editor on {tab1}",
                 {
-                    "editor with tabs": ui.find("Tree 1") is not None,
-                    "Tree 1 active": ui.active_tab() == "Tree 1",
+                    "editor with tabs": ui.find(tab1) is not None,
+                    f"{tab1} active": ui.active_tab() == tab1,
                 },
                 target,
                 xy,
@@ -427,30 +474,30 @@ class Check:
             ui, shot, xml = self.snapshot("editor before the first interaction")
             self.record(
                 "editor before the first interaction",
-                self.section_problems(ui, "Tree 1"),
+                self.section_problems(ui, tab1),
                 ui,
                 shot,
                 xml,
             )
 
         self.step("create", create)
-        self.step("portrait Tree 2", lambda: self.open_tab("Tree 2", "portrait: tap Tree 2"))
+        self.step("portrait tab 2", lambda: self.open_tab(tab2, f"portrait: tap {tab2}"))
         self.step(
-            "rotate", lambda: self.rotate_keeps(True, "Tree 2", "rotate to landscape keeps Tree 2")
+            "rotate", lambda: self.rotate_keeps(True, tab2, f"rotate to landscape keeps {tab2}")
         )
-        self.step("landscape Tree 3", lambda: self.open_tab("Tree 3", "landscape: tap Tree 3"))
+        self.step("landscape tab 3", lambda: self.open_tab(tab3, f"landscape: tap {tab3}"))
         self.step(
             "rotate back",
-            lambda: self.rotate_keeps(False, "Tree 3", "rotate to portrait keeps Tree 3"),
+            lambda: self.rotate_keeps(False, tab3, f"rotate to portrait keeps {tab3}"),
         )
-        self.step("portrait Tree 1", lambda: self.open_tab("Tree 1", "portrait: tap Tree 1"))
+        self.step("portrait tab 1", lambda: self.open_tab(tab1, f"portrait: tap {tab1}"))
         self.step(
             "portrait swipe",
-            lambda: self.swipe_to(+1, "Tree 2", "portrait: swipe left opens Tree 2"),
+            lambda: self.swipe_to(+1, tab2, f"portrait: swipe left opens {tab2}"),
         )
         self.step(
             "portrait swipe back",
-            lambda: self.swipe_to(-1, "Tree 1", "portrait: swipe right opens Tree 1"),
+            lambda: self.swipe_to(-1, tab1, f"portrait: swipe right opens {tab1}"),
         )
 
         def spend() -> None:
@@ -475,7 +522,7 @@ class Check:
                         "Add rank to Improved Rend"
                     ),
                     "counter 1 / 51": self.present("1 / 51"),
-                    "Tree 1 still active": d.hierarchy().active_tab() == "Tree 1",
+                    f"{tab1} still active": d.hierarchy().active_tab() == tab1,
                 },
             )
 
@@ -496,15 +543,15 @@ class Check:
 
         def panel_and_tabs() -> None:
             before = d.hierarchy().active_tab()
-            _, target, xy = self.tap_label("Tree 2", tab=True)
+            _, target, xy = self.tap_label(tab2, tab=True)
             ui, shot, xml = self.snapshot(
-                "landscape: with the panel open, the Tree 2 tab still works"
+                f"landscape: with the panel open, the {tab2} tab still works"
             )
-            problems = self.section_problems(ui, "Tree 2")
+            problems = self.section_problems(ui, tab2)
             if ui.find("Add rank to Improved Rend") is not None:
                 problems.append("the side panel stayed open (a tab change deselects)")
             self.record(
-                "landscape: with the panel open, the Tree 2 tab still works",
+                f"landscape: with the panel open, the {tab2} tab still works",
                 problems,
                 ui,
                 shot,
@@ -517,20 +564,20 @@ class Check:
         self.step("panel vs tabs", panel_and_tabs)
         self.step(
             "landscape swipe",
-            lambda: self.swipe_to(+1, "Tree 3", "landscape: swipe left opens Tree 3"),
+            lambda: self.swipe_to(+1, tab3, f"landscape: swipe left opens {tab3}"),
         )
         self.step(
             "landscape swipe back",
-            lambda: self.swipe_to(-1, "Tree 2", "landscape: swipe right opens Tree 2"),
+            lambda: self.swipe_to(-1, tab2, f"landscape: swipe right opens {tab2}"),
         )
-        self.step("landscape Tree 1", lambda: self.open_tab("Tree 1", "landscape: tap Tree 1"))
+        self.step("landscape tab 1", lambda: self.open_tab(tab1, f"landscape: tap {tab1}"))
 
         def back() -> None:
             self.tap_label("Improved Rend")
             d.shell("input keyevent 4")
             time.sleep(1.2)
             cleared = self.gone("Add rank to Improved Rend")
-            in_editor = self.present("Tree 1")
+            in_editor = self.present(tab1)
             self.expect(
                 "landscape: system Back clears the selection, editor stays",
                 {"selection cleared": cleared, "still in the editor": in_editor},
@@ -672,11 +719,17 @@ def main() -> int:
             print("building the isolated APK …", flush=True)
             build_apk(out / "build.log")
         device = Device(pick_serial(adb_path(), args.serial), adb_path())
+        # M5.REL.1: the same labels the app shows on THIS device — its primary
+        # locale decides (Russian only for ru*, English otherwise)
+        locale_tag = device.primary_locale()
+        device.tabs = TABS_BY_LANGUAGE[language_of(locale_tag)]
         header |= {
             "serial": device.serial,
             "model": device.shell("getprop ro.product.model", check=False),
             "android": device.shell("getprop ro.build.version.release", check=False),
             "font_scale": device.shell("settings get system font_scale", check=False),
+            "primary_locale": locale_tag,
+            "tab_labels": list(device.tabs),
             **device.screen(),
         }
         saved = {
@@ -687,7 +740,7 @@ def main() -> int:
         for index in range(1, args.runs + 1):
             run_dir = out / f"run{index}"
             run_dir.mkdir(exist_ok=True)
-            check = Check(device, run_dir, sections)
+            check = Check(device, run_dir, sections, device.tabs)
             try:
                 check.run(APK)
             except (DeviceError, subprocess.TimeoutExpired) as error:

@@ -55,6 +55,8 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
 
 /**
  * M5.UX.1 portrait section tabs on the real screen (1A v2): one tap per
@@ -88,7 +90,7 @@ class TalentTreeSectionTabsUiTest {
         cameras = TalentTreeSectionCameras(sessionKey = "tabs-test", treeId = state.model.treeId)
         composeRule.setContent {
             TalentForgeTheme {
-                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                CompositionLocalProvider(LocalDensity provides Density(1f), LocalAppLanguage provides AppLanguage.ENGLISH) {
                     Box(Modifier.size(width, height)) {
                         TalentTreeScreen(
                             state,
@@ -148,27 +150,27 @@ class TalentTreeSectionTabsUiTest {
     fun tabsShowDataDrivenLabelsAndLivePointsPerSection() {
         compose()
 
-        composeRule.onNodeWithText("Tree 1").assertIsSelected()
-        composeRule.onNodeWithText("Tree 2").assertIsNotSelected()
-        composeRule.onNodeWithText("Tree 3").assertIsNotSelected()
-        for (label in listOf("Tree 1", "Tree 2", "Tree 3")) assertEquals("0 points spent", tabState(label))
+        composeRule.onNodeWithText("Arms").assertIsSelected()
+        composeRule.onNodeWithText("Fury").assertIsNotSelected()
+        composeRule.onNodeWithText("Protection").assertIsNotSelected()
+        for (label in listOf("Arms", "Fury", "Protection")) assertEquals("0 points spent", tabState(label))
 
         select("Improved Rend")
         repeat(2) {
             composeRule.onNodeWithText("+").performClick()
             composeRule.waitForIdle()
         }
-        assertEquals("2 points spent", tabState("Tree 1"))
+        assertEquals("2 points spent", tabState("Arms"))
 
         val fury = firstBuyableTalentOf(section = 1)
-        openTab("Tree 2")
+        openTab("Fury")
         select(fury)
         composeRule.onNodeWithText("+").performClick()
         composeRule.waitForIdle()
 
-        assertEquals("2 points spent", tabState("Tree 1"))
-        assertEquals("1 point spent", tabState("Tree 2"))
-        assertEquals("0 points spent", tabState("Tree 3"))
+        assertEquals("2 points spent", tabState("Arms"))
+        assertEquals("1 point spent", tabState("Fury"))
+        assertEquals("0 points spent", tabState("Protection"))
         // the section counts add up to the one global counter
         composeRule.onNodeWithText("3 / 51").assertExists()
     }
@@ -183,10 +185,10 @@ class TalentTreeSectionTabsUiTest {
         select("Deflection")
         composeRule.onNodeWithText("+").assertExists() // the compact inspector is open
 
-        openTab("Tree 2")
+        openTab("Fury")
 
-        composeRule.onNodeWithText("Tree 2").assertIsSelected()
-        // only Tree 2's talents are on the canvas — no pan through the other trees
+        composeRule.onNodeWithText("Fury").assertIsSelected()
+        // only Fury's talents are on the canvas — no pan through the other trees
         for (node in sections().section(1)!!.model.nodes) {
             composeRule.onNodeWithContentDescription(assertNotNull(node.name)).assertExists()
         }
@@ -200,8 +202,8 @@ class TalentTreeSectionTabsUiTest {
         composeRule.onNodeWithText("1 / 51").assertExists()
         composeRule.onNodeWithContentDescription("Undo talent change").assertIsEnabled()
 
-        openTab("Tree 3")
-        openTab("Tree 1")
+        openTab("Protection")
+        openTab("Arms")
         assertEquals(
             "1/3, in progress",
             composeRule.onNodeWithContentDescription("Improved Rend").fetchSemanticsNode()
@@ -217,12 +219,19 @@ class TalentTreeSectionTabsUiTest {
             compose(state)
             val seen = mutableSetOf<Int>()
             for (section in sections(state).sections) {
-                openTab(section.label)
+                val label = talentSectionDisplayLabel(
+                    datasetName = section.datasetName,
+                    classToken = state.classToken,
+                    sectionIndex = section.index,
+                    ordinal = section.ordinal,
+                    language = AppLanguage.ENGLISH,
+                )
+                openTab(label)
                 for (node in section.model.nodes) {
                     val description = node.name ?: "talent ${node.id}"
                     assertTrue(
                         composeRule.onAllNodesWithContentDescription(description).fetchSemanticsNodes().isNotEmpty(),
-                        "${bundle.clientBuild} $classToken ${section.label}: $description",
+                        "${bundle.clientBuild} $classToken $label: $description",
                     )
                     seen += node.id
                 }
@@ -242,17 +251,17 @@ class TalentTreeSectionTabsUiTest {
 
         dragCanvasDown(80f)
         val moved1 = assertNotNull(tree1.viewport)
-        assertNotEquals(fit1, moved1, "the drag moved Tree 1's camera")
+        assertNotEquals(fit1, moved1, "the drag moved Arms's camera")
 
-        openTab("Tree 2")
+        openTab("Fury")
         val tree2 = cameras.stateOf(1)
-        val fit2 = assertNotNull(tree2.viewport, "Tree 2 gets its own camera on first open")
+        val fit2 = assertNotNull(tree2.viewport, "Fury gets its own camera on first open")
         assertFalse(tree2.userMoved)
-        assertEquals(moved1, tree1.viewport, "switching away never touches Tree 1's camera")
+        assertEquals(moved1, tree1.viewport, "switching away never touches Arms's camera")
 
-        openTab("Tree 1")
-        assertEquals(moved1, tree1.viewport, "Tree 1's pan/zoom is restored")
-        assertEquals(fit2, tree2.viewport, "and Tree 2's camera is untouched")
+        openTab("Arms")
+        assertEquals(moved1, tree1.viewport, "Arms's pan/zoom is restored")
+        assertEquals(fit2, tree2.viewport, "and Fury's camera is untouched")
     }
 
     @Test
@@ -290,11 +299,11 @@ class TalentTreeSectionTabsUiTest {
         dragCanvasDown(80f)
         assertTrue(camera.isAwayFromFit)
 
-        openTab("Tree 1") // already open
+        openTab("Arms") // already open
         settle()
 
         assertTrue(assertNotNull(camera.viewport).isCloseTo(fit))
-        composeRule.onNodeWithText("Tree 1").assertIsSelected()
+        composeRule.onNodeWithText("Arms").assertIsSelected()
         assertTrue(reported.isEmpty())
     }
 
@@ -333,19 +342,19 @@ class TalentTreeSectionTabsUiTest {
         composeRule.onNodeWithText("+").performClick()
         composeRule.waitForIdle()
 
-        openTab("Tree 2")
+        openTab("Fury")
         composeRule.onNodeWithContentDescription("Undo talent change").performClick()
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithText("Tree 2").assertIsSelected() // 1A v2 S8: no tab switch
+        composeRule.onNodeWithText("Fury").assertIsSelected() // 1A v2 S8: no tab switch
         composeRule.onNodeWithText("0 / 51").assertExists()
-        assertEquals("0 points spent", tabState("Tree 1"))
+        assertEquals("0 points spent", tabState("Arms"))
 
         composeRule.onNodeWithContentDescription("Redo talent change").performClick()
         composeRule.waitForIdle()
         composeRule.onNodeWithText("1 / 51").assertExists()
-        assertEquals("1 point spent", tabState("Tree 1"))
-        composeRule.onNodeWithText("Tree 2").assertIsSelected()
+        assertEquals("1 point spent", tabState("Arms"))
+        composeRule.onNodeWithText("Fury").assertIsSelected()
         // spend, undo, redo — and nothing else — reached the autosave observer
         assertEquals(listOf(1, 0, 1), reported.map { readyState.engine.spentPoints(it) })
     }
@@ -358,11 +367,11 @@ class TalentTreeSectionTabsUiTest {
         val engine = TalentAllocationEngine(fixture.document)
         val model = assertIs<TalentTreeUiBuildResult.Ready>(buildTalentTreeUiModel(fixture.document)).model
         val state = readyState.copy(model = model, engine = engine, buildState = engine.emptyState())
-        val origin = nameOf(state, fixture.targetId) // the locked talent in Tree 3
-        val prerequisite = nameOf(state, fixture.sourceId) // its synthetic prerequisite in Tree 2
+        val origin = nameOf(state, fixture.targetId) // the locked talent in Protection
+        val prerequisite = nameOf(state, fixture.sourceId) // its synthetic prerequisite in Fury
         compose(state)
 
-        openTab("Tree 3")
+        openTab("Protection")
         select(origin)
         composeRule.onNodeWithText("Show").assertExists()
         val tree3Camera = assertNotNull(cameras.stateOf(2).viewport)
@@ -370,20 +379,20 @@ class TalentTreeSectionTabsUiTest {
         composeRule.onNodeWithText("Show").performClick()
         settle()
 
-        composeRule.onNodeWithText("Tree 2").assertIsSelected()
+        composeRule.onNodeWithText("Fury").assertIsSelected()
         composeRule.onNodeWithContentDescription(prerequisite).assertIsSelected()
         composeRule.onNodeWithText("Available · needed for $origin").assertExists()
-        composeRule.onNodeWithText("Back to $origin · Tree 3").assertExists()
+        composeRule.onNodeWithText("Back to $origin · Protection").assertExists()
         assertEquals(tree3Camera, cameras.stateOf(2).viewport, "the origin tab's camera is kept")
         composeRule.onNodeWithText("0 / 51").assertExists()
         assertTrue(reported.isEmpty(), "Show never spends")
 
-        composeRule.onNodeWithText("Back to $origin · Tree 3").performClick()
+        composeRule.onNodeWithText("Back to $origin · Protection").performClick()
         settle()
 
-        composeRule.onNodeWithText("Tree 3").assertIsSelected()
+        composeRule.onNodeWithText("Protection").assertIsSelected()
         composeRule.onNodeWithContentDescription(origin).assertIsSelected()
-        composeRule.onNodeWithText("Back to $origin · Tree 3").assertDoesNotExist()
+        composeRule.onNodeWithText("Back to $origin · Protection").assertDoesNotExist()
         assertEquals(tree3Camera, cameras.stateOf(2).viewport)
         assertTrue(reported.isEmpty())
     }
@@ -398,7 +407,7 @@ class TalentTreeSectionTabsUiTest {
         var shown by mutableStateOf(true)
         composeRule.setContent {
             TalentForgeTheme {
-                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                CompositionLocalProvider(LocalDensity provides Density(1f), LocalAppLanguage provides AppLanguage.ENGLISH) {
                     Box(Modifier.size(360.dp, 760.dp)) {
                         if (shown) {
                             CompositionLocalProvider(LocalSaveableStateRegistry provides registry) {
@@ -414,7 +423,7 @@ class TalentTreeSectionTabsUiTest {
         composeRule.onNodeWithText("+").performClick()
         composeRule.waitForIdle()
         val fury = firstBuyableTalentOf(section = 1)
-        openTab("Tree 2")
+        openTab("Fury")
         dragCanvasDown(60f)
         select(fury)
         val before = composeRule.onNodeWithContentDescription(fury).fetchSemanticsNode().positionInRoot
@@ -425,19 +434,19 @@ class TalentTreeSectionTabsUiTest {
             shown = false
         }
         composeRule.waitForIdle()
-        composeRule.onNodeWithText("Tree 2").assertDoesNotExist()
+        composeRule.onNodeWithText("Fury").assertDoesNotExist()
         composeRule.runOnIdle {
             registry = SaveableStateRegistry(saved) { true }
             shown = true
         }
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithText("Tree 2").assertIsSelected()
+        composeRule.onNodeWithText("Fury").assertIsSelected()
         composeRule.onNodeWithContentDescription(fury).assertIsSelected()
         assertEquals(before, composeRule.onNodeWithContentDescription(fury).fetchSemanticsNode().positionInRoot,
             "the tab's pan is restored")
         composeRule.onNodeWithText("1 / 51").assertExists()
-        assertEquals("1 point spent", tabState("Tree 1"))
+        assertEquals("1 point spent", tabState("Arms"))
     }
 
     @Test
@@ -446,7 +455,7 @@ class TalentTreeSectionTabsUiTest {
         cameras = TalentTreeSectionCameras(sessionKey = "rotate", treeId = readyState.model.treeId)
         composeRule.setContent {
             TalentForgeTheme {
-                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                CompositionLocalProvider(LocalDensity provides Density(1f), LocalAppLanguage provides AppLanguage.ENGLISH) {
                     Box(Modifier.size(window.width.dp, window.height.dp)) {
                         TalentTreeScreen(readyState, sectionCameras = cameras)
                     }
@@ -455,19 +464,19 @@ class TalentTreeSectionTabsUiTest {
         }
         composeRule.waitForIdle()
         val fury = firstBuyableTalentOf(section = 1)
-        openTab("Tree 2")
+        openTab("Fury")
         select(fury)
 
         // landscape (M5.UX.2b.1): the same section tabs, the same section and selection
         composeRule.runOnIdle { window = IntSize(760, 360) }
         composeRule.waitForIdle()
-        composeRule.onNodeWithText("Tree 2").assertIsSelected()
+        composeRule.onNodeWithText("Fury").assertIsSelected()
         composeRule.onNodeWithContentDescription(fury).assertIsSelected()
 
         // back to portrait: the same section and the same selection
         composeRule.runOnIdle { window = IntSize(360, 760) }
         composeRule.waitForIdle()
-        composeRule.onNodeWithText("Tree 2").assertIsSelected()
+        composeRule.onNodeWithText("Fury").assertIsSelected()
         composeRule.onNodeWithContentDescription(fury).assertIsSelected()
     }
 
@@ -529,7 +538,7 @@ class TalentTreeSectionTabsUiTest {
 
         compose(state)
 
-        composeRule.onNodeWithText("Tree 1").assertDoesNotExist()
+        composeRule.onNodeWithText("Arms").assertDoesNotExist()
         // no node is hidden: the whole tree is on the one canvas
         for (node in state.model.nodes) {
             assertTrue(
@@ -552,6 +561,7 @@ class TalentTreeSectionTabsUiTest {
         TalentTreeUiState.Ready(
             classDisplayName = document.classInfo.name,
             gameDisplayName = "Forever",
+            classToken = document.classInfo.token,
             model = assertIs<TalentTreeUiBuildResult.Ready>(buildTalentTreeUiModel(document)).model,
             engine = engine,
             buildState = engine.emptyState(),

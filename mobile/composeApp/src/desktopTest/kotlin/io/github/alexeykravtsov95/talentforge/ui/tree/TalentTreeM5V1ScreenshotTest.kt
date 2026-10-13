@@ -81,6 +81,7 @@ class TalentTreeM5V1ScreenshotTest {
         TalentTreeUiState.Ready(
             classDisplayName = document.classInfo.name,
             gameDisplayName = "Forever",
+            classToken = document.classInfo.token,
             model = assertIs<TalentTreeUiBuildResult.Ready>(buildTalentTreeUiModel(document)).model,
             engine = engine,
             buildState = engine.emptyState(),

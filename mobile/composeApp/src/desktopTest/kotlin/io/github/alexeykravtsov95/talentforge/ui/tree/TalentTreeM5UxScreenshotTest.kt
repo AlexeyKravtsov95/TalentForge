@@ -40,10 +40,12 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.Assume.assumeTrue
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
 
 /**
  * M5.UX.1 PR evidence from the REAL screen (desktop-rendered, product
- * dataset 1.60.1.70245, real icons): Tree 1 → Tree 2 → Tree 3 by one tap
+ * dataset 1.60.1.70245, real icons): Balance → Feral Combat → Restoration by one tap
  * each, FIT after a pinch zoom, one tree on a 320 × 568 phone, and a
  * cross-section Show on the synthetic test fixture.
  *
@@ -76,6 +78,7 @@ class TalentTreeM5UxScreenshotTest {
         TalentTreeUiState.Ready(
             classDisplayName = document.classInfo.name,
             gameDisplayName = "Forever",
+            classToken = document.classInfo.token,
             model = assertIs<TalentTreeUiBuildResult.Ready>(buildTalentTreeUiModel(document)).model,
             engine = engine,
             buildState = engine.emptyState(),
@@ -122,7 +125,7 @@ class TalentTreeM5UxScreenshotTest {
         val cameras = TalentTreeSectionCameras(sessionKey = "screenshots", treeId = state.model.treeId)
         setContent {
             TalentForgeTheme {
-                CompositionLocalProvider(LocalDensity provides Density(DENSITY)) {
+                CompositionLocalProvider(LocalDensity provides Density(DENSITY), LocalAppLanguage provides AppLanguage.ENGLISH) {
                     Box(Modifier.size(width.dp, height.dp)) {
                         TalentTreeScreen(state, sectionCameras = cameras)
                     }
@@ -150,15 +153,15 @@ class TalentTreeM5UxScreenshotTest {
 
         onPhone(state, 393, 852) { cameras ->
             shoot("m5ux-393x852-1-tree1.png")
-            onNodeWithText("Tree 2").performClick()
+            onNodeWithText("Feral Combat").performClick()
             settle()
             shoot("m5ux-393x852-2-tree2.png")
-            onNodeWithText("Tree 3").performClick()
+            onNodeWithText("Restoration").performClick()
             settle()
             shoot("m5ux-393x852-3-tree3.png")
 
-            // pinch-zoom Tree 1 with the real gesture (px = dp × density)
-            onNodeWithText("Tree 1").performClick()
+            // pinch-zoom Balance with the real gesture (px = dp × density)
+            onNodeWithText("Balance").performClick()
             settle()
             onRoot().performTouchInput {
                 val centre = Offset(196f * DENSITY, 360f * DENSITY)
@@ -197,7 +200,7 @@ class TalentTreeM5UxScreenshotTest {
         val origin = model.nodes.first { it.id == fixture.targetId }.name!!
 
         onPhone(state, 393, 852) {
-            onNodeWithText("Tree 3").performClick()
+            onNodeWithText("Protection").performClick()
             settle()
             onNodeWithContentDescription(origin).performClick()
             settle()

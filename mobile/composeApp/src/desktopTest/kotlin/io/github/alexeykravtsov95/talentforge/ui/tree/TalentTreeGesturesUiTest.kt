@@ -38,6 +38,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
 
 /**
  * PR #19 on the REAL screen (product Warrior, 360 × 800 dp, density 1 so
@@ -76,7 +78,7 @@ class TalentTreeGesturesUiTest {
             )
             setContent {
                 TalentForgeTheme {
-                    CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    CompositionLocalProvider(LocalDensity provides Density(1f), LocalAppLanguage provides AppLanguage.ENGLISH) {
                         // stands in for the app's navigation handler (registered first, like App.kt)
                         PlatformBackHandler(enabled = true) { session.navigatedBack[0] += 1 }
                         Box(Modifier.size(w.dp, h.dp)) {
@@ -175,19 +177,19 @@ class TalentTreeGesturesUiTest {
             assertTrue(cameraA.sectionOverscrollDp < 0f, "the canvas follows the finger: ${cameraA.sectionOverscrollDp}")
             onRoot().performTouchInput { up() }
             settle()
-            assertEquals(b, session.open(), "80 dp left from the centre → Tree 2, no pan to an edge first")
+            assertEquals(b, session.open(), "80 dp left from the centre → Fury, no pan to an edge first")
             assertEquals(0f, cameraA.sectionOverscrollDp)
-            session.assertAtFit(a, "Tree 1 after leaving")
+            session.assertAtFit(a, "Arms after leaving")
 
             // from the left third of the canvas, then from the right third
             drag(dx = -80f, start = Offset(110f, 300f))
-            assertEquals(c, session.open(), "left third → Tree 3")
+            assertEquals(c, session.open(), "left third → Protection")
             drag(dx = 80f, start = Offset(260f, 600f))
-            assertEquals(b, session.open(), "right third, finger right → back to Tree 2")
+            assertEquals(b, session.open(), "right third, finger right → back to Fury")
             // a quick 45 dp flick
             flick(dx = 45f)
-            assertEquals(a, session.open(), "a flick → Tree 1")
-            onNodeWithText("Tree 1").assertIsSelected()
+            assertEquals(a, session.open(), "a flick → Arms")
+            onNodeWithText("Arms").assertIsSelected()
             for (section in session.sections) session.assertAtFit(section, "section $section")
             assertTrue(session.reported.isEmpty(), "switching sections never touches the BuildState or autosave")
         }
@@ -214,7 +216,7 @@ class TalentTreeGesturesUiTest {
                         edgeModel += label
                         drag(dx = -340f, start = Offset(350f, 420f))
                     }
-                    assertEquals(session.sections[1], session.open(), "$label: Tree 1 → Tree 2 ($model)")
+                    assertEquals(session.sections[1], session.open(), "$label: Arms → Fury ($model)")
                     assertTrue(session.reported.isEmpty(), label)
                 }
             }
@@ -304,8 +306,8 @@ class TalentTreeGesturesUiTest {
             }
             settle()
             assertEquals(b, session.open(), "any pan, then ≥ 40 dp past the edge → next")
-            assertTrue(camera.userMoved, "Tree 1 keeps the user's camera")
-            // zoomed Tree 2: past the right bound, then pulled back below the threshold before the release
+            assertTrue(camera.userMoved, "Arms keeps the user's camera")
+            // zoomed Fury: past the right bound, then pulled back below the threshold before the release
             zoomIn(session)
             onRoot().performTouchInput {
                 down(centre)
@@ -370,16 +372,16 @@ class TalentTreeGesturesUiTest {
             assertEquals(a, session.open(), "no wrap-around before the first section")
             drag(dx = -220f)
             assertEquals(b, session.open())
-            drag(dx = -220f) // at FIT: a direct swipe, Tree 2's camera does not move
+            drag(dx = -220f) // at FIT: a direct swipe, Fury's camera does not move
             assertEquals(c, session.open())
             val cameraB = assertNotNull(session.cameras.stateOf(b).viewport)
-            assertEquals(session.cameras.stateOf(b).fitViewport(), cameraB, "Tree 2 is left at FIT")
+            assertEquals(session.cameras.stateOf(b).fitViewport(), cameraB, "Fury is left at FIT")
             drag(dx = -220f)
             assertEquals(c, session.open(), "no wrap-around past the last section")
             drag(dx = 220f)
             assertEquals(b, session.open(), "swipe right at the left edge → previous section")
             assertEquals(cameraB, session.cameras.stateOf(b).viewport, "each section keeps its own camera")
-            onNodeWithText("Tree 2").assertIsSelected()
+            onNodeWithText("Fury").assertIsSelected()
             assertTrue(session.reported.isEmpty())
         }
     }
@@ -496,7 +498,7 @@ class TalentTreeGesturesUiTest {
         runDesktopComposeUiTest(width = 320, height = 568) {
             setContent {
                 TalentForgeTheme {
-                    CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    CompositionLocalProvider(LocalDensity provides Density(1f), LocalAppLanguage provides AppLanguage.ENGLISH) {
                         Box(Modifier.size(320.dp, 568.dp)) {
                             TalentTreeScreen(
                                 druid.copy(buildState = case.build),

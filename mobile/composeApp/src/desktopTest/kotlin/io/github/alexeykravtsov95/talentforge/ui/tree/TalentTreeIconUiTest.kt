@@ -43,6 +43,8 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
 
 /**
  * M5.V1: the real screen renders real, bundled talent icons as the normal node
@@ -72,6 +74,7 @@ class TalentTreeIconUiTest {
         TalentTreeUiState.Ready(
             classDisplayName = document.classInfo.name,
             gameDisplayName = "Forever",
+            classToken = document.classInfo.token,
             model = model,
             engine = engine,
             buildState = engine.emptyState(),
@@ -89,7 +92,7 @@ class TalentTreeIconUiTest {
     ) {
         composeRule.setContent {
             TalentForgeTheme {
-                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                CompositionLocalProvider(LocalDensity provides Density(1f), LocalAppLanguage provides AppLanguage.ENGLISH) {
                     Box(Modifier.size(width, height)) {
                         TalentTreeScreen(state, onBuildStateChanged = onBuildStateChanged)
                     }
@@ -137,10 +140,17 @@ class TalentTreeIconUiTest {
         // every tab renders exactly its own nodes with icons; together: the whole tree
         var rendered = 0
         for (section in sectionsOf(state).sections) {
-            composeRule.onNodeWithText(section.label).performClick()
+            val label = talentSectionDisplayLabel(
+                datasetName = section.datasetName,
+                classToken = state.classToken,
+                sectionIndex = section.index,
+                ordinal = section.ordinal,
+                language = AppLanguage.ENGLISH,
+            )
+            composeRule.onNodeWithText(label).performClick()
             composeRule.waitForIdle()
-            assertEquals(section.model.nodes.size, count(TALENT_NODE_ICON_TAG), "$classToken ${section.label}")
-            assertEquals(0, count(TALENT_NODE_MONOGRAM_TAG), "$classToken ${section.label} monogram fallbacks")
+            assertEquals(section.model.nodes.size, count(TALENT_NODE_ICON_TAG), "$classToken $label")
+            assertEquals(0, count(TALENT_NODE_MONOGRAM_TAG), "$classToken $label monogram fallbacks")
             rendered += count(TALENT_NODE_ICON_TAG)
         }
         assertEquals(expectedNodes, rendered, "$classToken icon-backed nodes across all tabs")

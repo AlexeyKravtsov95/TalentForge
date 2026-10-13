@@ -42,6 +42,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
 
 /**
  * M5.UX.2a on the REAL screen (real datasets, icons, descriptions; density 1,
@@ -69,7 +71,7 @@ class TalentInspectorAdaptiveUiTest {
         )
         setContent {
             TalentForgeTheme {
-                CompositionLocalProvider(LocalDensity provides Density(1f, fontScale)) {
+                CompositionLocalProvider(LocalDensity provides Density(1f, fontScale), LocalAppLanguage provides AppLanguage.ENGLISH) {
                     Box(Modifier.size(width.dp, height.dp)) {
                         TalentTreeScreen(
                             state,
@@ -132,7 +134,7 @@ class TalentInspectorAdaptiveUiTest {
                 runDesktopComposeUiTest(width = w, height = h) {
                     setContent {
                         TalentForgeTheme {
-                            CompositionLocalProvider(LocalDensity provides Density(1f, scale)) {
+                            CompositionLocalProvider(LocalDensity provides Density(1f, scale), LocalAppLanguage provides AppLanguage.ENGLISH) {
                                 Box(Modifier.size(w.dp, h.dp)) {
                                     // a fresh screen per scenario (the editing session is keyed by engine)
                                     key(current) {
@@ -474,8 +476,8 @@ class TalentInspectorAdaptiveUiTest {
         val warrior = productState("WARRIOR")
         onPhone(warrior, 320, 568, fontScale = 2f) { session ->
             // 1A v2 S8: "вкладки только «N» и очки" — the label stays the accessible name
-            onNodeWithText("Tree 2").assertDoesNotExist()
-            onNode(hasContentDescription("Tree 2") and hasText("2", substring = true)).assertIsDisplayed().performClick()
+            onNodeWithText("Fury").assertDoesNotExist()
+            onNode(hasContentDescription("Fury") and hasText("2", substring = true)).assertIsDisplayed().performClick()
             settle()
             val second = (buildTalentTreeSections(warrior.engine.tree, warrior.model) as TalentTreeSectionsResult.Sectioned)
                 .sections[1].index
@@ -483,7 +485,7 @@ class TalentInspectorAdaptiveUiTest {
             assertTrue(session.reported.isEmpty(), "a tab switch is view state only")
         }
         onPhone(warrior, 320, 568, fontScale = 1.3f) {
-            onNodeWithText("Tree 2").assertIsDisplayed() // below 175 % the label is unchanged
+            onNodeWithText("Fury").assertIsDisplayed() // below 175 % the label is unchanged
         }
     }
 
@@ -493,10 +495,10 @@ class TalentInspectorAdaptiveUiTest {
         onPhone(warrior, 360, 800) { session ->
             select(SHORT_DESCRIPTION_TALENT)
             expand()
-            onNodeWithText("Tree 2").performClick()
+            onNodeWithText("Fury").performClick()
             settle()
             onNodeWithTag(TALENT_INSPECTOR_SHEET_TAG).assertDoesNotExist()
-            onNodeWithText("Tree 1").performClick()
+            onNodeWithText("Arms").performClick()
             settle()
             assertTrue(session.reported.isEmpty(), "a tab switch is view state only")
         }

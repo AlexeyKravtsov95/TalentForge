@@ -25,12 +25,14 @@ import javax.imageio.ImageIO
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import org.junit.Assume.assumeTrue
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
 
 /**
  * PR #19 evidence: frame-by-frame renders of the REAL screen (desktop, product
  * Warrior, 360 × 800 dp at density 2) while the gestures are injected — the
- * PR #19 motion tour: swipes Tree 1 → 2 → 3 and back, tab taps, a cancelled
- * swipe, a zoomed Tree 1 that keeps its camera through a round trip, and the
+ * PR #19 motion tour: swipes Arms → 2 → 3 and back, tab taps, a cancelled
+ * swipe, a zoomed Arms that keeps its camera through a round trip, and the
  * inspector sheet sliding up and down. Frames are numbered PNGs (assembled
  * into a GIF for the PR). Desktop-rendered: it shows the app's own behaviour, not Android's
  * system gesture handling, which needs a device.
@@ -99,7 +101,7 @@ class TalentTreeGestureRecordingTest {
             mainClock.autoAdvance = false
             setContent {
                 TalentForgeTheme {
-                    CompositionLocalProvider(LocalDensity provides Density(DENSITY)) {
+                    CompositionLocalProvider(LocalDensity provides Density(DENSITY), LocalAppLanguage provides AppLanguage.ENGLISH) {
                         Box(Modifier.size(360.dp, 800.dp)) {
                             TalentTreeScreen(warrior, onBack = {}, sectionCameras = cameras)
                         }
@@ -108,27 +110,27 @@ class TalentTreeGestureRecordingTest {
             }
             advance(900)
             shoot(hold = 8)
-            // Tree 1 → Tree 2 → Tree 3: ordinary swipes left, both pages follow the finger
+            // Arms → Fury → Protection: ordinary swipes left, both pages follow the finger
             recordedDrag(start = Offset(250f, 420f), delta = Offset(-140f, 0f))
             shoot(hold = 4)
             recordedDrag(start = Offset(250f, 420f), delta = Offset(-140f, 0f))
             shoot(hold = 4)
-            // and back: Tree 3 → Tree 2 → Tree 1
+            // and back: Protection → Fury → Arms
             recordedDrag(start = Offset(110f, 420f), delta = Offset(140f, 0f))
             shoot(hold = 4)
             recordedDrag(start = Offset(110f, 420f), delta = Offset(140f, 0f))
             shoot(hold = 6)
             // tab taps: the same transition, 260 ms ease-out, from the tab's side
-            onNodeWithText("Tree 3").performClick()
+            onNodeWithText("Protection").performClick()
             settleFrames()
             shoot(hold = 4)
-            onNodeWithText("Tree 1").performClick()
+            onNodeWithText("Arms").performClick()
             settleFrames()
             shoot(hold = 6)
-            // a cancelled swipe: 40 dp slowly, Tree 2 peeks in and eases back out
+            // a cancelled swipe: 40 dp slowly, Fury peeks in and eases back out
             recordedDrag(start = Offset(220f, 420f), delta = Offset(-40f, 0f), steps = 8, moveMillis = 60)
             shoot(hold = 6)
-            // quick double swipes Tree 1 → 2 → 3 (the second starts mid-motion) and back
+            // quick double swipes Arms → 2 → 3 (the second starts mid-motion) and back
             repeat(2) { index ->
                 val left = index == 0
                 recordedDrag(
@@ -145,14 +147,14 @@ class TalentTreeGestureRecordingTest {
                 shoot(hold = 4)
             }
             // a tab tap caught mid-way by a finger: the pages stop where they are, then follow it back
-            onNodeWithText("Tree 2").performClick()
+            onNodeWithText("Fury").performClick()
             repeat(3) {
                 advance(32)
                 shoot()
             }
             recordedDrag(start = Offset(180f, 420f), delta = Offset(80f, 0f), steps = 8, moveMillis = 40)
             shoot(hold = 6)
-            // Tree 1 zoomed by a pinch, then Tree 2 and back: Tree 1 comes back with its zoom
+            // Arms zoomed by a pinch, then Fury and back: Arms comes back with its zoom
             onRoot().performTouchInput {
                 down(0, Offset(150f, 360f) * DENSITY)
                 down(1, Offset(210f, 360f) * DENSITY)
@@ -172,10 +174,10 @@ class TalentTreeGestureRecordingTest {
             }
             advance(200)
             shoot(hold = 6)
-            onNodeWithText("Tree 2").performClick()
+            onNodeWithText("Fury").performClick()
             settleFrames()
             shoot(hold = 4)
-            onNodeWithText("Tree 1").performClick()
+            onNodeWithText("Arms").performClick()
             settleFrames()
             shoot(hold = 8)
             onNodeWithContentDescription("Fit tree").performClick()

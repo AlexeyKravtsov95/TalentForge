@@ -54,6 +54,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.alexeykravtsov95.talentforge.data.ClassToken
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeRadius
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
@@ -127,7 +129,7 @@ const val TALENT_SECTION_TAB_ICON_TAG = "talent-section-tab-icon"
 /** Test tag of the tab indicator (its bounds follow the pages, PR #19 motion). */
 const val TALENT_SECTION_INDICATOR_TAG = "talent-section-indicator"
 
-/** One tab: the section, its data-driven label, its live spent points and its icon node. */
+/** One tab: the section, its display label, its live spent points and its icon node. */
 data class TalentSectionTab(
     val index: Int,
     val label: String,
@@ -136,15 +138,31 @@ data class TalentSectionTab(
     val iconNodeId: Int?,
 )
 
-/** Builds the tabs of [sections] from live per-section [points] and the available [icons]. */
+/**
+ * Builds the tabs of [sections] from live per-section [points] and the
+ * available [icons]. M5.REL.1: each tab's [TalentSectionTab.label] is the
+ * resolved display label of ([classToken], the section's index) in
+ * [language] — the approved specialization name ("Arms" / "Оружие" …), the
+ * dataset's own published section name when it has one, and the localized
+ * generic "Tree N" / "Ветка N" only for a pair the approved table does not
+ * name (see [talentSectionDisplayLabel]).
+ */
 fun talentSectionTabs(
     sections: TalentTreeSectionsResult.Sectioned,
     points: Map<Int, Int>,
     icons: TalentNodeIcons,
+    classToken: ClassToken,
+    language: AppLanguage,
 ): List<TalentSectionTab> = sections.sections.map { section ->
     TalentSectionTab(
         index = section.index,
-        label = section.label,
+        label = talentSectionDisplayLabel(
+            datasetName = section.datasetName,
+            classToken = classToken,
+            sectionIndex = section.index,
+            ordinal = section.ordinal,
+            language = language,
+        ),
         points = points[section.index] ?: 0,
         iconNodeId = section.readingOrderNodeIds.firstOrNull { icons.iconOf(it) != null },
     )
@@ -152,10 +170,11 @@ fun talentSectionTabs(
 
 /**
  * The M5.UX.1 section tab row (1A v2 01): one tab per section — the
- * section's first talent icon, its label ("Tree N" while the dataset names
- * none) and the points spent in it. One tap switches the section; a tap on
- * the active tab asks for FIT. Any number of sections is supported: they
- * share the width while each tab keeps 72 dp, otherwise the row scrolls.
+ * section's first talent icon, its resolved display label (M5.REL.1: the
+ * approved specialization name, e.g. "Arms" / "Оружие") and the points
+ * spent in it. One tap switches the section; a tap on the active tab asks
+ * for FIT. Any number of sections is supported: they share the width while
+ * each tab keeps 72 dp, otherwise the row scrolls.
  *
  * Accessibility: each tab is a selectable `Tab` whose merged text carries the
  * label and the count; the count is also its state description.

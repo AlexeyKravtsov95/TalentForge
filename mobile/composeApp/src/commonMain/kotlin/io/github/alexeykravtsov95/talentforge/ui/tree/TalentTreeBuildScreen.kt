@@ -117,6 +117,7 @@ private fun ReadyBuildEditor(
             state = TalentTreeUiState.Ready(
                 classDisplayName = session.classDisplayName,
                 gameDisplayName = session.gameDisplayName,
+                classToken = record.build.classToken,
                 model = session.model,
                 engine = session.engine,
                 buildState = session.buildState,

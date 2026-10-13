@@ -63,6 +63,7 @@ import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentDescriptionsLoader
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentIconsLoader
+import io.github.alexeykravtsov95.talentforge.ui.lang.appLanguage
 import io.github.alexeykravtsov95.talentforge.ui.library.REFERENCE_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.motion.prefersReducedMotion
 import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
@@ -100,6 +101,13 @@ sealed interface TalentTreeUiState {
     data class Ready(
         val classDisplayName: String,
         val gameDisplayName: String,
+        /**
+         * The build's locale-independent class token (M5.REL.1) — the key the
+         * editor's presentation resolves specialization display names with
+         * ([TalentSpecializationNames]). Never displayed directly and never
+         * part of any build.
+         */
+        val classToken: ClassToken,
         val model: TalentTreeUiModel,
         val engine: TalentAllocationEngine,
         /**
@@ -369,6 +377,11 @@ private fun ReadyTalentTreeScreen(
     val sectioned = remember(current.engine, current.model) {
         buildTalentTreeSections(current.engine.tree, current.model) as? TalentTreeSectionsResult.Sectioned
     }
+    // M5.REL.1: the one language every editor surface presents in — Russian
+    // only for a Russian primary device language, English otherwise. Read
+    // here once; the tabs, the Back chip and the accessibility labels all
+    // resolve through it, so a change recomposes the labels only.
+    val language = appLanguage()
     val rememberedCameras = rememberTalentTreeSectionCameras(sessionKey, current.model.treeId)
     val cameras = sectionCameras ?: rememberedCameras
     // per-section spent points from the live build (tabs)
@@ -640,7 +653,13 @@ private fun ReadyTalentTreeScreen(
         fun SectionTabs() {
             if (pagedSections != null && activeSection != null) {
                 TalentTreeSectionTabs(
-                    tabs = talentSectionTabs(pagedSections, sectionPoints, current.icons),
+                    tabs = talentSectionTabs(
+                        sections = pagedSections,
+                        points = sectionPoints,
+                        icons = current.icons,
+                        classToken = current.classToken,
+                        language = language,
+                    ),
                     selectedIndex = activeSection,
                     accent = current.classAccent,
                     icons = current.icons,
@@ -1100,7 +1119,16 @@ private fun ReadyTalentTreeScreen(
                                     }
                                     val origin = sectionReturn
                                     if (origin != null && origin.originSection != activeSection) {
-                                        val originLabel = pagedSections?.section(origin.originSection)?.label
+                                        val originSection = pagedSections?.section(origin.originSection)
+                                        val originLabel = originSection?.let {
+                                            talentSectionDisplayLabel(
+                                                datasetName = it.datasetName,
+                                                classToken = current.classToken,
+                                                sectionIndex = it.index,
+                                                ordinal = it.ordinal,
+                                                language = language,
+                                            )
+                                        }
                                         TalentSectionReturnChip(
                                             text = listOfNotNull(
                                                 "Back to ${facts.nameOf(origin.originNodeId)}",
@@ -1517,6 +1545,7 @@ internal fun loadWarriorTreeState(document: TalentDataDocument): TalentTreeUiSta
             TalentTreeUiState.Ready(
                 classDisplayName = document.classInfo.name,
                 gameDisplayName = document.game.value.replaceFirstChar { it.uppercase() },
+                classToken = document.classInfo.token,
                 model = built.model,
                 engine = engine,
                 buildState = engine.emptyState(),

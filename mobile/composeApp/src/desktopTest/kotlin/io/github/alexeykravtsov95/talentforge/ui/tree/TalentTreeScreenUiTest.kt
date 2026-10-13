@@ -29,6 +29,8 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
 
 /**
  * Screen-level contract tests: the explicit Loading/Ready/Failed states, and
@@ -58,7 +60,7 @@ class TalentTreeScreenUiTest {
     private fun compose(state: TalentTreeUiState) {
         composeRule.setContent {
             TalentForgeTheme {
-                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                CompositionLocalProvider(LocalDensity provides Density(1f), LocalAppLanguage provides AppLanguage.ENGLISH) {
                     Box(Modifier.size(360.dp, 760.dp)) {
                         TalentTreeScreen(state)
                     }
@@ -100,7 +102,7 @@ class TalentTreeScreenUiTest {
         composeRule.onAllNodes(anyContentDescription())
             .assertCountEquals(firstSection().model.nodes.size + 3)
         // the data-driven section tabs (the dataset names no section)
-        for (label in listOf("Tree 1", "Tree 2", "Tree 3")) {
+        for (label in listOf("Arms", "Fury", "Protection")) {
             composeRule.onNodeWithText(label).assertExists()
         }
     }

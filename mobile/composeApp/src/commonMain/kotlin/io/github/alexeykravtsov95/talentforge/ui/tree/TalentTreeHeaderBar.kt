@@ -48,9 +48,11 @@ import kotlin.math.sin
  * ([talentTreeHeaderLayout]). Since M5.1 the title is the two-line ADAPT 1 form —
  * line 1 the build name (or "Draft"), line 2 `class · game` — and the back
  * control appears when the screen is not the root (M4 kept the single-line
- * class title because no navigation existed). There is still no spec row: the
- * published sections are nameless, so no Arms/Fury/Protection labels are
- * invented.
+ * class title because no navigation existed). There is still no spec row of
+ * the header's own: the specialization names live in the section tabs
+ * (M5.REL.1 resolves them from the approved class-token × section-index
+ * table, `TalentSpecializationNames`), which merge into this bar only in
+ * the landscape layout.
  *
  * Undo/redo are enabled iff the corresponding history is non-empty, stay
  * visible while disabled, and affect ONLY the BuildState — never selection,

@@ -35,6 +35,8 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
 
 /**
  * M4.3 interactive-allocation UI behaviour against the real Warrior screen:
@@ -89,7 +91,7 @@ class TalentTreeEditingUiTest {
         sectionCameras = TalentTreeSectionCameras(sessionKey = "editing-test", treeId = readyState.model.treeId)
         composeRule.setContent {
             TalentForgeTheme {
-                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                CompositionLocalProvider(LocalDensity provides Density(1f), LocalAppLanguage provides AppLanguage.ENGLISH) {
                     Box(Modifier.size(width, height)) {
                         TalentTreeScreen(state, viewportState = viewportState, sectionCameras = sectionCameras)
                     }
@@ -106,7 +108,14 @@ class TalentTreeEditingUiTest {
     /** Opens the portrait tab of [name]'s section (one tap, never a build change). */
     private fun openSectionOf(name: String) {
         val section = assertNotNull(sections().sectionOf(nodeIdOf(name)))
-        composeRule.onNodeWithText(section.label).performClick()
+        val label = talentSectionDisplayLabel(
+            datasetName = section.datasetName,
+            classToken = readyState.classToken,
+            sectionIndex = section.index,
+            ordinal = section.ordinal,
+            language = AppLanguage.ENGLISH,
+        )
+        composeRule.onNodeWithText(label).performClick()
         composeRule.waitForIdle()
     }
 
@@ -671,7 +680,7 @@ class TalentTreeEditingUiTest {
         var window by mutableStateOf(IntSize(360, 760))
         composeRule.setContent {
             TalentForgeTheme {
-                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                CompositionLocalProvider(LocalDensity provides Density(1f), LocalAppLanguage provides AppLanguage.ENGLISH) {
                     Box(Modifier.size(window.width.dp, window.height.dp)) {
                         TalentTreeScreen(readyState)
                     }
