@@ -3,6 +3,7 @@ package io.github.alexeykravtsov95.talentforge.ui
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.assertWidthIsAtLeast
@@ -10,9 +11,8 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.printToString
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.alexeykravtsov95.talentforge.allocation.TalentAllocationEngine
@@ -26,22 +26,27 @@ import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
+import io.github.alexeykravtsov95.talentforge.ui.builds.BuildsPointsStyle
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 
 /**
- * PR #22 review finding 1, as automated layout assertions: at 320 dp width
- * and 200 % font scale the All Builds row's FIXED elements (36 dp artwork,
- * the mono points column, the 48 dp `⋯` button) must never crowd the build
- * name into unreadability. The row answers with a responsive arrangement:
- * with room (360 dp at 100 %) the points stay a trailing column; without it
- * (200 % font scale, narrow screens) the points fold into the meta line and
- * the freed width goes to the title — while the artwork, the points FACT and
- * the 48 dp actions target are always preserved.
+ * PR #22 accessibility review, as automated LAYOUT assertions (a semantics
+ * lookup of an ellipsized string is NOT enough — the full text exists in the
+ * semantics tree while being visually truncated):
+ *
+ * the All Builds row must keep the spent/total points VISIBLY readable at
+ * 320 dp and 360 dp with 200 % font scale, with the priority build name →
+ * points → class/version/time. Each test proves the points are a SEPARATE
+ * element whose laid-out width covers the full intrinsic width of the label
+ * (measured with the production style at the exact font scale), has nonzero
+ * bounds and stays inside the screen — i.e. it is not clipped, wrapped or
+ * ellipsized. The full trailing-column arrangement at 100 % is pinned too.
  */
 class AllBuildsRowLayoutUiTest {
 
@@ -58,6 +63,9 @@ class AllBuildsRowLayoutUiTest {
     private val longName =
         "Rend and Deflection levelling route for solo battlegrounds"
 
+    /** The intrinsic (unconstrained) width of the points label at the composed font scale. */
+    private var pointsIntrinsicWidthPx: Int = 0
+
     @BeforeTest
     fun setUp() {
         storage = FakeBuildLibraryStorage()
@@ -70,6 +78,11 @@ class AllBuildsRowLayoutUiTest {
         composeRule.setContent {
             TalentForgeTheme {
                 CompositionLocalProvider(LocalDensity provides Density(1f, fontScale)) {
+                    val textMeasurer = rememberTextMeasurer()
+                    SideEffect {
+                        pointsIntrinsicWidthPx =
+                            textMeasurer.measure("13 / 51", BuildsPointsStyle).size.width
+                    }
                     Box(Modifier.size(widthDp.dp, heightDp.dp)) {
                         App(storage = storage, clock = clock, ids = ids)
                     }
@@ -83,6 +96,9 @@ class AllBuildsRowLayoutUiTest {
             composeRule.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
         }
     }
+
+    private fun <T> loaded(outcome: BuildLibraryOutcome<T>): T =
+        assertIs<BuildLibraryOutcome.Loaded<T>>(outcome).value
 
     /**
      * Composes the app FIRST on the fresh empty library, seeds the scenario,
@@ -99,9 +115,6 @@ class AllBuildsRowLayoutUiTest {
         composeApp(widthDp, heightDp, fontScale)
         awaitText("CONTINUE")
     }
-
-    private fun <T> loaded(outcome: BuildLibraryOutcome<T>): T =
-        assertIs<BuildLibraryOutcome.Loaded<T>>(outcome).value
 
     /**
      * A real engine-spent Warrior build with a two-digit points label
@@ -151,16 +164,38 @@ class AllBuildsRowLayoutUiTest {
         awaitText("Builds 1")
     }
 
+    /**
+     * The accessibility core: the points are their own element, with nonzero
+     * bounds, laid out at (at least) the label's full intrinsic width — an
+     * ellipsized or clipped element would report a narrower box — and fully
+     * inside the screen.
+     */
+    private fun assertPointsElementFullyVisible(screenWidthPx: Int) {
+        val node = composeRule.onNodeWithText("13 / 51").fetchSemanticsNode()
+        val width = node.size.width.toFloat()
+        assertTrue(width > 0f && node.size.height > 0, "the points element must have nonzero bounds")
+        assertTrue(
+            width + 0.5f >= pointsIntrinsicWidthPx,
+            "the points label must be fully laid out, not clipped/ellipsized " +
+                "(laid out $width px of intrinsic $pointsIntrinsicWidthPx px)",
+        )
+        val rightEdge = node.positionInRoot.x + width
+        assertTrue(
+            rightEdge <= screenWidthPx.toFloat(),
+            "the points element must stay inside the screen (right edge $rightEdge of $screenWidthPx)",
+        )
+    }
+
     @Test
-    fun withRoomThePointsStayATrailingColumn() {
+    fun atFullFontSizeTheTrailingPointsColumnIsFullyVisible() {
         composeSeededApp(widthDp = 360, heightDp = 800, fontScale = 1f) {
             persistLongNamedSpentBuild()
         }
         openAllBuilds()
 
-        // the full arrangement: points are their own trailing mono column…
-        composeRule.onNodeWithText("13 / 51").assertExists()
-        // …and the meta line stays class · version · recency (points NOT folded)
+        // the full arrangement: separate trailing mono column, fully laid out
+        assertPointsElementFullyVisible(screenWidthPx = 360)
+        // the meta line keeps its own full form (class · version · recency)
         composeRule.onNodeWithText("Warrior · Forever · Just now").assertExists()
         // the ⋯ target keeps its 48 dp width
         composeRule.onNodeWithContentDescription("build actions for $longName")
@@ -168,32 +203,26 @@ class AllBuildsRowLayoutUiTest {
     }
 
     @Test
-    fun atDoubleFontScaleThePointsFoldIntoTheMetaLine() {
+    fun atDoubleFontScaleThePointsStayAVisibleSeparateElement() {
         composeSeededApp(widthDp = 360, heightDp = 800, fontScale = 2f) {
             persistLongNamedSpentBuild()
         }
         openAllBuilds()
 
-        // compact arrangement: no separate squeezed points column…
-        composeRule.onNodeWithText("13 / 51").assertDoesNotExist()
-        // …the points FACT survives inside the meta line…
-        composeRule.onNodeWithText("Warrior · Forever · 13 / 51 · Just now").assertExists()
-        // …the long title is present…
+        assertPointsElementFullyVisible(screenWidthPx = 360)
         composeRule.onNodeWithText(longName).assertExists()
-        // …and the ⋯ target still keeps its 48 dp width
         composeRule.onNodeWithContentDescription("build actions for $longName")
             .assertWidthIsAtLeast(48.dp)
     }
 
     @Test
-    fun atSmallestWidthAndDoubleFontScaleTheRowStaysReadable() {
+    fun atSmallestWidthAndDoubleFontScaleThePointsStayAVisibleSeparateElement() {
         composeSeededApp(widthDp = 320, heightDp = 568, fontScale = 2f) {
             persistLongNamedSpentBuild()
         }
         openAllBuilds()
 
-        composeRule.onNodeWithText("13 / 51").assertDoesNotExist()
-        composeRule.onNodeWithText("Warrior · Forever · 13 / 51 · Just now").assertExists()
+        assertPointsElementFullyVisible(screenWidthPx = 320)
         composeRule.onNodeWithText(longName).assertExists()
         composeRule.onNodeWithContentDescription("build actions for $longName")
             .assertWidthIsAtLeast(48.dp)

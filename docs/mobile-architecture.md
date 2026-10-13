@@ -819,9 +819,17 @@ Home's `New build`. The row is RESPONSIVE (PR #22 review): its fixed-width
 elements (artwork tile, mono points column, 48 dp `⋯` button) would crowd a
 long build name into unreadability at large font scales, so the row measures
 the widest points label at the current font scale and, when the title column
-would fall below ~112 dp, folds the points into the meta line — the artwork,
-the points FACT and the 48 dp actions target are always preserved
-(`AllBuildsRowLayoutUiTest` pins both arrangements and the button width).
+would fall below ~112 dp, switches to the compact arrangement with the
+review's exact priority — build name, then the points as their OWN
+single-line element on the metadata row (natural width, never ellipsized,
+never wrapped), then `class · version · recency` taking the remainder and
+ellipsizing where space does not permit. The artwork, the 48 dp actions
+target and the click-to-open row are identical in both arrangements.
+`AllBuildsRowLayoutUiTest` pins VISIBILITY, not just semantics: the points
+element's laid-out width must cover the label's full intrinsic width
+(measured with the production style at the exact font scale), it must have
+nonzero bounds and stay inside the screen — an ellipsized/truncated element
+would report a narrower box.
 
 **Tests added/updated:** `HomeRedesignUiTest`, `ClassArtworkTest`,
 `AllBuildsRowLayoutUiTest` (the responsive row of the PR #22 review)
@@ -835,8 +843,8 @@ fallback titles). Opt-in screenshot evidence:
 > skipped), `:composeApp:assembleDebug`, both iOS debug framework links and
 > the `iosApp` simulator `xcodebuild` — all green. Review evidence in
 > `docs/screenshots/m5ui1/`: the All Builds row at 200 % font scale on
-> 360×800 and 320×568 (long name, two-digit points, folded meta line), and
-> the realigned empty state at 320×568 / 130 % / 200 %.
+> 360×800 and 320×568 (long name, two-digit points as a separate, fully
+> visible element), and the realigned empty state at 320×568 / 130 % / 200 %.
 
 ## Version stack (all stable)
 

@@ -378,9 +378,13 @@ fun AllBuildsScreen(
  * on narrow screens the full arrangement would crowd the build name into
  * unreadability. The row measures the WIDEST points label at the current
  * font scale and, when the title column would fall below
- * [MinBuildTitleWidth], folds the points into the meta line — the freed
- * width goes to the title while the artwork, the points FACT and the 48 dp
- * actions target are all preserved.
+ * [MinBuildTitleWidth], switches to the compact arrangement: the points
+ * become their OWN single-line element on the metadata row — measured at
+ * natural width, never ellipsized — and the class/version/time meta line
+ * takes what remains and ellipsizes where space does not permit. Layout
+ * priority is exactly the review's: build name, spent/total points, then
+ * class · version · recency. The artwork, the 48 dp actions target and the
+ * click-to-open row are identical in both arrangements.
  */
 @Composable
 private fun BuildRow(
@@ -394,7 +398,7 @@ private fun BuildRow(
         BuildRowContent(
             card = card,
             clockMillis = clockMillis,
-            foldPointsIntoMeta = compact,
+            compact = compact,
             onClick = onClick,
             onActions = onActions,
         )
@@ -420,7 +424,7 @@ private fun BoxWithConstraintsScope.isCompactRow(hasPoints: Boolean): Boolean {
 private fun BuildRowContent(
     card: BuildCardModel,
     clockMillis: () -> Long,
-    foldPointsIntoMeta: Boolean,
+    compact: Boolean,
     onClick: () -> Unit,
     onActions: () -> Unit,
 ) {
@@ -447,14 +451,38 @@ private fun BuildRowContent(
                 maxLines = 1,
                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
             )
-            BasicText(
-                text = rowMetaLine(card, clockMillis, includePoints = foldPointsIntoMeta),
-                style = TalentForgeTypography.meta.copy(color = colors.textSecondary),
-                maxLines = 1,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-            )
+            if (compact) {
+                // the review's priority: the points are their OWN element,
+                // measured at natural width and never ellipsized; the meta
+                // line takes what remains and yields first
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
+                ) {
+                    BasicText(
+                        text = "${card.spentPoints} / ${card.pointBudget}",
+                        style = BuildsPointsStyle.copy(color = colors.textPrimary),
+                        maxLines = 1,
+                        softWrap = false,
+                    )
+                    BasicText(
+                        text = rowMetaLine(card, clockMillis),
+                        style = TalentForgeTypography.meta.copy(color = colors.textSecondary),
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            } else {
+                BasicText(
+                    text = rowMetaLine(card, clockMillis),
+                    style = TalentForgeTypography.meta.copy(color = colors.textSecondary),
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                )
+            }
         }
-        if (!foldPointsIntoMeta && card.spentPoints != null && card.pointBudget != null) {
+        if (!compact && card.spentPoints != null && card.pointBudget != null) {
             BasicText(
                 text = "${card.spentPoints} / ${card.pointBudget}",
                 style = BuildsPointsStyle.copy(color = colors.textPrimary),
@@ -464,19 +492,13 @@ private fun BuildRowContent(
     }
 }
 
-/** `Warrior · Forever · [13 / 51 ·] Just now` — only resolved fields, in fixed order. */
+/** `Warrior · Forever · Just now` — only resolved fields, in fixed order. */
 private fun rowMetaLine(
     card: BuildCardModel,
     clockMillis: () -> Long,
-    includePoints: Boolean,
 ): String = listOfNotNull(
     card.classDisplayName ?: card.record.build.classToken.value,
     gameDisplayName(card.record.build.game),
-    if (includePoints && card.spentPoints != null && card.pointBudget != null) {
-        "${card.spentPoints} / ${card.pointBudget}"
-    } else {
-        null
-    },
     relativeBuildTime(clockMillis(), card.record.updatedAt),
 ).joinToString(" · ")
 
@@ -511,7 +533,8 @@ private val RowActionsButtonSize = 48.dp
  */
 private val MinBuildTitleWidth = 112.dp
 
-private val BuildsPointsStyle = androidx.compose.ui.text.TextStyle(
+/** UX spec G numeric mono 17 · 600 — `internal` so the layout test measures the same style. */
+internal val BuildsPointsStyle = androidx.compose.ui.text.TextStyle(
     fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
     fontSize = 17.sp,
     lineHeight = 22.sp,
