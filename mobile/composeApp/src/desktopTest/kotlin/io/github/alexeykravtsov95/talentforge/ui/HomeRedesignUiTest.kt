@@ -86,10 +86,13 @@ class HomeRedesignUiTest {
 
         awaitText("No builds yet")
         composeRule.onNodeWithText("TalentForge").assertExists()
+        // PR #22 review: the copy names the class (the actual New Build
+        // choice) — Forever is the only version and stays on its own line
         composeRule.onNodeWithText(
-            "Pick a version and class, then spend points on the talent tree. " +
+            "Pick a class and spend points on its talent tree. " +
                 "Builds are stored on this device; no account is needed.",
         ).assertExists()
+        composeRule.onNodeWithText("Pick a version and class").assertDoesNotExist()
         composeRule.onNodeWithText("Forever talent data 1.60.1").assertExists()
         // the single primary action of the empty state, pinned at the bottom
         composeRule.onNodeWithText("New build").assertExists()
@@ -97,6 +100,35 @@ class HomeRedesignUiTest {
         composeRule.onNodeWithText("CONTINUE").assertDoesNotExist()
         composeRule.onNodeWithText("RECENT").assertDoesNotExist()
         composeRule.onNodeWithText("All builds 0").assertDoesNotExist()
+    }
+
+    @Test
+    fun emptyHomeCopySitsBelowTheHeaderInTheUpperMiddle() {
+        composeRule.setContent {
+            TalentForgeTheme {
+                CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                    Box(Modifier.size(360.dp, 800.dp)) {
+                        App(storage = storage, clock = clock, ids = ids)
+                    }
+                }
+            }
+        }
+        awaitText("No builds yet")
+
+        // the heading must start clearly below the brand header (the B+
+        // upper-middle alignment), with the whole copy well above mid-screen
+        val header = composeRule.onNodeWithText("TalentForge")
+        val heading = composeRule.onNodeWithText("No builds yet")
+        val headerTop = header.fetchSemanticsNode().positionInRoot.y
+        val headingTop = heading.fetchSemanticsNode().positionInRoot.y
+        kotlin.test.assertTrue(
+            headingTop - headerTop > 88f,
+            "the empty-state copy must sit well below the brand header (was ${headingTop - headerTop}px)",
+        )
+        kotlin.test.assertTrue(
+            headingTop < 400f,
+            "the empty-state copy must stay in the upper-middle of the 800 dp screen (was $headingTop)",
+        )
     }
 
     @Test

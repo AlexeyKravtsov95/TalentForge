@@ -57,7 +57,7 @@ class M5Ui1ScreenshotTest {
     private val outputDir: File
         get() = File(System.getProperty("talentforge.m5ui1.screenshots")!!)
 
-    private val storage = FakeBuildLibraryStorage()
+    private var storage = FakeBuildLibraryStorage()
     private val clock = FixedClock(startMillis = 1_700_000_000_000L)
     private val ids = SequentialIds()
 
@@ -136,7 +136,12 @@ class M5Ui1ScreenshotTest {
         shoot("m5ui1-360x800-empty.png")
 
         // ---- one saved build: Continue + the standalone All-builds row
-        persistBuild("WARRIOR", mapOf("Improved Rend" to 3, "Deflection" to 2))
+        // (long name + two-digit points — the widest row, as PR #22 review)
+        persistBuild(
+            "WARRIOR",
+            mapOf("Improved Rend" to 3, "Deflection" to 2, "Cruelty" to 5),
+            name = "Rend and Deflection levelling route for solo battlegrounds",
+        )
         composeApp()
         awaitText("CONTINUE")
         shoot("m5ui1-360x800-one-build.png")
@@ -173,6 +178,36 @@ class M5Ui1ScreenshotTest {
         composeApp(360, 800, fontScale = 2f)
         awaitText("RECENT")
         shoot("m5ui1-360x800-font200.png")
+
+        // ---- PR #22 review: the All Builds row at 200 % font scale — the
+        // long-named two-digit-points build must stay readable (points fold
+        // into the meta line; artwork and the 48 dp ⋯ target stay fixed)
+        composeApp(360, 800, fontScale = 2f)
+        awaitText("All builds 4")
+        composeRule.onNodeWithText("All builds 4").performClick()
+        awaitText("Builds 4")
+        shoot("m5ui1-360x800-font200-all-builds.png")
+
+        composeApp(320, 568, fontScale = 2f)
+        awaitText("All builds 4")
+        composeRule.onNodeWithText("All builds 4").performClick()
+        awaitText("Builds 4")
+        shoot("m5ui1-320x568-font200-all-builds.png")
+
+        // ---- PR #22 review: the realigned empty state across the matrix
+        // (a fresh library: the copy sits below the header, upper-middle)
+        storage = FakeBuildLibraryStorage()
+        composeApp(320, 568)
+        awaitText("No builds yet")
+        shoot("m5ui1-320x568-empty.png")
+
+        composeApp(360, 800, fontScale = 1.3f)
+        awaitText("No builds yet")
+        shoot("m5ui1-360x800-font130-empty.png")
+
+        composeApp(360, 800, fontScale = 2f)
+        awaitText("No builds yet")
+        shoot("m5ui1-360x800-font200-empty.png")
 
         // ---- the recoverable repository error (never a faked empty Home)
         storage.failReads = true

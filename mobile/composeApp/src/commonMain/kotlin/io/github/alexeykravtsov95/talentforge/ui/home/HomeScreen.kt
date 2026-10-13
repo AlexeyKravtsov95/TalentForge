@@ -41,6 +41,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.alexeykravtsov95.talentforge.data.TalentDatasetRepository
@@ -105,12 +106,17 @@ fun HomeScreen(
     }
 
     val colors = talentForgeColors()
-    Box(
+    BoxWithConstraints(
         Modifier
             .fillMaxSize()
             .background(colors.background)
             .windowInsetsPadding(WindowInsets.safeDrawing),
     ) {
+        // B+ empty-state alignment: the copy starts in the UPPER-MIDDLE of
+        // the usable content (the ~80 % of the screen above the pinned CTA),
+        // not right under the header. Computed here because the scrollable
+        // content column receives unbounded height and cannot derive it.
+        val emptyCopyTopGap = maxHeight * EMPTY_COPY_TOP_GAP_FRACTION
         Column(Modifier.fillMaxSize()) {
             Column(
                 Modifier
@@ -145,6 +151,7 @@ fun HomeScreen(
                     is LibraryData.Ready -> HomeContent(
                         model = current.value,
                         clockMillis = clockMillis,
+                        emptyCopyTopGap = emptyCopyTopGap,
                         onOpenBuild = onOpenBuild,
                         onAllBuilds = onAllBuilds,
                     )
@@ -190,12 +197,13 @@ fun HomeScreen(
 private fun HomeContent(
     model: HomeModel,
     clockMillis: () -> Long,
+    emptyCopyTopGap: Dp,
     onOpenBuild: (String) -> Unit,
     onAllBuilds: () -> Unit,
 ) {
     val continueCard = model.continueCard
     if (continueCard == null) {
-        NewUserContent()
+        NewUserContent(emptyCopyTopGap = emptyCopyTopGap)
         return
     }
     SectionLabel("CONTINUE")
@@ -237,18 +245,21 @@ private fun HomeContent(
 /**
  * B+ empty state: typography only — the heading, one workflow sentence and
  * the real bundled data version; the single primary `New build` action is
- * the pinned bottom button.
+ * the pinned bottom button. The copy block starts in the upper-middle of
+ * the usable content ([emptyCopyTopGap], derived from the screen height),
+ * below the brand header — no illustration, no decoration.
  */
 @Composable
-private fun NewUserContent() {
+private fun NewUserContent(emptyCopyTopGap: Dp) {
     val colors = talentForgeColors()
     Column(verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.rowGap)) {
+        Spacer(Modifier.height(emptyCopyTopGap))
         BasicText(
             "No builds yet",
             style = TalentForgeTypography.title.copy(color = colors.textPrimary),
         )
         BasicText(
-            "Pick a version and class, then spend points on the talent tree. " +
+            "Pick a class and spend points on its talent tree. " +
                 "Builds are stored on this device; no account is needed.",
             style = TalentForgeTypography.body.copy(color = colors.textSecondary),
         )
@@ -491,3 +502,10 @@ private val HomeLinkStyle = TextStyle(
     lineHeight = 16.sp,
     fontWeight = FontWeight.Medium,
 )
+
+/**
+ * The B+ empty state's copy gap: ~16 % of the screen height below the brand
+ * header puts the heading in the upper-middle of the usable content (the
+ * area above the pinned CTA) on every supported phone height.
+ */
+private const val EMPTY_COPY_TOP_GAP_FRACTION = 0.16f
