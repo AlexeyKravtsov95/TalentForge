@@ -26,15 +26,25 @@ import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentTree
  *   exist in the published Forever data) and still enforced by the engine.
  *
  * Labels come from the data: the dataset's section name when it publishes
- * one, otherwise "Tree N" by position (1A v2 S8: a null name reads
- * "Tree N"). No specialization name is ever guessed.
+ * one ([TalentTreeSectionUiModel.datasetName]), otherwise "Tree N" by
+ * position (1A v2 S8: a null name reads "Tree N"). The projection itself
+ * never guesses a specialization — since M5.REL.1 the presentation layer
+ * resolves the approved specialization name from (class token, section
+ * index) through [talentSectionDisplayLabel]; this locale-neutral
+ * [TalentTreeSectionUiModel.label] is its fallback input.
  */
 data class TalentTreeSectionUiModel(
     /** The dataset's `TalentSection.index` — the stable section identity. */
     val index: Int,
     /** Tab position, 0-based, in ascending [index] order. */
     val ordinal: Int,
-    /** The dataset's section name, or "Tree N" when the dataset has none. */
+    /** The dataset's own section name, or `null` when it publishes none. */
+    val datasetName: String?,
+    /**
+     * The locale-neutral label: the dataset's section name, or "Tree N" when
+     * the dataset has none. The localized display label is resolved from
+     * [datasetName] at presentation time (M5.REL.1).
+     */
     val label: String,
     /** The section's own nodes/connectors/bounds (same node instances as the whole tree). */
     val model: TalentTreeUiModel,
@@ -157,6 +167,7 @@ fun buildTalentTreeSections(tree: TalentTree, model: TalentTreeUiModel): TalentT
         TalentTreeSectionUiModel(
             index = section.index,
             ordinal = ordinal,
+            datasetName = section.name?.takeIf { it.isNotBlank() },
             label = section.name?.takeIf { it.isNotBlank() } ?: "Tree ${ordinal + 1}",
             model = TalentTreeUiModel(
                 treeId = model.treeId,
