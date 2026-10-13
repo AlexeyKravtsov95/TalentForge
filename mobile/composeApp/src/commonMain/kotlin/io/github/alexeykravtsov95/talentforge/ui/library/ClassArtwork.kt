@@ -36,11 +36,17 @@ import org.jetbrains.compose.resources.imageResource
 
 /**
  * The B+ class-artwork tile slots, exactly as the supplied M5.UI.1 asset
- * integration specification freezes them. The class-picker slots (56 dp /
- * 46 dp, 10 dp radius) join this enum with the next milestone's Class
- * Selection screen; the two below are the slots Home and All Builds use.
+ * integration specification freezes them. The first two are the class-picker
+ * slots of the M5.UI.2 Class Selection screen; the last two are the slots
+ * Home and All Builds use.
  */
 enum class ClassArtworkSlot(val size: Dp, val cornerRadius: Dp) {
+    /** Class Selection · standard picker tile: 56 dp, 10 dp corner radius. */
+    Picker(56.dp, 10.dp),
+
+    /** Class Selection · compact picker tile (narrow viewports): 46 dp, 10 dp corner radius. */
+    PickerCompact(46.dp, 10.dp),
+
     /** Home · Continue card: 44 dp tile, 9 dp corner radius. */
     Continue(44.dp, 9.dp),
 
@@ -70,8 +76,8 @@ fun classArtworkResourceFor(classToken: ClassToken): DrawableResource? = when (c
 }
 
 /**
- * The shared class artwork of the B+ shell screens (Home, All Builds — and
- * the Class Selection screen of the next milestone). Renders the supplied
+ * The shared class artwork of the B+ shell screens (Home, All Builds and the
+ * Class Selection picker). Renders the supplied
  * painting unmodified — no tint, no color filter, the art supplies its own
  * colour — cropped to the square slot with high-quality filtering, clipped
  * to the slot's rounded rect with the spec's 1 dp inner hairline on top.
