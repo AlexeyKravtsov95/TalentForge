@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -39,12 +40,14 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.alexeykravtsov95.talentforge.data.TalentDatasetRepository
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildCardModel
-import io.github.alexeykravtsov95.talentforge.ui.library.ClassMonogramMark
+import io.github.alexeykravtsov95.talentforge.ui.library.ClassArtworkMark
+import io.github.alexeykravtsov95.talentforge.ui.library.ClassArtworkSlot
 import io.github.alexeykravtsov95.talentforge.ui.library.HomeModel
 import io.github.alexeykravtsov95.talentforge.ui.library.InlineNotice
 import io.github.alexeykravtsov95.talentforge.ui.library.LibraryData
@@ -66,12 +69,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * Home — the app root (UX/UI spec B). Hierarchy exactly as frozen:
- * Continue (the strongest action, the most recently edited build) → Recent
- * builds (3; 4 on 412 dp+ screens) → All builds · N → New build (secondary,
- * pinned in the thumb zone). The new-user state collapses to one sentence,
- * one primary action and the data status — no placeholder cards, no
- * illustration, no fake builds.
+ * Home — the app root, redesigned in M5.UI.1 to the approved B+ "Modern
+ * Fantasy Utility" layout. Hierarchy exactly as approved: Continue (the
+ * strongest action, the most recently edited build) → Recent builds (3; 4 on
+ * 412 dp+ screens) → All builds · N → New build (pinned in the thumb zone:
+ * the single PRIMARY action of the typography-only empty state, a neutral
+ * secondary once builds exist). The empty state is one heading, one
+ * workflow sentence and the data status — no placeholder cards, no
+ * illustration, no fake builds, no decorative talent-tree fragment.
+ *
+ * All Builds stays reachable from Home at EVERY library size — including
+ * exactly one build, where no Recent row exists to host the link (the link
+ * then renders as its own row after the Continue card).
  *
  * A failed library load is a recoverable error state with Retry — never a
  * faked empty Home (which would invite an overwrite of the stored payload).
@@ -142,19 +151,37 @@ fun HomeScreen(
                 }
                 Spacer(Modifier.height(TalentForgeSpacing.group))
             }
-            // New build: secondary, pinned in the thumb zone (spec B.1).
-            SecondaryActionButton(
-                text = "+ New build",
-                onClickLabel = "start a new build",
-                onClick = onNewBuild,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        start = TalentForgeSpacing.screenX,
-                        end = TalentForgeSpacing.screenX,
-                        bottom = TalentForgeSpacing.rowGap,
-                    ),
-            )
+            // New build, pinned in the thumb zone (B+): the PRIMARY action of
+            // the empty state, a neutral secondary once builds exist.
+            // Loading/Failed keep the secondary so the pinned slot never
+            // changes identity mid-session.
+            if (data is LibraryData.Ready && (data as LibraryData.Ready<HomeModel>).value.continueCard == null) {
+                PrimaryActionButton(
+                    text = "New build",
+                    onClickLabel = "start a new build",
+                    onClick = onNewBuild,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = TalentForgeSpacing.screenX,
+                            end = TalentForgeSpacing.screenX,
+                            bottom = TalentForgeSpacing.rowGap,
+                        ),
+                )
+            } else {
+                SecondaryActionButton(
+                    text = "New build",
+                    onClickLabel = "start a new build",
+                    onClick = onNewBuild,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = TalentForgeSpacing.screenX,
+                            end = TalentForgeSpacing.screenX,
+                            bottom = TalentForgeSpacing.rowGap,
+                        ),
+                )
+            }
         }
     }
 }
@@ -194,16 +221,30 @@ private fun HomeContent(
                 }
             }
         }
+    } else {
+        // B+: with exactly one build there is no RECENT section to host the
+        // link — All Builds still must stay reachable, so it renders as its
+        // own end-aligned row after the Continue card.
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+        ) {
+            AllBuildsLink(count = model.totalBuilds, onClick = onAllBuilds)
+        }
     }
 }
 
-/** B.2 new user: one sentence, one primary action (the pinned New build), data status. */
+/**
+ * B+ empty state: typography only — the heading, one workflow sentence and
+ * the real bundled data version; the single primary `New build` action is
+ * the pinned bottom button.
+ */
 @Composable
 private fun NewUserContent() {
     val colors = talentForgeColors()
     Column(verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.rowGap)) {
         BasicText(
-            "Plan your first build",
+            "No builds yet",
             style = TalentForgeTypography.title.copy(color = colors.textPrimary),
         )
         BasicText(
@@ -258,7 +299,12 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawBrandDiamond(
     drawCircle(color = coreColor, radius = radius * 0.3f, center = center)
 }
 
-/** B.1: the strongest element — the most recently edited build, full-width action. */
+/**
+ * B.1/B+: the strongest element — the most recently edited build. The B+
+ * card: class artwork (44 dp tile), title, `class · version · recency`
+ * metadata, the engine-computed spent/budget over a simple progress bar,
+ * and the primary `Continue editing` action.
+ */
 @Composable
 private fun ContinueCard(
     card: BuildCardModel,
@@ -278,7 +324,9 @@ private fun ContinueCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
         ) {
-            ClassMonogramMark(
+            ClassArtworkMark(
+                classToken = card.record.build.classToken,
+                slot = ClassArtworkSlot.Continue,
                 monogram = classMonogramOf(card.classDisplayName ?: card.record.build.classToken.value),
                 accent = classAccentFor(card.record.build.classToken).color,
             )
@@ -287,16 +335,30 @@ private fun ContinueCard(
                     text = card.title,
                     style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary),
                     maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
                 BasicText(
                     text = cardMetaLine(card, clockMillis),
                     style = TalentForgeTypography.meta.copy(color = colors.textSecondary),
                     maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
-            card.pointsText()?.let { points ->
+        }
+        if (card.spentPoints != null && card.pointBudget != null) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
+            ) {
+                PointsProgress(
+                    spent = card.spentPoints,
+                    budget = card.pointBudget,
+                    // the bar must not squeeze the numeric column
+                    modifier = Modifier.weight(1f),
+                )
                 BasicText(
-                    text = points,
+                    text = "${card.spentPoints} / ${card.pointBudget}",
                     style = HomePointsStyle.copy(color = colors.textPrimary),
                 )
             }
@@ -310,7 +372,35 @@ private fun ContinueCard(
     }
 }
 
-/** Compact recent-build row: mark, title, `spent / budget · time`. */
+/**
+ * The B+ "simple progress bar": a 4 dp track on the interactive surface with
+ * the primary amber fill of `spent / budget`. Non-interactive by design —
+ * the editor, not Home, manipulates points.
+ */
+@Composable
+private fun PointsProgress(
+    spent: Int,
+    budget: Int,
+    modifier: Modifier = Modifier,
+) {
+    val colors = talentForgeColors()
+    val fraction = if (budget <= 0) 0f else (spent.toFloat() / budget.toFloat()).coerceIn(0f, 1f)
+    val barShape = RoundedCornerShape(2.dp)
+    Box(
+        modifier
+            .height(4.dp)
+            .background(colors.surfaceInteractive, barShape),
+    ) {
+        Box(
+            Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(fraction)
+                .background(colors.primaryAction, barShape),
+        )
+    }
+}
+
+/** Compact recent-build row: artwork, title, `spent / budget · time`. */
 @Composable
 private fun RecentBuildRow(
     card: BuildCardModel,
@@ -327,7 +417,9 @@ private fun RecentBuildRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
     ) {
-        ClassMonogramMark(
+        ClassArtworkMark(
+            classToken = card.record.build.classToken,
+            slot = ClassArtworkSlot.Row,
             monogram = classMonogramOf(card.classDisplayName ?: card.record.build.classToken.value),
             accent = classAccentFor(card.record.build.classToken).color,
         )
@@ -336,17 +428,19 @@ private fun RecentBuildRow(
                 text = card.title,
                 style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary),
                 maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             BasicText(
                 text = recentMetaLine(card, clockMillis),
                 style = TalentForgeTypography.meta.copy(color = colors.textSecondary),
                 maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }
 }
 
-/** `All builds 6` link of the RECENT header row. */
+/** `All builds 6` link of the RECENT header row (or its own row at one build). */
 @Composable
 private fun AllBuildsLink(count: Int, onClick: () -> Unit) {
     BasicText(

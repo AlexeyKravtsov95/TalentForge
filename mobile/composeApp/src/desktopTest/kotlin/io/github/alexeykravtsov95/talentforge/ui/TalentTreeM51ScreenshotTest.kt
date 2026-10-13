@@ -147,17 +147,17 @@ class TalentTreeM51ScreenshotTest {
     fun m51ShellAndWarriorEditor() {
         // Home empty
         composeApp()
-        awaitText("Plan your first build")
+        awaitText("No builds yet")
         shoot("m51-home-empty.png")
 
         // New Build / class selection
-        composeRule.onNodeWithText("+ New build").performClick()
+        composeRule.onNodeWithText("New build").performClick()
         awaitText("GAME VERSION")
         shoot("m51-new-build.png")
 
         // back to Home, then a returning user: a spent Warrior build + a Mage draft
         composeRule.onNodeWithContentDescription("go back").performClick()
-        awaitText("Plan your first build")
+        awaitText("No builds yet")
         persistBuild("WARRIOR", mapOf("Improved Rend" to 3, "Deflection" to 2))
         persistBuild("MAGE", emptyMap())
         composeApp()

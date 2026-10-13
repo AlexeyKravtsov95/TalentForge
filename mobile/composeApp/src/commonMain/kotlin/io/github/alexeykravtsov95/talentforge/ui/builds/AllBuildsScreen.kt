@@ -38,7 +38,8 @@ import io.github.alexeykravtsov95.talentforge.data.TalentDatasetRepository
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildCardModel
-import io.github.alexeykravtsov95.talentforge.ui.library.ClassMonogramMark
+import io.github.alexeykravtsov95.talentforge.ui.library.ClassArtworkMark
+import io.github.alexeykravtsov95.talentforge.ui.library.ClassArtworkSlot
 import io.github.alexeykravtsov95.talentforge.ui.library.InlineNotice
 import io.github.alexeykravtsov95.talentforge.ui.library.InlineNoticeTone
 import io.github.alexeykravtsov95.talentforge.ui.library.LibraryData
@@ -291,7 +292,7 @@ fun AllBuildsScreen(
                             style = TalentForgeTypography.bodySmall.copy(color = colors.textSecondary),
                         )
                         PrimaryActionButton(
-                            text = "+ New build",
+                            text = "New build",
                             onClickLabel = "start a new build",
                             onClick = onNewBuild,
                         )
@@ -383,7 +384,9 @@ private fun BuildRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
     ) {
-        ClassMonogramMark(
+        ClassArtworkMark(
+            classToken = card.record.build.classToken,
+            slot = ClassArtworkSlot.Row,
             monogram = classMonogramOf(card.classDisplayName ?: card.record.build.classToken.value),
             accent = classAccentFor(card.record.build.classToken).color,
         )
@@ -392,6 +395,7 @@ private fun BuildRow(
                 text = card.title,
                 style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary),
                 maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
             )
             BasicText(
                 text = listOfNotNull(

@@ -116,8 +116,8 @@ class BuildManagementScreenshotTest {
         composeRule.onNodeWithText("All builds 2").performClick()
         awaitText("Builds 2")
 
-        // the ⋯ sheet over the list
-        composeRule.onNodeWithContentDescription("build actions for Draft").performClick()
+        // the ⋯ sheet over the list (unnamed Mage draft → display fallback)
+        composeRule.onNodeWithContentDescription("build actions for Mage build").performClick()
         awaitText("Duplicate")
         shoot("m52a-actions-sheet.png")
 

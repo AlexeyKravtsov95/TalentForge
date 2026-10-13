@@ -95,8 +95,9 @@ class BuildCardMetadataTest {
         assertEquals(null, card.classDisplayName)
         assertEquals(null, card.spentPoints)
         assertEquals(null, card.pointBudget)
-        // the persisted facts themselves stay visible
-        assertEquals("Draft", card.title)
+        // the persisted facts themselves stay visible; the class document did
+        // not load, so the display fallback capitalizes the class token
+        assertEquals("Warrior build", card.title)
         assertEquals("9.9.9.99999", card.record.build.clientBuild)
 
         val homeCard = assertIs<LibraryData.Ready<HomeModel>>(homeModel()).value.continueCard
@@ -172,5 +173,47 @@ class BuildCardMetadataTest {
             datasets.document(DatasetId(game, clientBuild, ClassToken("MAGE"))),
         ).value
         TalentAllocationEngine(document).pointBudget
+    }
+
+    // ------------------------------------------------- M5.UI.1: display-only names
+
+    @Test
+    fun unnamedBuildsDisplayTheDescriptiveClassFallback() {
+        assertIs<DraftCreation.Created>(
+            runBlocking { createClassDraft(repository, datasets, ClassToken("MAGE")) },
+        )
+
+        val card = assertIs<LibraryData.Ready<List<BuildCardModel>>>(buildsModel()).value.single()
+
+        assertEquals("Mage build", card.title)
+        // display-only: the persisted record stays unnamed
+        assertEquals(null, card.record.name)
+    }
+
+    @Test
+    fun anExplicitlyNamedDraftIsNeverReplacedByTheFallback() {
+        val created = assertIs<DraftCreation.Created>(
+            runBlocking { createClassDraft(repository, datasets, ClassToken("MAGE")) },
+        ).record
+        loaded(repository.renameBuild(created.localId, "Draft"))
+
+        val card = assertIs<LibraryData.Ready<List<BuildCardModel>>>(buildsModel()).value.single()
+
+        assertEquals("Draft", card.title)
+        assertEquals("Draft", card.record.name)
+    }
+
+    @Test
+    fun aCustomNameAlwaysTakesPrecedenceEverywhere() {
+        val created = assertIs<DraftCreation.Created>(
+            runBlocking { createClassDraft(repository, datasets, ClassToken("WARRIOR")) },
+        ).record
+        loaded(repository.renameBuild(created.localId, "Rend spam levelling"))
+
+        val card = assertIs<LibraryData.Ready<List<BuildCardModel>>>(buildsModel()).value.single()
+        val homeCard = assertIs<LibraryData.Ready<HomeModel>>(homeModel()).value.continueCard
+
+        assertEquals("Rend spam levelling", assertNotNull(homeCard).title)
+        assertEquals("Rend spam levelling", card.title)
     }
 }

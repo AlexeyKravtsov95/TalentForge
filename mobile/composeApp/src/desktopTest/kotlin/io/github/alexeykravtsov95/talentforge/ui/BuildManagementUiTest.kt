@@ -43,9 +43,9 @@ import org.junit.Rule
  * return (a deleted Continue promotes the next build).
  *
  * Every scenario seeds TWO builds — a named "Spare" plus the unnamed target
- * (the newest) — because Home offers its "All builds" link only once a RECENT
- * build exists, and because distinct titles keep every row's ⋯ button
- * addressable unambiguously.
+ * (the newest, displayed as "Mage build" since M5.UI.1) — because distinct
+ * titles keep every row's ⋯ button addressable unambiguously. (Home shows
+ * its "All builds" link at every library size since M5.UI.1.)
  */
 class BuildManagementUiTest {
 
@@ -104,7 +104,7 @@ class BuildManagementUiTest {
     /**
      * Seeds the standard scenario: a named "Spare" build plus the unnamed
      * TARGET (the newest — Home's Continue). Returns nothing; the target row
-     * is always addressed by its title "Draft".
+     * is always addressed by its display title "Mage build".
      */
     private fun seedSpareAndTarget() {
         val spare = createDraftViaRepository("WARRIOR")
@@ -145,7 +145,7 @@ class BuildManagementUiTest {
         composeApp()
         openAllBuilds(expectedCount = 2)
 
-        openRowActions("Draft")
+        openRowActions("Mage build")
 
         composeRule.onNodeWithText("Rename").assertExists()
         composeRule.onNodeWithText("Duplicate").assertExists()
@@ -158,7 +158,7 @@ class BuildManagementUiTest {
         composeApp()
         openAllBuilds(expectedCount = 2)
 
-        openRowActions("Draft")
+        openRowActions("Mage build")
 
         // still on All Builds, and no editor is composed behind the sheet
         composeRule.onNodeWithText("Builds 2").assertExists()
@@ -172,7 +172,7 @@ class BuildManagementUiTest {
         seedSpareAndTarget()
         composeApp()
         openAllBuilds(expectedCount = 2)
-        openRowActions("Draft")
+        openRowActions("Mage build")
 
         composeRule.onNodeWithText("Rename").performClick()
         awaitText("Rename build")
@@ -199,7 +199,7 @@ class BuildManagementUiTest {
         seedSpareAndTarget()
         composeApp()
         openAllBuilds(expectedCount = 2)
-        openRowActions("Draft")
+        openRowActions("Mage build")
         composeRule.onNodeWithText("Rename").performClick()
         awaitText("Rename build")
         val writesBefore = storage.writeCount
@@ -217,7 +217,7 @@ class BuildManagementUiTest {
         seedSpareAndTarget()
         composeApp()
         openAllBuilds(expectedCount = 2)
-        openRowActions("Draft")
+        openRowActions("Mage build")
         composeRule.onNodeWithText("Rename").performClick()
         awaitText("Rename build")
         val field = composeRule.onNodeWithContentDescription("build name")
@@ -240,7 +240,7 @@ class BuildManagementUiTest {
         seedSpareAndTarget()
         composeApp()
         openAllBuilds(expectedCount = 2)
-        openRowActions("Draft")
+        openRowActions("Mage build")
         composeRule.onNodeWithText("Rename").performClick()
         awaitText("Rename build")
         composeRule.onNodeWithContentDescription("build name").performTextInput("My build")
@@ -264,7 +264,7 @@ class BuildManagementUiTest {
         seedSpareAndTarget()
         composeApp()
         openAllBuilds(expectedCount = 2)
-        openRowActions("Draft")
+        openRowActions("Mage build")
 
         composeRule.onNodeWithText("Duplicate").performClick()
 
@@ -281,7 +281,7 @@ class BuildManagementUiTest {
         seedSpareAndTarget()
         composeApp()
         openAllBuilds(expectedCount = 2)
-        openRowActions("Draft")
+        openRowActions("Mage build")
 
         storage.failWrites = true
         composeRule.onNodeWithText("Duplicate").performClick()
@@ -301,19 +301,19 @@ class BuildManagementUiTest {
         seedSpareAndTarget()
         composeApp()
         openAllBuilds(expectedCount = 2)
-        openRowActions("Draft")
+        openRowActions("Mage build")
 
         composeRule.onNodeWithText("Delete").performClick()
 
-        awaitText("Delete \"Draft\"?")
+        awaitText("Delete \"Mage build\"?")
         composeRule
             .onNodeWithText("This permanently deletes the build from this device and cannot be undone.")
             .assertExists()
 
         composeRule.onNodeWithText("Cancel").performClick()
-        awaitGone("Delete \"Draft\"?")
+        awaitGone("Delete \"Mage build\"?")
         composeRule.onNodeWithText("Builds 2").assertExists()
-        composeRule.onNodeWithContentDescription("build actions for Draft").assertExists()
+        composeRule.onNodeWithContentDescription("build actions for Mage build").assertExists()
     }
 
     @Test
@@ -323,12 +323,12 @@ class BuildManagementUiTest {
         openAllBuilds(expectedCount = 2)
 
         // delete the target…
-        openRowActions("Draft")
+        openRowActions("Mage build")
         composeRule.onNodeWithText("Delete").performClick()
-        awaitText("Delete \"Draft\"?")
+        awaitText("Delete \"Mage build\"?")
         composeRule.onNodeWithText("Delete").performClick()
         awaitText("Builds 1")
-        composeRule.onNodeWithContentDescription("build actions for Draft").assertDoesNotExist()
+        composeRule.onNodeWithContentDescription("build actions for Mage build").assertDoesNotExist()
 
         // …then the last remaining build
         openRowActions("Spare")
@@ -358,9 +358,9 @@ class BuildManagementUiTest {
         seedSpareAndTarget()
         composeApp()
         openAllBuilds(expectedCount = 2)
-        openRowActions("Draft")
+        openRowActions("Mage build")
         composeRule.onNodeWithText("Delete").performClick()
-        awaitText("Delete \"Draft\"?")
+        awaitText("Delete \"Mage build\"?")
 
         storage.failWrites = true
         composeRule.onNodeWithText("Delete").performClick()
@@ -383,12 +383,12 @@ class BuildManagementUiTest {
         createDraftViaRepository("MAGE") // newest → Home's Continue
         composeApp()
         awaitText("CONTINUE")
-        composeRule.onNodeWithText("Draft").assertExists() // the Mage draft is Continue
+        composeRule.onNodeWithText("Mage build").assertExists() // the unnamed Mage draft is Continue
 
         openAllBuilds(expectedCount = 2)
-        openRowActions("Draft") // the Mage row (only unnamed row)
+        openRowActions("Mage build") // the Mage row (only unnamed row)
         composeRule.onNodeWithText("Delete").performClick()
-        awaitText("Delete \"Draft\"?")
+        awaitText("Delete \"Mage build\"?")
         composeRule.onNodeWithText("Delete").performClick()
         awaitText("Builds 1")
 
@@ -402,7 +402,7 @@ class BuildManagementUiTest {
         seedSpareAndTarget()
         composeApp()
         openAllBuilds(expectedCount = 2)
-        openRowActions("Draft")
+        openRowActions("Mage build")
         composeRule.onNodeWithText("Rename").performClick()
         awaitText("Rename build")
         composeRule.onNodeWithContentDescription("build name").performTextInput("Renamed")
@@ -425,7 +425,7 @@ class BuildManagementUiTest {
         seedSpareAndTarget()
         composeApp()
         openAllBuilds(expectedCount = 2)
-        openRowActions("Draft")
+        openRowActions("Mage build")
 
         assertTrue(systemBack())
 
@@ -438,7 +438,7 @@ class BuildManagementUiTest {
         seedSpareAndTarget()
         composeApp()
         openAllBuilds(expectedCount = 2)
-        openRowActions("Draft")
+        openRowActions("Mage build")
         composeRule.onNodeWithText("Rename").performClick()
         awaitText("Rename build")
         composeRule.onNodeWithContentDescription("build name").performTextInput("Typed")
@@ -457,15 +457,15 @@ class BuildManagementUiTest {
         seedSpareAndTarget()
         composeApp()
         openAllBuilds(expectedCount = 2)
-        openRowActions("Draft")
+        openRowActions("Mage build")
         composeRule.onNodeWithText("Delete").performClick()
-        awaitText("Delete \"Draft\"?")
+        awaitText("Delete \"Mage build\"?")
 
         assertTrue(systemBack())
 
-        awaitGone("Delete \"Draft\"?")
+        awaitGone("Delete \"Mage build\"?")
         composeRule.onNodeWithText("Builds 2").assertExists()
-        composeRule.onNodeWithContentDescription("build actions for Draft").assertExists()
+        composeRule.onNodeWithContentDescription("build actions for Mage build").assertExists()
     }
 
     @Test
@@ -485,7 +485,7 @@ class BuildManagementUiTest {
         seedSpareAndTarget()
         composeApp()
         openAllBuilds(expectedCount = 2)
-        openRowActions("Draft")
+        openRowActions("Mage build")
         storage.writeDelayMillis = 2_500
         composeRule.onNodeWithText("Duplicate").performClick()
 
@@ -506,7 +506,7 @@ class BuildManagementUiTest {
         seedSpareAndTarget()
         composeApp()
         openAllBuilds(expectedCount = 2)
-        openRowActions("Draft")
+        openRowActions("Mage build")
 
         // the tap lands ON the scrim, right over the Spare row's ⋯ button: the
         // sheet must DISMISS (scrim, not busy) and the button underneath must
@@ -522,7 +522,7 @@ class BuildManagementUiTest {
         seedSpareAndTarget()
         composeApp()
         openAllBuilds(expectedCount = 2)
-        openRowActions("Draft")
+        openRowActions("Mage build")
 
         // The caption is NOT its own semantics node (the scrim's clickable
         // merges it), so address the surface through the first action and
@@ -544,7 +544,7 @@ class BuildManagementUiTest {
         seedSpareAndTarget()
         composeApp()
         openAllBuilds(expectedCount = 2)
-        openRowActions("Draft")
+        openRowActions("Mage build")
         composeRule.onNodeWithText("Rename").performClick()
         awaitText("Rename build")
         composeRule.onNodeWithContentDescription("build name").performTextInput("My build")
@@ -567,7 +567,7 @@ class BuildManagementUiTest {
         seedSpareAndTarget()
         composeApp()
         openAllBuilds(expectedCount = 2)
-        openRowActions("Draft")
+        openRowActions("Mage build")
         storage.writeDelayMillis = 2_500
         composeRule.onNodeWithText("Duplicate").performClick() // the write is held in flight
 
