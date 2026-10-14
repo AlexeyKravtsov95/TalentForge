@@ -38,13 +38,21 @@ SCRIPTS = {
     "dataset": load_script("sync_mobile_datasets"),
     "visuals": load_script("sync_mobile_visuals"),
     "tooltips": load_script("sync_mobile_tooltips"),
+    "localization": load_script("sync_mobile_localization"),
 }
-KINDS = {"dataset": bundles.DATASET, "visuals": bundles.VISUALS, "tooltips": bundles.TOOLTIPS}
-# committed files per kind and build: 9 class files (+ manifest | + registry and icons)
+KINDS = {
+    "dataset": bundles.DATASET,
+    "visuals": bundles.VISUALS,
+    "tooltips": bundles.TOOLTIPS,
+    "localization": bundles.LOCALIZATION,
+}
+# committed files per kind and build: 9 class files (+ manifest | + registry and icons |
+# + the ruRU overlay of each class under localization)
 FILE_COUNTS = {
     "dataset": {REFERENCE: 10, BUILD_70245: 10, PREVIOUS_PRODUCT: 10, PRODUCT: 10},
     "visuals": {REFERENCE: 368, BUILD_70245: 367, PREVIOUS_PRODUCT: 368, PRODUCT: 368},
     "tooltips": {REFERENCE: 9, BUILD_70245: 9, PREVIOUS_PRODUCT: 9, PRODUCT: 9},
+    "localization": {REFERENCE: 9, BUILD_70245: 9, PREVIOUS_PRODUCT: 9, PRODUCT: 9},
 }
 
 

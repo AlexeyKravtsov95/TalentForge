@@ -288,11 +288,11 @@ def test_committed_localization_is_consistent_with_the_product_dataset(at_repo_r
     assert check_localization(GAME, PRODUCT_BUILD, LOCALE) == []
 
 
-def test_regenerating_the_ruRU_pilot_from_the_build_rows_reproduces_the_committed_files(
+def test_regenerating_the_ruRU_overlays_from_the_build_rows_reproduces_the_committed_files(
     at_repo_root,
 ) -> None:
-    """The 70374 overlay, report and Markdown come from 70374's own enUS/ruRU rows and its
-    own dataset and tooltip revisions - M5.REL.3b.1 can build on them directly."""
+    """The 70374 overlays, report and Markdown come from 70374's own enUS/ruRU rows and its
+    own dataset and tooltip revisions - all nine classes since M5.REL.3b.1."""
     build = localize_build(
         LocalCsvDb2Source(LOCALIZATION_FIXTURES / "enUS", per_version=False),
         LocalCsvDb2Source(LOCALIZATION_FIXTURES / LOCALE, per_version=False),
@@ -302,30 +302,34 @@ def test_regenerating_the_ruRU_pilot_from_the_build_rows_reproduces_the_committe
         LOCALE,
         source_name="wago.tools",
     )
-    overlay = (OVERLAYS / "warrior.json").read_text(encoding="utf-8")
-    assert build.overlays["WARRIOR"].to_json() == overlay
-    report = build.report(frozenset({"WARRIOR"}))
+    for token, overlay in build.overlays.items():
+        committed = (OVERLAYS / f"{token.lower()}.json").read_text(encoding="utf-8")
+        assert overlay.to_json() == committed, f"{token} overlay is stale"
+    report = build.report(frozenset(build.overlays))
     assert report.to_json() == LOCALIZATION_REPORT.read_text(encoding="utf-8")
     markdown = LOCALIZATION_MARKDOWN.read_text(encoding="utf-8")
     assert render_localization_markdown(report) == markdown
 
 
-def test_the_ruRU_overlay_is_linked_to_the_product_revisions(
+def test_the_ruRU_overlays_are_linked_to_the_product_revisions(
     committed: dict[str, TalentDataDocument],
 ) -> None:
+    for class_key, document in committed.items():
+        overlay = read_localization_document(OVERLAYS / f"{class_key}.json")
+        tooltips = json.loads((TOOLTIPS / f"{class_key}.json").read_text(encoding="utf-8"))
+        assert overlay.client_build == str(PRODUCT_BUILD)
+        assert overlay.talent_data_content_hash == document.content_hash
+        assert overlay.tooltips_content_hash == tooltips["contentHash"]
+    # a build's overlay is never another build's: 70338 keeps its own revision links
     overlay = read_localization_document(OVERLAYS / "warrior.json")
-    tooltips = json.loads((TOOLTIPS / "warrior.json").read_text(encoding="utf-8"))
-    assert overlay.client_build == str(PRODUCT_BUILD)
-    assert overlay.talent_data_content_hash == committed["warrior"].content_hash
-    assert overlay.tooltips_content_hash == tooltips["contentHash"]
     previous = read_localization_document(PREVIOUS_OVERLAYS / LOCALE / "warrior.json")
     assert overlay.talent_data_content_hash != previous.talent_data_content_hash
     assert overlay.content_hash != previous.content_hash
 
 
 def test_ruRU_coverage_of_the_product_build() -> None:
-    """Same coverage as 70338 (identical ruRU exports): every class reported, Warrior
-    published as the pilot, the other classes left to M5.REL.3b.1."""
+    """Same coverage as 70338 (identical ruRU exports): every class reported and - since
+    M5.REL.3b.1 - every class published."""
     report = read_localization_report(LOCALIZATION_REPORT)
     totals = report.totals
     assert (totals.entries, totals.ranks) == (469, 1329)
@@ -333,5 +337,7 @@ def test_ruRU_coverage_of_the_product_build() -> None:
     assert (names.translated, names.untranslated, names.missing) == (459, 10, 0)
     assert totals.descriptions.rendered == 355
     assert totals.rendered_ranks == 1058
-    assert [row.class_token for row in report.classes if row.published] == ["WARRIOR"]
+    assert [row.class_token for row in report.classes if row.published] == [
+        key.upper() for key in ALL_CLASSES
+    ]
     assert len(report.classes) == 9
