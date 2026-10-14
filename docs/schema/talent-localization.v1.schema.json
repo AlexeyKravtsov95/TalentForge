@@ -1,0 +1,328 @@
+{
+  "$defs": {
+    "LocalizationProvenance": {
+      "additionalProperties": false,
+      "properties": {
+        "renderer": {
+          "description": "Renderer and grammar revision that produced the text",
+          "title": "Renderer",
+          "type": "string"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "tables": {
+          "items": {
+            "$ref": "#/$defs/LocalizationSourceTable"
+          },
+          "title": "Tables",
+          "type": "array"
+        }
+      },
+      "required": [
+        "source",
+        "renderer",
+        "tables"
+      ],
+      "title": "LocalizationProvenance",
+      "type": "object"
+    },
+    "LocalizationSourceTable": {
+      "additionalProperties": false,
+      "properties": {
+        "locale": {
+          "enum": [
+            "enUS",
+            "ruRU"
+          ],
+          "title": "Locale",
+          "type": "string"
+        },
+        "table": {
+          "minLength": 1,
+          "title": "Table",
+          "type": "string"
+        },
+        "url": {
+          "description": "Build- and locale-pinned export URL",
+          "minLength": 1,
+          "title": "Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "table",
+        "locale",
+        "url"
+      ],
+      "title": "LocalizationSourceTable",
+      "type": "object"
+    },
+    "LocalizedDescription": {
+      "additionalProperties": false,
+      "properties": {
+        "ranks": {
+          "description": "Exactly ranks 1..maxRank when rendered; empty otherwise",
+          "items": {
+            "$ref": "#/$defs/LocalizedRank"
+          },
+          "title": "Ranks",
+          "type": "array"
+        },
+        "source": {
+          "description": "The client column the template comes from",
+          "enum": [
+            "Spell.Description_lang",
+            "TraitDefinition.OverrideDescription_lang"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "missing",
+            "untranslated",
+            "sourceNotResolved",
+            "pluralRuleUnverified",
+            "structureMismatch",
+            "renderGap",
+            "decimalFormatUnverified",
+            "rendered"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "source",
+        "ranks"
+      ],
+      "title": "LocalizedDescription",
+      "type": "object"
+    },
+    "LocalizedEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "definitionId": {
+          "description": "TraitDefinition.ID",
+          "exclusiveMinimum": 0,
+          "title": "Definitionid",
+          "type": "integer"
+        },
+        "description": {
+          "$ref": "#/$defs/LocalizedDescription"
+        },
+        "entryId": {
+          "description": "TalentEntry.id of the matching talent-data.v1",
+          "exclusiveMinimum": 0,
+          "title": "Entryid",
+          "type": "integer"
+        },
+        "maxRank": {
+          "description": "TalentEntry.maxRank",
+          "minimum": 1,
+          "title": "Maxrank",
+          "type": "integer"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedName"
+        },
+        "nodeId": {
+          "description": "TalentNode.id the entry belongs to",
+          "exclusiveMinimum": 0,
+          "title": "Nodeid",
+          "type": "integer"
+        },
+        "spellId": {
+          "description": "TraitDefinition.SpellID (= TalentEntry.spellId)",
+          "exclusiveMinimum": 0,
+          "title": "Spellid",
+          "type": "integer"
+        },
+        "textSpellId": {
+          "description": "The spell whose client strings name and describe the entry: TraitDefinition.VisibleSpellID when set, otherwise SpellID (the dataset's own rule)",
+          "exclusiveMinimum": 0,
+          "title": "Textspellid",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entryId",
+        "nodeId",
+        "definitionId",
+        "spellId",
+        "textSpellId",
+        "maxRank",
+        "name",
+        "description"
+      ],
+      "title": "LocalizedEntry",
+      "type": "object"
+    },
+    "LocalizedName": {
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "description": "The client column the name is taken from",
+          "enum": [
+            "SpellName.Name_lang",
+            "TraitDefinition.OverrideName_lang"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "translated",
+            "untranslated",
+            "missing"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The localized name; present exactly when translated",
+          "title": "Text"
+        }
+      },
+      "required": [
+        "status",
+        "text",
+        "source"
+      ],
+      "title": "LocalizedName",
+      "type": "object"
+    },
+    "LocalizedRank": {
+      "additionalProperties": false,
+      "properties": {
+        "rank": {
+          "minimum": 1,
+          "title": "Rank",
+          "type": "integer"
+        },
+        "segments": {
+          "items": {
+            "$ref": "#/$defs/LocalizedSegment"
+          },
+          "minItems": 1,
+          "title": "Segments",
+          "type": "array"
+        }
+      },
+      "required": [
+        "rank",
+        "segments"
+      ],
+      "title": "LocalizedRank",
+      "type": "object"
+    },
+    "LocalizedSegment": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "description": "text: literal localized template text; value: one evaluated value",
+          "enum": [
+            "text",
+            "value"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "text"
+      ],
+      "title": "LocalizedSegment",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "classToken": {
+      "description": "Locale-independent class token, e.g. WARRIOR",
+      "pattern": "^[A-Z]+$",
+      "title": "Classtoken",
+      "type": "string"
+    },
+    "clientBuild": {
+      "pattern": "^\\d+\\.\\d+\\.\\d+\\.\\d+$",
+      "title": "Clientbuild",
+      "type": "string"
+    },
+    "contentHash": {
+      "description": "sha256 of the canonical JSON of every field except contentHash and provenance",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "title": "Contenthash",
+      "type": "string"
+    },
+    "entries": {
+      "description": "One entry per talent entry of the class, ordered by entryId",
+      "items": {
+        "$ref": "#/$defs/LocalizedEntry"
+      },
+      "title": "Entries",
+      "type": "array"
+    },
+    "game": {
+      "minLength": 1,
+      "title": "Game",
+      "type": "string"
+    },
+    "locale": {
+      "const": "ruRU",
+      "title": "Locale",
+      "type": "string"
+    },
+    "provenance": {
+      "$ref": "#/$defs/LocalizationProvenance"
+    },
+    "schemaVersion": {
+      "const": 1,
+      "title": "Schemaversion",
+      "type": "integer"
+    },
+    "talentDataContentHash": {
+      "description": "contentHash of the talent-data.v1 document this overlay belongs to",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "title": "Talentdatacontenthash",
+      "type": "string"
+    },
+    "tooltipsContentHash": {
+      "description": "contentHash of the English talent-tooltips.v1 sidecar the rendered descriptions were checked against",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "title": "Tooltipscontenthash",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "game",
+    "clientBuild",
+    "classToken",
+    "locale",
+    "talentDataContentHash",
+    "tooltipsContentHash",
+    "entries",
+    "contentHash",
+    "provenance"
+  ],
+  "title": "TalentLocalizationDocument",
+  "type": "object"
+}
