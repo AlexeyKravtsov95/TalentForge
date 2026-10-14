@@ -189,13 +189,22 @@ class ShellLocalizationUiTest {
                 )
             }
             if (layout.layoutInput.overflow != TextOverflow.Ellipsis && layout.lineCount > 0) {
-                // the laid-out glyphs, not the paragraph's layout width, must fit the text's box
+                // The laid-out glyphs, not the paragraph's layout width, must fit the
+                // space the text's parent gave it. Not the text's own box alone: on
+                // macOS fonts (SF) Skia's intrinsic width of a single word can be a
+                // few px under its laid-out glyphs, so a word sized to its intrinsic
+                // width ("RECENT", 98.7 px in a 96 px box with the whole row free)
+                // overhangs its box without being cut or touching anything.
+                val constraints = layout.layoutInput.constraints
+                val availableWidth = maxOf(layout.size.width, constraints.maxWidth)
+                val availableHeight = maxOf(layout.size.height, constraints.maxHeight)
                 val contentRight = (0 until layout.lineCount).maxOf { layout.getLineRight(it) }
                 val contentBottom = layout.getLineBottom(layout.lineCount - 1)
                 assertTrue(
-                    contentRight <= layout.size.width + OVERFLOW_TOLERANCE_PX &&
-                        contentBottom <= layout.size.height + OVERFLOW_TOLERANCE_PX,
-                    "$where: '$text' overflows its box ($contentRight x $contentBottom in ${layout.size})",
+                    contentRight <= availableWidth + OVERFLOW_TOLERANCE_PX &&
+                        contentBottom <= availableHeight + OVERFLOW_TOLERANCE_PX,
+                    "$where: '$text' overflows the space it was given " +
+                        "($contentRight x $contentBottom in ${layout.size}, $constraints)",
                 )
             }
             val bounds = node.boundsInRoot
