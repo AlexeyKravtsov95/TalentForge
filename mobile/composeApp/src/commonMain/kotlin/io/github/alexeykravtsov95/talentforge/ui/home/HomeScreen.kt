@@ -124,6 +124,12 @@ fun HomeScreen(
         data = LibraryData.Loading
         data = withContext(Dispatchers.Default) { loadHomeModel(repository, datasets) }
     }
+    // Read HERE, in HomeScreen's own scope, not only inside BoxWithConstraints'
+    // subcomposition: when the load result is written off the UI thread (the
+    // unconfined effect dispatcher of the desktop UI-test harness), a change
+    // observed only by the subcomposition was never applied and Home stayed
+    // on "Loading" until the waitUntil timeout.
+    val shown = data
 
     val colors = talentForgeColors()
     BoxWithConstraints(
@@ -148,7 +154,7 @@ fun HomeScreen(
             ) {
                 Spacer(Modifier.height(TalentForgeSpacing.group))
                 BrandHeader()
-                when (val current = data) {
+                when (val current = shown) {
                     LibraryData.Loading -> BasicText(
                         stringResource(Res.string.library_loading),
                         style = TalentForgeTypography.bodySmall.copy(color = colors.textSecondary),
@@ -182,7 +188,7 @@ fun HomeScreen(
             // the empty state, a neutral secondary once builds exist.
             // Loading/Failed keep the secondary so the pinned slot never
             // changes identity mid-session.
-            if (data is LibraryData.Ready && (data as LibraryData.Ready<HomeModel>).value.continueCard == null) {
+            if (shown is LibraryData.Ready && shown.value.continueCard == null) {
                 PrimaryActionButton(
                     text = stringResource(Res.string.common_new_build),
                     onClickLabel = stringResource(Res.string.common_new_build_action),
