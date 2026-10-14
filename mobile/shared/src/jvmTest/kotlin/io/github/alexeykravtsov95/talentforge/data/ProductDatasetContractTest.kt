@@ -20,16 +20,17 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
 
-private val PRODUCT = DatasetBundleId(GameId("forever"), "1.60.1.70338")
+private val PRODUCT = DatasetBundleId(GameId("forever"), "1.60.1.70374")
 
 /**
- * M5.DATA.2: the committed product dataset 1.60.1.70338 — documents, manifest,
+ * M5.DATA.3: the committed product dataset 1.60.1.70374 — documents, manifest,
  * `talent-visuals.v1` / `talent-icons.v1` and `talent-tooltips.v1` — parses
  * under the strict readers, passes every repository identity check, and is
  * supported by the Kotlin allocation engine exactly like the reference
  * baseline (only Rogue Venom stays unresolved). Another build's sidecars —
- * even those of the previous product dataset 1.60.1.70245 — can never stand
- * in for it: they fail with a typed build mismatch.
+ * even those of the previous product dataset 1.60.1.70338, whose talent rows,
+ * icons and descriptions are identical — can never stand in for it: they fail
+ * with a typed build mismatch.
  */
 class ProductDatasetContractTest {
 
@@ -64,13 +65,13 @@ class ProductDatasetContractTest {
         }
 
     private fun productDocument(token: String): TalentDataDocument =
-        TalentDataContract.decodeTalentDataDocument(TestRepoAssets.forever70338.resolve("$token.json").readBytes())
+        TalentDataContract.decodeTalentDataDocument(TestRepoAssets.forever70374.resolve("$token.json").readBytes())
 
     @Test
     fun everyProductDocumentLoadsThroughTheVerifyingRepository() = runTest {
         val repository = BundledTalentDatasetRepository(committedAssets())
         val manifest = assertIs<DatasetOutcome.Loaded<DatasetManifest>>(repository.manifest(PRODUCT)).value
-        assertEquals("1.60.1.70338", manifest.clientBuild)
+        assertEquals("1.60.1.70374", manifest.clientBuild)
         assertEquals(TestRepoAssets.classTokens.map { it.uppercase() }.toSet(), manifest.classes.map { it.token.value }.toSet())
 
         var nodes = 0
@@ -103,37 +104,37 @@ class ProductDatasetContractTest {
         for (token in TestRepoAssets.classTokens) {
             val document = productDocument(token)
             val loadedVisuals = assertIs<VisualsOutcome.Loaded<TalentVisuals>>(visuals.visuals(document), token).value
-            assertEquals("1.60.1.70338", loadedVisuals.clientBuild)
+            assertEquals("1.60.1.70374", loadedVisuals.clientBuild)
             for (fileDataId in loadedVisuals.iconFileDataIds) {
                 val path = loadedVisuals.iconAssetPathOf(fileDataId)
-                assertTrue(path != null && path.startsWith("visuals/forever/1.60.1.70338/icons/"), "$token $path")
+                assertTrue(path != null && path.startsWith("visuals/forever/1.60.1.70374/icons/"), "$token $path")
             }
             icons += loadedVisuals.iconFileDataIds.size
             val loadedTooltips = assertIs<TooltipsOutcome.Loaded<TalentTooltips>>(tooltips.tooltips(document), token).value
-            assertEquals("1.60.1.70338", loadedTooltips.clientBuild)
+            assertEquals("1.60.1.70374", loadedTooltips.clientBuild)
         }
         assertTrue(icons >= 358, "every class resolves its own icons ($icons class-icon pairs)")
     }
 
     @Test
     fun previousProductSidecarsCannotStandInForTheProductBuild() = runTest {
-        // a hand-copied 70245 visuals/tooltips tree placed where 70338's belongs
+        // a hand-copied 70338 visuals/tooltips tree (same icons and text) placed where 70374's belongs
         val temp = Files.createTempDirectory("talentforge-substitution").toFile()
         tempDirs += temp
-        TestRepoAssets.visuals70245.copyRecursively(temp.resolve("visuals/forever/1.60.1.70338"))
-        TestRepoAssets.tooltips70245.copyRecursively(temp.resolve("tooltips/forever/1.60.1.70338"))
+        TestRepoAssets.visuals70338.copyRecursively(temp.resolve("visuals/forever/1.60.1.70374"))
+        TestRepoAssets.tooltips70338.copyRecursively(temp.resolve("tooltips/forever/1.60.1.70374"))
         val assets = directoryAssetSource(temp)
         val document = productDocument("warrior")
 
         val visualsError = assertIs<VisualsOutcome.Failed>(BundledTalentVisualsRepository(assets).visuals(document)).error
         val visualsMismatch = assertIs<VisualsLoadError.BuildMismatch>(visualsError)
-        assertEquals("1.60.1.70338", visualsMismatch.expected)
-        assertEquals("1.60.1.70245", visualsMismatch.actual)
+        assertEquals("1.60.1.70374", visualsMismatch.expected)
+        assertEquals("1.60.1.70338", visualsMismatch.actual)
 
         val tooltipsError = assertIs<TooltipsOutcome.Failed>(BundledTalentTooltipsRepository(assets).tooltips(document)).error
         val tooltipsMismatch = assertIs<TooltipsLoadError.BuildMismatch>(tooltipsError)
-        assertEquals("1.60.1.70338", tooltipsMismatch.expected)
-        assertEquals("1.60.1.70245", tooltipsMismatch.actual)
+        assertEquals("1.60.1.70374", tooltipsMismatch.expected)
+        assertEquals("1.60.1.70338", tooltipsMismatch.actual)
     }
 
     private companion object {

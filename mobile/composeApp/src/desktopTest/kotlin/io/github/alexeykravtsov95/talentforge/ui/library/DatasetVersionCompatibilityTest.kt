@@ -31,13 +31,14 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 
 /**
- * M5.DATA / M5.DATA.2: three datasets bundled side by side. New drafts are
- * created on the product dataset ([PRODUCT_BUNDLE], 1.60.1.70338); a build
- * saved on the reference baseline ([REFERENCE_BUNDLE], 1.60.1.70009) or on the
- * previous product dataset ([PREVIOUS_PRODUCT_BUNDLE], 1.60.1.70245) opens on
- * its own build — same tree, ranks, points, icons and descriptions — and is
- * never re-read against the product dataset; a build of a client build that
- * is not bundled fails with a typed error instead of falling back.
+ * M5.DATA / M5.DATA.2 / M5.DATA.3: four datasets bundled side by side. New
+ * drafts are created on the product dataset ([PRODUCT_BUNDLE], 1.60.1.70374);
+ * a build saved on the reference baseline ([REFERENCE_BUNDLE], 1.60.1.70009),
+ * on [BUNDLE_70245] or on the previous product dataset
+ * ([PREVIOUS_PRODUCT_BUNDLE], 1.60.1.70338 — the same talent rows as 70374)
+ * opens on its own build — same tree, ranks, points, icons and descriptions —
+ * and is never re-read against the product dataset; a build of a client build
+ * that is not bundled fails with a typed error instead of falling back.
  *
  * Every bundled read goes through [RecordingAssetSource], so each test can
  * prove WHICH build's files answered.
@@ -118,7 +119,7 @@ class DatasetVersionCompatibilityTest {
 
     /**
      * A real 1.60.1.70009 Druid build with node 104951 (King of the Jungle on
-     * 70009) at 3/3. On 1.60.1.70245 and 1.60.1.70338 the same node id is
+     * 70009) at 3/3. On 1.60.1.70245 and every later build the same node id is
      * Shifting Power with max rank 1, so this build only exists on its own build.
      */
     private fun referenceDruidWithShiftingPowerMaxed(engine: TalentAllocationEngine): BuildState =
@@ -138,7 +139,7 @@ class DatasetVersionCompatibilityTest {
 
         assertEquals("Forever", choices.gameDisplayName)
         // the header's human version, derived from the bundle's exact client
-        // build (1.60.1.70338 → 1.60.1)
+        // build (1.60.1.70374 → 1.60.1)
         assertEquals("1.60.1", choices.dataVersion)
         assertEquals(9, choices.classes.size)
         assertTrue(choices.classes.all { it.available })
@@ -150,13 +151,13 @@ class DatasetVersionCompatibilityTest {
         val created = assertIs<DraftCreation.Created>(
             runBlocking { createClassDraft(repository, datasets, ClassToken("DRUID")) },
         ).record
-        assertEquals("1.60.1.70338", created.build.clientBuild)
+        assertEquals("1.60.1.70374", created.build.clientBuild)
         assertEquals(PRODUCT_BUNDLE.clientBuild, created.build.clientBuild)
         assertEquals(1089, created.build.treeId)
 
         val session = assertIs<EditorLoad.Ready>(open(created.localId)).session
 
-        assertEquals("1.60.1.70338", session.engine.document.clientBuild)
+        assertEquals("1.60.1.70374", session.engine.document.clientBuild)
         assertEquals(52, session.engine.tree.nodes.size)
         val improved = session.engine.tree.nodes.single { it.id == IMPROVED_SHIFTING_POWER }
         assertEquals("Improved Shifting Power", improved.name)
@@ -172,9 +173,9 @@ class DatasetVersionCompatibilityTest {
             ),
             ranksOf(session, IMPROVED_SHIFTING_POWER).map { it.text() },
         )
-        // dataset, visuals and descriptions all came from 1.60.1.70338
-        assertTrue(assets.paths.any { it.startsWith("visuals/forever/1.60.1.70338/") })
-        assertTrue(assets.paths.any { it.startsWith("tooltips/forever/1.60.1.70338/") })
+        // dataset, visuals and descriptions all came from 1.60.1.70374
+        assertTrue(assets.paths.any { it.startsWith("visuals/forever/1.60.1.70374/") })
+        assertTrue(assets.paths.any { it.startsWith("tooltips/forever/1.60.1.70374/") })
         assertTrue(assets.paths.allIn(PRODUCT_BUNDLE.clientBuild), "read: ${assets.paths}")
     }
 
@@ -183,14 +184,14 @@ class DatasetVersionCompatibilityTest {
         val created = assertIs<DraftCreation.Created>(
             runBlocking { createClassDraft(repository, datasets, ClassToken("WARRIOR")) },
         ).record
-        assertEquals("1.60.1.70338", created.build.clientBuild)
+        assertEquals("1.60.1.70374", created.build.clientBuild)
         assertEquals(1117, created.build.treeId)
 
         val session = assertIs<EditorLoad.Ready>(open(created.localId)).session
 
         val nodes = session.engine.tree.nodes.associateBy { it.id }
         assertEquals(52, nodes.size)
-        assertFalse(TOUGHNESS in nodes, "Toughness is gone on 1.60.1.70338")
+        assertFalse(TOUGHNESS in nodes, "Toughness is gone since 1.60.1.70338")
         assertEquals("Gore Drinker", nodes.getValue(GORE_DRINKER).name)
         assertEquals(listOf(ENRAGE), nodes.getValue(GORE_DRINKER).prerequisites.map { it.nodeId })
         assertEquals("Iron Will", nodes.getValue(IRON_WILL).name)
@@ -249,12 +250,12 @@ class DatasetVersionCompatibilityTest {
         assertFalse(productEngine.validate(state).valid)
     }
 
-    // ------------------------------------------------------------------ saved previous-product builds
+    // ------------------------------------------------------------------ saved 1.60.1.70245 builds
 
     @Test
-    fun aBuildSavedOnThePreviousProductDatasetOpensOnItsOwnBuildUnchanged() {
-        // Warrior Toughness 5/5: a valid 1.60.1.70245 build whose node no longer exists on 70338
-        val previousEngine = TalentAllocationEngine(document(PREVIOUS_PRODUCT_BUNDLE.clientBuild, "WARRIOR"))
+    fun aBuildSavedOn70245OpensOnItsOwnBuildUnchanged() {
+        // Warrior Toughness 5/5: a valid 1.60.1.70245 build whose node no longer exists since 70338
+        val previousEngine = TalentAllocationEngine(document(BUNDLE_70245.clientBuild, "WARRIOR"))
         val state = maxedThroughItsSection(previousEngine, TOUGHNESS)
         val localId = saved(state, "1.60.1.70245", "WARRIOR")
         val file = loaded(repository.load()).single().build
@@ -277,7 +278,7 @@ class DatasetVersionCompatibilityTest {
         assertEquals("Increases your Armor value from items by 10%.", ranksOf(session, TOUGHNESS)[4].text())
         assertTrue(assets.paths.any { it.startsWith("visuals/forever/1.60.1.70245/") })
         assertTrue(assets.paths.any { it.startsWith("tooltips/forever/1.60.1.70245/") })
-        assertTrue(assets.paths.allIn(PREVIOUS_PRODUCT_BUNDLE.clientBuild), "read: ${assets.paths}")
+        assertTrue(assets.paths.allIn(BUNDLE_70245.clientBuild), "read: ${assets.paths}")
         assertEquals(file, loaded(repository.load()).single().build)
 
         // why it must open on 1.60.1.70245: the product dataset rejects the same ranks
@@ -286,14 +287,14 @@ class DatasetVersionCompatibilityTest {
     }
 
     @Test
-    fun aPreviousProductBuildThatStaysValidStillOpensWithItsOwnTalents() {
+    fun a70245BuildThatStaysValidStillOpensWithItsOwnTalents() {
         // node 105953 at 3/3 validates on BOTH builds, but it is Boundless Rage on
-        // 70245 and Furious Precision on 70338: validity is no license to migrate
-        val previousEngine = TalentAllocationEngine(document(PREVIOUS_PRODUCT_BUNDLE.clientBuild, "WARRIOR"))
+        // 70245 and Furious Precision since 70338: validity is no license to migrate
+        val previousEngine = TalentAllocationEngine(document(BUNDLE_70245.clientBuild, "WARRIOR"))
         val state = maxedThroughItsSection(previousEngine, BOUNDLESS_RAGE_NODE)
         val productEngine = TalentAllocationEngine(document(PRODUCT_BUNDLE.clientBuild, "WARRIOR"))
         assertTrue(productEngine.validate(state).valid)
-        val localId = saved(state, PREVIOUS_PRODUCT_BUNDLE.clientBuild, "WARRIOR")
+        val localId = saved(state, BUNDLE_70245.clientBuild, "WARRIOR")
         assets.paths.clear()
 
         val session = assertIs<EditorLoad.Ready>(open(localId)).session
@@ -302,7 +303,41 @@ class DatasetVersionCompatibilityTest {
         assertEquals(state, session.buildState)
         assertEquals("Boundless Rage", session.engine.tree.nodes.single { it.id == BOUNDLESS_RAGE_NODE }.name)
         assertEquals("Increases your maximum Rage by 30.", ranksOf(session, BOUNDLESS_RAGE_NODE)[2].text())
+        assertTrue(assets.paths.allIn(BUNDLE_70245.clientBuild), "read: ${assets.paths}")
+    }
+
+    // ------------------------------------------------------------------ saved previous-product builds
+
+    @Test
+    fun aBuildSavedOnThePreviousProductDatasetOpensOnItsOwnBuildAlthoughTheDataIsIdentical() {
+        // Warrior Gore Drinker maxed on 1.60.1.70338. 70374 has the same talent rows, so the
+        // product engine accepts the same ranks - and the build still opens on 70338 only.
+        val previousEngine = TalentAllocationEngine(document(PREVIOUS_PRODUCT_BUNDLE.clientBuild, "WARRIOR"))
+        val state = maxedThroughItsSection(previousEngine, GORE_DRINKER)
+        val productDocument = document(PRODUCT_BUNDLE.clientBuild, "WARRIOR")
+        assertTrue(TalentAllocationEngine(productDocument).validate(state).valid)
+        assertEquals(previousEngine.document.trees, productDocument.trees)
+        val localId = saved(state, "1.60.1.70338", "WARRIOR")
+        val file = loaded(repository.load()).single().build
+        assets.paths.clear()
+
+        val session = assertIs<EditorLoad.Ready>(open(localId)).session
+
+        // exact identity, ranks and points: nothing migrated, re-mapped or recounted
+        assertEquals(file, session.record.build)
+        assertEquals("1.60.1.70338", session.record.build.clientBuild)
+        assertEquals(state, session.buildState)
+        assertEquals(previousEngine.spentPoints(state), session.engine.spentPoints(session.buildState))
+        assertEquals("1.60.1.70338", session.engine.document.clientBuild)
+        assertEquals(previousEngine.document.contentHash, session.engine.document.contentHash)
+        assertTrue(session.engine.document.contentHash != productDocument.contentHash)
+        // its own build's icon and description, never the product build's identical copy
+        assertTrue(GORE_DRINKER in session.icons.nodeIds)
+        assertTrue(assets.paths.any { it.startsWith("visuals/forever/1.60.1.70338/") })
+        assertTrue(assets.paths.any { it.startsWith("tooltips/forever/1.60.1.70338/") })
         assertTrue(assets.paths.allIn(PREVIOUS_PRODUCT_BUNDLE.clientBuild), "read: ${assets.paths}")
+        // opening wrote nothing but lastOpenedAt
+        assertEquals(file, loaded(repository.load()).single().build)
     }
 
     @Test
@@ -312,9 +347,15 @@ class DatasetVersionCompatibilityTest {
         val reference = loaded(
             repository.createDraft(buildFileOf(state, game, REFERENCE_BUNDLE.clientBuild, ClassToken("DRUID"))),
         )
-        val previousEngine = TalentAllocationEngine(document(PREVIOUS_PRODUCT_BUNDLE.clientBuild, "WARRIOR"))
-        val previousState = maxedThroughItsSection(previousEngine, TOUGHNESS)
-        val previousId = saved(previousState, PREVIOUS_PRODUCT_BUNDLE.clientBuild, "WARRIOR")
+        val engine70245 = TalentAllocationEngine(document(BUNDLE_70245.clientBuild, "WARRIOR"))
+        val state70245 = maxedThroughItsSection(engine70245, TOUGHNESS)
+        val id70245 = saved(state70245, BUNDLE_70245.clientBuild, "WARRIOR")
+        val previousEngine = TalentAllocationEngine(document(PREVIOUS_PRODUCT_BUNDLE.clientBuild, "PRIEST"))
+        val firstTalent = previousEngine.tree.nodes
+            .filter { previousEngine.canSpend(previousEngine.emptyState(), it.id).allowed }
+            .minOf { it.id }
+        val previousState = previousEngine.spend(previousEngine.emptyState(), firstTalent).state
+        val previousId = saved(previousState, PREVIOUS_PRODUCT_BUNDLE.clientBuild, "PRIEST")
         val product = assertIs<DraftCreation.Created>(
             runBlocking { createClassDraft(repository, datasets, ClassToken("DRUID")) },
         ).record
@@ -327,8 +368,12 @@ class DatasetVersionCompatibilityTest {
         assertEquals("Druid", referenceCard.classDisplayName)
         assertEquals(referenceEngine.spentPoints(state), referenceCard.spentPoints)
         assertEquals(51, referenceCard.pointBudget)
+        val card70245 = cards.getValue(id70245)
+        assertEquals("Warrior", card70245.classDisplayName)
+        assertEquals(engine70245.spentPoints(state70245), card70245.spentPoints)
+        assertEquals(51, card70245.pointBudget)
         val previousCard = cards.getValue(previousId)
-        assertEquals("Warrior", previousCard.classDisplayName)
+        assertEquals("Priest", previousCard.classDisplayName)
         assertEquals(previousEngine.spentPoints(previousState), previousCard.spentPoints)
         assertEquals(51, previousCard.pointBudget)
         val productCard = cards.getValue(product.localId)
@@ -342,7 +387,8 @@ class DatasetVersionCompatibilityTest {
     @Test
     fun aBuildOfAnUnbundledClientBuildFailsTypedWithoutFallback() {
         // real Forever builds that are not bundled: 1.60.1.70170 (between 70009 and
-        // 70245) and 1.60.1.70334 (talent data identical to 70338 - still no stand-in)
+        // 70245) and 1.60.1.70334 (talent data identical to 70338 and 70374 - still no
+        // stand-in)
         val productEngine = TalentAllocationEngine(document(PRODUCT_BUNDLE.clientBuild, "DRUID"))
         for (clientBuild in listOf("1.60.1.70170", "1.60.1.70334")) {
             val localId = saved(productEngine.emptyState(), clientBuild, "DRUID")

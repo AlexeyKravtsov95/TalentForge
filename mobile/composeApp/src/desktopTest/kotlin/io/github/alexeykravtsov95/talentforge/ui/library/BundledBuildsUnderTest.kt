@@ -9,7 +9,15 @@ import io.github.alexeykravtsov95.talentforge.data.GameId
  * keep opening on it; the app itself never names it — a saved build carries
  * its own client build.
  */
-val PREVIOUS_PRODUCT_BUNDLE: DatasetBundleId = DatasetBundleId(GameId("forever"), "1.60.1.70245")
+val BUNDLE_70245: DatasetBundleId = DatasetBundleId(GameId("forever"), "1.60.1.70245")
+
+/**
+ * Forever `1.60.1.70338`, the product dataset of M5.DATA.2 — the same talent
+ * rows as the product dataset 1.60.1.70374, yet its own bundle: builds saved
+ * on it keep opening on it, exactly like [BUNDLE_70245].
+ */
+val PREVIOUS_PRODUCT_BUNDLE: DatasetBundleId = DatasetBundleId(GameId("forever"), "1.60.1.70338")
 
 /** Every bundled dataset, ascending: the test-side view of `BUNDLED_BUILDS`. */
-val ALL_BUNDLES: List<DatasetBundleId> = listOf(REFERENCE_BUNDLE, PREVIOUS_PRODUCT_BUNDLE, PRODUCT_BUNDLE)
+val ALL_BUNDLES: List<DatasetBundleId> =
+    listOf(REFERENCE_BUNDLE, BUNDLE_70245, PREVIOUS_PRODUCT_BUNDLE, PRODUCT_BUNDLE)

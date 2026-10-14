@@ -27,8 +27,8 @@ import kotlinx.coroutines.runBlocking
 
 /**
  * M5.UX.1 section projection against the REAL bundled datasets of EVERY bundled
- * client build (1.60.1.70009 reference, 1.60.1.70245 previous product,
- * 1.60.1.70338 product), all nine classes:
+ * client build (1.60.1.70009 reference, 1.60.1.70245 and 1.60.1.70338 retained
+ * products, 1.60.1.70374 product), all nine classes:
  * the tree splits into exactly its published sections, no node id is lost or
  * duplicated, no connector is invented or broken, bounds come from each
  * section's own nodes, the geometry is the original one, the per-section
@@ -67,7 +67,7 @@ class TalentTreeSectionsTest {
     @Test
     fun everyRealTreeSplitsIntoExactlyItsPublishedSections() {
         val documents = everyDocument()
-        assertEquals(27, documents.size, "nine classes on each of the three bundled builds")
+        assertEquals(36, documents.size, "nine classes on each of the four bundled builds")
         for (document in documents) {
             val tree = document.trees.single()
             val label = "${document.classInfo.token} ${document.clientBuild}"
