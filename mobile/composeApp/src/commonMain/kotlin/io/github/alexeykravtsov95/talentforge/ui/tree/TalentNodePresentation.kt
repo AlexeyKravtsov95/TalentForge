@@ -173,18 +173,3 @@ internal fun nodePresentation(
         tierGates = tierGates,
     )
 }
-
-/** Short accessibility label of the primary visual state (B3 02 wording). */
-fun TalentNodeState.accessibilityLabel(): String = when (this) {
-    TalentNodeState.AVAILABLE -> "available"
-    TalentNodeState.PARTIAL -> "in progress"
-    TalentNodeState.MAXED -> "maxed"
-    TalentNodeState.PREREQUISITE_LOCKED -> "locked by prerequisite"
-    TalentNodeState.TIER_LOCKED -> "locked by tier"
-    TalentNodeState.NO_POINTS -> "no points remaining"
-    TalentNodeState.UNAVAILABLE -> "unavailable"
-}
-
-/** Spoken form of a node's rank + state ("2/5, in progress"). */
-fun TalentNodePresentation.accessibilityStateDescription(): String =
-    "$rankText, ${state.accessibilityLabel()}"

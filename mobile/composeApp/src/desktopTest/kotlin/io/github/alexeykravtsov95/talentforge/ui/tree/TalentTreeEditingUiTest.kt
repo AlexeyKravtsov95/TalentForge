@@ -749,7 +749,7 @@ class TalentTreeEditingUiTest {
                 it.state == TalentNodeState.NO_POINTS && it.rank < it.maxRank
             },
         )
-        return facts.nameOf(node.nodeId)
+        return assertNotNull(facts.talentName(node.nodeId).published)
     }
 
     /** The mid-rank talent a greedy 51/51 fill leaves behind (engine-spent, never hand-written). */
@@ -762,7 +762,7 @@ class TalentTreeEditingUiTest {
             },
             "the greedy 51/51 fill must leave exactly one partial talent",
         )
-        return facts.nameOf(node.nodeId)
+        return assertNotNull(facts.talentName(node.nodeId).published)
     }
 
     private fun rankOf(state: TalentTreeUiState.Ready, name: String): Int =

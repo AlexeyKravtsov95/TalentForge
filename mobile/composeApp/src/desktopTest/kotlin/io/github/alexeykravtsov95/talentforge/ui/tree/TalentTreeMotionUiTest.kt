@@ -616,7 +616,7 @@ class TalentTreeMotionUiTest {
             rest()
             val strip = onNodeWithTag(TALENT_INSPECTOR_COMPACT_TAG).fetchSemanticsNode().boundsInRoot
 
-            onNodeWithContentDescription(INSPECTOR_EXPAND_LABEL).performClick()
+            onNodeWithContentDescription(EditorCopy.English.expand).performClick()
             advance(16)
             val first = onNodeWithTag(TALENT_INSPECTOR_SHEET_TAG).fetchSemanticsNode().boundsInRoot
             assertTrue(first.top > strip.top - 60f, "the sheet starts at the strip's top edge: ${first.top} vs ${strip.top}")
@@ -635,7 +635,7 @@ class TalentTreeMotionUiTest {
             rest()
             assertEquals(1, session.reported.size, "+ spends one rank; the animation spent nothing")
 
-            onNodeWithContentDescription(INSPECTOR_COLLAPSE_LABEL).performClick()
+            onNodeWithContentDescription(EditorCopy.English.collapse).performClick()
             advance(16)
             onNodeWithTag(TALENT_INSPECTOR_COMPACT_TAG).assertExists() // the strip is back (and interactive) at once
             onNodeWithTag(TALENT_INSPECTOR_SHEET_TAG).assertDoesNotExist()
@@ -686,7 +686,7 @@ class TalentTreeMotionUiTest {
         onPhone(warrior) { session ->
             onNodeWithContentDescription(SHORT_DESCRIPTION_TALENT).performClick()
             rest()
-            onNodeWithContentDescription(INSPECTOR_EXPAND_LABEL).performClick()
+            onNodeWithContentDescription(EditorCopy.English.expand).performClick()
             rest()
             onNodeWithContentDescription(top).performClick()
             advance(16)
@@ -721,7 +721,7 @@ class TalentTreeMotionUiTest {
             assertSettledOn(session, a, "back")
             onNodeWithContentDescription(SHORT_DESCRIPTION_TALENT).performClick()
             advance(48)
-            onNodeWithContentDescription(INSPECTOR_EXPAND_LABEL).performClick()
+            onNodeWithContentDescription(EditorCopy.English.expand).performClick()
             advance(48)
             val now = onNodeWithTag(TALENT_INSPECTOR_SHEET_TAG).fetchSemanticsNode().boundsInRoot
             rest()

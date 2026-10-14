@@ -163,8 +163,8 @@ class TalentSpecializationNamesUiTest {
         composeRule.onNodeWithText("Воздаяние").performClick()
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Воздаяние").assertIsSelected()
-        // the per-tab point counts stay attached to the localized labels
-        assertEquals("0 points spent", tabState("Воздаяние"))
+        // the per-tab point counts stay attached to the localized labels (localized since M5.REL.2b)
+        assertEquals("потрачено 0 очков", tabState("Воздаяние"))
     }
 
     @Test
@@ -236,7 +236,8 @@ class TalentSpecializationNamesUiTest {
         composeRule.onNodeWithText("Огонь").assertIsSelected()
         composeRule.onNodeWithText("Тайная магия").assertExists()
         composeRule.onNodeWithText("Лёд").assertExists()
-        assertEquals("1 point spent", tabState("Огонь"))
+        // M5.REL.2b: the tab's spoken point count is localized with the labels
+        assertEquals("потрачено 1 очко", tabState("Огонь"))
         assertEquals(buildBefore, reported.single(), "a language change never reports a build change")
         assertEquals(cameraBefore, cameras.stateOf(1).viewport, "the camera is untouched")
         composeRule.onNodeWithText("1 / 51").assertExists()

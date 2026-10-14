@@ -108,4 +108,142 @@
     <string name="new_build_error_dataset">Не удалось прочитать данные талантов класса.</string>
     <string name="new_build_error_engine">Движок распределения очков отклонил эти данные (%1$s).</string>
     <string name="new_build_error_library">Не удалось сохранить черновик на этом устройстве.</string>
+
+    <!-- ================================================================ -->
+    <!-- редактор талантов (M5.REL.2b). Названия талантов и текст        -->
+    <!-- подсказок берутся из данных и здесь НЕ переводятся (M5.REL.3).   -->
+    <!-- ================================================================ -->
+
+    <!-- editor header -->
+    <string name="editor_draft_title">Черновик</string>
+    <string name="editor_undo_action">Отменить изменение талантов</string>
+    <string name="editor_redo_action">Повторить изменение талантов</string>
+    <string name="editor_build_actions_open">открыть действия с билдом</string>
+
+    <!-- editor loading, failures and autosave -->
+    <string name="editor_opening_build">Открытие билда…</string>
+    <string name="editor_open_failed">Не удалось открыть билд</string>
+    <string name="editor_loading_talent_data">Загрузка данных талантов…</string>
+    <string name="editor_talent_data_failed">Не удалось загрузить данные талантов</string>
+    <string name="editor_autosave_failed">Не удалось сохранить изменения на этом устройстве</string>
+    <string name="editor_failure_library">не удалось прочитать локальную библиотеку билдов (%1$s)</string>
+    <string name="editor_failure_dataset">данные талантов этого билда недоступны на устройстве (%1$s)</string>
+    <string name="editor_failure_tree_unavailable">билд относится к дереву %1$d, а в данных есть только деревья %2$s</string>
+    <string name="editor_failure_engine">движок распределения очков отклонил эти данные (%1$s)</string>
+    <string name="editor_failure_invalid_build">сохранённый билд некорректен (%1$s) — он не изменён</string>
+    <string name="editor_failure_ui_model">по этим данным невозможно построить дерево талантов</string>
+    <string name="editor_failure_no_trees">в данных нет дерева талантов</string>
+    <string name="editor_failure_multiple_trees">в данных несколько деревьев талантов (%1$s), а этот экран пока показывает только одно</string>
+    <string name="editor_failure_empty_tree">в дереве талантов нет узлов</string>
+    <string name="editor_failure_duplicate_node">в дереве талантов повторяется узел %1$d</string>
+    <string name="editor_failure_invalid_layout">раскладку дерева талантов невозможно отобразить (xStep=%1$d)</string>
+    <string name="editor_failure_dangling_prerequisite">связь-требование ссылается на отсутствующий узел (%1$d → %2$d)</string>
+    <string name="editor_failure_dangling_visual">декоративная связь ссылается на отсутствующий узел (%1$d → %2$d)</string>
+    <string name="library_error_storage_read">ошибка чтения хранилища</string>
+    <string name="library_error_storage_write">ошибка записи в хранилище</string>
+    <string name="library_error_malformed">сохранённые данные повреждены</string>
+    <string name="library_error_unsupported_version">данные сохранены в версии хранилища %1$d</string>
+    <string name="library_error_unknown_record">этого билда больше нет на устройстве</string>
+    <plurals name="library_error_id_collision">
+        <item quantity="one">не удалось создать уникальный идентификатор билда (попыток: %1$d)</item>
+        <item quantity="few">не удалось создать уникальный идентификатор билда (попыток: %1$d)</item>
+        <item quantity="many">не удалось создать уникальный идентификатор билда (попыток: %1$d)</item>
+        <item quantity="other">не удалось создать уникальный идентификатор билда (попыток: %1$d)</item>
+    </plurals>
+    <plurals name="library_error_invalid_name">
+        <item quantity="one">название билда отклонено (пустое или длиннее %1$d символа)</item>
+        <item quantity="few">название билда отклонено (пустое или длиннее %1$d символов)</item>
+        <item quantity="many">название билда отклонено (пустое или длиннее %1$d символов)</item>
+        <item quantity="other">название билда отклонено (пустое или длиннее %1$d символа)</item>
+    </plurals>
+
+    <!-- build actions sheet and reset feedback -->
+    <string name="editor_build_actions_title">Действия с билдом</string>
+    <string name="editor_reset_talents">Сбросить таланты</string>
+    <plurals name="editor_reset_notice">
+        <item quantity="one">Таланты сброшены · снято %1$d очко</item>
+        <item quantity="few">Таланты сброшены · снято %1$d очка</item>
+        <item quantity="many">Таланты сброшены · снято %1$d очков</item>
+        <item quantity="other">Таланты сброшены · снято %1$d очка</item>
+    </plurals>
+    <string name="editor_undo">Отменить</string>
+
+    <!-- section tabs, Fit and the Back chip -->
+    <plurals name="section_points_spent">
+        <item quantity="one">потрачено %1$d очко</item>
+        <item quantity="few">потрачено %1$d очка</item>
+        <item quantity="many">потрачено %1$d очков</item>
+        <item quantity="other">потрачено %1$d очка</item>
+    </plurals>
+    <string name="section_fit_tree">Вписать дерево</string>
+    <string name="section_fit_tree_action">вписать дерево в экран</string>
+    <string name="section_back_to">Назад к «%1$s»</string>
+    <string name="section_return_action">вернуться к таланту</string>
+
+    <!-- talent nodes on the canvas (accessibility) -->
+    <string name="talent_fallback_name">Талант %1$d</string>
+    <string name="talent_select_action">выбрать талант</string>
+    <string name="talent_clear_selection_action">снять выделение</string>
+    <string name="talent_state_available">доступен</string>
+    <string name="talent_state_in_progress">частично изучен</string>
+    <string name="talent_state_maxed">изучен полностью</string>
+    <string name="talent_state_prerequisite_locked">заблокирован требованием</string>
+    <string name="talent_state_tier_locked">заблокирован ярусом</string>
+    <string name="talent_state_no_points">нет свободных очков</string>
+    <string name="talent_state_unavailable">недоступен</string>
+
+    <!-- talent inspector -->
+    <string name="inspector_select_prompt">Выберите талант, чтобы увидеть подробности</string>
+    <string name="inspector_expand">Развернуть панель таланта</string>
+    <string name="inspector_collapse">Свернуть панель таланта</string>
+    <string name="inspector_expand_action">развернуть панель таланта</string>
+    <string name="inspector_collapse_action">свернуть панель таланта</string>
+    <string name="inspector_rank_caption">Ранг</string>
+    <string name="inspector_add_rank">Добавить ранг: %1$s</string>
+    <string name="inspector_remove_rank">Убрать ранг: %1$s</string>
+    <string name="inspector_max_out">Изучить полностью: %1$s</string>
+    <string name="inspector_max_button">Макс.</string>
+    <string name="inspector_max_rank_reached">Достигнут максимальный ранг</string>
+    <string name="inspector_show">Показать</string>
+    <string name="inspector_show_action">показать требуемый талант: %1$s</string>
+    <string name="inspector_tier_points">Очки яруса: %1$d из %2$d</string>
+
+    <!-- inspector state lines (B3 03–07) -->
+    <string name="inspector_state_available">Доступен</string>
+    <string name="inspector_state_in_progress">Частично изучен</string>
+    <string name="inspector_state_maxed">Изучен полностью</string>
+    <string name="inspector_state_unavailable">Недоступен</string>
+    <string name="inspector_state_no_points">Нет свободных очков · потрачено %1$d/%2$d</string>
+    <string name="inspector_needed_for">%1$s · нужен для «%2$s»</string>
+    <string name="inspector_requires_prerequisite">Требуется «%1$s» %2$d/%2$d</string>
+    <plurals name="inspector_requires_prerequisites">
+        <item quantity="one">Сначала изучите %1$d требуемый талант</item>
+        <item quantity="few">Сначала изучите %1$d требуемых таланта</item>
+        <item quantity="many">Сначала изучите %1$d требуемых талантов</item>
+        <item quantity="other">Сначала изучите %1$d требуемого таланта</item>
+    </plurals>
+    <plurals name="inspector_spend_more_points">
+        <item quantity="one">Вложите ещё %1$d очко в эту ветку</item>
+        <item quantity="few">Вложите ещё %1$d очка в эту ветку</item>
+        <item quantity="many">Вложите ещё %1$d очков в эту ветку</item>
+        <item quantity="other">Вложите ещё %1$d очка в эту ветку</item>
+    </plurals>
+    <string name="inspector_spend_more_points_unspecified">Вложите больше очков в эту ветку</string>
+
+    <!-- blocked-action reasons (B3 07), from the engine's typed issue codes -->
+    <string name="inspector_blocked_no_rank_to_refund">Нет рангов для возврата</string>
+    <string name="inspector_blocked_no_points">Не осталось очков талантов</string>
+    <string name="inspector_blocked_needed_by">Нужен для «%1$s»</string>
+    <string name="inspector_blocked_needed_by_allocated">Нужен для изученного таланта</string>
+    <string name="inspector_blocked_tier">Заблокирован — вложите больше очков в эту ветку</string>
+    <string name="inspector_blocked_requires">Сначала изучите «%1$s»</string>
+    <string name="inspector_blocked_requires_unnamed">Сначала изучите требуемый талант</string>
+    <string name="inspector_blocked_unavailable">Действие недоступно</string>
+
+    <!-- talent description (M5.V2): labels around the dataset's own text -->
+    <string name="description_current">СЕЙЧАС</string>
+    <string name="description_next_rank">СЛЕД. РАНГ</string>
+    <string name="description_unavailable">Описание таланта недоступно в данных этого клиента.</string>
+    <string name="description_missing_character">Значения, отмеченные «—», зависят от персонажа и не показываются.</string>
+    <string name="description_missing_data">Значения, отмеченные «—», отсутствуют в данных этого клиента.</string>
 </resources>

@@ -106,7 +106,7 @@ class TalentInspectorAdaptiveUiTest {
     }
 
     private fun ComposeUiTest.expand() {
-        onNodeWithContentDescription(INSPECTOR_EXPAND_LABEL).performClick()
+        onNodeWithContentDescription(EditorCopy.English.expand).performClick()
         settle()
     }
 
@@ -166,7 +166,9 @@ class TalentInspectorAdaptiveUiTest {
 
                         // the reason is the engine's own wording, shown in words
                         val (content, _) = inspectorInputsOf(warrior, scenario.build, scenario.nodeName)
-                        val reason = content.prerequisiteLine ?: content.tierLine ?: content.stateLine
+                        val reason = EditorCopy.English.textOf(
+                            assertNotNull(content.prerequisiteLine ?: content.tierLine ?: content.stateLine),
+                        )
                         onNode(hasTestTag(TALENT_INSPECTOR_REASON_TAG) and hasText(reason), useUnmergedTree = true)
                             .assertIsDisplayed()
                         val reasonRect = bounds(hasTestTag(TALENT_INSPECTOR_REASON_TAG))
@@ -195,7 +197,7 @@ class TalentInspectorAdaptiveUiTest {
                         for ((i, a) in actions.withIndex()) {
                             for (b in actions.drop(i + 1)) assertTrue(!a.overlaps(b), "actions overlap: $where")
                         }
-                        onNodeWithContentDescription(INSPECTOR_EXPAND_LABEL).assertIsDisplayed()
+                        onNodeWithContentDescription(EditorCopy.English.expand).assertIsDisplayed()
                     }
                 }
             }
@@ -331,7 +333,7 @@ class TalentInspectorAdaptiveUiTest {
             select(case.nodeName)
             expand()
             onNodeWithContentDescription(case.nodeName).assertIsSelected()
-            onNodeWithContentDescription(INSPECTOR_COLLAPSE_LABEL).performClick()
+            onNodeWithContentDescription(EditorCopy.English.collapse).performClick()
             settle()
             onNodeWithContentDescription(case.nodeName).assertIsSelected()
             onNodeWithTag(TALENT_INSPECTOR_COMPACT_TAG).assertIsDisplayed()
@@ -393,7 +395,7 @@ class TalentInspectorAdaptiveUiTest {
             onNodeWithContentDescription(bottomNode.name!!).assertIsSelected()
 
             // collapsing never moves the camera (B3 08); FIT still returns to the fit
-            onNodeWithContentDescription(INSPECTOR_COLLAPSE_LABEL).performClick()
+            onNodeWithContentDescription(EditorCopy.English.collapse).performClick()
             settle()
             assertEquals(after, camera.viewport, "collapsing never moves the camera")
             assertTrue(camera.isAwayFromFit)
@@ -431,7 +433,7 @@ class TalentInspectorAdaptiveUiTest {
         val warrior = productState("WARRIOR")
         val locked = compactScenarios(warrior).getValue("prerequisite")
         val (content, _) = inspectorInputsOf(warrior, locked.build, locked.nodeName)
-        val target = assertNotNull(content.showAction).prerequisiteName
+        val target = assertNotNull(assertNotNull(content.showAction).prerequisiteName.published)
         for (fromSheet in listOf(false, true)) {
             onPhone(warrior.copy(buildState = locked.build), 320, 568) { session ->
                 select(locked.nodeName)
@@ -457,7 +459,7 @@ class TalentInspectorAdaptiveUiTest {
             expand()
             onNodeWithContentDescription("Add rank to $SHORT_DESCRIPTION_TALENT").performClick()
             settle()
-            onNodeWithContentDescription(INSPECTOR_COLLAPSE_LABEL).performClick()
+            onNodeWithContentDescription(EditorCopy.English.collapse).performClick()
             settle()
             onNode(counter(2), useUnmergedTree = true).assertExists()
             onNodeWithContentDescription("Undo talent change").performClick()

@@ -33,15 +33,14 @@ sealed interface DescriptionBody {
     data class Text(
         val spans: List<DescriptionSpan>,
         /** Explains the `—` marks of a partial description; `null` when there are none. */
-        val missingNote: String?,
+        val missingNote: MissingValuesNote?,
     ) : DescriptionBody {
         /** Plain rendering (for accessibility and tests). */
         val plainText: String get() = spans.joinToString("") { it.text }
     }
 
-    data object Unavailable : DescriptionBody {
-        const val TEXT: String = "Talent description unavailable for this client data."
-    }
+    /** No verified description: the inspector shows its localized "unavailable" line (M5.REL.2b). */
+    data object Unavailable : DescriptionBody
 }
 
 sealed interface DescriptionSpan {
@@ -68,12 +67,6 @@ sealed interface RankComparison {
 
 /** Visible stand-in for a value that is not shown. */
 const val MISSING_MARK: String = "—"
-
-const val MISSING_NOTE_CHARACTER: String =
-    "Values marked $MISSING_MARK depend on your character and are not shown."
-
-const val MISSING_NOTE_DATA: String =
-    "Values marked $MISSING_MARK are not available in this client data."
 
 /**
  * The description block of one selected node at its current [rank].
@@ -120,8 +113,10 @@ private fun bodyOf(rank: TalentTooltipRank, changedValues: Set<Int>): Descriptio
     }
     val note = when {
         rank.gaps.isEmpty() -> null
-        rank.gaps.all { it.classification == TooltipGapClassification.CONTEXT_DEPENDENT } -> MISSING_NOTE_CHARACTER
-        else -> MISSING_NOTE_DATA
+        rank.gaps.all { it.classification == TooltipGapClassification.CONTEXT_DEPENDENT } ->
+            MissingValuesNote.CHARACTER_DEPENDENT
+
+        else -> MissingValuesNote.NOT_IN_CLIENT_DATA
     }
     return DescriptionBody.Text(spans, note)
 }

@@ -17,20 +17,21 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.description_current
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.description_next_rank
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.description_unavailable
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeColors
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTypography
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
+import org.jetbrains.compose.resources.stringResource
 
 /** Test tag of the inspector's description block. */
 const val TALENT_INSPECTOR_DESCRIPTION_TAG: String = "talent-inspector-description"
 
 /** Test tag of the CURRENT / NEXT RANK comparison. */
 const val TALENT_INSPECTOR_COMPARISON_TAG: String = "talent-inspector-comparison"
-
-/** B3 04 column labels of the rank comparison. */
-const val CURRENT_LABEL: String = "CURRENT"
-const val NEXT_RANK_LABEL: String = "NEXT RANK"
 
 /**
  * The description of the selected talent (M5.V2) and the B3 CURRENT / NEXT RANK
@@ -52,12 +53,12 @@ internal fun InspectorDescriptionBlock(description: TalentInspectorDescription) 
                     style = DescriptionStyle,
                 )
                 body.missingNote?.let { note ->
-                    BasicText(text = note, style = DescriptionNoteStyle.copy(color = colors.textMuted))
+                    BasicText(text = note.text(), style = DescriptionNoteStyle.copy(color = colors.textMuted))
                 }
             }
 
             DescriptionBody.Unavailable -> BasicText(
-                text = DescriptionBody.Unavailable.TEXT,
+                text = stringResource(Res.string.description_unavailable),
                 style = DescriptionNoteStyle.copy(color = colors.textMuted),
             )
         }
@@ -66,15 +67,23 @@ internal fun InspectorDescriptionBlock(description: TalentInspectorDescription) 
                 modifier = Modifier.fillMaxWidth().testTag(TALENT_INSPECTOR_COMPARISON_TAG),
                 horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.rowGap),
             ) {
-                ComparisonColumn(CURRENT_LABEL, comparison.current ?: MISSING_MARK, Modifier.weight(1f))
-                ComparisonColumn(NEXT_RANK_LABEL, comparison.next, Modifier.weight(1f))
+                // B3 04 column labels of the rank comparison (CURRENT / NEXT RANK)
+                ComparisonColumn(
+                    stringResource(Res.string.description_current),
+                    comparison.current ?: MISSING_MARK,
+                    Modifier.weight(1f),
+                )
+                ComparisonColumn(stringResource(Res.string.description_next_rank), comparison.next, Modifier.weight(1f))
             }
 
             is RankComparison.NextRankText -> Column(
                 modifier = Modifier.fillMaxWidth().testTag(TALENT_INSPECTOR_COMPARISON_TAG),
                 verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.hairline),
             ) {
-                BasicText(text = NEXT_RANK_LABEL, style = ComparisonLabelStyle.copy(color = colors.textMuted))
+                BasicText(
+                    text = stringResource(Res.string.description_next_rank),
+                    style = ComparisonLabelStyle.copy(color = colors.textMuted),
+                )
                 BasicText(
                     text = comparison.body.annotated(
                         colors,

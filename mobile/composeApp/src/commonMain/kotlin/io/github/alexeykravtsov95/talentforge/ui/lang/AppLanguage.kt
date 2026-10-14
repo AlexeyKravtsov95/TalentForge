@@ -10,9 +10,10 @@ import org.jetbrains.compose.resources.stringResource
  * The display languages TalentForge ships (M5.REL.1): Russian when the
  * device's primary language is Russian, English for every other primary
  * language. There is no in-app language selector. Since M5.REL.2a the shell
- * screens' copy (Home, All Builds, Class Selection) comes from Compose
- * resources (`values/` English default, `values-ru/` Russian) under the SAME
- * rule; the specialization names keep their M5.REL.1 table.
+ * screens' copy (Home, All Builds, Class Selection) — and since M5.REL.2b the
+ * talent editor's — comes from Compose resources (`values/` English default,
+ * `values-ru/` Russian) under the SAME rule; the specialization names keep
+ * their M5.REL.1 table.
  */
 enum class AppLanguage {
     ENGLISH,

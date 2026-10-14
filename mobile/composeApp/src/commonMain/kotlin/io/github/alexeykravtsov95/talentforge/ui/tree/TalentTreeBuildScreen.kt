@@ -28,6 +28,25 @@ import io.github.alexeykravtsov95.talentforge.data.describe
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryError
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_retry
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_autosave_failed
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_draft_title
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_failure_dataset
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_failure_engine
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_failure_invalid_build
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_failure_library
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_failure_tree_unavailable
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_failure_ui_model
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_open_failed
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_opening_build
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_error_id_collision
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_error_invalid_name
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_error_malformed
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_error_storage_read
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_error_storage_write
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_error_unknown_record
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_error_unsupported_version
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentDescriptionsLoader
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentIconsLoader
 import androidx.compose.runtime.collectAsState
@@ -42,6 +61,8 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.classAccentFor
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * The M5.1 generic build editor host: opens a locally stored build by its
@@ -81,13 +102,13 @@ fun TalentTreeBuildScreen(
     val colors = talentForgeColors()
     when (val current = load) {
         EditorLoad.Loading -> EditorPane(
-            primary = "Opening build…",
+            primary = stringResource(Res.string.editor_opening_build),
             primaryColor = colors.textSecondary,
             onBack = onBack,
         )
 
         is EditorLoad.Failed -> EditorPane(
-            primary = "This build can't be opened",
+            primary = stringResource(Res.string.editor_open_failed),
             primaryColor = colors.danger,
             detail = current.failure.describe(),
             onBack = onBack,
@@ -121,7 +142,9 @@ private fun ReadyBuildEditor(
                 model = session.model,
                 engine = session.engine,
                 buildState = session.buildState,
-                buildTitle = record.name ?: "Draft",
+                // a user name verbatim; an unnamed build shows the localized "Draft",
+                // resolved here at display time — `record.name` stays null in storage
+                buildTitle = record.name ?: stringResource(Res.string.editor_draft_title),
                 classAccent = classAccentFor(record.build.classToken).color,
                 icons = session.icons,
                 descriptions = session.descriptions,
@@ -142,8 +165,8 @@ private fun ReadyBuildEditor(
         )
         if (saveFailed) {
             InlineNotice(
-                text = "Couldn't save your changes on this device",
-                actionText = "Retry",
+                text = stringResource(Res.string.editor_autosave_failed),
+                actionText = stringResource(Res.string.common_retry),
                 onAction = { newestFile?.let { autosave.submit(record.localId, it) } },
                 modifier = Modifier
                     .align(Alignment.TopCenter)
@@ -193,31 +216,40 @@ private fun EditorPane(
     }
 }
 
-/** Human-readable rendering of [EditorFailure] (typed, never raw exceptions). */
+/**
+ * Localized rendering of [EditorFailure] (typed, never raw exceptions;
+ * M5.REL.2b). Embedded technical details — the shared dataset diagnostic,
+ * the engine's reason and the validation reason codes — stay as reported:
+ * they are diagnostics, not product copy.
+ */
+@Composable
 fun EditorFailure.describe(): String = when (this) {
-    is EditorFailure.Record -> "the local build library could not be read (${error.describeLibraryError()})"
+    is EditorFailure.Record -> stringResource(Res.string.editor_failure_library, error.describeLibraryError())
 
-    is EditorFailure.Dataset -> "its talent data is unavailable on this device (${error.describe()})"
+    is EditorFailure.Dataset -> stringResource(Res.string.editor_failure_dataset, error.describe())
 
     is EditorFailure.TreeUnavailable ->
-        "the build targets tree $buildTreeId, but the dataset only contains trees " +
-            "${availableTreeIds.joinToString()}"
+        stringResource(Res.string.editor_failure_tree_unavailable, buildTreeId, availableTreeIds.joinToString())
 
-    is EditorFailure.Engine -> "the allocation engine rejected this dataset ($reason)"
+    is EditorFailure.Engine -> stringResource(Res.string.editor_failure_engine, reason)
 
     is EditorFailure.InvalidBuild ->
-        "the saved build is invalid (${reasonCodes.joinToString().lowercase()}) — it was not changed"
+        stringResource(Res.string.editor_failure_invalid_build, reasonCodes.joinToString().lowercase())
 
-    is EditorFailure.UiModel -> "the talent tree cannot be rendered from this dataset"
+    is EditorFailure.UiModel -> stringResource(Res.string.editor_failure_ui_model)
 }
 
-/** Human-readable rendering of a [BuildLibraryError] for the recoverable error states. */
+/** Localized rendering of a [BuildLibraryError] for the recoverable error states. */
+@Composable
 fun BuildLibraryError.describeLibraryError(): String = when (this) {
-    is BuildLibraryError.StorageRead -> "storage read failed"
-    is BuildLibraryError.StorageWrite -> "storage write failed"
-    is BuildLibraryError.Malformed -> "stored data is malformed"
-    is BuildLibraryError.UnsupportedStorageVersion -> "stored data uses storage version $actual"
-    is BuildLibraryError.UnknownRecord -> "this build no longer exists on this device"
-    is BuildLibraryError.IdCollision -> "a unique build id could not be generated ($attempts attempts)"
-    is BuildLibraryError.InvalidBuildName -> "the build name was rejected (blank or over $maxLength characters)"
+    is BuildLibraryError.StorageRead -> stringResource(Res.string.library_error_storage_read)
+    is BuildLibraryError.StorageWrite -> stringResource(Res.string.library_error_storage_write)
+    is BuildLibraryError.Malformed -> stringResource(Res.string.library_error_malformed)
+    is BuildLibraryError.UnsupportedStorageVersion ->
+        stringResource(Res.string.library_error_unsupported_version, actual)
+
+    is BuildLibraryError.UnknownRecord -> stringResource(Res.string.library_error_unknown_record)
+    is BuildLibraryError.IdCollision -> pluralStringResource(Res.plurals.library_error_id_collision, attempts, attempts)
+    is BuildLibraryError.InvalidBuildName ->
+        pluralStringResource(Res.plurals.library_error_invalid_name, maxLength, maxLength)
 }

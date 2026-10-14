@@ -27,9 +27,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_add_rank
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_max_button
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_max_out
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_max_rank_reached
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_rank_caption
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_remove_rank
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeRadius
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * The M4.3 explicit rank-action controls (B3 03/04/06/07, UX/UI spec 03):
@@ -159,7 +167,7 @@ fun TalentInspectorRankActions(
             )
         }
         BasicText(
-            text = "Rank",
+            text = stringResource(Res.string.inspector_rank_caption),
             style = InspectorActionCaptionStyle.copy(color = talentForgeColors().textMuted),
             modifier = Modifier.padding(horizontal = TalentForgeSpacing.hairline),
         )
@@ -213,7 +221,11 @@ fun TalentInspectorSheetRankActions(
                 width = null,
                 height = height,
                 // 1A v2 S8 very large text: the glyph alone (the label still names the action)
-                caption = if (LocalDensity.current.fontScale >= TalentInspectorMetrics.COMPACT_STACK_FONT_SCALE) null else "Rank",
+                caption = if (LocalDensity.current.fontScale >= TalentInspectorMetrics.COMPACT_STACK_FONT_SCALE) {
+                    null
+                } else {
+                    stringResource(Res.string.inspector_rank_caption)
+                },
                 modifier = Modifier.weight(1f),
             )
         }
@@ -255,7 +267,7 @@ fun SpendButton(
             .actionSize(width, height)
             .background(background, RoundedCornerShape(TalentForgeRadius.medium))
             .rankActionSemantics(
-                label = "Add rank to $talentName",
+                label = stringResource(Res.string.inspector_add_rank, talentName),
                 enabled = enabled,
                 onClick = onClick,
             ),
@@ -297,7 +309,7 @@ fun RefundButton(
             .size(width = width, height = height)
             .background(colors.surfaceInteractive, RoundedCornerShape(TalentForgeRadius.medium))
             .rankActionSemantics(
-                label = "Remove rank from $talentName",
+                label = stringResource(Res.string.inspector_remove_rank, talentName),
                 enabled = enabled,
                 onClick = onClick,
             ),
@@ -329,7 +341,7 @@ fun MaxButton(
             .heightIn(min = TalentInspectorActionMetrics.ACTION_SIZE_DP)
             .background(colors.surfaceInteractive, RoundedCornerShape(TalentForgeRadius.medium))
             .rankActionSemantics(
-                label = "Max out $talentName",
+                label = stringResource(Res.string.inspector_max_out, talentName),
                 enabled = enabled,
                 onClick = onClick,
             )
@@ -337,7 +349,7 @@ fun MaxButton(
         contentAlignment = Alignment.Center,
     ) {
         BasicText(
-            text = "Max",
+            text = stringResource(Res.string.inspector_max_button),
             style = InspectorActionTextStyle.copy(
                 color = if (enabled) colors.textPrimary else colors.disabled,
             ),
@@ -356,11 +368,12 @@ fun MaxedBadge(
     height: Dp = TalentInspectorActionMetrics.ACTION_SIZE_DP,
 ) {
     val colors = talentForgeColors()
+    val label = stringResource(Res.string.inspector_max_rank_reached)
     Box(
         modifier = modifier
             .actionSize(width, height)
             .background(colors.surfaceElevated, RoundedCornerShape(TalentForgeRadius.medium))
-            .semantics(mergeDescendants = true) { contentDescription = "Max rank reached" },
+            .semantics(mergeDescendants = true) { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) {
         BasicText(text = "✓", style = InspectorGlyphStyle.copy(color = colors.positive))

@@ -32,6 +32,8 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 
 /**
  * M4.2 adaptive-inspector behaviour against the real Warrior screen: portrait
@@ -40,6 +42,10 @@ import org.junit.Rule
  * navigation (one prerequisite hop, never mutating the BuildState).
  */
 class TalentInspectorUiTest {
+
+    /** M5.REL.2b: the UI copy follows the platform locale — pinned to English, whatever the JVM default. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     @get:Rule
     val composeRule = createComposeRule()
@@ -91,7 +97,6 @@ class TalentInspectorUiTest {
         composeRule.mainClock.advanceTimeBy((TalentInspectorMetrics.SHOW_PAN_MS + 200).toLong())
         composeRule.waitForIdle()
     }
-
 
     /**
      * Node chips of the open (first) section that currently show this rank
