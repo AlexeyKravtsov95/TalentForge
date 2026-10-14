@@ -1,13 +1,12 @@
-"""M5.DATA.2: the Forever product dataset 1.60.1.70338, end to end and offline.
+"""M5.DATA.3: the Forever product dataset 1.60.1.70374, end to end and offline.
 
-1.60.1.70338 is the product dataset (new builds are created on it). 1.60.1.70245, the
-product dataset of M5.DATA, stays committed and bundled for the builds saved on it
-(tests/unit/test_build_70245.py); 1.60.1.70009 stays the verified reference baseline the
-live-client evidence and the M2 conformance vectors are pinned to. These tests prove that
-the committed 70338 artifacts are exactly what the unchanged pipeline produces from that
-build's own client rows, that the build brings no mechanic the allocation engine does not
-support, and that the documented 70245 -> 70338 changes (the Warrior rework) are the real
-ones. Facts and evidence: docs/forever-dataset.md.
+1.60.1.70374 is the product dataset (new builds are created on it). 1.60.1.70338 (M5.DATA.2,
+tests/unit/test_build_70338.py) and 1.60.1.70245 (M5.DATA, tests/unit/test_build_70245.py)
+stay committed and bundled for the builds saved on them; 1.60.1.70009 stays the verified
+reference baseline. 70374 carries exactly 70338's talent rows - the diff is empty - and is
+nevertheless its own dataset: every artifact here is generated from 70374's own client rows
+(DB2, icon files, tooltip tables, ruRU strings), never copied, and carries 70374's identity
+and hashes. These tests prove both halves. Facts and evidence: docs/forever-dataset.md.
 """
 
 from __future__ import annotations
@@ -19,7 +18,11 @@ import pytest
 
 from talent_data.allocation import BuildState, TalentAllocationEngine
 from talent_data.games import get_game
-from talent_data.models.talents import TalentDataDocument, TalentNode
+from talent_data.localization.coverage import render_markdown as render_localization_markdown
+from talent_data.localization.pipeline import check_canonical as check_localization
+from talent_data.localization.pipeline import localize_build, read_localization_document
+from talent_data.localization.pipeline import read_coverage_report as read_localization_report
+from talent_data.models.talents import TalentDataDocument
 from talent_data.pipeline import diff_batch, read_document, read_manifest
 from talent_data.sources.local import LocalCsvDb2Source
 from talent_data.tooltips.coverage import render_markdown
@@ -35,18 +38,26 @@ from tests.unit.test_known_anomalies import EXPECTED_WARNINGS
 
 ROOT = Path(__file__).resolve().parents[2]
 GAME = get_game("forever")
+LOCALE = "ruRU"
 DATASET = ROOT / "data" / "normalized" / "forever" / str(PRODUCT_BUILD)
 PREVIOUS_DATASET = ROOT / "data" / "normalized" / "forever" / str(PREVIOUS_PRODUCT_BUILD)
 VISUALS = ROOT / "data" / "visuals" / "forever" / str(PRODUCT_BUILD)
+PREVIOUS_VISUALS = ROOT / "data" / "visuals" / "forever" / str(PREVIOUS_PRODUCT_BUILD)
 TOOLTIPS = ROOT / "data" / "tooltips" / "forever" / str(PRODUCT_BUILD)
+OVERLAYS = ROOT / "data" / "localization" / "forever" / str(PRODUCT_BUILD) / LOCALE
+PREVIOUS_OVERLAYS = ROOT / "data" / "localization" / "forever" / str(PREVIOUS_PRODUCT_BUILD)
 DIFFS = ROOT / "artifacts" / "diff"
 TOOLTIP_REPORT = ROOT / "artifacts" / "tooltips" / f"forever-{PRODUCT_BUILD}-tooltip-coverage.json"
 TOOLTIP_MARKDOWN = ROOT / "docs" / "research" / f"forever-{PRODUCT_BUILD}-tooltip-coverage.md"
 TOOLTIP_FIXTURES = FIXTURES / "tooltips" / "forever" / str(PRODUCT_BUILD)
+LOCALIZATION_REPORT = (
+    ROOT / "artifacts" / "localization" / f"forever-{PRODUCT_BUILD}-{LOCALE}-coverage.json"
+)
+LOCALIZATION_MARKDOWN = ROOT / "docs" / "research" / f"forever-{PRODUCT_BUILD}-{LOCALE}-coverage.md"
+LOCALIZATION_FIXTURES = FIXTURES / "localization" / "forever" / str(PRODUCT_BUILD)
 
-# class: (tree_id, nodes, point budget, prerequisite links, total ranks, entries) of 70338.
-# Identical to 70245 except Warrior (3 nodes removed, 2 added: 53 -> 52 nodes, 154 -> 150
-# ranks; the prerequisite link count stays 8 although four links moved).
+# class: (tree_id, nodes, point budget, prerequisite links, total ranks, entries) of 70374 -
+# identical to 70338 for every class.
 CLASS_STATS = {
     "warrior": (1117, 52, 51, 8, 150, 52),
     "paladin": (1100, 50, 51, 7, 138, 50),
@@ -59,13 +70,6 @@ CLASS_STATS = {
     "druid": (1089, 52, 51, 11, 148, 52),
 }
 VENOM = 105712
-# Warrior rework, 70245 -> 70338
-PRECISION, IMPROVED_CLEAVE, TOUGHNESS = 105929, 105936, 105973  # removed
-GORE_DRINKER, IRON_WILL = 113569, 113570  # added
-BOUNDLESS_RAGE_NODE = 105953  # Boundless Rage on 70245, Furious Precision on 70338
-IRON_WILL_NODE = 110857  # Iron Will on 70245, Lingering Rage on 70338
-FLURRY, BLOODTHIRST, IMPALE, LAST_STAND = 105928, 105930, 105947, 105970
-ENRAGE, DEATH_WISH, DEEP_WOUNDS, IMPROVED_BLOODRAGE = 105931, 105927, 105950, 105974
 
 
 @pytest.fixture(scope="module")
@@ -83,10 +87,6 @@ def at_repo_root(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("TALENT_DATA_ROOT", str(ROOT))
 
 
-def _nodes(document: TalentDataDocument) -> dict[int, TalentNode]:
-    return {n.id: n for n in document.trees[0].nodes}
-
-
 # --------------------------------------------------------------------------- dataset
 
 
@@ -94,8 +94,8 @@ def _nodes(document: TalentDataDocument) -> dict[int, TalentNode]:
 def test_committed_document_is_reproduced_from_the_build_rows(
     class_key: str, committed: dict[str, TalentDataDocument]
 ) -> None:
-    """No hand edits: normalizing the build's own fixture rows yields the committed
-    semantic payload (only ``generatedAt``/provenance source differ)."""
+    """No copy of 70338: normalizing 70374's own fixture rows yields the committed
+    semantic payload, with 70374's identity."""
     fresh = normalize_fixture_class(class_key, PRODUCT_BUILD)
     assert fresh.client_build == str(PRODUCT_BUILD)
     assert fresh.content_hash == committed[class_key].content_hash
@@ -119,7 +119,6 @@ def test_class_shape_and_point_budget(
 def test_warnings_are_exactly_the_investigated_set_of_the_reference_baseline(
     committed: dict[str, TalentDataDocument],
 ) -> None:
-    """70338 raises no new warning code and no new instance: the investigated 70009 set."""
     for class_key in ALL_CLASSES:
         report = validate_document(committed[class_key])
         assert report.errors == [], class_key
@@ -136,7 +135,7 @@ def test_manifest_lists_the_nine_committed_documents(
         assert entry.content_hash == committed[entry.token.lower()].content_hash
 
 
-def test_committed_diff_against_the_previous_product_dataset_is_current(
+def test_committed_diff_against_the_previous_product_dataset_is_current_and_empty(
     committed: dict[str, TalentDataDocument], previous: dict[str, TalentDataDocument]
 ) -> None:
     reports, aggregate = diff_batch(list(previous.values()), list(committed.values()))
@@ -147,53 +146,24 @@ def test_committed_diff_against_the_previous_product_dataset_is_current(
     for report in reports:
         file = f"forever-{report.class_.token.lower()}-{old}-{new}.json"
         assert report.to_json() == (DIFFS / file).read_text(encoding="utf-8"), file
-    assert (aggregate.total.added, aggregate.total.removed, aggregate.total.changed) == (2, 3, 36)
-    by_class = {
-        r.class_.token: (r.summary.added, r.summary.removed, r.summary.changed) for r in reports
-    }
-    assert by_class["WARRIOR"] == (2, 3, 29)
-    assert by_class["ROGUE"] == by_class["PRIEST"] == by_class["MAGE"] == (0, 0, 0)
+    assert (aggregate.total.added, aggregate.total.removed, aggregate.total.changed) == (0, 0, 0)
 
 
-def test_warrior_rework_nodes_and_prerequisites(
-    committed: dict[str, TalentDataDocument], previous: dict[str, TalentDataDocument]
+@pytest.mark.parametrize("class_key", ALL_CLASSES)
+def test_same_talent_rows_but_a_distinct_dataset_identity(
+    class_key: str,
+    committed: dict[str, TalentDataDocument],
+    previous: dict[str, TalentDataDocument],
 ) -> None:
-    """The Warrior rework as the client rows define it: removed and added nodes, spells
-    replaced on unchanged node ids, and the four moved prerequisite links."""
-    old, new = _nodes(previous["warrior"]), _nodes(committed["warrior"])
-    assert set(old) - set(new) == {PRECISION, IMPROVED_CLEAVE, TOUGHNESS}
-    assert set(new) - set(old) == {GORE_DRINKER, IRON_WILL}
-
-    # one node id, two different talents (same max rank: the old ranks stay *valid*)
-    assert (old[BOUNDLESS_RAGE_NODE].name, new[BOUNDLESS_RAGE_NODE].name) == (
-        "Boundless Rage",
-        "Furious Precision",
-    )
-    assert (old[IRON_WILL_NODE].name, new[IRON_WILL_NODE].name) == ("Iron Will", "Lingering Rage")
-    for node_id in (BOUNDLESS_RAGE_NODE, IRON_WILL_NODE):
-        assert old[node_id].max_rank == new[node_id].max_rank
-        assert old[node_id].entries[0].spell_id != new[node_id].entries[0].spell_id
-    # Iron Will's spell moved to a new node id in another section
-    assert new[IRON_WILL].entries[0].spell_id == old[IRON_WILL_NODE].entries[0].spell_id
-    assert (old[IRON_WILL_NODE].section_index, new[IRON_WILL].section_index) == (1, 2)
-
-    def prereqs(nodes: dict[int, TalentNode], node_id: int) -> list[tuple[int, str]]:
-        return [(p.node_id, p.kind) for p in nodes[node_id].prerequisites]
-
-    assert (prereqs(old, FLURRY), prereqs(new, FLURRY)) == (
-        [(ENRAGE, "sufficient")],
-        [(DEATH_WISH, "sufficient")],
-    )
-    assert (prereqs(old, BLOODTHIRST), prereqs(new, BLOODTHIRST)) == (
-        [(DEATH_WISH, "sufficient")],
-        [],
-    )
-    assert (prereqs(old, IMPALE), prereqs(new, IMPALE)) == ([], [(DEEP_WOUNDS, "sufficient")])
-    assert (prereqs(old, LAST_STAND), prereqs(new, LAST_STAND)) == (
-        [(IMPROVED_BLOODRAGE, "sufficient")],
-        [],
-    )
-    assert prereqs(new, GORE_DRINKER) == [(ENRAGE, "sufficient")]
+    """The anomaly review of the empty diff, field by field: class identity, trees, nodes,
+    entries, spells, ranks, gates, prerequisites, sections and layout are all equal to
+    70338 - yet the document is 70374's own, with its own build and content hash, so a
+    saved build of either build can never be mistaken for the other."""
+    new, old = committed[class_key], previous[class_key]
+    assert new.class_ == old.class_
+    assert new.trees == old.trees
+    assert (new.client_build, old.client_build) == (str(PRODUCT_BUILD), str(PREVIOUS_PRODUCT_BUILD))
+    assert new.content_hash != old.content_hash
 
 
 # --------------------------------------------------------------------------- allocation
@@ -208,48 +178,32 @@ def test_engine_supports_every_node_except_the_known_unresolved_venom(
     assert engine.unsupported_nodes().keys() == expected
 
 
-def _spend_until_maxed(engine: TalentAllocationEngine, target: int) -> BuildState:
-    """Spend the lowest-id allowed node of the target's section until the target is
-    purchasable, then max it - a real engine-made build, never hand-written."""
-    node = next(n for n in engine.tree.nodes if n.id == target)
+def _spend_all_points(engine: TalentAllocationEngine) -> BuildState:
+    """Spend the lowest-id allowed node until nothing more can be spent - a real
+    engine-made build, never hand-written."""
     state = engine.empty_state()
-    while engine.can_spend(state, target).allowed is False:
-        candidates = [
-            n.id
-            for n in engine.tree.nodes
-            if n.section_index == node.section_index and n.id != target
-            if engine.can_spend(state, n.id).allowed
-        ]
-        assert candidates, f"node {target} must be reachable"
-        state = engine.spend(state, min(candidates)).state
-    for _ in range(node.max_rank):
-        state = engine.spend(state, target).state
-    assert state.rank_of(target) == node.max_rank
-    assert engine.validate(state).valid
-    return state
+    while True:
+        allowed = [n.id for n in engine.tree.nodes if engine.can_spend(state, n.id).allowed]
+        if not allowed:
+            return state
+        state = engine.spend(state, min(allowed)).state
 
 
-def test_a_previous_product_build_is_not_valid_on_the_product_build(
-    committed: dict[str, TalentDataDocument], previous: dict[str, TalentDataDocument]
+@pytest.mark.parametrize("class_key", ALL_CLASSES)
+def test_a_previous_product_build_validates_alike_on_both_builds(
+    class_key: str,
+    committed: dict[str, TalentDataDocument],
+    previous: dict[str, TalentDataDocument],
 ) -> None:
-    """A 70245 Warrior build with Toughness 5/5 is valid on 70245 and invalid on 70338,
-    where node 105973 no longer exists: re-reading saved builds against the product build
-    would change them."""
-    state = _spend_until_maxed(TalentAllocationEngine(previous["warrior"]), TOUGHNESS)
-    assert not TalentAllocationEngine(committed["warrior"]).validate(state).valid
-
-
-def test_a_previous_product_build_can_stay_valid_and_still_change_meaning(
-    committed: dict[str, TalentDataDocument], previous: dict[str, TalentDataDocument]
-) -> None:
-    """Node 105953 at 3/3 is Boundless Rage on 70245 and Furious Precision on 70338 - the
-    ranks still validate, the talent does not match. Validity is no license to migrate:
-    a saved build always opens on its own build."""
-    state = _spend_until_maxed(TalentAllocationEngine(previous["warrior"]), BOUNDLESS_RAGE_NODE)
-    assert TalentAllocationEngine(committed["warrior"]).validate(state).valid
-    old, new = _nodes(previous["warrior"]), _nodes(committed["warrior"])
-    old_spell = old[BOUNDLESS_RAGE_NODE].entries[0].spell_id
-    assert old_spell != new[BOUNDLESS_RAGE_NODE].entries[0].spell_id
+    """A full 70338 build gets the same verdict from both engines. That is a property of
+    the data, not a license to migrate: a saved build still opens on its own client build
+    (the mobile tests pin that)."""
+    engine = TalentAllocationEngine(previous[class_key])
+    state = _spend_all_points(engine)
+    assert engine.spent_points(state) > 0
+    on_previous = TalentAllocationEngine(previous[class_key]).validate(state)
+    on_product = TalentAllocationEngine(committed[class_key]).validate(state)
+    assert on_previous.valid and on_product.valid
 
 
 # --------------------------------------------------------------------------- visuals
@@ -262,8 +216,8 @@ def test_committed_visuals_are_consistent_with_the_product_dataset(at_repo_root)
 def test_icons_resolve_from_the_build_s_own_rows(
     committed: dict[str, TalentDataDocument], merged_source: LocalCsvDb2Source
 ) -> None:
-    """Every sidecar icon is the one the 70338 TraitDefinition/SpellMisc rows name -
-    nothing is carried over from another build."""
+    """Every sidecar icon is the one the 70374 TraitDefinition/SpellMisc rows name, and
+    every sidecar is linked to the 70374 document's hash."""
     tables = VisualSourceTables.load(merged_source, PRODUCT_BUILD)
     registry = read_icon_registry(VISUALS / "icons.json")
     assert registry.client_build == str(PRODUCT_BUILD)
@@ -280,6 +234,16 @@ def test_icons_resolve_from_the_build_s_own_rows(
     assert len(registered) == 358
     images = {p.name for p in (VISUALS / "icons").glob("*.png")}
     assert images == {f"{file_data_id}.png" for file_data_id in registered}
+
+
+def test_icon_images_were_regenerated_and_match_the_previous_build() -> None:
+    """Recorded investigation: the 358 client icon files of 70374 (fetched from 70374, not
+    copied) are byte-identical to 70338's, and so are the PNGs made from them."""
+    names = sorted(p.name for p in (VISUALS / "icons").glob("*.png"))
+    assert names == sorted(p.name for p in (PREVIOUS_VISUALS / "icons").glob("*.png"))
+    for name in names:
+        current = (VISUALS / "icons" / name).read_bytes()
+        assert current == (PREVIOUS_VISUALS / "icons" / name).read_bytes(), name
 
 
 # --------------------------------------------------------------------------- tooltips
@@ -302,12 +266,11 @@ def test_regenerating_tooltips_from_the_build_rows_reproduces_the_committed_file
 
 
 def test_tooltip_coverage_and_the_explicitly_unresolved_rank() -> None:
+    """Coverage is unchanged from 70338: same totals, same single unresolved rank."""
     report = read_coverage_report(TOOLTIP_REPORT)
     totals = report.totals
     assert (totals.entries, totals.ranks) == (469, 1329)
     assert (totals.resolved, totals.partial, totals.unresolved) == (1281, 47, 1)
-    # still the only unresolved rank: Druid Shifting Power's "$c" mana-cost reference is
-    # outside the supported grammar and stays an explicit gap, never a guessed number
     druid = json.loads((TOOLTIPS / "druid.json").read_text(encoding="utf-8"))
     unresolved = [
         (entry["entryId"], rank["rank"])
@@ -316,3 +279,59 @@ def test_tooltip_coverage_and_the_explicitly_unresolved_rank() -> None:
         if rank["status"] == "unresolved"
     ]
     assert unresolved == [(129611, 1)]
+
+
+# --------------------------------------------------------------------------- localization
+
+
+def test_committed_localization_is_consistent_with_the_product_dataset(at_repo_root) -> None:
+    assert check_localization(GAME, PRODUCT_BUILD, LOCALE) == []
+
+
+def test_regenerating_the_ruRU_pilot_from_the_build_rows_reproduces_the_committed_files(
+    at_repo_root,
+) -> None:
+    """The 70374 overlay, report and Markdown come from 70374's own enUS/ruRU rows and its
+    own dataset and tooltip revisions - M5.REL.3b.1 can build on them directly."""
+    build = localize_build(
+        LocalCsvDb2Source(LOCALIZATION_FIXTURES / "enUS", per_version=False),
+        LocalCsvDb2Source(LOCALIZATION_FIXTURES / LOCALE, per_version=False),
+        LocalCsvDb2Source(TOOLTIP_FIXTURES, per_version=False),
+        GAME,
+        PRODUCT_BUILD,
+        LOCALE,
+        source_name="wago.tools",
+    )
+    overlay = (OVERLAYS / "warrior.json").read_text(encoding="utf-8")
+    assert build.overlays["WARRIOR"].to_json() == overlay
+    report = build.report(frozenset({"WARRIOR"}))
+    assert report.to_json() == LOCALIZATION_REPORT.read_text(encoding="utf-8")
+    markdown = LOCALIZATION_MARKDOWN.read_text(encoding="utf-8")
+    assert render_localization_markdown(report) == markdown
+
+
+def test_the_ruRU_overlay_is_linked_to_the_product_revisions(
+    committed: dict[str, TalentDataDocument],
+) -> None:
+    overlay = read_localization_document(OVERLAYS / "warrior.json")
+    tooltips = json.loads((TOOLTIPS / "warrior.json").read_text(encoding="utf-8"))
+    assert overlay.client_build == str(PRODUCT_BUILD)
+    assert overlay.talent_data_content_hash == committed["warrior"].content_hash
+    assert overlay.tooltips_content_hash == tooltips["contentHash"]
+    previous = read_localization_document(PREVIOUS_OVERLAYS / LOCALE / "warrior.json")
+    assert overlay.talent_data_content_hash != previous.talent_data_content_hash
+    assert overlay.content_hash != previous.content_hash
+
+
+def test_ruRU_coverage_of_the_product_build() -> None:
+    """Same coverage as 70338 (identical ruRU exports): every class reported, Warrior
+    published as the pilot, the other classes left to M5.REL.3b.1."""
+    report = read_localization_report(LOCALIZATION_REPORT)
+    totals = report.totals
+    assert (totals.entries, totals.ranks) == (469, 1329)
+    names = totals.names
+    assert (names.translated, names.untranslated, names.missing) == (459, 10, 0)
+    assert totals.descriptions.rendered == 355
+    assert totals.rendered_ranks == 1058
+    assert [row.class_token for row in report.classes if row.published] == ["WARRIOR"]
+    assert len(report.classes) == 9

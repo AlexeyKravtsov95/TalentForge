@@ -1,8 +1,9 @@
 """M5.DATA: the Forever dataset 1.60.1.70245, end to end and offline.
 
-1.60.1.70245 was the product dataset of M5.DATA; since M5.DATA.2 new builds are created on
-1.60.1.70338 (tests/unit/test_product_build.py), and 70245 stays committed and bundled so
-that builds saved on it keep opening on it, unchanged. 1.60.1.70009 stays the verified
+1.60.1.70245 was the product dataset of M5.DATA; since then new builds are created on
+1.60.1.70338 (M5.DATA.2, tests/unit/test_build_70338.py) and now 1.60.1.70374 (M5.DATA.3,
+tests/unit/test_product_build.py), and 70245 stays committed and bundled so that builds
+saved on it keep opening on it, unchanged. 1.60.1.70009 stays the verified
 reference baseline every older test, the live-client evidence and the M2 conformance
 vectors are pinned to. These tests prove that the committed 70245 artifacts are
 exactly what the unchanged pipeline produces from that build's own client rows, that the
@@ -30,8 +31,7 @@ from talent_data.visuals.pipeline import check_canonical as check_visuals
 from talent_data.visuals.pipeline import read_icon_registry, read_visuals_document
 from talent_data.visuals.resolver import VisualSourceTables, resolve_document
 from tests.conftest import ALL_CLASSES, normalize_fixture_class
-from tests.helpers import FIXTURES, NEW_BUILD
-from tests.helpers import PREVIOUS_PRODUCT_BUILD as BUILD_70245
+from tests.helpers import BUILD_70245, FIXTURES, NEW_BUILD
 from tests.unit.test_known_anomalies import EXPECTED_WARNINGS
 
 ROOT = Path(__file__).resolve().parents[2]

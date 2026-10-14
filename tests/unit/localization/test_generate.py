@@ -25,7 +25,7 @@ from talent_data.models.tooltips import rank_text as english_text
 from talent_data.pipeline import PipelineError
 from talent_data.tooltips.grammar import parse
 from talent_data.versions import ClientVersion
-from tests.helpers import PRODUCT_BUILD
+from tests.helpers import PILOT_BUILD
 from tests.unit.localization.conftest import SOURCE_NAME, entry_named, with_russian
 
 WARRIOR = "WARRIOR"
@@ -337,7 +337,7 @@ def test_overlays_are_linked_to_the_exact_dataset_and_tooltip_revisions(
     for token, overlay in build.overlays.items():
         assert (overlay.game, overlay.client_build, overlay.locale) == (
             "forever",
-            str(PRODUCT_BUILD),
+            str(PILOT_BUILD),
             "ruRU",
         )
         assert overlay.talent_data_content_hash == documents[token].content_hash

@@ -8,6 +8,7 @@ from talent_data.normalization.normalizer import normalize_class
 from talent_data.sources.local import LocalCsvDb2Source
 from talent_data.versions import ClientVersion
 from tests.helpers import (
+    BUILD_70245,
     DB2_FIXTURES,
     FIXED_TIME,
     NEW_BUILD,
@@ -102,6 +103,6 @@ def merged_source(tmp_path_factory: pytest.TempPathFactory) -> LocalCsvDb2Source
     from tests.unit.test_cli import _merge_class_fixtures
 
     root = tmp_path_factory.mktemp("merged")
-    for build in (OLD_BUILD, NEW_BUILD, PREVIOUS_PRODUCT_BUILD, PRODUCT_BUILD):
+    for build in (OLD_BUILD, NEW_BUILD, BUILD_70245, PREVIOUS_PRODUCT_BUILD, PRODUCT_BUILD):
         _merge_class_fixtures(DB2_FIXTURES / str(build), root / str(build))
     return LocalCsvDb2Source(root)

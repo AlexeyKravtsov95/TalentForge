@@ -1,0 +1,52 @@
+ID,NameSubtext_lang,Description_lang,AuraDescription_lang
+19159,,Increases the critical strike chance of all your melee abilities by $s1%.,
+19168,,Increases your Agility by $s1%.,
+19184,,"When your traps are triggered, all affected targets are Entrapped, preventing them from moving for ${$m1/1000} sec.",
+19228,Rank 1,Gives your Wing Clip ability a $s1% chance to immobilize the target for $19229d.,
+19239,,Increases the duration of Freezing and Frost trap effects by $s1% and the damage of Immolation and Explosive trap effects by $s2%.,
+19255,,Increases your total Health by $s1%.,
+19263,,"When activated, increases your Dodge and Parry chance by $s1% for $d.",Dodge and Parry chance increased by $s1%.
+19290,,Increases your hit chance by $m3% and reduces the duration of movement impairing effects on you by $m2%.,
+19306,Rank 1,"A strike that becomes active after parrying an opponent's attack. This attack deals $s2% weapon damage plus $m1 and immobilizes the target for $d. Counterattack cannot be blocked, dodged, or parried.",Immobile.
+19376,,Increases your chance to hit with your Trap and Feign Death abilities by $s1%.,
+19407,Rank 1,Gives your Concussive Shot a $m1% chance to stun the target for $19410d.,
+19416,,"Reduces the Mana cost of your Shots, Stings, and melee abilities by $s1%.",
+19426,,Increases your critical strike chance with all attacks by $m1%.,
+19454,,Reduces the cooldown of your Arcane Shot by $/1000;S1 sec. Does not affect the cooldown of abilities which share a cooldown with Arcane Shot.,
+19461,,"Increases the damage done by your Multi-Shot, Aimed Shot, and Volley abilities by $s1%.",
+19464,,Increases the damage done by your Serpent Sting by $s1%.,
+19485,,Increases the critical strike damage bonus on all ranged abilities by $m1%.,
+19498,,Increases the range of your ranged weapons by $s1 yards.,
+19503,,A short-range shot that deals $s1% weapon damage and disorients the target for $d.  Any damage caused will remove the effect.  Turns off your attack when used.,Disoriented.
+19507,,Increases the damage you deal with ranged weapons by $s1%.,
+19549,,"Increases the Dodge bonus of your Aspect of the Monkey by $s1%. Additionally, your pet gains 50% of the effect of your Aspect of the Monkey ability.",
+19552,,"While Aspect of the Hawk is active, Auto Shot has a $s1% chance of increasing ranged attack speed by $6150s1% for $6150d. While Aspect of the Beast is active, all melee auto attacks have a $s2% chance of increasing melee attack speed by $1299448s1% for $1299448d.",
+19559,,Increases the speed bonus of your Aspect of the Cheetah and Aspect of the Pack by $s1%.,
+19572,,"Gives your Mend Pet spell a $s1% chance of cleansing $24406s1 Curse, Disease, Magic, or Poison effect from your pet each time it heals and reduces the Mana cost by $s2%.",
+19574,,"Send your pet into a rage causing $s2% additional damage for $d.  While enraged, the beast does not feel pity or remorse or fear and it cannot be stopped unless killed.",Enraged. Unstoppable and damage done increased by $s2%.
+19577,,"Command your pet to Stun the target for $24394d on its next successful attack, which also gains $m2% increased critical strike chance. Generates high threat.",Intimidating.
+19578,,"While your pet is active, you and your pet will regenerate $m1% of total health every $m2 sec.",
+19583,,Increases the Health and Armor of your pets by $s1%.,
+19590,,Increases the Focus regeneration of your pets by $s1% and allows $m2% of your Mana regeneration to continue while casting.,
+19596,,Increases the movement speed of your pets by $s1%.,
+19598,,Increases the critical strike chance of your pets and hawks by $s1%.,
+19616,,Increases the damage done by your pets and hawks by $s1%.,
+19621,,Gives your pet a $s1% chance to gain a $19615s1% attack speed increase for $19615d after dealing a critical strike.,
+24293,,"While tracking Beasts, Demons, Dragonkin, Elementals, Giants, Humanoids, or Undead, all damage you deal to the tracked creature type is increased by $m1%.",
+24443,,"Revive Pet's casting time is reduced by $/1000;s1 sec, mana cost is reduced by $s2%, and increases the health your pet returns with by an additional $s3%.",
+415370,,You deal $s2% increased damage with all attacks while you do not have an active pet.,
+415405,,"Reduces the cooldown on your Rapid Fire ability by ${$m1/-60000} min. In addition, when you kill a non-trivial enemy or it dies while afflicted by your Serpent Sting, you gain Rapid Killing, increasing the damage of your next Shot ability within $415407d by $m2%.",
+440529,,"Reduces the mana cost of your Trap abilities and melee abilities by $s1%. In addition, your critical strikes have a $m3% chance to allow $1242688s1% of your Mana regeneration to continue while casting for $1242688d.",
+1223755,,Increases all damage you and your pet deal by $s1% while your pet is active.,
+1223984,,Increases your Attack Power by $s1% of your Intellect.,
+1223987,,Hitting a target with your Serpent Sting ability grants you $s1% and consuming Rapid Killing grants you $s2% of your Mana regeneration while casting for the next $1242512d.,
+1293241,Rank 1,"Command a hawk to dive-bomb your targeted enemy, dealing ${$s1+($rap*($s4/100))} Physical damage and continuing its assault for $1293248d. Only $s3 hawks can be active at once. Summon Hawk shares its cooldown with Arcane Shot.",
+1299346,Rank 1,Increases the Ranged Attack Power of party members within $a1 yds by $s1.,Ranged Attack Power increased by $w1.
+1310496,,Reduces the cooldown of your Trap and Deterrence abilities by $m1%.,
+1310532,,Your attacks against targets with Hunter's Mark have a $s1% chance to activate your Mongoose Bite for $1310726d.,
+1310533,,Your Mongoose Bite also causes the target to Bleed for damage equal to $s1% of the damage done by Mongoose Bite over $1310536d,
+1310627,,Increases your melee critical strike damage by $s1% and your Off Hand weapon damage by $s2%.,
+1310661,,"Increases the damage of your Serpent Sting ability by $s1%, reduces the cooldown of your Viper Sting ability by ${$m2/-1000} sec, and increases the duration of your Scorpid Sting ability by ${$m3/1000} sec.",
+1310687,Rank 1,A long-range shot that deals ranged damage plus $s1 and increases the range of your next $n Shots by $s2 yards for $d.,Shot range increased by $s2.
+1317257,Rank 1,A powerful kick that deals $s2% melee weapon damage and increases movement speed by $s3% for $d.,Movement speed increased by $w3%.
+19295,,Increases your Parry chance by $s1%.,
