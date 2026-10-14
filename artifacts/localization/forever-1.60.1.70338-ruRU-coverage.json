@@ -45,7 +45,7 @@
       "ranks": 138,
       "renderedRanks": 98,
       "classToken": "PALADIN",
-      "published": false
+      "published": true
     },
     {
       "entries": 52,
@@ -67,7 +67,7 @@
       "ranks": 158,
       "renderedRanks": 129,
       "classToken": "HUNTER",
-      "published": false
+      "published": true
     },
     {
       "entries": 53,
@@ -89,7 +89,7 @@
       "ranks": 139,
       "renderedRanks": 127,
       "classToken": "ROGUE",
-      "published": false
+      "published": true
     },
     {
       "entries": 54,
@@ -111,7 +111,7 @@
       "ranks": 153,
       "renderedRanks": 124,
       "classToken": "PRIEST",
-      "published": false
+      "published": true
     },
     {
       "entries": 50,
@@ -133,7 +133,7 @@
       "ranks": 148,
       "renderedRanks": 124,
       "classToken": "SHAMAN",
-      "published": false
+      "published": true
     },
     {
       "entries": 54,
@@ -155,7 +155,7 @@
       "ranks": 146,
       "renderedRanks": 121,
       "classToken": "MAGE",
-      "published": false
+      "published": true
     },
     {
       "entries": 52,
@@ -177,7 +177,7 @@
       "ranks": 149,
       "renderedRanks": 128,
       "classToken": "WARLOCK",
-      "published": false
+      "published": true
     },
     {
       "entries": 52,
@@ -199,7 +199,7 @@
       "ranks": 148,
       "renderedRanks": 104,
       "classToken": "DRUID",
-      "published": false
+      "published": true
     }
   ],
   "totals": {
