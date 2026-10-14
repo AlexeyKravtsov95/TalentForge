@@ -1078,6 +1078,90 @@ change outside this milestone). At 200 % font scale All Builds still
 ellipsizes long titles by design; unnamed Russian titles share the `Билд`
 prefix, so the class there is carried by the artwork and the meta line.
 
+## Localized talent editor (M5.REL.2b)
+
+The talent editor — header, section tabs and the Back chip, canvas
+accessibility, the compact / expanded / side / tablet inspector, the
+description labels, the build-actions sheet and reset notice, the loading,
+failure and autosave panes — presents every application-owned string in
+English or Russian under the M5.REL.2a rule (resources in
+`values{,-ru}/strings.xml`, resource locale = platform primary language, no
+in-app selector). Game content stays as the dataset publishes it: talent
+names and tooltip text are English in both languages until M5.REL.3.
+
+- **Descriptors, not pre-formatted English.** The pure projections no longer
+  produce English sentences. `buildTalentInspectorContent`,
+  `blockedActionReason` and `disabledActionExplanation` return
+  `InspectorText` descriptors (`TalentEditorText.kt`): the message identity
+  (`Available`, `RequiresPrerequisite`, `SpendMorePoints`, …), its numbers
+  (`NoPointsLeft(51, 51)`, `SpendMorePoints(deficit = 5)`), the node ids it
+  names and — for every blocked-action reason — the engine's typed
+  `AllocationIssueCode` (`NeededBy(DEPENDENT_NODE_WOULD_BREAK, …)`). Names are
+  `TalentName(nodeId, published)`: the dataset's non-blank name verbatim, or
+  `null` → the localized `Talent <id>` / `Талант <id>` fallback.
+  `MissingValuesNote` replaces the description's English note strings. The
+  same allocation state yields the same descriptors in every language; text
+  is resolved only at the composable boundary (`InspectorText.text()`,
+  `TalentName.text()`), with counts through plural resources and names
+  through positional arguments, so Russian word order and plural forms
+  (`Вложите ещё 5 очков в эту ветку`, `Таланты сброшены · снято 21 очко`,
+  `потрачено 1 очко`) belong to the resource. Nothing localized reaches the
+  engine, `BuildState`, the history or the build library.
+- **Canvas.** The nodes' spoken state (`2/5, частично изучен`) and the
+  select / clear-selection actions are resolved once per node layer
+  (`TalentNodeAccessibilityCopy`) and handed to every node, so a node stays a
+  skippable scope (PR #19) and no node resolves resources itself.
+- **Header.** An unnamed build shows the localized `Draft` / `Черновик`,
+  resolved by `TalentTreeBuildScreen` at display time — `record.name` stays
+  `null` in storage; a user-given name is shown verbatim in both languages.
+  The meta line uses `localizedClassName` (`Воин · Forever`).
+- **Failures.** `EditorFailure.describe()`, `BuildLibraryError.describeLibraryError()`
+  and `TalentTreeUiFailure.describe()` are composable and localized. Embedded
+  technical details stay as reported — the shared dataset diagnostic
+  (`DatasetLoadError.describe()`), the allocation engine's reason and the
+  validation reason codes are diagnostics, not product copy.
+- **Layout.** One minimal rule, inert where the text fits
+  (`TextBesideActions`): the compact strip's two-line reason row and the
+  reset notice keep their text beside their actions as before, and the text
+  moves onto its own line above the end-aligned actions only when its
+  longest word cannot fit beside them (`Требуется` next to `↑ Показать`,
+  `Таланты сброшены` next to `Отменить`, on a 320 dp phone at 200 %), so no
+  word is split and `Undo` is never pushed off its row. The Russian rank
+  comparison label is the short `СЛЕД. РАНГ` (a half-width column at 200 %).
+  `Max` grows with its translation (`Макс.`) as it already did with a
+  larger font.
+
+**Tests added:** `TalentEditorTextTest` (every `AllocationIssueCode` → its
+typed reason keeping the code; reasons without a named node; the nameless
+fallback; identical inspector content under every platform locale; every
+descriptor rendered against the literal `EditorCopy` oracle in both
+languages; Russian plurals for 0, 1, 2, 3, 4, 5, 11, 12, 14, 21, 22, 25, 101,
+111 and English plurals; EN/RU resource parity — same keys, same
+placeholders, complete plural forms; a source scan that fails on any
+user-facing literal in the editor), `EditorLocalizationUiTest` (the real
+editor in EN and RU: loading / failure / opening panes, every compact
+inspector state with its spoken node state and controls, the expanded
+sheet, spend and refund, blocked reasons, prerequisite and tier locks,
+cross-section Show with the Back chip and Fit, Reset + Undo with 1 and 21
+points, the header's labels, autosave failure + Retry, the description
+labels, a language switch that changes words only — build, selection,
+expansion, camera, reports and stored bytes unchanged, no autosave — the
+nameless / unavailable fallbacks and user titles verbatim; no English editor
+copy on a Russian screen, dataset tooltip text excepted) and
+`EditorLocalizationLayoutUiTest` (393 × 852, 320 × 568, 915 × 412 × 100 / 200 %
+× EN/RU: no mid-word break, no overflow, nothing past the window, rank
+actions and Show ≥ 44 dp). Every desktop UI test that renders editor copy now
+pins its language with `AppLanguageRule`. Opt-in screenshot evidence:
+`M5Rel2bScreenshotTest` (`-Dtalentforge.m5rel2b.screenshots=<dir>`),
+committed under `docs/screenshots/m5-rel-2b/`.
+
+**Known limitations.** Talent names and tooltip text are dataset content and
+stay English (M5.REL.3). The section tabs' fallback labels keep their
+M5.REL.1 table (`Tree N` / `Ветка N`). Technical details inside the failure
+panes (dataset diagnostic, engine reason, reason codes) are not translated.
+`Draft (copy)` names produced by duplication are persisted by the shared
+repository in English (unchanged, see M5.REL.2a).
+
 ## Version stack (all stable)
 
 | Component | Version |
