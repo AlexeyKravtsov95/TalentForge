@@ -138,6 +138,23 @@ python -m talent_data tooltips check --build 1.60.1.70338                # produ
 python scripts/sync_mobile_tooltips.py --check                           # bundle == canonical
 ```
 
+## Russian talent text (M5.REL.3a)
+
+The client's own `ruRU` names and description templates of the same pinned build, from the
+same wago.tools DB2 exports (`&locale=ruRU`), verified against the enUS export and published
+as a separate `talent-localization.v1` overlay linked to the exact dataset and tooltip
+revisions - nothing is translated by hand or by machine, and the English dataset is
+unchanged. Product build 1.60.1.70338: 459 / 469 names translated, 355 / 469 descriptions
+rendered; the rest falls back to English with a reason. Only the Warrior pilot is committed
+and the app does not use it yet (M5.REL.3b). Source evidence, contract, gates and plan:
+[docs/talent-localization.md](docs/talent-localization.md).
+
+```bash
+python -m talent_data localization fetch --build 1.60.1.70338 --locale ruRU                 # online
+python -m talent_data localization normalize --build 1.60.1.70338 --locale ruRU --classes warrior --offline
+python -m talent_data localization check --build 1.60.1.70338 --locale ruRU                 # offline, CI
+```
+
 ## Checks
 
 ```bash

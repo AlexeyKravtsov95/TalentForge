@@ -12,6 +12,7 @@ schema         [--out docs/schema]
 allocation     validate|replay   (M2 allocation engine developer tools)
 visuals        fetch|report|normalize|check   (M5.V1 talent icons, build-pinned)
 tooltips       fetch|report|normalize|check   (M5.V2 talent descriptions, build-pinned)
+localization   fetch|report|normalize|check   (M5.REL.3a localized text overlays)
 
 ``builds freshness`` (M5.DATA.2) compares the product build with the latest publishable
 build and prints a ``product-freshness`` v1 JSON document; its exit code is the status:
@@ -38,6 +39,7 @@ from talent_data import paths
 from talent_data.allocation.conformance import ConformanceSuite
 from talent_data.allocation.models import BuildFile
 from talent_data.cli import allocation as allocation_cli
+from talent_data.cli import localization as localization_cli
 from talent_data.cli import tooltips as tooltips_cli
 from talent_data.cli import visuals as visuals_cli
 from talent_data.db2.tables import TRAIT_TABLES
@@ -45,6 +47,7 @@ from talent_data.diff.models import DatasetDiffReport, DiffReport
 from talent_data.diff.render import render_dataset_text, render_text
 from talent_data.freshness import FreshnessStatus, evaluate_freshness
 from talent_data.games import GAMES, GameConfig, get_game
+from talent_data.models.localization import TalentLocalizationDocument
 from talent_data.models.manifest import DatasetManifest
 from talent_data.models.talents import TalentDataDocument
 from talent_data.models.tooltips import TalentTooltipsDocument
@@ -202,6 +205,7 @@ def _build_parser() -> argparse.ArgumentParser:
     allocation_cli.register(sub)
     visuals_cli.register(sub)
     tooltips_cli.register(sub)
+    localization_cli.register(sub)
     return parser
 
 
@@ -567,6 +571,7 @@ def json_schemas() -> dict[str, str]:
         "talent-visuals.v1.schema.json": _schema_text(TalentVisualsDocument),
         "talent-icons.v1.schema.json": _schema_text(TalentIconRegistry),
         "talent-tooltips.v1.schema.json": _schema_text(TalentTooltipsDocument),
+        "talent-localization.v1.schema.json": _schema_text(TalentLocalizationDocument),
     }
 
 

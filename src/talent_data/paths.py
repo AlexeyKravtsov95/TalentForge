@@ -80,3 +80,25 @@ def tooltip_coverage_path(game: str, version: ClientVersion) -> Path:
 def tooltip_coverage_markdown_path(game: str, version: ClientVersion) -> Path:
     """Human tooltip coverage summary: docs/research/<game>-<build>-tooltip-coverage.md"""
     return project_root() / "docs" / "research" / f"{game}-{version}-tooltip-coverage.md"
+
+
+def localization_dir(game: str, version: ClientVersion, locale: str) -> Path:
+    """Localized text overlays of one build: data/localization/<game>/<build>/<locale>/"""
+    return project_root() / "data" / "localization" / game / str(version) / locale
+
+
+def localization_path(game: str, version: ClientVersion, locale: str, class_token: str) -> Path:
+    """talent-localization.v1 overlay of one class: .../<build>/<locale>/<class>.json"""
+    return localization_dir(game, version, locale) / f"{class_token.lower()}.json"
+
+
+def localization_coverage_path(game: str, version: ClientVersion, locale: str) -> Path:
+    """Coverage report: artifacts/localization/<game>-<build>-<locale>-coverage.json"""
+    return (
+        project_root() / "artifacts" / "localization" / f"{game}-{version}-{locale}-coverage.json"
+    )
+
+
+def localization_coverage_markdown_path(game: str, version: ClientVersion, locale: str) -> Path:
+    """Human coverage summary: docs/research/<game>-<build>-<locale>-coverage.md"""
+    return project_root() / "docs" / "research" / f"{game}-{version}-{locale}-coverage.md"
