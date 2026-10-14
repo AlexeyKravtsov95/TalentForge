@@ -294,6 +294,9 @@ def check_canonical(game: GameConfig, version: ClientVersion, locale: Locale) ->
         problems.append(f"{directory} contains no overlay")
     if problems:
         return problems
+    # recompute in dataset order: the report and its exception lists are ordered by the
+    # dataset's class order, not by file name
+    ordered = [classes[d.class_.token] for d in documents if d.class_.token in classes]
 
     report_path = paths.localization_coverage_path(game.key, version, locale)
     try:
@@ -311,7 +314,7 @@ def check_canonical(game: GameConfig, version: ClientVersion, locale: Locale) ->
     if [row.class_token for row in report.classes] != [d.class_.token for d in documents]:
         problems.append(f"{report_path}: does not list every class of the dataset in order")
     recomputed = build_report(
-        game=game.key, client_build=str(version), locale=locale, classes=list(classes.values())
+        game=game.key, client_build=str(version), locale=locale, classes=ordered
     )
     rows = {row.class_token: row for row in report.classes}
     for row in recomputed.classes:
