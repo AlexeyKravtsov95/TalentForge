@@ -1,17 +1,21 @@
-# Localized talent text (M5.REL.3a): source, contract, pipeline and plan
+# Localized talent text (M5.REL.3a / M5.REL.3b.1): source, contract, pipeline and plan
 
 TalentForge's talent names and descriptions are the client's own English strings
-(`talent-data.v1`, `talent-tooltips.v1`). M5.REL.3a establishes **where authentic Russian
+(`talent-data.v1`, `talent-tooltips.v1`). M5.REL.3a established **where authentic Russian
 strings come from, how they are bound to exactly one dataset revision, and when a Russian
-description may be shown at all**. It does not translate anything and does not change the
-app: the overlay is generated, validated and committed for the **Warrior pilot of the
-product build `1.60.1.70338`** only. Wiring it into the editor, the other eight classes and
-the retained builds are M5.REL.3b (§9). Since M5.DATA.3 the product build is `1.60.1.70374`;
-its compatibility report and Warrior pilot are in §11 (70338 is now a retained build, its
-overlay unchanged).
+description may be shown at all**, with the **Warrior pilot of `1.60.1.70338`**. M5.REL.3b.1
+(§12) completed the data: **36 overlays — all nine classes of every supported build
+(`1.60.1.70009`, `1.60.1.70245`, `1.60.1.70338`, `1.60.1.70374`), each generated from its
+own build's exports — are committed and bundled** as Compose Multiplatform resources.
+Wiring them into the editor remains future work (§8). No milestone translates anything or
+changes allocation, persistence or navigation.
 
 * Source evidence: [research/forever-ruRU-localization-feasibility.md](research/forever-ruRU-localization-feasibility.md)
-* Product-build coverage (generated, every class): [research/forever-1.60.1.70338-ruRU-coverage.md](research/forever-1.60.1.70338-ruRU-coverage.md)
+* Coverage per build (generated, every class):
+  [70009](research/forever-1.60.1.70009-ruRU-coverage.md) ·
+  [70245](research/forever-1.60.1.70245-ruRU-coverage.md) ·
+  [70338](research/forever-1.60.1.70338-ruRU-coverage.md) ·
+  [70374](research/forever-1.60.1.70374-ruRU-coverage.md)
 * Contract: [`schema/talent-localization.v1.schema.json`](schema/talent-localization.v1.schema.json)
   (generated from `talent_data.models.localization`)
 
@@ -23,7 +27,8 @@ exact Forever build
   -> per entry: name status; description gates 1-8 (unchanged M5.V2 renderer, ruRU strings)
   -> data/localization/<game>/<build>/ruRU/<class>.json          (talent-localization.v1)
   -> artifacts/localization/<game>-<build>-ruRU-coverage.json    (+ research/*.md summary)
-  -> localization check (offline, CI)                            (no mobile bundle in 3a)
+  -> localization check (offline, CI)
+  -> scripts/sync_mobile_localization.py -> composeResources/files/localization/… (M5.REL.3b.1)
 ```
 
 ```bash
@@ -200,42 +205,54 @@ The reference implementation is `talent_data.localization.display.resolve_class_
 | source-data drift | `test_source_data_drift_changes_the_overlay`, `test_the_real_exports_verify_as_one_build_in_two_locales` |
 | numeric preservation | `test_every_rendered_rank_shows_exactly_the_english_numbers`, `test_numbers_that_change_in_rendering_are_a_structure_mismatch`, `test_a_changed_number_in_a_rendered_rank_is_detected`, `test_localized_ranks_carry_the_english_numbers` |
 | comparison behaviour | `test_rank_comparison_behaves_as_in_english` |
-| no allocation / persistence change | `test_allocation_and_dataset_code_never_depend_on_localization`, `test_saved_build_and_allocation_contracts_are_untouched`; no file under `mobile/` changes in this milestone |
-| retained builds stay readable | `test_retained_builds_have_no_overlay_and_say_so` (and the unchanged existing suites) |
+| no allocation / persistence change | `test_allocation_and_dataset_code_never_depend_on_localization`, `test_saved_build_and_allocation_contracts_are_untouched`; no Kotlin source under `mobile/` changes in this milestone |
+| every bundled build covered (3b.1) | `test_all_builds.py`: nine overlays per build, `check` + CLI check for all four builds, measured totals, per-build identity and provenance, offline regeneration of 70009/70245, unchanged Warrior pilots, unchanged canonical English trees |
 
-Fixtures are real rows: `tests/fixtures/localization/forever/1.60.1.70338/{enUS,ruRU}/`
-(identical row ids in both locales — the definitions of the dataset, their text spells, the
-closure of every spell the English **and** Russian templates reference or nest, and the
-duration rows of `GlobalStrings`).
+Fixtures are real rows: `tests/fixtures/localization/forever/<build>/{enUS,ruRU}/` for
+every bundled build (identical row ids in both locales — the definitions of the dataset,
+their text spells, the closure of every spell the English **and** Russian templates
+reference or nest, and the duration rows of `GlobalStrings`).
 
-## 8. Integration points (for M5.REL.3b, not implemented here)
+## 8. Integration points (Kotlin runtime — future work after M5.REL.3b.1)
 
-* **Data.** `scripts/sync_mobile_localization.py` mirroring `data/localization/<game>/<build>/ruRU/`
-  for every `BUNDLED_BUILDS` entry into Compose resources, with `--check` in CI — the same
-  pattern as `sync_mobile_tooltips.py`. No runtime network.
+M5.REL.3b.1 delivered the data half of this list (the first bullet); the runtime half
+remains the next milestone and must follow these instructions:
+
+* **Data (done).** `scripts/sync_mobile_localization.py` mirrors
+  `data/localization/<game>/<build>/ruRU/` for every `BUNDLED_BUILDS` entry into Compose
+  resources (`composeResources/files/localization/<game>/<build>/<locale>/<class>.json`),
+  with `--check` in CI (mobile-ci workflow) — the same pattern as `sync_mobile_tooltips.py`
+  and through the same `scripts/mobile_bundles.py` module (byte-identical mirror, missing/
+  extra-file detection, all-or-nothing preflight). No runtime network.
 * **`mobile/shared`.** A strict `TalentLocalizationDocument` decoder and a
   `BundledTalentLocalizationRepository` that performs the §5 checks with typed
   `LocalizationLoadError`s (unknown/missing/duplicate entry, identity drift, hash mismatch).
-  Locale-independent: it takes the locale code as input.
+  Locale-independent: it takes the locale code as input. The resource path convention is
+  `files/localization/forever/<build>/ruRU/<class>.json` (lower-case class token, exactly
+  the bundled layout); mirror `TooltipsDriftTest` as a JVM `LocalizationDriftTest` over
+  `data/localization` vs the bundle, and port `test_display.py` as Kotlin tests against
+  the same committed files.
 * **`mobile/composeApp`.** `TalentName.published` and `DescriptionBody` resolution in the
   editor (`TalentInspectorContent.talentName`, `TalentInspectorDescription.bodyOf`) choose
   overlay text by `AppLanguage`; the allocation engine, `TalentTreeNodeFacts` identity, persistence,
   history and navigation are not touched. A failed or absent overlay shows English, never
-  blocks the editor.
+  blocks the editor. The §9 step 5 mixed-inspector decision (Russian name with an English
+  description) must be settled before the editor labels anything "localized".
 * **Kotlin oracle.** Port `test_display.py` cases as Kotlin tests against the same committed files.
 
 ## 9. Plan: M5.REL.3b
 
-1. **All nine classes, product build.** `localization normalize --build 1.60.1.70338
-   --locale ruRU --classes all --offline`; commit the nine overlays; `check` covers them
-   (the report already lists all classes). Expected from today's report: 459/469 names,
-   355/469 descriptions.
-2. **Retained builds.** Same commands for `1.60.1.70245` and `1.60.1.70009` (overlays are
-   per build; never reuse one build's text for another). Measured on 2026-10-14 with the
-   same gates (report only, nothing committed): 70245 — 464/470 names, 365/470 descriptions
-   (1 097/1 333 ranks), `Spell` ruRU lacks one row (1318286, a pet summon, not a talent);
-   70009 — 467/469 names, 386/469 descriptions (1 143/1 333 ranks). Fixtures per build only
-   where a test needs rows.
+1. **All nine classes, product build — done in M5.REL.3b.1 (§12).** `localization normalize
+   --build 1.60.1.70374 --locale ruRU --classes all --offline` after `localization fetch`;
+   all nine overlays committed and bundled; `check` passes. Coverage as measured in 3a:
+   459/469 names, 355/469 descriptions.
+2. **Retained builds — done in M5.REL.3b.1 (§12).** The same commands for `1.60.1.70245`
+   and `1.60.1.70009`; overlays are per build and never reuse one build's text for another.
+   Measured coverage (committed, matches the 3a report-day figures): 70245 — 464/470 names,
+   365/470 descriptions (1 097/1 333 ranks), `Spell`/`SpellName` ruRU lack one row
+   (1318286, a pet summon, not a talent); 70009 — 467/469 names, 386/469 descriptions
+   (1 143/1 333 ranks). Fixtures exist for every build
+   (`tests/fixtures/localization/forever/<build>/{enUS,ruRU}/`).
 3. **Evidence to lift gates** (each needs recorded client evidence, like
    `talent-allocation-semantics.md` §15): ruRU in-game tooltip screenshots of chosen ranks for
    (a) a three-form plural with counts 1/2/5/11/21, (b) a two-form plural, (c) a decimal value
@@ -290,3 +307,61 @@ report and Markdown are untouched.
 tooltip revisions it was produced for are explicit. 70338 keeps its own overlay; bundling
 overlays for retained builds stays per build (§9 step 2), never by copying text across
 builds — even where, as here, the strings are identical.
+
+## 12. M5.REL.3b.1: all nine classes of every supported build, published and bundled
+
+Executed on 2026-10-15, per §9 steps 1–2, with the unchanged 3a pipeline (fetch → verify →
+normalize → check) and no gate, rule or schema change:
+
+```bash
+for b in 1.60.1.70009 1.60.1.70245 1.60.1.70338 1.60.1.70374; do
+    python -m talent_data localization fetch    --build $b --locale ruRU   # online, build-pinned
+    python -m talent_data localization normalize --build $b --locale ruRU --classes all --offline
+    python -m talent_data localization check     --build $b --locale ruRU   # offline, CI
+done
+python scripts/extract_fixtures.py --build 1.60.1.70009 --localization ruRU  # + 1.60.1.70245
+python scripts/sync_mobile_localization.py            # bundle 36 overlays
+python scripts/sync_mobile_localization.py --check    # CI drift gate
+```
+
+| | 1.60.1.70009 | 1.60.1.70245 | 1.60.1.70338 | 1.60.1.70374 |
+| --- | --- | --- | --- | --- |
+| names translated | 467 / 469 | 464 / 470 | 459 / 469 | 459 / 469 |
+| names missing | 0 | 0 | 0 | 0 |
+| descriptions rendered | 386 / 469 | 365 / 470 | 355 / 469 | 355 / 469 |
+| ranks rendered | 1 143 / 1 333 | 1 097 / 1 333 | 1 058 / 1 329 | 1 058 / 1 329 |
+| source quirks | — | `Spell`/`SpellName` ruRU lack row 1318286 (pet summon, not a talent) | — | ruRU exports byte-identical to 70338's |
+
+Coverage reports: [70009](research/forever-1.60.1.70009-ruRU-coverage.md) ·
+[70245](research/forever-1.60.1.70245-ruRU-coverage.md) ·
+[70338](research/forever-1.60.1.70338-ruRU-coverage.md) ·
+[70374](research/forever-1.60.1.70374-ruRU-coverage.md).
+
+Facts of this milestone:
+
+* **36 committed overlays** (`data/localization/forever/<build>/ruRU/`, nine classes each),
+  four coverage reports + Markdown, four fixture pairs
+  (`tests/fixtures/localization/forever/<build>/{enUS,ruRU}/` — the 70338/70374 fixtures
+  predate it and are unchanged).
+* **The Warrior pilots are byte-identical** to the 3a / M5.DATA.3 commits: regenerating all
+  nine classes reproduces the pilot file exactly (pinned by
+  `test_the_warrior_pilots_are_unchanged`).
+* **Canonical English data untouched**: `data/normalized/**` and `data/tooltips/**` of all
+  four builds hash to their pre-milestone digests
+  (`test_canonical_english_data_is_unchanged`), and `publish` never writes outside
+  `data/localization`, `artifacts/localization`, `docs/research` (3a boundary test).
+* **Bundled**: `composeResources/files/localization/forever/<build>/ruRU/<class>.json` —
+  byte-identical mirror via `scripts/sync_mobile_localization.py` (the fourth
+  `mobile_bundles.py` kind), `--check` in `mobile-ci` and in
+  `test_mobile_bundles.py`. Not yet read by any Kotlin code (§8).
+* **One pipeline fix.** Publishing more than one class exposed a latent ordering bug in
+  `check_canonical`: the recomputed exception lists followed alphabetical file order while
+  the committed report follows dataset order, so every build with ≥2 classes failed with
+  "the name/description exceptions do not match the overlays". The check now recomputes in
+  dataset order — the pilot-era single-class state had simply never exercised it.
+* **Tests**: `tests/unit/localization/test_all_builds.py` (new) plus updated pilot
+  assumptions in `test_contract_and_pipeline.py` and `test_product_build.py`. Full offline
+  suite: 1038 passed, 11 integration tests deselected.
+* **Known limits** (unchanged): plural forms, decimal separator and partial English ranks
+  keep their §4/§10 fallbacks; the app still shows English only until the §8 runtime
+  milestone.

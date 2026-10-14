@@ -1247,8 +1247,9 @@ Open string unions the schema explicitly allows are modelled faithfully:
    documents of **every bundled build** (`BUNDLED_BUILDS` in
    `scripts/mobile_bundles.py`: `1.60.1.70009`, `1.60.1.70245`, `1.60.1.70338` and `1.60.1.70374`) into
    `mobile/composeApp/src/commonMain/composeResources/files/dataset/forever/<build>/`;
-   `sync_mobile_visuals.py` and `sync_mobile_tooltips.py` do the same for
-   `files/visuals/…` and `files/tooltips/…` through the same module.
+   `sync_mobile_visuals.py`, `sync_mobile_tooltips.py` and `sync_mobile_localization.py` do
+   the same for `files/visuals/…`, `files/tooltips/…` and `files/localization/…` through
+   the same module.
 3. `--check` mode (offline, CI) fails (exit 1) on a missing, changed or extra
    file of a bundled build, on a missing build and on a bundled directory of a
    build that is not listed. A sync repairs files inside the listed builds but
@@ -1262,8 +1263,11 @@ Open string unions the schema explicitly allows are modelled faithfully:
 The bundled copy is deterministically derived and never hand-edited. Drift is
 caught in three places: the Python check scripts (CI), the JVM
 `DatasetDriftTest` / `VisualsDriftTest` / `TooltipsDriftTest` (every bundled
-build, and exactly the three bundled builds), and the resource pipeline itself
-(files are packaged as-is). `test_mobile_bundles.py` also pins `PRODUCT_BUNDLE`
+build, and exactly the four bundled builds), and the resource pipeline itself
+(files are packaged as-is); the localization bundle is guarded by the Python
+`sync_mobile_localization.py --check` (CI and `test_mobile_bundles.py`) until its
+Kotlin runtime milestone adds the matching JVM drift test.
+`test_mobile_bundles.py` also pins `PRODUCT_BUNDLE`
 (read from `BundledDatasets.kt`) to the newest bundled build.
 
 ## Bundled datasets: product and reference (M5.DATA)
@@ -1539,6 +1543,55 @@ Mage Arcane Focus, Rogue Relentless Strikes (partial description), Druid Improve
 (several values change: next-rank text), landscape side inspector; iOS simulator
 (iPhone 17 Pro) New Build version line and the Improved Rend inspector.
 
+## Localized talent text bundle (M5.REL.3b.1)
+
+The client's own ruRU talent names and descriptions, as offline presentation overlays
+next to the English data. Source rules, the eight description gates, coverage per build
+and the English-fallback contract: [talent-localization.md](talent-localization.md).
+**No Kotlin code reads this bundle yet** — the runtime milestone below is the integration
+instructions; this milestone only published and mirrored the data.
+
+**Bundle.** `talent-localization.v1` overlays
+(`composeResources/files/localization/forever/<build>/ruRU/<class>.json` of every bundled
+build — 36 files, nine classes × four builds, mirrored byte-for-byte by
+`scripts/sync_mobile_localization.py` through `scripts/mobile_bundles.py`, CI `--check` in
+`mobile-ci`). Presentation-only: never an input to allocation, validation, saved builds or
+any English contract; each overlay pins its build's dataset and English-tooltip revisions
+(`talentDataContentHash`, `tooltipsContentHash`) and its own `contentHash`.
+
+**Coverage (committed 2026-10-15).** Names translated / entries: 70009 — 467/469,
+70245 — 464/470, 70338 — 459/469, 70374 — 459/469 (0 missing everywhere). Descriptions
+rendered / entries (ranks): 70009 — 386/469 (1 143/1 333), 70245 — 365/470 (1 097/1 333),
+70338 — 355/469 (1 058/1 329), 70374 — identical to 70338. Everything else falls back to
+the English text with a recorded reason (plural selection, decimal separator, unresolved
+English source).
+
+**Runtime integration (next milestone, not implemented).** Per
+[talent-localization.md](talent-localization.md) §8:
+
+1. `mobile/shared`: a strict `TalentLocalizationDocument` decoder (closed enums, numeric
+   wire-form check — the `talent-data.v1` reading rules) and a
+   `BundledTalentLocalizationRepository` verifying, against the loaded class document and
+   its English tooltips: game, client build, class token, locale, both content hashes,
+   exactly the dataset's entry set with matching node/definition/spell/maxRank identity,
+   ordered unique entry ids, ranks exactly `1..maxRank` on rendered descriptions and the
+   English numbers on every rendered rank. Any problem rejects the overlay **whole**
+   (typed `LocalizationLoadError`s), never partially applied. The repository is
+   locale-agnostic (locale code is a parameter; `ruRU` is the one supported value).
+2. `mobile/composeApp`: resolve inspector name/description text by the existing
+   `AppLanguage` rule — overlay `text`/ranks when the overlay loaded and the entry is
+   `translated`/`rendered`, otherwise the English dataset/sidecar text unchanged. A failed,
+   absent or mismatched overlay shows English and never blocks the editor; allocation,
+   `TalentTreeNodeFacts` identity, persistence, history and navigation stay untouched.
+   Longer Russian strings need the adaptive layout matrix re-run for the inspector.
+3. Tests: a JVM `LocalizationDriftTest` mirroring `TooltipsDriftTest` (bundle ==
+   `data/localization`, exactly the four bundled builds) and a Kotlin port of the
+   `test_display.py` oracle cases against the same committed files, plus EN/RU inspector
+   UI tests for translated, untranslated, unrendered and mismatched overlays. The mixed
+   inspector (Russian name, English description — 114 of 469 product-build entries today)
+   needs the product decision recorded in talent-localization.md §9 step 5 before any UI
+   labels itself "localized".
+
 ## Conformance strategy (M3A parsing, M3B execution)
 
 M3A implements the full serialization contract for
@@ -1624,7 +1677,11 @@ python3 scripts/sync_mobile_visuals.py
 # talent descriptions drift check / re-sync — offline
 python3 scripts/sync_mobile_tooltips.py --check
 python3 scripts/sync_mobile_tooltips.py
-# (all three mirror every build in BUNDLED_BUILDS of scripts/mobile_bundles.py)
+
+# ruRU talent text overlays drift check / re-sync — offline
+python3 scripts/sync_mobile_localization.py --check
+python3 scripts/sync_mobile_localization.py
+# (all four mirror every build in BUNDLED_BUILDS of scripts/mobile_bundles.py)
 
 # tests (JVM)
 cd mobile
