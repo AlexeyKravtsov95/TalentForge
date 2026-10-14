@@ -5,13 +5,14 @@ versioned talent-tree contract, and how it detects semantic changes between clie
 Everything below was verified against real Forever beta builds `1.60.1.69876` … `1.60.1.70009`
 on 2026-09-27. Nothing in the pipeline is hand-written talent data.
 
-Committed builds have distinct roles (M5.DATA, M5.DATA.2):
+Committed builds have distinct roles (M5.DATA, M5.DATA.2, M5.DATA.3):
 
-* `1.60.1.70338` is the **product dataset** — the newest Forever build wago.tools listed
-  on 2026-10-10 with `is_bgdl` explicitly `false`; the mobile app creates new builds on it.
-  It went through the same unchanged pipeline (§9 commands with `--build 1.60.1.70338`).
-* `1.60.1.70245`, the product dataset of M5.DATA, is kept unchanged for the builds saved on
-  it.
+* `1.60.1.70374` is the **product dataset** — the newest Forever build wago.tools listed
+  on 2026-10-14 with `is_bgdl` explicitly `false`; the mobile app creates new builds on it.
+  It went through the same unchanged pipeline (§9 commands with `--build 1.60.1.70374`); its
+  talent rows equal 70338's, and it is still published as its own dataset.
+* `1.60.1.70338` (M5.DATA.2) and `1.60.1.70245` (M5.DATA), earlier product datasets, are
+  kept unchanged for the builds saved on them.
 * `1.60.1.70009` stays the **verified reference baseline**: the build the live allocation
   evidence and the M2 conformance vectors are pinned to, and the build every pre-M5.DATA
   saved build was created on. It is kept, unchanged, next to the product dataset.
@@ -469,14 +470,16 @@ python -m talent_data fetch --game forever --build latest   # whatever builds la
 # is the app's product dataset still the latest publishable build? (read-only)
 python scripts/check_product_freshness.py --output freshness.json
 
-# reproduce the product dataset (M5.DATA.2) and its diff to the previous product dataset
-python -m talent_data fetch --game forever --build 1.60.1.70338
-python -m talent_data normalize --game forever --build 1.60.1.70338 --class all
-python -m talent_data diff --game forever --class all --from 1.60.1.70245 --to 1.60.1.70338
-python -m talent_data manifest data/normalized/forever/1.60.1.70338/manifest.json
-python -m talent_data visuals fetch --build 1.60.1.70338      # then: visuals normalize/check
-python -m talent_data tooltips fetch --build 1.60.1.70338     # then: tooltips normalize/check
-# (the same commands with 1.60.1.70245 / --from 1.60.1.70009 reproduce M5.DATA's dataset)
+# reproduce the product dataset (M5.DATA.3) and its diff to the previous product dataset
+python -m talent_data fetch --game forever --build 1.60.1.70374
+python -m talent_data normalize --game forever --build 1.60.1.70374 --class all
+python -m talent_data diff --game forever --class all --from 1.60.1.70338 --to 1.60.1.70374
+python -m talent_data manifest data/normalized/forever/1.60.1.70374/manifest.json
+python -m talent_data visuals fetch --build 1.60.1.70374      # then: visuals normalize/check
+python -m talent_data tooltips fetch --build 1.60.1.70374     # then: tooltips normalize/check
+python -m talent_data localization fetch --build 1.60.1.70374 --locale ruRU   # then: report/normalize/check
+# (the same commands with 1.60.1.70338 / --from 1.60.1.70245 reproduce M5.DATA.2's dataset,
+#  with 1.60.1.70245 / --from 1.60.1.70009 M5.DATA's)
 
 # reproduce the verified reference baseline (and the historical build it is diffed against)
 python -m talent_data fetch --game forever --build 1.60.1.69977

@@ -6,7 +6,9 @@ strings come from, how they are bound to exactly one dataset revision, and when 
 description may be shown at all**. It does not translate anything and does not change the
 app: the overlay is generated, validated and committed for the **Warrior pilot of the
 product build `1.60.1.70338`** only. Wiring it into the editor, the other eight classes and
-the retained builds are M5.REL.3b (§9).
+the retained builds are M5.REL.3b (§9). Since M5.DATA.3 the product build is `1.60.1.70374`;
+its compatibility report and Warrior pilot are in §11 (70338 is now a retained build, its
+overlay unchanged).
 
 * Source evidence: [research/forever-ruRU-localization-feasibility.md](research/forever-ruRU-localization-feasibility.md)
 * Product-build coverage (generated, every class): [research/forever-1.60.1.70338-ruRU-coverage.md](research/forever-1.60.1.70338-ruRU-coverage.md)
@@ -266,3 +268,25 @@ duration rows of `GlobalStrings`).
   keep everything offline, but regeneration needs the service (or a CASC reader).
 * **Renderer coupling.** The overlay embeds the renderer revision; any renderer change must
   regenerate English tooltips and overlays together (the `tooltipsContentHash` link enforces it).
+
+## 11. M5.DATA.3: the product build 1.60.1.70374
+
+The product build moved to `1.60.1.70374` (`docs/forever-dataset.md`). The same pipeline was
+run on it, unchanged, from its own exports; nothing of 70338 was reused and the 70338 overlay,
+report and Markdown are untouched.
+
+| | 1.60.1.70374 (2026-10-14) |
+| --- | --- |
+| Source support | `localization fetch --build 1.60.1.70374 --locale ruRU`: all four tables served for the exact build and verified against its enUS exports (same columns, ids and non-text columns; Cyrillic present; `TraitDefinition` text-free as before). `SpellName` 31863 rows (29302 translated), `Spell` 31863 (19553), `GlobalStrings` 27372 (25428), 0 missing |
+| Raw identity | the four ruRU and four enUS exports are byte-identical to 70338's |
+| Coverage (every class) | names **459 / 469** translated (10 English, 0 missing); descriptions **355 / 469** rendered (1058 / 1329 ranks) — identical to 70338, gate by gate: [research/forever-1.60.1.70374-ruRU-coverage.md](research/forever-1.60.1.70374-ruRU-coverage.md) |
+| Committed | `data/localization/forever/1.60.1.70374/ruRU/warrior.json` (pilot, as for 70338), `artifacts/localization/forever-1.60.1.70374-ruRU-coverage.json` |
+| Linkage | `talentDataContentHash` = the 70374 Warrior document (`sha256:e47bd92d…`), `tooltipsContentHash` = the 70374 Warrior sidecar (`sha256:43ac9654…`); `localization check --build 1.60.1.70374` passes |
+| Tests | `tests/unit/test_product_build.py` regenerates overlay, report and Markdown from `tests/fixtures/localization/forever/1.60.1.70374/` byte for byte and checks the linkage; `tests/unit/localization/` stays pinned to the 3a pilot build 70338 (`PILOT_BUILD`) |
+
+**For M5.REL.3b.1.** Generate the product-build overlays with
+`localization normalize --build 1.60.1.70374 --locale ruRU --classes all --offline` (after
+`localization fetch`); every overlay is then bound to the hashes above, so the dataset and
+tooltip revisions it was produced for are explicit. 70338 keeps its own overlay; bundling
+overlays for retained builds stays per build (§9 step 2), never by copying text across
+builds — even where, as here, the strings are identical.
