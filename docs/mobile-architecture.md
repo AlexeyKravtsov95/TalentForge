@@ -1052,10 +1052,23 @@ copy on a Russian screen; the nine class names and unnamed titles; Russian
 plural forms for 1, 2, 5, 11, 21; the relative-time buckets; user names
 verbatim; a language switch leaving the stored library byte-for-byte
 unchanged with no writes; and the 320 / 393 dp × 100 / 200 % matrix where no
-text breaks mid-word, overflows its box or leaves the window). Opt-in
+text breaks mid-word, overflows the space its parent gives it or leaves
+the window — measured against the parent's constraints, not the text's own
+box, because Skia's intrinsic width of a single word on macOS fonts can be a
+few px under its laid-out glyphs). Opt-in
 screenshot evidence: `M5Rel2aScreenshotTest`
 (`-Dtalentforge.m5rel2a.screenshots=<dir>`), committed under
 `docs/screenshots/m5-rel-2a/`.
+
+**Home loading state is read in Home's own scope.** `HomeScreen` reads its
+`LibraryData` once, outside `BoxWithConstraints`, and passes that value into
+the subcomposition. In the desktop UI-test harness the effect dispatcher is
+unconfined, so the load result is written from a `Dispatchers.Default`
+worker; a change observed only inside the subcomposition was never applied
+and Home stayed on "Loading your builds…" until the `waitUntil` timeout
+(`M51AppFlowUiTest.onePersistedDraftAppearsOnHomeAsContinue` failed on every
+Mac run, also on main). On devices the effect resumes on the UI thread, so
+behaviour there is unchanged.
 
 **Known limitations.** A duplicate's initial name is generated and
 persisted by the shared repository in English (`Draft (copy)`,
