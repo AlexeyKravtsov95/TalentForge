@@ -1,0 +1,3786 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "clientBuild": "1.60.1.70338",
+  "classToken": "HUNTER",
+  "locale": "ruRU",
+  "talentDataContentHash": "sha256:717ae2bdbaf67d253ce51d9cc184347d92e6ec4185d0a79b2ac6bfab519574a7",
+  "tooltipsContentHash": "sha256:70b3b16e9981801206f6d3a2403462ac91e70edf0c314d9c258dacbc4faf81e5",
+  "entries": [
+    {
+      "entryId": 129621,
+      "nodeId": 104960,
+      "definitionId": 134422,
+      "spellId": 19552,
+      "textSpellId": 19552,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Смертоносные духи",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Во время действия \"Духа ястреба\" автоматическая стрельба с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": " повышает скорость атаки в дальнем бою на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "12 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Во время действия \"Духа зверя\" автоатаки в ближнем бою с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": " повышают скорость атаки в ближнем бою на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "12 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Во время действия \"Духа ястреба\" автоматическая стрельба с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": " повышает скорость атаки в дальнем бою на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "12 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Во время действия \"Духа зверя\" автоатаки в ближнем бою с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": " повышают скорость атаки в ближнем бою на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "12 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Во время действия \"Духа ястреба\" автоматическая стрельба с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": " повышает скорость атаки в дальнем бою на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "12 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Во время действия \"Духа зверя\" автоатаки в ближнем бою с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": " повышают скорость атаки в ближнем бою на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "12 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Во время действия \"Духа ястреба\" автоматическая стрельба с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": " повышает скорость атаки в дальнем бою на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "12 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Во время действия \"Духа зверя\" автоатаки в ближнем бою с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": " повышают скорость атаки в ближнем бою на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "12 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Во время действия \"Духа ястреба\" автоматическая стрельба с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " повышает скорость атаки в дальнем бою на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "12 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Во время действия \"Духа зверя\" автоатаки в ближнем бою с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " повышают скорость атаки в ближнем бою на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "12 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129622,
+      "nodeId": 104961,
+      "definitionId": 134423,
+      "spellId": 19574,
+      "textSpellId": 19574,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Звериный гнев",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Приводит питомца в ярость, увеличивая наносимый им урон на "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "18 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". В состоянии ярости питомец не знает ни страха, ни жалости, и только смерть может остановить его."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129623,
+      "nodeId": 104962,
+      "definitionId": 134424,
+      "spellId": 19621,
+      "textSpellId": 19621,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Бешенство",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Дает вашему питомцу "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " шанс увеличить скорость атаки на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " в течение "
+              },
+              {
+                "kind": "value",
+                "text": "8 сек"
+              },
+              {
+                "kind": "text",
+                "text": " после нанесения критического удара."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Дает вашему питомцу "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": " шанс увеличить скорость атаки на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " в течение "
+              },
+              {
+                "kind": "value",
+                "text": "8 сек"
+              },
+              {
+                "kind": "text",
+                "text": " после нанесения критического удара."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Дает вашему питомцу "
+              },
+              {
+                "kind": "value",
+                "text": "60%"
+              },
+              {
+                "kind": "text",
+                "text": " шанс увеличить скорость атаки на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " в течение "
+              },
+              {
+                "kind": "value",
+                "text": "8 сек"
+              },
+              {
+                "kind": "text",
+                "text": " после нанесения критического удара."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Дает вашему питомцу "
+              },
+              {
+                "kind": "value",
+                "text": "80%"
+              },
+              {
+                "kind": "text",
+                "text": " шанс увеличить скорость атаки на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " в течение "
+              },
+              {
+                "kind": "value",
+                "text": "8 сек"
+              },
+              {
+                "kind": "text",
+                "text": " после нанесения критического удара."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Дает вашему питомцу "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " шанс увеличить скорость атаки на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " в течение "
+              },
+              {
+                "kind": "value",
+                "text": "8 сек"
+              },
+              {
+                "kind": "text",
+                "text": " после нанесения критического удара."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129624,
+      "nodeId": 104963,
+      "definitionId": 134425,
+      "spellId": 19590,
+      "textSpellId": 19590,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Беспрекословное послушание",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает скорость восстановления концентрации ваших питомцев на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": ". Во время применения способностей ваша мана продолжает восполняться со скоростью "
+              },
+              {
+                "kind": "value",
+                "text": "25%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает скорость восстановления концентрации ваших питомцев на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": ". Во время применения способностей ваша мана продолжает восполняться со скоростью "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129625,
+      "nodeId": 104964,
+      "definitionId": 134426,
+      "spellId": 19577,
+      "textSpellId": 19577,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Устрашение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Следующая успешная атака вашего питомца оглушает цель на "
+              },
+              {
+                "kind": "value",
+                "text": "3 сек"
+              },
+              {
+                "kind": "text",
+                "text": "., при этом вероятность критического удара этой атаки повышается на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": ". Создает высокий уровень угрозы."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129626,
+      "nodeId": 104965,
+      "definitionId": 134427,
+      "spellId": 19578,
+      "textSpellId": 19578,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Узы духа",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Пока ваш питомец активен, вы и ваш питомец восстанавливаете "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": " общего запаса здоровья раз в "
+              },
+              {
+                "kind": "value",
+                "text": "10"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Пока ваш питомец активен, вы и ваш питомец восстанавливаете "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": " общего запаса здоровья раз в "
+              },
+              {
+                "kind": "value",
+                "text": "5"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129627,
+      "nodeId": 104966,
+      "definitionId": 134428,
+      "spellId": 1293241,
+      "textSpellId": 1293241,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Призыв ястреба",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 129628,
+      "nodeId": 104967,
+      "definitionId": 134429,
+      "spellId": 19598,
+      "textSpellId": 19598,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Свирепость",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара ваших питомцев и ястребов на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара ваших питомцев и ястребов на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара ваших питомцев и ястребов на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара ваших питомцев и ястребов на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара ваших питомцев и ястребов на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129629,
+      "nodeId": 104968,
+      "definitionId": 134430,
+      "spellId": 19572,
+      "textSpellId": 19572,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенное лечение питомца",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "pluralRuleUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 129630,
+      "nodeId": 104969,
+      "definitionId": 134431,
+      "spellId": 19616,
+      "textSpellId": 19616,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Неудержимое неистовство",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон, наносимый вашими питомцами и ястребами, на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон, наносимый вашими питомцами и ястребами, на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон, наносимый вашими питомцами и ястребами, на "
+              },
+              {
+                "kind": "value",
+                "text": "9%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон, наносимый вашими питомцами и ястребами, на "
+              },
+              {
+                "kind": "value",
+                "text": "12%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон, наносимый вашими питомцами и ястребами, на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129631,
+      "nodeId": 104970,
+      "definitionId": 134432,
+      "spellId": 19596,
+      "textSpellId": 19596,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Звериная стремительность",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает скорость передвижения ваших питомцев на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129633,
+      "nodeId": 104972,
+      "definitionId": 134434,
+      "spellId": 24443,
+      "textSpellId": 24443,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенное воскрешение питомца",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Время наложения заклинания \"Воскрешение питомца\" уменьшается на "
+              },
+              {
+                "kind": "value",
+                "text": "3"
+              },
+              {
+                "kind": "text",
+                "text": " сек., расход маны уменьшается на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": ", здоровье, которым наделен ваш питомец по возвращении, увеличивается дополнительно на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Время наложения заклинания \"Воскрешение питомца\" уменьшается на "
+              },
+              {
+                "kind": "value",
+                "text": "6"
+              },
+              {
+                "kind": "text",
+                "text": " сек., расход маны уменьшается на "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": ", здоровье, которым наделен ваш питомец по возвращении, увеличивается дополнительно на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129634,
+      "nodeId": 104973,
+      "definitionId": 134435,
+      "spellId": 19559,
+      "textSpellId": 19559,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Знание троп",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение приращения скорости при обращении к духу гепарда и духу стаи на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение приращения скорости при обращении к духу гепарда и духу стаи на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129635,
+      "nodeId": 104974,
+      "definitionId": 134436,
+      "spellId": 19549,
+      "textSpellId": 19549,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенный дух обезьяны",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Бонус к вероятности уклонения от \"Духа обезьяны\" увеличивается на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": ". Кроме того, ваш питомец получает 50% эффекта \"Духа обезьяны\"."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Бонус к вероятности уклонения от \"Духа обезьяны\" увеличивается на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": ". Кроме того, ваш питомец получает 50% эффекта \"Духа обезьяны\"."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Бонус к вероятности уклонения от \"Духа обезьяны\" увеличивается на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": ". Кроме того, ваш питомец получает 50% эффекта \"Духа обезьяны\"."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129636,
+      "nodeId": 104975,
+      "definitionId": 134437,
+      "spellId": 1223755,
+      "textSpellId": 1223755,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Направленный огонь",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Пока ваш питомец активен, вы и ваш питомец наносите на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": " больше урона."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Пока ваш питомец активен, вы и ваш питомец наносите на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": " больше урона."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129637,
+      "nodeId": 104976,
+      "definitionId": 134438,
+      "spellId": 19583,
+      "textSpellId": 19583,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Тренировка стойкости",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает запас здоровья и усиливает броню ваших питомцев на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает запас здоровья и усиливает броню ваших питомцев на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает запас здоровья и усиливает броню ваших питомцев на "
+              },
+              {
+                "kind": "value",
+                "text": "9%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает запас здоровья и усиливает броню ваших питомцев на "
+              },
+              {
+                "kind": "value",
+                "text": "12%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает запас здоровья и усиливает броню ваших питомцев на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129645,
+      "nodeId": 104981,
+      "definitionId": 134446,
+      "spellId": 1317257,
+      "textSpellId": 1317257,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Удар долгонога",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "untranslated",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 129646,
+      "nodeId": 104982,
+      "definitionId": 134447,
+      "spellId": 19168,
+      "textSpellId": 19168,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Молниеносные рефлексы",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышение ловкости на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышение ловкости на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышение ловкости на "
+              },
+              {
+                "kind": "value",
+                "text": "9%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышение ловкости на "
+              },
+              {
+                "kind": "value",
+                "text": "12%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышение ловкости на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129647,
+      "nodeId": 104983,
+      "definitionId": 134448,
+      "spellId": 440529,
+      "textSpellId": 440529,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Находчивость",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 129648,
+      "nodeId": 104984,
+      "definitionId": 134449,
+      "spellId": 1310533,
+      "textSpellId": 1310533,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Раздирающие удары",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "missing",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 129649,
+      "nodeId": 104985,
+      "definitionId": 134450,
+      "spellId": 1310532,
+      "textSpellId": 1310532,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Обнаружение добычи",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "untranslated",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 129650,
+      "nodeId": 104986,
+      "definitionId": 134451,
+      "spellId": 19263,
+      "textSpellId": 19263,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Сдерживание",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышение вероятности уклонения и парирования удара на "
+              },
+              {
+                "kind": "value",
+                "text": "25%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "10 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129651,
+      "nodeId": 104987,
+      "definitionId": 134452,
+      "spellId": 19290,
+      "textSpellId": 19290,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Верный шаг",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": " и сокращает время действия на вас затрудняющих передвижение эффектов на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": " и сокращает время действия на вас затрудняющих передвижение эффектов на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": " и сокращает время действия на вас затрудняющих передвижение эффектов на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129652,
+      "nodeId": 104988,
+      "definitionId": 134453,
+      "spellId": 19376,
+      "textSpellId": 19376,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Тактика выживания",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания для ловушек и способности \"Притвориться мертвым\" на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания для ловушек и способности \"Притвориться мертвым\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129653,
+      "nodeId": 104989,
+      "definitionId": 134454,
+      "spellId": 19306,
+      "textSpellId": 19306,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Контратака",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Удар, наносящий противнику "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " урона от оружия и еще "
+              },
+              {
+                "kind": "value",
+                "text": "26"
+              },
+              {
+                "kind": "text",
+                "text": " ед., а также обездвиживающий его на "
+              },
+              {
+                "kind": "value",
+                "text": "5 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Можно применить только после парирования атаки. Этот удар невозможно заблокировать или парировать, и от него нельзя уклониться."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129654,
+      "nodeId": 104990,
+      "definitionId": 134455,
+      "spellId": 19228,
+      "textSpellId": 19228,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенная подрезка крыльев",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Способность \"Подрезать крылья\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "7%"
+              },
+              {
+                "kind": "text",
+                "text": " обездвиживает цель на "
+              },
+              {
+                "kind": "value",
+                "text": "5 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Способность \"Подрезать крылья\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "13%"
+              },
+              {
+                "kind": "text",
+                "text": " обездвиживает цель на "
+              },
+              {
+                "kind": "value",
+                "text": "5 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Способность \"Подрезать крылья\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " обездвиживает цель на "
+              },
+              {
+                "kind": "value",
+                "text": "5 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129655,
+      "nodeId": 104991,
+      "definitionId": 134456,
+      "spellId": 19239,
+      "textSpellId": 19239,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Хитрые ловушки",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение длительности эффектов \"Ледяной ловушки\" и \"Замораживающей ловушки\" на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": ", а урона от \"Огненной ловушки\" и \"Взрывной ловушки\" – на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение длительности эффектов \"Ледяной ловушки\" и \"Замораживающей ловушки\" на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": ", а урона от \"Огненной ловушки\" и \"Взрывной ловушки\" – на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129656,
+      "nodeId": 104992,
+      "definitionId": 134457,
+      "spellId": 19255,
+      "textSpellId": 19255,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Остаться в живых",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает общий запас здоровья на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает общий запас здоровья на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает общий запас здоровья на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает общий запас здоровья на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает общий запас здоровья на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129657,
+      "nodeId": 104993,
+      "definitionId": 134458,
+      "spellId": 19159,
+      "textSpellId": 19159,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Беспощадные удары",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара способностей ближнего боя на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара способностей ближнего боя на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129658,
+      "nodeId": 104994,
+      "definitionId": 134459,
+      "spellId": 19184,
+      "textSpellId": 19184,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Удержание",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Ваши ловушки также применяют к пораженным целям эффект \"В ловушке\", обездвиживающий их на "
+              },
+              {
+                "kind": "value",
+                "text": "1"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Ваши ловушки также применяют к пораженным целям эффект \"В ловушке\", обездвиживающий их на "
+              },
+              {
+                "kind": "value",
+                "text": "2"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Ваши ловушки также применяют к пораженным целям эффект \"В ловушке\", обездвиживающий их на "
+              },
+              {
+                "kind": "value",
+                "text": "3"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Ваши ловушки также применяют к пораженным целям эффект \"В ловушке\", обездвиживающий их на "
+              },
+              {
+                "kind": "value",
+                "text": "4"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Ваши ловушки также применяют к пораженным целям эффект \"В ловушке\", обездвиживающий их на "
+              },
+              {
+                "kind": "value",
+                "text": "5"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129659,
+      "nodeId": 104995,
+      "definitionId": 134460,
+      "spellId": 19295,
+      "textSpellId": 19295,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Отражение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает вероятность парирования атак на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает вероятность парирования атак на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает вероятность парирования атак на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает вероятность парирования атак на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает вероятность парирования атак на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129660,
+      "nodeId": 104996,
+      "definitionId": 134461,
+      "spellId": 24293,
+      "textSpellId": 24293,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Мастерское выслеживание",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда вы выслеживаете зверей, демонов, драконов, элементалей, великанов, гуманоидов или нежить, вы наносите на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": " существам выбранного типа."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда вы выслеживаете зверей, демонов, драконов, элементалей, великанов, гуманоидов или нежить, вы наносите на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": " существам выбранного типа."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда вы выслеживаете зверей, демонов, драконов, элементалей, великанов, гуманоидов или нежить, вы наносите на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": " существам выбранного типа."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда вы выслеживаете зверей, демонов, драконов, элементалей, великанов, гуманоидов или нежить, вы наносите на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": " существам выбранного типа."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда вы выслеживаете зверей, демонов, драконов, элементалей, великанов, гуманоидов или нежить, вы наносите на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": " существам выбранного типа."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129661,
+      "nodeId": 104997,
+      "definitionId": 134462,
+      "spellId": 1310687,
+      "textSpellId": 1310687,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Снайперский выстрел",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "untranslated",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 129662,
+      "nodeId": 104998,
+      "definitionId": 134463,
+      "spellId": 19507,
+      "textSpellId": 19507,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Специализация на оружии дальнего боя",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повешение урона, наносимого оружием дальнего боя, на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повешение урона, наносимого оружием дальнего боя, на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повешение урона, наносимого оружием дальнего боя, на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повешение урона, наносимого оружием дальнего боя, на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повешение урона, наносимого оружием дальнего боя, на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129663,
+      "nodeId": 104999,
+      "definitionId": 134464,
+      "spellId": 1223987,
+      "textSpellId": 1223987,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Быстрая концентрация",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Поразив цель \"Укусом змеи\", вы восполняете ману во время применения способностей со скоростью "
+              },
+              {
+                "kind": "value",
+                "text": "25%"
+              },
+              {
+                "kind": "text",
+                "text": ", а после поглощения эффекта \"Быстрые убийства\" – со скоростью "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": ". Время действия – "
+              },
+              {
+                "kind": "value",
+                "text": "15 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Поразив цель \"Укусом змеи\", вы восполняете ману во время применения способностей со скоростью "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": ", а после поглощения эффекта \"Быстрые убийства\" – со скоростью "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": ". Время действия – "
+              },
+              {
+                "kind": "value",
+                "text": "15 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129664,
+      "nodeId": 105000,
+      "definitionId": 134465,
+      "spellId": 19503,
+      "textSpellId": 19503,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Дезориентирующий выстрел",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Выстрел на короткой дистанции с нанесением цели "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " урона от оружия и лишением ее ощущения направления на "
+              },
+              {
+                "kind": "value",
+                "text": "4 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Любой нанесенный урон отменяет действие эффекта."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129665,
+      "nodeId": 105001,
+      "definitionId": 134466,
+      "spellId": 19461,
+      "textSpellId": 19461,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Заградительный огонь",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от \"Залпа\", \"Града стрел\" и \"Прицельного выстрела\" на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от \"Залпа\", \"Града стрел\" и \"Прицельного выстрела\" на "
+              },
+              {
+                "kind": "value",
+                "text": "7%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от \"Залпа\", \"Града стрел\" и \"Прицельного выстрела\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129666,
+      "nodeId": 105002,
+      "definitionId": 134467,
+      "spellId": 19485,
+      "textSpellId": 19485,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Смертоносные выстрелы",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает бонус к критическому урону от способностей дальнего боя на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает бонус к критическому урону от способностей дальнего боя на "
+              },
+              {
+                "kind": "value",
+                "text": "12%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает бонус к критическому урону от способностей дальнего боя на "
+              },
+              {
+                "kind": "value",
+                "text": "18%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает бонус к критическому урону от способностей дальнего боя на "
+              },
+              {
+                "kind": "value",
+                "text": "24%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает бонус к критическому урону от способностей дальнего боя на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129667,
+      "nodeId": 105003,
+      "definitionId": 134468,
+      "spellId": 19464,
+      "textSpellId": 19464,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Смертельный укус змеи",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": " урона, наносимого \"Укусом змеи\"."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": " урона, наносимого \"Укусом змеи\"."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": " урона, наносимого \"Укусом змеи\"."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": " урона, наносимого \"Укусом змеи\"."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " урона, наносимого \"Укусом змеи\"."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129668,
+      "nodeId": 105004,
+      "definitionId": 134469,
+      "spellId": 1299346,
+      "textSpellId": 1299346,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Аура меткого выстрела",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "untranslated",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 129669,
+      "nodeId": 105005,
+      "definitionId": 134470,
+      "spellId": 415405,
+      "textSpellId": 415405,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Быстрые убийства",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Сокращает время восстановления \"Быстрой стрельбы\" на "
+              },
+              {
+                "kind": "value",
+                "text": "1"
+              },
+              {
+                "kind": "text",
+                "text": " мин. Кроме того, когда вы убиваете представляющего угрозу противника или такой противник погибает под действием вашего \"Укуса змеи\", вы получаете эффект \"Быстрые убийства\", увеличивающий урон от следующей способности категории \"Выстрел\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": ". Время действия – "
+              },
+              {
+                "kind": "value",
+                "text": "20 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Сокращает время восстановления \"Быстрой стрельбы\" на "
+              },
+              {
+                "kind": "value",
+                "text": "2"
+              },
+              {
+                "kind": "text",
+                "text": " мин. Кроме того, когда вы убиваете представляющего угрозу противника или такой противник погибает под действием вашего \"Укуса змеи\", вы получаете эффект \"Быстрые убийства\", увеличивающий урон от следующей способности категории \"Выстрел\" на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": ". Время действия – "
+              },
+              {
+                "kind": "value",
+                "text": "20 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129670,
+      "nodeId": 105006,
+      "definitionId": 134471,
+      "spellId": 19454,
+      "textSpellId": 19454,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенный чародейский выстрел",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "decimalFormatUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 129671,
+      "nodeId": 105007,
+      "definitionId": 134472,
+      "spellId": 415370,
+      "textSpellId": 415370,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Одинокий волк",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Ваши атаки наносят на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " больше урона, пока у вас нет активного питомца."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129672,
+      "nodeId": 105008,
+      "definitionId": 134473,
+      "spellId": 1223984,
+      "textSpellId": 1223984,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Верная цель",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает силу атаки на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " интеллекта."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает силу атаки на "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": " интеллекта."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает силу атаки на "
+              },
+              {
+                "kind": "value",
+                "text": "60%"
+              },
+              {
+                "kind": "text",
+                "text": " интеллекта."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает силу атаки на "
+              },
+              {
+                "kind": "value",
+                "text": "80%"
+              },
+              {
+                "kind": "text",
+                "text": " интеллекта."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает силу атаки на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " интеллекта."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129673,
+      "nodeId": 105009,
+      "definitionId": 134474,
+      "spellId": 19416,
+      "textSpellId": 19416,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Эффективность",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на ваши способности категорий \"Выстрел\" и \"Укус\", а также способности ближнего боя на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на ваши способности категорий \"Выстрел\" и \"Укус\", а также способности ближнего боя на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на ваши способности категорий \"Выстрел\" и \"Укус\", а также способности ближнего боя на "
+              },
+              {
+                "kind": "value",
+                "text": "9%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на ваши способности категорий \"Выстрел\" и \"Укус\", а также способности ближнего боя на "
+              },
+              {
+                "kind": "value",
+                "text": "12%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на ваши способности категорий \"Выстрел\" и \"Укус\", а также способности ближнего боя на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129675,
+      "nodeId": 105011,
+      "definitionId": 134476,
+      "spellId": 19426,
+      "textSpellId": 19426,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Смертоносные атаки",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара всех атак на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара всех атак на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара всех атак на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара всех атак на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара всех атак на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129676,
+      "nodeId": 105012,
+      "definitionId": 134477,
+      "spellId": 19407,
+      "textSpellId": 19407,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенный контузящий выстрел",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышение до "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": " вероятности оглушения противника на "
+              },
+              {
+                "kind": "value",
+                "text": "3 сек"
+              },
+              {
+                "kind": "text",
+                "text": " при использовании способности \"Шокирующий выстрел\"."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышение до "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": " вероятности оглушения противника на "
+              },
+              {
+                "kind": "value",
+                "text": "3 сек"
+              },
+              {
+                "kind": "text",
+                "text": " при использовании способности \"Шокирующий выстрел\"."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышение до "
+              },
+              {
+                "kind": "value",
+                "text": "12%"
+              },
+              {
+                "kind": "text",
+                "text": " вероятности оглушения противника на "
+              },
+              {
+                "kind": "value",
+                "text": "3 сек"
+              },
+              {
+                "kind": "text",
+                "text": " при использовании способности \"Шокирующий выстрел\"."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышение до "
+              },
+              {
+                "kind": "value",
+                "text": "16%"
+              },
+              {
+                "kind": "text",
+                "text": " вероятности оглушения противника на "
+              },
+              {
+                "kind": "value",
+                "text": "3 сек"
+              },
+              {
+                "kind": "text",
+                "text": " при использовании способности \"Шокирующий выстрел\"."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышение до "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " вероятности оглушения противника на "
+              },
+              {
+                "kind": "value",
+                "text": "3 сек"
+              },
+              {
+                "kind": "text",
+                "text": " при использовании способности \"Шокирующий выстрел\"."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129677,
+      "nodeId": 105013,
+      "definitionId": 134478,
+      "spellId": 19498,
+      "textSpellId": 19498,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Глаз ястреба",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "pluralRuleUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 137851,
+      "nodeId": 110859,
+      "definitionId": 142605,
+      "spellId": 19168,
+      "textSpellId": 19168,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Молниеносные рефлексы",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышение ловкости на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышение ловкости на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышение ловкости на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышение ловкости на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышение ловкости на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 137852,
+      "nodeId": 110860,
+      "definitionId": 142606,
+      "spellId": 1310496,
+      "textSpellId": 1310496,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Дисциплина выживающего",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "untranslated",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 137853,
+      "nodeId": 110861,
+      "definitionId": 142607,
+      "spellId": 1310627,
+      "textSpellId": 1310627,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Лезвие хищника",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "untranslated",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 137868,
+      "nodeId": 110870,
+      "definitionId": 142622,
+      "spellId": 1310661,
+      "textSpellId": 1310661,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Смертельные укусы",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "untranslated",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    }
+  ],
+  "contentHash": "sha256:34e758ec3e051954fd622bf50ef57c345964c021713b5c8bd15dc3027fdbb01b",
+  "provenance": {
+    "source": "wago.tools",
+    "renderer": "talent_data.localization gates-v1 + talent_data.tooltips grammar-v1",
+    "tables": [
+      {
+        "table": "SpellName",
+        "locale": "enUS",
+        "url": "https://wago.tools/db2/SpellName/csv?build=1.60.1.70338"
+      },
+      {
+        "table": "TraitDefinition",
+        "locale": "enUS",
+        "url": "https://wago.tools/db2/TraitDefinition/csv?build=1.60.1.70338"
+      },
+      {
+        "table": "Spell",
+        "locale": "enUS",
+        "url": "https://wago.tools/db2/Spell/csv?build=1.60.1.70338"
+      },
+      {
+        "table": "GlobalStrings",
+        "locale": "enUS",
+        "url": "https://wago.tools/db2/GlobalStrings/csv?build=1.60.1.70338"
+      },
+      {
+        "table": "SpellName",
+        "locale": "ruRU",
+        "url": "https://wago.tools/db2/SpellName/csv?build=1.60.1.70338&locale=ruRU"
+      },
+      {
+        "table": "TraitDefinition",
+        "locale": "ruRU",
+        "url": "https://wago.tools/db2/TraitDefinition/csv?build=1.60.1.70338&locale=ruRU"
+      },
+      {
+        "table": "Spell",
+        "locale": "ruRU",
+        "url": "https://wago.tools/db2/Spell/csv?build=1.60.1.70338&locale=ruRU"
+      },
+      {
+        "table": "GlobalStrings",
+        "locale": "ruRU",
+        "url": "https://wago.tools/db2/GlobalStrings/csv?build=1.60.1.70338&locale=ruRU"
+      }
+    ]
+  }
+}
