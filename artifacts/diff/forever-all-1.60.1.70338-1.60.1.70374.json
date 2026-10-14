@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "fromBuild": "1.60.1.70338",
+  "toBuild": "1.60.1.70374",
+  "classes": [
+    {
+      "class": {
+        "id": 1,
+        "token": "WARRIOR",
+        "name": "Warrior"
+      },
+      "file": "forever-warrior-1.60.1.70338-1.60.1.70374.json",
+      "summary": {
+        "added": 0,
+        "removed": 0,
+        "changed": 0,
+        "changesByKind": {}
+      }
+    },
+    {
+      "class": {
+        "id": 2,
+        "token": "PALADIN",
+        "name": "Paladin"
+      },
+      "file": "forever-paladin-1.60.1.70338-1.60.1.70374.json",
+      "summary": {
+        "added": 0,
+        "removed": 0,
+        "changed": 0,
+        "changesByKind": {}
+      }
+    },
+    {
+      "class": {
+        "id": 3,
+        "token": "HUNTER",
+        "name": "Hunter"
+      },
+      "file": "forever-hunter-1.60.1.70338-1.60.1.70374.json",
+      "summary": {
+        "added": 0,
+        "removed": 0,
+        "changed": 0,
+        "changesByKind": {}
+      }
+    },
+    {
+      "class": {
+        "id": 4,
+        "token": "ROGUE",
+        "name": "Rogue"
+      },
+      "file": "forever-rogue-1.60.1.70338-1.60.1.70374.json",
+      "summary": {
+        "added": 0,
+        "removed": 0,
+        "changed": 0,
+        "changesByKind": {}
+      }
+    },
+    {
+      "class": {
+        "id": 5,
+        "token": "PRIEST",
+        "name": "Priest"
+      },
+      "file": "forever-priest-1.60.1.70338-1.60.1.70374.json",
+      "summary": {
+        "added": 0,
+        "removed": 0,
+        "changed": 0,
+        "changesByKind": {}
+      }
+    },
+    {
+      "class": {
+        "id": 7,
+        "token": "SHAMAN",
+        "name": "Shaman"
+      },
+      "file": "forever-shaman-1.60.1.70338-1.60.1.70374.json",
+      "summary": {
+        "added": 0,
+        "removed": 0,
+        "changed": 0,
+        "changesByKind": {}
+      }
+    },
+    {
+      "class": {
+        "id": 8,
+        "token": "MAGE",
+        "name": "Mage"
+      },
+      "file": "forever-mage-1.60.1.70338-1.60.1.70374.json",
+      "summary": {
+        "added": 0,
+        "removed": 0,
+        "changed": 0,
+        "changesByKind": {}
+      }
+    },
+    {
+      "class": {
+        "id": 9,
+        "token": "WARLOCK",
+        "name": "Warlock"
+      },
+      "file": "forever-warlock-1.60.1.70338-1.60.1.70374.json",
+      "summary": {
+        "added": 0,
+        "removed": 0,
+        "changed": 0,
+        "changesByKind": {}
+      }
+    },
+    {
+      "class": {
+        "id": 11,
+        "token": "DRUID",
+        "name": "Druid"
+      },
+      "file": "forever-druid-1.60.1.70338-1.60.1.70374.json",
+      "summary": {
+        "added": 0,
+        "removed": 0,
+        "changed": 0,
+        "changesByKind": {}
+      }
+    }
+  ],
+  "total": {
+    "added": 0,
+    "removed": 0,
+    "changed": 0,
+    "changesByKind": {}
+  }
+}
