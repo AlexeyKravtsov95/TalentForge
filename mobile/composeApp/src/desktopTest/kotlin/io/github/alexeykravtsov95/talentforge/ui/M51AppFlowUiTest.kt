@@ -20,6 +20,8 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.alexeykravtsov95.talentforge.data.ClassToken
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.library.createClassDraft
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
@@ -38,6 +40,10 @@ import org.junit.Rule
  * it. Pan/zoom/selection must never write.
  */
 class M51AppFlowUiTest {
+
+    /** UI copy follows the platform locale since M5.REL.2a: pinned explicitly. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     @get:Rule
     val composeRule = createComposeRule()
@@ -109,8 +115,10 @@ class M51AppFlowUiTest {
     fun emptyLibraryHomeOffersNewBuildAndNothingFake() {
         composeApp()
 
-        awaitText("New build")
-        composeRule.onNodeWithText("No builds yet").assertExists()
+        // "New build" is pinned already while the library loads: wait for the
+        // loaded empty state itself (the localized copy made that race visible)
+        awaitText("No builds yet")
+        composeRule.onNodeWithText("New build").assertExists()
         composeRule.onNodeWithText("CONTINUE").assertDoesNotExist()
         composeRule.onNodeWithText("RECENT").assertDoesNotExist()
         composeRule.onNodeWithText("Forever talent data 1.60.1").assertExists()

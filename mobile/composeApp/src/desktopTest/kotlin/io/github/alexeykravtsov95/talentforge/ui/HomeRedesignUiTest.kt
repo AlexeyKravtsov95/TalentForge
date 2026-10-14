@@ -13,6 +13,8 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.alexeykravtsov95.talentforge.data.ClassToken
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.library.DraftCreation
 import io.github.alexeykravtsov95.talentforge.ui.library.createClassDraft
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
@@ -30,6 +32,10 @@ import org.junit.Rule
  * and the recoverable repository-error state.
  */
 class HomeRedesignUiTest {
+
+    /** UI copy follows the platform locale since M5.REL.2a: pinned explicitly. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     @get:Rule
     val composeRule = createComposeRule()

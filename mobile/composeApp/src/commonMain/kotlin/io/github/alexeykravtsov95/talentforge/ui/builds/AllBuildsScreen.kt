@@ -38,6 +38,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_duplicate_failed
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_duplicated
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_empty_body
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_empty_title
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_row_actions_action
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_row_actions_description
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_title
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_title_count
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_new_build
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_new_build_action
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_open_build_action
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_retry
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_load_failed_body
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_load_failed_title
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_loading
 import io.github.alexeykravtsov95.talentforge.data.TalentDatasetRepository
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
@@ -48,9 +64,11 @@ import io.github.alexeykravtsov95.talentforge.ui.library.InlineNotice
 import io.github.alexeykravtsov95.talentforge.ui.library.InlineNoticeTone
 import io.github.alexeykravtsov95.talentforge.ui.library.LibraryData
 import io.github.alexeykravtsov95.talentforge.ui.library.PrimaryActionButton
+import io.github.alexeykravtsov95.talentforge.ui.library.buildCardTitle
 import io.github.alexeykravtsov95.talentforge.ui.library.classMonogramOf
 import io.github.alexeykravtsov95.talentforge.ui.library.gameDisplayName
 import io.github.alexeykravtsov95.talentforge.ui.library.loadBuildsModel
+import io.github.alexeykravtsov95.talentforge.ui.library.localizedClassName
 import io.github.alexeykravtsov95.talentforge.ui.library.relativeBuildTime
 import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
@@ -62,6 +80,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Which management overlay (M5.2a) is open, and for which record. The overlay
@@ -225,8 +244,8 @@ fun AllBuildsScreen(
                 BackChevronButton(onClick = onBack)
                 BasicText(
                     text = when (val current = data) {
-                        is LibraryData.Ready -> "Builds ${current.value.size}"
-                        else -> "Builds"
+                        is LibraryData.Ready -> stringResource(Res.string.builds_title_count, current.value.size)
+                        else -> stringResource(Res.string.builds_title)
                     },
                     style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary),
                     modifier = Modifier.weight(1f),
@@ -237,20 +256,24 @@ fun AllBuildsScreen(
                     modifier = Modifier
                         .heightIn(min = 44.dp)
                         .padding(horizontal = TalentForgeSpacing.screenX)
-                        .clickable(role = Role.Button, onClickLabel = "start a new build", onClick = onNewBuild),
+                        .clickable(
+                            role = Role.Button,
+                            onClickLabel = stringResource(Res.string.common_new_build_action),
+                            onClick = onNewBuild,
+                        ),
                 )
             }
             when (val current = notice) {
                 is ManagementNotice.Duplicated -> InlineNotice(
-                    text = "Build duplicated",
+                    text = stringResource(Res.string.builds_duplicated),
                     actionText = null,
                     onAction = null,
                     tone = InlineNoticeTone.Positive,
                 )
 
                 is ManagementNotice.DuplicateFailed -> InlineNotice(
-                    text = "Couldn't duplicate the build",
-                    actionText = "Retry",
+                    text = stringResource(Res.string.builds_duplicate_failed),
+                    actionText = stringResource(Res.string.common_retry),
                     onAction = { duplicate(current.localId) },
                 )
 
@@ -266,7 +289,7 @@ fun AllBuildsScreen(
                 Spacer(Modifier.height(TalentForgeSpacing.inline))
                 when (val current = data) {
                     LibraryData.Loading -> BasicText(
-                        "Loading your builds…",
+                        stringResource(Res.string.library_loading),
                         style = TalentForgeTypography.bodySmall.copy(color = colors.textSecondary),
                     )
 
@@ -274,12 +297,12 @@ fun AllBuildsScreen(
                         verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.rowGap),
                     ) {
                         BasicText(
-                            "Couldn't load your builds",
+                            stringResource(Res.string.library_load_failed_title),
                             style = TalentForgeTypography.componentTitle.copy(color = colors.danger),
                         )
                         InlineNotice(
-                            text = "The local build library could not be read",
-                            actionText = "Retry",
+                            text = stringResource(Res.string.library_load_failed_body),
+                            actionText = stringResource(Res.string.common_retry),
                             onAction = { reloadToken += 1 },
                         )
                     }
@@ -288,16 +311,16 @@ fun AllBuildsScreen(
                         // D.6 empty: one line, one hint, one action.
                         Spacer(Modifier.height(TalentForgeSpacing.group))
                         BasicText(
-                            "No saved builds yet.",
+                            stringResource(Res.string.builds_empty_title),
                             style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary),
                         )
                         BasicText(
-                            "Create a build to start planning talents.",
+                            stringResource(Res.string.builds_empty_body),
                             style = TalentForgeTypography.bodySmall.copy(color = colors.textSecondary),
                         )
                         PrimaryActionButton(
-                            text = "New build",
-                            onClickLabel = "start a new build",
+                            text = stringResource(Res.string.common_new_build),
+                            onClickLabel = stringResource(Res.string.common_new_build_action),
                             onClick = onNewBuild,
                         )
                     } else {
@@ -324,7 +347,7 @@ fun AllBuildsScreen(
                 val card = readyCards?.firstOrNull { it.record.localId == current.localId }
                 if (card != null) {
                     BuildRowActionsSheet(
-                        buildTitle = card.title,
+                        buildTitle = buildCardTitle(card),
                         busy = operationInFlight,
                         onDismiss = { overlay = ManagementOverlay.Hidden },
                         onRename = {
@@ -358,7 +381,7 @@ fun AllBuildsScreen(
                 val card = readyCards?.firstOrNull { it.record.localId == current.localId }
                 if (card != null) {
                     DeleteBuildDialog(
-                        buildTitle = card.title,
+                        buildTitle = buildCardTitle(card),
                         busy = operationInFlight,
                         error = overlayError,
                         onDelete = { delete(current.localId) },
@@ -429,11 +452,16 @@ private fun BuildRowContent(
     onActions: () -> Unit,
 ) {
     val colors = talentForgeColors()
+    val title = buildCardTitle(card)
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 56.dp)
-            .clickable(role = Role.Button, onClickLabel = "open ${card.title}", onClick = onClick)
+            .clickable(
+                role = Role.Button,
+                onClickLabel = stringResource(Res.string.common_open_build_action, title),
+                onClick = onClick,
+            )
             .padding(vertical = TalentForgeSpacing.hairline),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
@@ -446,7 +474,7 @@ private fun BuildRowContent(
         )
         Column(Modifier.weight(1f)) {
             BasicText(
-                text = card.title,
+                text = title,
                 style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary),
                 maxLines = 1,
                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
@@ -488,16 +516,17 @@ private fun BuildRowContent(
                 style = BuildsPointsStyle.copy(color = colors.textPrimary),
             )
         }
-        RowActionsButton(title = card.title, onClick = onActions)
+        RowActionsButton(title = title, onClick = onActions)
     }
 }
 
 /** `Warrior · Forever · Just now` — only resolved fields, in fixed order. */
+@Composable
 private fun rowMetaLine(
     card: BuildCardModel,
     clockMillis: () -> Long,
 ): String = listOfNotNull(
-    card.classDisplayName ?: card.record.build.classToken.value,
+    localizedClassName(card.record.build.classToken, card.classDisplayName) ?: card.record.build.classToken.value,
     gameDisplayName(card.record.build.game),
     relativeBuildTime(clockMillis(), card.record.updatedAt),
 ).joinToString(" · ")
@@ -509,11 +538,16 @@ private fun rowMetaLine(
  */
 @Composable
 private fun RowActionsButton(title: String, onClick: () -> Unit) {
+    val description = stringResource(Res.string.builds_row_actions_description, title)
     Box(
         modifier = Modifier
             .size(RowActionsButtonSize)
-            .semantics { contentDescription = "build actions for $title" }
-            .clickable(role = Role.Button, onClickLabel = "manage $title", onClick = onClick),
+            .semantics { contentDescription = description }
+            .clickable(
+                role = Role.Button,
+                onClickLabel = stringResource(Res.string.builds_row_actions_action, title),
+                onClick = onClick,
+            ),
         contentAlignment = Alignment.Center,
     ) {
         BasicText(

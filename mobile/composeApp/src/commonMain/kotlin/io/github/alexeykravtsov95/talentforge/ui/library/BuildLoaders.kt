@@ -36,23 +36,9 @@ data class BuildCardModel(
     val spentPoints: Int?,
     /** The tree's real point budget; `null` when unresolved. */
     val pointBudget: Int?,
-) {
-    /**
-     * The DISPLAY name (M5.UI.1): a user-provided name always wins — an
-     * explicitly named `Draft` included — and an unnamed build shows the
-     * descriptive `<Class> build` fallback (`Mage build`). The fallback is
-     * derived, never persisted: `record.name` stays `null` in storage, and
-     * the rename dialog still opens with an empty field for an unnamed
-     * build. The class segment is the real display name when the class
-     * document resolved, else the class token capitalized — no invented name.
-     */
-    val title: String
-        get() = record.name ?: "${fallbackClassName()} build"
-
-    private fun fallbackClassName(): String =
-        classDisplayName ?: record.build.classToken.value.lowercase()
-            .replaceFirstChar { it.uppercase() }
-}
+)
+// The card's DISPLAY title (user name wins, else the localized `<Class>
+// build` fallback) is UI copy since M5.REL.2a: see `buildCardTitle`.
 
 /** Home's answer to "what do I edit now" (UX/UI spec B): Continue first. */
 data class HomeModel(

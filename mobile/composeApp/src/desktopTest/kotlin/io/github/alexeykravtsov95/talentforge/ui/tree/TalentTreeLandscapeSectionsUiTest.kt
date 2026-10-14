@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.alexeykravtsov95.talentforge.allocation.BuildState
 import io.github.alexeykravtsov95.talentforge.allocation.TalentAllocationEngine
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.navigation.DesktopBackDispatcher
 import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
@@ -53,6 +54,7 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
 import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
+import org.junit.Rule
 
 /**
  * M5.UX.2b.1 landscape phones on the REAL screen (reference Warrior dataset):
@@ -69,6 +71,10 @@ import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
  */
 @OptIn(ExperimentalTestApi::class)
 class TalentTreeLandscapeSectionsUiTest {
+
+    /** UI copy follows the platform locale since M5.REL.2a: pinned explicitly. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     private lateinit var readyState: TalentTreeUiState.Ready
 

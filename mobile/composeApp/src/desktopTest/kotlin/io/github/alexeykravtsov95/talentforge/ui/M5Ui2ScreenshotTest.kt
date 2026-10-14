@@ -25,6 +25,8 @@ import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.data.manifest.DatasetManifest
 import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.motion.LocalReducedMotion
 import io.github.alexeykravtsov95.talentforge.ui.newbuild.NewBuildScreen
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
@@ -54,6 +56,10 @@ import org.junit.Rule
  * deterministic single frame.
  */
 class M5Ui2ScreenshotTest {
+
+    /** UI copy follows the platform locale since M5.REL.2a: pinned explicitly. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     @get:Rule
     val composeRule = createComposeRule()

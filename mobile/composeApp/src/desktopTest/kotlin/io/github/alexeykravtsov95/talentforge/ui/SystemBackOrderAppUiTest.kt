@@ -17,6 +17,8 @@ import io.github.alexeykravtsov95.talentforge.data.ClassToken
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRecord
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.library.DraftCreation
 import io.github.alexeykravtsov95.talentforge.ui.library.createClassDraft
 import io.github.alexeykravtsov95.talentforge.ui.navigation.DesktopBackDispatcher
@@ -41,6 +43,10 @@ import org.junit.Rule
  * the spent rank is on storage.
  */
 class SystemBackOrderAppUiTest {
+
+    /** UI copy follows the platform locale since M5.REL.2a: pinned explicitly. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     @get:Rule
     val composeRule = createComposeRule()

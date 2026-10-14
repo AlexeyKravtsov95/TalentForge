@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.alexeykravtsov95.talentforge.allocation.BuildState
 import io.github.alexeykravtsov95.talentforge.allocation.TalentAllocationEngine
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.motion.LocalReducedMotion
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
 import kotlin.math.abs
@@ -39,6 +40,7 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
 import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
+import org.junit.Rule
 
 /**
  * PR #19 motion polish on the REAL screen (360 × 800 dp, density 1 so px = dp),
@@ -54,6 +56,10 @@ import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
  */
 @OptIn(ExperimentalTestApi::class)
 class TalentTreeMotionUiTest {
+
+    /** UI copy follows the platform locale since M5.REL.2a: pinned explicitly. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     private class Session(
         val cameras: TalentTreeSectionCameras,

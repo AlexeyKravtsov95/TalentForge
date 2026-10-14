@@ -27,6 +27,8 @@ import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
 import io.github.alexeykravtsov95.talentforge.ui.builds.BuildsPointsStyle
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -49,6 +51,10 @@ import org.junit.Rule
  * ellipsized. The full trailing-column arrangement at 100 % is pinned too.
  */
 class AllBuildsRowLayoutUiTest {
+
+    /** UI copy follows the platform locale since M5.REL.2a: pinned explicitly. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     @get:Rule
     val composeRule = createComposeRule()

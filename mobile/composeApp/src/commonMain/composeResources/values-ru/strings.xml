@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  TalentForge UI copy (M5.REL.2a) — Russian. Same keys as values/strings.xml;
+  selected only when the device's PRIMARY language is Russian. Brand names
+  (TalentForge, Forever) stay untranslated.
+-->
+<resources>
+    <string name="resource_language">ru</string>
+
+    <!-- shared -->
+    <string name="common_go_back">назад</string>
+    <string name="common_retry">Повторить</string>
+    <string name="common_cancel">Отмена</string>
+    <string name="common_save">Сохранить</string>
+    <string name="common_new_build">Новый билд</string>
+    <string name="common_new_build_action">создать новый билд</string>
+    <string name="common_open_build_action">открыть: %1$s</string>
+    <string name="common_talent_data_version">%1$s · данные талантов %2$s</string>
+
+    <!-- library loading (Home and All Builds) -->
+    <string name="library_loading">Загрузка билдов…</string>
+    <string name="library_load_failed_title">Не удалось загрузить билды</string>
+    <string name="library_load_failed_body">Не удалось прочитать локальную библиотеку билдов</string>
+
+    <!-- class names by ClassToken -->
+    <string name="class_name_warrior">Воин</string>
+    <string name="class_name_paladin">Паладин</string>
+    <string name="class_name_hunter">Охотник</string>
+    <string name="class_name_rogue">Разбойник</string>
+    <string name="class_name_priest">Жрец</string>
+    <string name="class_name_shaman">Шаман</string>
+    <string name="class_name_mage">Маг</string>
+    <string name="class_name_warlock">Чернокнижник</string>
+    <string name="class_name_druid">Друид</string>
+
+    <!-- the display title of an UNNAMED build (derived, never persisted) -->
+    <string name="build_title_warrior">Билд воина</string>
+    <string name="build_title_paladin">Билд паладина</string>
+    <string name="build_title_hunter">Билд охотника</string>
+    <string name="build_title_rogue">Билд разбойника</string>
+    <string name="build_title_priest">Билд жреца</string>
+    <string name="build_title_shaman">Билд шамана</string>
+    <string name="build_title_mage">Билд мага</string>
+    <string name="build_title_warlock">Билд чернокнижника</string>
+    <string name="build_title_druid">Билд друида</string>
+    <string name="build_title_other_class">Билд: %1$s</string>
+
+    <!-- relative build time -->
+    <string name="time_just_now">Только что</string>
+    <string name="time_minutes_ago">%1$d мин назад</string>
+    <string name="time_hours_ago">%1$d ч назад</string>
+    <string name="time_yesterday">Вчера</string>
+    <plurals name="time_days_ago">
+        <item quantity="one">%1$d день назад</item>
+        <item quantity="few">%1$d дня назад</item>
+        <item quantity="many">%1$d дней назад</item>
+        <item quantity="other">%1$d дня назад</item>
+    </plurals>
+    <string name="time_last_week">На прошлой неделе</string>
+    <plurals name="time_weeks_ago">
+        <item quantity="one">%1$d неделю назад</item>
+        <item quantity="few">%1$d недели назад</item>
+        <item quantity="many">%1$d недель назад</item>
+        <item quantity="other">%1$d недели назад</item>
+    </plurals>
+
+    <!-- Home -->
+    <string name="home_section_continue">ПРОДОЛЖИТЬ</string>
+    <string name="home_section_recent">НЕДАВНИЕ</string>
+    <string name="home_continue_editing">Продолжить</string>
+    <string name="home_continue_editing_action">продолжить редактирование: %1$s</string>
+    <string name="home_all_builds_link">Все билды\u00A0%1$d</string>
+    <string name="home_all_builds_action">открыть все билды</string>
+    <string name="home_empty_title">Пока нет билдов</string>
+    <string name="home_empty_body">Выберите класс и распределите очки в его дереве талантов. Билды хранятся на этом устройстве — аккаунт не нужен.</string>
+    <string name="home_empty_data_version">Данные талантов %1$s %2$s</string>
+
+    <!-- All Builds -->
+    <string name="builds_title">Билды</string>
+    <string name="builds_title_count">Билды\u00A0%1$d</string>
+    <string name="builds_empty_title">Сохранённых билдов пока нет.</string>
+    <string name="builds_empty_body">Создайте билд, чтобы начать планировать таланты.</string>
+    <string name="builds_duplicated">Копия билда создана</string>
+    <string name="builds_duplicate_failed">Не удалось создать копию билда</string>
+    <string name="builds_row_actions_description">действия: %1$s</string>
+    <string name="builds_row_actions_action">управление: %1$s</string>
+
+    <!-- All Builds: row actions sheet and dialogs -->
+    <string name="builds_sheet_close_action">закрыть действия с билдом</string>
+    <string name="builds_action_rename">Переименовать</string>
+    <string name="builds_action_duplicate">Создать копию</string>
+    <string name="builds_action_delete">Удалить</string>
+    <string name="builds_dialog_close_action">закрыть окно</string>
+    <string name="builds_rename_title">Новое название</string>
+    <string name="builds_rename_field_description">название билда</string>
+    <string name="builds_rename_failed">Не удалось переименовать билд</string>
+    <string name="builds_delete_title">Удалить «%1$s»?</string>
+    <string name="builds_delete_body">Билд будет навсегда удалён с этого устройства. Это действие нельзя отменить.</string>
+    <string name="builds_delete_failed">Не удалось удалить билд</string>
+
+    <!-- Class Selection (New Build) -->
+    <string name="new_build_title">Выберите класс</string>
+    <string name="new_build_loading">Загрузка классов…</string>
+    <string name="new_build_load_failed_title">Не удалось загрузить классы</string>
+    <string name="new_build_load_failed_body">Не удалось прочитать локальные данные талантов.</string>
+    <string name="new_build_create_action">создать билд: %1$s</string>
+    <string name="new_build_creating">Создание билда</string>
+    <string name="new_build_error_dataset">Не удалось прочитать данные талантов класса.</string>
+    <string name="new_build_error_engine">Движок распределения очков отклонил эти данные (%1$s).</string>
+    <string name="new_build_error_library">Не удалось сохранить черновик на этом устройстве.</string>
+</resources>

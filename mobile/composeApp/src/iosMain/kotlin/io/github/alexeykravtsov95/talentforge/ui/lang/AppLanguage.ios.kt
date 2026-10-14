@@ -9,8 +9,9 @@ import platform.Foundation.preferredLanguages
  * iOS: the first entry of the user's preferred languages (Settings →
  * General → Language & Region), the device's primary language — the
  * `NSLocale` class property Kotlin/Native exports as an extension of its
- * companion object.
+ * companion object. It is the same list Compose's `Locale.current` (and so
+ * the resource environment) reads its first entry from.
  */
 @Composable
 actual fun platformPrimaryLanguageTag(): String =
-    remember { NSLocale.Companion.preferredLanguages.firstOrNull() as? String ?: "" }
+    remember { primaryLanguageTagOf(NSLocale.Companion.preferredLanguages.map { it as? String ?: "" }) }

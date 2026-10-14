@@ -29,6 +29,7 @@ import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentDescriptionsLoader
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentIconsLoader
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
 import io.github.alexeykravtsov95.talentforge.ui.theme.classAccentFor
@@ -42,6 +43,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assume.assumeTrue
 import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
 import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
+import org.junit.Rule
 
 /**
  * M5.UX.1 PR evidence from the REAL screen (desktop-rendered, product
@@ -58,6 +60,10 @@ import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
  */
 @OptIn(ExperimentalTestApi::class)
 class TalentTreeM5UxScreenshotTest {
+
+    /** UI copy follows the platform locale since M5.REL.2a: pinned explicitly. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     private val outputDir: File
         get() = File(System.getProperty(PROPERTY)!!)

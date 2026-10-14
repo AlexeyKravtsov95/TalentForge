@@ -29,6 +29,7 @@ import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.alexeykravtsov95.talentforge.allocation.BuildState
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.library.ALL_BUNDLES
 import io.github.alexeykravtsov95.talentforge.ui.navigation.DesktopBackDispatcher
 import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
@@ -40,6 +41,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
 import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
+import org.junit.Rule
 
 /**
  * PR #19 on the REAL screen (product Warrior, 360 × 800 dp, density 1 so
@@ -55,6 +57,10 @@ import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
  */
 @OptIn(ExperimentalTestApi::class)
 class TalentTreeGesturesUiTest {
+
+    /** UI copy follows the platform locale since M5.REL.2a: pinned explicitly. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     private class Session(
         val cameras: TalentTreeSectionCameras,

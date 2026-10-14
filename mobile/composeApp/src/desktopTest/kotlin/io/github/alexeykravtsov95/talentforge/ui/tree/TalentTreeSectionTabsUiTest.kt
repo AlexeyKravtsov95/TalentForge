@@ -40,6 +40,7 @@ import io.github.alexeykravtsov95.talentforge.data.DatasetId
 import io.github.alexeykravtsov95.talentforge.data.DatasetOutcome
 import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.library.REFERENCE_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
@@ -68,6 +69,10 @@ import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
  * Density is pinned to 1, so px == dp in every injected position.
  */
 class TalentTreeSectionTabsUiTest {
+
+    /** UI copy follows the platform locale since M5.REL.2a: pinned explicitly. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     @get:Rule
     val composeRule = createComposeRule()

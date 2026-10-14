@@ -35,6 +35,7 @@ import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.alexeykravtsov95.talentforge.allocation.BuildState
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.library.ALL_BUNDLES
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
 import kotlin.math.abs
@@ -44,6 +45,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
 import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
+import org.junit.Rule
 
 /**
  * M5.UX.2a on the REAL screen (real datasets, icons, descriptions; density 1,
@@ -54,6 +56,10 @@ import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
  */
 @OptIn(ExperimentalTestApi::class)
 class TalentInspectorAdaptiveUiTest {
+
+    /** UI copy follows the platform locale since M5.REL.2a: pinned explicitly. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     private class Session(val cameras: TalentTreeSectionCameras, val reported: MutableList<BuildState>)
 

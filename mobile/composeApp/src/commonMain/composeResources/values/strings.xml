@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  TalentForge UI copy (M5.REL.2a) — English, the default and fallback.
+  Russian lives in values-ru/strings.xml with the SAME keys. Brand names
+  (TalentForge, Forever) are not resources and are never translated.
+  Scope: Home, All Builds (+ its management overlays), Class Selection and
+  their shared components. The talent editor copy is M5.REL.2b.
+-->
+<resources>
+    <!-- the resource set's own language: read by the AppLanguage consistency guard -->
+    <string name="resource_language">en</string>
+
+    <!-- shared -->
+    <string name="common_go_back">go back</string>
+    <string name="common_retry">Retry</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_save">Save</string>
+    <string name="common_new_build">New build</string>
+    <string name="common_new_build_action">start a new build</string>
+    <string name="common_open_build_action">open %1$s</string>
+    <string name="common_talent_data_version">%1$s · talent data %2$s</string>
+
+    <!-- library loading (Home and All Builds) -->
+    <string name="library_loading">Loading your builds…</string>
+    <string name="library_load_failed_title">Couldn't load your builds</string>
+    <string name="library_load_failed_body">The local build library could not be read</string>
+
+    <!-- class names by ClassToken -->
+    <string name="class_name_warrior">Warrior</string>
+    <string name="class_name_paladin">Paladin</string>
+    <string name="class_name_hunter">Hunter</string>
+    <string name="class_name_rogue">Rogue</string>
+    <string name="class_name_priest">Priest</string>
+    <string name="class_name_shaman">Shaman</string>
+    <string name="class_name_mage">Mage</string>
+    <string name="class_name_warlock">Warlock</string>
+    <string name="class_name_druid">Druid</string>
+
+    <!-- the display title of an UNNAMED build (derived, never persisted) -->
+    <string name="build_title_warrior">Warrior build</string>
+    <string name="build_title_paladin">Paladin build</string>
+    <string name="build_title_hunter">Hunter build</string>
+    <string name="build_title_rogue">Rogue build</string>
+    <string name="build_title_priest">Priest build</string>
+    <string name="build_title_shaman">Shaman build</string>
+    <string name="build_title_mage">Mage build</string>
+    <string name="build_title_warlock">Warlock build</string>
+    <string name="build_title_druid">Druid build</string>
+    <string name="build_title_other_class">%1$s build</string>
+
+    <!-- relative build time -->
+    <string name="time_just_now">Just now</string>
+    <string name="time_minutes_ago">%1$d min ago</string>
+    <string name="time_hours_ago">%1$d h ago</string>
+    <string name="time_yesterday">Yesterday</string>
+    <plurals name="time_days_ago">
+        <item quantity="one">%1$d day ago</item>
+        <item quantity="other">%1$d days ago</item>
+    </plurals>
+    <string name="time_last_week">Last week</string>
+    <plurals name="time_weeks_ago">
+        <item quantity="one">%1$d week ago</item>
+        <item quantity="other">%1$d weeks ago</item>
+    </plurals>
+
+    <!-- Home -->
+    <string name="home_section_continue">CONTINUE</string>
+    <string name="home_section_recent">RECENT</string>
+    <string name="home_continue_editing">Continue editing</string>
+    <string name="home_continue_editing_action">continue editing %1$s</string>
+    <string name="home_all_builds_link">All builds %1$d</string>
+    <string name="home_all_builds_action">open all builds</string>
+    <string name="home_empty_title">No builds yet</string>
+    <string name="home_empty_body">Pick a class and spend points on its talent tree. Builds are stored on this device; no account is needed.</string>
+    <string name="home_empty_data_version">%1$s talent data %2$s</string>
+
+    <!-- All Builds -->
+    <string name="builds_title">Builds</string>
+    <string name="builds_title_count">Builds %1$d</string>
+    <string name="builds_empty_title">No saved builds yet.</string>
+    <string name="builds_empty_body">Create a build to start planning talents.</string>
+    <string name="builds_duplicated">Build duplicated</string>
+    <string name="builds_duplicate_failed">Couldn't duplicate the build</string>
+    <string name="builds_row_actions_description">build actions for %1$s</string>
+    <string name="builds_row_actions_action">manage %1$s</string>
+
+    <!-- All Builds: row actions sheet and dialogs -->
+    <string name="builds_sheet_close_action">close build actions</string>
+    <string name="builds_action_rename">Rename</string>
+    <string name="builds_action_duplicate">Duplicate</string>
+    <string name="builds_action_delete">Delete</string>
+    <string name="builds_dialog_close_action">close dialog</string>
+    <string name="builds_rename_title">Rename build</string>
+    <string name="builds_rename_field_description">build name</string>
+    <string name="builds_rename_failed">Couldn't rename the build</string>
+    <string name="builds_delete_title">Delete "%1$s"?</string>
+    <string name="builds_delete_body">This permanently deletes the build from this device and cannot be undone.</string>
+    <string name="builds_delete_failed">Couldn't delete the build</string>
+
+    <!-- Class Selection (New Build) -->
+    <string name="new_build_title">Choose a class</string>
+    <string name="new_build_loading">Loading classes…</string>
+    <string name="new_build_load_failed_title">Couldn't load classes</string>
+    <string name="new_build_load_failed_body">The local talent data could not be read.</string>
+    <string name="new_build_create_action">create a %1$s build</string>
+    <string name="new_build_creating">Creating build</string>
+    <string name="new_build_error_dataset">The class talent data could not be read.</string>
+    <string name="new_build_error_engine">The allocation engine rejected this dataset (%1$s).</string>
+    <string name="new_build_error_library">The draft could not be saved on this device.</string>
+</resources>

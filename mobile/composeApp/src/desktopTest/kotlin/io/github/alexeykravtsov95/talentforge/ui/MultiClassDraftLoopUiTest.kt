@@ -13,6 +13,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.alexeykravtsov95.talentforge.allocation.TalentAllocationEngine
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.library.EditorLoad
 import io.github.alexeykravtsov95.talentforge.ui.library.loadEditorSession
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
@@ -41,6 +43,10 @@ class MultiClassDraftLoopUiTest(
     private val classDisplayName: String,
     private val spendableTalent: String,
 ) {
+
+    /** UI copy follows the platform locale since M5.REL.2a: pinned explicitly. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     companion object {
         @JvmStatic

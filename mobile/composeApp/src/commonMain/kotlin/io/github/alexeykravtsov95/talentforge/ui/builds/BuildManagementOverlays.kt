@@ -7,7 +7,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,10 +33,25 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_action_delete
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_action_duplicate
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_action_rename
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_delete_body
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_delete_failed
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_delete_title
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_dialog_close_action
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_rename_failed
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_rename_field_description
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_rename_title
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_sheet_close_action
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_cancel
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_save
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeRadius
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTypography
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * The M5.2a build-management overlays of All Builds, built from the same
@@ -82,7 +97,7 @@ fun BuildRowActionsSheet(
                 interactionSource = null,
                 indication = null,
                 role = Role.Button,
-                onClickLabel = if (busy) null else "close build actions",
+                onClickLabel = if (busy) null else stringResource(Res.string.builds_sheet_close_action),
             ) { if (!busy) onDismiss() },
     ) {
         Column(
@@ -114,13 +129,13 @@ fun BuildRowActionsSheet(
                 maxLines = 1,
             )
             SheetAction(
-                text = "Rename",
+                text = stringResource(Res.string.builds_action_rename),
                 busy = busy,
                 color = colors.textPrimary,
                 onClick = onRename,
             )
             SheetAction(
-                text = "Duplicate",
+                text = stringResource(Res.string.builds_action_duplicate),
                 busy = busy,
                 color = colors.textPrimary,
                 onClick = onDuplicate,
@@ -133,7 +148,7 @@ fun BuildRowActionsSheet(
                     .background(colors.borderDefault),
             )
             SheetAction(
-                text = "Delete",
+                text = stringResource(Res.string.builds_action_delete),
                 busy = busy,
                 color = colors.danger,
                 onClick = onDelete,
@@ -183,6 +198,7 @@ fun RenameBuildDialog(
     val blank = trimmed.isEmpty()
     val overLimit = trimmed.length > maxLength
     val saveEnabled = !busy && !blank && !overLimit
+    val fieldDescription = stringResource(Res.string.builds_rename_field_description)
     DialogScrim(busy = busy, onDismiss = onCancel, modifier = modifier) {
         Column(
             Modifier
@@ -198,7 +214,7 @@ fun RenameBuildDialog(
             verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
         ) {
             BasicText(
-                text = "Rename build",
+                text = stringResource(Res.string.builds_rename_title),
                 style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary),
             )
             BasicTextField(
@@ -217,7 +233,7 @@ fun RenameBuildDialog(
                         RoundedCornerShape(TalentForgeRadius.medium),
                     )
                     .padding(horizontal = 12.dp, vertical = 12.dp)
-                    .semantics { contentDescription = "build name" },
+                    .semantics { contentDescription = fieldDescription },
             )
             BasicText(
                 text = "${text.length} / $maxLength",
@@ -225,23 +241,19 @@ fun RenameBuildDialog(
             )
             if (error) {
                 BasicText(
-                    text = "Couldn't rename the build",
+                    text = stringResource(Res.string.builds_rename_failed),
                     style = OverlayActionStyle.copy(color = colors.danger),
                 )
             }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
+            DialogButtonRow {
                 DialogTextButton(
-                    text = "Cancel",
+                    text = stringResource(Res.string.common_cancel),
                     color = colors.textSecondary,
                     enabled = !busy,
                     onClick = onCancel,
                 )
                 DialogTextButton(
-                    text = "Save",
+                    text = stringResource(Res.string.common_save),
                     color = colors.focus,
                     enabled = saveEnabled,
                     onClick = onSave,
@@ -281,32 +293,28 @@ fun DeleteBuildDialog(
             verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
         ) {
             BasicText(
-                text = "Delete \"$buildTitle\"?",
+                text = stringResource(Res.string.builds_delete_title, buildTitle),
                 style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary),
             )
             BasicText(
-                text = "This permanently deletes the build from this device and cannot be undone.",
+                text = stringResource(Res.string.builds_delete_body),
                 style = TalentForgeTypography.bodySmall.copy(color = colors.textSecondary),
             )
             if (error) {
                 BasicText(
-                    text = "Couldn't delete the build",
+                    text = stringResource(Res.string.builds_delete_failed),
                     style = OverlayActionStyle.copy(color = colors.danger),
                 )
             }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
+            DialogButtonRow {
                 DialogTextButton(
-                    text = "Cancel",
+                    text = stringResource(Res.string.common_cancel),
                     color = colors.textSecondary,
                     enabled = !busy,
                     onClick = onCancel,
                 )
                 DialogTextButton(
-                    text = "Delete",
+                    text = stringResource(Res.string.builds_action_delete),
                     color = colors.danger,
                     enabled = !busy,
                     onClick = onDelete,
@@ -337,11 +345,28 @@ private fun DialogScrim(
                 interactionSource = null,
                 indication = null,
                 role = Role.Button,
-                onClickLabel = if (busy) null else "close dialog",
+                onClickLabel = if (busy) null else stringResource(Res.string.builds_dialog_close_action),
             ) { if (!busy) onDismiss() },
         contentAlignment = Alignment.Center,
     ) {
         Box(Modifier.padding(horizontal = TalentForgeSpacing.screenX)) { content() }
+    }
+}
+
+/**
+ * The dialog's end-aligned action row. A row that cannot hold every button
+ * on one line (long translations at large font scales) wraps WHOLE buttons
+ * onto the next line, still end-aligned — a button label is never broken
+ * mid-word (M5.REL.2a); at the reference sizes it is the same single row.
+ */
+@Composable
+private fun DialogButtonRow(content: @Composable () -> Unit) {
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.End,
+        itemVerticalAlignment = Alignment.CenterVertically,
+    ) {
+        content()
     }
 }
 
@@ -356,6 +381,7 @@ private fun DialogTextButton(
     BasicText(
         text = text,
         style = OverlayActionStyle.copy(color = if (enabled) color else colors.disabled),
+        softWrap = false,
         modifier = Modifier
             .heightIn(min = 48.dp)
             .clickable(role = Role.Button, onClickLabel = text, enabled = enabled, onClick = onClick)

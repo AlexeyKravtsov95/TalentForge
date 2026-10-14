@@ -948,8 +948,8 @@ specialization names instead of the generic "Tree N".
   from `LocaleList` on Android, `NSLocale.preferredLanguages` on iOS, the JVM
   default locale on desktop), English for every other primary language. No
   in-app selector; `LocalAppLanguage` overrides it in tests and previews.
-  The next milestone widens this from the specialization names to all
-  visible UI copy;
+  M5.REL.2a widened the same rule to the shell screens' copy (see
+  "Localized shell screens (M5.REL.2a)");
 - `TalentSpecializationNames` — the ONE approved mapping
   (class token × `TalentSection.index` → English/Russian name), verified in
   this repository against every section's node membership on every bundled
@@ -985,6 +985,98 @@ asserting each tab against its dataset section index. Opt-in screenshot
 evidence: `TalentSpecializationNamesScreenshotTest`
 (`-Dtalentforge.m5rel1.screenshots=<dir>`) — Paladin and Mage in EN and RU,
 landscape navigation, 320 dp, 200 % font scale.
+
+## Localized shell screens (M5.REL.2a)
+
+Home, All Builds (with its row sheet and the rename/delete dialogs) and
+Class Selection — and the components they share — present every user-facing
+string in English or Russian. The talent editor's own copy is M5.REL.2b;
+game content (talent names and descriptions) is M5.REL.3.
+
+- **Resources.** `composeResources/values/strings.xml` is the English
+  default and fallback, `values-ru/strings.xml` the Russian set with the
+  same keys; screens read them through the generated typed accessors
+  (`Res.string.*`, `Res.plurals.*`) with `stringResource` /
+  `pluralStringResource`. Dynamic text uses positional arguments
+  (`%1$s`, `%1$d`); the relative build time's day and week counts are
+  plurals (`3 дня назад`, `5 дней назад`, `21 неделю назад`). In Russian a
+  count stays on the line of its noun (`Все билды\u00A04`). Brand names
+  (TalentForge, Forever) are not resources and are never translated.
+- **One rule, one input.** Compose resources select `values-ru` exactly when
+  `Locale.current.language` is `ru`, and Compose's `Locale.current` reads the
+  same platform value `platformPrimaryLanguageTag()` does — Android
+  `LocaleList.getDefault()[0]`, iOS `NSLocale.preferredLanguages[0]`, desktop
+  `Locale.getDefault()`. The resource choice therefore equals
+  `appLanguageOf(...)` on every platform: Russian only for a Russian PRIMARY
+  language (`ru`, `ru-RU`, `ru-KZ`, …), English for every other primary
+  language — `[en-US, ru-RU]` is English — and for an undeterminable one
+  (`primaryLanguageTagOf` takes the first preferred entry). There is still no
+  in-app selector. iOS declares `CFBundleLocalizations` `en` + `ru`, so the
+  app's system-provided UI (e.g. the text-field edit menu) can also be
+  Russian on a Russian device (not yet verified on a device).
+- **Overrides.** Compose Resources 1.10.3 has no public API to override the
+  resource locale (`LocalComposeEnvironment` and the `ResourceEnvironment`
+  constructor are internal), so `LocalAppLanguage` cannot switch resource
+  copy on its own — and plural rules follow the resource locale too. A test
+  switches the platform locale (desktop: `AppLanguageRule`, which pins and
+  restores `Locale.getDefault()`) and the override together; an override the
+  resource locale contradicts fails in `appLanguage()` instead of rendering a
+  mixed-language UI. Every desktop UI test that renders localized copy (or
+  uses `LocalAppLanguage`) pins its language explicitly, so the suite does
+  not depend on the machine's locale.
+- **Class names and titles.** The nine class names are localized at the UI
+  level by the stable `ClassToken` (`localizedClassName`); the English
+  resources equal the datasets' own names. A class whose document did not
+  load keeps its honest token, an unknown token keeps the dataset name. An
+  unnamed build's display title is the localized fallback
+  (`Mage build` / `Билд мага`, `buildCardTitle`) — derived, never persisted;
+  a user-given name is always shown verbatim. Datasets, saved builds and
+  their identity are untouched by the language.
+- **Responsive guarantees.** No text breaks mid-word: the dialogs' action row
+  wraps whole buttons onto the next line (end-aligned) when a translation at
+  a large font scale cannot hold them on one line, and the class grid drops
+  to one column when the widest single word of a class name no longer fits a
+  two-column card (Russian `Чернокнижник` at 200 %); at the reference sizes
+  both are unchanged. Russian copy is kept short where the approved layout is
+  narrow (`Продолжить`, `Новое название`).
+
+**Tests added:** `AppLanguageResourceConsistencyTest` (the `ru`/`ru-RU`/
+`ru-KZ` vs `en`/`de`/`uk`/`kk`/… rule, English-first-Russian-second →
+English, the resource locale and `appLanguage()` agreeing for 15 platform
+locales, the contradicting-override failure) and `ShellLocalizationUiTest`
+(the real app in EN and RU: Home empty / populated / error + Retry, All
+Builds list, sheet, rename and delete dialogs, duplicate and failure
+notices, empty state, Class Selection grid, load and creation errors and the
+creating mark; every accessibility label in both languages; no English shell
+copy on a Russian screen; the nine class names and unnamed titles; Russian
+plural forms for 1, 2, 5, 11, 21; the relative-time buckets; user names
+verbatim; a language switch leaving the stored library byte-for-byte
+unchanged with no writes; and the 320 / 393 dp × 100 / 200 % matrix where no
+text breaks mid-word, overflows the space its parent gives it or leaves
+the window — measured against the parent's constraints, not the text's own
+box, because Skia's intrinsic width of a single word on macOS fonts can be a
+few px under its laid-out glyphs). Opt-in
+screenshot evidence: `M5Rel2aScreenshotTest`
+(`-Dtalentforge.m5rel2a.screenshots=<dir>`), committed under
+`docs/screenshots/m5-rel-2a/`.
+
+**Home loading state is read in Home's own scope.** `HomeScreen` reads its
+`LibraryData` once, outside `BoxWithConstraints`, and passes that value into
+the subcomposition. In the desktop UI-test harness the effect dispatcher is
+unconfined, so the load result is written from a `Dispatchers.Default`
+worker; a change observed only inside the subcomposition was never applied
+and Home stayed on "Loading your builds…" until the `waitUntil` timeout
+(`M51AppFlowUiTest.onePersistedDraftAppearsOnHomeAsContinue` failed on every
+Mac run, also on main). On devices the effect resumes on the UI thread, so
+behaviour there is unchanged.
+
+**Known limitations.** A duplicate's initial name is generated and
+persisted by the shared repository in English (`Draft (copy)`,
+`<name> (copy)`); it is stored data shown verbatim, so it stays English in a
+Russian UI until the copy-name policy itself is localized (a persistence
+change outside this milestone). At 200 % font scale All Builds still
+ellipsizes long titles by design; unnamed Russian titles share the `Билд`
+prefix, so the class there is carried by the artwork and the meta line.
 
 ## Version stack (all stable)
 
