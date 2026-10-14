@@ -68,46 +68,35 @@ fun buildTalentNodeActions(
 }
 
 /**
- * Short user-facing copy of a denied action (B3 07: "A blocked refund shows
- * its reason in the state line for 2.6 s"). Wording is derived from the typed
- * issue **codes** only — raw engine diagnostic messages are never surfaced.
- * Facts that need names (which dependent blocks the refund) come from the
- * real node facts, never guesses.
+ * The reason of a denied action (B3 07: "A blocked refund shows its reason in
+ * the state line for 2.6 s"), as a typed [InspectorText.Blocked] descriptor
+ * derived from the issue **codes** only — raw engine diagnostic messages are
+ * never surfaced, and the wording is resolved per language at the
+ * presentation boundary (M5.REL.2b). Facts that need names (which dependent
+ * blocks the refund) come from the real node facts, never guesses.
  */
 fun blockedActionReason(
     issues: List<AllocationIssue>,
     facts: TalentTreeNodeFacts,
-): String {
-    val issue = issues.firstOrNull() ?: return "Action not available"
-    return when (issue.code) {
-        AllocationIssueCode.NOT_ALLOCATED -> "No rank to refund"
-        AllocationIssueCode.MAX_RANK_REACHED -> "Max rank reached"
+): InspectorText.Blocked {
+    val issue = issues.firstOrNull() ?: return InspectorText.ActionNotAvailable(code = null)
+    val code = issue.code
+    return when (code) {
+        AllocationIssueCode.NOT_ALLOCATED -> InspectorText.NoRankToRefund(code)
+        AllocationIssueCode.MAX_RANK_REACHED -> InspectorText.MaxRankReached(code)
         AllocationIssueCode.NO_POINTS_REMAINING,
         AllocationIssueCode.POINT_BUDGET_EXCEEDED,
-        -> "No talent points left"
+        -> InspectorText.NoTalentPoints(code)
 
-        AllocationIssueCode.DEPENDENT_NODE_WOULD_BREAK -> {
-            val dependent = issue.nodeId
-            if (dependent != null) {
-                "Needed by ${facts.nameOf(dependent)}"
-            } else {
-                "Needed by an allocated talent"
-            }
-        }
+        AllocationIssueCode.DEPENDENT_NODE_WOULD_BREAK ->
+            InspectorText.NeededBy(code, dependent = issue.nodeId?.let(facts::talentName))
 
-        AllocationIssueCode.TIER_GATE_NOT_MET -> "Locked — spend more points in this tree"
+        AllocationIssueCode.TIER_GATE_NOT_MET -> InspectorText.TierLocked(code)
         AllocationIssueCode.REQUIRED_PREREQUISITE_NOT_MET,
         AllocationIssueCode.SUFFICIENT_PREREQUISITE_NOT_MET,
-        -> {
-            val source = issue.relatedNodeIds.firstOrNull()
-            if (source != null) {
-                "Requires ${facts.nameOf(source)} first"
-            } else {
-                "Requires a prerequisite talent"
-            }
-        }
+        -> InspectorText.RequiresFirst(code, source = issue.relatedNodeIds.firstOrNull()?.let(facts::talentName))
 
-        else -> "Action not available"
+        else -> InspectorText.ActionNotAvailable(code)
     }
 }
 
@@ -134,7 +123,7 @@ fun TalentNodeActions.disabledActionExplanation(
     facts: TalentTreeNodeFacts,
     spentPoints: Int,
     pointBudget: Int,
-): String? = when {
+): InspectorText? = when {
     offersRankControls && !isMaxed && !canSpend ->
         spendExplanation(facts, spentPoints, pointBudget)
 
@@ -145,18 +134,18 @@ fun TalentNodeActions.disabledActionExplanation(
 /**
  * B3 04 state 07 freezes the no-points wording — "No talent points left ·
  * 51/51 spent" — so the exhausted budget carries its live count; every other
- * spend denial keeps its [blockedActionReason] copy.
+ * spend denial keeps its [blockedActionReason] descriptor.
  */
 private fun TalentNodeActions.spendExplanation(
     facts: TalentTreeNodeFacts,
     spentPoints: Int,
     pointBudget: Int,
-): String {
+): InspectorText {
     val code = spendIssues.firstOrNull()?.code
     return if (code == AllocationIssueCode.NO_POINTS_REMAINING ||
         code == AllocationIssueCode.POINT_BUDGET_EXCEEDED
     ) {
-        "No talent points left · $spentPoints/$pointBudget spent"
+        InspectorText.NoPointsLeft(spentPoints = spentPoints, pointBudget = pointBudget)
     } else {
         blockedActionReason(spendIssues, facts)
     }

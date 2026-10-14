@@ -63,7 +63,20 @@ import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentDescriptionsLoader
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentIconsLoader
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_failure_dangling_prerequisite
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_failure_dangling_visual
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_failure_duplicate_node
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_failure_empty_tree
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_failure_engine
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_failure_invalid_layout
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_failure_multiple_trees
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_failure_no_trees
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_loading_talent_data
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_talent_data_failed
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.section_back_to
 import io.github.alexeykravtsov95.talentforge.ui.lang.appLanguage
+import io.github.alexeykravtsov95.talentforge.ui.library.localizedClassName
 import io.github.alexeykravtsov95.talentforge.ui.library.REFERENCE_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.motion.prefersReducedMotion
 import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
@@ -73,6 +86,7 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.classAccentFor
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * The M4.3/M5.1 production screen: the Talent Tree as an interactive **local
@@ -117,7 +131,11 @@ sealed interface TalentTreeUiState {
          * live build is the editing session's `current`, never this field.
          */
         val buildState: BuildState,
-        /** Header line 1: the build's name, or "Draft" while unnamed. */
+        /**
+         * Header line 1: the build's user-given name verbatim, or the
+         * localized "Draft" while unnamed (resolved by the host at display
+         * time, never persisted).
+         */
         val buildTitle: String,
         /**
          * The class accent of THIS build's class — an explicit presentation
@@ -153,27 +171,37 @@ sealed interface TalentTreeUiFailure {
     data class UiModel(val error: TalentTreeUiBuildError) : TalentTreeUiFailure
 }
 
-/** Human-readable rendering of [TalentTreeUiFailure] for the Failed pane. */
+/**
+ * Localized rendering of [TalentTreeUiFailure] for the Failed pane (M5.REL.2b).
+ * The typed failure is the input; the sentence is UI copy. Embedded technical
+ * details — the shared dataset diagnostic and the engine's reason — stay as
+ * reported (diagnostics, not product copy).
+ */
+@Composable
 fun TalentTreeUiFailure.describe(): String = when (this) {
     is TalentTreeUiFailure.Dataset -> error.describe()
-    is TalentTreeUiFailure.AllocationEngine ->
-        "the allocation engine rejected this dataset ($reason)"
+    is TalentTreeUiFailure.AllocationEngine -> stringResource(Res.string.editor_failure_engine, reason)
+    is TalentTreeUiFailure.UiModel -> error.describe()
+}
 
-    is TalentTreeUiFailure.UiModel -> when (error) {
-        TalentTreeUiBuildError.NoTrees -> "the dataset contains no talent tree"
-        is TalentTreeUiBuildError.MultipleTrees ->
-            "the dataset contains multiple talent trees (${error.treeIds.joinToString()}), " +
-                "which this screen does not present yet"
+/** Localized rendering of a [TalentTreeUiBuildError]. */
+@Composable
+fun TalentTreeUiBuildError.describe(): String = when (this) {
+    TalentTreeUiBuildError.NoTrees -> stringResource(Res.string.editor_failure_no_trees)
+    is TalentTreeUiBuildError.MultipleTrees ->
+        stringResource(Res.string.editor_failure_multiple_trees, treeIds.joinToString())
 
-        TalentTreeUiBuildError.EmptyTree -> "the talent tree contains no nodes"
-        is TalentTreeUiBuildError.DuplicateNodeId ->
-            "the talent tree contains duplicate node id ${error.nodeId}"
-        is TalentTreeUiBuildError.InvalidLayout ->
-            "the talent tree layout is not renderable (xStep=${error.xStep})"
-        is TalentTreeUiBuildError.DanglingEdgeReference ->
-            "a ${error.kind.name.lowercase()} connector references a missing node " +
-                "(${error.fromNodeId} → ${error.toNodeId})"
-    }
+    TalentTreeUiBuildError.EmptyTree -> stringResource(Res.string.editor_failure_empty_tree)
+    is TalentTreeUiBuildError.DuplicateNodeId -> stringResource(Res.string.editor_failure_duplicate_node, nodeId)
+    is TalentTreeUiBuildError.InvalidLayout -> stringResource(Res.string.editor_failure_invalid_layout, xStep)
+    is TalentTreeUiBuildError.DanglingEdgeReference -> stringResource(
+        when (kind) {
+            TalentTreeEdgeKind.PREREQUISITE -> Res.string.editor_failure_dangling_prerequisite
+            TalentTreeEdgeKind.VISUAL_ONLY -> Res.string.editor_failure_dangling_visual
+        },
+        fromNodeId,
+        toNodeId,
+    )
 }
 
 /** One successful purchase's node feedback (the token restarts the glow/pop). */
@@ -185,7 +213,7 @@ private data class TalentPurchaseFeedback(
 /** One denied action's temporary state-line reason (B3 07: 2.6 s). */
 private data class TalentBlockedNotice(
     val nodeId: Int,
-    val reason: String,
+    val reason: InspectorText.Blocked,
     val token: Int,
 )
 
@@ -250,7 +278,10 @@ fun TalentTreeScreen(
         when (val current = state) {
             TalentTreeUiState.Loading -> Column(Modifier.fillMaxSize()) {
                 TreeHeader(title = "TalentForge", onBack = onBack)
-                StatusPane(primary = "Loading talent data…", primaryColor = colors.textSecondary)
+                StatusPane(
+                    primary = stringResource(Res.string.editor_loading_talent_data),
+                    primaryColor = colors.textSecondary,
+                )
             }
 
             is TalentTreeUiState.Ready -> ReadyTalentTreeScreen(
@@ -273,7 +304,7 @@ fun TalentTreeScreen(
             is TalentTreeUiState.Failed -> Column(Modifier.fillMaxSize()) {
                 TreeHeader(title = "TalentForge", onBack = onBack)
                 StatusPane(
-                    primary = "Talent data failed to load",
+                    primary = stringResource(Res.string.editor_talent_data_failed),
                     primaryColor = colors.danger,
                     detail = current.failure.describe(),
                 )
@@ -347,7 +378,7 @@ private fun ReadyTalentTreeScreen(
     val guideOriginName = showGuide
         ?.takeIf { it.targetNodeId == selectedNodeId }
         ?.originNodeId
-        ?.let { facts.nameOf(it) }
+        ?.let { facts.talentName(it) }
     // B3 04 state 07 / UX/UI spec G: a disabled control is always paired with
     // its reason, in the steady state — a correctly disabled button can never
     // be clicked to produce a denial, so the explanation is derived up front
@@ -674,7 +705,9 @@ private fun ReadyTalentTreeScreen(
         Column(Modifier.fillMaxSize()) {
             TalentTreeHeaderBar(
                 title = current.buildTitle,
-                meta = "${current.classDisplayName} · ${current.gameDisplayName}",
+                // M5.REL.2a class names by ClassToken; the game name is a brand
+                meta = "${localizedClassName(current.classToken, current.classDisplayName) ?: current.classDisplayName} · " +
+                    current.gameDisplayName,
                 pointsText = "${presentation.spentPoints} / ${presentation.pointBudget}",
                 canUndo = editing.canUndo,
                 canRedo = editing.canRedo,
@@ -1131,7 +1164,10 @@ private fun ReadyTalentTreeScreen(
                                         }
                                         TalentSectionReturnChip(
                                             text = listOfNotNull(
-                                                "Back to ${facts.nameOf(origin.originNodeId)}",
+                                                stringResource(
+                                                    Res.string.section_back_to,
+                                                    facts.talentName(origin.originNodeId).text(),
+                                                ),
                                                 originLabel,
                                             ).joinToString(" · "),
                                             onClick = { onReturnToOrigin(origin) },

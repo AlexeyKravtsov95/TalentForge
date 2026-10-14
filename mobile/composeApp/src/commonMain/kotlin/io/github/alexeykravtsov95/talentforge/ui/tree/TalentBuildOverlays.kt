@@ -11,7 +11,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -27,10 +26,19 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_sheet_close_action
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_build_actions_title
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_reset_notice
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_reset_talents
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_undo
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_undo_action
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeMotion
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeRadius
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * The M4.3 build-action overlays, both built from the stable Compose
@@ -97,7 +105,7 @@ fun TalentBuildActionsSheet(
                     interactionSource = null,
                     indication = null,
                     role = Role.Button,
-                    onClickLabel = "close build actions",
+                    onClickLabel = stringResource(Res.string.builds_sheet_close_action),
                     onClick = onDismiss,
                 ),
         ) {
@@ -126,19 +134,20 @@ fun TalentBuildActionsSheet(
                     verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
                 ) {
                     BasicText(
-                        text = "Build actions",
+                        text = stringResource(Res.string.editor_build_actions_title),
                         style = OverlayCaptionStyle.copy(color = colors.textMuted),
                     )
                     // UX/UI spec E.2: Reset talents sits separated, in the
                     // warning colour — recoverable, so no confirmation dialog.
+                    val resetTalents = stringResource(Res.string.editor_reset_talents)
                     BasicText(
-                        text = "Reset talents",
+                        text = resetTalents,
                         style = OverlayActionStyle.copy(color = colors.warning),
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable(
                                 role = Role.Button,
-                                onClickLabel = "Reset talents",
+                                onClickLabel = resetTalents,
                                 onClick = onResetTalents,
                             )
                             .padding(vertical = TalentForgeSpacing.inline),
@@ -184,7 +193,13 @@ fun TalentResetSnackbar(
         val colors = talentForgeColors()
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
             val cleared = notice?.pointsCleared ?: 0
-            Row(
+            val message = pluralStringResource(Res.plurals.editor_reset_notice, cleared, cleared)
+            // M5.REL.2b: the notice beside Undo, as before; a longer translation wraps at
+            // words, and moves above Undo only when a word cannot fit beside it
+            TextBesideActions(
+                text = message,
+                textStyle = OverlayActionStyle,
+                gap = TalentForgeSpacing.inline,
                 modifier = Modifier
                     .background(colors.surfaceElevated, RoundedCornerShape(TalentForgeRadius.medium))
                     .padding(
@@ -193,21 +208,17 @@ fun TalentResetSnackbar(
                         bottom = TalentForgeSpacing.inline,
                         end = TalentForgeSpacing.hairline,
                     ),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
+                content = { BasicText(text = message, style = OverlayActionStyle.copy(color = colors.textPrimary)) },
             ) {
                 BasicText(
-                    text = "Talents reset · $cleared " +
-                        (if (cleared == 1) "point" else "points") + " cleared",
-                    style = OverlayActionStyle.copy(color = colors.textPrimary),
-                )
-                BasicText(
-                    text = "Undo",
+                    text = stringResource(Res.string.editor_undo),
                     style = OverlayUndoStyle.copy(color = colors.focus),
+                    maxLines = 1,
+                    softWrap = false,
                     modifier = Modifier
                         .clickable(
                             role = Role.Button,
-                            onClickLabel = "Undo talent change",
+                            onClickLabel = stringResource(Res.string.editor_undo_action),
                             onClick = onUndo,
                         )
                         .padding(horizontal = TalentForgeSpacing.inline, vertical = TalentForgeSpacing.inline),

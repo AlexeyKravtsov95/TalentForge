@@ -4,7 +4,8 @@
   Russian lives in values-ru/strings.xml with the SAME keys. Brand names
   (TalentForge, Forever) are not resources and are never translated.
   Scope: Home, All Builds (+ its management overlays), Class Selection and
-  their shared components. The talent editor copy is M5.REL.2b.
+  their shared components (M5.REL.2a); the talent editor (M5.REL.2b).
+  Dataset content — talent names, tooltip text — is never a resource here.
 -->
 <resources>
     <!-- the resource set's own language: read by the AppLanguage consistency guard -->
@@ -107,4 +108,130 @@
     <string name="new_build_error_dataset">The class talent data could not be read.</string>
     <string name="new_build_error_engine">The allocation engine rejected this dataset (%1$s).</string>
     <string name="new_build_error_library">The draft could not be saved on this device.</string>
+
+    <!-- ================================================================ -->
+    <!-- talent editor (M5.REL.2b). Talent names and tooltip text come    -->
+    <!-- from the dataset and are NOT resources (M5.REL.3).               -->
+    <!-- ================================================================ -->
+
+    <!-- editor header -->
+    <string name="editor_draft_title">Draft</string>
+    <string name="editor_undo_action">Undo talent change</string>
+    <string name="editor_redo_action">Redo talent change</string>
+    <string name="editor_build_actions_open">open build actions</string>
+
+    <!-- editor loading, failures and autosave -->
+    <string name="editor_opening_build">Opening build…</string>
+    <string name="editor_open_failed">This build can't be opened</string>
+    <string name="editor_loading_talent_data">Loading talent data…</string>
+    <string name="editor_talent_data_failed">Talent data failed to load</string>
+    <string name="editor_autosave_failed">Couldn't save your changes on this device</string>
+    <string name="editor_failure_library">the local build library could not be read (%1$s)</string>
+    <string name="editor_failure_dataset">its talent data is unavailable on this device (%1$s)</string>
+    <string name="editor_failure_tree_unavailable">the build targets tree %1$d, but the dataset only contains trees %2$s</string>
+    <string name="editor_failure_engine">the allocation engine rejected this dataset (%1$s)</string>
+    <string name="editor_failure_invalid_build">the saved build is invalid (%1$s) — it was not changed</string>
+    <string name="editor_failure_ui_model">the talent tree cannot be rendered from this dataset</string>
+    <string name="editor_failure_no_trees">the dataset contains no talent tree</string>
+    <string name="editor_failure_multiple_trees">the dataset contains multiple talent trees (%1$s), which this screen does not present yet</string>
+    <string name="editor_failure_empty_tree">the talent tree contains no nodes</string>
+    <string name="editor_failure_duplicate_node">the talent tree contains duplicate node id %1$d</string>
+    <string name="editor_failure_invalid_layout">the talent tree layout is not renderable (xStep=%1$d)</string>
+    <string name="editor_failure_dangling_prerequisite">a prerequisite connector references a missing node (%1$d → %2$d)</string>
+    <string name="editor_failure_dangling_visual">a visual_only connector references a missing node (%1$d → %2$d)</string>
+    <string name="library_error_storage_read">storage read failed</string>
+    <string name="library_error_storage_write">storage write failed</string>
+    <string name="library_error_malformed">stored data is malformed</string>
+    <string name="library_error_unsupported_version">stored data uses storage version %1$d</string>
+    <string name="library_error_unknown_record">this build no longer exists on this device</string>
+    <plurals name="library_error_id_collision">
+        <item quantity="one">a unique build id could not be generated (%1$d attempt)</item>
+        <item quantity="other">a unique build id could not be generated (%1$d attempts)</item>
+    </plurals>
+    <plurals name="library_error_invalid_name">
+        <item quantity="one">the build name was rejected (blank or over %1$d character)</item>
+        <item quantity="other">the build name was rejected (blank or over %1$d characters)</item>
+    </plurals>
+
+    <!-- build actions sheet and reset feedback -->
+    <string name="editor_build_actions_title">Build actions</string>
+    <string name="editor_reset_talents">Reset talents</string>
+    <plurals name="editor_reset_notice">
+        <item quantity="one">Talents reset · %1$d point cleared</item>
+        <item quantity="other">Talents reset · %1$d points cleared</item>
+    </plurals>
+    <string name="editor_undo">Undo</string>
+
+    <!-- section tabs, Fit and the Back chip -->
+    <plurals name="section_points_spent">
+        <item quantity="one">%1$d point spent</item>
+        <item quantity="other">%1$d points spent</item>
+    </plurals>
+    <string name="section_fit_tree">Fit tree</string>
+    <string name="section_fit_tree_action">fit the tree</string>
+    <string name="section_back_to">Back to %1$s</string>
+    <string name="section_return_action">return to the talent</string>
+
+    <!-- talent nodes on the canvas (accessibility) -->
+    <string name="talent_fallback_name">Talent %1$d</string>
+    <string name="talent_select_action">select talent</string>
+    <string name="talent_clear_selection_action">clear selection</string>
+    <string name="talent_state_available">available</string>
+    <string name="talent_state_in_progress">in progress</string>
+    <string name="talent_state_maxed">maxed</string>
+    <string name="talent_state_prerequisite_locked">locked by prerequisite</string>
+    <string name="talent_state_tier_locked">locked by tier</string>
+    <string name="talent_state_no_points">no points remaining</string>
+    <string name="talent_state_unavailable">unavailable</string>
+
+    <!-- talent inspector -->
+    <string name="inspector_select_prompt">Select a talent to inspect it</string>
+    <string name="inspector_expand">Expand inspector</string>
+    <string name="inspector_collapse">Collapse inspector</string>
+    <string name="inspector_expand_action">expand inspector</string>
+    <string name="inspector_collapse_action">collapse inspector</string>
+    <string name="inspector_rank_caption">Rank</string>
+    <string name="inspector_add_rank">Add rank to %1$s</string>
+    <string name="inspector_remove_rank">Remove rank from %1$s</string>
+    <string name="inspector_max_out">Max out %1$s</string>
+    <string name="inspector_max_button">Max</string>
+    <string name="inspector_max_rank_reached">Max rank reached</string>
+    <string name="inspector_show">Show</string>
+    <string name="inspector_show_action">show prerequisite %1$s</string>
+    <string name="inspector_tier_points">Tier points %1$d of %2$d</string>
+
+    <!-- inspector state lines (B3 03–07) -->
+    <string name="inspector_state_available">Available</string>
+    <string name="inspector_state_in_progress">In progress</string>
+    <string name="inspector_state_maxed">Maxed</string>
+    <string name="inspector_state_unavailable">Unavailable</string>
+    <string name="inspector_state_no_points">No talent points left · %1$d/%2$d spent</string>
+    <string name="inspector_needed_for">%1$s · needed for %2$s</string>
+    <string name="inspector_requires_prerequisite">Requires %1$s %2$d/%2$d</string>
+    <plurals name="inspector_requires_prerequisites">
+        <item quantity="one">Requires %1$d prerequisite talent</item>
+        <item quantity="other">Requires %1$d prerequisite talents</item>
+    </plurals>
+    <plurals name="inspector_spend_more_points">
+        <item quantity="one">Spend %1$d more point in this tree</item>
+        <item quantity="other">Spend %1$d more points in this tree</item>
+    </plurals>
+    <string name="inspector_spend_more_points_unspecified">Spend more points in this tree</string>
+
+    <!-- blocked-action reasons (B3 07), from the engine's typed issue codes -->
+    <string name="inspector_blocked_no_rank_to_refund">No rank to refund</string>
+    <string name="inspector_blocked_no_points">No talent points left</string>
+    <string name="inspector_blocked_needed_by">Needed by %1$s</string>
+    <string name="inspector_blocked_needed_by_allocated">Needed by an allocated talent</string>
+    <string name="inspector_blocked_tier">Locked — spend more points in this tree</string>
+    <string name="inspector_blocked_requires">Requires %1$s first</string>
+    <string name="inspector_blocked_requires_unnamed">Requires a prerequisite talent</string>
+    <string name="inspector_blocked_unavailable">Action not available</string>
+
+    <!-- talent description (M5.V2): labels around the dataset's own text -->
+    <string name="description_current">CURRENT</string>
+    <string name="description_next_rank">NEXT RANK</string>
+    <string name="description_unavailable">Talent description unavailable for this client data.</string>
+    <string name="description_missing_character">Values marked — depend on your character and are not shown.</string>
+    <string name="description_missing_data">Values marked — are not available in this client data.</string>
 </resources>

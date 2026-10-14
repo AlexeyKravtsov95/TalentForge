@@ -12,28 +12,34 @@ package io.github.alexeykravtsov95.talentforge.ui.tree
  * it ("Available", "In progress", "Maxed", "Requires <prereq> r/r",
  * "No talent points left · x/y spent", "Available · needed for <origin>").
  * The deviations forced by missing data are documented on the properties they
- * affect.
+ * affect. Since M5.REL.2b the lines are [InspectorText] descriptors and the
+ * name a [TalentName]: the content is language-free and resolves to English
+ * or Russian at the composable boundary.
  */
 data class TalentInspectorContent(
     val nodeId: Int,
     /** Real published node name (or the honest id fallback — never invented). */
-    val name: String,
+    val name: TalentName,
     val rankText: String,
-    /** B3 state line; may append "· needed for <origin>" while a Show guide is active. */
-    val stateLine: String,
+    /**
+     * B3 state line; may append "· needed for <origin>" while a Show guide is
+     * active. `null` for a locked node without a blocked reason — its lock
+     * lines below are the state (B3 04: "The reason is spelled out in words").
+     */
+    val stateLine: InspectorText?,
     /**
      * "Requires <prerequisite> r/r" when a prerequisite edge is unmet. Kept
      * alongside [tierLine] when both lock reasons are present (B3 07 + M4.2
      * brief: preserve both facts, never collapse engine output).
      */
-    val prerequisiteLine: String?,
+    val prerequisiteLine: InspectorText?,
     /**
      * "Spend <n> more points in this tree" with the real gate deficit.
      * Deviation from B3 04 ("Spend 2 more points in Arms"): the dataset
      * publishes no section/spec names (all Warrior sections are nameless), so
      * no spec name is invented.
      */
-    val tierLine: String?,
+    val tierLine: InspectorText?,
     /** The one-hop Show action; absent when ineligible (see [ShowAction]). */
     val showAction: ShowAction?,
     /** Real required/spent values of every unmet tier gate (B3 non-interactive meter). */
@@ -52,7 +58,7 @@ data class TalentInspectorContent(
      * when several exist, so the presentation fails safe and offers no action
      * rather than implying a semantic preference.
      */
-    data class ShowAction(val prerequisiteNodeId: Int, val prerequisiteName: String)
+    data class ShowAction(val prerequisiteNodeId: Int, val prerequisiteName: TalentName)
 }
 
 /**
@@ -65,8 +71,9 @@ data class TalentTreeNodeFacts(
     val names: Map<Int, String?>,
     val maxRanks: Map<Int, Int>,
 ) {
-    fun nameOf(nodeId: Int): String =
-        names[nodeId].orEmpty().ifBlank { "Talent $nodeId" }
+    /** The node's published name, or `null` → the localized `Talent <id>` fallback at display time. */
+    fun talentName(nodeId: Int): TalentName =
+        TalentName(nodeId = nodeId, published = names[nodeId]?.takeIf { it.isNotBlank() })
 
     fun maxRankOf(nodeId: Int): Int = maxRanks[nodeId] ?: 0
 }
@@ -96,31 +103,31 @@ fun buildTalentInspectorContent(
     presentation: TalentNodePresentation,
     tree: TalentTreePresentation,
     facts: TalentTreeNodeFacts,
-    guideOriginName: String? = null,
-    blockedReason: String? = null,
+    guideOriginName: TalentName? = null,
+    blockedReason: InspectorText? = null,
     descriptions: TalentNodeDescriptions = TalentNodeDescriptions.None,
 ): TalentInspectorContent {
-    val name = facts.nameOf(presentation.nodeId)
+    val name = facts.talentName(presentation.nodeId)
 
-    val baseStateLine = when (presentation.state) {
-        TalentNodeState.AVAILABLE -> "Available"
-        TalentNodeState.PARTIAL -> "In progress"
-        TalentNodeState.MAXED -> "Maxed"
+    val baseStateLine: InspectorText? = when (presentation.state) {
+        TalentNodeState.AVAILABLE -> InspectorText.Available
+        TalentNodeState.PARTIAL -> InspectorText.InProgress
+        TalentNodeState.MAXED -> InspectorText.Maxed
         TalentNodeState.PREREQUISITE_LOCKED,
         TalentNodeState.TIER_LOCKED,
-        -> "" // the lock reason lines below are the state (B3 04: "The reason is spelled out in words")
+        -> null // the lock reason lines below are the state (B3 04: "The reason is spelled out in words")
 
         TalentNodeState.NO_POINTS ->
-            "No talent points left · ${tree.spentPoints}/${tree.pointBudget} spent"
+            InspectorText.NoPointsLeft(spentPoints = tree.spentPoints, pointBudget = tree.pointBudget)
 
-        TalentNodeState.UNAVAILABLE -> "Unavailable"
+        TalentNodeState.UNAVAILABLE -> InspectorText.Unavailable
     }
     // B3 05: after Show, the target's state line reads "Available · needed for <origin>".
     // B3 07: a blocked action's reason takes the state line while it shows.
     val stateLine = when {
         blockedReason != null -> blockedReason
-        guideOriginName != null && baseStateLine.isNotEmpty() ->
-            "$baseStateLine · needed for $guideOriginName"
+        guideOriginName != null && baseStateLine != null ->
+            InspectorText.NeededFor(state = baseStateLine, origin = guideOriginName)
 
         else -> baseStateLine
     }
@@ -135,7 +142,7 @@ fun buildTalentInspectorContent(
         showAction = presentation.unmetPrerequisiteNodeIds.singleOrNull()?.let { sourceId ->
             TalentInspectorContent.ShowAction(
                 prerequisiteNodeId = sourceId,
-                prerequisiteName = facts.nameOf(sourceId),
+                prerequisiteName = facts.talentName(sourceId),
             )
         },
         tierMeters = presentation.tierGates,
@@ -158,26 +165,28 @@ fun buildTalentInspectorContent(
 private fun prerequisiteLineOf(
     presentation: TalentNodePresentation,
     facts: TalentTreeNodeFacts,
-): String? {
+): InspectorText? {
     val unmet = presentation.unmetPrerequisiteNodeIds
     if (unmet.isEmpty()) return null
     if (unmet.size == 1) {
         val sourceId = unmet.single()
-        val required = facts.maxRankOf(sourceId)
-        return "Requires ${facts.nameOf(sourceId)} $required/$required"
+        return InspectorText.RequiresPrerequisite(
+            source = facts.talentName(sourceId),
+            requiredRank = facts.maxRankOf(sourceId),
+        )
     }
-    return "Requires ${unmet.size} prerequisite talents"
+    return InspectorText.RequiresPrerequisites(count = unmet.size)
 }
 
 /** "Spend <deficit> more points in this tree" from the first unmet gate's real values. */
-private fun tierLineOf(presentation: TalentNodePresentation): String? =
+private fun tierLineOf(presentation: TalentNodePresentation): InspectorText? =
     when (presentation.tierGates.size) {
         0 -> null
         1 -> {
             val gate = presentation.tierGates.single()
             val deficit = (gate.requiredPoints - gate.spentPoints).coerceAtLeast(1)
-            "Spend $deficit more points in this tree"
+            InspectorText.SpendMorePoints(deficit = deficit)
         }
 
-        else -> "Spend more points in this tree"
+        else -> InspectorText.SpendMorePointsInTree
     }

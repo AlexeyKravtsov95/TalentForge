@@ -55,7 +55,10 @@ import androidx.compose.ui.input.pointer.util.addPointerInputChange
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.talent_clear_selection_action
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
+import org.jetbrains.compose.resources.stringResource
 import kotlin.math.abs
 import kotlin.math.hypot
 
@@ -210,6 +213,7 @@ fun TalentTreeCanvas(
         if (finished) viewportState.completeFit(fit)
     }
 
+    val clearSelectionLabel = stringResource(Res.string.talent_clear_selection_action)
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -233,7 +237,7 @@ fun TalentTreeCanvas(
                     Modifier
                         .semantics {
                             if (selectedNodeId != null) {
-                                onClick(label = "clear selection") {
+                                onClick(label = clearSelectionLabel) {
                                     onSelectionCleared()
                                     true
                                 }
@@ -434,6 +438,8 @@ private fun TalentTreeNodeLayer(
     composedNodeCount: () -> Int,
 ) {
     val containerHalfSide = talentNodeContainerHalfSideDp().dp
+    // M5.REL.2b: the nodes' localized accessibility copy, resolved once for the layer
+    val accessibilityCopy = talentNodeAccessibilityCopy()
 
     val count = composedNodeCount()
     val composedNodes = if (count >= model.nodes.size) {
@@ -455,6 +461,7 @@ private fun TalentTreeNodeLayer(
                     pulseToken = if (showGuide?.targetNodeId == node.id) guideToken else 0,
                     purchaseToken = if (purchaseNodeId == node.id) purchaseToken else 0,
                     containerHalfSide = containerHalfSide,
+                    accessibilityCopy = accessibilityCopy,
                     onNodeSelected = onNodeSelected,
                 )
             }
@@ -479,8 +486,11 @@ private fun TalentTreeNode(
     pulseToken: Int,
     purchaseToken: Int,
     containerHalfSide: androidx.compose.ui.unit.Dp,
+    accessibilityCopy: TalentNodeAccessibilityCopy,
     onNodeSelected: (Int) -> Unit,
 ) {
+    // the dataset's name verbatim; only a nameless node resolves the localized fallback
+    val description = node.name ?: TalentName(node.id, published = null).text()
     Box(
         modifier = Modifier
             .offset {
@@ -495,12 +505,11 @@ private fun TalentTreeNode(
             // active or inactive never rediffs every node's modifier chain
             // (the switch frames measured 30-55 ms of applyChanges on a phone).
             .semantics {
-                contentDescription = node.name ?: "talent ${node.id}"
-                stateDescription =
-                    nodePresentation.accessibilityStateDescription()
+                contentDescription = description
+                stateDescription = accessibilityCopy.stateDescriptionOf(nodePresentation)
                 role = Role.Button
                 this.selected = selected
-                onClick(label = "select talent") {
+                onClick(label = accessibilityCopy.selectAction) {
                     onNodeSelected(node.id)
                     true
                 }

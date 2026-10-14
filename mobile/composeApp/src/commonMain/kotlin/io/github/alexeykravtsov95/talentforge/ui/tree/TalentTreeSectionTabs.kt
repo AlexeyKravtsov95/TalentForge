@@ -54,11 +54,18 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.section_fit_tree
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.section_fit_tree_action
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.section_points_spent
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.section_return_action
 import io.github.alexeykravtsov95.talentforge.data.ClassToken
 import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeRadius
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Metrics of the M5.UX.1 section tabs and their canvas controls, frozen by the
@@ -292,6 +299,7 @@ private fun SectionTab(
     modifier: Modifier = Modifier,
 ) {
     val colors = talentForgeColors()
+    val pointsSpent = pluralStringResource(Res.plurals.section_points_spent, tab.points, tab.points)
     // 1A v2 S8: a tab changed by an undo/redo made elsewhere flashes for 600 ms
     val highlight = remember { Animatable(0f) }
     LaunchedEffect(highlightToken) {
@@ -310,7 +318,7 @@ private fun SectionTab(
             }
             .selectable(selected = selected, role = Role.Tab, onClick = onClick)
             .semantics(mergeDescendants = true) {
-                stateDescription = if (tab.points == 1) "1 point spent" else "${tab.points} points spent"
+                stateDescription = pointsSpent
                 if (shortLabel != null) contentDescription = tab.label
             }
             .padding(horizontal = TalentForgeSpacing.hairline),
@@ -365,11 +373,16 @@ fun TalentTreeFitButton(
     if (!away) return
     val colors = talentForgeColors()
     val shape = RoundedCornerShape(TalentForgeRadius.medium)
+    val label = stringResource(Res.string.section_fit_tree)
     Box(
         modifier = modifier
             .size(TalentTreeSectionTabsMetrics.FIT_TARGET_DP)
-            .clickable(role = Role.Button, onClickLabel = "fit the tree", onClick = viewportState::requestFit)
-            .semantics { contentDescription = "Fit tree" },
+            .clickable(
+                role = Role.Button,
+                onClickLabel = stringResource(Res.string.section_fit_tree_action),
+                onClick = viewportState::requestFit,
+            )
+            .semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) {
         Box(
@@ -418,7 +431,11 @@ fun TalentSectionReturnChip(
     Box(
         modifier = modifier
             .heightIn(min = TalentTreeSectionTabsMetrics.FIT_TARGET_DP)
-            .clickable(role = Role.Button, onClickLabel = "return to the talent", onClick = onClick),
+            .clickable(
+                role = Role.Button,
+                onClickLabel = stringResource(Res.string.section_return_action),
+                onClick = onClick,
+            ),
         contentAlignment = Alignment.Center,
     ) {
         Row(

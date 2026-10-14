@@ -35,6 +35,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,6 +46,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
@@ -54,15 +56,27 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_collapse
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_collapse_action
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_expand
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_expand_action
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_select_prompt
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_show
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_show_action
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_tier_points
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.talent_clear_selection_action
 import io.github.alexeykravtsov95.talentforge.ui.motion.prefersReducedMotion
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeMotion
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeRadius
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * The M4.2/M4.3 adaptive Talent Inspector — three presentations of the same
@@ -123,14 +137,15 @@ const val TALENT_INSPECTOR_SHEET_HEADER_TAG: String = "talent-inspector-sheet-he
 /** Test tag of the expanded sheet's pinned action area (M5.UX.2a). */
 const val TALENT_INSPECTOR_SHEET_ACTIONS_TAG: String = "talent-inspector-sheet-actions"
 
-/** Accessibility label of the compact strip's expand handle (M5.UX.2a). */
-const val INSPECTOR_EXPAND_LABEL: String = "Expand inspector"
-
 /** Test tag of the landscape side panel (M5.UX.2b.1: it overlays the section canvas). */
 const val TALENT_INSPECTOR_SIDE_PANEL_TAG: String = "talent-inspector-side-panel"
 
-/** Accessibility label of the sheet's ⌄ collapse control. */
-const val INSPECTOR_COLLAPSE_LABEL: String = "Collapse inspector"
+/*
+ * M5.REL.2b: every label of the inspector (expand / collapse, Show, Rank, the
+ * tier meter, the empty prompt) is a localized resource; the state and lock
+ * lines are InspectorText descriptors resolved here, at the composable
+ * boundary. The talent's name is the dataset's own (TalentName.text()).
+ */
 
 /**
  * Portrait: the compact strip docked to the bottom (1A v2 02 / S1, M5.UX.2a);
@@ -181,6 +196,7 @@ fun TalentInspectorCompactBar(
                 val twoLine = talentInspectorCompactLayout(maxWidth, fontScale) ==
                     TalentInspectorCompactLayout.TWO_LINE
                 val stateColor = talentInspectorStateTone(content, actions).color(accent)
+                val name = content.name.text()
                 val cluster: @Composable () -> Unit = {
                     CompactActionCluster(
                         content = content,
@@ -221,7 +237,7 @@ fun TalentInspectorCompactBar(
                                 .padding(vertical = TalentForgeSpacing.hairline)
                                 .clickable(
                                     role = Role.Button,
-                                    onClickLabel = "expand inspector",
+                                    onClickLabel = stringResource(Res.string.inspector_expand_action),
                                     onClick = onToggleExpanded,
                                 ),
                         ) {
@@ -232,7 +248,7 @@ fun TalentInspectorCompactBar(
                             // width next to the actions.
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 BasicText(
-                                    text = content.name,
+                                    text = name,
                                     style = InspectorNameStyle.copy(color = talentForgeColors().textPrimary),
                                     maxLines = if (twoLine) 2 else 1,
                                     overflow = TextOverflow.Ellipsis,
@@ -248,22 +264,17 @@ fun TalentInspectorCompactBar(
                         if (!twoLine) cluster()
                     }
                     if (twoLine) {
-                        Row(
+                        TextBesideActions(
+                            text = (content.prerequisiteLine ?: content.tierLine ?: content.stateLine)?.text(),
+                            textStyle = InspectorStateLineStyle,
+                            gap = TalentForgeSpacing.inline,
+                            content = { InspectorReasonLines(content = content, color = stateColor, maxLines = 4) },
+                            actions = cluster,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .heightIn(min = TalentInspectorMetrics.COMPACT_ACTION_DP)
                                 .padding(bottom = TalentForgeSpacing.inline),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
-                        ) {
-                            InspectorReasonLines(
-                                content = content,
-                                color = stateColor,
-                                maxLines = 4,
-                                modifier = Modifier.weight(1f),
-                            )
-                            cluster()
-                        }
+                        )
                     }
                 }
             }
@@ -344,7 +355,7 @@ fun TalentInspectorExpandedSheet(
                     val rankBelow = LocalDensity.current.fontScale >= TalentInspectorMetrics.COMPACT_STACK_FONT_SCALE
                     Column(Modifier.weight(1f)) {
                         BasicText(
-                            text = content.name,
+                            text = content.name.text(),
                             style = InspectorNameStyle.copy(color = talentForgeColors().textPrimary),
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
@@ -379,7 +390,7 @@ fun TalentInspectorExpandedSheet(
         ) {
             if (actions != null && actions.offersRankControls) {
                 TalentInspectorSheetRankActions(
-                    talentName = content.name,
+                    talentName = content.name.text(),
                     actions = actions,
                     accent = accent,
                     onSpend = onSpendRank,
@@ -434,7 +445,7 @@ fun TalentInspectorSidePanel(
             }
             Column(Modifier.weight(1f)) {
                 BasicText(
-                    text = content.name,
+                    text = content.name.text(),
                     style = InspectorNameStyle.copy(color = talentForgeColors().textPrimary),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
@@ -493,7 +504,7 @@ fun TalentInspectorPersistentPanel(
         if (content == null) {
             Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 BasicText(
-                    text = "Select a talent to inspect it",
+                    text = stringResource(Res.string.inspector_select_prompt),
                     style = InspectorStateLineStyle.copy(color = talentForgeColors().textMuted),
                 )
             }
@@ -505,7 +516,7 @@ fun TalentInspectorPersistentPanel(
             ) {
                 InspectorTalentIcon(icon = icon, size = TalentInspectorMetrics.DETAIL_ICON_DP)
                 BasicText(
-                    text = content.name,
+                    text = content.name.text(),
                     style = InspectorNameStyle.copy(color = talentForgeColors().textPrimary),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
@@ -558,7 +569,7 @@ private fun InspectorPinnedActions(
 ) {
     if (actions != null && actions.offersRankControls && sheetRow) {
         TalentInspectorSheetRankActions(
-            talentName = content.name,
+            talentName = content.name.text(),
             actions = actions,
             accent = accent,
             onSpend = onSpendRank,
@@ -568,7 +579,7 @@ private fun InspectorPinnedActions(
         )
     } else if (actions != null && actions.offersRankControls) {
         TalentInspectorRankActions(
-            talentName = content.name,
+            talentName = content.name.text(),
             actions = actions,
             accent = accent,
             onSpend = onSpendRank,
@@ -629,21 +640,21 @@ private fun InspectorDetail(
                 style = InspectorRankLargeStyle.copy(color = talentForgeColors().textPrimary),
             )
         }
-        if (content.stateLine.isNotEmpty()) {
+        content.stateLine?.let { line ->
             BasicText(
-                text = content.stateLine,
+                text = line.text(),
                 style = InspectorStateLineStyle.copy(color = stateColor ?: talentForgeColors().textSecondary),
             )
         }
         content.prerequisiteLine?.let { line ->
             BasicText(
-                text = line,
+                text = line.text(),
                 style = InspectorStateLineStyle.copy(color = stateColor ?: talentForgeColors().textSecondary),
             )
         }
         content.tierLine?.let { line ->
             BasicText(
-                text = line,
+                text = line.text(),
                 style = InspectorStateLineStyle.copy(color = stateColor ?: talentForgeColors().textSecondary),
             )
         }
@@ -672,15 +683,70 @@ private fun InspectorReasonLines(
     maxLines: Int,
     modifier: Modifier = Modifier,
 ) {
-    val line = content.prerequisiteLine ?: content.tierLine ?: content.stateLine
-    if (line.isEmpty()) return
+    val line = content.prerequisiteLine ?: content.tierLine ?: content.stateLine ?: return
     BasicText(
-        text = line,
+        text = line.text(),
         style = InspectorStateLineStyle.copy(color = color),
         maxLines = maxLines,
         overflow = TextOverflow.Ellipsis,
         modifier = modifier.testTag(TALENT_INSPECTOR_REASON_TAG),
     )
+}
+
+/**
+ * A text beside its actions — the compact strip's two-line action row
+ * (M5.UX.2a) and the reset notice — laid out as before: the text first, the
+ * actions at the end. Only when the text's longest word cannot fit the width
+ * the actions leave it does the text take its own line above the end-aligned
+ * actions, so a word is never split (M5.REL.2b: the Russian "Требуется" next
+ * to the wider "↑ Показать", "Таланты сброшены" next to "Отменить", on a
+ * 320 dp phone at 200 %). Wraps its content like a Row; a `fillMaxWidth`
+ * modifier makes it span the width.
+ */
+@Composable
+internal fun TextBesideActions(
+    text: String?,
+    textStyle: TextStyle,
+    gap: Dp,
+    content: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    actions: @Composable () -> Unit,
+) {
+    val measurer = rememberTextMeasurer()
+    val longestWordPx = remember(text, textStyle, measurer) {
+        text.orEmpty().split(' ').filter { it.isNotEmpty() }.maxOfOrNull { word ->
+            measurer.measure(word, style = textStyle, softWrap = false, maxLines = 1).size.width
+        } ?: 0
+    }
+    Layout(contents = listOf(content, actions), modifier = modifier) { (textMeasurables, actionMeasurables), constraints ->
+        val gapPx = gap.roundToPx()
+        val loose = constraints.copy(minWidth = 0, minHeight = 0)
+        val actionPlaceables = actionMeasurables.map { it.measure(loose) }
+        val actionsWidth = actionPlaceables.sumOf { it.width }
+        val actionsHeight = actionPlaceables.maxOfOrNull { it.height } ?: 0
+        val maxWidth = constraints.maxWidth
+        val actionsGap = if (actionPlaceables.isEmpty()) 0 else gapPx
+        val besideWidth = (maxWidth - actionsWidth - actionsGap).coerceAtLeast(0)
+        val stacked = actionPlaceables.isNotEmpty() && longestWordPx > besideWidth
+        val textPlaceables = textMeasurables.map {
+            it.measure(loose.copy(maxWidth = if (stacked) maxWidth else besideWidth))
+        }
+        val textWidth = textPlaceables.maxOfOrNull { it.width } ?: 0
+        val textHeight = textPlaceables.maxOfOrNull { it.height } ?: 0
+        val contentWidth = if (stacked) maxOf(textWidth, actionsWidth) else textWidth + actionsGap + actionsWidth
+        val contentHeight = if (stacked) textHeight + gapPx + actionsHeight else maxOf(textHeight, actionsHeight)
+        val width = contentWidth.coerceIn(constraints.minWidth, maxWidth)
+        val height = contentHeight.coerceIn(constraints.minHeight, constraints.maxHeight)
+        layout(width, height) {
+            val actionsTop = if (stacked) textHeight + gapPx else (height - actionsHeight) / 2
+            textPlaceables.forEach { it.placeRelative(0, if (stacked) 0 else (height - it.height) / 2) }
+            var x = width - actionsWidth
+            actionPlaceables.forEach {
+                it.placeRelative(x, actionsTop + (actionsHeight - it.height) / 2)
+                x += it.width
+            }
+        }
+    }
 }
 
 /**
@@ -710,7 +776,7 @@ private fun CompactActionCluster(
         TierChip(gate)
     } else if (actions != null && actions.offersRankControls) {
         TalentInspectorCompactActions(
-            talentName = content.name,
+            talentName = content.name.text(),
             actions = actions,
             accent = accent,
             onSpend = onSpendRank,
@@ -788,7 +854,7 @@ private fun ShowButton(
             )
             .clickable(
                 role = Role.Button,
-                onClickLabel = "show prerequisite ${action.prerequisiteName}",
+                onClickLabel = stringResource(Res.string.inspector_show_action, action.prerequisiteName.text()),
                 onClick = onClick,
             )
             .padding(horizontal = TalentForgeSpacing.rowGap, vertical = TalentForgeSpacing.inline),
@@ -798,7 +864,7 @@ private fun ShowButton(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 BasicText(text = "↑", style = InspectorActionStyle.copy(color = colors.warning))
                 BasicText(
-                    text = "Show",
+                    text = stringResource(Res.string.inspector_show),
                     style = InspectorActionStyle.copy(color = colors.warning),
                     maxLines = 1,
                     modifier = Modifier.padding(start = TalentForgeSpacing.hairline),
@@ -806,7 +872,7 @@ private fun ShowButton(
             }
         } else {
             BasicText(
-                text = "Show",
+                text = stringResource(Res.string.inspector_show),
                 style = InspectorActionStyle.copy(color = colors.background),
             )
         }
@@ -821,12 +887,13 @@ private fun ShowButton(
 @Composable
 private fun TierChip(gate: TalentTierGateProgress) {
     val colors = talentForgeColors()
+    val label = stringResource(Res.string.inspector_tier_points, gate.spentPoints, gate.requiredPoints)
     Box(
         modifier = Modifier
             .heightIn(min = TalentInspectorMetrics.COMPACT_ACTION_DP)
             .border(1.dp, colors.warning, RoundedCornerShape(TalentForgeRadius.medium))
             .semantics(mergeDescendants = true) {
-                contentDescription = "Tier points ${gate.spentPoints} of ${gate.requiredPoints}"
+                contentDescription = label
             }
             .padding(horizontal = TalentForgeSpacing.rowGap),
         contentAlignment = Alignment.Center,
@@ -920,6 +987,8 @@ private fun HandleBar() {
  */
 @Composable
 private fun InspectorHandle(onClick: () -> Unit) {
+    val label = stringResource(Res.string.inspector_expand)
+    val actionLabel = stringResource(Res.string.inspector_expand_action)
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -930,8 +999,8 @@ private fun InspectorHandle(onClick: () -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(TalentInspectorMetrics.COMPACT_HANDLE_DP)
-                .clickable(role = Role.Button, onClickLabel = "expand inspector", onClick = onClick)
-                .semantics { contentDescription = INSPECTOR_EXPAND_LABEL },
+                .clickable(role = Role.Button, onClickLabel = actionLabel, onClick = onClick)
+                .semantics { contentDescription = label },
             contentAlignment = Alignment.Center,
         ) {
             HandleBar()
@@ -947,13 +1016,16 @@ private fun ChevronButton(
     targetSize: Dp = TalentInspectorMetrics.ACTION_MIN_DP,
 ) {
     val color = talentForgeColors().textSecondary
-    val label = if (expanded) INSPECTOR_COLLAPSE_LABEL else INSPECTOR_EXPAND_LABEL
+    val label = stringResource(if (expanded) Res.string.inspector_collapse else Res.string.inspector_expand)
+    val actionLabel = stringResource(
+        if (expanded) Res.string.inspector_collapse_action else Res.string.inspector_expand_action,
+    )
     Box(
         modifier = Modifier
             .size(targetSize)
             .clickable(
                 role = Role.Button,
-                onClickLabel = if (expanded) "collapse inspector" else "expand inspector",
+                onClickLabel = actionLabel,
                 onClick = onToggle,
             )
             .semantics { contentDescription = label },
@@ -988,7 +1060,11 @@ private fun CloseButton(onClose: () -> Unit, targetSize: Dp = TalentInspectorMet
     Box(
         modifier = Modifier
             .size(targetSize)
-            .clickable(role = Role.Button, onClickLabel = "clear selection", onClick = onClose),
+            .clickable(
+                role = Role.Button,
+                onClickLabel = stringResource(Res.string.talent_clear_selection_action),
+                onClick = onClose,
+            ),
         contentAlignment = Alignment.Center,
     ) {
         BasicText(

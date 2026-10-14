@@ -35,6 +35,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_go_back
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_build_actions_open
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_redo_action
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_undo_action
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
 import kotlin.math.PI
@@ -227,13 +230,13 @@ fun TalentTreeHeaderBar(
             // Undo = ↺ (counterclockwise), redo = ↻: the arc is symmetric, so the
             // flag only flips the arrowhead's direction.
             HistoryIconButton(
-                label = "Undo talent change",
+                label = stringResource(Res.string.editor_undo_action),
                 enabled = canUndo,
                 mirrored = true,
                 onClick = onUndo,
             )
             HistoryIconButton(
-                label = "Redo talent change",
+                label = stringResource(Res.string.editor_redo_action),
                 enabled = canRedo,
                 mirrored = false,
                 onClick = onRedo,
@@ -343,15 +346,16 @@ private fun HistoryIconButton(
 /** The ⋯ build-actions opener (UX/UI spec ADAPT 2). */
 @Composable
 private fun OverflowButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val label = stringResource(Res.string.editor_build_actions_open)
     Box(
         modifier = modifier
             .size(TalentTreeHeaderMetrics.EDITOR_CONTROL_DP)
             .clickable(
                 role = Role.Button,
-                onClickLabel = "open build actions",
+                onClickLabel = label,
                 onClick = onClick,
             )
-            .semantics { contentDescription = "open build actions" },
+            .semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) {
         BasicText(
