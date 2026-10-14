@@ -6,12 +6,14 @@ so the user's real TalentForge app and its saved builds are never seen, changed 
 deleted. Uses adb + uiautomator only: Home -> New build -> Warrior -> editor, then
 the portrait <-> landscape section-navigation scenarios of the milestone.
 
-Since M5.REL.1 the section tabs read the Warrior's approved specialization names,
-localized by the device's PRIMARY language: the script reads the locale, picks the
-matching labels (the app's own rule — Russian only for a Russian primary language,
-English for every other one) and runs the same scenarios on an English or a Russian
-phone. Only the tab labels are localized in M5.REL.1; the rest of the copy the
-script reads (Home, class selection, talent names, rank controls) stays English.
+The app's copy is localized (M5.REL.2a/2b: the shell screens and the talent
+editor present English or Russian), so EVERY selector the script taps or reads is
+localized too: it reads the device's PRIMARY locale and picks the matching
+``UiCopy`` set (the app's own rule — Russian only for a Russian primary language,
+English for every other one), then runs the same scenarios on an English or a
+Russian phone. Dataset talent names ("Improved Rend") are game content and stay
+English on every device; the numeric ``1 / 51`` counter and the ``x`` close glyph
+are language-neutral.
 
 Every step records: orientation, display size and density, the tap coordinates and
 the target's bounds, the active tab before/after, the section actually on screen,
@@ -61,24 +63,83 @@ PACKAGE = "io.github.alexeykravtsov95.talentforge.devcheck"
 ACTIVITY = "io.github.alexeykravtsov95.talentforge.ui.MainActivity"
 APK = REPO / "mobile/composeApp/build/outputs/apk/debug/composeApp-debug.apk"
 DATASETS = REPO / "mobile/composeApp/src/commonMain/composeResources/files/dataset/forever"
-# M5.REL.1: the Warrior's approved specialization names by tab position — the
-# tuple order IS the section-index correspondence the assertions rely on
-# (``tabs.index(label)`` must equal the dataset's ``sectionIndex``).
-TABS_BY_LANGUAGE: dict[str, tuple[str, str, str]] = {
-    "en": ("Arms", "Fury", "Protection"),
-    "ru": ("Оружие", "Неистовство", "Защита"),
-}
-CLOSE = "\u00d7"  # the side panel's close button label
+# Dataset content is never translated (M5.REL.3): every language spends on this
+# exact node, so the selector is a language-neutral constant, not a UiCopy field.
+TALENT = "Improved Rend"
+COUNTER = "1 / 51"  # the header's `spent / budget` counter — numeric, never localized
+CLOSE = "\u00d7"  # the side panel's close button label — a glyph, never localized
 BOUNDS = re.compile(r"\[(-?\d+),(-?\d+)\]\[(-?\d+),(-?\d+)\]")
-NOT_TALENTS = {
-    "go back",
-    "Undo talent change",
-    "Redo talent change",
-    "open build actions",
-    "Fit tree",
-    "Expand inspector",
-    "Collapse inspector",
-    "Max rank reached",
+
+
+@dataclass(frozen=True)
+class UiCopy:
+    """Every UI string the scenario taps or reads, in ONE language — all of it in
+    this one place, never an ``if language == "ru"`` branch inside a scenario.
+
+    The values mirror the strings the app itself renders
+    (``composeResources/values/strings.xml`` and ``values-ru/strings.xml``; a unit
+    test cross-checks them against those files). The tab labels are the Warrior's
+    approved specialization names (M5.REL.1): the tuple order IS the
+    section-index correspondence the assertions rely on (``tabs.index(label)`` must
+    equal the dataset's ``sectionIndex``).
+    """
+
+    tabs: tuple[str, str, str]
+    new_build: str  # Home's create button (common_new_build)
+    warrior: str  # the Warrior tile on Class Selection (class_name_warrior)
+    continue_editing: str  # Home's continue card (home_continue_editing)
+    undo_change: str  # the editor header's undo control (editor_undo_action)
+    add_rank_to: str  # the inspector + control's label; {} = the talent name (inspector_add_rank)
+    # Accessibility labels that must never read as a talent on screen even if a
+    # future dataset named a talent exactly like one of them (Hierarchy.talents).
+    not_talents: frozenset[str]
+
+    def add_rank(self, talent: str) -> str:
+        """The + control's accessibility label for ``talent`` (the name stays untranslated)."""
+        return self.add_rank_to.format(talent)
+
+
+UI_COPY_BY_LANGUAGE: dict[str, UiCopy] = {
+    "en": UiCopy(
+        tabs=("Arms", "Fury", "Protection"),
+        new_build="New build",
+        warrior="Warrior",
+        continue_editing="Continue editing",
+        undo_change="Undo talent change",
+        add_rank_to="Add rank to {}",
+        not_talents=frozenset(
+            {
+                "go back",
+                "Undo talent change",
+                "Redo talent change",
+                "open build actions",
+                "Fit tree",
+                "Expand inspector",
+                "Collapse inspector",
+                "Max rank reached",
+            }
+        ),
+    ),
+    "ru": UiCopy(
+        tabs=("Оружие", "Неистовство", "Защита"),
+        new_build="Новый билд",
+        warrior="Воин",
+        continue_editing="Продолжить",
+        undo_change="Отменить изменение талантов",
+        add_rank_to="Добавить ранг: {}",
+        not_talents=frozenset(
+            {
+                "назад",
+                "Отменить изменение талантов",
+                "Повторить изменение талантов",
+                "открыть действия с билдом",  # noqa: RUF001 — the app's exact resource text
+                "Вписать дерево",
+                "Развернуть панель таланта",
+                "Свернуть панель таланта",
+                "Достигнут максимальный ранг",
+            }
+        ),
+    ),
 }
 
 
@@ -120,9 +181,9 @@ class UiNode:
 class Hierarchy:
     """One uiautomator dump, with parent links."""
 
-    def __init__(self, xml: str, tabs: tuple[str, str, str]) -> None:
+    def __init__(self, xml: str, copy: UiCopy) -> None:
         self.xml = xml
-        self.tabs = tabs
+        self.copy = copy
         self.nodes: list[UiNode] = []
         root = ET.fromstring(xml)
         self._walk(root, None)
@@ -163,12 +224,16 @@ class Hierarchy:
 
     def active_tab(self) -> str | None:
         active = [
-            label for label in self.tabs if (tab := self.tab(label)) is not None and tab.selected
+            label
+            for label in self.copy.tabs
+            if (tab := self.tab(label)) is not None and tab.selected
         ]
         return active[0] if len(active) == 1 else None
 
     def talents(self, sections: dict[str, int]) -> list[str]:
-        return [n.desc for n in self.nodes if n.desc in sections and n.desc not in NOT_TALENTS]
+        return [
+            n.desc for n in self.nodes if n.desc in sections and n.desc not in self.copy.not_talents
+        ]
 
 
 def dataset_sections() -> dict[str, int]:
@@ -182,9 +247,9 @@ def dataset_sections() -> dict[str, int]:
 class Device:
     serial: str
     adb: str
-    # The tab labels of THIS device's language — set in main() from the primary
-    # locale before any check runs (fail-closed: hierarchy() refuses without them).
-    tabs: tuple[str, str, str] = ()
+    # The UI copy of THIS device's language — set in main() from the primary
+    # locale before any check runs (fail-closed: hierarchy() refuses without it).
+    copy: UiCopy | None = None
 
     def run(self, *args: str, check: bool = True, timeout: int = 300) -> bytes:
         cmd = [self.adb, "-s", self.serial, *args]
@@ -206,8 +271,8 @@ class Device:
         return ""
 
     def hierarchy(self) -> Hierarchy:
-        if not self.tabs:
-            raise DeviceError("tab labels not configured: the device locale was not read")
+        if self.copy is None:
+            raise DeviceError("UI copy not configured: the device locale was not read")
         last = ""
         for _ in range(8):
             last = self.shell("uiautomator dump /sdcard/tf-section-check.xml", check=False)
@@ -217,7 +282,7 @@ class Device:
                 errors="replace"
             )
             if xml.lstrip().startswith("<?xml"):
-                return Hierarchy(xml, self.tabs)
+                return Hierarchy(xml, self.copy)
             time.sleep(0.7)
         raise DeviceError(f"uiautomator dump failed: {last}")
 
@@ -270,13 +335,11 @@ class Step:
 class Check:
     """One full pass of the scenarios on one device."""
 
-    def __init__(
-        self, device: Device, out: Path, sections: dict[str, int], tabs: tuple[str, str, str]
-    ) -> None:
+    def __init__(self, device: Device, out: Path, sections: dict[str, int], copy: UiCopy) -> None:
         self.device = device
         self.out = out
         self.sections = sections
-        self.tabs = tabs
+        self.copy = copy
         self.steps: list[Step] = []
         self.orientation = "portrait"
         self.counter = 0
@@ -340,7 +403,7 @@ class Check:
         talents = ui.talents(self.sections)
         # the tab's POSITION is the dataset's section index (M5.REL.1 keeps the
         # mapping (WARRIOR, index) -> Arms/Fury/Protection / Оружие/… intact)
-        expected_section = self.tabs.index(expected_tab)
+        expected_section = self.copy.tabs.index(expected_tab)
         on_screen = {self.sections[t] for t in talents}
         if not talents:
             problems.append("no talent of any section is exposed on screen")
@@ -396,8 +459,8 @@ class Check:
     def swipe_to(self, direction: int, label: str, name: str) -> None:
         ui = self.device.hierarchy()
         before = ui.active_tab()
-        tab = ui.tab(self.tabs[0])
-        undo = ui.find("Undo talent change")
+        tab = ui.tab(self.copy.tabs[0])
+        undo = ui.find(self.copy.undo_change)
         if tab is None or undo is None:
             raise GestureError("tabs or header not on screen")
         size = self.device.shell("wm size").split()[-1]
@@ -445,25 +508,26 @@ class Check:
 
     def run(self, apk: Path) -> None:
         d = self.device
-        tab1, tab2, tab3 = self.tabs  # Arms / Fury / Protection in this device's language
+        tab1, tab2, tab3 = self.copy.tabs  # Arms / Fury / Protection in this device's language
+        add_rank = self.copy.add_rank(TALENT)  # e.g. "Add rank to Improved Rend"
         d.run("install", "-r", "-t", str(apk))
         if PACKAGE not in d.shell(f"pm list packages {PACKAGE}"):
             raise DeviceError(f"{apk} did not install as {PACKAGE}")
         d.shell(f"pm clear {PACKAGE}")  # the isolated package's own data only
         self.rotate(landscape=False)
         d.shell(f"am start -W -n {PACKAGE}/{ACTIVITY}")
-        d.wait_for("New build", timeout_s=30)
+        d.wait_for(self.copy.new_build, timeout_s=30)
         self.expect(
             "isolated app opens on an empty Home",
-            {"'New build' on Home": self.present("New build")},
+            {f"'{self.copy.new_build}' on Home": self.present(self.copy.new_build)},
         )
 
         def create() -> None:
-            _, target, xy = self.tap_label("New build")
-            self.tap_label("Warrior")
+            _, target, xy = self.tap_label(self.copy.new_build)
+            self.tap_label(self.copy.warrior)
             ui = d.wait_for(tab1, timeout_s=30)
             self.expect(
-                f"New build -> Warrior opens the editor on {tab1}",
+                f"{self.copy.new_build} -> {self.copy.warrior} opens the editor on {tab1}",
                 {
                     "editor with tabs": ui.find(tab1) is not None,
                     f"{tab1} active": ui.active_tab() == tab1,
@@ -501,12 +565,12 @@ class Check:
         )
 
         def spend() -> None:
-            _, target, xy = self.tap_label("Improved Rend")
-            d.wait_for("Add rank to Improved Rend")
-            self.tap_label("Add rank to Improved Rend")
+            _, target, xy = self.tap_label(TALENT)
+            d.wait_for(add_rank)
+            self.tap_label(add_rank)
             self.expect(
                 "portrait: select Improved Rend and + spends one point",
-                {"counter 1 / 51": self.present("1 / 51")},
+                {f"counter {COUNTER}": self.present(COUNTER)},
                 target,
                 xy,
             )
@@ -518,10 +582,8 @@ class Check:
             self.expect(
                 "rotate to landscape: selection, points and side panel survive",
                 {
-                    "side panel shows Improved Rend's controls": self.present(
-                        "Add rank to Improved Rend"
-                    ),
-                    "counter 1 / 51": self.present("1 / 51"),
+                    "side panel shows Improved Rend's controls": self.present(add_rank),
+                    f"counter {COUNTER}": self.present(COUNTER),
                     f"{tab1} still active": d.hierarchy().active_tab() == tab1,
                 },
             )
@@ -530,11 +592,11 @@ class Check:
 
         def close_reopen() -> None:
             self.tap_label(CLOSE)
-            closed = self.gone("Add rank to Improved Rend")
-            _, target, xy = self.tap_label("Improved Rend")
+            closed = self.gone(add_rank)
+            _, target, xy = self.tap_label(TALENT)
             self.expect(
                 "landscape: the close button closes the panel, a tap reopens it",
-                {"closed": closed, "reopened": self.present("Add rank to Improved Rend")},
+                {"closed": closed, "reopened": self.present(add_rank)},
                 target,
                 xy,
             )
@@ -548,7 +610,7 @@ class Check:
                 f"landscape: with the panel open, the {tab2} tab still works"
             )
             problems = self.section_problems(ui, tab2)
-            if ui.find("Add rank to Improved Rend") is not None:
+            if ui.find(add_rank) is not None:
                 problems.append("the side panel stayed open (a tab change deselects)")
             self.record(
                 f"landscape: with the panel open, the {tab2} tab still works",
@@ -573,10 +635,10 @@ class Check:
         self.step("landscape tab 1", lambda: self.open_tab(tab1, f"landscape: tap {tab1}"))
 
         def back() -> None:
-            self.tap_label("Improved Rend")
+            self.tap_label(TALENT)
             d.shell("input keyevent 4")
             time.sleep(1.2)
-            cleared = self.gone("Add rank to Improved Rend")
+            cleared = self.gone(add_rank)
             in_editor = self.present(tab1)
             self.expect(
                 "landscape: system Back clears the selection, editor stays",
@@ -584,11 +646,12 @@ class Check:
             )
             d.shell("input keyevent 4")
             time.sleep(1.5)
+            continue_card = self.copy.continue_editing
             self.expect(
                 "landscape: a second Back leaves the editor",
                 {
-                    "Home shows 'Continue editing'": d.wait_for("Continue editing", 10).find(
-                        "Continue editing"
+                    f"Home shows '{continue_card}'": d.wait_for(continue_card, 10).find(
+                        continue_card
                     )
                     is not None
                 },
@@ -600,11 +663,11 @@ class Check:
             self.rotate(landscape=False)
             d.shell(f"am force-stop {PACKAGE}")
             d.shell(f"am start -W -n {PACKAGE}/{ACTIVITY}")
-            _, target, xy = self.tap_label("Continue editing")
-            ui = d.wait_for("1 / 51", 20)
+            _, target, xy = self.tap_label(self.copy.continue_editing)
+            ui = d.wait_for(COUNTER, 20)
             self.expect(
-                "relaunch: the saved build reopens with 1 / 51",
-                {"counter 1 / 51": ui.find("1 / 51") is not None},
+                f"relaunch: the saved build reopens with {COUNTER}",
+                {f"counter {COUNTER}": ui.find(COUNTER) is not None},
                 target,
                 xy,
             )
@@ -719,17 +782,18 @@ def main() -> int:
             print("building the isolated APK …", flush=True)
             build_apk(out / "build.log")
         device = Device(pick_serial(adb_path(), args.serial), adb_path())
-        # M5.REL.1: the same labels the app shows on THIS device — its primary
-        # locale decides (Russian only for ru*, English otherwise)
+        # The same copy the app shows on THIS device — its primary locale decides
+        # (Russian only for ru*, English otherwise)
         locale_tag = device.primary_locale()
-        device.tabs = TABS_BY_LANGUAGE[language_of(locale_tag)]
+        device.copy = UI_COPY_BY_LANGUAGE[language_of(locale_tag)]
         header |= {
             "serial": device.serial,
             "model": device.shell("getprop ro.product.model", check=False),
             "android": device.shell("getprop ro.build.version.release", check=False),
             "font_scale": device.shell("settings get system font_scale", check=False),
             "primary_locale": locale_tag,
-            "tab_labels": list(device.tabs),
+            "ui_language": language_of(locale_tag),
+            "tab_labels": list(device.copy.tabs),
             **device.screen(),
         }
         saved = {
@@ -740,7 +804,7 @@ def main() -> int:
         for index in range(1, args.runs + 1):
             run_dir = out / f"run{index}"
             run_dir.mkdir(exist_ok=True)
-            check = Check(device, run_dir, sections, device.tabs)
+            check = Check(device, run_dir, sections, device.copy)
             try:
                 check.run(APK)
             except (DeviceError, subprocess.TimeoutExpired) as error:

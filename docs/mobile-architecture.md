@@ -1155,6 +1155,21 @@ pins its language with `AppLanguageRule`. Opt-in screenshot evidence:
 `M5Rel2bScreenshotTest` (`-Dtalentforge.m5rel2b.screenshots=<dir>`),
 committed under `docs/screenshots/m5-rel-2b/`.
 
+The physical device check follows the same copy: every selector
+`scripts/android_section_check.py` taps or reads lives in one `UiCopy` set
+per language (`UI_COPY_BY_LANGUAGE`, chosen by the existing `language_of`
+locale rule) — Home's create button and continue card, Class Selection's
+Warrior tile, the editor header's undo control, the + control's
+accessibility label (its `%1$s` talent name stays the untranslated
+`Improved Rend`) and the `not_talents` accessibility set that must never
+read as an on-screen talent. Dataset names, the numeric `1 / 51` counter and
+the `x` close glyph are language-neutral constants. The same scenario —
+tabs, rotation, swipes, spend, the side panel, Back and the relaunch — runs
+unchanged on an English or a Russian phone;
+`tests/unit/test_android_section_check.py` pins both selector sets and
+cross-checks them against `values{,-ru}/strings.xml`, so renamed copy fails
+in the unit suite instead of on a device.
+
 **Known limitations.** Talent names and tooltip text are dataset content and
 stay English (M5.REL.3). The section tabs' fallback labels keep their
 M5.REL.1 table (`Tree N` / `Ветка N`). Technical details inside the failure
