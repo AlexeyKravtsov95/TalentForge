@@ -12,8 +12,10 @@ build's client files (`data/visuals/forever/1.60.1.70245/`; 3 FileDataIDs new co
 the same for the product dataset **`1.60.1.70338`** on 2026-10-10: 469 / 469 entries, 358
 distinct icons (`data/visuals/forever/1.60.1.70338/`; compared with 70245: 132356, 135727
 and 236309 new, 132338 and 236310 no longer used, the 355 shared ones convert to identical
-PNGs). No icon is ever carried over from another build; each build is published and bundled
-with its own.
+PNGs). **M5.DATA.3** fetched the 358 icon files of **`1.60.1.70374`** from that build: they
+and the PNGs made from them are byte-identical to 70338's, and are still published as
+70374's own (`data/visuals/forever/1.60.1.70374/`). No icon is ever carried over from another
+build; each build is published and bundled with its own.
 
 ```
 data/normalized/forever/<build>/<class>.json      (talent-data.v1, unchanged)
@@ -299,7 +301,7 @@ by `pytest -m integration` (manual workflow), separately.
 ## 5. Mobile bundle and consumer obligations
 
 `mobile/composeApp/src/commonMain/composeResources/files/visuals/forever/<build>/` (for
-every bundled build: 1.60.1.70009, 1.60.1.70245 and 1.60.1.70338) is a derived,
+every bundled build: 1.60.1.70009, 1.60.1.70245, 1.60.1.70338 and 1.60.1.70374) is a derived,
 byte-identical copy of
 the canonical directory; never edit it by hand.
 

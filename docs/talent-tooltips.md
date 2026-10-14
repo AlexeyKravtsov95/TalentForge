@@ -18,8 +18,11 @@ ranks — 1281 resolved, 47 partial, 1 unresolved (still Shifting Power's `$c`);
 partial ranks are Druid Thick Hide (`$s2` now scales with the caster's level) and Warrior
 Piercing Howl (`$a2`); see
 [research/forever-1.60.1.70338-tooltip-coverage.md](research/forever-1.60.1.70338-tooltip-coverage.md).
-The table and column facts below are observed on the reference baseline; the 70245 and
-70338 exports have the same shapes (the typed table readers accept them unchanged).
+**M5.DATA.3** rendered the product dataset **`1.60.1.70374`** from its own tooltip tables
+(byte-identical to 70338's): the same 1281 / 47 / 1 statuses, rank for rank —
+[research/forever-1.60.1.70374-tooltip-coverage.md](research/forever-1.60.1.70374-tooltip-coverage.md).
+The table and column facts below are observed on the reference baseline; the 70245, 70338
+and 70374 exports have the same shapes (the typed table readers accept them unchanged).
 
 ```
 exact Forever build
@@ -210,7 +213,7 @@ Resourcefulness `$m3` (a rank curve for effect 2, but the spell has no `EffectIn
 
 **Unknown syntax** (anything outside the grammar) makes the whole rank `unresolved` with an
 `unclassified` gap: the extent of an unknown construct is unknown, so the text around it is
-not trusted either. 1.60.1.70009 has none; 1.60.1.70245 and 1.60.1.70338 have one (`$c` in
+not trusted either. 1.60.1.70009 has none; 1.60.1.70245, 1.60.1.70338 and 1.60.1.70374 have one (`$c` in
 Druid Shifting Power, rank 1 → `unresolved`, shown as "unavailable" in the app).
 
 ## Mobile

@@ -23,7 +23,7 @@ class TooltipsDriftTest {
     }
 
     @Test
-    fun exactlyTheThreeBundledBuildsAreBundled() {
+    fun exactlyTheFourBundledBuildsAreBundled() {
         val repoRoot = findRepoRoot(File(System.getProperty("user.dir")).absoluteFile)
         val bundledRoot = repoRoot
             .resolve("mobile/composeApp/src/commonMain/composeResources/files/tooltips/forever")

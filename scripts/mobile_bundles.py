@@ -38,9 +38,10 @@ GAME = "forever"
 
 # Every client build the app bundles (ascending). 1.60.1.70009 is the verified reference
 # baseline (allocation evidence, M2 conformance, every build saved before M5.DATA);
-# 1.60.1.70245 was the product dataset of M5.DATA and stays for the builds saved on it;
-# 1.60.1.70338 is the product dataset new builds are created on (M5.DATA.2).
-BUNDLED_BUILDS: tuple[str, ...] = ("1.60.1.70009", "1.60.1.70245", "1.60.1.70338")
+# 1.60.1.70245 (M5.DATA) and 1.60.1.70338 (M5.DATA.2) were product datasets and stay for
+# the builds saved on them; 1.60.1.70374 is the product dataset new builds are created on
+# (M5.DATA.3).
+BUNDLED_BUILDS: tuple[str, ...] = ("1.60.1.70009", "1.60.1.70245", "1.60.1.70338", "1.60.1.70374")
 
 CLASS_FILES: tuple[str, ...] = (
     "warrior.json",

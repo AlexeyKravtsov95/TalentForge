@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 9,
+    "token": "WARLOCK",
+    "name": "Warlock"
+  },
+  "fromBuild": "1.60.1.70338",
+  "toBuild": "1.60.1.70374",
+  "fromContentHash": "sha256:03e683b4f0d06c2a993c850cae6e4d00edba8b06727ec099c36a58caad450b33",
+  "toContentHash": "sha256:c0ee75875088a97d5fb37344369f3d18a2cd4393962e6135fe2a4e94e0cd4c36",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 0,
+    "changesByKind": {}
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": []
+}

@@ -26,7 +26,7 @@ from talent_data.localization.pipeline import (
 from talent_data.models.localization import TalentLocalizationDocument, expected_content_hash
 from talent_data.models.talents import TalentDataDocument
 from talent_data.models.tooltips import TalentTooltipsDocument
-from tests.helpers import NEW_BUILD, PREVIOUS_PRODUCT_BUILD, PRODUCT_BUILD
+from tests.helpers import BUILD_70245, NEW_BUILD, PILOT_BUILD
 from tests.unit.localization.conftest import (
     GAME,
     LOCALE,
@@ -166,12 +166,13 @@ def test_source_data_drift_changes_the_overlay(
 
 
 def test_the_committed_localization_is_consistent(at_repo_root) -> None:
-    assert check_canonical(GAME, PRODUCT_BUILD, LOCALE) == []
+    assert check_canonical(GAME, PILOT_BUILD, LOCALE) == []
 
 
-@pytest.mark.parametrize("retained", [NEW_BUILD, PREVIOUS_PRODUCT_BUILD])
+@pytest.mark.parametrize("retained", [NEW_BUILD, BUILD_70245])
 def test_retained_builds_have_no_overlay_and_say_so(at_repo_root, retained) -> None:
-    """3a localizes only the product build; other bundled builds stay readable, unchanged."""
+    """Overlays exist only for 70338 (3a) and 70374 (M5.DATA.3); the other bundled builds
+    stay readable, unchanged."""
     problems = check_canonical(GAME, retained, LOCALE)
     assert len(problems) == 1
     assert problems[0].startswith(f"no ruRU localization of {retained}")
@@ -241,9 +242,9 @@ def test_a_changed_number_in_a_rendered_rank_is_detected(pair) -> None:
 
 def _copy_repo(tmp: Path) -> Path:
     for relative in (
-        f"data/normalized/forever/{PRODUCT_BUILD}",
-        f"data/tooltips/forever/{PRODUCT_BUILD}",
-        f"data/localization/forever/{PRODUCT_BUILD}",
+        f"data/normalized/forever/{PILOT_BUILD}",
+        f"data/tooltips/forever/{PILOT_BUILD}",
+        f"data/localization/forever/{PILOT_BUILD}",
     ):
         shutil.copytree(ROOT / relative, tmp / relative)
     for path in (REPORT, MARKDOWN):
@@ -256,15 +257,15 @@ def _copy_repo(tmp: Path) -> Path:
 def test_report_and_files_must_agree(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root = _copy_repo(tmp_path)
     monkeypatch.setenv("TALENT_DATA_ROOT", str(root))
-    assert check_canonical(GAME, PRODUCT_BUILD, LOCALE) == []
+    assert check_canonical(GAME, PILOT_BUILD, LOCALE) == []
     overlays = root / OVERLAYS.relative_to(ROOT)
     (overlays / "notes.json").write_text("{}", encoding="utf-8")
-    problems = check_canonical(GAME, PRODUCT_BUILD, LOCALE)
+    problems = check_canonical(GAME, PILOT_BUILD, LOCALE)
     assert any("notes.json is not part" in p for p in problems)
     (overlays / "notes.json").unlink()
     markdown = root / MARKDOWN.relative_to(ROOT)
     markdown.write_text(markdown.read_text("utf-8") + "edited\n", encoding="utf-8")
-    problems = check_canonical(GAME, PRODUCT_BUILD, LOCALE)
+    problems = check_canonical(GAME, PILOT_BUILD, LOCALE)
     assert any("does not match the coverage report" in p for p in problems)
 
 
@@ -294,7 +295,7 @@ def test_publishing_writes_only_localization_outputs(
     publish(build, frozenset({"WARRIOR"}))
     written = {p for p in root.rglob("*") if p.is_file()} - existing
     assert {str(p.relative_to(root)) for p in written} == {
-        f"data/localization/forever/{PRODUCT_BUILD}/ruRU/warrior.json",
+        f"data/localization/forever/{PILOT_BUILD}/ruRU/warrior.json",
         str(REPORT.relative_to(ROOT)),
         str(MARKDOWN.relative_to(ROOT)),
     }
@@ -330,12 +331,12 @@ def test_saved_build_and_allocation_contracts_are_untouched() -> None:
 
 
 def test_cli_check_passes_on_the_committed_files(at_repo_root, capsys) -> None:
-    argv = ["localization", "check", "--build", str(PRODUCT_BUILD), "--locale", "ruRU"]
+    argv = ["localization", "check", "--build", str(PILOT_BUILD), "--locale", "ruRU"]
     assert main(argv) == 0
     assert "consistent" in capsys.readouterr().out
 
 
 def test_cli_refuses_an_unsupported_locale(at_repo_root, capsys) -> None:
-    argv = ["localization", "check", "--build", str(PRODUCT_BUILD), "--locale", "ruru"]
+    argv = ["localization", "check", "--build", str(PILOT_BUILD), "--locale", "ruru"]
     assert main(argv) == 1
     assert "not supported" in capsys.readouterr().err

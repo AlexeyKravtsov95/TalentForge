@@ -7,10 +7,11 @@ could not (yet) prove. Data basis: real client DB2 tables of builds `1.60.1.6989
 
 `1.60.1.70009` is the **verified reference baseline**: the allocation evidence and the
 conformance vectors are pinned to it, and the warning investigations below were made on it.
-Since M5.DATA.2 the **product dataset** — the one the app creates new builds on — is
-`1.60.1.70338` ([below](#product-dataset-160170338-m5data2)). `1.60.1.70245`, the product
-dataset of M5.DATA ([below](#product-dataset-160170245-m5data)), and 70009 stay committed
-and bundled, unchanged, for the builds saved on them. None of them is claimed to be the
+Since M5.DATA.3 the **product dataset** — the one the app creates new builds on — is
+`1.60.1.70374` ([below](#product-dataset-160170374-m5data3)). `1.60.1.70338`, the product
+dataset of M5.DATA.2 ([below](#product-dataset-160170338-m5data2)), `1.60.1.70245`, the
+product dataset of M5.DATA ([below](#product-dataset-160170245-m5data)), and 70009 stay
+committed and bundled, unchanged, for the builds saved on them. None of them is claimed to be the
 build the live realms run (`builds latest` reports the newest detected build at the moment
 it runs; wago.tools has no "live" marker). Whether the product dataset is still the newest
 publishable build is answered by `builds freshness` ([below](#product-freshness-check-m5data2)).
@@ -203,6 +204,119 @@ The machine-readable boundary lives in `talent_data.diff.models`
 (`USER_VISIBLE_CHANGE_KINDS` / `DIAGNOSTIC_CHANGE_KINDS`); it is a classification only —
 the raw engineering diff is never filtered.
 
+## Product dataset 1.60.1.70374 (M5.DATA.3)
+
+### Build selection
+
+Verified on **2026-10-14 at 16:50 UTC** with the repository's own check and against the
+raw index (`GET https://wago.tools/api/builds`, response `Date: Wed, 14 Oct 2026 16:50:54
+GMT`; the M5.DATA.3 subset is committed as `tests/fixtures/wago/builds-2026-10-14.json`):
+
+```text
+$ python scripts/check_product_freshness.py --output freshness.json      # exit 3
+OUTDATED: 1.60.1.70374 is publishable (is_bgdl=false) and newer than the product build 1.60.1.70338
+```
+
+| Fact | Value |
+| --- | --- |
+| `PRODUCT_BUNDLE` before this milestone | `1.60.1.70338` |
+| Latest detected Forever build | `1.60.1.70374` (`wow_classic_beta`, created 2026-10-13 23:25:05) |
+| Latest publishable Forever build | `1.60.1.70374` |
+| `is_bgdl` of 70374 on the wire | JSON `false` (a strict boolean, not `"false"`/`0`) |
+| Newer non-publishable builds | none |
+| Source / checked at | wago.tools `/api/builds`, `checkedAt` 2026-10-14T16:50:45Z; re-checked 2026-10-14T18:57:39Z (70338 `OUTDATED`) and 18:57:26Z (70374 `CURRENT`), index unchanged |
+
+70374 is product `wow_classic_beta`, branch `1.60` (`build_config
+25822068f8fce8b21bc714e7e3210481`, `cdn_config dffb7f6337496ac02a54d2d5191ccc12`, same
+`product_config` as 70338); `wow_cn_beta` lists 70374 too (2026-10-13 23:59:08, `is_bgdl=false`).
+No build newer than 70374 existed on either track at the check, so **70374 is selected**.
+
+**New in the index: product `wowf`.** It appeared with exactly one entry, `1.60.1.70245`
+(created 2026-10-13 21:18:10, `is_bgdl=false`), i.e. an *older* build than the beta. The
+product code suggests a dedicated Forever product ahead of the announced 4 November 2026
+launch, but nothing in the repository proves what it is; `GameConfig.products` stays
+`("wow_classic_beta",)`, so the freshness check does not consult it
+(`test_the_wowf_product_is_outside_the_game_s_products`). This is a recorded monitoring
+gap, not a decision: if `wowf` becomes the live product, its build — possibly older than the
+beta — is the relevant one, and the product mapping must be revisited with evidence
+(see [dataset-freshness-watch.md](dataset-freshness-watch.md#known-gap-the-wowf-product)).
+
+**Basis and its limit** (unchanged): 70374 is the newest Forever build whose `is_bgdl` is
+explicitly `false` — the project's definition of *publishable*. It is not evidence that the
+realms run 70374, and no 70374 client was observed.
+
+### Generation and integrity
+
+Every artifact is generated from 70374's own client rows with the unchanged pipeline;
+nothing is copied from 70338, nothing hand-edited, no check relaxed:
+
+```bash
+python -m talent_data fetch --game forever --build 1.60.1.70374
+python -m talent_data normalize --game forever --build 1.60.1.70374 --class all
+python -m talent_data diff --game forever --class all --from 1.60.1.70338 --to 1.60.1.70374
+python -m talent_data manifest data/normalized/forever/1.60.1.70374/manifest.json --expect-complete
+python -m talent_data visuals fetch|report|normalize|check --build 1.60.1.70374
+python -m talent_data tooltips fetch|normalize|check --build 1.60.1.70374
+python -m talent_data localization fetch|report|normalize|check --build 1.60.1.70374 --locale ruRU
+```
+
+* 9 classes, 469 nodes, **0 errors, the same 12 warnings**; per-class shape identical to the
+  70338 table below (tree ids, nodes, links, ranks, 51-point budget).
+* Real DB2, tooltip-table and enUS/ruRU fixtures of 70374 are committed
+  (`tests/fixtures/{db2,tooltips,localization}/forever/1.60.1.70374/`);
+  `tests/unit/test_product_build.py` regenerates the documents, icon sidecars, descriptions
+  and the Warrior ruRU overlay from them byte for byte. The 70338 tests moved unchanged to
+  `tests/unit/test_build_70338.py`.
+
+### What changed 70338 → 70374: nothing in the talent data
+
+`artifacts/diff/forever-all-1.60.1.70338-1.60.1.70374.json`: **0 added, 0 removed,
+0 changed** in every class. Because an empty diff can also hide a pipeline that read the
+wrong build, it was investigated rather than accepted:
+
+* **Source level.** All 388 source files the pipelines read for 70374 — the 23 trait tables
+  plus `ChrClasses`/`Spell*`/`Curve*` (DB2), the tooltip tables, `SpellMisc`, the four ruRU
+  and enUS localization tables, and all 358 CASC icon files — were downloaded for 70374 and
+  are **byte-identical** to the 70338 downloads. Only `_table_status.json` differs, because
+  its evidence names the build it was proven on.
+* **The source honours the build.** The same request for 70245 (`TraitNode`, 560 lines,
+  sha256 `d7fe3ae7…`) differs from 70338/70374 (559 lines, `263f9df9…`), and an unknown
+  build (`1.60.1.99999`) is refused with HTTP 400 — the identical bytes are 70374's answer,
+  not a fallback.
+* **Document level.** Each 70374 document equals its 70338 counterpart in class identity,
+  trees, nodes, entries, definitions, spells, ranks, gates, prerequisites, sections and
+  layout (`test_same_talent_rows_but_a_distinct_dataset_identity`); only `clientBuild`,
+  `generatedAt` and `contentHash` differ. The allocation inventory
+  (`scripts/allocation_inventory.py`) is identical, no new mechanic, Rogue Venom still the
+  only unsupported node, the M2 vectors (pinned to 70009) replay 53/53, and no confidence
+  label changes (EDGE-ACTIVE / EDGE-SUF remain hypotheses).
+* **Interpretation.** 70374 is a client build without talent-data changes. It is
+  nevertheless published as its own dataset: a build saved on 70338 keeps opening on 70338,
+  a new build is created on 70374, and the two datasets can never stand in for each other
+  (different `clientBuild` and hashes; `ProductDatasetContractTest` proves that 70338's
+  identical sidecars fail with a typed `BuildMismatch` for 70374).
+
+### Icons, descriptions and Russian text
+
+* Visuals: 469 / 469 entries resolved from 70374's own `TraitDefinition` → `SpellMisc` rows;
+  358 icon files fetched from 70374 and converted — the PNGs are byte-identical to 70338's.
+* Descriptions: 1329 ranks — **1281 resolved, 47 partial, 1 unresolved** (Druid Shifting
+  Power `$c`), identical statuses to 70338 —
+  `docs/research/forever-1.60.1.70374-tooltip-coverage.md`.
+* ruRU: the 70374 exports pass every source check of `talent_data.localization.source`
+  (ruRU applied, same columns, ids and non-text columns as enUS, Cyrillic present); coverage
+  459 / 469 names, 355 / 469 descriptions (1058 / 1329 ranks), identical to 70338 —
+  `docs/research/forever-1.60.1.70374-ruRU-coverage.md`. The Warrior pilot overlay of 70374
+  is committed and linked to the 70374 dataset and tooltip hashes, so M5.REL.3b.1 can generate
+  the product-build overlays directly (`docs/talent-localization.md` §11).
+
+### Validity boundaries
+
+* Valid for WoW: Forever **1.60.1.70374** as published by wago.tools; nothing carries over to
+  another build without re-running the pipeline.
+* Not established: that 70374 is live on the realms, what the `wowf` product carries at
+  launch, and every semantic still listed as unresolved below.
+
 ## Product dataset 1.60.1.70338 (M5.DATA.2)
 
 ### Build selection
@@ -366,7 +480,8 @@ GitHub Issue and is the mandatory release preflight
 ([`docs/dataset-freshness-watch.md`](dataset-freshness-watch.md)). Since M5.DATA.2 a non-boolean `is_bgdl` on the wire
 (`"false"`, `0`) is an unexpected schema, not a publishability answer (it used to be coerced
 by the lax pydantic `bool`). On 2026-10-10 it answered `OUTDATED` for 70245 and `CURRENT`
-for 70338.
+for 70338; on 2026-10-14 `OUTDATED` for 70338 (by 70374), and `CURRENT` for 70374 after
+`PRODUCT_BUNDLE` moved (M5.DATA.3, checked 17:28 UTC).
 
 ## Product dataset 1.60.1.70245 (M5.DATA)
 

@@ -1,8 +1,9 @@
 """Product freshness check (M5.DATA.2): CURRENT / OUTDATED / UNKNOWN, offline.
 
 Every case runs the real ``WagoBuildSource`` + ``HttpClient`` against an
-``httpx.MockTransport`` serving ``tests/fixtures/wago/builds-2026-10-10.json`` (a real
-``/api/builds`` subset) or a variant of it derived explicitly in the test. A network,
+``httpx.MockTransport`` serving ``tests/fixtures/wago/builds-2026-10-10.json`` or
+``builds-2026-10-14.json`` (real ``/api/builds`` subsets) or a variant of one derived
+explicitly in the test. A network,
 HTTP or schema failure must be UNKNOWN - never CURRENT ("no update").
 """
 
@@ -29,15 +30,24 @@ from talent_data.versions import ClientVersion
 
 ROOT = Path(__file__).resolve().parents[2]
 BUILDS = ROOT / "tests" / "fixtures" / "wago" / "builds-2026-10-10.json"
+# The index of the M5.DATA.3 decision (2026-10-14 16:50 UTC): 70374 is the newest Forever
+# build, explicitly not a background download; a new `wowf` product appeared with 70245.
+BUILDS_70374 = ROOT / "tests" / "fixtures" / "wago" / "builds-2026-10-14.json"
 GAME = get_game("forever")
 NOW = datetime(2026, 10, 10, 17, 28, 14, tzinfo=UTC)
 V70245, V70291, V70334, V70338 = "1.60.1.70245", "1.60.1.70291", "1.60.1.70334", "1.60.1.70338"
+V70374 = "1.60.1.70374"
 
 Handler = Callable[[httpx.Request], httpx.Response]
 
 
 def payload() -> dict[str, Any]:
     data: dict[str, Any] = json.loads(BUILDS.read_text(encoding="utf-8"))
+    return data
+
+
+def payload_70374() -> dict[str, Any]:
+    data: dict[str, Any] = json.loads(BUILDS_70374.read_text(encoding="utf-8"))
     return data
 
 
@@ -107,6 +117,36 @@ def test_a_newer_publishable_build_makes_the_product_outdated() -> None:
 def test_after_switching_the_product_the_same_source_is_current() -> None:
     assert check(serving(payload()), V70245).status is FreshnessStatus.OUTDATED
     assert check(serving(payload()), V70338).status is FreshnessStatus.CURRENT
+
+
+def test_the_m5_data_3_index_makes_the_previous_product_outdated() -> None:
+    """The transition M5.DATA.3 made: 70338 was the product, 70374 appeared publishable."""
+    report = check(serving(payload_70374()), V70338)
+    assert report.status is FreshnessStatus.OUTDATED
+    assert latest_publishable(report) == V70374
+    assert report.latest_publishable is not None
+    assert report.latest_publishable.background_download is False
+    assert "1.60.1.70374 is publishable (is_bgdl=false)" in report.reason
+
+
+def test_the_m5_data_3_index_is_current_for_70374() -> None:
+    report = check(serving(payload_70374()), V70374)
+    assert report.status is FreshnessStatus.CURRENT
+    assert latest_publishable(report) == V70374
+    assert report.latest_detected is not None
+    assert str(report.latest_detected.info.version) == V70374
+    assert report.newer_unpublishable == ()
+
+
+def test_the_wowf_product_is_outside_the_game_s_products() -> None:
+    """``wowf`` (first seen in the 2026-10-14 index, carrying 1.60.1.70245) is not one of
+    the products Forever is mapped to, so it is never a candidate - an explicit, documented
+    scope limit (docs/dataset-freshness-watch.md), not a judgement about that product."""
+    assert GAME.products == ("wow_classic_beta",)
+    assert [e["version"] for e in payload_70374()["wowf"]] == [V70245]
+    report = check(serving(payload_70374()), V70374)
+    assert report.latest_publishable is not None
+    assert report.latest_publishable.info.product == "wow_classic_beta"
 
 
 def test_a_newer_background_download_build_is_not_an_update() -> None:
@@ -319,8 +359,8 @@ def test_script_checks_the_app_s_product_bundle(
     script = load_script("check_product_freshness")
     declared = script.product_build()
     assert declared in script.BUNDLED_BUILDS
-    monkeypatch.setattr(cli, "_http", lambda: http(serving(payload())))
+    monkeypatch.setattr(cli, "_http", lambda: http(serving(payload_70374())))
     code = script.main([])
     result = json.loads(capsys.readouterr().out)
-    assert result["productBuild"] == declared
-    assert code == {"CURRENT": 0, "OUTDATED": 3}[result["status"]]
+    # the app declares the build this index names as the latest publishable one
+    assert (result["productBuild"], result["status"], code) == (declared, "CURRENT", 0)

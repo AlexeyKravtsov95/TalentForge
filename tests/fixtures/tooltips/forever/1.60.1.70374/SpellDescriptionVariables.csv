@@ -1,0 +1,26 @@
+ID,Variables
+823,"$damagepower=${9.183105+0.616405*$PL+0.028608*$PL*$PL}
+$healpower=${38.949830+0.606705*$PL+0.167780*$PL*$PL}"
+824,"$damagepower=${7.583798+0.471881*$PL+0.036599*$PL*$PL}
+$healpower=${29.888200+0.690312*$PL+0.136267*$PL*$PL}"
+1015,"$twinD=$?s1225132[${$1225132m1/100+1)}][${1}]
+$spiritualH=$?s14898[${$14898m1/100+1)}][${1}]
+$mult=${$<twinD>*$<spiritualH>}"
+1016,"$shadowMult=$?a23761[${$23785m1/100+1}][${1}]
+$fireMult=$?a23759[${$23785m1/100+1}][${1}]
+$petMult=$?a18769[${$18769m1/100+1}][${1}]
+$mult=${$<fireMult>*$<petMult>*$<shadowMult>}
+$sps=${$SPS}
+$spfi=${$SPFI}
+$which=${$cond($gt($<spfi>,$<sps>), $<spfi>,$<sps>)}
+$minDam=${((($pl-26)*1.5)+14+(0.078*$<which>))*$<mult>}
+$maxDam=${((($pl-26)*1.5)+17+(0.078*$<which>))*$<mult>}"
+1020,"$shadowMult=$?a23761[${1.1}][${1}]
+$fireMult=$?a23759[${1.1}][${1}]
+$petMult=$?a18769[${1.1}][${1}]
+$mult=${$<fireMult>*$<petMult>*$<shadowMult>}
+$sps=${$SPS}
+$spfi=${$SPFI}
+$which=${$cond($gt($<spfi>,$<sps>), $<spfi>,$<sps>)}
+$minDam=${((($pl-26)*1.5)+14+(0.078*$<which>))}
+$maxDam=${((($pl-26)*1.5)+17+(0.078*$<which>))}"

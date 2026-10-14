@@ -52,7 +52,7 @@ data class HomeModel(
 data class NewBuildChoices(
     val gameDisplayName: String,
 
-    /** Human data version of the bundle's client build (`1.60.1.70338` → `1.60.1`). */
+    /** Human data version of the bundle's client build (`1.60.1.70374` → `1.60.1`). */
     val dataVersion: String,
     val classes: List<NewBuildClassChoice>,
 )

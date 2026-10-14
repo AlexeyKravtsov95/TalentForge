@@ -1,4 +1,5 @@
-"""Shared inputs for the localization tests: the real enUS/ruRU rows of the product build."""
+"""Shared inputs for the localization tests: the real enUS/ruRU rows of the M5.REL.3a pilot
+build 1.60.1.70338 (the product build of M5.REL.3a, retained since M5.DATA.3)."""
 
 from __future__ import annotations
 
@@ -16,21 +17,21 @@ from talent_data.pipeline import read_document
 from talent_data.sources.local import LocalCsvDb2Source
 from talent_data.tooltips.pipeline import read_tooltips_document
 from talent_data.tooltips.spells import SpellLookup
-from tests.helpers import FIXTURES, PRODUCT_BUILD
+from tests.helpers import FIXTURES, PILOT_BUILD
 
 ROOT = Path(__file__).resolve().parents[3]
 GAME = get_game("forever")
 LOCALE = "ruRU"
 SOURCE_NAME = "wago.tools"
-DATASET = ROOT / "data" / "normalized" / "forever" / str(PRODUCT_BUILD)
-TOOLTIPS = ROOT / "data" / "tooltips" / "forever" / str(PRODUCT_BUILD)
-OVERLAYS = ROOT / "data" / "localization" / "forever" / str(PRODUCT_BUILD) / LOCALE
-REPORT = ROOT / "artifacts" / "localization" / f"forever-{PRODUCT_BUILD}-{LOCALE}-coverage.json"
-MARKDOWN = ROOT / "docs" / "research" / f"forever-{PRODUCT_BUILD}-{LOCALE}-coverage.md"
+DATASET = ROOT / "data" / "normalized" / "forever" / str(PILOT_BUILD)
+TOOLTIPS = ROOT / "data" / "tooltips" / "forever" / str(PILOT_BUILD)
+OVERLAYS = ROOT / "data" / "localization" / "forever" / str(PILOT_BUILD) / LOCALE
+REPORT = ROOT / "artifacts" / "localization" / f"forever-{PILOT_BUILD}-{LOCALE}-coverage.json"
+MARKDOWN = ROOT / "docs" / "research" / f"forever-{PILOT_BUILD}-{LOCALE}-coverage.md"
 # Real rows of both exports (identical ids); regenerate with
 # `python scripts/extract_fixtures.py --build 1.60.1.70338 --localization ruRU`.
-LOCALIZATION_FIXTURES = FIXTURES / "localization" / "forever" / str(PRODUCT_BUILD)
-TOOLTIP_FIXTURES = FIXTURES / "tooltips" / "forever" / str(PRODUCT_BUILD)
+LOCALIZATION_FIXTURES = FIXTURES / "localization" / "forever" / str(PILOT_BUILD)
+TOOLTIP_FIXTURES = FIXTURES / "tooltips" / "forever" / str(PILOT_BUILD)
 
 
 def english_source() -> LocalCsvDb2Source:
@@ -50,8 +51,8 @@ def inputs() -> LocalizationInputs:
     return load_inputs(
         english_source(),
         russian_source(),
-        SpellLookup.load(tooltip_source(), PRODUCT_BUILD),
-        PRODUCT_BUILD,
+        SpellLookup.load(tooltip_source(), PILOT_BUILD),
+        PILOT_BUILD,
         LOCALE,
     )
 
@@ -65,7 +66,7 @@ def build() -> BuildLocalization:
             russian_source(),
             tooltip_source(),
             GAME,
-            PRODUCT_BUILD,
+            PILOT_BUILD,
             LOCALE,
             source_name=SOURCE_NAME,
         )

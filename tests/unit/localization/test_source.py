@@ -18,11 +18,11 @@ from talent_data.localization.source import (
 )
 from talent_data.sources.base import Db2Table
 from talent_data.sources.http import HttpClient, HttpConfig
-from tests.helpers import NEW_BUILD, PRODUCT_BUILD
+from tests.helpers import NEW_BUILD, PILOT_BUILD
 from tests.unit.localization.conftest import LOCALE, english_source, russian_source
 
 CSV = "ID,Name_lang\n12282,Улучшенный\n".encode()
-URL = f"https://wago.tools/db2/SpellName/csv?build={PRODUCT_BUILD}&locale=ruRU"
+URL = f"https://wago.tools/db2/SpellName/csv?build={PILOT_BUILD}&locale=ruRU"
 
 
 class Server:
@@ -50,17 +50,17 @@ def csv_ok(body: bytes = CSV) -> httpx.Response:
 
 def test_request_and_cache_are_pinned_to_build_and_locale(tmp_path: Path) -> None:
     server = Server(csv_ok())
-    table = source(server, tmp_path).load_table(PRODUCT_BUILD, "SpellName")
+    table = source(server, tmp_path).load_table(PILOT_BUILD, "SpellName")
     assert str(server.requests[0].url) == URL
-    path = tmp_path / str(PRODUCT_BUILD) / "locale" / "ruRU" / "SpellName.csv"
+    path = tmp_path / str(PILOT_BUILD) / "locale" / "ruRU" / "SpellName.csv"
     assert json.loads(path.with_name(path.name + ".meta.json").read_text())["url"] == URL
     assert table.rows[0]["Name_lang"] == "Улучшенный"
 
 
 def test_cached_table_is_not_downloaded_again(tmp_path: Path) -> None:
-    source(Server(csv_ok()), tmp_path).ensure_table(PRODUCT_BUILD, "SpellName")
+    source(Server(csv_ok()), tmp_path).ensure_table(PILOT_BUILD, "SpellName")
     server = Server()  # any request would fail
-    source(server, tmp_path).ensure_table(PRODUCT_BUILD, "SpellName")
+    source(server, tmp_path).ensure_table(PILOT_BUILD, "SpellName")
     assert server.requests == []
 
 
@@ -68,26 +68,26 @@ def test_a_table_recorded_for_another_url_is_never_reused(tmp_path: Path) -> Non
     """An export of another build copied into this build's locale directory is not reused."""
     source(Server(csv_ok()), tmp_path).ensure_table(NEW_BUILD, "SpellName")
     old = tmp_path / str(NEW_BUILD) / "locale" / "ruRU"
-    new = tmp_path / str(PRODUCT_BUILD) / "locale" / "ruRU"
+    new = tmp_path / str(PILOT_BUILD) / "locale" / "ruRU"
     new.mkdir(parents=True)
     for name in ("SpellName.csv", "SpellName.csv.meta.json"):
         (new / name).write_bytes((old / name).read_bytes())
     server = Server(csv_ok())
-    source(server, tmp_path).ensure_table(PRODUCT_BUILD, "SpellName")
+    source(server, tmp_path).ensure_table(PILOT_BUILD, "SpellName")
     assert [str(r.url) for r in server.requests] == [URL]
 
 
 def test_offline_without_cache_is_a_typed_failure(tmp_path: Path) -> None:
     offline = WagoLocalizedDb2Source(None, tmp_path, LOCALE, offline=True)
     with pytest.raises(LocalizationSourceError) as caught:
-        offline.load_table(PRODUCT_BUILD, "SpellName")
+        offline.load_table(PILOT_BUILD, "SpellName")
     assert caught.value.kind is LocalizationSourceErrorKind.NOT_CACHED
 
 
 def test_unknown_build_is_a_transport_failure(tmp_path: Path) -> None:
     page = httpx.Response(400, content=b"<html>error</html>", headers={"content-type": "text/html"})
     with pytest.raises(LocalizationSourceError) as caught:
-        source(Server(page), tmp_path).ensure_table(PRODUCT_BUILD, "SpellName")
+        source(Server(page), tmp_path).ensure_table(PILOT_BUILD, "SpellName")
     assert caught.value.kind is LocalizationSourceErrorKind.TRANSPORT
 
 
@@ -109,8 +109,8 @@ def test_only_investigated_locales_are_accepted_case_sensitively(
 
 def real(table: str) -> tuple[Db2Table, Db2Table]:
     return (
-        english_source().load_table(PRODUCT_BUILD, table),
-        russian_source().load_table(PRODUCT_BUILD, table),
+        english_source().load_table(PILOT_BUILD, table),
+        russian_source().load_table(PILOT_BUILD, table),
     )
 
 
