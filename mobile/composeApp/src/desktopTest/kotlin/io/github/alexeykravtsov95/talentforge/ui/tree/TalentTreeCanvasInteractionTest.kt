@@ -38,6 +38,8 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 
 /**
  * Interaction tests of the read-only canvas against the real bundled Warrior
@@ -46,6 +48,10 @@ import org.junit.Rule
  * gesture handler match the positions injected by the touch simulator.
  */
 class TalentTreeCanvasInteractionTest {
+
+    /** M5.REL.2b: the UI copy follows the platform locale — pinned to English, whatever the JVM default. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     @get:Rule
     val composeRule = createComposeRule()

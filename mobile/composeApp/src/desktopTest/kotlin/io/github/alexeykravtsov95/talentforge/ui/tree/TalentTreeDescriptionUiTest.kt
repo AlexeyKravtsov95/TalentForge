@@ -33,6 +33,8 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 
 /**
  * M5.V2: the real screen shows real, build-pinned talent descriptions in the
@@ -41,6 +43,10 @@ import org.junit.Rule
  * frozen M4 controls stay where they were.
  */
 class TalentTreeDescriptionUiTest {
+
+    /** M5.REL.2b: the UI copy follows the platform locale — pinned to English, whatever the JVM default. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     @get:Rule
     val composeRule = createComposeRule()
@@ -95,8 +101,8 @@ class TalentTreeDescriptionUiTest {
     private fun rend(percent: Int) = "Increases the Bleed damage done by your Rend ability by $percent%."
 
     private fun assertComparison(current: String, next: String) {
-        composeRule.onNodeWithText(CURRENT_LABEL).assertExists()
-        composeRule.onNodeWithText(NEXT_RANK_LABEL).assertExists()
+        composeRule.onNodeWithText(EditorCopy.English.current).assertExists()
+        composeRule.onNodeWithText(EditorCopy.English.nextRank).assertExists()
         composeRule.onNodeWithText(current).assertExists()
         composeRule.onNodeWithText(next).assertExists()
     }
@@ -130,7 +136,7 @@ class TalentTreeDescriptionUiTest {
 
         click("+")
         composeRule.onNodeWithText(rend(35)).assertExists()
-        composeRule.onNodeWithText(NEXT_RANK_LABEL).assertDoesNotExist()
+        composeRule.onNodeWithText(EditorCopy.English.nextRank).assertDoesNotExist()
     }
 
     @Test
@@ -241,7 +247,7 @@ class TalentTreeDescriptionUiTest {
 
         composeRule.onNode(hasText("have a $MISSING_MARK% chance per Combo Point", substring = true))
             .assertExists()
-        composeRule.onNodeWithText(MISSING_NOTE_CHARACTER).assertExists()
+        composeRule.onNodeWithText(EditorCopy.English.missingCharacter).assertExists()
     }
 
     @Test
@@ -249,7 +255,7 @@ class TalentTreeDescriptionUiTest {
         compose(readyStateOf("WARRIOR").copy(descriptions = TalentNodeDescriptions.Unavailable))
         select("Improved Rend")
 
-        composeRule.onNodeWithText(DescriptionBody.Unavailable.TEXT).assertExists()
+        composeRule.onNodeWithText(EditorCopy.English.descriptionUnavailable).assertExists()
         click("+")
         composeRule.onNodeWithText("1 / 51").assertExists()
         assertEquals(1, count(TALENT_INSPECTOR_ICON_TAG))

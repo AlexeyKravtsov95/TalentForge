@@ -23,7 +23,7 @@ import io.github.alexeykravtsov95.talentforge.ui.library.DraftCreation
 import io.github.alexeykravtsov95.talentforge.ui.library.createClassDraft
 import io.github.alexeykravtsov95.talentforge.ui.navigation.DesktopBackDispatcher
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
-import io.github.alexeykravtsov95.talentforge.ui.tree.INSPECTOR_EXPAND_LABEL
+import io.github.alexeykravtsov95.talentforge.ui.tree.EditorCopy
 import io.github.alexeykravtsov95.talentforge.ui.tree.TALENT_INSPECTOR_COMPACT_TAG
 import io.github.alexeykravtsov95.talentforge.ui.tree.TALENT_INSPECTOR_SHEET_TAG
 import kotlin.test.BeforeTest
@@ -106,7 +106,7 @@ class SystemBackOrderAppUiTest {
         storage.writeDelayMillis = 2_500
         composeRule.onNodeWithContentDescription("Improved Rend").performClick()
         composeRule.onNodeWithText("+").performClick()
-        composeRule.onNodeWithContentDescription(INSPECTOR_EXPAND_LABEL).performClick()
+        composeRule.onNodeWithContentDescription(EditorCopy.English.expand).performClick()
         composeRule.waitForIdle()
         assertTrue(has(TALENT_INSPECTOR_SHEET_TAG))
 

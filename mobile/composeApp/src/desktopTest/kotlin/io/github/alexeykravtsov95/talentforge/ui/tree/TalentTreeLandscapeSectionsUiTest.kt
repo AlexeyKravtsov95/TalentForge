@@ -495,7 +495,7 @@ class TalentTreeLandscapeSectionsUiTest {
     fun aPortraitSheetExpansionAddsNoHiddenBackStepInLandscape() {
         onEditor(width = 412, height = 915) { session ->
             select("Improved Rend")
-            onNodeWithContentDescription(INSPECTOR_EXPAND_LABEL).performClick()
+            onNodeWithContentDescription(EditorCopy.English.expand).performClick()
             settle()
             rotate(session, 915, 412)
             assertTrue(hasPanel())
@@ -607,7 +607,7 @@ class TalentTreeLandscapeSectionsUiTest {
             rotate(session, 412, 915)
             select("Improved Rend")
             assertTrue(hasCompactBar())
-            onNodeWithContentDescription(INSPECTOR_EXPAND_LABEL).performClick()
+            onNodeWithContentDescription(EditorCopy.English.expand).performClick()
             settle()
             assertTrue(onAllNodes(hasTestTag(TALENT_INSPECTOR_SHEET_TAG)).fetchSemanticsNodes().isNotEmpty())
             runOnIdle { DesktopBackDispatcher.dispatch() } // collapse

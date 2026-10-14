@@ -467,10 +467,10 @@ class TalentTreeGesturesUiTest {
             onNodeWithTag(TALENT_INSPECTOR_COMPACT_TAG).assertIsDisplayed()
             onNodeWithContentDescription(SHORT_DESCRIPTION_TALENT).assertIsSelected()
             // taps still work: the handle and the name
-            onNodeWithContentDescription(INSPECTOR_EXPAND_LABEL).performClick()
+            onNodeWithContentDescription(EditorCopy.English.expand).performClick()
             settle()
             onNodeWithTag(TALENT_INSPECTOR_SHEET_TAG).assertIsDisplayed()
-            onNodeWithContentDescription(INSPECTOR_COLLAPSE_LABEL).performClick()
+            onNodeWithContentDescription(EditorCopy.English.collapse).performClick()
             settle()
             onNodeWithText(SHORT_DESCRIPTION_TALENT).performClick()
             settle()
@@ -517,7 +517,7 @@ class TalentTreeGesturesUiTest {
             settle()
             onNodeWithContentDescription(case.nodeName).performSemanticsAction(SemanticsActions.OnClick)
             settle()
-            onNodeWithContentDescription(INSPECTOR_EXPAND_LABEL).performClick()
+            onNodeWithContentDescription(EditorCopy.English.expand).performClick()
             settle()
             val scroll = onNodeWithTag(TALENT_INSPECTOR_DETAIL_SCROLL_TAG, useUnmergedTree = true)
             val range = assertNotNull(
@@ -541,7 +541,7 @@ class TalentTreeGesturesUiTest {
         onPhone(productState("WARRIOR")) { session ->
             onNodeWithContentDescription(SHORT_DESCRIPTION_TALENT).performClick()
             settle()
-            onNodeWithContentDescription(INSPECTOR_EXPAND_LABEL).performClick()
+            onNodeWithContentDescription(EditorCopy.English.expand).performClick()
             settle()
             onNodeWithTag(TALENT_INSPECTOR_SHEET_TAG).assertIsDisplayed()
 

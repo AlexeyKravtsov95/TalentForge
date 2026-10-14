@@ -217,9 +217,9 @@ class TalentNodePresentationTest {
 
         val content = buildTalentInspectorContent(tree.nodes.getValue(IMPROVED_REND), tree, facts)
 
-        assertEquals("Improved Rend", content.name)
+        assertEquals(TalentName(IMPROVED_REND, "Improved Rend"), content.name)
         assertEquals("0/3", content.rankText)
-        assertEquals("Available", content.stateLine)
+        assertEquals(InspectorText.Available, content.stateLine)
         assertNull(content.showAction)
         assertNull(content.prerequisiteLine)
         assertNull(content.tierLine)
@@ -233,14 +233,18 @@ class TalentNodePresentationTest {
 
         val content = buildTalentInspectorContent(tree.nodes.getValue(DEEP_WOUNDS), tree, facts)
 
-        assertEquals("Deep Wounds", content.name)
-        assertEquals("Requires Improved Rend 3/3", content.prerequisiteLine)
+        assertEquals(TalentName(DEEP_WOUNDS, "Deep Wounds"), content.name)
+        assertEquals(
+            InspectorText.RequiresPrerequisite(TalentName(IMPROVED_REND, "Improved Rend"), requiredRank = 3),
+            content.prerequisiteLine,
+        )
+        assertNull(content.stateLine, "a locked node's lock lines are its state")
         val show = assertNotNull(content.showAction)
         assertEquals(IMPROVED_REND, show.prerequisiteNodeId)
-        assertEquals("Improved Rend", show.prerequisiteName)
+        assertEquals(TalentName(IMPROVED_REND, "Improved Rend"), show.prerequisiteName)
         // both lock facts stay visible: tier meter present alongside the prereq
         assertEquals(1, content.tierMeters.size)
-        assertEquals("Spend 10 more points in this tree", content.tierLine)
+        assertEquals(InspectorText.SpendMorePoints(deficit = 10), content.tierLine)
     }
 
     @Test
@@ -252,7 +256,7 @@ class TalentNodePresentationTest {
         val content = buildTalentInspectorContent(tree.nodes.getValue(IMPROVED_CHARGE), tree, facts)
 
         assertNull(content.showAction, "a tier-only lock never invents a prerequisite Show")
-        assertEquals("Spend 5 more points in this tree", content.tierLine)
+        assertEquals(InspectorText.SpendMorePoints(deficit = 5), content.tierLine)
         assertEquals(5, content.tierMeters.single().requiredPoints)
         assertEquals(0, content.tierMeters.single().spentPoints)
     }
@@ -268,11 +272,14 @@ class TalentNodePresentationTest {
             tree.nodes.getValue(IMPROVED_REND),
             tree,
             facts,
-            guideOriginName = "Deep Wounds",
+            guideOriginName = facts.talentName(DEEP_WOUNDS),
         )
 
-        assertEquals("Available", plain.stateLine)
-        assertEquals("Available · needed for Deep Wounds", guided.stateLine)
+        assertEquals(InspectorText.Available, plain.stateLine)
+        assertEquals(
+            InspectorText.NeededFor(InspectorText.Available, TalentName(DEEP_WOUNDS, "Deep Wounds")),
+            guided.stateLine,
+        )
     }
 
     @Test
@@ -286,7 +293,7 @@ class TalentNodePresentationTest {
 
         val content = buildTalentInspectorContent(tree.nodes.getValue(2), tree, facts)
 
-        assertEquals("No talent points left · 1/1 spent", content.stateLine)
+        assertEquals(InspectorText.NoPointsLeft(spentPoints = 1, pointBudget = 1), content.stateLine)
     }
 
     @Test
@@ -315,7 +322,7 @@ class TalentNodePresentationTest {
 
         assertNull(content.showAction)
         assertEquals(listOf(1, 2), tree.nodes.getValue(3).unmetPrerequisiteNodeIds)
-        assertEquals("Requires 2 prerequisite talents", content.prerequisiteLine)
+        assertEquals(InspectorText.RequiresPrerequisites(count = 2), content.prerequisiteLine)
     }
 }
 

@@ -28,6 +28,8 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 
 /**
  * M4.2 review regression: the Talent Tree canvas is a real viewport — after a
@@ -40,6 +42,10 @@ import org.junit.Rule
  * colours; any escaped canvas pixel would change them.
  */
 class TalentTreeCanvasClippingTest {
+
+    /** M5.REL.2b: the UI copy follows the platform locale — pinned to English, whatever the JVM default. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     @get:Rule
     val composeRule = createComposeRule()

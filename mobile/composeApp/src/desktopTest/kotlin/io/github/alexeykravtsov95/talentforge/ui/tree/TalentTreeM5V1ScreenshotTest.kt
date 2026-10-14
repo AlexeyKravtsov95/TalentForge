@@ -39,6 +39,8 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.Assume.assumeTrue
 import org.junit.Rule
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 
 /**
  * Produces M5.V1 visual evidence of the real screen with the real bundled
@@ -55,6 +57,10 @@ import org.junit.Rule
  * ```
  */
 class TalentTreeM5V1ScreenshotTest {
+
+    /** M5.REL.2b: the UI copy follows the platform locale — pinned to English, whatever the JVM default. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     @get:Rule
     val composeRule = createComposeRule()

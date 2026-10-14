@@ -24,6 +24,9 @@ import javax.imageio.ImageIO
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import org.junit.Assume.assumeTrue
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
+import org.junit.Rule
 
 /**
  * M5.UX.2a PR evidence from the REAL screen (desktop-rendered, product
@@ -42,6 +45,10 @@ import org.junit.Assume.assumeTrue
  */
 @OptIn(ExperimentalTestApi::class)
 class TalentTreeM5Ux2ScreenshotTest {
+
+    /** M5.REL.2b: the UI copy follows the platform locale — pinned to English, whatever the JVM default. */
+    @get:Rule
+    val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
 
     private val outputDir: File
         get() = File(System.getProperty(PROPERTY)!!)
@@ -89,7 +96,7 @@ class TalentTreeM5Ux2ScreenshotTest {
     }
 
     private fun ComposeUiTest.expand() {
-        onNodeWithContentDescription(INSPECTOR_EXPAND_LABEL).performClick()
+        onNodeWithContentDescription(EditorCopy.English.expand).performClick()
         settle()
     }
 

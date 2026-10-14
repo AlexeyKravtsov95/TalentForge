@@ -163,7 +163,10 @@ class TalentInspectorAdaptiveRulesTest {
                 )
                 if (expected.getValue(label) == TalentInspectorStateTone.BLOCKED) {
                     val reason = content.prerequisiteLine ?: content.tierLine ?: content.stateLine
-                    assertTrue(reason.isNotBlank(), "a blocked state always says why: $label")
+                    assertTrue(
+                        reason != null && EditorCopy.English.textOf(reason).isNotBlank(),
+                        "a blocked state always says why: $label",
+                    )
                 }
             }
         }

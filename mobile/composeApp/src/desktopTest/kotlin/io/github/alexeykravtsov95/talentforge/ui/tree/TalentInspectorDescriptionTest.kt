@@ -105,7 +105,7 @@ class TalentInspectorDescriptionTest {
         val bloodthirst = warrior.describe("Bloodthirst", 0)
         val body = assertIs<DescriptionBody.Text>(bloodthirst.body)
         assertTrue(DescriptionSpan.Missing in body.spans)
-        assertEquals(MISSING_NOTE_CHARACTER, body.missingNote)
+        assertEquals(MissingValuesNote.CHARACTER_DEPENDENT, body.missingNote)
         assertTrue(body.plainText.contains("Attack Power plus $MISSING_MARK and increasing"))
     }
 
@@ -116,7 +116,6 @@ class TalentInspectorDescriptionTest {
             buildTalentInspectorDescription(TalentNodeDescriptions.Unavailable, node.id, 1, node.maxRank),
         )
         assertEquals(DescriptionBody.Unavailable, unavailable.body)
-        assertEquals("Talent description unavailable for this client data.", DescriptionBody.Unavailable.TEXT)
         assertNull(unavailable.comparison)
         // a node the sidecar has nothing for is also unavailable, never guessed
         val missing = assertNotNull(
