@@ -16,6 +16,16 @@ spells, every spell they reference or nest, transitively), the whole of the smal
 ``SpellDuration``/``SpellRadius`` tables and the duration rows of ``GlobalStrings``:
 
     python scripts/extract_fixtures.py --build 1.60.1.70009 --tooltips
+
+``--localization <locale>`` (M5.REL.3a) writes ``tests/fixtures/localization/<game>/<build>/``
+with one directory per locale (``enUS`` and the given one): the rows of the localization
+tables the committed dataset reaches - its definitions, the spells naming them, the closure
+of spells their English *and* localized templates reference or nest, and the duration rows of
+``GlobalStrings``. Both locales get exactly the same row ids, so the fixture reproduces the
+enUS/locale comparison of the real exports:
+
+    python -m talent_data localization fetch --build 1.60.1.70338 --locale ruRU
+    python scripts/extract_fixtures.py --build 1.60.1.70338 --localization ruRU
 """
 
 from __future__ import annotations
@@ -34,6 +44,7 @@ from talent_data.db2.tables import (
     VISUAL_TABLES,
 )
 from talent_data.games import get_game
+from talent_data.localization.source import LOCALIZATION_TABLES, WagoLocalizedDb2Source
 from talent_data.normalization.class_resolution import resolve_class, trees_for_class
 from talent_data.sources.base import Db2Table, TableAvailability, TableStatus
 from talent_data.sources.capabilities import record_absent, snapshot_path
@@ -199,6 +210,63 @@ def extract_tooltips(cache: WagoDb2Source, game: str, version: ClientVersion) ->
     return dst
 
 
+def extract_localization(
+    cache: WagoDb2Source, game: str, version: ClientVersion, locale: str
+) -> Path:
+    """Localization fixture: identical row ids for enUS and ``locale``."""
+    localized_cache = WagoLocalizedDb2Source(
+        None, ROOT / ".cache" / "wago" / game, locale, offline=True
+    )
+    tables = {
+        "enUS": {name: cache.load_table(version, name) for name in LOCALIZATION_TABLES},
+        locale: {name: localized_cache.load_table(version, name) for name in LOCALIZATION_TABLES},
+    }
+    documents = load_canonical_dataset(get_game(game), version)
+    entries = [e for d in documents for tree in d.trees for n in tree.nodes for e in n.entries]
+    definition_ids = {str(e.definition_id) for e in entries}
+    definitions = [r for r in tables["enUS"]["TraitDefinition"].rows if r["ID"] in definition_ids]
+    text_spells = {
+        r["VisibleSpellID"] if r["VisibleSpellID"] != "0" else r["SpellID"] for r in definitions
+    }
+    descriptions = {
+        code: {r["ID"]: r["Description_lang"] for r in by_name["Spell"].rows}
+        for code, by_name in tables.items()
+    }
+    pending = [int(s) for s in text_spells]
+    spells: set[int] = set()
+    while pending:
+        spell_id = pending.pop()
+        if spell_id in spells:
+            continue
+        spells.add(spell_id)
+        for texts in descriptions.values():
+            description = texts.get(str(spell_id))
+            if not description:
+                continue
+            try:
+                values, nested = referenced_spells(parse(description))
+            except TemplateSyntaxError:
+                continue
+            pending += [*values, *nested]
+    spell_ids = {str(s) for s in spells}
+    keep: dict[str, Callable[[Row], bool]] = {
+        "SpellName": lambda r: r["ID"] in text_spells,
+        "TraitDefinition": lambda r: r["ID"] in definition_ids,
+        "Spell": lambda r: r["ID"] in spell_ids,
+        "GlobalStrings": lambda r: r["BaseTag"] in DURATION_TAGS,
+    }
+    root = ROOT / "tests" / "fixtures" / "localization" / game / str(version)
+    for code, by_name in tables.items():
+        dst = root / code
+        dst.mkdir(parents=True, exist_ok=True)
+        total = sum(
+            _write_table(table, [r for r in table.rows if keep[name](r)], dst)
+            for name, table in by_name.items()
+        )
+        print(f"localization {code}: {total} rows -> {dst}")
+    return root
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--game", default="forever")
@@ -207,12 +275,18 @@ def main() -> None:
     parser.add_argument(
         "--tooltips", action="store_true", help="write the tooltip fixture instead of classes"
     )
+    parser.add_argument(
+        "--localization", metavar="LOCALE", help="write the localization fixture (enUS + LOCALE)"
+    )
     args = parser.parse_args()
 
     cache = WagoDb2Source(None, ROOT / ".cache" / "wago" / args.game, offline=True)
     version = ClientVersion.parse(args.build)
     if args.tooltips:
         extract_tooltips(cache, args.game, version)
+        return
+    if args.localization:
+        extract_localization(cache, args.game, version, args.localization)
         return
     if not args.classes:
         parser.error("--classes is required unless --tooltips is given")
