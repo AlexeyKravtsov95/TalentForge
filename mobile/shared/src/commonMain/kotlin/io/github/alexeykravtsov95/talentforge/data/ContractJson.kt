@@ -2,6 +2,7 @@ package io.github.alexeykravtsov95.talentforge.data
 
 import io.github.alexeykravtsov95.talentforge.data.allocation.BuildFile
 import io.github.alexeykravtsov95.talentforge.data.conformance.ConformanceSuite
+import io.github.alexeykravtsov95.talentforge.data.localization.TalentLocalizationDocument
 import io.github.alexeykravtsov95.talentforge.data.manifest.DatasetManifest
 import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
 import io.github.alexeykravtsov95.talentforge.data.tooltips.TalentTooltipsDocument
@@ -66,6 +67,11 @@ object TalentDataContract {
     fun decodeTalentTooltipsDocument(bytes: ByteArray): TalentTooltipsDocument =
         decode(ContractKind.TALENT_TOOLTIPS, bytes, TalentTooltipsDocument.serializer()) { json.decodeFromString(it) }
 
+    fun decodeTalentLocalizationDocument(bytes: ByteArray): TalentLocalizationDocument =
+        decode(ContractKind.TALENT_LOCALIZATION, bytes, TalentLocalizationDocument.serializer()) {
+            json.decodeFromString(it)
+        }
+
     private inline fun <T : Any> decode(
         contract: ContractKind,
         bytes: ByteArray,
@@ -97,6 +103,7 @@ object TalentDataContract {
         is TalentVisualsDocument -> schemaVersion
         is TalentIconRegistry -> schemaVersion
         is TalentTooltipsDocument -> schemaVersion
+        is TalentLocalizationDocument -> schemaVersion
         else -> throw SerializationException("unexpected contract payload ${this::class.simpleName}")
     }
 

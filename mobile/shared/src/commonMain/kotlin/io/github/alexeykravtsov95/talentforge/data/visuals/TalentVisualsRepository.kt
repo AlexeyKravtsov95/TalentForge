@@ -140,9 +140,18 @@ class TalentVisuals internal constructor(
     val game: GameId,
     val clientBuild: String,
     val classToken: ClassToken,
+    /** The class document revision these visuals were verified against. */
+    val talentDataContentHash: ContentHash,
     private val iconByEntryId: Map<Int, Int>,
     private val assetPathByIcon: Map<Int, String>,
+    private val displaySpellIdByEntryId: Map<Int, Int>,
 ) {
+    /**
+     * The spell the client presents for a talent entry (`VisibleSpellID` when set, else
+     * `SpellID`); `null` for an id that is not an entry of the class.
+     */
+    fun displaySpellIdOf(entryId: Int): Int? = displaySpellIdByEntryId[entryId]
+
     /** Icon FileDataID of a talent entry; `null` for an id that is not an entry of the class. */
     fun iconFileDataIdOf(entryId: Int): Int? = iconByEntryId[entryId]
 
@@ -217,8 +226,10 @@ class BundledTalentVisualsRepository(
                 game = document.game,
                 clientBuild = document.clientBuild,
                 classToken = document.classInfo.token,
+                talentDataContentHash = document.contentHash,
                 iconByEntryId = iconByEntryId,
                 assetPathByIcon = assetPathByIcon,
+                displaySpellIdByEntryId = sidecar.entries.associate { it.entryId to it.displaySpellId },
             ),
         )
     }
