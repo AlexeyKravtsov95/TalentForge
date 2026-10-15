@@ -115,6 +115,8 @@ fun TalentTreeCanvas(
     purchaseNodeId: Int? = null,
     purchaseToken: Int = 0,
     icons: TalentNodeIcons = TalentNodeIcons.None,
+    /** M5.REL.3b.2: display names by node id that replace the dataset's (accessibility labels). */
+    localizedNames: Map<Int, String> = emptyMap(),
     onNodeSelected: (Int) -> Unit,
     onSelectionCleared: () -> Unit,
     modifier: Modifier = Modifier,
@@ -383,6 +385,7 @@ fun TalentTreeCanvas(
                 model = model,
                 presentation = presentation,
                 icons = icons,
+                localizedNames = localizedNames,
                 accent = accent,
                 selectedNodeId = selectedNodeId,
                 showGuide = showGuide,
@@ -428,6 +431,7 @@ private fun TalentTreeNodeLayer(
     model: TalentTreeUiModel,
     presentation: TalentTreePresentation,
     icons: TalentNodeIcons,
+    localizedNames: Map<Int, String>,
     accent: androidx.compose.ui.graphics.Color,
     selectedNodeId: Int?,
     showGuide: TalentShowGuide?,
@@ -454,6 +458,7 @@ private fun TalentTreeNodeLayer(
                 TalentTreeNode(
                     node = node,
                     nodePresentation = nodePresentation,
+                    displayName = localizedNames[node.id] ?: node.name,
                     icon = icons.iconOf(node.id),
                     accent = accent,
                     selected = node.id == selectedNodeId,
@@ -479,6 +484,8 @@ private fun TalentTreeNodeLayer(
 private fun TalentTreeNode(
     node: TalentTreeNodeUiModel,
     nodePresentation: TalentNodePresentation,
+    /** The verified Russian name in Russian (M5.REL.3b.2), else the dataset's name verbatim. */
+    displayName: String?,
     icon: androidx.compose.ui.graphics.ImageBitmap?,
     accent: androidx.compose.ui.graphics.Color,
     selected: Boolean,
@@ -489,8 +496,8 @@ private fun TalentTreeNode(
     accessibilityCopy: TalentNodeAccessibilityCopy,
     onNodeSelected: (Int) -> Unit,
 ) {
-    // the dataset's name verbatim; only a nameless node resolves the localized fallback
-    val description = node.name ?: TalentName(node.id, published = null).text()
+    // only a nameless node resolves the localized `Talent <id>` fallback
+    val description = displayName ?: TalentName(node.id, published = null).text()
     Box(
         modifier = Modifier
             .offset {

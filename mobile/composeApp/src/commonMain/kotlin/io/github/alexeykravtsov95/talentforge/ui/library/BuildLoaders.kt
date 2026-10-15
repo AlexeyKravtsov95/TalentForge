@@ -17,8 +17,10 @@ import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentDescriptionsLoader
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentIconsLoader
+import io.github.alexeykravtsov95.talentforge.ui.assets.TalentLocalizationLoader
 import io.github.alexeykravtsov95.talentforge.ui.tree.TalentNodeDescriptions
 import io.github.alexeykravtsov95.talentforge.ui.tree.TalentNodeIcons
+import io.github.alexeykravtsov95.talentforge.ui.tree.TalentNodeLocalization
 import io.github.alexeykravtsov95.talentforge.ui.tree.TalentTreeUiBuildError
 import io.github.alexeykravtsov95.talentforge.ui.tree.TalentTreeUiModel
 import io.github.alexeykravtsov95.talentforge.ui.tree.buildTreeUiModel
@@ -95,6 +97,12 @@ data class EditorSession(
      * the inspector and never fail the session.
      */
     val descriptions: TalentNodeDescriptions = TalentNodeDescriptions.None,
+    /**
+     * Verified Russian talent text of the tree (M5.REL.3b.2), shown when the app language is
+     * Russian. Presentation only: a missing or rejected overlay shows English and never
+     * fails the session.
+     */
+    val localization: TalentNodeLocalization = TalentNodeLocalization.None,
 )
 
 /** Typed, fail-closed editor opening failures. No silent migration exists. */
@@ -158,6 +166,7 @@ suspend fun loadEditorSession(
     localId: String,
     icons: TalentIconsLoader? = null,
     descriptions: TalentDescriptionsLoader? = null,
+    localization: TalentLocalizationLoader? = null,
 ): EditorLoad {
     val record = when (val opened = repository.open(localId)) {
         is BuildLibraryOutcome.Failed -> return EditorLoad.Failed(EditorFailure.Record(opened.error))
@@ -190,7 +199,12 @@ suspend fun loadEditorSession(
         is io.github.alexeykravtsov95.talentforge.ui.tree.TalentTreeUiBuildResult.Failed ->
             EditorLoad.Failed(EditorFailure.UiModel(built.error))
 
-        is io.github.alexeykravtsov95.talentforge.ui.tree.TalentTreeUiBuildResult.Ready ->
+        is io.github.alexeykravtsov95.talentforge.ui.tree.TalentTreeUiBuildResult.Ready -> {
+            // Loaded last, after every allocation gate passed: icons, descriptions and
+            // their localization can never influence whether a build opens. The overlay is
+            // checked against the sidecars loaded here, so each asset is read once.
+            val iconLoad = icons?.load(document, tree)
+            val descriptionLoad = descriptions?.load(document, tree)
             EditorLoad.Ready(
                 EditorSession(
                     record = record,
@@ -199,13 +213,13 @@ suspend fun loadEditorSession(
                     buildState = state,
                     classDisplayName = document.classInfo.name,
                     gameDisplayName = gameDisplayName(document.game),
-                    // Loaded last, after every allocation gate passed: icons
-                    // can never influence whether a build opens.
-                    icons = icons?.load(document, tree)?.icons ?: TalentNodeIcons.None,
-                    descriptions = descriptions?.load(document, tree)?.descriptions
-                        ?: TalentNodeDescriptions.None,
+                    icons = iconLoad?.icons ?: TalentNodeIcons.None,
+                    descriptions = descriptionLoad?.descriptions ?: TalentNodeDescriptions.None,
+                    localization = localization?.load(document, tree, descriptionLoad?.tooltips, iconLoad?.visuals)
+                        ?: TalentNodeLocalization.None,
                 ),
             )
+        }
     }
 }
 

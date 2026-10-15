@@ -7,6 +7,7 @@ import io.github.alexeykravtsov95.talentforge.data.DatasetAssetSource
 import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
 import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentTree
 import io.github.alexeykravtsov95.talentforge.data.visuals.BundledTalentVisualsRepository
+import io.github.alexeykravtsov95.talentforge.data.visuals.TalentVisuals
 import io.github.alexeykravtsov95.talentforge.data.visuals.VisualsLoadError
 import io.github.alexeykravtsov95.talentforge.data.visuals.VisualsOutcome
 import io.github.alexeykravtsov95.talentforge.ui.tree.TalentNodeIcons
@@ -99,6 +100,11 @@ data class TalentNodeIconsLoad(
     val visualsError: VisualsLoadError?,
     /** Nodes whose own icon image failed, by node id. */
     val failedNodes: Map<Int, TalentIconFailure>,
+    /**
+     * The verified visuals sidecar itself (`null` on failure): its display spell ids check a
+     * localization overlay's `textSpellId` without reading the asset again (M5.REL.3b.2).
+     */
+    val visuals: TalentVisuals? = null,
 )
 
 /**
@@ -136,6 +142,6 @@ class TalentIconsLoader(
                 is TalentIconLoad.Failed -> failures[node.id] = icon.reason
             }
         }
-        return TalentNodeIconsLoad(TalentNodeIcons(bitmaps), visualsError = null, failedNodes = failures)
+        return TalentNodeIconsLoad(TalentNodeIcons(bitmaps), visualsError = null, failedNodes = failures, visuals = visuals)
     }
 }

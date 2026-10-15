@@ -78,10 +78,18 @@ data class TalentTreeNodeFacts(
     fun maxRankOf(nodeId: Int): Int = maxRanks[nodeId] ?: 0
 }
 
-/** Builds the node facts of an engine's tree (one lookup per node). */
-fun talentNodeFacts(engine: io.github.alexeykravtsov95.talentforge.allocation.TalentAllocationEngine): TalentTreeNodeFacts =
+/**
+ * Builds the node facts of an engine's tree (one lookup per node). [localizedNames] (M5.REL.3b.2,
+ * by node id) replaces the dataset's English name for display only — inspector heading,
+ * prerequisite/Show/"needed for"/blocked-action copy all name talents through these facts —
+ * while the engine's tree keeps its own names.
+ */
+fun talentNodeFacts(
+    engine: io.github.alexeykravtsov95.talentforge.allocation.TalentAllocationEngine,
+    localizedNames: Map<Int, String> = emptyMap(),
+): TalentTreeNodeFacts =
     TalentTreeNodeFacts(
-        names = engine.tree.nodes.associate { it.id to it.name },
+        names = engine.tree.nodes.associate { it.id to (localizedNames[it.id] ?: it.name) },
         maxRanks = engine.tree.nodes.associate { it.id to it.maxRank },
     )
 
