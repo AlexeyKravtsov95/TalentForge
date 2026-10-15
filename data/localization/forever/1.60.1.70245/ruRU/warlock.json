@@ -1,0 +1,4148 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "clientBuild": "1.60.1.70245",
+  "classToken": "WARLOCK",
+  "locale": "ruRU",
+  "talentDataContentHash": "sha256:ff947e568e5ed55a625befdf153cde7788f9d2c660bc5b2a9ab3ba5dd842b352",
+  "tooltipsContentHash": "sha256:ac6e0023de6209e81f2a593f78745ca23b6239ac5804b837c111a0374763dfb9",
+  "entries": [
+    {
+      "entryId": 130604,
+      "nodeId": 105874,
+      "definitionId": 135405,
+      "spellId": 412758,
+      "textSpellId": 412758,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Испепеление",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130605,
+      "nodeId": 105875,
+      "definitionId": 135406,
+      "spellId": 426316,
+      "textSpellId": 426316,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Тьма и пламя",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Когда вы поражаете противника \"Поджиганием\", наносимый урон от темной магии увеличивается на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "20 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Когда вы поражаете противника \"Ожогом Тьмы\", наносимый урон от огня увеличивается на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "20 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Кроме того, \"Поджигание\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " не поглощает \"Жертвенный огонь\", а \"Ожог Тьмы\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " мгновенно восстанавливает осколок души.\""
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Когда вы поражаете противника \"Поджиганием\", наносимый урон от темной магии увеличивается на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "20 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Когда вы поражаете противника \"Ожогом Тьмы\", наносимый урон от огня увеличивается на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "20 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Кроме того, \"Поджигание\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": " не поглощает \"Жертвенный огонь\", а \"Ожог Тьмы\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": " мгновенно восстанавливает осколок души.\""
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Когда вы поражаете противника \"Поджиганием\", наносимый урон от темной магии увеличивается на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "20 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Когда вы поражаете противника \"Ожогом Тьмы\", наносимый урон от огня увеличивается на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "20 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Кроме того, \"Поджигание\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "60%"
+              },
+              {
+                "kind": "text",
+                "text": " не поглощает \"Жертвенный огонь\", а \"Ожог Тьмы\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "60%"
+              },
+              {
+                "kind": "text",
+                "text": " мгновенно восстанавливает осколок души.\""
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Когда вы поражаете противника \"Поджиганием\", наносимый урон от темной магии увеличивается на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "20 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Когда вы поражаете противника \"Ожогом Тьмы\", наносимый урон от огня увеличивается на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "20 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Кроме того, \"Поджигание\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "80%"
+              },
+              {
+                "kind": "text",
+                "text": " не поглощает \"Жертвенный огонь\", а \"Ожог Тьмы\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "80%"
+              },
+              {
+                "kind": "text",
+                "text": " мгновенно восстанавливает осколок души.\""
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Когда вы поражаете противника \"Поджиганием\", наносимый урон от темной магии увеличивается на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "20 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Когда вы поражаете противника \"Ожогом Тьмы\", наносимый урон от огня увеличивается на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "20 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Кроме того, \"Поджигание\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " не поглощает \"Жертвенный огонь\", а \"Ожог Тьмы\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " мгновенно восстанавливает осколок души.\""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130606,
+      "nodeId": 105876,
+      "definitionId": 135407,
+      "spellId": 1225228,
+      "textSpellId": 1225228,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Бич сокрушения",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Проклинает противника, после чего "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": " урона, который вы наносите другим целям, также наносится этой цели. Время действия – "
+              },
+              {
+                "kind": "value",
+                "text": "5 мин"
+              },
+              {
+                "kind": "text",
+                "text": ". Одновременно можно применить \"Бич сокрушения\" только к одной цели. На каждую цель может действовать только одно заклинание категории \"Бич\" каждого чернокнижника."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130607,
+      "nodeId": 105877,
+      "definitionId": 135408,
+      "spellId": 412751,
+      "textSpellId": 412751,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Огонь и сера",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта \"Поджигания\" на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта \"Поджигания\" на "
+              },
+              {
+                "kind": "value",
+                "text": "17%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта \"Поджигания\" на "
+              },
+              {
+                "kind": "value",
+                "text": "25%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130608,
+      "nodeId": 105878,
+      "definitionId": 135409,
+      "spellId": 18073,
+      "textSpellId": 18073,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Пироклазм",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Огонь души\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "13%"
+              },
+              {
+                "kind": "text",
+                "text": " оглушает цель на "
+              },
+              {
+                "kind": "value",
+                "text": "3 сек"
+              },
+              {
+                "kind": "text",
+                "text": "., а \"Огненный ливень\" и \"Адское пламя\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "13%"
+              },
+              {
+                "kind": "text",
+                "text": " за все время действия оглушают цели, которым нанесли урон, на "
+              },
+              {
+                "kind": "value",
+                "text": "3 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Огонь души\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "26%"
+              },
+              {
+                "kind": "text",
+                "text": " оглушает цель на "
+              },
+              {
+                "kind": "value",
+                "text": "3 сек"
+              },
+              {
+                "kind": "text",
+                "text": "., а \"Огненный ливень\" и \"Адское пламя\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "26%"
+              },
+              {
+                "kind": "text",
+                "text": " за все время действия оглушают цели, которым нанесли урон, на "
+              },
+              {
+                "kind": "value",
+                "text": "3 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130609,
+      "nodeId": 105879,
+      "definitionId": 135410,
+      "spellId": 17927,
+      "textSpellId": 17927,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Пламенная боль",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта \"Жгучей боли\" на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": ", а урон, наносимый другими заклинаниями категории \"Разрушение\", – на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта \"Жгучей боли\" на "
+              },
+              {
+                "kind": "value",
+                "text": "7%"
+              },
+              {
+                "kind": "text",
+                "text": ", а урон, наносимый другими заклинаниями категории \"Разрушение\", – на "
+              },
+              {
+                "kind": "value",
+                "text": "7%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта \"Жгучей боли\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": ", а урон, наносимый другими заклинаниями категории \"Разрушение\", – на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130610,
+      "nodeId": 105880,
+      "definitionId": 135411,
+      "spellId": 1293817,
+      "textSpellId": 1293817,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Поджигание",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130611,
+      "nodeId": 105881,
+      "definitionId": 135412,
+      "spellId": 17917,
+      "textSpellId": 17917,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Предел разрушения",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает дальность действия наносящих урон заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает дальность действия наносящих урон заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130612,
+      "nodeId": 105882,
+      "definitionId": 135413,
+      "spellId": 18135,
+      "textSpellId": 18135,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Напряжение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Дает вам "
+              },
+              {
+                "kind": "value",
+                "text": "23%"
+              },
+              {
+                "kind": "text",
+                "text": " шанс сопротивления прерыванию наложения заклинаний вследствие получения урона при наложении заклинаний \"Огненный ливень\", \"Адское Пламя\" и \"Ожог души\"."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Дает вам "
+              },
+              {
+                "kind": "value",
+                "text": "47%"
+              },
+              {
+                "kind": "text",
+                "text": " шанс сопротивления прерыванию наложения заклинаний вследствие получения урона при наложении заклинаний \"Огненный ливень\", \"Адское Пламя\" и \"Ожог души\"."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Дает вам "
+              },
+              {
+                "kind": "value",
+                "text": "70%"
+              },
+              {
+                "kind": "text",
+                "text": " шанс сопротивления прерыванию наложения заклинаний вследствие получения урона при наложении заклинаний \"Огненный ливень\", \"Адское Пламя\" и \"Ожог души\"."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130613,
+      "nodeId": 105883,
+      "definitionId": 135414,
+      "spellId": 17959,
+      "textSpellId": 17959,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Разгром",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает бонус к критическому урону от заклинаний категории \"Разрушение\" на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает бонус к критическому урону от заклинаний категории \"Разрушение\" на "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает бонус к критическому урону от заклинаний категории \"Разрушение\" на "
+              },
+              {
+                "kind": "value",
+                "text": "60%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает бонус к критическому урону от заклинаний категории \"Разрушение\" на "
+              },
+              {
+                "kind": "value",
+                "text": "80%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает бонус к критическому урону от заклинаний категории \"Разрушение\" на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130614,
+      "nodeId": 105884,
+      "definitionId": 135415,
+      "spellId": 17877,
+      "textSpellId": 17877,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Ожог Тьмы",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130615,
+      "nodeId": 105885,
+      "definitionId": 135416,
+      "spellId": 1225220,
+      "textSpellId": 1225220,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Раскаленная кожа",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Уменьшает получаемый урон на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Уменьшает получаемый урон на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Уменьшает получаемый урон на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Уменьшает получаемый урон на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Уменьшает получаемый урон на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130616,
+      "nodeId": 105886,
+      "definitionId": 135417,
+      "spellId": 18119,
+      "textSpellId": 18119,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Последствия",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает мгновенный урон от \"Жертвенного огня\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": ". \"Поджигание\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " вызывает у цели головокружение, снижая ее скорость передвижения на "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "5 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает мгновенный урон от \"Жертвенного огня\" на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": ". \"Поджигание\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": " вызывает у цели головокружение, снижая ее скорость передвижения на "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "5 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает мгновенный урон от \"Жертвенного огня\" на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": ". \"Поджигание\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "60%"
+              },
+              {
+                "kind": "text",
+                "text": " вызывает у цели головокружение, снижая ее скорость передвижения на "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "5 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает мгновенный урон от \"Жертвенного огня\" на "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": ". \"Поджигание\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "80%"
+              },
+              {
+                "kind": "text",
+                "text": " вызывает у цели головокружение, снижая ее скорость передвижения на "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "5 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает мгновенный урон от \"Жертвенного огня\" на "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": ". \"Поджигание\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " вызывает у цели головокружение, снижая ее скорость передвижения на "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "5 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130617,
+      "nodeId": 105887,
+      "definitionId": 135418,
+      "spellId": 17778,
+      "textSpellId": 17778,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Катаклизм",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижение расхода маны на ваши заклинания категории \"Разрушение\" на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижение расхода маны на ваши заклинания категории \"Разрушение\" на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижение расхода маны на ваши заклинания категории \"Разрушение\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130618,
+      "nodeId": 105888,
+      "definitionId": 135419,
+      "spellId": 17788,
+      "textSpellId": 17788,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Погибель",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "decimalFormatUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130619,
+      "nodeId": 105889,
+      "definitionId": 135420,
+      "spellId": 17793,
+      "textSpellId": 17793,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенная стрела Тьмы",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Критические удары \"Стрелы Тьмы\" увеличивают урон от темной магии, получаемый целью от ваших атак, на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "12 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Критические удары \"Стрелы Тьмы\" увеличивают урон от темной магии, получаемый целью от ваших атак, на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "12 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Критические удары \"Стрелы Тьмы\" увеличивают урон от темной магии, получаемый целью от ваших атак, на "
+              },
+              {
+                "kind": "value",
+                "text": "12%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "12 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Критические удары \"Стрелы Тьмы\" увеличивают урон от темной магии, получаемый целью от ваших атак, на "
+              },
+              {
+                "kind": "value",
+                "text": "16%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "12 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Критические удары \"Стрелы Тьмы\" увеличивают урон от темной магии, получаемый целью от ваших атак, на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "12 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130620,
+      "nodeId": 105890,
+      "definitionId": 135421,
+      "spellId": 425464,
+      "textSpellId": 425464,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Демонический союз",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Эффект \"Демонического жертвоприношения\" больше не прерывается при призыве другого прислужника-демона. Эффект прервется, если снова призвать прислужника, которого вы только что принесли в жертву."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130621,
+      "nodeId": 105891,
+      "definitionId": 135422,
+      "spellId": 23785,
+      "textSpellId": 23785,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Мастер-демонолог",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Дает вам и призванному демону эффект, действующий, пока жив демон.\n\nБес: увеличивает наносимый урон от огня на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": ".\n\nДемон Бездны: уменьшает получаемый физический урон на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": ".\n\nСуккуб/инкуб: увеличивает наносимый урон от темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": ".\n\nОхотник Скверны: уменьшает получаемый магический урон на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Дает вам и призванному демону эффект, действующий, пока жив демон.\n\nБес: увеличивает наносимый урон от огня на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": ".\n\nДемон Бездны: уменьшает получаемый физический урон на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": ".\n\nСуккуб/инкуб: увеличивает наносимый урон от темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": ".\n\nОхотник Скверны: уменьшает получаемый магический урон на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Дает вам и призванному демону эффект, действующий, пока жив демон.\n\nБес: увеличивает наносимый урон от огня на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": ".\n\nДемон Бездны: уменьшает получаемый физический урон на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": ".\n\nСуккуб/инкуб: увеличивает наносимый урон от темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": ".\n\nОхотник Скверны: уменьшает получаемый магический урон на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Дает вам и призванному демону эффект, действующий, пока жив демон.\n\nБес: увеличивает наносимый урон от огня на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": ".\n\nДемон Бездны: уменьшает получаемый физический урон на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": ".\n\nСуккуб/инкуб: увеличивает наносимый урон от темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": ".\n\nОхотник Скверны: уменьшает получаемый магический урон на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Дает вам и призванному демону эффект, действующий, пока жив демон.\n\nБес: увеличивает наносимый урон от огня на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": ".\n\nДемон Бездны: уменьшает получаемый физический урон на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": ".\n\nСуккуб/инкуб: увеличивает наносимый урон от темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": ".\n\nОхотник Скверны: уменьшает получаемый магический урон на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130622,
+      "nodeId": 105892,
+      "definitionId": 135423,
+      "spellId": 19028,
+      "textSpellId": 19028,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Связка души",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Пока действует этот эффект, "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " получаемого вами урона перенаправляется на вашего беса, демона Бездны, суккуба, инкуба или охотника Скверны. Кроме того, вы и ваш демон наносите на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": " больше урона. Эффект действует, пока демон активен."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130623,
+      "nodeId": 105893,
+      "definitionId": 135424,
+      "spellId": 412732,
+      "textSpellId": 412732,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Демоническое знание",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает ваш урон от заклинаний и урон от заклинаний вашего демона максимум на "
+              },
+              {
+                "kind": "value",
+                "text": "33%"
+              },
+              {
+                "kind": "text",
+                "text": " вашего уровня, пока жив ваш демон-прислужник."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает ваш урон от заклинаний и урон от заклинаний вашего демона максимум на "
+              },
+              {
+                "kind": "value",
+                "text": "67%"
+              },
+              {
+                "kind": "text",
+                "text": " вашего уровня, пока жив ваш демон-прислужник."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает ваш урон от заклинаний и урон от заклинаний вашего демона максимум на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " вашего уровня, пока жив ваш демон-прислужник."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130624,
+      "nodeId": 105894,
+      "definitionId": 135425,
+      "spellId": 1225217,
+      "textSpellId": 1225217,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенный охотник Скверны",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает эффективность, с которой \"Испорченная кровь\" Охотника Скверны уменьшает силу атаки противника, повышает эффективность исцеления \"Пожиранием магии\", а также увеличивает уровень обнаружения \"Паранойи\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": ". Сокращает время восстановления \"Запрета чар\" на "
+              },
+              {
+                "kind": "value",
+                "text": "2"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает эффективность, с которой \"Испорченная кровь\" Охотника Скверны уменьшает силу атаки противника, повышает эффективность исцеления \"Пожиранием магии\", а также увеличивает уровень обнаружения \"Паранойи\" на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": ". Сокращает время восстановления \"Запрета чар\" на "
+              },
+              {
+                "kind": "value",
+                "text": "4"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает эффективность, с которой \"Испорченная кровь\" Охотника Скверны уменьшает силу атаки противника, повышает эффективность исцеления \"Пожиранием магии\", а также увеличивает уровень обнаружения \"Паранойи\" на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": ". Сокращает время восстановления \"Запрета чар\" на "
+              },
+              {
+                "kind": "value",
+                "text": "6"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130625,
+      "nodeId": 105895,
+      "definitionId": 135426,
+      "spellId": 18708,
+      "textSpellId": 18708,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Господство Скверны",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "decimalFormatUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130626,
+      "nodeId": 105896,
+      "definitionId": 135427,
+      "spellId": 1293695,
+      "textSpellId": 1293695,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Демоническое клеймо",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130627,
+      "nodeId": 105897,
+      "definitionId": 135428,
+      "spellId": 440870,
+      "textSpellId": 440870,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Истребление",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Сокращает время восстановления \"Ожога души\" на "
+              },
+              {
+                "kind": "value",
+                "text": "45%"
+              },
+              {
+                "kind": "text",
+                "text": ". Когда вы применяете \"Стрелу тьмы\" или \"Жгучую боль\" к противнику с уровнем здоровья ниже "
+              },
+              {
+                "kind": "value",
+                "text": "35%"
+              },
+              {
+                "kind": "text",
+                "text": ", эти заклинания наносят на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": " больше урона. Кроме того, в течение следующих "
+              },
+              {
+                "kind": "value",
+                "text": "10 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". \"Ожог души\" не расходует осколки души, а время его применения сокращается на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Сокращает время восстановления \"Ожога души\" на "
+              },
+              {
+                "kind": "value",
+                "text": "90%"
+              },
+              {
+                "kind": "text",
+                "text": ". Когда вы применяете \"Стрелу тьмы\" или \"Жгучую боль\" к противнику с уровнем здоровья ниже "
+              },
+              {
+                "kind": "value",
+                "text": "35%"
+              },
+              {
+                "kind": "text",
+                "text": ", эти заклинания наносят на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": " больше урона. Кроме того, в течение следующих "
+              },
+              {
+                "kind": "value",
+                "text": "10 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". \"Ожог души\" не расходует осколки души, а время его применения сокращается на "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130628,
+      "nodeId": 105898,
+      "definitionId": 135429,
+      "spellId": 18709,
+      "textSpellId": 18709,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Мастер призыва",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Сокращает время призыва беса, демона Бездны, суккуба, инкуба и охотника Скверны на "
+              },
+              {
+                "kind": "value",
+                "text": "2"
+              },
+              {
+                "kind": "text",
+                "text": " сек. и снижает его стоимость на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Сокращает время призыва беса, демона Бездны, суккуба, инкуба и охотника Скверны на "
+              },
+              {
+                "kind": "value",
+                "text": "4"
+              },
+              {
+                "kind": "text",
+                "text": " сек. и снижает его стоимость на "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130629,
+      "nodeId": 105899,
+      "definitionId": 135430,
+      "spellId": 1225214,
+      "textSpellId": 1225214,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Демоническая энергия",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Ваш прислужник восполняет здоровье в объеме "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": " наносимого вами урона от заклинаний. Когда вы получаете ману при помощи \"Жизнеотвода\", ваш демон также восполняет ману с эффективностью "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Ваш прислужник восполняет здоровье в объеме "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": " наносимого вами урона от заклинаний. Когда вы получаете ману при помощи \"Жизнеотвода\", ваш демон также восполняет ману с эффективностью "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130630,
+      "nodeId": 105900,
+      "definitionId": 135431,
+      "spellId": 18788,
+      "textSpellId": 18788,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Демоническое жертвоприношение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "При активации приносит в жертву призванного демона и дает вам эффект, противоположный его сущности. Действует "
+              },
+              {
+                "kind": "value",
+                "text": "2 ч"
+              },
+              {
+                "kind": "text",
+                "text": ". или до вызова нового демона.\n\nБес: увеличивает урон от темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": ".\n\nДемон Бездны: восполняет "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": " общего запаса маны раз в "
+              },
+              {
+                "kind": "value",
+                "text": "4"
+              },
+              {
+                "kind": "text",
+                "text": " сек.\n\nСуккуб/инкуб: увеличивает урон от огня на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": ".\n\nОхотник Скверны: восполняет "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": " общего запаса здоровья раз в "
+              },
+              {
+                "kind": "value",
+                "text": "4"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130631,
+      "nodeId": 105901,
+      "definitionId": 135432,
+      "spellId": 18754,
+      "textSpellId": 18754,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенный сайаад",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Усиливает эффект от \"Всплеска боли\" и \"Утешительного поцелуя\" суккуба или инкуба на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " и продлевает действие \"Соблазнения\" и \"Слабой невидимости\" суккуба или инкуба на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Усиливает эффект от \"Всплеска боли\" и \"Утешительного поцелуя\" суккуба или инкуба на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " и продлевает действие \"Соблазнения\" и \"Слабой невидимости\" суккуба или инкуба на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Усиливает эффект от \"Всплеска боли\" и \"Утешительного поцелуя\" суккуба или инкуба на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " и продлевает действие \"Соблазнения\" и \"Слабой невидимости\" суккуба или инкуба на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130632,
+      "nodeId": 105902,
+      "definitionId": 135433,
+      "spellId": 1235316,
+      "textSpellId": 1235316,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Демоническая эгида",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает эффективность \"Шкуры демона\" и \"Демонического доспеха\" на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает эффективность \"Шкуры демона\" и \"Демонического доспеха\" на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130633,
+      "nodeId": 105903,
+      "definitionId": 135434,
+      "spellId": 18731,
+      "textSpellId": 18731,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Энергия Скверны",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает максимальный запас здоровья и маны беса, демона Бездны, суккуба, инкуба и охотника Скверны на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": ", а ваш максимальный запас маны – на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает максимальный запас здоровья и маны беса, демона Бездны, суккуба, инкуба и охотника Скверны на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": ", а ваш максимальный запас маны – на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает максимальный запас здоровья и маны беса, демона Бездны, суккуба, инкуба и охотника Скверны на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": ", а ваш максимальный запас маны – на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130634,
+      "nodeId": 105904,
+      "definitionId": 135435,
+      "spellId": 18705,
+      "textSpellId": 18705,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенный демон Бездны",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает эффективность способностей демона Бездны \"Мучение\", \"Поглощение теней\", \"Жертвоприношение\" и \"Муки\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает эффективность способностей демона Бездны \"Мучение\", \"Поглощение теней\", \"Жертвоприношение\" и \"Муки\" на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает эффективность способностей демона Бездны \"Мучение\", \"Поглощение теней\", \"Жертвоприношение\" и \"Муки\" на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130635,
+      "nodeId": 105905,
+      "definitionId": 135436,
+      "spellId": 18703,
+      "textSpellId": 18703,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенный канал здоровья",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Канал здоровья\" передает на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " больше здоровья, расходует на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": " меньше здоровья и создает на "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " меньше угрозы. \"Канал здоровья\" можно применять вне зависимости от уровня здоровья вашего демона."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Канал здоровья\" передает на "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": " больше здоровья, расходует на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " меньше здоровья и создает на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " меньше угрозы. \"Канал здоровья\" можно применять вне зависимости от уровня здоровья вашего демона."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130636,
+      "nodeId": 105906,
+      "definitionId": 135437,
+      "spellId": 18769,
+      "textSpellId": 18769,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Нечестивая сила",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон, наносимый вашим бесом, демоном Бездны, суккубом, инкубом и охотником Скверны, на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон, наносимый вашим бесом, демоном Бездны, суккубом, инкубом и охотником Скверны, на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон, наносимый вашим бесом, демоном Бездны, суккубом, инкубом и охотником Скверны, на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон, наносимый вашим бесом, демоном Бездны, суккубом, инкубом и охотником Скверны, на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон, наносимый вашим бесом, демоном Бездны, суккубом, инкубом и охотником Скверны, на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130637,
+      "nodeId": 105907,
+      "definitionId": 135438,
+      "spellId": 18697,
+      "textSpellId": 18697,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Демоническое облачение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает выносливость на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает выносливость на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает выносливость на "
+              },
+              {
+                "kind": "value",
+                "text": "9%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает выносливость на "
+              },
+              {
+                "kind": "value",
+                "text": "12%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает выносливость на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130638,
+      "nodeId": 105908,
+      "definitionId": 135439,
+      "spellId": 18694,
+      "textSpellId": 18694,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенный бес",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон, наносимый \"Огненной стрелой\" беса, на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": ", а эффективность его \"Огненного щита\" – на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон, наносимый \"Огненной стрелой\" беса, на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": ", а эффективность его \"Огненного щита\" – на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон, наносимый \"Огненной стрелой\" беса, на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": ", а эффективность его \"Огненного щита\" – на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130639,
+      "nodeId": 105909,
+      "definitionId": 135440,
+      "spellId": 1316697,
+      "textSpellId": 1316697,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Судороги",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "untranslated",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130640,
+      "nodeId": 105910,
+      "definitionId": 135441,
+      "spellId": 18271,
+      "textSpellId": 18271,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Власть над Тенями",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение урона, наносимого заклинаниями темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение урона, наносимого заклинаниями темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение урона, наносимого заклинаниями темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение урона, наносимого заклинаниями темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение урона, наносимого заклинаниями темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130641,
+      "nodeId": 105911,
+      "definitionId": 135442,
+      "spellId": 17804,
+      "textSpellId": 17804,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Вытягивание души",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Усиливает \"Похищение жизни\", \"Похищение души\" и \"Судороги\", увеличивая урон или количество похищаемого здоровья на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": " за каждый иной эффект категории \"Колдовство\" на цели. Максимальный бонус – "
+              },
+              {
+                "kind": "value",
+                "text": "12%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Усиливает \"Похищение жизни\", \"Похищение души\" и \"Судороги\", увеличивая урон или количество похищаемого здоровья на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": " за каждый иной эффект категории \"Колдовство\" на цели. Максимальный бонус – "
+              },
+              {
+                "kind": "value",
+                "text": "24%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Усиливает \"Похищение жизни\", \"Похищение души\" и \"Судороги\", увеличивая урон или количество похищаемого здоровья на "
+              },
+              {
+                "kind": "value",
+                "text": "12%"
+              },
+              {
+                "kind": "text",
+                "text": " за каждый иной эффект категории \"Колдовство\" на цели. Максимальный бонус – "
+              },
+              {
+                "kind": "value",
+                "text": "36%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130642,
+      "nodeId": 105912,
+      "definitionId": 135443,
+      "spellId": 18265,
+      "textSpellId": 18265,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Вытягивание жизни",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130643,
+      "nodeId": 105913,
+      "definitionId": 135444,
+      "spellId": 18223,
+      "textSpellId": 18223,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Проклятие изнеможения",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает скорость передвижения цели на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "12 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". На цель может одновременно действовать только одно проклятие каждого чернокнижника."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130644,
+      "nodeId": 105914,
+      "definitionId": 135445,
+      "spellId": 18094,
+      "textSpellId": 18094,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Сумерки",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда \"Порча\", \"Похищение души\", \"Похищение жизни\" и \"Судороги\" наносят урон противнику, вы с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": " входите в теневой транс, сокращающий время применения следующей \"Стрелы Тьмы\" на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда \"Порча\", \"Похищение души\", \"Похищение жизни\" и \"Судороги\" наносят урон противнику, вы с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": " входите в теневой транс, сокращающий время применения следующей \"Стрелы Тьмы\" на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130646,
+      "nodeId": 105916,
+      "definitionId": 135447,
+      "spellId": 18288,
+      "textSpellId": 18288,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Усиление проклятия",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Усиливает эффект следующего \"Проклятия слабости\" или \"Бича агонии\" на "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " или следующего \"Проклятия изнеможения\" – на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": ". Время действия – "
+              },
+              {
+                "kind": "value",
+                "text": "30 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130647,
+      "nodeId": 105917,
+      "definitionId": 135448,
+      "spellId": 427712,
+      "textSpellId": 427712,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Пандемия",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает критический урон от \"Порчи\", \"Бича агонии\", \"Бича судьбы\", \"Похищения души\", \"Похищения жизни\", \"Вытягивания жизни\" и \"Судорог\" на "
+              },
+              {
+                "kind": "value",
+                "text": "33%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает критический урон от \"Порчи\", \"Бича агонии\", \"Бича судьбы\", \"Похищения души\", \"Похищения жизни\", \"Вытягивания жизни\" и \"Судорог\" на "
+              },
+              {
+                "kind": "value",
+                "text": "67%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает критический урон от \"Порчи\", \"Бича агонии\", \"Бича судьбы\", \"Похищения души\", \"Похищения жизни\", \"Вытягивания жизни\" и \"Судорог\" на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130648,
+      "nodeId": 105918,
+      "definitionId": 135449,
+      "spellId": 17783,
+      "textSpellId": 17783,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Сосредоточение Скверны",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "С вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "23%"
+              },
+              {
+                "kind": "text",
+                "text": " позволяет избежать задержки при поддержании или применении \"Похищения жизни\", \"Похищения маны\", \"Похищения души\" и \"Крушение\", когда вы получаете урон."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "С вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "47%"
+              },
+              {
+                "kind": "text",
+                "text": " позволяет избежать задержки при поддержании или применении \"Похищения жизни\", \"Похищения маны\", \"Похищения души\" и \"Крушение\", когда вы получаете урон."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "С вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "70%"
+              },
+              {
+                "kind": "text",
+                "text": " позволяет избежать задержки при поддержании или применении \"Похищения жизни\", \"Похищения маны\", \"Похищения души\" и \"Крушение\", когда вы получаете урон."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130649,
+      "nodeId": 105919,
+      "definitionId": 135450,
+      "spellId": 18827,
+      "textSpellId": 18827,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенный бич агонии",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от \"Бича агонии\" на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от \"Бича агонии\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130650,
+      "nodeId": 105920,
+      "definitionId": 135451,
+      "spellId": 403511,
+      "textSpellId": 403511,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенное похищение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Усиливает \"Похищение жизни\", \"Похищение души\" и \"Судороги\", увеличивая урон или количество похищаемого здоровья на "
+              },
+              {
+                "kind": "value",
+                "text": "7%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Усиливает \"Похищение жизни\", \"Похищение души\" и \"Судороги\", увеличивая урон или количество похищаемого здоровья на "
+              },
+              {
+                "kind": "value",
+                "text": "13%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Усиливает \"Похищение жизни\", \"Похищение души\" и \"Судороги\", увеличивая урон или количество похищаемого здоровья на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130651,
+      "nodeId": 105921,
+      "definitionId": 135452,
+      "spellId": 18182,
+      "textSpellId": 18182,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенный жизнеотвод",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение количества маны, полученной при использовании вами заклинания \"Жизнеотвод\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение количества маны, полученной при использовании вами заклинания \"Жизнеотвод\" на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130652,
+      "nodeId": 105922,
+      "definitionId": 135453,
+      "spellId": 437032,
+      "textSpellId": 437032,
+      "maxRank": 2,
+      "name": {
+        "status": "untranslated",
+        "text": null,
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "untranslated",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130653,
+      "nodeId": 105923,
+      "definitionId": 135454,
+      "spellId": 1225177,
+      "textSpellId": 1225177,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Темное проклятие",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает периодический урон от ваших заклинаний чернокнижника на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает периодический урон от ваших заклинаний чернокнижника на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает периодический урон от ваших заклинаний чернокнижника на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает периодический урон от ваших заклинаний чернокнижника на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает периодический урон от ваших заклинаний чернокнижника на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130654,
+      "nodeId": 105924,
+      "definitionId": 135455,
+      "spellId": 17810,
+      "textSpellId": 17810,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенная порча",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "decimalFormatUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130655,
+      "nodeId": 105925,
+      "definitionId": 135456,
+      "spellId": 18174,
+      "textSpellId": 18174,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Подавление",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": " и снижает уровень создаваемой угрозы на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": " и снижает уровень создаваемой угрозы на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": " и снижает уровень создаваемой угрозы на "
+              },
+              {
+                "kind": "value",
+                "text": "12%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": " и снижает уровень создаваемой угрозы на "
+              },
+              {
+                "kind": "value",
+                "text": "16%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": " и снижает уровень создаваемой угрозы на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 137874,
+      "nodeId": 110876,
+      "definitionId": 142628,
+      "spellId": 1310949,
+      "textSpellId": 1310949,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Злоба",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта заклинаний темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта заклинаний темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта заклинаний темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта заклинаний темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта заклинаний темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "contentHash": "sha256:285a3567d5ec2e0c2cf0e0c94f2c1e8d9a3e5458d8bf354118879e886cf9b406",
+  "provenance": {
+    "source": "wago.tools",
+    "renderer": "talent_data.localization gates-v1 + talent_data.tooltips grammar-v1",
+    "tables": [
+      {
+        "table": "SpellName",
+        "locale": "enUS",
+        "url": "https://wago.tools/db2/SpellName/csv?build=1.60.1.70245"
+      },
+      {
+        "table": "TraitDefinition",
+        "locale": "enUS",
+        "url": "https://wago.tools/db2/TraitDefinition/csv?build=1.60.1.70245"
+      },
+      {
+        "table": "Spell",
+        "locale": "enUS",
+        "url": "https://wago.tools/db2/Spell/csv?build=1.60.1.70245"
+      },
+      {
+        "table": "GlobalStrings",
+        "locale": "enUS",
+        "url": "https://wago.tools/db2/GlobalStrings/csv?build=1.60.1.70245"
+      },
+      {
+        "table": "SpellName",
+        "locale": "ruRU",
+        "url": "https://wago.tools/db2/SpellName/csv?build=1.60.1.70245&locale=ruRU"
+      },
+      {
+        "table": "TraitDefinition",
+        "locale": "ruRU",
+        "url": "https://wago.tools/db2/TraitDefinition/csv?build=1.60.1.70245&locale=ruRU"
+      },
+      {
+        "table": "Spell",
+        "locale": "ruRU",
+        "url": "https://wago.tools/db2/Spell/csv?build=1.60.1.70245&locale=ruRU"
+      },
+      {
+        "table": "GlobalStrings",
+        "locale": "ruRU",
+        "url": "https://wago.tools/db2/GlobalStrings/csv?build=1.60.1.70245&locale=ruRU"
+      }
+    ]
+  }
+}

@@ -1,0 +1,3720 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "clientBuild": "1.60.1.70338",
+  "classToken": "MAGE",
+  "locale": "ruRU",
+  "talentDataContentHash": "sha256:c374846571afa95b0f36e2162839e011943f130f1119c789ed6319c1537983bb",
+  "tooltipsContentHash": "sha256:3f53f1c81b258d193f449378eec528ec863e6386075559eb9e913e677469dd28",
+  "entries": [
+    {
+      "entryId": 130491,
+      "nodeId": 105762,
+      "definitionId": 135292,
+      "spellId": 11426,
+      "textSpellId": 11426,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Ледяная преграда",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130492,
+      "nodeId": 105763,
+      "definitionId": 135293,
+      "spellId": 11180,
+      "textSpellId": 11180,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Зимняя стужа",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Заклинания магии льда с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " применяют эффект \"Зимняя стужа\", повышающий вероятность критического удара \"Ледяного копья\" и \"Ледяной стрелы\" против пораженной цели на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": ". Время действия – "
+              },
+              {
+                "kind": "value",
+                "text": "15 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Суммируется до "
+              },
+              {
+                "kind": "value",
+                "text": "1"
+              },
+              {
+                "kind": "text",
+                "text": " раз."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Заклинания магии льда с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": " применяют эффект \"Зимняя стужа\", повышающий вероятность критического удара \"Ледяного копья\" и \"Ледяной стрелы\" против пораженной цели на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": ". Время действия – "
+              },
+              {
+                "kind": "value",
+                "text": "15 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Суммируется до "
+              },
+              {
+                "kind": "value",
+                "text": "2"
+              },
+              {
+                "kind": "text",
+                "text": " раз."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Заклинания магии льда с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "60%"
+              },
+              {
+                "kind": "text",
+                "text": " применяют эффект \"Зимняя стужа\", повышающий вероятность критического удара \"Ледяного копья\" и \"Ледяной стрелы\" против пораженной цели на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": ". Время действия – "
+              },
+              {
+                "kind": "value",
+                "text": "15 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Суммируется до "
+              },
+              {
+                "kind": "value",
+                "text": "3"
+              },
+              {
+                "kind": "text",
+                "text": " раз."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Заклинания магии льда с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "80%"
+              },
+              {
+                "kind": "text",
+                "text": " применяют эффект \"Зимняя стужа\", повышающий вероятность критического удара \"Ледяного копья\" и \"Ледяной стрелы\" против пораженной цели на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": ". Время действия – "
+              },
+              {
+                "kind": "value",
+                "text": "15 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Суммируется до "
+              },
+              {
+                "kind": "value",
+                "text": "4"
+              },
+              {
+                "kind": "text",
+                "text": " раз."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Заклинания магии льда с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " применяют эффект \"Зимняя стужа\", повышающий вероятность критического удара \"Ледяного копья\" и \"Ледяной стрелы\" против пораженной цели на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": ". Время действия – "
+              },
+              {
+                "kind": "value",
+                "text": "15 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Суммируется до "
+              },
+              {
+                "kind": "value",
+                "text": "5"
+              },
+              {
+                "kind": "text",
+                "text": " раз."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130493,
+      "nodeId": 105764,
+      "definitionId": 135294,
+      "spellId": 400647,
+      "textSpellId": 400647,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Ледяные пальцы",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "pluralRuleUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130494,
+      "nodeId": 105765,
+      "definitionId": 135295,
+      "spellId": 11190,
+      "textSpellId": 11190,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенный конус холода",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение урона, нанесенного заклинанием \"Конус холода\", на "
+              },
+              {
+                "kind": "value",
+                "text": "12%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение урона, нанесенного заклинанием \"Конус холода\", на "
+              },
+              {
+                "kind": "value",
+                "text": "23%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение урона, нанесенного заклинанием \"Конус холода\", на "
+              },
+              {
+                "kind": "value",
+                "text": "35%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130495,
+      "nodeId": 105766,
+      "definitionId": 135296,
+      "spellId": 12472,
+      "textSpellId": 12472,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Холодная хватка",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Мгновенно восстанавливает все остальные заклинания магии льда."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130496,
+      "nodeId": 105767,
+      "definitionId": 135297,
+      "spellId": 1312002,
+      "textSpellId": 1312002,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Ледяное копье",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130497,
+      "nodeId": 105768,
+      "definitionId": 135298,
+      "spellId": 11170,
+      "textSpellId": 11170,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Обледенение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара заклинаний против замороженных целей на "
+              },
+              {
+                "kind": "value",
+                "text": "17%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара заклинаний против замороженных целей на "
+              },
+              {
+                "kind": "value",
+                "text": "33%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара заклинаний против замороженных целей на "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130498,
+      "nodeId": 105769,
+      "definitionId": 135299,
+      "spellId": 11958,
+      "textSpellId": 11958,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Ледяная глыба",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Заключает вас в ледяную глыбу, которая защищает от атак и заклинаний в течение "
+              },
+              {
+                "kind": "value",
+                "text": "10 сек"
+              },
+              {
+                "kind": "text",
+                "text": "., но в это время вы не можете атаковать, двигаться и применять заклинания."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130499,
+      "nodeId": 105770,
+      "definitionId": 135300,
+      "spellId": 16757,
+      "textSpellId": 16757,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Предел льда",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает дальность действия \"Ледяной стрелы\" и \"Снежной бури\", а также радиус действия \"Кольца льда\" и \"Конуса холода\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает дальность действия \"Ледяной стрелы\" и \"Снежной бури\", а также радиус действия \"Кольца льда\" и \"Конуса холода\" на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130500,
+      "nodeId": 105771,
+      "definitionId": 135301,
+      "spellId": 11185,
+      "textSpellId": 11185,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенная снежная буря",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "decimalFormatUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130501,
+      "nodeId": 105772,
+      "definitionId": 135302,
+      "spellId": 11160,
+      "textSpellId": 11160,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Направленная сила льда",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижение расхода маны на заклинания магии льда на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": " и снижение угрозы от них на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижение расхода маны на заклинания магии льда на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " и снижение угрозы от них на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижение расхода маны на заклинания магии льда на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": " и снижение угрозы от них на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130502,
+      "nodeId": 105773,
+      "definitionId": 135303,
+      "spellId": 11151,
+      "textSpellId": 11151,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Пронзающий лед",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение урона, наносимого вашими ледяными заклинаниями на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение урона, наносимого вашими ледяными заклинаниями на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение урона, наносимого вашими ледяными заклинаниями на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130503,
+      "nodeId": 105774,
+      "definitionId": 135304,
+      "spellId": 11071,
+      "textSpellId": 11071,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Обморожение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Ваши эффекты окоченения с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": " замораживают цель на "
+              },
+              {
+                "kind": "value",
+                "text": "5 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Ваши эффекты окоченения с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " замораживают цель на "
+              },
+              {
+                "kind": "value",
+                "text": "5 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Ваши эффекты окоченения с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": " замораживают цель на "
+              },
+              {
+                "kind": "value",
+                "text": "5 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130504,
+      "nodeId": 105775,
+      "definitionId": 135305,
+      "spellId": 11165,
+      "textSpellId": 11165,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенное кольцо льда",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Уменьшает время восстановления \"Кольца льда\" на "
+              },
+              {
+                "kind": "value",
+                "text": "2"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Уменьшает время восстановления \"Кольца льда\" на "
+              },
+              {
+                "kind": "value",
+                "text": "4"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130505,
+      "nodeId": 105776,
+      "definitionId": 135306,
+      "spellId": 11175,
+      "textSpellId": 11175,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Вечная мерзлота",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Продлевает время действия ваших эффектов окоченения на "
+              },
+              {
+                "kind": "value",
+                "text": "11%"
+              },
+              {
+                "kind": "text",
+                "text": ", и эти эффекты снижают скорость передвижения еще на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Продлевает время действия ваших эффектов окоченения на "
+              },
+              {
+                "kind": "value",
+                "text": "22%"
+              },
+              {
+                "kind": "text",
+                "text": ", и эти эффекты снижают скорость передвижения еще на "
+              },
+              {
+                "kind": "value",
+                "text": "7%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Продлевает время действия ваших эффектов окоченения на "
+              },
+              {
+                "kind": "value",
+                "text": "33%"
+              },
+              {
+                "kind": "text",
+                "text": ", и эти эффекты снижают скорость передвижения еще на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130506,
+      "nodeId": 105777,
+      "definitionId": 135307,
+      "spellId": 11207,
+      "textSpellId": 11207,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Ледяные осколки",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение урона от критического поражения вашими заклинаниями льда на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение урона от критического поражения вашими заклинаниями льда на "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение урона от критического поражения вашими заклинаниями льда на "
+              },
+              {
+                "kind": "value",
+                "text": "60%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение урона от критического поражения вашими заклинаниями льда на "
+              },
+              {
+                "kind": "value",
+                "text": "80%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение урона от критического поражения вашими заклинаниями льда на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130507,
+      "nodeId": 105778,
+      "definitionId": 135308,
+      "spellId": 29438,
+      "textSpellId": 29438,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Точность стихии",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания заклинаниями магии льда и огня на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания заклинаниями магии льда и огня на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания заклинаниями магии льда и огня на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания заклинаниями магии льда и огня на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания заклинаниями магии льда и огня на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130508,
+      "nodeId": 105779,
+      "definitionId": 135309,
+      "spellId": 11070,
+      "textSpellId": 11070,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенная ледяная стрела",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "decimalFormatUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130509,
+      "nodeId": 105780,
+      "definitionId": 135310,
+      "spellId": 11189,
+      "textSpellId": 11189,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Защита от льда",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Бонусы к броне и сопротивлению от \"Морозного доспеха\" и \"Ледяного доспеха\" увеличиваются на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": ". Кроме того, \"Защита от магии льда\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " отражает заклинания и эффекты магии льда."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Бонусы к броне и сопротивлению от \"Морозного доспеха\" и \"Ледяного доспеха\" увеличиваются на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": ". Кроме того, \"Защита от магии льда\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " отражает заклинания и эффекты магии льда."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130510,
+      "nodeId": 105781,
+      "definitionId": 135311,
+      "spellId": 11129,
+      "textSpellId": 11129,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Возгорание",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "pluralRuleUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130511,
+      "nodeId": 105782,
+      "definitionId": 135312,
+      "spellId": 11124,
+      "textSpellId": 11124,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Сила огня",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от ваших заклинаний огня на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от ваших заклинаний огня на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от ваших заклинаний огня на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от ваших заклинаний огня на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от ваших заклинаний огня на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130512,
+      "nodeId": 105783,
+      "definitionId": 135313,
+      "spellId": 11113,
+      "textSpellId": 11113,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Взрывная волна",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130513,
+      "nodeId": 105784,
+      "definitionId": 135314,
+      "spellId": 11115,
+      "textSpellId": 11115,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Критическая масса",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара при применении заклинаний огня на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара при применении заклинаний огня на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара при применении заклинаний огня на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130514,
+      "nodeId": 105785,
+      "definitionId": 135315,
+      "spellId": 29074,
+      "textSpellId": 29074,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Повелитель Стихий",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Критические удары заклинаний огня и магии льда восполняют ману в объеме "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " их базовой стоимости."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Критические удары заклинаний огня и магии льда восполняют ману в объеме "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " их базовой стоимости."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Критические удары заклинаний огня и магии льда восполняют ману в объеме "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " их базовой стоимости."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130515,
+      "nodeId": 105786,
+      "definitionId": 135316,
+      "spellId": 400624,
+      "textSpellId": 400624,
+      "maxRank": 1,
+      "name": {
+        "status": "untranslated",
+        "text": null,
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "untranslated",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130516,
+      "nodeId": 105787,
+      "definitionId": 135317,
+      "spellId": 11094,
+      "textSpellId": 11094,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенная защита от огня",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Защита от огня с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " отражает заклинания школы огня."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Защита от огня с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " отражает заклинания школы огня."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130517,
+      "nodeId": 105788,
+      "definitionId": 135318,
+      "spellId": 11095,
+      "textSpellId": 11095,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенный ожог",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Ожог\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "33%"
+              },
+              {
+                "kind": "text",
+                "text": " делает цель уязвимой к огню, в результате чего вы наносите этой цели на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": " больше урона от огня. Время действия – "
+              },
+              {
+                "kind": "value",
+                "text": "30 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Суммируется до "
+              },
+              {
+                "kind": "value",
+                "text": "5"
+              },
+              {
+                "kind": "text",
+                "text": " раз."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Ожог\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "67%"
+              },
+              {
+                "kind": "text",
+                "text": " делает цель уязвимой к огню, в результате чего вы наносите этой цели на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": " больше урона от огня. Время действия – "
+              },
+              {
+                "kind": "value",
+                "text": "30 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Суммируется до "
+              },
+              {
+                "kind": "value",
+                "text": "5"
+              },
+              {
+                "kind": "text",
+                "text": " раз."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Ожог\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " делает цель уязвимой к огню, в результате чего вы наносите этой цели на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": " больше урона от огня. Время действия – "
+              },
+              {
+                "kind": "value",
+                "text": "30 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Суммируется до "
+              },
+              {
+                "kind": "value",
+                "text": "5"
+              },
+              {
+                "kind": "text",
+                "text": " раз."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130518,
+      "nodeId": 105789,
+      "definitionId": 135319,
+      "spellId": 11083,
+      "textSpellId": 11083,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Пылающая душа",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Прочтение заклинаний огня не будет замедлено при получении урона с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "23%"
+              },
+              {
+                "kind": "text",
+                "text": ". Угроза от ваших заклинаний огня уменьшается на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Прочтение заклинаний огня не будет замедлено при получении урона с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "47%"
+              },
+              {
+                "kind": "text",
+                "text": ". Угроза от ваших заклинаний огня уменьшается на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Прочтение заклинаний огня не будет замедлено при получении урона с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "70%"
+              },
+              {
+                "kind": "text",
+                "text": ". Угроза от ваших заклинаний огня уменьшается на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130519,
+      "nodeId": 105790,
+      "definitionId": 135320,
+      "spellId": 11366,
+      "textSpellId": 11366,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Огненная глыба",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130520,
+      "nodeId": 105791,
+      "definitionId": 135321,
+      "spellId": 11108,
+      "textSpellId": 11108,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенный огненный столб",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара при применении \"Огненного столба\" на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара при применении \"Огненного столба\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара при применении \"Огненного столба\" на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130521,
+      "nodeId": 105792,
+      "definitionId": 135322,
+      "spellId": 11103,
+      "textSpellId": 11103,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Сотрясение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Заклинания огня с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": " оглушают цель на "
+              },
+              {
+                "kind": "value",
+                "text": "2 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Заклинания огня с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "7%"
+              },
+              {
+                "kind": "text",
+                "text": " оглушают цель на "
+              },
+              {
+                "kind": "value",
+                "text": "2 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Заклинания огня с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " оглушают цель на "
+              },
+              {
+                "kind": "value",
+                "text": "2 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130522,
+      "nodeId": 105793,
+      "definitionId": 135323,
+      "spellId": 11100,
+      "textSpellId": 11100,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Метание пламени",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "pluralRuleUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130523,
+      "nodeId": 105794,
+      "definitionId": 135324,
+      "spellId": 11119,
+      "textSpellId": 11119,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Воспламенение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Критические эффекты заклинаний огня поджигают цель, нанося еще "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": " урона от примененного заклинания за "
+              },
+              {
+                "kind": "value",
+                "text": "4 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Критические эффекты заклинаний огня поджигают цель, нанося еще "
+              },
+              {
+                "kind": "value",
+                "text": "16%"
+              },
+              {
+                "kind": "text",
+                "text": " урона от примененного заклинания за "
+              },
+              {
+                "kind": "value",
+                "text": "4 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Критические эффекты заклинаний огня поджигают цель, нанося еще "
+              },
+              {
+                "kind": "value",
+                "text": "24%"
+              },
+              {
+                "kind": "text",
+                "text": " урона от примененного заклинания за "
+              },
+              {
+                "kind": "value",
+                "text": "4 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Критические эффекты заклинаний огня поджигают цель, нанося еще "
+              },
+              {
+                "kind": "value",
+                "text": "32%"
+              },
+              {
+                "kind": "text",
+                "text": " урона от примененного заклинания за "
+              },
+              {
+                "kind": "value",
+                "text": "4 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Критические эффекты заклинаний огня поджигают цель, нанося еще "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": " урона от примененного заклинания за "
+              },
+              {
+                "kind": "value",
+                "text": "4 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130524,
+      "nodeId": 105795,
+      "definitionId": 135325,
+      "spellId": 11069,
+      "textSpellId": 11069,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенный огненный шар",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "decimalFormatUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130525,
+      "nodeId": 105796,
+      "definitionId": 135326,
+      "spellId": 18459,
+      "textSpellId": 18459,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Испепеление",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара \"Огненного взрыва\", \"Ледяного копья\", \"Чародейской вспышки\" и \"Ожога\" на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара \"Огненного взрыва\", \"Ледяного копья\", \"Чародейской вспышки\" и \"Ожога\" на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара \"Огненного взрыва\", \"Ледяного копья\", \"Чародейской вспышки\" и \"Ожога\" на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130526,
+      "nodeId": 105797,
+      "definitionId": 135327,
+      "spellId": 11078,
+      "textSpellId": 11078,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Огненный след",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Сокращает время восстановления \"Огненного взрыва\" на "
+              },
+              {
+                "kind": "value",
+                "text": "1"
+              },
+              {
+                "kind": "text",
+                "text": " сек. Когда вы убиваете цель, за которую получаете опыт или честь, вероятность критического удара следующего \"Огненного взрыва\" повышается на "
+              },
+              {
+                "kind": "value",
+                "text": "25%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "30 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Сокращает время восстановления \"Огненного взрыва\" на "
+              },
+              {
+                "kind": "value",
+                "text": "2"
+              },
+              {
+                "kind": "text",
+                "text": " сек. Когда вы убиваете цель, за которую получаете опыт или честь, вероятность критического удара следующего \"Огненного взрыва\" повышается на "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "30 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130527,
+      "nodeId": 105798,
+      "definitionId": 135328,
+      "spellId": 12042,
+      "textSpellId": 12042,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Мощь тайной магии",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "В течение "
+              },
+              {
+                "kind": "value",
+                "text": "15 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". заклинания наносят на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " больше урона, но расходуют на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " больше маны."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130528,
+      "nodeId": 105799,
+      "definitionId": 135329,
+      "spellId": 15058,
+      "textSpellId": 15058,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Магическая нестабильность",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": " и повышает вероятность критического удара на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": " и повышает вероятность критического удара на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": " и повышает вероятность критического удара на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130529,
+      "nodeId": 105800,
+      "definitionId": 135330,
+      "spellId": 11232,
+      "textSpellId": 11232,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Чародейский ум",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает интеллект на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": " и увеличивает критический урон от заклинаний тайной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает интеллект на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": " и увеличивает критический урон от заклинаний тайной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает интеллект на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": " и увеличивает критический урон от заклинаний тайной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "60%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает интеллект на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": " и увеличивает критический урон от заклинаний тайной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "80%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает интеллект на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " и увеличивает критический урон от заклинаний тайной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130530,
+      "nodeId": 105801,
+      "definitionId": 135331,
+      "spellId": 12043,
+      "textSpellId": 12043,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Присутствие разума",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Мгновенное применение следующего магического заклинания, обычное время применения которого ниже 10 сек."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130531,
+      "nodeId": 105802,
+      "definitionId": 135332,
+      "spellId": 400588,
+      "textSpellId": 400588,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Заградительные стрелы",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "decimalFormatUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130532,
+      "nodeId": 105803,
+      "definitionId": 135333,
+      "spellId": 18462,
+      "textSpellId": 18462,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Чародейская медитация",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "В процессе применения заклинаний продолжается "
+              },
+              {
+                "kind": "value",
+                "text": "17%"
+              },
+              {
+                "kind": "text",
+                "text": " от восполнения маны."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "В процессе применения заклинаний продолжается "
+              },
+              {
+                "kind": "value",
+                "text": "33%"
+              },
+              {
+                "kind": "text",
+                "text": " от восполнения маны."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "В процессе применения заклинаний продолжается "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " от восполнения маны."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130533,
+      "nodeId": 105804,
+      "definitionId": 135334,
+      "spellId": 11255,
+      "textSpellId": 11255,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенная Антимагия",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Антимагия\" также поражает цель немотой на "
+              },
+              {
+                "kind": "value",
+                "text": "2"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Антимагия\" также поражает цель немотой на "
+              },
+              {
+                "kind": "value",
+                "text": "4"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130534,
+      "nodeId": 105805,
+      "definitionId": 135335,
+      "spellId": 11252,
+      "textSpellId": 11252,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Чародейская защита",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает потери маны при получении урона под действием \"Щита маны\" на "
+              },
+              {
+                "kind": "value",
+                "text": "17%"
+              },
+              {
+                "kind": "text",
+                "text": " и увеличивает бонус к сопротивлению от \"Магического доспеха\" на "
+              },
+              {
+                "kind": "value",
+                "text": "25%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает потери маны при получении урона под действием \"Щита маны\" на "
+              },
+              {
+                "kind": "value",
+                "text": "33%"
+              },
+              {
+                "kind": "text",
+                "text": " и увеличивает бонус к сопротивлению от \"Магического доспеха\" на "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130535,
+      "nodeId": 105806,
+      "definitionId": 135336,
+      "spellId": 400574,
+      "textSpellId": 400574,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Чародейская вспышка",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130536,
+      "nodeId": 105807,
+      "definitionId": 135337,
+      "spellId": 11242,
+      "textSpellId": 11242,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Магическое действие",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара заклинаний тайной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара заклинаний тайной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара заклинаний тайной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130537,
+      "nodeId": 105808,
+      "definitionId": 135338,
+      "spellId": 11247,
+      "textSpellId": 11247,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Чародейская геометрия",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает дальность действия заклинаний тайной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "3"
+              },
+              {
+                "kind": "text",
+                "text": " м."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает дальность действия заклинаний тайной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "6"
+              },
+              {
+                "kind": "text",
+                "text": " м."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130538,
+      "nodeId": 105809,
+      "definitionId": 135339,
+      "spellId": 28574,
+      "textSpellId": 28574,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Чародейская стойкость",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает показатель брони на "
+              },
+              {
+                "kind": "value",
+                "text": "25%"
+              },
+              {
+                "kind": "text",
+                "text": " интеллекта."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает показатель брони на "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " интеллекта."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130539,
+      "nodeId": 105810,
+      "definitionId": 135340,
+      "spellId": 11213,
+      "textSpellId": 11213,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Чародейская сосредоточенность",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда ваше заклинание наносит урон противнику, вы с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": " переходите в состояние \"Ясность мысли\". \"Ясность мысли\" снижает затраты маны на следующее наносящее урон заклинание на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда ваше заклинание наносит урон противнику, вы с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": " переходите в состояние \"Ясность мысли\". \"Ясность мысли\" снижает затраты маны на следующее наносящее урон заклинание на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда ваше заклинание наносит урон противнику, вы с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": " переходите в состояние \"Ясность мысли\". \"Ясность мысли\" снижает затраты маны на следующее наносящее урон заклинание на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда ваше заклинание наносит урон противнику, вы с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": " переходите в состояние \"Ясность мысли\". \"Ясность мысли\" снижает затраты маны на следующее наносящее урон заклинание на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда ваше заклинание наносит урон противнику, вы с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " переходите в состояние \"Ясность мысли\". \"Ясность мысли\" снижает затраты маны на следующее наносящее урон заклинание на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130540,
+      "nodeId": 105811,
+      "definitionId": 135341,
+      "spellId": 29441,
+      "textSpellId": 29441,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Магическое поглощение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает сопротивление всем видам магии на "
+              },
+              {
+                "kind": "value",
+                "text": "5"
+              },
+              {
+                "kind": "text",
+                "text": ". Когда сопротивление полностью предотвращает эффект заклинания, вы восполняете "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": " максимального запаса маны. Эффект срабатывает не чаще раза в сек."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает сопротивление всем видам магии на "
+              },
+              {
+                "kind": "value",
+                "text": "10"
+              },
+              {
+                "kind": "text",
+                "text": ". Когда сопротивление полностью предотвращает эффект заклинания, вы восполняете "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": " максимального запаса маны. Эффект срабатывает не чаще раза в сек."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130541,
+      "nodeId": 105812,
+      "definitionId": 135342,
+      "spellId": 11210,
+      "textSpellId": 11210,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Искусные чары",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижение сопротивления цели всем вашим заклинаниям на "
+              },
+              {
+                "kind": "value",
+                "text": "8"
+              },
+              {
+                "kind": "text",
+                "text": " ед. и снижение угрозы от заклинаний тайной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижение сопротивления цели всем вашим заклинаниям на "
+              },
+              {
+                "kind": "value",
+                "text": "15"
+              },
+              {
+                "kind": "text",
+                "text": " ед. и снижение угрозы от заклинаний тайной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130542,
+      "nodeId": 105813,
+      "definitionId": 135343,
+      "spellId": 11237,
+      "textSpellId": 11237,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенное поддержание",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "С вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " поддержание \"Чародейских стрел\" не прерывается при получении урона. С вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "14%"
+              },
+              {
+                "kind": "text",
+                "text": " применение \"Чародейской вспышки\" не прерывается при получении урона."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "С вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": " поддержание \"Чародейских стрел\" не прерывается при получении урона. С вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "28%"
+              },
+              {
+                "kind": "text",
+                "text": " применение \"Чародейской вспышки\" не прерывается при получении урона."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "С вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "60%"
+              },
+              {
+                "kind": "text",
+                "text": " поддержание \"Чародейских стрел\" не прерывается при получении урона. С вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "42%"
+              },
+              {
+                "kind": "text",
+                "text": " применение \"Чародейской вспышки\" не прерывается при получении урона."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "С вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "80%"
+              },
+              {
+                "kind": "text",
+                "text": " поддержание \"Чародейских стрел\" не прерывается при получении урона. С вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "56%"
+              },
+              {
+                "kind": "text",
+                "text": " применение \"Чародейской вспышки\" не прерывается при получении урона."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "С вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " поддержание \"Чародейских стрел\" не прерывается при получении урона. С вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "70%"
+              },
+              {
+                "kind": "text",
+                "text": " применение \"Чародейской вспышки\" не прерывается при получении урона."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130543,
+      "nodeId": 105814,
+      "definitionId": 135344,
+      "spellId": 11222,
+      "textSpellId": 11222,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Средоточие чар",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания заклинаниями тайной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания заклинаниями тайной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания заклинаниями тайной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания заклинаниями тайной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания заклинаниями тайной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130544,
+      "nodeId": 105815,
+      "definitionId": 135345,
+      "spellId": 6057,
+      "textSpellId": 6057,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Специализация на жезлах",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение на "
+              },
+              {
+                "kind": "value",
+                "text": "13%"
+              },
+              {
+                "kind": "text",
+                "text": " урона, наносимого при использовании магических жезлов."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение на "
+              },
+              {
+                "kind": "value",
+                "text": "25%"
+              },
+              {
+                "kind": "text",
+                "text": " урона, наносимого при использовании магических жезлов."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "contentHash": "sha256:8f7f5859d2a5372a054ff6e5ffbe96b247a0bb5d3e2b72c0809052ce7179c2dd",
+  "provenance": {
+    "source": "wago.tools",
+    "renderer": "talent_data.localization gates-v1 + talent_data.tooltips grammar-v1",
+    "tables": [
+      {
+        "table": "SpellName",
+        "locale": "enUS",
+        "url": "https://wago.tools/db2/SpellName/csv?build=1.60.1.70338"
+      },
+      {
+        "table": "TraitDefinition",
+        "locale": "enUS",
+        "url": "https://wago.tools/db2/TraitDefinition/csv?build=1.60.1.70338"
+      },
+      {
+        "table": "Spell",
+        "locale": "enUS",
+        "url": "https://wago.tools/db2/Spell/csv?build=1.60.1.70338"
+      },
+      {
+        "table": "GlobalStrings",
+        "locale": "enUS",
+        "url": "https://wago.tools/db2/GlobalStrings/csv?build=1.60.1.70338"
+      },
+      {
+        "table": "SpellName",
+        "locale": "ruRU",
+        "url": "https://wago.tools/db2/SpellName/csv?build=1.60.1.70338&locale=ruRU"
+      },
+      {
+        "table": "TraitDefinition",
+        "locale": "ruRU",
+        "url": "https://wago.tools/db2/TraitDefinition/csv?build=1.60.1.70338&locale=ruRU"
+      },
+      {
+        "table": "Spell",
+        "locale": "ruRU",
+        "url": "https://wago.tools/db2/Spell/csv?build=1.60.1.70338&locale=ruRU"
+      },
+      {
+        "table": "GlobalStrings",
+        "locale": "ruRU",
+        "url": "https://wago.tools/db2/GlobalStrings/csv?build=1.60.1.70338&locale=ruRU"
+      }
+    ]
+  }
+}

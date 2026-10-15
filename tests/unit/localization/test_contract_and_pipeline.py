@@ -26,7 +26,8 @@ from talent_data.localization.pipeline import (
 from talent_data.models.localization import TalentLocalizationDocument, expected_content_hash
 from talent_data.models.talents import TalentDataDocument
 from talent_data.models.tooltips import TalentTooltipsDocument
-from tests.helpers import BUILD_70245, NEW_BUILD, PILOT_BUILD
+from tests.conftest import ALL_CLASSES
+from tests.helpers import BUILD_70245, PILOT_BUILD
 from tests.unit.localization.conftest import (
     GAME,
     LOCALE,
@@ -54,11 +55,15 @@ def rehash(raw: dict[str, Any]) -> TalentLocalizationDocument:
 # --------------------------------------------------------------------------- contract
 
 
-def test_the_committed_pilot_validates_hashes_and_round_trips() -> None:
-    assert sorted(p.name for p in OVERLAYS.iterdir()) == ["warrior.json"]
-    document = TalentLocalizationDocument.model_validate_json(WARRIOR_FILE.read_text("utf-8"))
-    assert document.content_hash == expected_content_hash(document)
-    assert document.to_json() == WARRIOR_FILE.read_text(encoding="utf-8")
+def test_the_committed_overlays_validate_hash_and_round_trip() -> None:
+    """Since M5.REL.3b.1 every class of the pilot build is published, not just Warrior."""
+    assert sorted(p.name for p in OVERLAYS.iterdir()) == [
+        f"{key}.json" for key in sorted(ALL_CLASSES)
+    ]
+    for path in sorted(OVERLAYS.glob("*.json")):
+        document = TalentLocalizationDocument.model_validate_json(path.read_text("utf-8"))
+        assert document.content_hash == expected_content_hash(document), path.name
+        assert document.to_json() == path.read_text(encoding="utf-8"), path.name
 
 
 def _rendered(d: dict[str, Any]) -> dict[str, Any]:
@@ -119,8 +124,11 @@ def test_the_committed_schema_is_generated_from_the_model() -> None:
 def test_regenerating_from_the_build_rows_reproduces_the_committed_files(
     build: BuildLocalization,
 ) -> None:
-    assert build.overlays["WARRIOR"].to_json() == WARRIOR_FILE.read_text(encoding="utf-8")
-    report = build.report(frozenset({"WARRIOR"}))
+    for token, overlay in build.overlays.items():
+        assert overlay.to_json() == (OVERLAYS / f"{token.lower()}.json").read_text(
+            encoding="utf-8"
+        ), token
+    report = build.report(frozenset(build.overlays))
     assert report.to_json() == REPORT.read_text(encoding="utf-8")
     assert render_markdown(report) == MARKDOWN.read_text(encoding="utf-8")
 
@@ -142,7 +150,9 @@ def test_product_build_coverage() -> None:
         "rendered": 355,
     }
     assert totals.rendered_ranks == 1058
-    assert [row.class_token for row in report.classes if row.published] == ["WARRIOR"]
+    # M5.REL.3b.1: every class of the build is published, in dataset order
+    assert [row.class_token for row in report.classes] == [key.upper() for key in ALL_CLASSES]
+    assert all(row.published for row in report.classes)
     # every fallback to English is listed with its reason
     assert len(report.name_exceptions) == names.untranslated + names.missing
     assert len(report.description_exceptions) == totals.entries - totals.descriptions.rendered
@@ -169,13 +179,21 @@ def test_the_committed_localization_is_consistent(at_repo_root) -> None:
     assert check_canonical(GAME, PILOT_BUILD, LOCALE) == []
 
 
-@pytest.mark.parametrize("retained", [NEW_BUILD, BUILD_70245])
-def test_retained_builds_have_no_overlay_and_say_so(at_repo_root, retained) -> None:
-    """Overlays exist only for 70338 (3a) and 70374 (M5.DATA.3); the other bundled builds
-    stay readable, unchanged."""
-    problems = check_canonical(GAME, retained, LOCALE)
+def test_a_build_without_an_overlay_directory_says_so(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The fail-closed path of the pilot era, kept as a behaviour test: a build without a
+    committed localization directory is reported, never skipped (M5.REL.3b.1 publishes the
+    overlays of every bundled build - see test_all_builds.py)."""
+    root = tmp_path
+    shutil.copytree(
+        ROOT / "data" / "normalized" / "forever" / str(BUILD_70245),
+        root / "data" / "normalized" / "forever" / str(BUILD_70245),
+    )
+    monkeypatch.setenv("TALENT_DATA_ROOT", str(root))
+    problems = check_canonical(GAME, BUILD_70245, LOCALE)
     assert len(problems) == 1
-    assert problems[0].startswith(f"no ruRU localization of {retained}")
+    assert problems[0].startswith(f"no {LOCALE} localization of {BUILD_70245}")
 
 
 @pytest.fixture
@@ -292,13 +310,11 @@ def test_publishing_writes_only_localization_outputs(
     before = _digests(root, *canonical)
     existing = {p for p in root.rglob("*") if p.is_file()}
     monkeypatch.setenv("TALENT_DATA_ROOT", str(root))
-    publish(build, frozenset({"WARRIOR"}))
+    publish(build, frozenset(build.overlays))
     written = {p for p in root.rglob("*") if p.is_file()} - existing
     assert {str(p.relative_to(root)) for p in written} == {
-        f"data/localization/forever/{PILOT_BUILD}/ruRU/warrior.json",
-        str(REPORT.relative_to(ROOT)),
-        str(MARKDOWN.relative_to(ROOT)),
-    }
+        f"data/localization/forever/{PILOT_BUILD}/ruRU/{key}.json" for key in ALL_CLASSES
+    } | {str(REPORT.relative_to(ROOT)), str(MARKDOWN.relative_to(ROOT))}
     assert _digests(root, *canonical) == before
 
 

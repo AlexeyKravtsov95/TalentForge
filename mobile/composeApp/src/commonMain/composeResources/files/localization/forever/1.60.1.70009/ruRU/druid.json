@@ -1,0 +1,3482 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "clientBuild": "1.60.1.70009",
+  "classToken": "DRUID",
+  "locale": "ruRU",
+  "talentDataContentHash": "sha256:0105ee1c9a858d61a8c2c595f1a4701ba1e3cd2164d04c6b1d37d5ff2da18772",
+  "tooltipsContentHash": "sha256:217a037543d5f5b31dbe70a1ea1b3bc7c273156955509bf667488919fd5b4f4d",
+  "entries": [
+    {
+      "entryId": 129569,
+      "nodeId": 104909,
+      "definitionId": 134370,
+      "spellId": 17123,
+      "textSpellId": 17123,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенное спокойствие",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает уровень угрозы, создаваемой \"Спокойствием\", на "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " и сокращает время восстановления \"Спокойствия\" на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает уровень угрозы, создаваемой \"Спокойствием\", на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " и сокращает время восстановления \"Спокойствия\" на "
+              },
+              {
+                "kind": "value",
+                "text": "60%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129570,
+      "nodeId": 104910,
+      "definitionId": 134371,
+      "spellId": 408120,
+      "textSpellId": 408120,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Буйный рост",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 129571,
+      "nodeId": 104911,
+      "definitionId": 134372,
+      "spellId": 1309631,
+      "textSpellId": 1309631,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Живой дух",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает дух на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает дух на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает дух на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129572,
+      "nodeId": 104912,
+      "definitionId": 134373,
+      "spellId": 18562,
+      "textSpellId": 18562,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Быстрое восстановление",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Мгновенно восполняет здоровье цели с активным эффектом \"Омоложение\" или \"Восстановление\" в объеме, равном исцелению от периодического эффекта одного из этих заклинаний за все время действия."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129573,
+      "nodeId": 104913,
+      "definitionId": 134374,
+      "spellId": 17074,
+      "textSpellId": 17074,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенное восстановление",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта \"Восстановления\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта \"Восстановления\" на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта \"Восстановления\" на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта \"Восстановления\" на "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта \"Восстановления\" на "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129574,
+      "nodeId": 104914,
+      "definitionId": 134375,
+      "spellId": 17111,
+      "textSpellId": 17111,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенное омоложение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение эффекта от заклинания \"Омоложение\" на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение эффекта от заклинания \"Омоложение\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение эффекта от заклинания \"Омоложение\" на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129575,
+      "nodeId": 104915,
+      "definitionId": 134376,
+      "spellId": 24968,
+      "textSpellId": 24968,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Мирный дух",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижение затрат маны на ваши заклинания \"Целительное прикосновение\" и \"Спокойствие\" на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижение затрат маны на ваши заклинания \"Целительное прикосновение\" и \"Спокойствие\" на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижение затрат маны на ваши заклинания \"Целительное прикосновение\" и \"Спокойствие\" на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижение затрат маны на ваши заклинания \"Целительное прикосновение\" и \"Спокойствие\" на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижение затрат маны на ваши заклинания \"Целительное прикосновение\" и \"Спокойствие\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129576,
+      "nodeId": 104916,
+      "definitionId": 134377,
+      "spellId": 17104,
+      "textSpellId": 17104,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Дар природы",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает эффективность исцеляющих заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает эффективность исцеляющих заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает эффективность исцеляющих заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает эффективность исцеляющих заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает эффективность исцеляющих заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129577,
+      "nodeId": 104917,
+      "definitionId": 134378,
+      "spellId": 17106,
+      "textSpellId": 17106,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Отражение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "В процессе применения заклинаний продолжается "
+              },
+              {
+                "kind": "value",
+                "text": "17%"
+              },
+              {
+                "kind": "text",
+                "text": " от восполнения маны."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "В процессе применения заклинаний продолжается "
+              },
+              {
+                "kind": "value",
+                "text": "33%"
+              },
+              {
+                "kind": "text",
+                "text": " от восполнения маны."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "В процессе применения заклинаний продолжается "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " от восполнения маны."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129578,
+      "nodeId": 104918,
+      "definitionId": 134379,
+      "spellId": 414673,
+      "textSpellId": 414673,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Дар Матери-Земли",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "decimalFormatUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 129579,
+      "nodeId": 104919,
+      "definitionId": 134380,
+      "spellId": 16833,
+      "textSpellId": 16833,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Прирожденный оборотень",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижение расхода маны на оборотничество на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижение расхода маны на оборотничество на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижение расхода маны на оборотничество на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129580,
+      "nodeId": 104920,
+      "definitionId": 134381,
+      "spellId": 17118,
+      "textSpellId": 17118,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Скрытность",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает уровень угрозы, создаваемой заклинаниями сил природы и тайной магии, на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает уровень угрозы, создаваемой заклинаниями сил природы и тайной магии, на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает уровень угрозы, создаваемой заклинаниями сил природы и тайной магии, на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129581,
+      "nodeId": 104921,
+      "definitionId": 134382,
+      "spellId": 17116,
+      "textSpellId": 17116,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Природная стремительность",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Мгновенное применение следующего заклинания сил природы."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129582,
+      "nodeId": 104922,
+      "definitionId": 134383,
+      "spellId": 17069,
+      "textSpellId": 17069,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Натуралист",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "decimalFormatUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 129583,
+      "nodeId": 104923,
+      "definitionId": 134384,
+      "spellId": 16814,
+      "textSpellId": 16814,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенный гнев",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "decimalFormatUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 129584,
+      "nodeId": 104924,
+      "definitionId": 134385,
+      "spellId": 1223081,
+      "textSpellId": 1223081,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Сотворение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает периодический урон и силу исцеления ваших заклинаний и способностей на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает периодический урон и силу исцеления ваших заклинаний и способностей на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает периодический урон и силу исцеления ваших заклинаний и способностей на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает периодический урон и силу исцеления ваших заклинаний и способностей на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает периодический урон и силу исцеления ваших заклинаний и способностей на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129585,
+      "nodeId": 104925,
+      "definitionId": 134386,
+      "spellId": 16845,
+      "textSpellId": 16845,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Лунное сияние",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на наносящие урон заклинания на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на наносящие урон заклинания на "
+              },
+              {
+                "kind": "value",
+                "text": "17%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на наносящие урон заклинания на "
+              },
+              {
+                "kind": "value",
+                "text": "25%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129586,
+      "nodeId": 104926,
+      "definitionId": 134387,
+      "spellId": 16918,
+      "textSpellId": 16918,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенный гнев деревьев",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от \"Гнева деревьев\" на "
+              },
+              {
+                "kind": "value",
+                "text": "25%"
+              },
+              {
+                "kind": "text",
+                "text": ". Обездвиженные цели могут получить на "
+              },
+              {
+                "kind": "value",
+                "text": "25%"
+              },
+              {
+                "kind": "text",
+                "text": " больше урона, прежде чем эффект будет снят."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от \"Гнева деревьев\" на "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": ". Обездвиженные цели могут получить на "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " больше урона, прежде чем эффект будет снят."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от \"Гнева деревьев\" на "
+              },
+              {
+                "kind": "value",
+                "text": "75%"
+              },
+              {
+                "kind": "text",
+                "text": ". Обездвиженные цели могут получить на "
+              },
+              {
+                "kind": "value",
+                "text": "75%"
+              },
+              {
+                "kind": "text",
+                "text": " больше урона, прежде чем эффект будет снят."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129587,
+      "nodeId": 104927,
+      "definitionId": 134388,
+      "spellId": 1223082,
+      "textSpellId": 1223082,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Величие природы",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара заклинаний и атак ближнего боя на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара заклинаний и атак ближнего боя на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129588,
+      "nodeId": 104928,
+      "definitionId": 134389,
+      "spellId": 1223083,
+      "textSpellId": 1223083,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Великолепие природы",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает время действия заклинаний \"Лунный огонь\" и \"Омоложение\" на "
+              },
+              {
+                "kind": "value",
+                "text": "3"
+              },
+              {
+                "kind": "text",
+                "text": " сек., \"Восстановления\" – на "
+              },
+              {
+                "kind": "value",
+                "text": "6"
+              },
+              {
+                "kind": "text",
+                "text": " сек. и \"Роя насекомых\" – на "
+              },
+              {
+                "kind": "value",
+                "text": "2"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129589,
+      "nodeId": 104929,
+      "definitionId": 134390,
+      "spellId": 16819,
+      "textSpellId": 16819,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Предел сил Природы",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает дальность действия наносящих урон заклинаний специализации \"Баланс\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " и повышает вероятностью попадания на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает дальность действия наносящих урон заклинаний специализации \"Баланс\" на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " и повышает вероятностью попадания на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129590,
+      "nodeId": 104930,
+      "definitionId": 134391,
+      "spellId": 5570,
+      "textSpellId": 5570,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Рой насекомых",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 129591,
+      "nodeId": 104931,
+      "definitionId": 134392,
+      "spellId": 16821,
+      "textSpellId": 16821,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенный лунный огонь",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение урона и шанса на критический удар от вашего заклинания \"Лунный огонь\" на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение урона и шанса на критический удар от вашего заклинания \"Лунный огонь\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129592,
+      "nodeId": 104932,
+      "definitionId": 134393,
+      "spellId": 16909,
+      "textSpellId": 16909,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Отмщение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает критический урон от заклинаний тайной магии и сил природы на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает критический урон от заклинаний тайной магии и сил природы на "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает критический урон от заклинаний тайной магии и сил природы на "
+              },
+              {
+                "kind": "value",
+                "text": "60%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает критический урон от заклинаний тайной магии и сил природы на "
+              },
+              {
+                "kind": "value",
+                "text": "80%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает критический урон от заклинаний тайной магии и сил природы на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129593,
+      "nodeId": 104933,
+      "definitionId": 134394,
+      "spellId": 16850,
+      "textSpellId": 16850,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенный звездный огонь",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "decimalFormatUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 129594,
+      "nodeId": 104934,
+      "definitionId": 134395,
+      "spellId": 16880,
+      "textSpellId": 16880,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Благоволение природы",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда ваше заклинание прямого действия наносит критический урон, вы получаете благословение природы, повышающее скорость применения заклинаний и сокращающее общее время восстановления на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "3 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129595,
+      "nodeId": 104935,
+      "definitionId": 134396,
+      "spellId": 408248,
+      "textSpellId": 408248,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Затмение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "pluralRuleUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 129596,
+      "nodeId": 104936,
+      "definitionId": 134397,
+      "spellId": 16896,
+      "textSpellId": 16896,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Лунное неистовство",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от заклинаний тайной магии и сил природы на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от заклинаний тайной магии и сил природы на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от заклинаний тайной магии и сил природы на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от заклинаний тайной магии и сил природы на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от заклинаний тайной магии и сил природы на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129597,
+      "nodeId": 104937,
+      "definitionId": 134398,
+      "spellId": 24858,
+      "textSpellId": 24858,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Облик лунного совуха",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Вы принимаете облик лунного совуха. В этом облике бонус к броне от снаряжения увеличивается на "
+              },
+              {
+                "kind": "value",
+                "text": "360%"
+              },
+              {
+                "kind": "text",
+                "text": ", вероятность срабатывания \"Знамения ясности\" повышается на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": ", а вероятность критического удара участников группы в радиусе "
+              },
+              {
+                "kind": "value",
+                "text": "45"
+              },
+              {
+                "kind": "text",
+                "text": " м повышается на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": ". Не суммируется с эффектом \"Вожак стаи\". В облике лунного совуха нельзя применять исцеляющие заклинания.\n\nКогда вы меняете облик, вы освобождаетесь от эффектов превращения и затруднения передвижения."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129598,
+      "nodeId": 104938,
+      "definitionId": 134399,
+      "spellId": 16934,
+      "textSpellId": 16934,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Свирепость",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "untranslated",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 129599,
+      "nodeId": 104939,
+      "definitionId": 134400,
+      "spellId": 17003,
+      "textSpellId": 17003,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Сердце дикой природы",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает интеллект на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": ". Также повышает выносливость в облике медведя и лютого медведя на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": " и повышает силу в облике кошки на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает интеллект на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": ". Также повышает выносливость в облике медведя и лютого медведя на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": " и повышает силу в облике кошки на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает интеллект на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": ". Также повышает выносливость в облике медведя и лютого медведя на "
+              },
+              {
+                "kind": "value",
+                "text": "12%"
+              },
+              {
+                "kind": "text",
+                "text": " и повышает силу в облике кошки на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает интеллект на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": ". Также повышает выносливость в облике медведя и лютого медведя на "
+              },
+              {
+                "kind": "value",
+                "text": "16%"
+              },
+              {
+                "kind": "text",
+                "text": " и повышает силу в облике кошки на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает интеллект на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": ". Также повышает выносливость в облике медведя и лютого медведя на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " и повышает силу в облике кошки на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129600,
+      "nodeId": 104940,
+      "definitionId": 134401,
+      "spellId": 16947,
+      "textSpellId": 16947,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Животный инстинкт",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от \"Размаха\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " и снижает вероятность того, что противники обнаружат вас во время действия \"Крадущегося зверя\", как если бы ваш уровень был выше на "
+              },
+              {
+                "kind": "value",
+                "text": "1"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от \"Размаха\" на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " и снижает вероятность того, что противники обнаружат вас во время действия \"Крадущегося зверя\", как если бы ваш уровень был выше на "
+              },
+              {
+                "kind": "value",
+                "text": "2"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от \"Размаха\" на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " и снижает вероятность того, что противники обнаружат вас во время действия \"Крадущегося зверя\", как если бы ваш уровень был выше на "
+              },
+              {
+                "kind": "value",
+                "text": "3"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129601,
+      "nodeId": 104941,
+      "definitionId": 134402,
+      "spellId": 16940,
+      "textSpellId": 16940,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Жестокий удар",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "decimalFormatUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 129602,
+      "nodeId": 104942,
+      "definitionId": 134403,
+      "spellId": 16929,
+      "textSpellId": 16929,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Плотная шкура",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "decimalFormatUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 129603,
+      "nodeId": 104943,
+      "definitionId": 134404,
+      "spellId": 17002,
+      "textSpellId": 17002,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Звериная скорость",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает скорость передвижения в облике кошки на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": " и увеличивает вероятность уклонения на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает скорость передвижения в облике кошки на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " и увеличивает вероятность уклонения на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129604,
+      "nodeId": 104944,
+      "definitionId": 134405,
+      "spellId": 1238122,
+      "textSpellId": 1238122,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Звериный рывок",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Требуется облик медведя или лютого медведя\nВы совершаете рывок к противнику, обездвиживая его и прерывая применение заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "4 сек"
+              },
+              {
+                "kind": "text",
+                "text": ".\n\nВы прыгаете за спину противника."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129605,
+      "nodeId": 104945,
+      "definitionId": 134406,
+      "spellId": 16966,
+      "textSpellId": 16966,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Растерзать противника",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты энергии на способность \"Полоснуть\" на "
+              },
+              {
+                "kind": "value",
+                "text": "6"
+              },
+              {
+                "kind": "text",
+                "text": " ед. и снижает затраты ярости на способность \"Растерзать\" на "
+              },
+              {
+                "kind": "value",
+                "text": "1"
+              },
+              {
+                "kind": "text",
+                "text": " ед."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты энергии на способность \"Полоснуть\" на "
+              },
+              {
+                "kind": "value",
+                "text": "12"
+              },
+              {
+                "kind": "text",
+                "text": " ед. и снижает затраты ярости на способность \"Растерзать\" на "
+              },
+              {
+                "kind": "value",
+                "text": "2"
+              },
+              {
+                "kind": "text",
+                "text": " ед."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты энергии на способность \"Полоснуть\" на "
+              },
+              {
+                "kind": "value",
+                "text": "18"
+              },
+              {
+                "kind": "text",
+                "text": " ед. и снижает затраты ярости на способность \"Растерзать\" на "
+              },
+              {
+                "kind": "value",
+                "text": "3"
+              },
+              {
+                "kind": "text",
+                "text": " ед."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129606,
+      "nodeId": 104946,
+      "definitionId": 134407,
+      "spellId": 16942,
+      "textSpellId": 16942,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Острые когти",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара в облике медведя, лютого медведя и кошки на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара в облике медведя, лютого медведя и кошки на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129607,
+      "nodeId": 104947,
+      "definitionId": 134408,
+      "spellId": 16958,
+      "textSpellId": 16958,
+      "maxRank": 2,
+      "name": {
+        "status": "untranslated",
+        "text": null,
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда вы наносите критический удар в облике медведя или лютого медведя, вы с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " накапливаете еще "
+              },
+              {
+                "kind": "value",
+                "text": "5"
+              },
+              {
+                "kind": "text",
+                "text": " ед. ярости. Кроме того, критические удары способностей прямого действия в облике кошки, увеличивающие длину серии, с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " увеличивают длину серии еще на 1."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда вы наносите критический удар в облике медведя или лютого медведя, вы с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " накапливаете еще "
+              },
+              {
+                "kind": "value",
+                "text": "5"
+              },
+              {
+                "kind": "text",
+                "text": " ед. ярости. Кроме того, критические удары способностей прямого действия в облике кошки, увеличивающие длину серии, с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " увеличивают длину серии еще на 1."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129608,
+      "nodeId": 104948,
+      "definitionId": 134409,
+      "spellId": 16998,
+      "textSpellId": 16998,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Бешеное неистовство",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от способностей \"Когти\", \"Глубокая рана\", \"Полоснуть\", \"Трепка\" и \"Размах\" на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от способностей \"Когти\", \"Глубокая рана\", \"Полоснуть\", \"Трепка\" и \"Размах\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129609,
+      "nodeId": 104949,
+      "definitionId": 134410,
+      "spellId": 407995,
+      "textSpellId": 407995,
+      "maxRank": 1,
+      "name": {
+        "status": "untranslated",
+        "text": null,
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "untranslated",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 129610,
+      "nodeId": 104950,
+      "definitionId": 134411,
+      "spellId": 1223242,
+      "textSpellId": 1223242,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Хищный инстинкт",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает дополнительный урон от критических ударов ближнего боя на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает дополнительный урон от критических ударов ближнего боя на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129611,
+      "nodeId": 104951,
+      "definitionId": 134412,
+      "spellId": 417046,
+      "textSpellId": 417046,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Король джунглей",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Тигриное неистовство\" теперь мгновенно восстанавливает "
+              },
+              {
+                "kind": "value",
+                "text": "20"
+              },
+              {
+                "kind": "text",
+                "text": " ед. энергии."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Тигриное неистовство\" теперь мгновенно восстанавливает "
+              },
+              {
+                "kind": "value",
+                "text": "40"
+              },
+              {
+                "kind": "text",
+                "text": " ед. энергии."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Тигриное неистовство\" теперь мгновенно восстанавливает "
+              },
+              {
+                "kind": "value",
+                "text": "60"
+              },
+              {
+                "kind": "text",
+                "text": " ед. энергии."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129612,
+      "nodeId": 104952,
+      "definitionId": 134413,
+      "spellId": 16972,
+      "textSpellId": 16972,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Удары хищника",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает силу атаки ближнего боя в облике кошки, медведя и лютого медведя на "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " вашего уровня."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает силу атаки ближнего боя в облике кошки, медведя и лютого медведя на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " вашего уровня."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает силу атаки ближнего боя в облике кошки, медведя и лютого медведя на "
+              },
+              {
+                "kind": "value",
+                "text": "150%"
+              },
+              {
+                "kind": "text",
+                "text": " вашего уровня."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129613,
+      "nodeId": 104953,
+      "definitionId": 134414,
+      "spellId": 1223246,
+      "textSpellId": 1223246,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Рви и терзай",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от способностей ближнего боя, применяемых к кровоточащим целям, на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от способностей ближнего боя, применяемых к кровоточащим целям, на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от способностей ближнего боя, применяемых к кровоточащим целям, на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от способностей ближнего боя, применяемых к кровоточащим целям, на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от способностей ближнего боя, применяемых к кровоточащим целям, на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129614,
+      "nodeId": 104954,
+      "definitionId": 134415,
+      "spellId": 417051,
+      "textSpellId": 417051,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Безусловный рефлекс",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность уклонения на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": ". Когда вы уклоняетесь от атаки, вы с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " накапливаете "
+              },
+              {
+                "kind": "value",
+                "text": "5"
+              },
+              {
+                "kind": "text",
+                "text": " ед. ярости."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность уклонения на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": ". Когда вы уклоняетесь от атаки, вы с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": " накапливаете "
+              },
+              {
+                "kind": "value",
+                "text": "5"
+              },
+              {
+                "kind": "text",
+                "text": " ед. ярости."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность уклонения на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": ". Когда вы уклоняетесь от атаки, вы с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "60%"
+              },
+              {
+                "kind": "text",
+                "text": " накапливаете "
+              },
+              {
+                "kind": "value",
+                "text": "5"
+              },
+              {
+                "kind": "text",
+                "text": " ед. ярости."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность уклонения на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": ". Когда вы уклоняетесь от атаки, вы с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "80%"
+              },
+              {
+                "kind": "text",
+                "text": " накапливаете "
+              },
+              {
+                "kind": "value",
+                "text": "5"
+              },
+              {
+                "kind": "text",
+                "text": " ед. ярости."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность уклонения на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": ". Когда вы уклоняетесь от атаки, вы с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " накапливаете "
+              },
+              {
+                "kind": "value",
+                "text": "5"
+              },
+              {
+                "kind": "text",
+                "text": " ед. ярости."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129615,
+      "nodeId": 104955,
+      "definitionId": 134416,
+      "spellId": 17007,
+      "textSpellId": 17007,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Вожак стаи",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "В облике кошки, медведя или лютого медведя \"Вожак стаи\" повышает вероятность критического удара участников группы в радиусе "
+              },
+              {
+                "kind": "value",
+                "text": "45"
+              },
+              {
+                "kind": "text",
+                "text": " м на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": ". Не суммируется с \"Аурой лунного совуха\"."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129616,
+      "nodeId": 104956,
+      "definitionId": 134417,
+      "spellId": 417141,
+      "textSpellId": 417141,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Берсерк",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "untranslated",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 129617,
+      "nodeId": 104957,
+      "definitionId": 134418,
+      "spellId": 17063,
+      "textSpellId": 17063,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Средоточие Природы",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "С вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "14%"
+              },
+              {
+                "kind": "text",
+                "text": " применение заклинаний тайной магии и сил природы не прерывается при получении урона."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "С вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "28%"
+              },
+              {
+                "kind": "text",
+                "text": " применение заклинаний тайной магии и сил природы не прерывается при получении урона."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "С вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "42%"
+              },
+              {
+                "kind": "text",
+                "text": " применение заклинаний тайной магии и сил природы не прерывается при получении урона."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "С вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "56%"
+              },
+              {
+                "kind": "text",
+                "text": " применение заклинаний тайной магии и сил природы не прерывается при получении урона."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "С вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "70%"
+              },
+              {
+                "kind": "text",
+                "text": " применение заклинаний тайной магии и сил природы не прерывается при получении урона."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 129618,
+      "nodeId": 104958,
+      "definitionId": 134419,
+      "spellId": 17056,
+      "textSpellId": 17056,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Гнев",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда вы принимаете облик медведя или лютого медведя, вы с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " накапливаете "
+              },
+              {
+                "kind": "value",
+                "text": "10"
+              },
+              {
+                "kind": "text",
+                "text": " ед. ярости. Когда вы принимаете облик кошки, вы восстанавливаете "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " энергии, остававшейся у вас, когда вы покинули этот облик в прошлый раз, а также еще "
+              },
+              {
+                "kind": "value",
+                "text": "2"
+              },
+              {
+                "kind": "text",
+                "text": " ед. энергии за каждую секунду, проведенную не в облике медведя, кошки и лютого медведя. Максимум "
+              },
+              {
+                "kind": "value",
+                "text": "20"
+              },
+              {
+                "kind": "text",
+                "text": " ед. энергии."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда вы принимаете облик медведя или лютого медведя, вы с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": " накапливаете "
+              },
+              {
+                "kind": "value",
+                "text": "10"
+              },
+              {
+                "kind": "text",
+                "text": " ед. ярости. Когда вы принимаете облик кошки, вы восстанавливаете "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": " энергии, остававшейся у вас, когда вы покинули этот облик в прошлый раз, а также еще "
+              },
+              {
+                "kind": "value",
+                "text": "4"
+              },
+              {
+                "kind": "text",
+                "text": " ед. энергии за каждую секунду, проведенную не в облике медведя, кошки и лютого медведя. Максимум "
+              },
+              {
+                "kind": "value",
+                "text": "40"
+              },
+              {
+                "kind": "text",
+                "text": " ед. энергии."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда вы принимаете облик медведя или лютого медведя, вы с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "60%"
+              },
+              {
+                "kind": "text",
+                "text": " накапливаете "
+              },
+              {
+                "kind": "value",
+                "text": "10"
+              },
+              {
+                "kind": "text",
+                "text": " ед. ярости. Когда вы принимаете облик кошки, вы восстанавливаете "
+              },
+              {
+                "kind": "value",
+                "text": "60%"
+              },
+              {
+                "kind": "text",
+                "text": " энергии, остававшейся у вас, когда вы покинули этот облик в прошлый раз, а также еще "
+              },
+              {
+                "kind": "value",
+                "text": "6"
+              },
+              {
+                "kind": "text",
+                "text": " ед. энергии за каждую секунду, проведенную не в облике медведя, кошки и лютого медведя. Максимум "
+              },
+              {
+                "kind": "value",
+                "text": "60"
+              },
+              {
+                "kind": "text",
+                "text": " ед. энергии."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда вы принимаете облик медведя или лютого медведя, вы с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "80%"
+              },
+              {
+                "kind": "text",
+                "text": " накапливаете "
+              },
+              {
+                "kind": "value",
+                "text": "10"
+              },
+              {
+                "kind": "text",
+                "text": " ед. ярости. Когда вы принимаете облик кошки, вы восстанавливаете "
+              },
+              {
+                "kind": "value",
+                "text": "80%"
+              },
+              {
+                "kind": "text",
+                "text": " энергии, остававшейся у вас, когда вы покинули этот облик в прошлый раз, а также еще "
+              },
+              {
+                "kind": "value",
+                "text": "8"
+              },
+              {
+                "kind": "text",
+                "text": " ед. энергии за каждую секунду, проведенную не в облике медведя, кошки и лютого медведя. Максимум "
+              },
+              {
+                "kind": "value",
+                "text": "80"
+              },
+              {
+                "kind": "text",
+                "text": " ед. энергии."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда вы принимаете облик медведя или лютого медведя, вы с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " накапливаете "
+              },
+              {
+                "kind": "value",
+                "text": "10"
+              },
+              {
+                "kind": "text",
+                "text": " ед. ярости. Когда вы принимаете облик кошки, вы восстанавливаете "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " энергии, остававшейся у вас, когда вы покинули этот облик в прошлый раз, а также еще "
+              },
+              {
+                "kind": "value",
+                "text": "10"
+              },
+              {
+                "kind": "text",
+                "text": " ед. энергии за каждую секунду, проведенную не в облике медведя, кошки и лютого медведя. Максимум "
+              },
+              {
+                "kind": "value",
+                "text": "100"
+              },
+              {
+                "kind": "text",
+                "text": " ед. энергии."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 137836,
+      "nodeId": 110844,
+      "definitionId": 142590,
+      "spellId": 17245,
+      "textSpellId": 17245,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Разрастание",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает максимальное количество целей, к которым вы можете применить \"Гнев деревьев\", на "
+              },
+              {
+                "kind": "value",
+                "text": "1"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает максимальное количество целей, к которым вы можете применить \"Гнев деревьев\", на "
+              },
+              {
+                "kind": "value",
+                "text": "2"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "contentHash": "sha256:a4caaafc1697c195ca070e0322574c17ede787fdeee12422e8ebbb58f39e064c",
+  "provenance": {
+    "source": "wago.tools",
+    "renderer": "talent_data.localization gates-v1 + talent_data.tooltips grammar-v1",
+    "tables": [
+      {
+        "table": "SpellName",
+        "locale": "enUS",
+        "url": "https://wago.tools/db2/SpellName/csv?build=1.60.1.70009"
+      },
+      {
+        "table": "TraitDefinition",
+        "locale": "enUS",
+        "url": "https://wago.tools/db2/TraitDefinition/csv?build=1.60.1.70009"
+      },
+      {
+        "table": "Spell",
+        "locale": "enUS",
+        "url": "https://wago.tools/db2/Spell/csv?build=1.60.1.70009"
+      },
+      {
+        "table": "GlobalStrings",
+        "locale": "enUS",
+        "url": "https://wago.tools/db2/GlobalStrings/csv?build=1.60.1.70009"
+      },
+      {
+        "table": "SpellName",
+        "locale": "ruRU",
+        "url": "https://wago.tools/db2/SpellName/csv?build=1.60.1.70009&locale=ruRU"
+      },
+      {
+        "table": "TraitDefinition",
+        "locale": "ruRU",
+        "url": "https://wago.tools/db2/TraitDefinition/csv?build=1.60.1.70009&locale=ruRU"
+      },
+      {
+        "table": "Spell",
+        "locale": "ruRU",
+        "url": "https://wago.tools/db2/Spell/csv?build=1.60.1.70009&locale=ruRU"
+      },
+      {
+        "table": "GlobalStrings",
+        "locale": "ruRU",
+        "url": "https://wago.tools/db2/GlobalStrings/csv?build=1.60.1.70009&locale=ruRU"
+      }
+    ]
+  }
+}

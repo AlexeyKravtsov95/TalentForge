@@ -7,11 +7,11 @@ a build that saved builds may reference is never dropped by a sync (M5.DATA, see
 docs/mobile-architecture.md). The roles (product vs. reference) are an app decision
 made in Kotlin (``BundledDatasets.kt``); this module only knows *which* builds are bundled.
 
-Used by ``sync_mobile_datasets.py``, ``sync_mobile_visuals.py`` and
-``sync_mobile_tooltips.py``. Standard library only and no network: CI runs the checks with
-a bare ``python3``.
+Used by ``sync_mobile_datasets.py``, ``sync_mobile_visuals.py``,
+``sync_mobile_tooltips.py`` and ``sync_mobile_localization.py``. Standard library only and
+no network: CI runs the checks with a bare ``python3``.
 
-Rules, for each kind (dataset / visuals / tooltips):
+Rules, for each kind (dataset / visuals / tooltips / localization):
 
 * every bundled build must have its canonical directory with the kind's required files;
 * the bundle of a bundled build is a byte-identical mirror of its canonical directory -
@@ -112,6 +112,16 @@ TOOLTIPS = BundleKind(
     canonical_root=REPO_ROOT / "data" / "tooltips" / GAME,
     bundled_root=RESOURCES / "files" / "tooltips" / GAME,
     required_files=CLASS_FILES,
+)
+# The ruRU text overlays of every bundled build (M5.REL.3b.1). The one supported locale is
+# part of the required layout: a bundled build without its ruRU overlays is an incomplete
+# bundle, and an extra locale directory would be data the contract does not define.
+LOCALIZATION = BundleKind(
+    name="localization",
+    script="scripts/sync_mobile_localization.py",
+    canonical_root=REPO_ROOT / "data" / "localization" / GAME,
+    bundled_root=RESOURCES / "files" / "localization" / GAME,
+    required_files=tuple(f"ruRU/{name}" for name in CLASS_FILES),
 )
 
 
