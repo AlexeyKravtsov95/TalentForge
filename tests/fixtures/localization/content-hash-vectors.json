@@ -1,0 +1,285 @@
+{
+  "vectors": [
+    {
+      "name": "empty object",
+      "payload": {},
+      "canonical": "{}",
+      "contentHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "name": "scalars",
+      "payload": {
+        "b": true,
+        "a": false,
+        "n": null,
+        "z": 0,
+        "neg": -17,
+        "big": 2147483647
+      },
+      "canonical": "{\"a\":false,\"b\":true,\"big\":2147483647,\"n\":null,\"neg\":-17,\"z\":0}",
+      "contentHash": "sha256:8ae0e445620bbe9e891af053dee495b88cc610c2dd6ec2ea7d8741e5bef50dc3"
+    },
+    {
+      "name": "key order is by code point",
+      "payload": {
+        "b": 1,
+        "B": 2,
+        "a": 3,
+        "_": 4,
+        "1": 5,
+        "aa": 6,
+        "é": 7
+      },
+      "canonical": "{\"1\":5,\"B\":2,\"_\":4,\"a\":3,\"aa\":6,\"b\":1,\"é\":7}",
+      "contentHash": "sha256:18bc34048ec7021a309cbd2c993f4a254e5c6442d335b9377580b529e56dc018"
+    },
+    {
+      "name": "astral key sorts after U+FFFF",
+      "payload": {
+        "😀": 1,
+        "￿": 2,
+        "": 3
+      },
+      "canonical": "{\"\":3,\"￿\":2,\"😀\":1}",
+      "contentHash": "sha256:93b2a58df018a6988806462a306794c62e9c06b864ae85f32f0553ff05e518e5"
+    },
+    {
+      "name": "nested arrays and objects",
+      "payload": {
+        "x": [
+          {
+            "d": 1,
+            "c": [
+              2,
+              {
+                "f": [],
+                "e": {}
+              }
+            ]
+          },
+          [],
+          "s"
+        ]
+      },
+      "canonical": "{\"x\":[{\"c\":[2,{\"e\":{},\"f\":[]}],\"d\":1},[],\"s\"]}",
+      "contentHash": "sha256:30c668cfedf3366a618f3f791d164e32dd893dbb58f0383e868f8717e0efb878"
+    },
+    {
+      "name": "string escapes",
+      "payload": {
+        "quote": "say \"hi\"",
+        "backslash": "a\\b",
+        "short": "\n\r\t\b\f",
+        "controls": "\u0000\u0001\u001f",
+        "not escaped": " / < > & '"
+      },
+      "canonical": "{\"backslash\":\"a\\\\b\",\"controls\":\"\\u0000\\u0001\\u001f\",\"not escaped\":\" / < > & '\",\"quote\":\"say \\\"hi\\\"\",\"short\":\"\\n\\r\\t\\b\\f\"}",
+      "contentHash": "sha256:48f13ee80416e7d5d687d1fac39bd4cd925fb5b492cb4838fd09926bc59f0414"
+    },
+    {
+      "name": "non-ASCII stays literal",
+      "payload": {
+        "ru": "Улучшенный удар героя",
+        "dash": "—",
+        "ls": "  ",
+        "emoji": "😀"
+      },
+      "canonical": "{\"dash\":\"—\",\"emoji\":\"😀\",\"ls\":\"  \",\"ru\":\"Улучшенный удар героя\"}",
+      "contentHash": "sha256:38acfdb74851e0d24f6fee2ae8d10b9793b16aaf0d2c44d33a8e361d8aa043da"
+    },
+    {
+      "name": "an overlay-shaped payload",
+      "payload": {
+        "schemaVersion": 1,
+        "game": "forever",
+        "clientBuild": "1.60.1.70374",
+        "classToken": "WARRIOR",
+        "locale": "ruRU",
+        "talentDataContentHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "tooltipsContentHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "entries": [
+          {
+            "entryId": 1,
+            "nodeId": 2,
+            "definitionId": 3,
+            "spellId": 4,
+            "textSpellId": 4,
+            "maxRank": 1,
+            "name": {
+              "status": "missing",
+              "text": null,
+              "source": "SpellName.Name_lang"
+            },
+            "description": {
+              "status": "rendered",
+              "source": "Spell.Description_lang",
+              "ranks": [
+                {
+                  "rank": 1,
+                  "segments": [
+                    {
+                      "kind": "text",
+                      "text": "Урон \"Удара\" +"
+                    },
+                    {
+                      "kind": "value",
+                      "text": "10%"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "canonical": "{\"classToken\":\"WARRIOR\",\"clientBuild\":\"1.60.1.70374\",\"entries\":[{\"definitionId\":3,\"description\":{\"ranks\":[{\"rank\":1,\"segments\":[{\"kind\":\"text\",\"text\":\"Урон \\\"Удара\\\" +\"},{\"kind\":\"value\",\"text\":\"10%\"}]}],\"source\":\"Spell.Description_lang\",\"status\":\"rendered\"},\"entryId\":1,\"maxRank\":1,\"name\":{\"source\":\"SpellName.Name_lang\",\"status\":\"missing\",\"text\":null},\"nodeId\":2,\"spellId\":4,\"textSpellId\":4}],\"game\":\"forever\",\"locale\":\"ruRU\",\"schemaVersion\":1,\"talentDataContentHash\":\"sha256:0000000000000000000000000000000000000000000000000000000000000000\",\"tooltipsContentHash\":\"sha256:1111111111111111111111111111111111111111111111111111111111111111\"}",
+      "contentHash": "sha256:eb2bdb0963a928ab6ed7759b47f97f687d5d1f805dcd53d89d07c1a2b3692246"
+    }
+  ],
+  "overlays": [
+    {
+      "path": "data/localization/forever/1.60.1.70009/ruRU/druid.json",
+      "contentHash": "sha256:a4caaafc1697c195ca070e0322574c17ede787fdeee12422e8ebbb58f39e064c"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70009/ruRU/hunter.json",
+      "contentHash": "sha256:372635410500b64ce6e89bde5d76b217a319be62cc83c9b9734fb7e13efc5ca3"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70009/ruRU/mage.json",
+      "contentHash": "sha256:5759b8fb52cd8bb5b1a6179c9ac7a30b4767646068b70adc6b6f0423050f55b6"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70009/ruRU/paladin.json",
+      "contentHash": "sha256:7c1d0f45f1f618ec07881c767b55ff4280058a6df66b8d8b76647b9459671546"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70009/ruRU/priest.json",
+      "contentHash": "sha256:f94511cf26cdb829bfaba73a26f04e093f863652898eacbad38b9986984dfe30"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70009/ruRU/rogue.json",
+      "contentHash": "sha256:2db3cfd2ccb3d0dc3ec48dadb5add2869fdcd106f23812777768b4b23f908e6a"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70009/ruRU/shaman.json",
+      "contentHash": "sha256:139296b6c855fb1380272b723e0d4561bf16232cb2d3ef64e5923c205723a282"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70009/ruRU/warlock.json",
+      "contentHash": "sha256:6a5f4e76af687909dcad87a27b278b54a1c5149593a0805ddc894d1a16cdaefb"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70009/ruRU/warrior.json",
+      "contentHash": "sha256:df7279ee9b9796b13a77302d68b3fbdef4c4381003f95ae18bebdae84121eea4"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70245/ruRU/druid.json",
+      "contentHash": "sha256:8241bb4053c34e2e4df372864614cc129d16d8e6e393894826c5463ed11971d5"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70245/ruRU/hunter.json",
+      "contentHash": "sha256:1fac39538085e408c6684a2fac3d24c1e49430afbe99653669f5fe0a31c66154"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70245/ruRU/mage.json",
+      "contentHash": "sha256:b2783620c0c047a83cdf3e1e741247fa9b7606826c28674d0a2b27c484d9cfa7"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70245/ruRU/paladin.json",
+      "contentHash": "sha256:582c0bc3e059c17c8fc16dc1e763e6b7a6cfd3cdf992cc2532b09d7aeba25d2d"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70245/ruRU/priest.json",
+      "contentHash": "sha256:954fe7829ccf1fbce6f301a227ffbe0f56826adb0fc49d0706263d84d1c1ecdf"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70245/ruRU/rogue.json",
+      "contentHash": "sha256:2dbcc35d6228ef6afef6370c51107509cbe336f818080023685e8b6e69d6a295"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70245/ruRU/shaman.json",
+      "contentHash": "sha256:ab7d893023e0bbd4bd5c5b0c539cc78ad373560db301b739fc3f35d799882aea"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70245/ruRU/warlock.json",
+      "contentHash": "sha256:285a3567d5ec2e0c2cf0e0c94f2c1e8d9a3e5458d8bf354118879e886cf9b406"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70245/ruRU/warrior.json",
+      "contentHash": "sha256:419ffaf6aa6a18ff0b47767f1189abe83efe195b52af8d259ee670f6705dfc66"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70338/ruRU/druid.json",
+      "contentHash": "sha256:07e8e50b596d12bdc3e04d45a9a2f58e0cbf0f39f9c17cc013312a8ada897d9f"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70338/ruRU/hunter.json",
+      "contentHash": "sha256:34e758ec3e051954fd622bf50ef57c345964c021713b5c8bd15dc3027fdbb01b"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70338/ruRU/mage.json",
+      "contentHash": "sha256:8f7f5859d2a5372a054ff6e5ffbe96b247a0bb5d3e2b72c0809052ce7179c2dd"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70338/ruRU/paladin.json",
+      "contentHash": "sha256:ac1ffbf533a787f3dc7b93e939d7325dde8f758b6aab9745522626bd14dd668d"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70338/ruRU/priest.json",
+      "contentHash": "sha256:aa957329fc8522e9e9187adaaf9e5b885de8467d5c226efcf06330f4e0fe5b4d"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70338/ruRU/rogue.json",
+      "contentHash": "sha256:c5528baabef59d526d70eb7eb06d9a268f4366d4d8a34eb905b75decc11b9113"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70338/ruRU/shaman.json",
+      "contentHash": "sha256:bdeb5a67bb9be0cae4eb8cbcbd23b94680ca0559d964d52254a7d5cbdd36d35e"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70338/ruRU/warlock.json",
+      "contentHash": "sha256:9470b1a929fa5ecb1028c2759cdd235a6ecf5b420d88453757bdff3d7320eb08"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70338/ruRU/warrior.json",
+      "contentHash": "sha256:05a53c36b4f54c4f0316f45d7ab2817ecc2fa93e646d395474e75d85ebeabaa3"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70374/ruRU/druid.json",
+      "contentHash": "sha256:4af7e577f2908647a144f2a0fd84821439d2dc083fa1028e310b21d7df93ec4f"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70374/ruRU/hunter.json",
+      "contentHash": "sha256:e790f2f75932d74130166d19e01b6626bbe9cb56ba01ff01aa648e3125a8dc0a"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70374/ruRU/mage.json",
+      "contentHash": "sha256:116e62a43f54b7263ae50681c5939b17f68c9985a3910f6439c55f3bf55a9576"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70374/ruRU/paladin.json",
+      "contentHash": "sha256:978b8b949dc3de4e8e6aefff1992f399a298e6225f635b412baaa117dd587f97"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70374/ruRU/priest.json",
+      "contentHash": "sha256:9d8ed6305cc93c06ef618f003e4d97f8ebc675a0d14c658c9a5eaa0b61065ff0"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70374/ruRU/rogue.json",
+      "contentHash": "sha256:2f0c61c58043ff1a65180579f2bd60bf69ecf1d1edc89ccfddd7a499e9d98880"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70374/ruRU/shaman.json",
+      "contentHash": "sha256:d91d1a5dbff2b4d93c9d49b3538ecbbea69e85ac1fb7354753abe4c2eb09bf4b"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70374/ruRU/warlock.json",
+      "contentHash": "sha256:e69b123efb4808fda05c1600f9f64f3fd0f0a81bdcfb941e5e9e01a0eb377673"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70374/ruRU/warrior.json",
+      "contentHash": "sha256:ff5ba413147cddfd4bc3bce5942e15c3d418da07594c56b418f28c9d8a43aef7"
+    }
+  ]
+}
