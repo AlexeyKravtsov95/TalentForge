@@ -229,11 +229,16 @@ class EditorLocalizationLayoutUiTest {
                 // a line that ends at the text's own line break (client descriptions carry
                 // `\n`) is not a wrap at all
                 val hardBreak = text.getOrNull(end) == '\n'
-                // M5.REL.3b.2: a word wider than the whole line (the line holds nothing but
-                // part of it — e.g. "жертвоприношение" at 200 % on a 320 dp phone) cannot be
-                // kept whole at that text size; any avoidable split still fails
+                // M5.REL.3b.2: a word wider than the whole line (e.g. "жертвоприношение" at
+                // 200 % on a 320 dp phone) cannot be kept whole at that text size, whichever
+                // way the platform's line breaker then splits it (it starts it on a new line
+                // on Linux, on the current one on macOS). Measured from the laid-out glyphs;
+                // any avoidable split still fails.
                 val wordStart = text.lastIndexOfAny(charArrayOf(' ', '\n'), end - 1) + 1
-                val wordWiderThanLine = wordStart <= layout.getLineStart(line)
+                val wordEnd = text.indexOfAny(charArrayOf(' ', '\n'), end).let { if (it < 0) text.length else it }
+                val wordWidth = (wordStart until wordEnd).sumOf { layout.getBoundingBox(it).width.toDouble() }
+                val wordWiderThanLine = wordStart <= layout.getLineStart(line) ||
+                    wordWidth > layout.size.width + OVERFLOW_TOLERANCE_PX
                 assertTrue(
                     hardBreak || wordWiderThanLine || previous == null || previous.isWhitespace() ||
                         previous in WORD_BREAK_PUNCTUATION,
