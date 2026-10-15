@@ -45,7 +45,12 @@ Pure Kotlin Multiplatform library — **no Compose, no platform types**. Contain
 - the M5.1 **local build library** (`data.builds`): the app-private,
   versioned persistence envelope and `LocalBuildRepository` (see
   "Local build library" below). Pure Kotlin, no platform types — the platform
-  storage cell is injected at the app edge.
+  storage cell is injected at the app edge;
+- the M5.SHARE.1 **portable share code** (`share`): the `talentforge-share.v1`
+  codec over `BuildFile` and the read-only `prepareBuildImport`, which
+  validates a decoded build against its own exact bundled dataset with the
+  real engine (specification: [build-sharing.md](build-sharing.md)). No UI,
+  no storage writes.
 
 Targets: Android, iOS arm64, iOS simulator arm64, JVM (fast contract tests).
 
@@ -1211,6 +1216,11 @@ mirror Python internals:
 | talent icons v1 (M5.V1) | `docs/schema/talent-icons.v1.schema.json` | `TalentDataContract.decodeTalentIconRegistry` |
 
 The schemas are closed contracts; M3A is a consumer and never changes them.
+
+The `talentforge-share.v1` share code (M5.SHARE.1) is a text encoding of the
+allocation build v1 payload, not a JSON contract: its specification is
+[build-sharing.md](build-sharing.md), its entry points `BuildShareCode.encode`
+/ `BuildShareCode.decode` and `prepareBuildImport`.
 
 ## Strict JSON policy
 
