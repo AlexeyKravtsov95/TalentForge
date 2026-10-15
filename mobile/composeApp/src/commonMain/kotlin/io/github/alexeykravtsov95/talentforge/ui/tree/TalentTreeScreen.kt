@@ -156,6 +156,12 @@ sealed interface TalentTreeUiState {
          * description section, so lower-level callers keep working.
          */
         val descriptions: TalentNodeDescriptions = TalentNodeDescriptions.None,
+        /**
+         * Verified Russian talent names and descriptions (M5.REL.3b.2), applied only while
+         * the app language is Russian ([talentNodeDisplayText]). The default "none" keeps
+         * every talent English, so lower-level callers keep working.
+         */
+        val localization: TalentNodeLocalization = TalentNodeLocalization.None,
     ) : TalentTreeUiState
 
     data class Failed(val failure: TalentTreeUiFailure) : TalentTreeUiState
@@ -368,7 +374,17 @@ private fun ReadyTalentTreeScreen(
     val presentation = remember(current.engine, editing.current) {
         buildTalentTreePresentation(current.engine, editing.current)
     }
-    val facts = remember(current.engine) { talentNodeFacts(current.engine) }
+    // M5.REL.1: the one language every editor surface presents in — Russian
+    // only for a Russian primary device language, English otherwise. Read
+    // here once; the tabs, the Back chip, the accessibility labels and (since
+    // M5.REL.3b.2) the talent names and descriptions all resolve through it,
+    // so a change recomposes the text only: selection, cameras, the build,
+    // undo/redo and autosave are untouched.
+    val language = appLanguage()
+    val displayText = remember(language, current.descriptions, current.localization) {
+        talentNodeDisplayText(language, current.descriptions, current.localization)
+    }
+    val facts = remember(current.engine, displayText.names) { talentNodeFacts(current.engine, displayText.names) }
     val selectedPresentation = selectedNodeId?.let { presentation.nodes[it] }
     // The selected talent's real icon for the inspector header (null → no tile).
     val selectedIcon = selectedNodeId?.let { current.icons.iconOf(it) }
@@ -399,7 +415,7 @@ private fun ReadyTalentTreeScreen(
             facts = facts,
             guideOriginName = guideOriginName,
             blockedReason = selectedBlockedReason,
-            descriptions = current.descriptions,
+            descriptions = displayText.descriptions,
         )
     }
 
@@ -408,11 +424,6 @@ private fun ReadyTalentTreeScreen(
     val sectioned = remember(current.engine, current.model) {
         buildTalentTreeSections(current.engine.tree, current.model) as? TalentTreeSectionsResult.Sectioned
     }
-    // M5.REL.1: the one language every editor surface presents in — Russian
-    // only for a Russian primary device language, English otherwise. Read
-    // here once; the tabs, the Back chip and the accessibility labels all
-    // resolve through it, so a change recomposes the labels only.
-    val language = appLanguage()
     val rememberedCameras = rememberTalentTreeSectionCameras(sessionKey, current.model.treeId)
     val cameras = sectionCameras ?: rememberedCameras
     // per-section spent points from the live build (tabs)
@@ -1016,6 +1027,7 @@ private fun ReadyTalentTreeScreen(
                         layoutClass = layoutClass,
                         accent = current.classAccent,
                         icons = current.icons,
+                        localizedNames = displayText.names,
                         selectedNodeId = selectedNodeId,
                         showGuide = showGuide,
                         guideToken = guideToken,

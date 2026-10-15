@@ -134,6 +134,10 @@ class TalentTooltips internal constructor(
     val game: GameId,
     val clientBuild: String,
     val classToken: ClassToken,
+    /** The class document revision these descriptions were verified against. */
+    val talentDataContentHash: ContentHash,
+    /** The sidecar's own published `contentHash` (what a localization overlay links to). */
+    val contentHash: ContentHash,
     private val ranksByEntryId: Map<Int, List<TalentTooltipRank>>,
 ) {
     /** All ranks `1..maxRank` of a talent entry; `null` for an id that is not an entry of the class. */
@@ -176,6 +180,8 @@ class BundledTalentTooltipsRepository(
                 game = document.game,
                 clientBuild = document.clientBuild,
                 classToken = document.classInfo.token,
+                talentDataContentHash = document.contentHash,
+                contentHash = sidecar.contentHash,
                 ranksByEntryId = sidecar.entries.associate { it.entryId to it.ranks },
             ),
         )

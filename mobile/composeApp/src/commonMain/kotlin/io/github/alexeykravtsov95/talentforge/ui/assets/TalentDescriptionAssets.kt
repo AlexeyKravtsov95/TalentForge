@@ -5,6 +5,7 @@ import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
 import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentTree
 import io.github.alexeykravtsov95.talentforge.data.tooltips.BundledTalentTooltipsRepository
 import io.github.alexeykravtsov95.talentforge.data.tooltips.TalentTooltipRank
+import io.github.alexeykravtsov95.talentforge.data.tooltips.TalentTooltips
 import io.github.alexeykravtsov95.talentforge.data.tooltips.TooltipsLoadError
 import io.github.alexeykravtsov95.talentforge.data.tooltips.TooltipsOutcome
 import io.github.alexeykravtsov95.talentforge.ui.tree.TalentNodeDescriptions
@@ -14,6 +15,11 @@ data class TalentNodeDescriptionsLoad(
     val descriptions: TalentNodeDescriptions,
     /** The class's tooltips could not be loaded/verified (every inspector shows "unavailable"). */
     val error: TooltipsLoadError?,
+    /**
+     * The verified English sidecar itself (`null` on failure), so the localization overlay is
+     * checked against it without reading the asset again (M5.REL.3b.2).
+     */
+    val tooltips: TalentTooltips? = null,
 )
 
 /**
@@ -41,6 +47,6 @@ class TalentDescriptionsLoader(assets: DatasetAssetSource) {
             val entry = node.entries.singleOrNull() ?: continue
             tooltips.ranksOf(entry.id)?.let { byNodeId[node.id] = it }
         }
-        return TalentNodeDescriptionsLoad(TalentNodeDescriptions.Loaded(byNodeId), error = null)
+        return TalentNodeDescriptionsLoad(TalentNodeDescriptions.Loaded(byNodeId), error = null, tooltips = tooltips)
     }
 }

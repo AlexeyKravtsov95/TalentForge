@@ -7,8 +7,9 @@ description may be shown at all**, with the **Warrior pilot of `1.60.1.70338`**.
 (§12) completed the data: **36 overlays — all nine classes of every supported build
 (`1.60.1.70009`, `1.60.1.70245`, `1.60.1.70338`, `1.60.1.70374`), each generated from its
 own build's exports — are committed and bundled** as Compose Multiplatform resources.
-Wiring them into the editor remains future work (§8). No milestone translates anything or
-changes allocation, persistence or navigation.
+M5.REL.3b.2 (§13) wired them into the editor: on a Russian device the talent editor shows
+the client's Russian names and the descriptions that passed every gate, English everywhere
+else. No milestone translates anything or changes allocation, persistence or navigation.
 
 * Source evidence: [research/forever-ruRU-localization-feasibility.md](research/forever-ruRU-localization-feasibility.md)
 * Coverage per build (generated, every class):
@@ -213,10 +214,10 @@ every bundled build (identical row ids in both locales — the definitions of th
 their text spells, the closure of every spell the English **and** Russian templates
 reference or nest, and the duration rows of `GlobalStrings`).
 
-## 8. Integration points (Kotlin runtime — future work after M5.REL.3b.1)
+## 8. Integration points (Kotlin runtime — implemented in M5.REL.3b.2, §13)
 
-M5.REL.3b.1 delivered the data half of this list (the first bullet); the runtime half
-remains the next milestone and must follow these instructions:
+M5.REL.3b.1 delivered the data half of this list (the first bullet); M5.REL.3b.2
+implemented the runtime half as instructed below (details and deviations in §13):
 
 * **Data (done).** `scripts/sync_mobile_localization.py` mirrors
   `data/localization/<game>/<build>/ruRU/` for every `BUNDLED_BUILDS` entry into Compose
@@ -258,12 +259,13 @@ remains the next milestone and must follow these instructions:
    (a) a three-form plural with counts 1/2/5/11/21, (b) a two-form plural, (c) a decimal value
    (e.g. Warrior Improved Slam `0.5`). Only then add a ruRU plural selector and decimal
    formatter to the renderer (a new renderer revision → all overlays regenerate).
-4. **Mobile integration** per §8, behind the existing `AppLanguage` rule, with EN/RU UI
-   tests for translated, untranslated, unrendered and mismatched overlays and the layout
-   matrix for longer Russian text.
-5. **Release gate.** Decide (product) how a mixed inspector is presented — Russian name with
-   an English description is the honest client state for 114 entries today. Do not label the
-   editor "localized" until that decision and coverage targets are agreed.
+4. **Mobile integration — done in M5.REL.3b.2 (§13)** per §8, behind the existing
+   `AppLanguage` rule, with EN/RU UI tests for translated, untranslated, unrendered and
+   mismatched overlays and the layout matrix for longer Russian text.
+5. **Release gate — decided (product, M5.REL.3b.2).** A Russian name with an English
+   description is acceptable and shown as is: it is the honest client state for 114 entries
+   today, preferable to an invented translation or to hiding gameplay information. Nothing
+   labels the editor or a talent "localized"; coverage targets remain open.
 6. **Refresh.** When the product build moves, regenerate overlays after the dataset and
    tooltips; the hashes make a forgotten regeneration fail `check`.
 
@@ -365,3 +367,46 @@ Facts of this milestone:
 * **Known limits** (unchanged): plural forms, decimal separator and partial English ranks
   keep their §4/§10 fallbacks; the app still shows English only until the §8 runtime
   milestone.
+
+## 13. M5.REL.3b.2: Russian talent text in the editor
+
+Executed on 2026-10-15 per §8 and §9 steps 4–5. No data, schema, renderer or gate changed;
+the 36 overlays of §12 are read as committed.
+
+**Runtime check** (`mobile/shared`, `BundledTalentLocalizationRepository`) — the Kotlin form
+of `check_localization_document`, applied whole or not at all: schema patterns and ranges;
+the case-exact locale (`ruRU`; anything else is `UnsupportedLocale` and nothing is read);
+game, client build and class; the English tooltips and visuals handed in belong to the
+document; `talentDataContentHash`; `tooltipsContentHash`; the `contentHash` **recomputed** with
+the same canonical JSON + SHA-256 as `content_hash` (pinned by cross-language vectors:
+`tests/fixtures/localization/content-hash-vectors.json`, generated and checked by
+`tests/unit/localization/test_content_hash_vectors.py`, recomputed by the Kotlin
+`LocalizationContentHashTest` together with all 36 published hashes); the complete, unique,
+`entryId`-ordered entry set; node/definition/spell/maxRank identity; the §3 field rules
+(text ⇔ `translated` with Cyrillic, ranks exactly `1..maxRank` ⇔ `rendered`, no empty segment,
+no markup); and every rendered rank over a resolved English rank with exactly its numbers and
+no decimal value. Beyond the Python check, `textSpellId` is verified too: it must equal the
+`talent-visuals.v1` `displaySpellId` of the entry (the same VisibleSpellID-else-SpellID rule;
+all 1 877 entries agree), because `talent-data.v1` does not carry VisibleSpellID. Every failure
+is a typed `LocalizationLoadError` (diagnostic only, never user-facing).
+
+**Consumer rule** (`resolveClassTalentText`, a port of `display.resolve_class_text` with the
+`test_display.py` cases ported to `TalentClassTextTest`): by `entryId` only; translated name
+or the English name (and the localized `Talent <id>` fallback when neither exists); rendered
+ranks or the English ranks unchanged (partial/unresolved status, gaps and `—` markers kept);
+a rejected overlay shows English for the whole class. Multi-entry nodes stay English (the
+dataset defines no representative entry; none exist in the bundled data today).
+
+**Editor** (`mobile/composeApp`): the overlay is loaded with the session, after every
+allocation gate, against the tooltips and visuals the session already read; a missing or
+rejected overlay — or missing English inputs — opens the editor in English. Names reach the
+inspector heading, the prerequisite / Show / "needed for" / blocked-action copy and the node
+accessibility labels; Russian ranks feed the existing description, CURRENT / NEXT RANK
+comparison and value highlighting. A language change re-projects the text only.
+
+**Known limits.** The §4 fallbacks are unchanged (plural forms, the decimal separator and
+partial English ranks stay English). At 200 % text the single word «жертвоприношение»
+(Warlock *Демоническое жертвоприношение*) is wider than the 320 dp sheet and the 300 dp
+landscape panel and wraps inside the word — nothing is cut, and every other name and
+description keeps its words whole (`EditorLocalizationLayoutUiTest`). The node monogram (shown
+only when an icon fails) keeps the English initials.

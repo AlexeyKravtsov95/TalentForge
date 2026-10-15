@@ -49,6 +49,7 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.lib
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_error_unsupported_version
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentDescriptionsLoader
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentIconsLoader
+import io.github.alexeykravtsov95.talentforge.ui.assets.TalentLocalizationLoader
 import androidx.compose.runtime.collectAsState
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildAutosaveCoordinator
 import io.github.alexeykravtsov95.talentforge.ui.library.EditorFailure
@@ -90,12 +91,13 @@ fun TalentTreeBuildScreen(
     onBack: () -> Unit,
     icons: TalentIconsLoader? = null,
     descriptions: TalentDescriptionsLoader? = null,
+    localization: TalentLocalizationLoader? = null,
 ) {
     var load by remember(localId) { mutableStateOf<EditorLoad>(EditorLoad.Loading) }
     LaunchedEffect(localId) {
         load = EditorLoad.Loading
         load = withContext(Dispatchers.Default) {
-            loadEditorSession(repository, datasets, localId, icons, descriptions)
+            loadEditorSession(repository, datasets, localId, icons, descriptions, localization)
         }
     }
 
@@ -148,6 +150,9 @@ private fun ReadyBuildEditor(
                 classAccent = classAccentFor(record.build.classToken).color,
                 icons = session.icons,
                 descriptions = session.descriptions,
+                // M5.REL.3b.2: picked by the app language inside the screen, so a language
+                // change re-projects the text and never reloads or resets the session
+                localization = session.localization,
             ),
             onBack = onBack,
             // M5.UX.1: section cameras belong to THIS build only

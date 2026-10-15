@@ -16,6 +16,7 @@ import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.data.builds.RandomLocalBuildIdGenerator
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentDescriptionsLoader
+import io.github.alexeykravtsov95.talentforge.ui.assets.TalentLocalizationLoader
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentIconsLoader
 import io.github.alexeykravtsov95.talentforge.ui.builds.AllBuildsScreen
 import io.github.alexeykravtsov95.talentforge.ui.home.HomeScreen
@@ -136,6 +137,7 @@ fun App(
             // One loader per app run: decoded icons are cached across editor opens.
             icons = TalentIconsLoader(bundledAssets),
             descriptions = TalentDescriptionsLoader(bundledAssets),
+            localization = TalentLocalizationLoader(bundledAssets),
         )
     }
     val appScope = rememberCoroutineScope()
@@ -225,6 +227,7 @@ fun App(
                 onBack = ::navigateUp,
                 icons = environment.icons,
                 descriptions = environment.descriptions,
+                localization = environment.localization,
             )
         }
     }
@@ -236,4 +239,5 @@ private data class AppEnvironment(
     val datasets: BundledTalentDatasetRepository,
     val icons: TalentIconsLoader,
     val descriptions: TalentDescriptionsLoader,
+    val localization: TalentLocalizationLoader,
 )

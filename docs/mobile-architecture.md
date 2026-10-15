@@ -1087,7 +1087,9 @@ failure and autosave panes — presents every application-owned string in
 English or Russian under the M5.REL.2a rule (resources in
 `values{,-ru}/strings.xml`, resource locale = platform primary language, no
 in-app selector). Game content stays as the dataset publishes it: talent
-names and tooltip text are English in both languages until M5.REL.3.
+names and tooltip text are English in both languages until M5.REL.3 (since
+M5.REL.3b.2 the client's own Russian names and verified descriptions in Russian —
+see "Russian talent text in the editor").
 
 - **Descriptors, not pre-formatted English.** The pure projections no longer
   produce English sentences. `buildTalentInspectorContent`,
@@ -1262,11 +1264,11 @@ Open string unions the schema explicitly allows are modelled faithfully:
 
 The bundled copy is deterministically derived and never hand-edited. Drift is
 caught in three places: the Python check scripts (CI), the JVM
-`DatasetDriftTest` / `VisualsDriftTest` / `TooltipsDriftTest` (every bundled
-build, and exactly the four bundled builds), and the resource pipeline itself
-(files are packaged as-is); the localization bundle is guarded by the Python
-`sync_mobile_localization.py --check` (CI and `test_mobile_bundles.py`) until its
-Kotlin runtime milestone adds the matching JVM drift test.
+`DatasetDriftTest` / `VisualsDriftTest` / `TooltipsDriftTest` /
+`LocalizationDriftTest` (every bundled build, and exactly the four bundled
+builds), and the resource pipeline itself (files are packaged as-is); the
+localization bundle is also guarded by the Python
+`sync_mobile_localization.py --check` (CI and `test_mobile_bundles.py`).
 `test_mobile_bundles.py` also pins `PRODUCT_BUNDLE`
 (read from `BundledDatasets.kt`) to the newest bundled build.
 
@@ -1548,8 +1550,8 @@ Mage Arcane Focus, Rogue Relentless Strikes (partial description), Druid Improve
 The client's own ruRU talent names and descriptions, as offline presentation overlays
 next to the English data. Source rules, the eight description gates, coverage per build
 and the English-fallback contract: [talent-localization.md](talent-localization.md).
-**No Kotlin code reads this bundle yet** — the runtime milestone below is the integration
-instructions; this milestone only published and mirrored the data.
+M5.REL.3b.1 published and mirrored the data; M5.REL.3b.2 (next section) reads it in the
+editor.
 
 **Bundle.** `talent-localization.v1` overlays
 (`composeResources/files/localization/forever/<build>/ruRU/<class>.json` of every bundled
@@ -1566,31 +1568,90 @@ rendered / entries (ranks): 70009 — 386/469 (1 143/1 333), 70245 — 365/470 (
 the English text with a recorded reason (plural selection, decimal separator, unresolved
 English source).
 
-**Runtime integration (next milestone, not implemented).** Per
-[talent-localization.md](talent-localization.md) §8:
+## Russian talent text in the editor (M5.REL.3b.2)
 
-1. `mobile/shared`: a strict `TalentLocalizationDocument` decoder (closed enums, numeric
-   wire-form check — the `talent-data.v1` reading rules) and a
-   `BundledTalentLocalizationRepository` verifying, against the loaded class document and
-   its English tooltips: game, client build, class token, locale, both content hashes,
-   exactly the dataset's entry set with matching node/definition/spell/maxRank identity,
-   ordered unique entry ids, ranks exactly `1..maxRank` on rendered descriptions and the
-   English numbers on every rendered rank. Any problem rejects the overlay **whole**
-   (typed `LocalizationLoadError`s), never partially applied. The repository is
-   locale-agnostic (locale code is a parameter; `ruRU` is the one supported value).
-2. `mobile/composeApp`: resolve inspector name/description text by the existing
-   `AppLanguage` rule — overlay `text`/ranks when the overlay loaded and the entry is
-   `translated`/`rendered`, otherwise the English dataset/sidecar text unchanged. A failed,
-   absent or mismatched overlay shows English and never blocks the editor; allocation,
-   `TalentTreeNodeFacts` identity, persistence, history and navigation stay untouched.
-   Longer Russian strings need the adaptive layout matrix re-run for the inspector.
-3. Tests: a JVM `LocalizationDriftTest` mirroring `TooltipsDriftTest` (bundle ==
-   `data/localization`, exactly the four bundled builds) and a Kotlin port of the
-   `test_display.py` oracle cases against the same committed files, plus EN/RU inspector
-   UI tests for translated, untranslated, unrendered and mismatched overlays. The mixed
-   inspector (Russian name, English description — 114 of 469 product-build entries today)
-   needs the product decision recorded in talent-localization.md §9 step 5 before any UI
-   labels itself "localized".
+The editor shows the client's own Russian talent names and the descriptions it can show
+honestly when the device's primary language is Russian (the existing `AppLanguage` rule, no
+in-app selector), and exactly the previous English presentation otherwise. Localization is a
+separate, validated presentation projection: the allocation engine, `TalentDataDocument`
+(its English names stay), saved builds, history and navigation are untouched.
+
+```
+EditorSession load (after every allocation gate)
+  TalentIconsLoader ──── visuals (verified) ─────┐
+  TalentDescriptionsLoader ── tooltips (verified) ┤  each asset read once
+  TalentLocalizationLoader ──────────────────────┘
+    BundledTalentLocalizationRepository  localization/forever/<build>/ruRU/<class>.json
+      → LocalizationOutcome.Loaded | Failed(LocalizationLoadError)   (whole or nothing)
+    resolveClassTalentText (port of display.resolve_class_text, by entryId)
+    → TalentNodeLocalization  Loaded(names, ranks by node) | Rejected(error) | None
+TalentTreeScreen: talentNodeDisplayText(appLanguage(), descriptions, localization)
+  → names  → talentNodeFacts (inspector heading, Requires/Show/needed-for/blocked copy)
+           → TalentTreeCanvas (node accessibility labels)
+  → descriptions → the existing inspector description, comparison and highlighting
+```
+
+**`mobile/shared` (`data/localization/`).**
+
+* `TalentLocalizationDocument` — the strict `talent-localization.v1` model, decoded by
+  `TalentDataContract.decodeTalentLocalizationDocument` (unknown fields/enums, missing fields
+  — nullable ones included — and quoted or fractional numbers rejected; unsupported
+  `schemaVersion` typed).
+* `localizationContentHash` — the Python `content_hash` procedure in pure Kotlin: canonical
+  JSON (`sort_keys`, `(",", ":")`, `ensure_ascii=False` escaping, code-point key order) of
+  every field except `contentHash`/`provenance`, SHA-256. The published hash is recomputed,
+  never trusted; cross-language vectors (`tests/fixtures/localization/content-hash-vectors.json`)
+  are generated and checked by Python and recomputed by `LocalizationContentHashTest`.
+* `BundledTalentLocalizationRepository.localization(document, tooltips, visuals, localeCode)`
+  — the runtime `check_localization_document`, in this order: schema patterns/ranges;
+  locale (case-exact `ruRU`, anything else `UnsupportedLocale` without a read); game, build,
+  class; the English tooltips/visuals belong to the document; `talentDataContentHash`;
+  `tooltipsContentHash`; recomputed `contentHash`; then the entry set (no duplicate, unknown,
+  missing or unordered entry), node/definition/spell/maxRank identity and `textSpellId` =
+  the visuals' `displaySpellId` (VisibleSpellID, else SpellID — the same rule; talent-data.v1
+  has no VisibleSpellID); text ⇔ `translated` with Cyrillic; ranks exactly `1..maxRank` ⇔
+  `rendered`; no empty segment or markup (`$ | \r`); every rendered rank over a `resolved`
+  English rank with exactly its numbers and no decimal value. Typed `LocalizationLoadError`s
+  (missing, unreadable, malformed, unsupported version, invalid value, foreign identity,
+  stale dataset hash, stale tooltips hash, tampered content, entry set/identity, name, ranks,
+  segment, unresolved English, number, decimal); cancellation propagates. `describe()` is
+  for diagnostics only — no error ever becomes user-facing copy.
+* `resolveClassTalentText` — `TalentClassText` by entry id: translated name or English;
+  rendered ranks or the English ranks unchanged; a rejected overlay → English for every
+  entry with the typed reason. English tooltips of another document are an error.
+* `TalentTooltips` / `TalentVisuals` additionally expose the hashes and display spell ids they
+  were verified with.
+
+**`mobile/composeApp`.**
+
+* `TalentLocalizationLoader` (ui/assets) runs only with verified English tooltips and
+  visuals (otherwise `None`: nothing to check against), maps the resolved text onto
+  single-entry nodes (the icons/descriptions rule — no multi-entry node is localized), and
+  turns a rendered rank into the inspector's rank shape (`resolved`, the same text/value
+  segments), so CURRENT / NEXT RANK and the changed-value highlight work unchanged.
+* `EditorSession.localization` / `TalentTreeUiState.Ready.localization` carry the projection;
+  `loadEditorSession(…, localization)` and `TalentTreeBuildScreen(…, localization)` take the
+  loader (`App` passes it). Gameplay dataset failure → the existing typed `EditorFailure`;
+  tooltip failure → the existing unavailable description (and English names); overlay
+  failure → the editor opens in English.
+* `TalentTreeScreen` reads `appLanguage()` once and derives `talentNodeDisplayText`; a
+  language change only re-projects — no reload, no report, no autosave; selection, sheet,
+  section cameras, the build and undo/redo are untouched. The overlay is loaded at session
+  open whatever the language, so a switch needs no I/O.
+* Product decision (talent-localization.md §9 step 5): a Russian name over an English
+  description is shown as is; nothing labels the editor or a talent "localized".
+* Layout for longer Russian text: the expanded sheet and the side panels show the whole name
+  (no two-line cap — only the compact strip ellipsizes, by design); at ≥ 175 % text the
+  sheet's icon gives its width to the name and the landscape panel puts × above it.
+
+**Tests.** shared: `TalentLocalizationRepositoryTest` (36 overlays, every rejection),
+`TalentClassTextTest` (the `test_display.py` port), `LocalizationContentHashTest`; desktop:
+`TalentLocalizationUiTest` (EN/RU inspector, Show/prerequisite/a11y, fallback, all four
+client builds, language change), `EditorLocalizationLayoutUiTest` (longest Russian names and
+descriptions × 393 × 852 / 320 × 568 / 915 × 412 × 100 %/200 %), `LocalizationDriftTest`
+(bundle == `data/localization`, 4 builds × 9 classes). Screenshots:
+`M5Rel3b2ScreenshotTest` (`-Dtalentforge.m5rel3b2.screenshots=<dir>`), committed under
+`docs/screenshots/m5-rel-3b2/`.
 
 ## Conformance strategy (M3A parsing, M3B execution)
 

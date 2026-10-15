@@ -51,18 +51,20 @@ import org.jetbrains.compose.resources.stringResource
  * - counts go through plural resources and names through positional
  *   arguments, so Russian word order and plural forms belong to the resource.
  *
- * Talent names stay the dataset's own published text (TalentName.published),
- * shown verbatim in both languages — translating them is M5.REL.3.
+ * Talent names are the client's own text (TalentName.published): the dataset's
+ * English name, or — in Russian, since M5.REL.3b.2 — the verified overlay name
+ * where the client translates it. Nothing is translated here.
  */
 
 /**
- * A talent's display name: the dataset's own published name, verbatim and
- * untranslated, or — only when the dataset publishes none — the localized
- * `Talent <id>` / `Талант <id>` fallback. Never invented, never persisted.
+ * A talent's display name: the client's own published name — the dataset's
+ * English name, or its verified Russian overlay name in Russian (M5.REL.3b.2)
+ * — or, only when there is none, the localized `Talent <id>` / `Талант <id>`
+ * fallback. Never invented, never persisted.
  */
 data class TalentName(
     val nodeId: Int,
-    /** The dataset's non-blank name, or `null` when it publishes none. */
+    /** The non-blank display name, or `null` when the client publishes none. */
     val published: String?,
 )
 
