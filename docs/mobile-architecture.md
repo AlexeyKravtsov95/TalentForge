@@ -63,9 +63,11 @@ Compose Multiplatform application/UI host. Depends on `shared`. Contains:
   the repository + dataset collaborators once, and drives a small explicit
   destination back stack — `Home → NewBuild → pick class: the tree REPLACES
   New build (back → Home)`, `Home → Continue/Recent → tree (push, back →
-  Home)`, `Home → AllBuilds → tree (push, back → AllBuilds)`. The stack is
+  Home)`, `Home → AllBuilds → tree (push, back → AllBuilds)`, and since
+  M5.SHARE.2 `Home | AllBuilds → Import build (push); a confirmed import
+  REPLACES it with the new record's editor (back → Home | AllBuilds)`. The stack is
   `rememberSaveable` with an explicit plain-value saver (navigation facts
-  only — Home/NewBuild/AllBuilds/Editor(localId, origin); a corrupt entry
+  only — Home/NewBuild/AllBuilds/ImportBuild/Editor(localId, origin); a corrupt entry
   fails closed to Home), so a configuration change restores the exact
   destination while the editing session restores through its own M4.3
   saveable form. No navigation framework for four local screens, no bottom
@@ -1662,6 +1664,91 @@ descriptions × 393 × 852 / 320 × 568 / 915 × 412 × 100 %/200 %), `Localizat
 (bundle == `data/localization`, 4 builds × 9 classes). Screenshots:
 `M5Rel3b2ScreenshotTest` (`-Dtalentforge.m5rel3b2.screenshots=<dir>`), committed under
 `docs/screenshots/m5-rel-3b2/`.
+
+## Build sharing UI (M5.SHARE.2)
+
+Export and import of `talentforge-share.v1` codes ([build-sharing.md](build-sharing.md)) on
+Android and iOS, offline, with no new dependency. All logic is common Kotlin in
+`composeApp/ui/share`; the platforms contribute one narrow adapter each.
+
+```
+Editor ⋯ "Share build" ──▶ TalentTreeScreen.onShareBuild(editing.current)   (sync, at the tap)
+                           └▶ exportEditorState(state, identity = record.build)
+                                buildFileOf(…) → BuildShareCode.encode → BuildShareSheet
+All Builds ⋯ "Share"   ──▶ exportPersistedBuild(repository, localId)
+                                repository.load() (never open) → encode → BuildShareSheet
+BuildShareSheet: Share → BuildCodeSharing.shareText(code) · Copy code → copyToClipboard(code)
+
+Home / All Builds "Import build" ──▶ AppDestination.ImportBuild → ImportBuildScreen
+  BuildImportController: input (rememberSaveable) → prepareBuildImport(input, datasets)
+    → Problem(ImportProblem) | Confirming(code, BuildImportPreview)
+    → Import: repository.createDraft(preview.build) → Imported(localId)
+  App replaces ImportBuild with Editor(localId, Imported): Back → Home | All Builds
+```
+
+**Export consistency.** The editor exports the editing session's *current* `BuildState`,
+read synchronously in the ⋯ click handler and bound to the record's dataset identity
+(game / client build / class never change while editing). It never reads
+`session.record.build` (which lags behind a pending autosave and stays stale after a failed
+one), never caches a code (each tap re-encodes; the sheet is modal, so the build cannot change
+while it is open), adds no history entry and submits nothing to autosave. Sharing and saving
+are separate: a failed autosave keeps its retryable notice while the current build is shared.
+All Builds exports the latest *persisted* build of exactly the chosen `localId` through
+`LocalBuildRepository.load` — `open` would advance `lastOpenedAt` — so no timestamp, name,
+payload or list order changes; a vanished record (`UnknownRecord`) or a read failure is a
+retryable notice.
+
+**Platform adapters** (`BuildCodeSharing`, `rememberPlatformBuildCodeSharing()`
+expect/actual; injected into `App(sharing = …)`, recorded by tests):
+
+| | Share | Clipboard |
+|---|---|---|
+| Android | `Intent.createChooser(ACTION_SEND, text/plain, EXTRA_TEXT = code)` from the hosting Activity (unwrapped from `LocalContext`; `NEW_TASK` only without one) → `SheetOpened`; `ActivityNotFoundException` → `NO_SHARE_TARGET` | `ClipboardManager.setPrimaryClip(newPlainText)`; read: first item's plain text |
+| iOS | `UIActivityViewController([code])` presented from the top-most controller above `LocalUIViewController`; iPad popover anchored at the view centre, no arrow; host not in a window → `PRESENTATION_UNAVAILABLE`; completion → `Completed` / `Cancelled` / failure | `UIPasteboard.generalPasteboard`; read checks `hasStrings` first, a declined paste prompt is `CLIPBOARD_UNAVAILABLE` |
+| Desktop | no share sheet: copies, reports `CopiedToClipboard`, the sheet says so | AWT system clipboard (headless → typed failure) |
+
+No permission, no network, nothing thrown to the UI. A chooser that opened, a finished
+activity and a cancellation all show nothing (no delivery is claimed); only failures and
+copies produce feedback (polite live region).
+
+**Import guarantees** (`BuildImportController`, main-thread confined, work on
+`Dispatchers.Default`): the exact field text goes to `prepareBuildImport` (no case change,
+no trimming — the decoder ignores surrounding whitespace itself); an edit over 4 096
+characters is refused, never truncated; blank input cannot continue; every edit bumps a
+generation that drops a running check and invalidates a preview; Import refuses a preview
+whose code is not the current input; one check and one save at a time (repeated taps,
+Cancel and Back are inert while the record is written); a failed `createDraft` keeps the
+preview with a retryable error; success is reported only with the stored record's id. The
+import keeps the code's exact client build (an older build opens on its own dataset), never
+merges with or overwrites an existing build, and the library schema is unchanged.
+
+**Copy.** EN/RU resources only (`share_*`, `import_*`, `editor_share_build`,
+`builds_action_share`). `importMessageOf` maps every typed failure to one category: empty,
+too long, not a code, unsupported version (`TF2…`, schema ≠ 1), damaged (checksum,
+truncation, malformed body), unshipped client build (named), unavailable class, invalid
+allocation (tree/engine issues), dataset problem; plus storage write, clipboard and native
+share failures. No exception text, path or engine diagnostic is shown.
+
+**Layout.** The share sheet keeps Share / Copy code pinned under a scrollable area (title,
+the monospace selectable code, the explanation); the import screen pins Continue under a
+scrolling body with a 4–8-line field that scrolls inside itself; the confirmation pins
+full-width Import / Cancel under scrolling details (labels wrap rather than clip). The screen
+pads by `WindowInsets.safeDrawing` (IME included), so Continue stays above the keyboard;
+a tap outside the field or Continue hides it. Sheets are capped at 560 dp on tablets.
+
+**Tests** (desktop): `BuildExportTest`, `BuildImportFlowTest` (controller over the real
+datasets and repository: preview, exact input, stale-check race, edit invalidation, one
+record, double confirm, failure/retry, frozen input while saving, input limit, paste, every
+failure category, broken dataset), `BuildShareUiTest` (empty/full/older builds, rapid
+spend/refund/undo/redo + Share with the autosave held pending, Share after an autosave
+failure, Undo/Redo between shares, share/copy failures and cancellation, Back, All Builds
+latest-persisted export without writes, vanished record, RU), `BuildImportUiTest` (Home and
+All Builds entries incl. the empty library, preview copy, one record, origin-correct Back,
+Cancel/system Back without writes, error messages, double tap, failed write + retry, RU,
+navigation saver), `ShareLayoutUiTest` (320×568, 393×852, 640×360, 915×412, 1280×800,
+800×1280 × 100/200 % × EN/RU: every primary action fully inside the window). Screenshots:
+`M5Share2ScreenshotTest` (`-Dtalentforge.m5share2.screenshots=<dir>`), committed under
+`docs/screenshots/m5-share-2/`.
 
 ## Conformance strategy (M3A parsing, M3B execution)
 
