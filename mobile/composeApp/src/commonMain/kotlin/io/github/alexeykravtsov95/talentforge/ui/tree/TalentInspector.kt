@@ -349,16 +349,17 @@ fun TalentInspectorExpandedSheet(
                     horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.rowGap),
                     modifier = Modifier.padding(bottom = TalentForgeSpacing.inline),
                 ) {
-                    InspectorTalentIcon(icon = icon, size = TalentInspectorMetrics.COMPACT_ICON_DP)
-                    // very large text (1A v2 S8): the rank goes under the name, so the
-                    // name keeps the row's width and a long word is never split
+                    // very large text (1A v2 S8): the rank goes under the name and the
+                    // decorative icon gives its width to it (as in the landscape panel), so
+                    // the name keeps the row's width and a long word is never split
                     val rankBelow = LocalDensity.current.fontScale >= TalentInspectorMetrics.COMPACT_STACK_FONT_SCALE
+                    if (!rankBelow) InspectorTalentIcon(icon = icon, size = TalentInspectorMetrics.COMPACT_ICON_DP)
                     Column(Modifier.weight(1f)) {
+                        // the full name, never cut: the sheet is where a name the compact
+                        // strip ellipsized is read whole (long Russian names, M5.REL.3b.2)
                         BasicText(
                             text = content.name.text(),
                             style = InspectorNameStyle.copy(color = talentForgeColors().textPrimary),
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
                         )
                         if (rankBelow) SheetRank(content.rankText)
                     }
@@ -433,25 +434,31 @@ fun TalentInspectorSidePanel(
             .background(talentForgeColors().surface)
             .padding(horizontal = TalentForgeSpacing.screenX),
     ) {
+        // M5.UX.2b.1, very large text (1A v2 S8, as in the sheet): the decorative icon gives
+        // its width to the name and (M5.REL.3b.2) × moves above it, so the name has the
+        // panel's full width and a long word — e.g. a long Russian one — is never split
+        val stacked = LocalDensity.current.fontScale >= TalentInspectorMetrics.COMPACT_STACK_FONT_SCALE
+        if (stacked) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                CloseButton(onClose = onDeselect)
+            }
+        }
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
             modifier = Modifier.padding(vertical = TalentForgeSpacing.inline),
         ) {
-            // M5.UX.2b.1, very large text (1A v2 S8, as in the sheet): the decorative
-            // icon gives its width to the name, so a long word is never split
-            if (LocalDensity.current.fontScale < TalentInspectorMetrics.COMPACT_STACK_FONT_SCALE) {
+            if (!stacked) {
                 InspectorTalentIcon(icon = icon, size = TalentInspectorMetrics.DETAIL_ICON_DP)
             }
             Column(Modifier.weight(1f)) {
+                // the full name, never cut (long Russian names, M5.REL.3b.2)
                 BasicText(
                     text = content.name.text(),
                     style = InspectorNameStyle.copy(color = talentForgeColors().textPrimary),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
                 )
             }
-            CloseButton(onClose = onDeselect)
+            if (!stacked) CloseButton(onClose = onDeselect)
         }
         Column(
             Modifier
@@ -515,11 +522,10 @@ fun TalentInspectorPersistentPanel(
                 modifier = Modifier.padding(vertical = TalentForgeSpacing.inline),
             ) {
                 InspectorTalentIcon(icon = icon, size = TalentInspectorMetrics.DETAIL_ICON_DP)
+                // the full name, never cut (long Russian names, M5.REL.3b.2)
                 BasicText(
                     text = content.name.text(),
                     style = InspectorNameStyle.copy(color = talentForgeColors().textPrimary),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f),
                 )
             }
