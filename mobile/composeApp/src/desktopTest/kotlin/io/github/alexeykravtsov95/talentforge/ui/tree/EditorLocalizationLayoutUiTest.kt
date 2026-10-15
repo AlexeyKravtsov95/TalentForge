@@ -16,6 +16,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.style.TextOverflow
@@ -87,6 +88,86 @@ class EditorLocalizationLayoutUiTest {
         }
     }
 
+    /**
+     * M5.REL.3b.2: the client's longest Russian talent text at the same review matrix — the
+     * longest translated name and the longest rendered description of three classes (Warrior,
+     * Hunter, Warlock carry the longest of the product build), unspent (rank-1 preview) and
+     * with one rank spent (CURRENT / NEXT RANK comparison), in the compact and expanded
+     * portrait inspector, on the small phone and in the landscape side panel, at 100 % and
+     * 200 % text. The same assertions as the English/Russian UI copy above.
+     */
+    @Test
+    fun theLongestRussianTalentTextFitsEveryReviewSizeAndTextScale() {
+        val copy = EditorCopy.Russian
+        for (classToken in listOf("WARRIOR", "HUNTER", "WARLOCK")) {
+            val state = localizedProductState(classToken)
+            val localization = state.localization as TalentNodeLocalization.Loaded
+            val longestName = localization.names.maxBy { it.value.length }.key
+            val longestDescription = localization.ranks
+                .maxBy { (_, ranks) -> ranks.maxOf { rank -> rank.segments.sumOf { it.text.length } } }.key
+            for (nodeId in linkedSetOf(longestName, longestDescription)) {
+                val node = state.engine.tree.nodes.single { it.id == nodeId }
+                val name = localization.names[nodeId] ?: node.name!!
+                val builds = listOf("unspent" to state.engine.emptyState(), "1 rank" to withOneRank(state, nodeId))
+                for ((width, height) in listOf(393 to 852, 320 to 568, 915 to 412)) {
+                    for (fontScale in listOf(1f, 2f)) {
+                        for ((label, build) in builds) {
+                            val at = "$classToken '$name' $label ${width}x$height ${(fontScale * 100).toInt()}%"
+                            val cameras = TalentTreeSectionCameras(
+                                sessionKey = "rel3b2-layout",
+                                treeId = state.model.treeId,
+                                initialSelectedSection = node.sectionIndex,
+                            )
+                            onEditor(AppLanguage.RUSSIAN, width, height, fontScale, state.copy(buildState = build), cameras) {
+                                onNodeWithContentDescription(name).performSemanticsAction(SemanticsActions.OnClick)
+                                waitForIdle()
+                                assertLayout(at, copy, name)
+                                if (width < height) {
+                                    onNodeWithContentDescription(copy.expand).performClick()
+                                    waitForIdle()
+                                    assertLayout("$at sheet", copy, name)
+                                }
+                                // the sheet and the side panel show the whole name (only the
+                                // compact strip may ellipsize it, by design)
+                                assertNameShownWhole(at, name)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Some text node shows exactly [name] without an ellipsized line (overflow is already
+     * checked, with its sub-pixel tolerance, by [assertTextsFitAndWrapAtWords]).
+     */
+    private fun ComposeUiTest.assertNameShownWhole(where: String, name: String) {
+        val layouts = allNodes().mapNotNull { node ->
+            val action = node.config.getOrNull(SemanticsActions.GetTextLayoutResult) ?: return@mapNotNull null
+            val results = mutableListOf<TextLayoutResult>()
+            action.action?.invoke(results)
+            results.firstOrNull()?.takeIf { it.layoutInput.text.text == name }
+        }
+        assertTrue(
+            layouts.any { layout -> (0 until layout.lineCount).none { layout.isLineEllipsized(it) } },
+            "$where: '$name' is never shown whole (${layouts.size} renderings, all ellipsized)",
+        )
+    }
+
+    /** A real build with one rank in [target], reached by spending its section's open talents first. */
+    private fun withOneRank(state: TalentTreeUiState.Ready, target: Int) = state.engine.let { engine ->
+        val section = engine.tree.nodes.single { it.id == target }.sectionIndex
+        var build = engine.emptyState()
+        while (!engine.canSpend(build, target).allowed) {
+            val next = engine.tree.nodes
+                .filter { it.id != target && engine.canSpend(build, it.id).allowed }
+                .minWith(compareBy({ it.sectionIndex != section }, { it.id }))
+            build = engine.spend(build, next.id).state
+        }
+        engine.spend(build, target).state
+    }
+
     // ------------------------------------------------------------------ harness
 
     private fun onEditor(
@@ -95,6 +176,7 @@ class EditorLocalizationLayoutUiTest {
         height: Int,
         fontScale: Float,
         state: TalentTreeUiState.Ready,
+        cameras: TalentTreeSectionCameras? = null,
         block: ComposeUiTest.() -> Unit,
     ) {
         uiLanguage.language = language
@@ -106,7 +188,9 @@ class EditorLocalizationLayoutUiTest {
                         LocalReducedMotion provides true,
                         LocalAppLanguage provides language,
                     ) {
-                        Box(Modifier.size(width.dp, height.dp)) { TalentTreeScreen(state = state, onBack = {}) }
+                        Box(Modifier.size(width.dp, height.dp)) {
+                            TalentTreeScreen(state = state, onBack = {}, sectionCameras = cameras)
+                        }
                     }
                 }
             }
@@ -142,8 +226,17 @@ class EditorLocalizationLayoutUiTest {
             for (line in 0 until layout.lineCount - 1) {
                 val end = layout.getLineEnd(line, visibleEnd = false)
                 val previous = text.getOrNull(end - 1)
+                // a line that ends at the text's own line break (client descriptions carry
+                // `\n`) is not a wrap at all
+                val hardBreak = text.getOrNull(end) == '\n'
+                // M5.REL.3b.2: a word wider than the whole line (the line holds nothing but
+                // part of it — e.g. "жертвоприношение" at 200 % on a 320 dp phone) cannot be
+                // kept whole at that text size; any avoidable split still fails
+                val wordStart = text.lastIndexOfAny(charArrayOf(' ', '\n'), end - 1) + 1
+                val wordWiderThanLine = wordStart <= layout.getLineStart(line)
                 assertTrue(
-                    previous == null || previous.isWhitespace() || previous in WORD_BREAK_PUNCTUATION,
+                    hardBreak || wordWiderThanLine || previous == null || previous.isWhitespace() ||
+                        previous in WORD_BREAK_PUNCTUATION,
                     "$where: '$text' breaks mid-word after '${text.substring(0, end)}'",
                 )
             }
