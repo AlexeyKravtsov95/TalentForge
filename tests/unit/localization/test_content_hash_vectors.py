@@ -6,7 +6,8 @@ published value. These vectors pin that the Kotlin canonical JSON + SHA-256 and 
 producer (``talent_data.models.visuals.content_hash``) are byte-for-byte the same procedure:
 the Kotlin ``LocalizationContentHashTest`` reads the same committed file.
 
-Regenerate after a deliberate change: ``python tests/unit/localization/test_content_hash_vectors.py``.
+Regenerate after a deliberate change:
+``python tests/unit/localization/test_content_hash_vectors.py``.
 """
 
 from __future__ import annotations
@@ -43,7 +44,12 @@ PAYLOADS: list[tuple[str, Any]] = [
     ),
     (
         "non-ASCII stays literal",
-        {"ru": "Улучшенный удар героя", "dash": "—", "ls": "  ", "emoji": "\U0001f600"},
+        {
+            "ru": "Улучшенный удар героя",
+            "dash": "—",
+            "ls": "\N{LINE SEPARATOR}\N{PARAGRAPH SEPARATOR}",
+            "emoji": "\U0001f600",
+        },
     ),
     (
         "an overlay-shaped payload",
