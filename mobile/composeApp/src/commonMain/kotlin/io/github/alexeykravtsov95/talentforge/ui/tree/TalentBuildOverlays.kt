@@ -11,8 +11,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
@@ -31,6 +33,7 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.bui
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_build_actions_title
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_reset_notice
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_reset_talents
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_share_build
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_undo
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_undo_action
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeMotion
@@ -49,6 +52,8 @@ import org.jetbrains.compose.resources.stringResource
  *   owns — `Reset talents`, separated and in the warning colour, because it is
  *   *recoverable* (UX/UI spec 03 §4). Rename/Duplicate arrive with the
  *   build-management milestone and are not shown as dead placeholders.
+ *   M5.SHARE.2 adds `Share build` above it (neutral text action); Reset keeps
+ *   its separated warning styling.
  * - **Reset feedback** (UX/UI spec 03 §4 / E.3): `Talents reset · N points
  *   cleared` + `Undo` — the same history mechanism the header Undo uses, never
  *   a separate reset backup. Placement follows the spec's notice model: the
@@ -89,6 +94,7 @@ fun TalentBuildActionsSheet(
     onDismiss: () -> Unit,
     onResetTalents: () -> Unit,
     modifier: Modifier = Modifier,
+    onShareBuild: (() -> Unit)? = null,
 ) {
     AnimatedVisibility(
         visible = visible,
@@ -137,6 +143,28 @@ fun TalentBuildActionsSheet(
                         text = stringResource(Res.string.editor_build_actions_title),
                         style = OverlayCaptionStyle.copy(color = colors.textMuted),
                     )
+                    if (onShareBuild != null) {
+                        val shareBuild = stringResource(Res.string.editor_share_build)
+                        BasicText(
+                            text = shareBuild,
+                            style = OverlayActionStyle.copy(color = colors.textPrimary),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(
+                                    role = Role.Button,
+                                    onClickLabel = shareBuild,
+                                    onClick = onShareBuild,
+                                )
+                                .padding(vertical = TalentForgeSpacing.inline),
+                        )
+                        // Reset stays separated from the neutral actions above it
+                        Spacer(
+                            Modifier
+                                .fillMaxWidth()
+                                .height(1.dp)
+                                .background(colors.borderDefault),
+                        )
+                    }
                     // UX/UI spec E.2: Reset talents sits separated, in the
                     // warning colour — recoverable, so no confirmation dialog.
                     val resetTalents = stringResource(Res.string.editor_reset_talents)

@@ -37,6 +37,7 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_action_delete
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_action_duplicate
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_action_rename
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_action_share
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_delete_body
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_delete_failed
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_delete_title
@@ -56,9 +57,9 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * The M5.2a build-management overlays of All Builds, built from the same
  * stable primitives as the editor's build-action sheet (no Material
- * component): the row `⋯` bottom sheet (Rename / Duplicate / Delete — Delete
- * separated and in the danger colour, the one irreversible action) plus two
- * centered confirmation dialogs.
+ * component): the row `⋯` bottom sheet (Rename / Duplicate / Share — M5.SHARE.2
+ * — / Delete — Delete separated and in the danger colour, the one
+ * irreversible action) plus two centered confirmation dialogs.
  *
  * Input rules of every overlay: the SCRIM always consumes touches, so the
  * interface underneath is unreachable while a modal is open — but it only
@@ -85,6 +86,7 @@ fun BuildRowActionsSheet(
     onDismiss: () -> Unit,
     onRename: () -> Unit,
     onDuplicate: () -> Unit,
+    onShare: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -139,6 +141,12 @@ fun BuildRowActionsSheet(
                 busy = busy,
                 color = colors.textPrimary,
                 onClick = onDuplicate,
+            )
+            SheetAction(
+                text = stringResource(Res.string.builds_action_share),
+                busy = busy,
+                color = colors.textPrimary,
+                onClick = onShare,
             )
             // the one irreversible action: separated and in the danger colour
             Spacer(
@@ -331,7 +339,7 @@ fun DeleteBuildDialog(
  * operation a scrim tap is swallowed, never a dismiss.
  */
 @Composable
-private fun DialogScrim(
+internal fun DialogScrim(
     busy: Boolean,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,

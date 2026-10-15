@@ -241,6 +241,10 @@ private const val BLOCKED_REASON_MS: Long = 2600
  * pan, zoom, Show and denied actions never report. Both are optional so the
  * lower-level M4 usage (tests, previews) still works standalone.
  *
+ * M5.SHARE.2: [onShareBuild] (optional) adds `Share build` to the ⋯ sheet and
+ * receives the editing session's current [BuildState] at the moment of the
+ * tap; it never mutates the session.
+ *
  * M5.UX.1: in portrait the tree is shown one section at a time behind section
  * tabs (approved direction 1A v2), each section with its own camera held in
  * [sectionCameras] (default: one remembered per [sessionKey] — the opened
@@ -259,6 +263,7 @@ fun TalentTreeScreen(
     onBuildStateChanged: ((BuildState) -> Unit)? = null,
     sessionKey: String = "",
     sectionCameras: TalentTreeSectionCameras? = null,
+    onShareBuild: ((BuildState) -> Unit)? = null,
 ) {
     val colors = talentForgeColors()
     var selectedNodeId by rememberSaveable { mutableStateOf<Int?>(null) }
@@ -305,6 +310,7 @@ fun TalentTreeScreen(
                 onBuildStateChanged = onBuildStateChanged,
                 sessionKey = sessionKey,
                 sectionCameras = sectionCameras,
+                onShareBuild = onShareBuild,
             )
 
             is TalentTreeUiState.Failed -> Column(Modifier.fillMaxSize()) {
@@ -340,6 +346,7 @@ private fun ReadyTalentTreeScreen(
     onBuildStateChanged: ((BuildState) -> Unit)?,
     sessionKey: String,
     sectionCameras: TalentTreeSectionCameras?,
+    onShareBuild: ((BuildState) -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     // The editing session: which immutable BuildState is current + history.
@@ -1419,6 +1426,16 @@ private fun ReadyTalentTreeScreen(
                     resetNotice = TalentResetNotice(pointsCleared = cleared, id = resetNoticeToken)
                 }
                 buildActionsOpen = false
+            },
+            // M5.SHARE.2: hands over the session's CURRENT build, read
+            // synchronously at the tap — never the persisted record (which a
+            // pending or failed autosave may lag behind) and never a cached
+            // code. Sharing changes nothing: no history entry, no autosave.
+            onShareBuild = onShareBuild?.let { share ->
+                {
+                    buildActionsOpen = false
+                    share(editing.current)
+                }
             },
         )
         // Auto-dismiss of the reset snackbar (implementation-safe 4 s; the

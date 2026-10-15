@@ -31,7 +31,8 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
  * ([TalentForgeColors.primaryAction], frozen by the supplied class-artwork
  * integration spec — the M5.1 "neutral light" primary is retired with the
  * B+ Home it belonged to); the secondary stays neutral on the interactive
- * surface; both keep ≥ 48 dp targets. Amber marks PRIMARY actions only —
+ * surface; both keep ≥ 48 dp targets. `enabled = false` (M5.SHARE.2 busy
+ * states) keeps the target and the label but greys both and ignores taps. Amber marks PRIMARY actions only —
  * the editor keeps its neutral token set untouched.
  */
 @Composable
@@ -40,19 +41,23 @@ fun PrimaryActionButton(
     onClickLabel: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     val colors = talentForgeColors()
     Box(
         modifier = modifier
             .heightIn(min = 48.dp)
-            .background(colors.primaryAction, RoundedCornerShape(TalentForgeRadius.medium))
-            .clickable(role = Role.Button, onClickLabel = onClickLabel, onClick = onClick)
+            .background(
+                if (enabled) colors.primaryAction else colors.surfaceInteractive,
+                RoundedCornerShape(TalentForgeRadius.medium),
+            )
+            .clickable(role = Role.Button, onClickLabel = onClickLabel, enabled = enabled, onClick = onClick)
             .padding(horizontal = 24.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center,
     ) {
         BasicText(
             text = text,
-            style = ActionLabelStyle.copy(color = colors.background),
+            style = ActionLabelStyle.copy(color = if (enabled) colors.background else colors.disabled),
         )
     }
 }
@@ -63,6 +68,7 @@ fun SecondaryActionButton(
     onClickLabel: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     val colors = talentForgeColors()
     Box(
@@ -70,13 +76,13 @@ fun SecondaryActionButton(
             .heightIn(min = 48.dp)
             .background(colors.surfaceInteractive, RoundedCornerShape(TalentForgeRadius.medium))
             .border(1.dp, colors.borderStrong, RoundedCornerShape(TalentForgeRadius.medium))
-            .clickable(role = Role.Button, onClickLabel = onClickLabel, onClick = onClick)
+            .clickable(role = Role.Button, onClickLabel = onClickLabel, enabled = enabled, onClick = onClick)
             .padding(horizontal = 24.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center,
     ) {
         BasicText(
             text = text,
-            style = ActionLabelStyle.copy(color = colors.textPrimary),
+            style = ActionLabelStyle.copy(color = if (enabled) colors.textPrimary else colors.disabled),
         )
     }
 }

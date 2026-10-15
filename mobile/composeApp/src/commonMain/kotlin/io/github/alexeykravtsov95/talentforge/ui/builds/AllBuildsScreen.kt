@@ -51,6 +51,8 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.com
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_new_build_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_open_build_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_retry
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.import_build
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.import_build_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_load_failed_body
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_load_failed_title
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_loading
@@ -64,6 +66,7 @@ import io.github.alexeykravtsov95.talentforge.ui.library.InlineNotice
 import io.github.alexeykravtsov95.talentforge.ui.library.InlineNoticeTone
 import io.github.alexeykravtsov95.talentforge.ui.library.LibraryData
 import io.github.alexeykravtsov95.talentforge.ui.library.PrimaryActionButton
+import io.github.alexeykravtsov95.talentforge.ui.library.SecondaryActionButton
 import io.github.alexeykravtsov95.talentforge.ui.library.buildCardTitle
 import io.github.alexeykravtsov95.talentforge.ui.library.classMonogramOf
 import io.github.alexeykravtsov95.talentforge.ui.library.gameDisplayName
@@ -71,6 +74,12 @@ import io.github.alexeykravtsov95.talentforge.ui.library.loadBuildsModel
 import io.github.alexeykravtsov95.talentforge.ui.library.localizedClassName
 import io.github.alexeykravtsov95.talentforge.ui.library.relativeBuildTime
 import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
+import io.github.alexeykravtsov95.talentforge.ui.share.BuildCodeSharing
+import io.github.alexeykravtsov95.talentforge.ui.share.BuildExport
+import io.github.alexeykravtsov95.talentforge.ui.share.BuildExportFailure
+import io.github.alexeykravtsov95.talentforge.ui.share.BuildShareSheet
+import io.github.alexeykravtsov95.talentforge.ui.share.exportPersistedBuild
+import io.github.alexeykravtsov95.talentforge.ui.share.text
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTypography
 import io.github.alexeykravtsov95.talentforge.ui.theme.classAccentFor
@@ -95,6 +104,9 @@ private sealed interface ManagementOverlay {
     data class Rename(val localId: String) : ManagementOverlay
 
     data class DeleteConfirm(val localId: String) : ManagementOverlay
+
+    /** M5.SHARE.2: the export sheet, holding the code read from storage at the tap. */
+    data class Share(val localId: String, val code: String) : ManagementOverlay
 }
 
 /** The screen-level notice strip: duplicate success (auto-dismisses) or retryable duplicate failure. */
@@ -105,6 +117,9 @@ private sealed interface ManagementNotice {
     data class Duplicated(val id: Int) : ManagementNotice
 
     data class DuplicateFailed(val localId: String) : ManagementNotice
+
+    /** M5.SHARE.2: the record could not be read for sharing (retryable). */
+    data class ShareFailed(val localId: String, val failure: BuildExportFailure) : ManagementNotice
 }
 
 /**
@@ -118,6 +133,12 @@ private sealed interface ManagementNotice {
  * keep their dialog open with a retryable error; a failed duplicate shows a
  * retryable notice. The list count, order and empty state all come from the
  * reload.
+ *
+ * M5.SHARE.2: `Share` in the row sheet reads the LATEST persisted build of
+ * exactly that `localId` at the tap ([exportPersistedBuild] — `load`, never
+ * `open`, so no timestamp, name or order changes) and shows its code in the
+ * export sheet; a read failure or a vanished record is a retryable notice.
+ * `Import build` (also in the empty state) opens the shared import flow.
  */
 @Composable
 fun AllBuildsScreen(
@@ -127,6 +148,8 @@ fun AllBuildsScreen(
     onBack: () -> Unit,
     onOpenBuild: (String) -> Unit,
     onNewBuild: () -> Unit,
+    onImportBuild: () -> Unit,
+    sharing: BuildCodeSharing,
 ) {
     var data by remember { mutableStateOf<LibraryData<List<BuildCardModel>>>(LibraryData.Loading) }
     var reloadToken by remember { mutableStateOf(0) }
@@ -211,6 +234,23 @@ fun AllBuildsScreen(
         }
     }
 
+    fun share(localId: String) {
+        launchManagement {
+            when (val export = withContext(Dispatchers.Default) { exportPersistedBuild(repository, localId) }) {
+                is BuildExport.Ready -> {
+                    if (notice is ManagementNotice.ShareFailed) notice = ManagementNotice.None
+                    overlay = ManagementOverlay.Share(localId, export.code)
+                }
+                is BuildExport.Failed -> {
+                    // like a failed duplicate: the sheet closes so the retryable
+                    // notice is the visible answer
+                    overlay = ManagementOverlay.Hidden
+                    notice = ManagementNotice.ShareFailed(localId, export.failure)
+                }
+            }
+        }
+    }
+
     fun delete(localId: String) {
         launchManagement {
             when (withContext(Dispatchers.Default) { repository.deleteBuild(localId) }) {
@@ -277,6 +317,12 @@ fun AllBuildsScreen(
                     onAction = { duplicate(current.localId) },
                 )
 
+                is ManagementNotice.ShareFailed -> InlineNotice(
+                    text = current.failure.text(),
+                    actionText = stringResource(Res.string.common_retry),
+                    onAction = { share(current.localId) },
+                )
+
                 ManagementNotice.None -> {}
             }
             Column(
@@ -323,6 +369,7 @@ fun AllBuildsScreen(
                             onClickLabel = stringResource(Res.string.common_new_build_action),
                             onClick = onNewBuild,
                         )
+                        ImportBuildButton(onClick = onImportBuild)
                     } else {
                         for (card in current.value) {
                             BuildRow(
@@ -332,6 +379,8 @@ fun AllBuildsScreen(
                                 onActions = { overlay = ManagementOverlay.Actions(card.record.localId) },
                             )
                         }
+                        Spacer(Modifier.height(TalentForgeSpacing.inline))
+                        ImportBuildButton(onClick = onImportBuild)
                     }
                 }
                 Spacer(Modifier.height(TalentForgeSpacing.group))
@@ -356,6 +405,7 @@ fun AllBuildsScreen(
                             overlay = ManagementOverlay.Rename(current.localId)
                         },
                         onDuplicate = { duplicate(current.localId) },
+                        onShare = { share(current.localId) },
                         onDelete = {
                             overlayError = false
                             overlay = ManagementOverlay.DeleteConfirm(current.localId)
@@ -377,6 +427,15 @@ fun AllBuildsScreen(
                 onCancel = { overlay = ManagementOverlay.Hidden },
             )
 
+            is ManagementOverlay.Share -> BuildShareSheet(
+                code = current.code,
+                buildTitle = readyCards?.firstOrNull { it.record.localId == current.localId }
+                    ?.let { buildCardTitle(it) }
+                    .orEmpty(),
+                sharing = sharing,
+                onDismiss = { overlay = ManagementOverlay.Hidden },
+            )
+
             is ManagementOverlay.DeleteConfirm -> {
                 val card = readyCards?.firstOrNull { it.record.localId == current.localId }
                 if (card != null) {
@@ -391,6 +450,17 @@ fun AllBuildsScreen(
             }
         }
     }
+}
+
+/** M5.SHARE.2: `Import build`, a full-width secondary action after the list (and in the empty state). */
+@Composable
+private fun ImportBuildButton(onClick: () -> Unit) {
+    SecondaryActionButton(
+        text = stringResource(Res.string.import_build),
+        onClickLabel = stringResource(Res.string.import_build_action),
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+    )
 }
 
 /**

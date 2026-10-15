@@ -58,6 +58,8 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.hom
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_empty_title
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_section_continue
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_section_recent
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.import_build
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.import_build_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_load_failed_body
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_load_failed_title
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_loading
@@ -108,6 +110,10 @@ import org.jetbrains.compose.resources.stringResource
  * Card metadata shows only facts resolved from real data: the real class
  * display name, spent/budget computed by the real engine, relative time —
  * nothing invented, unresolved fields are simply absent.
+ *
+ * M5.SHARE.2: a low-emphasis `Import build` text action sits under the
+ * pinned New build in every state — an empty library included — so a code
+ * received from another player can always be brought in.
  */
 @Composable
 fun HomeScreen(
@@ -117,6 +123,7 @@ fun HomeScreen(
     onOpenBuild: (String) -> Unit,
     onAllBuilds: () -> Unit,
     onNewBuild: () -> Unit,
+    onImportBuild: () -> Unit,
 ) {
     var data by remember { mutableStateOf<LibraryData<HomeModel>>(LibraryData.Loading) }
     var reloadToken by remember { mutableStateOf(0) }
@@ -198,7 +205,6 @@ fun HomeScreen(
                         .padding(
                             start = TalentForgeSpacing.screenX,
                             end = TalentForgeSpacing.screenX,
-                            bottom = TalentForgeSpacing.rowGap,
                         ),
                 )
             } else {
@@ -211,10 +217,19 @@ fun HomeScreen(
                         .padding(
                             start = TalentForgeSpacing.screenX,
                             end = TalentForgeSpacing.screenX,
-                            bottom = TalentForgeSpacing.rowGap,
                         ),
                 )
             }
+            ImportBuildAction(
+                onClick = onImportBuild,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = TalentForgeSpacing.screenX,
+                        end = TalentForgeSpacing.screenX,
+                        bottom = TalentForgeSpacing.hairline,
+                    ),
+            )
         }
     }
 }
@@ -485,6 +500,30 @@ private fun RecentBuildRow(
     }
 }
 
+/**
+ * M5.SHARE.2: the low-emphasis `Import build` text action under the pinned
+ * New build — a 48 dp target whose label wraps (never clips) at large text.
+ */
+@Composable
+private fun ImportBuildAction(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .heightIn(min = 48.dp)
+            .clickable(
+                role = Role.Button,
+                onClickLabel = stringResource(Res.string.import_build_action),
+                onClick = onClick,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        BasicText(
+            text = stringResource(Res.string.import_build),
+            style = HomeImportStyle.copy(color = talentForgeColors().textSecondary),
+            modifier = Modifier.padding(horizontal = TalentForgeSpacing.inline, vertical = TalentForgeSpacing.hairline),
+        )
+    }
+}
+
 /** `All builds 6` link of the RECENT header row (or its own row at one build). */
 @Composable
 private fun AllBuildsLink(count: Int, onClick: () -> Unit) {
@@ -535,6 +574,13 @@ private val HomePointsStyle = TextStyle(
     fontSize = 17.sp,
     lineHeight = 22.sp,
     fontWeight = FontWeight.SemiBold,
+)
+
+private val HomeImportStyle = TextStyle(
+    fontSize = 15.sp,
+    lineHeight = 20.sp,
+    fontWeight = FontWeight.SemiBold,
+    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
 )
 
 private val HomeLinkStyle = TextStyle(

@@ -246,4 +246,66 @@
     <string name="description_unavailable">Описание таланта недоступно в данных этого клиента.</string>
     <string name="description_missing_character">Значения, отмеченные «—», зависят от персонажа и не показываются.</string>
     <string name="description_missing_data">Значения, отмеченные «—», отсутствуют в данных этого клиента.</string>
+    <!-- ================================================================ -->
+    <!-- обмен билдами (M5.SHARE.2): меню экспорта, импорт, ошибки.       -->
+    <!-- Сам код билда не ресурс и никогда не переводится.               -->
+    <!-- ================================================================ -->
+
+    <!-- точки входа -->
+    <string name="editor_share_build">Поделиться билдом</string>
+    <string name="builds_action_share">Поделиться</string>
+    <string name="import_build">Импортировать билд</string>
+    <string name="import_build_action">импортировать билд по коду</string>
+
+    <!-- меню экспорта -->
+    <string name="share_title">Поделиться билдом</string>
+    <string name="share_body">Этот код можно импортировать в TalentForge. В нём только таланты — без названия билда и личных данных.</string>
+    <string name="share_code_description">код билда</string>
+    <string name="share_send">Поделиться</string>
+    <string name="share_send_action">отправить код билда</string>
+    <string name="share_copy_code">Копировать код</string>
+    <string name="share_copy_code_action">скопировать код билда</string>
+    <string name="share_close_action">закрыть «Поделиться билдом»</string>
+    <string name="share_copied">Код скопирован</string>
+    <string name="share_copied_no_sheet">Код скопирован — на этом устройстве нет меню «Поделиться»</string>
+    <string name="share_error_no_target">На этом устройстве нет приложений для отправки текста. Скопируйте код.</string>
+    <string name="share_error_presentation">Не удалось открыть меню «Поделиться». Скопируйте код.</string>
+    <string name="share_error_clipboard">Не удалось скопировать код в буфер обмена</string>
+    <string name="share_error_encode">Не удалось создать код для этого билда</string>
+    <string name="share_error_library">Не удалось прочитать этот билд на устройстве</string>
+    <string name="share_error_build_missing">Этого билда больше нет на устройстве</string>
+
+    <!-- экран импорта -->
+    <string name="import_title">Импортировать билд</string>
+    <string name="import_body">Вставьте полученный код билда. Перед сохранением вы увидите, что это за билд.</string>
+    <string name="import_field_description">код билда</string>
+    <string name="import_field_placeholder">Вставьте код сюда</string>
+    <string name="import_paste">Вставить</string>
+    <string name="import_paste_action">вставить из буфера обмена</string>
+    <string name="import_clear">Очистить</string>
+    <string name="import_clear_action">очистить код</string>
+    <string name="import_continue">Продолжить</string>
+    <string name="import_continue_action">проверить код билда</string>
+    <string name="import_checking">Проверяем код…</string>
+
+    <!-- подтверждение импорта -->
+    <string name="import_preview_title">Импортировать этот билд?</string>
+    <string name="import_preview_points">Очки: %1$d / %2$d</string>
+    <string name="import_preview_body">Импорт добавит на устройство новый независимый билд. Остальные билды не изменятся.</string>
+    <string name="import_confirm">Импортировать</string>
+    <string name="import_saving">Импортируем…</string>
+
+    <!-- ошибки импорта -->
+    <string name="import_error_empty">Сначала вставьте код билда</string>
+    <string name="import_error_too_long">Этот текст слишком длинный для кода билда</string>
+    <string name="import_error_not_a_code">Это не код билда TalentForge</string>
+    <string name="import_error_unsupported_version">Этот код создан в более новой версии TalentForge. Обновите приложение, чтобы импортировать его.</string>
+    <string name="import_error_damaged">Код повреждён или неполон. Скопируйте его ещё раз из исходного сообщения.</string>
+    <string name="import_error_client_build">Билд создан для данных талантов %1$s, которых нет в этой версии TalentForge.</string>
+    <string name="import_error_class">Билд создан для класса, которого нет в этих данных талантов.</string>
+    <string name="import_error_allocation">Таланты в этом коде не образуют допустимый билд для его данных талантов.</string>
+    <string name="import_error_dataset">Не удалось прочитать данные талантов на этом устройстве. Попробуйте ещё раз.</string>
+    <string name="import_error_storage">Не удалось сохранить билд на этом устройстве. Попробуйте ещё раз.</string>
+    <string name="import_error_paste_empty">В буфере обмена нет текста</string>
+    <string name="import_error_paste_failed">Не удалось прочитать буфер обмена. Вставьте код в поле вручную.</string>
 </resources>

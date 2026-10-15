@@ -17,6 +17,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,6 +57,12 @@ import io.github.alexeykravtsov95.talentforge.ui.library.EditorFailure
 import io.github.alexeykravtsov95.talentforge.ui.library.EditorLoad
 import io.github.alexeykravtsov95.talentforge.ui.library.InlineNotice
 import io.github.alexeykravtsov95.talentforge.ui.library.loadEditorSession
+import io.github.alexeykravtsov95.talentforge.ui.share.BuildCodeSharing
+import io.github.alexeykravtsov95.talentforge.ui.share.BuildExport
+import io.github.alexeykravtsov95.talentforge.ui.share.BuildExportFailure
+import io.github.alexeykravtsov95.talentforge.ui.share.BuildShareSheet
+import io.github.alexeykravtsov95.talentforge.ui.share.exportEditorState
+import io.github.alexeykravtsov95.talentforge.ui.share.text
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTypography
 import io.github.alexeykravtsov95.talentforge.ui.theme.classAccentFor
@@ -81,6 +88,14 @@ import org.jetbrains.compose.resources.stringResource
  * visible non-blocking notice offers Retry (a re-submission of the newest
  * state), the in-memory build is never rolled back, no duplicate record is
  * ever created to "recover", and a later successful save clears the error.
+ *
+ * M5.SHARE.2 export ([sharing] non-null): `Share build` in the ⋯ sheet
+ * encodes the session's CURRENT in-memory build — read synchronously at the
+ * tap and bound to this record's dataset identity — and shows the code in
+ * [BuildShareSheet]. Sharing and saving are separate: a pending or failed
+ * autosave neither blocks nor changes the shared code, and the save-error
+ * notice stays as it was. Each Share re-encodes; no code is cached across
+ * edits (the sheet is modal, so the build cannot change while it is open).
  */
 @Composable
 fun TalentTreeBuildScreen(
@@ -92,6 +107,7 @@ fun TalentTreeBuildScreen(
     icons: TalentIconsLoader? = null,
     descriptions: TalentDescriptionsLoader? = null,
     localization: TalentLocalizationLoader? = null,
+    sharing: BuildCodeSharing? = null,
 ) {
     var load by remember(localId) { mutableStateOf<EditorLoad>(EditorLoad.Loading) }
     LaunchedEffect(localId) {
@@ -120,6 +136,7 @@ fun TalentTreeBuildScreen(
             session = current.session,
             autosave = autosave,
             onBack = onBack,
+            sharing = sharing,
         )
     }
 }
@@ -129,9 +146,17 @@ private fun ReadyBuildEditor(
     session: io.github.alexeykravtsov95.talentforge.ui.library.EditorSession,
     autosave: BuildAutosaveCoordinator,
     onBack: () -> Unit,
+    sharing: BuildCodeSharing?,
 ) {
     val record = session.record
     var newestFile by remember(record.localId) { mutableStateOf<BuildFile?>(null) }
+    // the open share sheet's code (saveable: rotation keeps the sheet — the
+    // session restores the same build, and the sheet is modal)
+    var shareCode by rememberSaveable(record.localId) { mutableStateOf<String?>(null) }
+    var exportFailure by remember(record.localId) { mutableStateOf<BuildExportFailure?>(null) }
+    // a user name verbatim; an unnamed build shows the localized "Draft",
+    // resolved here at display time — `record.name` stays null in storage
+    val buildTitle = record.name ?: stringResource(Res.string.editor_draft_title)
     val lastOutcome by autosave.lastOutcome.collectAsState()
     val saveFailed = lastOutcome?.let { it.localId == record.localId && it.failed } == true
 
@@ -144,9 +169,7 @@ private fun ReadyBuildEditor(
                 model = session.model,
                 engine = session.engine,
                 buildState = session.buildState,
-                // a user name verbatim; an unnamed build shows the localized "Draft",
-                // resolved here at display time — `record.name` stays null in storage
-                buildTitle = record.name ?: stringResource(Res.string.editor_draft_title),
+                buildTitle = buildTitle,
                 classAccent = classAccentFor(record.build.classToken).color,
                 icons = session.icons,
                 descriptions = session.descriptions,
@@ -167,6 +190,17 @@ private fun ReadyBuildEditor(
                 newestFile = file
                 autosave.submit(localId = record.localId, build = file)
             },
+            onShareBuild = sharing?.let {
+                { state ->
+                    when (val export = exportEditorState(state, identity = record.build)) {
+                        is BuildExport.Ready -> {
+                            exportFailure = null
+                            shareCode = export.code
+                        }
+                        is BuildExport.Failed -> exportFailure = export.failure
+                    }
+                }
+            },
         )
         if (saveFailed) {
             InlineNotice(
@@ -177,6 +211,26 @@ private fun ReadyBuildEditor(
                     .align(Alignment.TopCenter)
                     .padding(top = 56.dp + TalentForgeSpacing.inline)
                     .padding(horizontal = TalentForgeSpacing.screenX),
+            )
+        }
+        exportFailure?.let { failure ->
+            InlineNotice(
+                text = failure.text(),
+                actionText = null,
+                onAction = null,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 56.dp + TalentForgeSpacing.inline)
+                    .padding(horizontal = TalentForgeSpacing.screenX),
+            )
+        }
+        val code = shareCode
+        if (code != null && sharing != null) {
+            BuildShareSheet(
+                code = code,
+                buildTitle = buildTitle,
+                sharing = sharing,
+                onDismiss = { shareCode = null },
             )
         }
     }
