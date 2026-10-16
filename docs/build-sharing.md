@@ -7,8 +7,10 @@ language, no network.
 
 This document is the public specification of the wire format and of the import
 validation that follows decoding. M5.SHARE.1 implements the shared domain layer
-only (`mobile/shared`, package `io.github.alexeykravtsov95.talentforge.share`);
-the UI, share sheets and localized error messages belong to M5.SHARE.2.
+(`mobile/shared`, package `io.github.alexeykravtsov95.talentforge.share`);
+M5.SHARE.2 adds the UI, the platform share sheets and the localized error
+messages (section 9, and "Build sharing UI" in
+[mobile-architecture.md](mobile-architecture.md)).
 
 | | |
 |---|---|
@@ -345,22 +347,42 @@ The golden vectors in `BuildShareCodeTest` are pinned from the independent
 Python implementation, so the same text is required byte for byte on the JVM
 and on Kotlin/Native (iOS).
 
-## 9. Future UI integration (M5.SHARE.2)
+## 9. UI integration (M5.SHARE.2)
 
-Not implemented in M5.SHARE.1; the shared API is shaped for it:
-
-- **Export**: `BuildShareCode.encode(record.build)` on a saved record →
-  `ShareCodeEncoding.Encoded(code)` → platform share sheet / copy to
-  clipboard. `Failed` cannot happen for a valid build of the bundled datasets,
-  but stays typed.
-- **Import**: a paste field or shared text → `prepareBuildImport(text, datasets)`
-  → a confirmation screen built from `BuildImportPreview` (class, data
-  version, spent / budget points), with the localized class name taken from
-  the dataset on the device; each `BuildImportFailure` / `ShareCodeDecodeError`
-  type maps to one localized message.
-- **Confirm**: `LocalBuildRepository.createDraft(preview.build)` persists the
-  verified build as a new Draft, and the editor opens it with
-  `loadEditorSession` — which re-validates against the same exact dataset.
-  Nothing is written before the user confirms.
+- **Export from the editor**: ⋯ → *Share* encodes the editing session's
+  current in-memory build (`buildFileOf` over the session's `BuildState`, bound
+  to the record's game / client build / class) at the moment of the tap —
+  never the persisted record, which a pending or failed autosave may lag
+  behind, and never a cached code. Sharing changes no history and saves nothing.
+- **Export from All Builds and Home**: the All Builds row ⋯ → *Share* and the
+  Home *Recent* row ⋯ → *Share* read the latest persisted build of exactly
+  that record with `LocalBuildRepository.load` (not `open`, which would touch
+  `lastOpenedAt`): no timestamp, name or order changes.
+- **Rename next to Share**: the same three places offer *Rename* (Home Recent
+  ⋯: Rename · Share · Delete; editor ⋯: Rename · Share · Reset talents — never
+  Delete; All Builds ⋯: Rename · Duplicate · Share · Delete). Delete is always
+  confirmed first (the same dialog in Home and All Builds). One shared dialog and one write path
+  (`BuildAutosaveCoordinator.rename` → `LocalBuildRepository.renameBuild`):
+  the repository's trimming and 60-character rule, metadata only (no
+  allocation, `updatedAt` or order change), serialized with autosave, and
+  refused while the build's newest talent change failed to save. Renaming
+  does not touch the share code: a code never carries a name.
+- **Export surface**: the exact code (monospace, selectable), *Share* (Android
+  `ACTION_SEND` chooser, iOS `UIActivityViewController`, desktop: copies) and
+  *Copy code*. Only the canonical code is ever handed to the platform — no
+  label, line break or decoration. Opening a chooser is not reported as a
+  delivery; cancellation is silent; platform failures are typed messages.
+- **Import**: *Import build* on Home and All Builds opens one screen. The
+  field's exact text goes to `prepareBuildImport(text, datasets)`; every
+  `BuildImportFailure` / `ShareCodeDecodeError` maps to one localized category
+  (not a code, newer version, damaged, unshipped client build — named, class
+  unavailable, invalid talents, dataset problem). A valid code opens a
+  confirmation built from `BuildImportPreview` (localized class, `Forever ·
+  talent data <exact client build>`, spent / budget points).
+- **Confirm**: *Import* calls `LocalBuildRepository.createDraft(preview.build)`
+  once; the new Draft opens in the editor (which re-validates it against the
+  same exact dataset) and Back returns to Home or All Builds, wherever the
+  import started. Nothing is written before the confirmation; editing the code
+  invalidates the preview; a failed write keeps the preview for a retry.
 
 [`BuildFile`]: ../mobile/shared/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/data/allocation/BuildFile.kt

@@ -26,7 +26,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,12 +50,15 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.com
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_new_build_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_open_build_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_retry
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.import_build
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.import_build_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_load_failed_body
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_load_failed_title
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_loading
 import io.github.alexeykravtsov95.talentforge.data.TalentDatasetRepository
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
+import io.github.alexeykravtsov95.talentforge.ui.library.BuildAutosaveCoordinator
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildCardModel
 import io.github.alexeykravtsov95.talentforge.ui.library.ClassArtworkMark
 import io.github.alexeykravtsov95.talentforge.ui.library.ClassArtworkSlot
@@ -64,6 +66,7 @@ import io.github.alexeykravtsov95.talentforge.ui.library.InlineNotice
 import io.github.alexeykravtsov95.talentforge.ui.library.InlineNoticeTone
 import io.github.alexeykravtsov95.talentforge.ui.library.LibraryData
 import io.github.alexeykravtsov95.talentforge.ui.library.PrimaryActionButton
+import io.github.alexeykravtsov95.talentforge.ui.library.SecondaryActionButton
 import io.github.alexeykravtsov95.talentforge.ui.library.buildCardTitle
 import io.github.alexeykravtsov95.talentforge.ui.library.classMonogramOf
 import io.github.alexeykravtsov95.talentforge.ui.library.gameDisplayName
@@ -71,6 +74,8 @@ import io.github.alexeykravtsov95.talentforge.ui.library.loadBuildsModel
 import io.github.alexeykravtsov95.talentforge.ui.library.localizedClassName
 import io.github.alexeykravtsov95.talentforge.ui.library.relativeBuildTime
 import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
+import io.github.alexeykravtsov95.talentforge.ui.share.BuildCodeSharing
+import io.github.alexeykravtsov95.talentforge.ui.share.text
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTypography
 import io.github.alexeykravtsov95.talentforge.ui.theme.classAccentFor
@@ -78,7 +83,6 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
 import io.github.alexeykravtsov95.talentforge.ui.tree.BackChevronButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.stringResource
 
@@ -91,10 +95,6 @@ private sealed interface ManagementOverlay {
     data object Hidden : ManagementOverlay
 
     data class Actions(val localId: String) : ManagementOverlay
-
-    data class Rename(val localId: String) : ManagementOverlay
-
-    data class DeleteConfirm(val localId: String) : ManagementOverlay
 }
 
 /** The screen-level notice strip: duplicate success (auto-dismisses) or retryable duplicate failure. */
@@ -108,8 +108,9 @@ private sealed interface ManagementNotice {
 }
 
 /**
- * All Builds — the Saved Builds list (spec D.1) and, since M5.2a, the ONE
- * place builds are managed: every row ends in a `⋯` button opening the
+ * All Builds — the Saved Builds list (spec D.1) and, since M5.2a, the full
+ * management surface (M5.SHARE.2: Home's Recent rows offer Rename, Share and
+ * Delete through the same presenter): every row ends in a `⋯` button opening the
  * Rename / Duplicate / Delete sheet. Tap on the row still opens the build;
  * tap on `⋯` never does. Management operations run off the main thread, one
  * at a time (repeated presses are ignored while one is in flight), and every
@@ -118,6 +119,16 @@ private sealed interface ManagementNotice {
  * keep their dialog open with a retryable error; a failed duplicate shows a
  * retryable notice. The list count, order and empty state all come from the
  * reload.
+ *
+ * M5.SHARE.2: Rename, `Share` and Delete in the row sheet go through the
+ * app's one [BuildActionsPresenter] (also used by Home's Recent rows; the
+ * editor uses its Rename only — never Delete): Share reads the
+ * LATEST persisted build of exactly that `localId` at the tap (`load`, never
+ * `open`, so no timestamp, name or order changes) and shows its code in the
+ * export sheet; a read failure or a vanished record is a retryable notice.
+ * The presenter's single-flight guard also runs Duplicate and Delete, so no
+ * two management operations ever overlap.
+ * `Import build` (also in the empty state) opens the shared import flow.
  */
 @Composable
 fun AllBuildsScreen(
@@ -127,6 +138,9 @@ fun AllBuildsScreen(
     onBack: () -> Unit,
     onOpenBuild: (String) -> Unit,
     onNewBuild: () -> Unit,
+    onImportBuild: () -> Unit,
+    sharing: BuildCodeSharing,
+    autosave: BuildAutosaveCoordinator,
 ) {
     var data by remember { mutableStateOf<LibraryData<List<BuildCardModel>>>(LibraryData.Loading) }
     var reloadToken by remember { mutableStateOf(0) }
@@ -135,13 +149,17 @@ fun AllBuildsScreen(
         data = withContext(Dispatchers.Default) { loadBuildsModel(repository, datasets) }
     }
 
-    val scope = rememberCoroutineScope()
     var overlay by remember { mutableStateOf<ManagementOverlay>(ManagementOverlay.Hidden) }
-    var renameText by remember { mutableStateOf("") }
-    var overlayError by remember { mutableStateOf(false) }
-    var operationInFlight by remember { mutableStateOf(false) }
     var notice by remember { mutableStateOf<ManagementNotice>(ManagementNotice.None) }
     var noticeEvent by remember { mutableStateOf(0) }
+    val actions = rememberBuildActionsPresenter(
+        autosave = autosave,
+        repository = repository,
+        onRenamed = { reloadToken += 1 },
+        onRecordMissing = { reloadToken += 1 },
+        onDeleted = { reloadToken += 1 },
+    )
+    val operationInFlight = actions.busy
 
     LaunchedEffect(notice) {
         if (notice is ManagementNotice.Duplicated) {
@@ -152,15 +170,7 @@ fun AllBuildsScreen(
 
     /** One management operation at a time; repeated presses are ignored while one runs. */
     fun launchManagement(action: suspend () -> Unit) {
-        if (operationInFlight) return
-        operationInFlight = true
-        scope.launch {
-            try {
-                action()
-            } finally {
-                operationInFlight = false
-            }
-        }
+        actions.launchExclusive(action)
     }
 
     /**
@@ -178,19 +188,6 @@ fun AllBuildsScreen(
             if (!operationInFlight) overlay = ManagementOverlay.Hidden
         },
     )
-
-    fun rename(localId: String, newName: String) {
-        launchManagement {
-            when (withContext(Dispatchers.Default) { repository.renameBuild(localId, newName) }) {
-                is BuildLibraryOutcome.Loaded -> {
-                    overlay = ManagementOverlay.Hidden
-                    overlayError = false
-                    reloadToken += 1
-                }
-                is BuildLibraryOutcome.Failed -> overlayError = true
-            }
-        }
-    }
 
     fun duplicate(localId: String) {
         launchManagement {
@@ -211,17 +208,10 @@ fun AllBuildsScreen(
         }
     }
 
-    fun delete(localId: String) {
-        launchManagement {
-            when (withContext(Dispatchers.Default) { repository.deleteBuild(localId) }) {
-                is BuildLibraryOutcome.Loaded -> {
-                    overlay = ManagementOverlay.Hidden
-                    overlayError = false
-                    reloadToken += 1
-                }
-                is BuildLibraryOutcome.Failed -> overlayError = true
-            }
-        }
+    // like a failed duplicate, the sheet closes either way: the share sheet or
+    // the retryable notice is the visible answer
+    fun share(localId: String) {
+        actions.sharePersisted(localId) { overlay = ManagementOverlay.Hidden }
     }
 
     val colors = talentForgeColors()
@@ -261,6 +251,13 @@ fun AllBuildsScreen(
                             onClickLabel = stringResource(Res.string.common_new_build_action),
                             onClick = onNewBuild,
                         ),
+                )
+            }
+            actions.shareFailure?.let { failure ->
+                InlineNotice(
+                    text = failure.failure.text(),
+                    actionText = stringResource(Res.string.common_retry),
+                    onAction = { share(failure.localId) },
                 )
             }
             when (val current = notice) {
@@ -323,6 +320,7 @@ fun AllBuildsScreen(
                             onClickLabel = stringResource(Res.string.common_new_build_action),
                             onClick = onNewBuild,
                         )
+                        ImportBuildButton(onClick = onImportBuild)
                     } else {
                         for (card in current.value) {
                             BuildRow(
@@ -332,6 +330,8 @@ fun AllBuildsScreen(
                                 onActions = { overlay = ManagementOverlay.Actions(card.record.localId) },
                             )
                         }
+                        Spacer(Modifier.height(TalentForgeSpacing.inline))
+                        ImportBuildButton(onClick = onImportBuild)
                     }
                 }
                 Spacer(Modifier.height(TalentForgeSpacing.group))
@@ -351,46 +351,39 @@ fun AllBuildsScreen(
                         busy = operationInFlight,
                         onDismiss = { overlay = ManagementOverlay.Hidden },
                         onRename = {
-                            renameText = card.record.name.orEmpty() // a Draft starts with an empty field
-                            overlayError = false
-                            overlay = ManagementOverlay.Rename(current.localId)
+                            overlay = ManagementOverlay.Hidden
+                            // a Draft starts with an empty field
+                            actions.startRename(current.localId, card.record.name)
                         },
                         onDuplicate = { duplicate(current.localId) },
+                        onShare = { share(current.localId) },
                         onDelete = {
-                            overlayError = false
-                            overlay = ManagementOverlay.DeleteConfirm(current.localId)
+                            overlay = ManagementOverlay.Hidden
+                            actions.startDelete(current.localId)
                         },
-                    )
-                }
-            }
-
-            is ManagementOverlay.Rename -> RenameBuildDialog(
-                text = renameText,
-                onTextChange = {
-                    renameText = it
-                    overlayError = false
-                },
-                maxLength = LocalBuildRepository.MAX_BUILD_NAME_LENGTH,
-                busy = operationInFlight,
-                error = overlayError,
-                onSave = { rename(current.localId, renameText) },
-                onCancel = { overlay = ManagementOverlay.Hidden },
-            )
-
-            is ManagementOverlay.DeleteConfirm -> {
-                val card = readyCards?.firstOrNull { it.record.localId == current.localId }
-                if (card != null) {
-                    DeleteBuildDialog(
-                        buildTitle = buildCardTitle(card),
-                        busy = operationInFlight,
-                        error = overlayError,
-                        onDelete = { delete(current.localId) },
-                        onCancel = { overlay = ManagementOverlay.Hidden },
                     )
                 }
             }
         }
+        BuildActionsOverlays(
+            presenter = actions,
+            sharing = sharing,
+            titleOf = { localId ->
+                readyCards?.firstOrNull { it.record.localId == localId }?.let { buildCardTitle(it) }.orEmpty()
+            },
+        )
     }
+}
+
+/** M5.SHARE.2: `Import build`, a full-width secondary action after the list (and in the empty state). */
+@Composable
+private fun ImportBuildButton(onClick: () -> Unit) {
+    SecondaryActionButton(
+        text = stringResource(Res.string.import_build),
+        onClickLabel = stringResource(Res.string.import_build_action),
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+    )
 }
 
 /**
@@ -534,10 +527,11 @@ private fun rowMetaLine(
 /**
  * The row's `⋯` button — its own 48 dp click target, so pressing it opens the
  * management sheet and NEVER the build (the button's click target is a
- * sibling of the row's, not nested inside it).
+ * sibling of the row's, not nested inside it). M5.SHARE.2: Home's Recent
+ * rows use the same button.
  */
 @Composable
-private fun RowActionsButton(title: String, onClick: () -> Unit) {
+internal fun RowActionsButton(title: String, onClick: () -> Unit) {
     val description = stringResource(Res.string.builds_row_actions_description, title)
     Box(
         modifier = Modifier

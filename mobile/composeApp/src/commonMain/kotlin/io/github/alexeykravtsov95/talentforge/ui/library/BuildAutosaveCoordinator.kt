@@ -1,7 +1,9 @@
 package io.github.alexeykravtsov95.talentforge.ui.library
 
 import io.github.alexeykravtsov95.talentforge.data.allocation.BuildFile
+import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryError
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
+import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRecord
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -11,6 +13,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 /**
@@ -35,8 +39,18 @@ import kotlinx.coroutines.withContext
  *   onBuildStateChanged path submits.
  *
  * Threading: a main-thread API (Compose click handlers and the app scope) —
- * [submit]/[flush] are called from the composition, the consumer runs in
- * [scope] and hops to [Dispatchers.Default] only for the storage write.
+ * [submit]/[flush]/[rename] are called from the composition, the consumer
+ * runs in [scope] and hops to [Dispatchers.Default] only for the storage write.
+ *
+ * M5.SHARE.2 rename: the app's ONE rename path (Home, All Builds and the
+ * editor all call [rename]). Every repository operation is an unlocked
+ * read–modify–write of the whole library, so a rename running on another
+ * thread while an autosave writes could silently drop one of the two
+ * changes; both therefore write under the same [writeLock]. A rename also
+ * first [flush]es: it is applied only after every save submitted before it is
+ * on storage, and when the newest save of that record FAILED it is refused
+ * ([BuildRenameOutcome.PendingSaveFailed]) — the editor keeps its state and
+ * its retryable save notice instead of silently proceeding.
  */
 class BuildAutosaveCoordinator(
     private val repository: LocalBuildRepository,
@@ -46,6 +60,9 @@ class BuildAutosaveCoordinator(
     private val queue = Channel<SaveRequest>(Channel.UNLIMITED)
     private val processed = MutableStateFlow(0L)
     private val outcomeState = MutableStateFlow<SaveResult?>(null)
+
+    /** Serializes the library writes of this class: autosaves and renames never interleave. */
+    private val writeLock = Mutex()
 
     /** Main-thread confined: submissions before the current flush target. */
     private var submittedCount = 0L
@@ -77,6 +94,27 @@ class BuildAutosaveCoordinator(
         return outcomeState.value
     }
 
+    /**
+     * Renames [localId] through [LocalBuildRepository.renameBuild] — its
+     * trimming, length limit and metadata-only contract (`updatedAt`, the
+     * build, `createdAt`, `lastOpenedAt` untouched) — after every save
+     * submitted before this call reached storage, and never concurrently with
+     * one.
+     */
+    suspend fun rename(localId: String, newName: String): BuildRenameOutcome {
+        val pending = flush()
+        if (pending != null && pending.localId == localId && pending.failed) {
+            return BuildRenameOutcome.PendingSaveFailed
+        }
+        val outcome = writeLock.withLock {
+            withContext(Dispatchers.Default) { repository.renameBuild(localId, newName) }
+        }
+        return when (outcome) {
+            is BuildLibraryOutcome.Loaded -> BuildRenameOutcome.Renamed(outcome.value)
+            is BuildLibraryOutcome.Failed -> BuildRenameOutcome.Failed(outcome.error)
+        }
+    }
+
     private suspend fun consumeForever() {
         // scope-owned loop: scope cancellation cancels the suspended receive
         while (true) {
@@ -86,8 +124,10 @@ class BuildAutosaveCoordinator(
             while (true) {
                 request = queue.tryReceive().getOrNull() ?: break
             }
-            val outcome = withContext(Dispatchers.Default) {
-                repository.saveBuild(request.localId, request.build)
+            val outcome = writeLock.withLock {
+                withContext(Dispatchers.Default) {
+                    repository.saveBuild(request.localId, request.build)
+                }
             }
             outcomeState.value = SaveResult(localId = request.localId, outcome = outcome)
             processed.value = request.generation
@@ -100,4 +140,17 @@ class BuildAutosaveCoordinator(
     data class SaveResult(val localId: String, val outcome: BuildLibraryOutcome<*>) {
         val failed: Boolean get() = outcome is BuildLibraryOutcome.Failed
     }
+}
+
+/** Outcome of [BuildAutosaveCoordinator.rename] (typed; the UI never parses a message). */
+sealed interface BuildRenameOutcome {
+
+    /** Storage confirmed the name; [record] is the persisted record. */
+    data class Renamed(val record: LocalBuildRecord) : BuildRenameOutcome
+
+    /** The newest talent change of this build is not on storage: the rename was not attempted. */
+    data object PendingSaveFailed : BuildRenameOutcome
+
+    /** The rename itself failed (storage, a vanished record, an invalid name). */
+    data class Failed(val error: BuildLibraryError) : BuildRenameOutcome
 }

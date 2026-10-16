@@ -94,6 +94,7 @@
     <string name="builds_rename_title">Rename build</string>
     <string name="builds_rename_field_description">build name</string>
     <string name="builds_rename_failed">Couldn't rename the build</string>
+    <string name="builds_rename_pending_save_failed">Your latest talent changes aren't saved yet. Close this, tap Retry to save them, then rename.</string>
     <string name="builds_delete_title">Delete "%1$s"?</string>
     <string name="builds_delete_body">This permanently deletes the build from this device and cannot be undone.</string>
     <string name="builds_delete_failed">Couldn't delete the build</string>
@@ -234,4 +235,65 @@
     <string name="description_unavailable">Talent description unavailable for this client data.</string>
     <string name="description_missing_character">Values marked — depend on your character and are not shown.</string>
     <string name="description_missing_data">Values marked — are not available in this client data.</string>
+    <!-- ================================================================ -->
+    <!-- build sharing (M5.SHARE.2): export sheet, import screen, errors. -->
+    <!-- The share code itself is never a resource and never translated. -->
+    <!-- ================================================================ -->
+
+    <!-- entry points -->
+    <string name="builds_action_share">Share</string>
+    <string name="import_build">Import build</string>
+    <string name="import_build_action">import a build from a code</string>
+
+    <!-- export sheet -->
+    <string name="share_title">Share build</string>
+    <string name="share_body">Anyone with TalentForge can import this code. It holds only the talents — no build name and no personal data.</string>
+    <string name="share_code_description">build code</string>
+    <string name="share_send">Share</string>
+    <string name="share_send_action">share the build code</string>
+    <string name="share_copy_code">Copy code</string>
+    <string name="share_copy_code_action">copy the build code</string>
+    <string name="share_close_action">close share build</string>
+    <string name="share_copied">Code copied</string>
+    <string name="share_copied_no_sheet">Code copied — this device has no share menu</string>
+    <string name="share_error_no_target">No app on this device can share text. Copy the code instead.</string>
+    <string name="share_error_presentation">The share menu couldn't be opened. Copy the code instead.</string>
+    <string name="share_error_clipboard">Couldn't copy the code to the clipboard</string>
+    <string name="share_error_encode">This build couldn't be turned into a code</string>
+    <string name="share_error_library">Couldn't read this build on this device</string>
+    <string name="share_error_build_missing">This build no longer exists on this device</string>
+
+    <!-- import screen -->
+    <string name="import_title">Import build</string>
+    <string name="import_body">Paste a build code you received. You'll see the build before anything is saved.</string>
+    <string name="import_field_description">build code</string>
+    <string name="import_field_placeholder">Paste the code here</string>
+    <string name="import_paste">Paste</string>
+    <string name="import_paste_action">paste from the clipboard</string>
+    <string name="import_clear">Clear</string>
+    <string name="import_clear_action">clear the code</string>
+    <string name="import_continue">Continue</string>
+    <string name="import_continue_action">check the build code</string>
+    <string name="import_checking">Checking the code…</string>
+
+    <!-- import confirmation -->
+    <string name="import_preview_title">Import this build?</string>
+    <string name="import_preview_points">Points: %1$d / %2$d</string>
+    <string name="import_preview_body">Importing adds a new, independent build to this device. Your other builds stay unchanged.</string>
+    <string name="import_confirm">Import</string>
+    <string name="import_saving">Importing…</string>
+
+    <!-- import problems -->
+    <string name="import_error_empty">Paste a build code first</string>
+    <string name="import_error_too_long">This text is too long to be a build code</string>
+    <string name="import_error_not_a_code">This isn't a TalentForge build code</string>
+    <string name="import_error_unsupported_version">This code was made by a newer version of TalentForge. Update the app to import it.</string>
+    <string name="import_error_damaged">This code is damaged or incomplete. Copy it again from the original message.</string>
+    <string name="import_error_client_build">This build uses talent data %1$s, which this version of TalentForge doesn't include.</string>
+    <string name="import_error_class">This build is for a class that this talent data doesn't include.</string>
+    <string name="import_error_allocation">The talents in this code aren't a valid build for its talent data.</string>
+    <string name="import_error_dataset">The talent data on this device couldn't be read. Try again.</string>
+    <string name="import_error_storage">Couldn't save the build on this device. Try again.</string>
+    <string name="import_error_paste_empty">The clipboard has no text to paste</string>
+    <string name="import_error_paste_failed">Couldn't read the clipboard. Paste into the field instead.</string>
 </resources>

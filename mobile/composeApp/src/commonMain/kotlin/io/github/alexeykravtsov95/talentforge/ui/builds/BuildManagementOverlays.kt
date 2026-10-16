@@ -26,8 +26,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -37,11 +39,11 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_action_delete
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_action_duplicate
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_action_rename
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_action_share
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_delete_body
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_delete_failed
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_delete_title
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_dialog_close_action
-import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_rename_failed
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_rename_field_description
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_rename_title
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_sheet_close_action
@@ -56,9 +58,9 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * The M5.2a build-management overlays of All Builds, built from the same
  * stable primitives as the editor's build-action sheet (no Material
- * component): the row `⋯` bottom sheet (Rename / Duplicate / Delete — Delete
- * separated and in the danger colour, the one irreversible action) plus two
- * centered confirmation dialogs.
+ * component): the row `⋯` bottom sheet (Rename / Duplicate / Share — M5.SHARE.2
+ * — / Delete — Delete separated and in the danger colour, the one
+ * irreversible action) plus two centered confirmation dialogs.
  *
  * Input rules of every overlay: the SCRIM always consumes touches, so the
  * interface underneath is unreachable while a modal is open — but it only
@@ -77,6 +79,8 @@ object BuildManagementMetrics {
 /**
  * The `⋯` bottom sheet. Rendered by the screen inside a full-size scrim Box;
  * tapping the scrim dismisses without acting (unless an operation runs).
+ * M5.SHARE.2: Home's Recent rows reuse it with Rename and Share only — an
+ * action whose callback is `null` is not shown (never a dead placeholder).
  */
 @Composable
 fun BuildRowActionsSheet(
@@ -84,8 +88,9 @@ fun BuildRowActionsSheet(
     busy: Boolean,
     onDismiss: () -> Unit,
     onRename: () -> Unit,
-    onDuplicate: () -> Unit,
-    onDelete: () -> Unit,
+    onDuplicate: (() -> Unit)?,
+    onShare: () -> Unit,
+    onDelete: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     val colors = talentForgeColors()
@@ -134,25 +139,35 @@ fun BuildRowActionsSheet(
                 color = colors.textPrimary,
                 onClick = onRename,
             )
+            if (onDuplicate != null) {
+                SheetAction(
+                    text = stringResource(Res.string.builds_action_duplicate),
+                    busy = busy,
+                    color = colors.textPrimary,
+                    onClick = onDuplicate,
+                )
+            }
             SheetAction(
-                text = stringResource(Res.string.builds_action_duplicate),
+                text = stringResource(Res.string.builds_action_share),
                 busy = busy,
                 color = colors.textPrimary,
-                onClick = onDuplicate,
+                onClick = onShare,
             )
-            // the one irreversible action: separated and in the danger colour
-            Spacer(
-                Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(colors.borderDefault),
-            )
-            SheetAction(
-                text = stringResource(Res.string.builds_action_delete),
-                busy = busy,
-                color = colors.danger,
-                onClick = onDelete,
-            )
+            if (onDelete != null) {
+                // the one irreversible action: separated and in the danger colour
+                Spacer(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(colors.borderDefault),
+                )
+                SheetAction(
+                    text = stringResource(Res.string.builds_action_delete),
+                    busy = busy,
+                    color = colors.danger,
+                    onClick = onDelete,
+                )
+            }
         }
     }
 }
@@ -179,8 +194,9 @@ private fun SheetAction(
 /**
  * The rename dialog: the current name pre-filled (empty for a Draft), a live
  * `n / limit` hint, Cancel and Save. Save is disabled for a blank or
- * over-limit name; a failed save keeps the typed text and shows a retryable
- * error line inside the dialog.
+ * over-limit name; a failed save keeps the typed text and shows the
+ * retryable [errorText] line inside the dialog (M5.SHARE.2: the line names
+ * the typed reason — see [BuildActionsOverlays]).
  */
 @Composable
 fun RenameBuildDialog(
@@ -188,7 +204,7 @@ fun RenameBuildDialog(
     onTextChange: (String) -> Unit,
     maxLength: Int,
     busy: Boolean,
-    error: Boolean,
+    errorText: String?,
     onSave: () -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
@@ -239,10 +255,11 @@ fun RenameBuildDialog(
                 text = "${text.length} / $maxLength",
                 style = OverlayCaptionStyle.copy(color = if (overLimit) colors.danger else colors.textMuted),
             )
-            if (error) {
+            if (errorText != null) {
                 BasicText(
-                    text = stringResource(Res.string.builds_rename_failed),
+                    text = errorText,
                     style = OverlayActionStyle.copy(color = colors.danger),
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                 )
             }
             DialogButtonRow {
@@ -331,7 +348,7 @@ fun DeleteBuildDialog(
  * operation a scrim tap is swallowed, never a dismiss.
  */
 @Composable
-private fun DialogScrim(
+internal fun DialogScrim(
     busy: Boolean,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,

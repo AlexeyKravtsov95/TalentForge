@@ -58,11 +58,18 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.hom
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_empty_title
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_section_continue
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_section_recent
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.import_build
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.import_build_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_load_failed_body
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_load_failed_title
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_loading
 import io.github.alexeykravtsov95.talentforge.data.TalentDatasetRepository
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
+import io.github.alexeykravtsov95.talentforge.ui.builds.BuildActionsOverlays
+import io.github.alexeykravtsov95.talentforge.ui.builds.BuildRowActionsSheet
+import io.github.alexeykravtsov95.talentforge.ui.builds.RowActionsButton
+import io.github.alexeykravtsov95.talentforge.ui.builds.rememberBuildActionsPresenter
+import io.github.alexeykravtsov95.talentforge.ui.library.BuildAutosaveCoordinator
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildCardModel
 import io.github.alexeykravtsov95.talentforge.ui.library.ClassArtworkMark
 import io.github.alexeykravtsov95.talentforge.ui.library.ClassArtworkSlot
@@ -80,6 +87,9 @@ import io.github.alexeykravtsov95.talentforge.ui.library.gameDisplayName
 import io.github.alexeykravtsov95.talentforge.ui.library.loadHomeModel
 import io.github.alexeykravtsov95.talentforge.ui.library.localizedClassName
 import io.github.alexeykravtsov95.talentforge.ui.library.relativeBuildTime
+import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
+import io.github.alexeykravtsov95.talentforge.ui.share.BuildCodeSharing
+import io.github.alexeykravtsov95.talentforge.ui.share.text
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeRadius
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTypography
@@ -108,6 +118,16 @@ import org.jetbrains.compose.resources.stringResource
  * Card metadata shows only facts resolved from real data: the real class
  * display name, spent/budget computed by the real engine, relative time —
  * nothing invented, unresolved fields are simply absent.
+ *
+ * M5.SHARE.2: a low-emphasis `Import build` text action sits under the
+ * pinned New build in every state — an empty library included — so a code
+ * received from another player can always be brought in. Every Recent row
+ * ends in its own 48 dp `⋯` button (tapping the row still opens the build,
+ * tapping `⋯` never does) whose sheet offers Rename, Share and Delete through
+ * the app's one [BuildActionsPresenter] — the same dialogs, rules and export
+ * as All Builds (the editor has Rename and Share, never Delete). Delete is
+ * separated, in the danger colour and confirmed first. A rename or delete
+ * reloads Home from storage; a rename never reorders (no `updatedAt` change).
  */
 @Composable
 fun HomeScreen(
@@ -117,6 +137,9 @@ fun HomeScreen(
     onOpenBuild: (String) -> Unit,
     onAllBuilds: () -> Unit,
     onNewBuild: () -> Unit,
+    onImportBuild: () -> Unit,
+    autosave: BuildAutosaveCoordinator,
+    sharing: BuildCodeSharing,
 ) {
     var data by remember { mutableStateOf<LibraryData<HomeModel>>(LibraryData.Loading) }
     var reloadToken by remember { mutableStateOf(0) }
@@ -131,91 +154,148 @@ fun HomeScreen(
     // on "Loading" until the waitUntil timeout.
     val shown = data
 
-    val colors = talentForgeColors()
-    BoxWithConstraints(
-        Modifier
-            .fillMaxSize()
-            .background(colors.background)
-            .windowInsetsPadding(WindowInsets.safeDrawing),
-    ) {
-        // B+ empty-state alignment: the copy starts in the UPPER-MIDDLE of
-        // the usable content (the ~80 % of the screen above the pinned CTA),
-        // not right under the header. Computed here because the scrollable
-        // content column receives unbounded height and cannot derive it.
-        val emptyCopyTopGap = maxHeight * EMPTY_COPY_TOP_GAP_FRACTION
-        Column(Modifier.fillMaxSize()) {
-            Column(
-                Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = TalentForgeSpacing.screenX),
-                verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.rowGap),
-            ) {
-                Spacer(Modifier.height(TalentForgeSpacing.group))
-                BrandHeader()
-                when (val current = shown) {
-                    LibraryData.Loading -> BasicText(
-                        stringResource(Res.string.library_loading),
-                        style = TalentForgeTypography.bodySmall.copy(color = colors.textSecondary),
-                    )
+    // M5.SHARE.2: the Recent row whose ⋯ sheet is open, by opaque id
+    var actionsFor by remember { mutableStateOf<String?>(null) }
+    val actions = rememberBuildActionsPresenter(
+        autosave = autosave,
+        repository = repository,
+        onRenamed = { reloadToken += 1 },
+        onRecordMissing = { reloadToken += 1 },
+        onDeleted = { reloadToken += 1 },
+    )
+    // Back closes the open sheet first (never while its operation runs)
+    PlatformBackHandler(enabled = actionsFor != null) { if (!actions.busy) actionsFor = null }
 
-                    is LibraryData.Failed -> Column(
-                        verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.rowGap),
-                    ) {
-                        BasicText(
-                            stringResource(Res.string.library_load_failed_title),
-                            style = TalentForgeTypography.componentTitle.copy(color = colors.danger),
-                        )
+    val colors = talentForgeColors()
+    Box(Modifier.fillMaxSize()) {
+        BoxWithConstraints(
+            Modifier
+                .fillMaxSize()
+                .background(colors.background)
+                .windowInsetsPadding(WindowInsets.safeDrawing),
+        ) {
+            // B+ empty-state alignment: the copy starts in the UPPER-MIDDLE of
+            // the usable content (the ~80 % of the screen above the pinned CTA),
+            // not right under the header. Computed here because the scrollable
+            // content column receives unbounded height and cannot derive it.
+            val emptyCopyTopGap = maxHeight * EMPTY_COPY_TOP_GAP_FRACTION
+            Column(Modifier.fillMaxSize()) {
+                Column(
+                    Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = TalentForgeSpacing.screenX),
+                    verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.rowGap),
+                ) {
+                    Spacer(Modifier.height(TalentForgeSpacing.group))
+                    BrandHeader()
+                    actions.shareFailure?.let { failure ->
                         InlineNotice(
-                            text = stringResource(Res.string.library_load_failed_body),
+                            text = failure.failure.text(),
                             actionText = stringResource(Res.string.common_retry),
-                            onAction = { reloadToken += 1 },
+                            onAction = { actions.sharePersisted(failure.localId) },
                         )
                     }
+                    when (val current = shown) {
+                        LibraryData.Loading -> BasicText(
+                            stringResource(Res.string.library_loading),
+                            style = TalentForgeTypography.bodySmall.copy(color = colors.textSecondary),
+                        )
 
-                    is LibraryData.Ready -> HomeContent(
-                        model = current.value,
-                        clockMillis = clockMillis,
-                        emptyCopyTopGap = emptyCopyTopGap,
-                        onOpenBuild = onOpenBuild,
-                        onAllBuilds = onAllBuilds,
+                        is LibraryData.Failed -> Column(
+                            verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.rowGap),
+                        ) {
+                            BasicText(
+                                stringResource(Res.string.library_load_failed_title),
+                                style = TalentForgeTypography.componentTitle.copy(color = colors.danger),
+                            )
+                            InlineNotice(
+                                text = stringResource(Res.string.library_load_failed_body),
+                                actionText = stringResource(Res.string.common_retry),
+                                onAction = { reloadToken += 1 },
+                            )
+                        }
+
+                        is LibraryData.Ready -> HomeContent(
+                            model = current.value,
+                            clockMillis = clockMillis,
+                            emptyCopyTopGap = emptyCopyTopGap,
+                            onOpenBuild = onOpenBuild,
+                            onAllBuilds = onAllBuilds,
+                            onRecentActions = { localId -> actionsFor = localId },
+                        )
+                    }
+                    Spacer(Modifier.height(TalentForgeSpacing.group))
+                }
+                // New build, pinned in the thumb zone (B+): the PRIMARY action of
+                // the empty state, a neutral secondary once builds exist.
+                // Loading/Failed keep the secondary so the pinned slot never
+                // changes identity mid-session.
+                if (shown is LibraryData.Ready && shown.value.continueCard == null) {
+                    PrimaryActionButton(
+                        text = stringResource(Res.string.common_new_build),
+                        onClickLabel = stringResource(Res.string.common_new_build_action),
+                        onClick = onNewBuild,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = TalentForgeSpacing.screenX,
+                                end = TalentForgeSpacing.screenX,
+                            ),
+                    )
+                } else {
+                    SecondaryActionButton(
+                        text = stringResource(Res.string.common_new_build),
+                        onClickLabel = stringResource(Res.string.common_new_build_action),
+                        onClick = onNewBuild,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = TalentForgeSpacing.screenX,
+                                end = TalentForgeSpacing.screenX,
+                            ),
                     )
                 }
-                Spacer(Modifier.height(TalentForgeSpacing.group))
-            }
-            // New build, pinned in the thumb zone (B+): the PRIMARY action of
-            // the empty state, a neutral secondary once builds exist.
-            // Loading/Failed keep the secondary so the pinned slot never
-            // changes identity mid-session.
-            if (shown is LibraryData.Ready && shown.value.continueCard == null) {
-                PrimaryActionButton(
-                    text = stringResource(Res.string.common_new_build),
-                    onClickLabel = stringResource(Res.string.common_new_build_action),
-                    onClick = onNewBuild,
+                ImportBuildAction(
+                    onClick = onImportBuild,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(
                             start = TalentForgeSpacing.screenX,
                             end = TalentForgeSpacing.screenX,
-                            bottom = TalentForgeSpacing.rowGap,
-                        ),
-                )
-            } else {
-                SecondaryActionButton(
-                    text = stringResource(Res.string.common_new_build),
-                    onClickLabel = stringResource(Res.string.common_new_build_action),
-                    onClick = onNewBuild,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            start = TalentForgeSpacing.screenX,
-                            end = TalentForgeSpacing.screenX,
-                            bottom = TalentForgeSpacing.rowGap,
+                            bottom = TalentForgeSpacing.hairline,
                         ),
                 )
             }
         }
+
+        // ------------------------------------------- M5.SHARE.2 Recent-row actions
+        val cards = (shown as? LibraryData.Ready<HomeModel>)?.value?.let { listOfNotNull(it.continueCard) + it.recentCards }
+        val sheetCard = actionsFor?.let { id -> cards?.firstOrNull { it.record.localId == id } }
+        if (sheetCard != null) {
+            BuildRowActionsSheet(
+                buildTitle = buildCardTitle(sheetCard),
+                busy = actions.busy,
+                onDismiss = { actionsFor = null },
+                onRename = {
+                    actionsFor = null
+                    // a Draft starts with an empty field
+                    actions.startRename(sheetCard.record.localId, sheetCard.record.name)
+                },
+                onDuplicate = null,
+                onShare = { actions.sharePersisted(sheetCard.record.localId) { actionsFor = null } },
+                onDelete = {
+                    actionsFor = null
+                    actions.startDelete(sheetCard.record.localId)
+                },
+            )
+        }
+        BuildActionsOverlays(
+            presenter = actions,
+            sharing = sharing,
+            titleOf = { localId -> cards?.firstOrNull { it.record.localId == localId }?.let { buildCardTitle(it) }.orEmpty() },
+        )
     }
 }
 
@@ -226,6 +306,7 @@ private fun HomeContent(
     emptyCopyTopGap: Dp,
     onOpenBuild: (String) -> Unit,
     onAllBuilds: () -> Unit,
+    onRecentActions: (String) -> Unit,
 ) {
     val continueCard = model.continueCard
     if (continueCard == null) {
@@ -249,9 +330,12 @@ private fun HomeContent(
             val recentLimit = if (maxWidth.value >= 412f) 4 else 3
             Column(verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline)) {
                 for (card in model.recentCards.take(recentLimit)) {
-                    RecentBuildRow(card = card, clockMillis = clockMillis, onClick = {
-                        onOpenBuild(card.record.localId)
-                    })
+                    RecentBuildRow(
+                        card = card,
+                        clockMillis = clockMillis,
+                        onClick = { onOpenBuild(card.record.localId) },
+                        onActions = { onRecentActions(card.record.localId) },
+                    )
                 }
             }
         }
@@ -440,12 +524,17 @@ private fun PointsProgress(
     }
 }
 
-/** Compact recent-build row: artwork, title, `spent / budget · time`. */
+/**
+ * Compact recent-build row: artwork, title, `spent / budget · time`, and
+ * (M5.SHARE.2) the 48 dp `⋯` actions button — a sibling of the row's own
+ * click target, so pressing it never opens the build.
+ */
 @Composable
 private fun RecentBuildRow(
     card: BuildCardModel,
     clockMillis: () -> Long,
     onClick: () -> Unit,
+    onActions: () -> Unit,
 ) {
     val colors = talentForgeColors()
     val title = buildCardTitle(card)
@@ -482,6 +571,31 @@ private fun RecentBuildRow(
                 overflow = TextOverflow.Ellipsis,
             )
         }
+        RowActionsButton(title = title, onClick = onActions)
+    }
+}
+
+/**
+ * M5.SHARE.2: the low-emphasis `Import build` text action under the pinned
+ * New build — a 48 dp target whose label wraps (never clips) at large text.
+ */
+@Composable
+private fun ImportBuildAction(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .heightIn(min = 48.dp)
+            .clickable(
+                role = Role.Button,
+                onClickLabel = stringResource(Res.string.import_build_action),
+                onClick = onClick,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        BasicText(
+            text = stringResource(Res.string.import_build),
+            style = HomeImportStyle.copy(color = talentForgeColors().textSecondary),
+            modifier = Modifier.padding(horizontal = TalentForgeSpacing.inline, vertical = TalentForgeSpacing.hairline),
+        )
     }
 }
 
@@ -535,6 +649,13 @@ private val HomePointsStyle = TextStyle(
     fontSize = 17.sp,
     lineHeight = 22.sp,
     fontWeight = FontWeight.SemiBold,
+)
+
+private val HomeImportStyle = TextStyle(
+    fontSize = 15.sp,
+    lineHeight = 20.sp,
+    fontWeight = FontWeight.SemiBold,
+    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
 )
 
 private val HomeLinkStyle = TextStyle(

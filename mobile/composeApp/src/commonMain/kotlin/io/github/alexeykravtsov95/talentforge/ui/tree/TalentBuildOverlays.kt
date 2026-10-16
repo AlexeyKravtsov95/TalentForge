@@ -11,8 +11,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
@@ -27,6 +29,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_action_rename
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_action_share
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_sheet_close_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_build_actions_title
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_reset_notice
@@ -49,6 +53,9 @@ import org.jetbrains.compose.resources.stringResource
  *   owns — `Reset talents`, separated and in the warning colour, because it is
  *   *recoverable* (UX/UI spec 03 §4). Rename/Duplicate arrive with the
  *   build-management milestone and are not shown as dead placeholders.
+ *   M5.SHARE.2 adds the neutral `Rename` and `Share` above it (the same
+ *   labels as the Home and All Builds row sheets); Reset keeps its separated
+ *   warning styling.
  * - **Reset feedback** (UX/UI spec 03 §4 / E.3): `Talents reset · N points
  *   cleared` + `Undo` — the same history mechanism the header Undo uses, never
  *   a separate reset backup. Placement follows the spec's notice model: the
@@ -89,6 +96,8 @@ fun TalentBuildActionsSheet(
     onDismiss: () -> Unit,
     onResetTalents: () -> Unit,
     modifier: Modifier = Modifier,
+    onShareBuild: (() -> Unit)? = null,
+    onRenameBuild: (() -> Unit)? = null,
 ) {
     AnimatedVisibility(
         visible = visible,
@@ -137,6 +146,21 @@ fun TalentBuildActionsSheet(
                         text = stringResource(Res.string.editor_build_actions_title),
                         style = OverlayCaptionStyle.copy(color = colors.textMuted),
                     )
+                    if (onRenameBuild != null) {
+                        NeutralSheetAction(text = stringResource(Res.string.builds_action_rename), onClick = onRenameBuild)
+                    }
+                    if (onShareBuild != null) {
+                        NeutralSheetAction(text = stringResource(Res.string.builds_action_share), onClick = onShareBuild)
+                    }
+                    if (onRenameBuild != null || onShareBuild != null) {
+                        // Reset stays separated from the neutral actions above it
+                        Spacer(
+                            Modifier
+                                .fillMaxWidth()
+                                .height(1.dp)
+                                .background(colors.borderDefault),
+                        )
+                    }
                     // UX/UI spec E.2: Reset talents sits separated, in the
                     // warning colour — recoverable, so no confirmation dialog.
                     val resetTalents = stringResource(Res.string.editor_reset_talents)
@@ -156,6 +180,19 @@ fun TalentBuildActionsSheet(
             }
         }
     }
+}
+
+/** A neutral ⋯ action (Rename, Share): primary text colour, full-width target. */
+@Composable
+private fun NeutralSheetAction(text: String, onClick: () -> Unit) {
+    BasicText(
+        text = text,
+        style = OverlayActionStyle.copy(color = talentForgeColors().textPrimary),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(role = Role.Button, onClickLabel = text, onClick = onClick)
+            .padding(vertical = TalentForgeSpacing.inline),
+    )
 }
 
 /** `null` when no reset feedback is showing. */

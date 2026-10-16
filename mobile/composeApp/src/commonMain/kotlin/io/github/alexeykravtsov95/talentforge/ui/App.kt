@@ -24,6 +24,9 @@ import io.github.alexeykravtsov95.talentforge.ui.library.BuildAutosaveCoordinato
 import io.github.alexeykravtsov95.talentforge.ui.library.platformBuildClock
 import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
 import io.github.alexeykravtsov95.talentforge.ui.newbuild.NewBuildScreen
+import io.github.alexeykravtsov95.talentforge.ui.share.BuildCodeSharing
+import io.github.alexeykravtsov95.talentforge.ui.share.ImportBuildScreen
+import io.github.alexeykravtsov95.talentforge.ui.share.rememberPlatformBuildCodeSharing
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
 import io.github.alexeykravtsov95.talentforge.ui.tree.TalentTreeBuildScreen
 import kotlinx.coroutines.launch
@@ -35,7 +38,10 @@ import kotlinx.coroutines.launch
  * - Home → New build → pick class: the tree REPLACES New build, so Back from
  *   a new draft goes to Home;
  * - Home → Continue / Recent → tree (push): Back → Home;
- * - Home → Builds → tree (push): Back → Builds.
+ * - Home → Builds → tree (push): Back → Builds;
+ * - Home or Builds → Import build (push, M5.SHARE.2): Back → where it was
+ *   opened; a confirmed import REPLACES the import screen with the new
+ *   record's editor, so Back from it returns to Home or Builds likewise.
  *
  * The editor opens by opaque local build id — never by passing mutable UI
  * state between screens. Navigation state is not the persistence model: the
@@ -50,17 +56,19 @@ sealed interface AppDestination {
 
     data object AllBuilds : AppDestination
 
+    data object ImportBuild : AppDestination
+
     data class Editor(
         val localId: String,
         val openedFrom: EditorOrigin,
     ) : AppDestination
 }
 
-enum class EditorOrigin { CreatedNew, FromHome, FromAllBuilds }
+enum class EditorOrigin { CreatedNew, FromHome, FromAllBuilds, Imported }
 
 /**
  * Save/restore of the back stack as plain strings (`home`, `new-build`,
- * `all-builds`, `editor␟localId␟origin`). A decoded stack must be non-empty
+ * `all-builds`, `import-build`, `editor␟localId␟origin`). A decoded stack must be non-empty
  * and rooted at Home — anything else (blank, malformed entries, a stack that
  * does not start with Home) fails closed to the initial Home-only stack:
  * navigation state is not user data, and a corrupt bundle must never restore
@@ -77,6 +85,7 @@ internal fun encodeDestination(destination: AppDestination): String = when (dest
     AppDestination.Home -> "home"
     AppDestination.NewBuild -> "new-build"
     AppDestination.AllBuilds -> "all-builds"
+    AppDestination.ImportBuild -> "import-build"
     is AppDestination.Editor ->
         "editor$DESTINATION_SEPARATOR${destination.localId}$DESTINATION_SEPARATOR${destination.openedFrom.name}"
 }
@@ -90,6 +99,7 @@ internal fun decodeDestinations(values: List<String>): List<AppDestination>? {
             "home" -> AppDestination.Home
             "new-build" -> AppDestination.NewBuild
             "all-builds" -> AppDestination.AllBuilds
+            "import-build" -> AppDestination.ImportBuild
             else -> {
                 val parts = value.split(DESTINATION_SEPARATOR)
                 val localId = parts.getOrNull(1)
@@ -128,6 +138,7 @@ fun App(
     storage: BuildLibraryStorage,
     clock: BuildClock = platformBuildClock(),
     ids: LocalBuildIdGenerator = RandomLocalBuildIdGenerator(clock),
+    sharing: BuildCodeSharing = rememberPlatformBuildCodeSharing(),
 ) {
     val environment = remember(storage, clock, ids) {
         val bundledAssets = ComposeResourceDatasetAssetSource()
@@ -194,6 +205,9 @@ fun App(
                 },
                 onAllBuilds = { destinations = destinations + AppDestination.AllBuilds },
                 onNewBuild = { destinations = destinations + AppDestination.NewBuild },
+                onImportBuild = { destinations = destinations + AppDestination.ImportBuild },
+                autosave = autosave,
+                sharing = sharing,
             )
 
             AppDestination.NewBuild -> NewBuildScreen(
@@ -217,6 +231,26 @@ fun App(
                     destinations = destinations + AppDestination.Editor(localId, EditorOrigin.FromAllBuilds)
                 },
                 onNewBuild = { destinations = destinations + AppDestination.NewBuild },
+                onImportBuild = { destinations = destinations + AppDestination.ImportBuild },
+                sharing = sharing,
+                autosave = autosave,
+            )
+
+            AppDestination.ImportBuild -> ImportBuildScreen(
+                repository = environment.repository,
+                datasets = environment.datasets,
+                sharing = sharing,
+                onBack = ::navigateUp,
+                onImported = { localId ->
+                    // storage has confirmed the record: the editor REPLACES the
+                    // import screen, so Back from it returns to Home or Builds.
+                    // Were the stack to have moved on meanwhile, the record
+                    // simply stays listed in All Builds.
+                    if (destinations.last() == AppDestination.ImportBuild) {
+                        destinations = destinations.dropLast(1) +
+                            AppDestination.Editor(localId, EditorOrigin.Imported)
+                    }
+                },
             )
 
             is AppDestination.Editor -> TalentTreeBuildScreen(
@@ -228,6 +262,7 @@ fun App(
                 icons = environment.icons,
                 descriptions = environment.descriptions,
                 localization = environment.localization,
+                sharing = sharing,
             )
         }
     }
