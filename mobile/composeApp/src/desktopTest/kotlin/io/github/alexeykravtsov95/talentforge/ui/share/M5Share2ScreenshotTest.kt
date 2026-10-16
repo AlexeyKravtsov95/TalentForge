@@ -15,8 +15,10 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
@@ -48,8 +50,10 @@ import org.junit.Rule
  * M5.SHARE.2 PR evidence, desktop-rendered from the REAL app (bundled data,
  * real engine, in-memory library): Home's import entry, the import screen,
  * the confirmation of a current and of an older client build, an error, the
- * editor's ⋯ sheet and share sheet, and All Builds' row sheet — in English
- * and Russian, portrait and landscape, 100 % and 200 % text.
+ * editor's ⋯ sheet (Rename / Share / Reset talents) and share sheet, All
+ * Builds' row sheet, Home's Recent-row actions, the rename dialog opened from
+ * the editor and the editor title after the rename — in English and Russian,
+ * portrait and landscape, 100 % and 200 % text.
  *
  * Skipped unless the caller opts in (evidence, not a regression assertion —
  * the assertions live in `BuildShareUiTest`, `BuildImportUiTest` and
@@ -89,20 +93,29 @@ class M5Share2ScreenshotTest {
         val field: String,
         val allBuilds: String,
         val rowActions: String,
+        val recentActions: String,
+        val rename: String,
+        val renameField: String,
+        val save: String,
+        val newName: String,
     )
 
     private val english = Copy(
         lang = "en", importBuild = "Import build", continueEditing = "Continue editing", continueImport = "Continue",
         cancel = "Cancel", damaged = "This code is damaged or incomplete. Copy it again from the original message.",
-        buildActions = "open build actions", shareBuild = "Share build", copyCode = "Copy code", share = "Share",
+        buildActions = "open build actions", shareBuild = "Share", copyCode = "Copy code", share = "Share",
         field = "build code", allBuilds = "All builds 2", rowActions = "build actions for Arms",
+        recentActions = "build actions for Mage build", rename = "Rename", renameField = "build name", save = "Save",
+        newName = "Arms · raid",
     )
 
     private val russian = Copy(
         lang = "ru", importBuild = "Импортировать билд", continueEditing = "Продолжить", continueImport = "Продолжить",
         cancel = "Отмена", damaged = "Код повреждён или неполон. Скопируйте его ещё раз из исходного сообщения.",
-        buildActions = "открыть действия с билдом", shareBuild = "Поделиться билдом", copyCode = "Копировать код",
+        buildActions = "открыть действия с билдом", shareBuild = "Поделиться", copyCode = "Копировать код",
         share = "Поделиться", field = "код билда", allBuilds = "Все билды 2", rowActions = "действия: Arms",
+        recentActions = "действия: Билд мага", rename = "Переименовать", renameField = "название билда",
+        save = "Сохранить", newName = "Оружие · рейд",
     )
 
     private fun copyOf(language: AppLanguage) = if (language == AppLanguage.RUSSIAN) russian else english
@@ -263,6 +276,47 @@ class M5Share2ScreenshotTest {
             tapText(copy.shareBuild)
             await(copy.copyCode)
             shoot("ru-320x568-font200-editor-share-sheet")
+        }
+    }
+
+    @Test
+    fun renameAndShareActionsFlow() {
+        for (language in AppLanguage.entries) {
+            onApp(language) { copy ->
+                tapDescription(copy.recentActions)
+                await(copy.rename)
+                shoot("${copy.lang}-393x852-home-recent-actions")
+            }
+            onApp(language) { copy ->
+                openBuildActions(copy)
+                tapText(copy.rename)
+                await(copy.save)
+                onNodeWithContentDescription(copy.renameField).performTextReplacement(copy.newName)
+                waitForIdle()
+                shoot("${copy.lang}-393x852-editor-rename-dialog")
+                tapText(copy.save)
+                await(copy.newName)
+                waitUntil(timeoutMillis = 20_000) { onAllNodesWithText(copy.save).fetchSemanticsNodes().isEmpty() }
+                shoot("${copy.lang}-393x852-editor-renamed-title")
+            }
+            onApp(language, widthDp = 915, heightDp = 412) { copy ->
+                openBuildActions(copy)
+                shoot("${copy.lang}-915x412-editor-build-actions")
+            }
+        }
+        onApp(AppLanguage.RUSSIAN, widthDp = 320, heightDp = 568, fontScale = 2f) { copy ->
+            waitUntil(timeoutMillis = 20_000) {
+                onAllNodesWithContentDescription(copy.recentActions).fetchSemanticsNodes().isNotEmpty()
+            }
+            onNodeWithContentDescription(copy.recentActions).performScrollTo()
+            shoot("ru-320x568-font200-home-recent-row")
+            tapDescription(copy.recentActions)
+            await(copy.rename)
+            shoot("ru-320x568-font200-home-recent-actions")
+        }
+        onApp(AppLanguage.RUSSIAN, widthDp = 320, heightDp = 568, fontScale = 2f) { copy ->
+            openBuildActions(copy)
+            shoot("ru-320x568-font200-editor-build-actions")
         }
     }
 
