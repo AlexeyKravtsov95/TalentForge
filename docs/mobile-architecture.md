@@ -1703,12 +1703,13 @@ payload or list order changes; a vanished record (`UnknownRecord`) or a read fai
 retryable notice.
 
 **Rename and Share everywhere.** Home's *Recent* rows (a 48 dp ⋯ beside each row: Rename ·
-Share), the editor's ⋯ (Rename · Share · Reset talents — Reset keeps its separated warning
-styling) and All Builds (Rename · Duplicate · Share · Delete) use ONE
-`BuildActionsPresenter` (`ui/builds`): the shared `RenameBuildDialog` (current name
-pre-filled, empty for a Draft, `MAX_BUILD_NAME_LENGTH` from the repository), the persisted
-share read and one single-flight guard (repeated taps never write twice; All Builds runs
-Duplicate and Delete through it too). The editor's Share stays the in-memory export above.
+Share · Delete), the editor's ⋯ (Rename · Share · Reset talents — Reset keeps its separated
+warning styling; the editor never offers Delete) and All Builds (Rename · Duplicate · Share ·
+Delete) use ONE `BuildActionsPresenter` (`ui/builds`): the shared `RenameBuildDialog`
+(current name pre-filled, empty for a Draft, `MAX_BUILD_NAME_LENGTH` from the repository),
+the shared `DeleteBuildDialog` (separated danger action, confirmed first, a failed delete
+stays open and retryable), the persisted share read and one single-flight guard (repeated
+taps never write twice; All Builds runs Duplicate through it too). The editor's Share stays the in-memory export above.
 Every repository operation is an unlocked read–modify–write of the whole library, so the
 rename goes through `BuildAutosaveCoordinator.rename`: it first flushes the saves submitted
 before it, then writes under the same lock as the autosave consumer — neither change can
@@ -1773,7 +1774,8 @@ the name, refused after a failed save, another build's failure does not block, m
 typed failures), `BuildActionsUiTest` (Recent row vs ⋯, rename from Recent / the editor / All
 Builds with the title updated in place and the order kept, pending and failed autosave,
 failed write + retry, double tap, Share from Recent and right after Reset, vanished record,
-RU), `BuildActionsLayoutUiTest` (the ⋯ target, sheets, dialog and editor menu at 320×568,
+delete from Recent with Cancel / Back / double tap / failure + retry, no Delete in the
+editor, RU), `BuildActionsLayoutUiTest` (the ⋯ target, sheets, dialog and editor menu at 320×568,
 393×852, 640×360, 915×412, 1280×800 × 100/200 % × EN/RU). Screenshots:
 `M5Share2ScreenshotTest` (`-Dtalentforge.m5share2.screenshots=<dir>`), committed under
 `docs/screenshots/m5-share-2/`.

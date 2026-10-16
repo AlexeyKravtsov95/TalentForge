@@ -123,10 +123,11 @@ import org.jetbrains.compose.resources.stringResource
  * pinned New build in every state — an empty library included — so a code
  * received from another player can always be brought in. Every Recent row
  * ends in its own 48 dp `⋯` button (tapping the row still opens the build,
- * tapping `⋯` never does) whose sheet offers Rename and Share through the
- * app's one [BuildActionsPresenter] — the same dialog, rules and export as
- * All Builds and the editor. A rename reloads Home from storage; it does not
- * reorder anything (a rename never touches `updatedAt`).
+ * tapping `⋯` never does) whose sheet offers Rename, Share and Delete through
+ * the app's one [BuildActionsPresenter] — the same dialogs, rules and export
+ * as All Builds (the editor has Rename and Share, never Delete). Delete is
+ * separated, in the danger colour and confirmed first. A rename or delete
+ * reloads Home from storage; a rename never reorders (no `updatedAt` change).
  */
 @Composable
 fun HomeScreen(
@@ -160,6 +161,7 @@ fun HomeScreen(
         repository = repository,
         onRenamed = { reloadToken += 1 },
         onRecordMissing = { reloadToken += 1 },
+        onDeleted = { reloadToken += 1 },
     )
     // Back closes the open sheet first (never while its operation runs)
     PlatformBackHandler(enabled = actionsFor != null) { if (!actions.busy) actionsFor = null }
@@ -283,7 +285,10 @@ fun HomeScreen(
                 },
                 onDuplicate = null,
                 onShare = { actions.sharePersisted(sheetCard.record.localId) { actionsFor = null } },
-                onDelete = null,
+                onDelete = {
+                    actionsFor = null
+                    actions.startDelete(sheetCard.record.localId)
+                },
             )
         }
         BuildActionsOverlays(

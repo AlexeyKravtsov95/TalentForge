@@ -98,6 +98,7 @@ class M5Share2ScreenshotTest {
         val renameField: String,
         val save: String,
         val newName: String,
+        val delete: String,
     )
 
     private val english = Copy(
@@ -106,7 +107,7 @@ class M5Share2ScreenshotTest {
         buildActions = "open build actions", shareBuild = "Share", copyCode = "Copy code", share = "Share",
         field = "build code", allBuilds = "All builds 2", rowActions = "build actions for Arms",
         recentActions = "build actions for Mage build", rename = "Rename", renameField = "build name", save = "Save",
-        newName = "Arms · raid",
+        newName = "Arms · raid", delete = "Delete",
     )
 
     private val russian = Copy(
@@ -115,7 +116,7 @@ class M5Share2ScreenshotTest {
         buildActions = "открыть действия с билдом", shareBuild = "Поделиться", copyCode = "Копировать код",
         share = "Поделиться", field = "код билда", allBuilds = "Все билды 2", rowActions = "действия: Arms",
         recentActions = "действия: Билд мага", rename = "Переименовать", renameField = "название билда",
-        save = "Сохранить", newName = "Оружие · рейд",
+        save = "Сохранить", newName = "Оружие · рейд", delete = "Удалить",
     )
 
     private fun copyOf(language: AppLanguage) = if (language == AppLanguage.RUSSIAN) russian else english
@@ -286,6 +287,9 @@ class M5Share2ScreenshotTest {
                 tapDescription(copy.recentActions)
                 await(copy.rename)
                 shoot("${copy.lang}-393x852-home-recent-actions")
+                tapText(copy.delete)
+                await(copy.cancel)
+                shoot("${copy.lang}-393x852-home-delete-confirm")
             }
             onApp(language) { copy ->
                 openBuildActions(copy)

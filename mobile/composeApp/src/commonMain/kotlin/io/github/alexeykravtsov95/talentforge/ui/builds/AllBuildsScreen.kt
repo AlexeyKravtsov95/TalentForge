@@ -95,8 +95,6 @@ private sealed interface ManagementOverlay {
     data object Hidden : ManagementOverlay
 
     data class Actions(val localId: String) : ManagementOverlay
-
-    data class DeleteConfirm(val localId: String) : ManagementOverlay
 }
 
 /** The screen-level notice strip: duplicate success (auto-dismisses) or retryable duplicate failure. */
@@ -110,8 +108,9 @@ private sealed interface ManagementNotice {
 }
 
 /**
- * All Builds — the Saved Builds list (spec D.1) and, since M5.2a, the ONE
- * place builds are managed: every row ends in a `⋯` button opening the
+ * All Builds — the Saved Builds list (spec D.1) and, since M5.2a, the full
+ * management surface (M5.SHARE.2: Home's Recent rows offer Rename, Share and
+ * Delete through the same presenter): every row ends in a `⋯` button opening the
  * Rename / Duplicate / Delete sheet. Tap on the row still opens the build;
  * tap on `⋯` never does. Management operations run off the main thread, one
  * at a time (repeated presses are ignored while one is in flight), and every
@@ -121,8 +120,9 @@ private sealed interface ManagementNotice {
  * retryable notice. The list count, order and empty state all come from the
  * reload.
  *
- * M5.SHARE.2: Rename and `Share` in the row sheet go through the app's one
- * [BuildActionsPresenter] (also used by Home and the editor): Share reads the
+ * M5.SHARE.2: Rename, `Share` and Delete in the row sheet go through the
+ * app's one [BuildActionsPresenter] (also used by Home's Recent rows; the
+ * editor uses its Rename only — never Delete): Share reads the
  * LATEST persisted build of exactly that `localId` at the tap (`load`, never
  * `open`, so no timestamp, name or order changes) and shows its code in the
  * export sheet; a read failure or a vanished record is a retryable notice.
@@ -150,7 +150,6 @@ fun AllBuildsScreen(
     }
 
     var overlay by remember { mutableStateOf<ManagementOverlay>(ManagementOverlay.Hidden) }
-    var overlayError by remember { mutableStateOf(false) }
     var notice by remember { mutableStateOf<ManagementNotice>(ManagementNotice.None) }
     var noticeEvent by remember { mutableStateOf(0) }
     val actions = rememberBuildActionsPresenter(
@@ -158,6 +157,7 @@ fun AllBuildsScreen(
         repository = repository,
         onRenamed = { reloadToken += 1 },
         onRecordMissing = { reloadToken += 1 },
+        onDeleted = { reloadToken += 1 },
     )
     val operationInFlight = actions.busy
 
@@ -212,19 +212,6 @@ fun AllBuildsScreen(
     // the retryable notice is the visible answer
     fun share(localId: String) {
         actions.sharePersisted(localId) { overlay = ManagementOverlay.Hidden }
-    }
-
-    fun delete(localId: String) {
-        launchManagement {
-            when (withContext(Dispatchers.Default) { repository.deleteBuild(localId) }) {
-                is BuildLibraryOutcome.Loaded -> {
-                    overlay = ManagementOverlay.Hidden
-                    overlayError = false
-                    reloadToken += 1
-                }
-                is BuildLibraryOutcome.Failed -> overlayError = true
-            }
-        }
     }
 
     val colors = talentForgeColors()
@@ -371,22 +358,9 @@ fun AllBuildsScreen(
                         onDuplicate = { duplicate(current.localId) },
                         onShare = { share(current.localId) },
                         onDelete = {
-                            overlayError = false
-                            overlay = ManagementOverlay.DeleteConfirm(current.localId)
+                            overlay = ManagementOverlay.Hidden
+                            actions.startDelete(current.localId)
                         },
-                    )
-                }
-            }
-
-            is ManagementOverlay.DeleteConfirm -> {
-                val card = readyCards?.firstOrNull { it.record.localId == current.localId }
-                if (card != null) {
-                    DeleteBuildDialog(
-                        buildTitle = buildCardTitle(card),
-                        busy = operationInFlight,
-                        error = overlayError,
-                        onDelete = { delete(current.localId) },
-                        onCancel = { overlay = ManagementOverlay.Hidden },
                     )
                 }
             }

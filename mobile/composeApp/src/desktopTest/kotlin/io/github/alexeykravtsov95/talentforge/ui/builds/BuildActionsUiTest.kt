@@ -58,7 +58,7 @@ import org.junit.Rule
  * writes can be held or failed:
  *
  * - a Recent row opens the editor, its ⋯ never does, and its sheet offers
- *   exactly Rename and Share;
+ *   exactly Rename, Share and a confirmed Delete (the editor never offers Delete);
  * - a rename is the same shared dialog and rule everywhere, metadata only
  *   (no allocation, `updatedAt` or order change), updates the editor title in
  *   place without restarting the session, waits for a pending autosave, is
@@ -230,7 +230,7 @@ class BuildActionsUiTest {
         openRecentActions("Feral")
         composeRule.waitForIdle()
         assertTrue(has("Share"), "the Recent sheet offers Share")
-        assertTrue(!has("Duplicate") && !has("Delete"), "the Recent sheet holds exactly Rename and Share")
+        assertTrue(has("Delete") && !has("Duplicate"), "the Recent sheet holds exactly Rename, Share and Delete")
         assertTrue(!hasDescription("open build actions"), "⋯ must never open the editor")
         assertEquals(writes, storage.writes, "opening the sheet writes nothing")
 
@@ -347,6 +347,64 @@ class BuildActionsUiTest {
         assertEquals(1, persisted().size)
     }
 
+    @Test
+    fun deletingFromRecentConfirmsFirstAndRemovesOnlyThatBuild() {
+        val (older, newer) = seedTwo()
+        composeApp()
+        openRecentActions("Feral")
+        assertTrue(top("Share") < top("Delete"), "Delete comes last, separated")
+        val writes = storage.writes
+
+        composeRule.onNodeWithText("Delete").performClick()
+        awaitText("Delete \"Feral\"?")
+        composeRule.onNodeWithText("Cancel").performClick()
+        awaitGone("Delete \"Feral\"?")
+        assertEquals(writes, storage.writes, "Cancel deletes nothing")
+        assertEquals(2, persisted().size)
+
+        openRecentActions("Feral")
+        composeRule.onNodeWithText("Delete").performClick()
+        awaitText("Delete \"Feral\"?")
+        assertTrue(systemBack(), "Back closes the confirmation first")
+        awaitGone("Delete \"Feral\"?")
+        assertEquals(2, persisted().size)
+
+        openRecentActions("Feral")
+        composeRule.onNodeWithText("Delete").performClick()
+        awaitText("Delete \"Feral\"?")
+        storage.hold()
+        composeRule.onNodeWithText("Delete").performClick()
+        composeRule.onNodeWithText("Delete").performClick() // ignored while the delete is written
+        storage.release()
+        awaitGone("Delete \"Feral\"?")
+        awaitGone("Feral")
+
+        assertEquals(listOf(newer), persisted(), "only the selected build is gone, the other untouched")
+        assertEquals(writes + 1, storage.writes, "one delete, one write")
+        assertTrue(has("Frost") && has("CONTINUE"), "still on Home with the remaining build")
+        assertTrue(older.localId !in persisted().map { it.localId })
+    }
+
+    @Test
+    fun aFailedDeleteKeepsTheConfirmationAndTheRetrySucceeds() {
+        val (older, _) = seedTwo()
+        composeApp()
+        openRecentActions("Feral")
+        composeRule.onNodeWithText("Delete").performClick()
+        awaitText("Delete \"Feral\"?")
+
+        storage.failWrites = true
+        composeRule.onNodeWithText("Delete").performClick()
+        awaitText("Couldn't delete the build")
+        assertEquals(2, persisted().size)
+
+        storage.failWrites = false
+        composeRule.onNodeWithText("Delete").performClick()
+        awaitGone("Delete \"Feral\"?")
+        awaitGone("Feral")
+        assertTrue(older.localId !in persisted().map { it.localId })
+    }
+
     // -------------------------------------------------------------------- editor
 
     @Test
@@ -358,6 +416,7 @@ class BuildActionsUiTest {
 
         assertTrue(top("Rename") < top("Share"))
         assertTrue(top("Share") < top("Reset talents"))
+        assertTrue(!has("Delete"), "the editor never offers Delete")
     }
 
     @Test
@@ -544,6 +603,7 @@ class BuildActionsUiTest {
         composeRule.onNodeWithContentDescription("действия: Feral").performClick()
         awaitText("Переименовать")
         assertTrue(has("Поделиться"))
+        assertTrue(has("Удалить"))
         composeRule.onNodeWithText("Переименовать").performClick()
         awaitText("Новое название")
         composeRule.onNodeWithContentDescription("название билда").assertExists()
@@ -557,5 +617,6 @@ class BuildActionsUiTest {
         assertTrue(has("Переименовать") && has("Поделиться"))
         assertTrue(top("Переименовать") < top("Поделиться"))
         assertTrue(top("Поделиться") < top("Сбросить таланты"))
+        assertTrue(!has("Удалить"), "the editor never offers Delete")
     }
 }

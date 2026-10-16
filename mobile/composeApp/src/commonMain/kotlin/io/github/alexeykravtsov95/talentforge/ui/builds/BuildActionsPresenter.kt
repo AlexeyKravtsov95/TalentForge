@@ -13,6 +13,7 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.bui
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_rename_pending_save_failed
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.share_error_build_missing
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryError
+import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRecord
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildAutosaveCoordinator
@@ -66,9 +67,14 @@ data class ShareFailureNotice(val localId: String, val failure: BuildExportFailu
  *   so nothing is written) and shows the code in [BuildShareSheet]. The editor
  *   shares its in-memory build itself and does not use this path.
  *
+ * - **Delete** (Home's Recent rows and All Builds — deliberately NOT the
+ *   editor, which only offers the recoverable Reset) asks for confirmation in
+ *   the shared [DeleteBuildDialog] and calls `LocalBuildRepository.deleteBuild`;
+ *   only a storage-confirmed delete closes it and reports [onDeleted].
+ *
  * One operation at a time: [launchExclusive] ignores taps while one runs
- * ([busy]), so double taps never rename or read twice; screens with further
- * actions (All Builds' duplicate and delete) run them through it too.
+ * ([busy]), so double taps never rename, delete or read twice; All Builds'
+ * Duplicate runs through it too.
  */
 @Stable
 class BuildActionsPresenter internal constructor(
@@ -77,6 +83,7 @@ class BuildActionsPresenter internal constructor(
     private val scope: CoroutineScope,
     private val onRenamed: (LocalBuildRecord) -> Unit,
     private val onRecordMissing: () -> Unit,
+    private val onDeleted: () -> Unit,
 ) {
 
     var busy by mutableStateOf(false)
@@ -95,6 +102,13 @@ class BuildActionsPresenter internal constructor(
         private set
 
     var shareFailure by mutableStateOf<ShareFailureNotice?>(null)
+        private set
+
+    /** The record whose delete confirmation is open (Home Recent and All Builds only — never the editor). */
+    var deleting by mutableStateOf<String?>(null)
+        private set
+
+    var deleteFailed by mutableStateOf(false)
         private set
 
     /** Runs [action] unless another operation is in flight; `false` when the tap was ignored. */
@@ -175,6 +189,41 @@ class BuildActionsPresenter internal constructor(
     fun closeShare() {
         shared = null
     }
+
+    /** Opens the irreversible-delete confirmation for [localId]. */
+    fun startDelete(localId: String) {
+        if (busy) return
+        deleteFailed = false
+        deleting = localId
+    }
+
+    fun cancelDelete() {
+        if (busy) return
+        deleting = null
+        deleteFailed = false
+    }
+
+    /**
+     * Deletes the confirmed record. Only a storage-confirmed delete closes the
+     * dialog and reports [onDeleted]; a failure keeps it open with a retryable
+     * line (a vanished record also reloads the list).
+     */
+    fun confirmDelete() {
+        val localId = deleting ?: return
+        launchExclusive {
+            when (val outcome = withContext(Dispatchers.Default) { repository.deleteBuild(localId) }) {
+                is BuildLibraryOutcome.Loaded -> {
+                    deleting = null
+                    deleteFailed = false
+                    onDeleted()
+                }
+                is BuildLibraryOutcome.Failed -> {
+                    deleteFailed = true
+                    if (outcome.error is BuildLibraryError.UnknownRecord) onRecordMissing()
+                }
+            }
+        }
+    }
 }
 
 private fun BuildExportFailure.isMissingRecord(): Boolean =
@@ -191,10 +240,12 @@ fun rememberBuildActionsPresenter(
     repository: LocalBuildRepository,
     onRenamed: (LocalBuildRecord) -> Unit,
     onRecordMissing: () -> Unit = {},
+    onDeleted: () -> Unit = {},
 ): BuildActionsPresenter {
     val scope = rememberCoroutineScope()
     val renamed by rememberUpdatedState(onRenamed)
     val missing by rememberUpdatedState(onRecordMissing)
+    val deleted by rememberUpdatedState(onDeleted)
     return remember(autosave, repository, scope) {
         BuildActionsPresenter(
             autosave = autosave,
@@ -202,14 +253,16 @@ fun rememberBuildActionsPresenter(
             scope = scope,
             onRenamed = { renamed(it) },
             onRecordMissing = { missing() },
+            onDeleted = { deleted() },
         )
     }
 }
 
 /**
- * The presenter's modal surfaces: the rename dialog and the persisted-build
- * share sheet, with system Back closing the rename dialog first (never while
- * a rename is being written). [titleOf] names the shared build on the sheet.
+ * The presenter's modal surfaces: the rename dialog, the delete confirmation
+ * and the persisted-build share sheet, with system Back closing a dialog
+ * first (never while its write runs). [titleOf] names the build on the
+ * delete dialog and the share sheet.
  */
 @Composable
 fun BuildActionsOverlays(
@@ -230,6 +283,17 @@ fun BuildActionsOverlays(
             errorText = presenter.renameProblem?.text(),
             onSave = presenter::confirmRename,
             onCancel = presenter::cancelRename,
+        )
+    }
+    val deleting = presenter.deleting
+    if (deleting != null) {
+        PlatformBackHandler(enabled = true) { presenter.cancelDelete() }
+        DeleteBuildDialog(
+            buildTitle = titleOf(deleting),
+            busy = presenter.busy,
+            error = presenter.deleteFailed,
+            onDelete = presenter::confirmDelete,
+            onCancel = presenter::cancelDelete,
         )
     }
     val code = presenter.shared

@@ -359,8 +359,9 @@ and on Kotlin/Native (iOS).
   that record with `LocalBuildRepository.load` (not `open`, which would touch
   `lastOpenedAt`): no timestamp, name or order changes.
 - **Rename next to Share**: the same three places offer *Rename* (Home Recent
-  ⋯: Rename · Share; editor ⋯: Rename · Share · Reset talents; All Builds ⋯:
-  Rename · Duplicate · Share · Delete). One shared dialog and one write path
+  ⋯: Rename · Share · Delete; editor ⋯: Rename · Share · Reset talents — never
+  Delete; All Builds ⋯: Rename · Duplicate · Share · Delete). Delete is always
+  confirmed first (the same dialog in Home and All Builds). One shared dialog and one write path
   (`BuildAutosaveCoordinator.rename` → `LocalBuildRepository.renameBuild`):
   the repository's trimming and 60-character rule, metadata only (no
   allocation, `updatedAt` or order change), serialized with autosave, and

@@ -44,7 +44,8 @@ import org.junit.Rule
  * at the supported extremes — 320 dp portrait, landscape phones and a tablet,
  * at 100 % and 200 % text, in English and Russian: the Recent row's ⋯ is a
  * full 48 dp target inside the window next to a still-visible build name, and
- * every action of the Recent sheet, the rename dialog and the editor's ⋯
+ * every action of the Recent sheet (Rename / Share / Delete), the delete
+ * confirmation, the rename dialog and the editor's ⋯
  * sheet (Rename / Share / Reset talents) is fully inside the window.
  */
 @OptIn(ExperimentalTestApi::class)
@@ -58,6 +59,7 @@ class BuildActionsLayoutUiTest {
         val rename: String,
         val share: String,
         val reset: String,
+        val delete: String,
         val save: String,
         val cancel: String,
         val field: String,
@@ -66,12 +68,12 @@ class BuildActionsLayoutUiTest {
 
     private val english = Copy(
         rowActions = "build actions for Arms", rename = "Rename", share = "Share", reset = "Reset talents",
-        save = "Save", cancel = "Cancel", field = "build name", buildActions = "open build actions",
+        delete = "Delete", save = "Save", cancel = "Cancel", field = "build name", buildActions = "open build actions",
     )
 
     private val russian = Copy(
         rowActions = "действия: Arms", rename = "Переименовать", share = "Поделиться", reset = "Сбросить таланты",
-        save = "Сохранить", cancel = "Отмена", field = "название билда", buildActions = "открыть действия с билдом",
+        delete = "Удалить", save = "Сохранить", cancel = "Отмена", field = "название билда", buildActions = "открыть действия с билдом",
     )
 
     private fun ComposeUiTest.await(text: String) =
@@ -146,6 +148,17 @@ class BuildActionsLayoutUiTest {
             await(copy.rename)
             assertInsideWindow(onNodeWithText(copy.rename), "$where sheet Rename", widthDp, heightDp)
             assertInsideWindow(onNodeWithText(copy.share), "$where sheet Share", widthDp, heightDp)
+            assertInsideWindow(onNodeWithText(copy.delete), "$where sheet Delete", widthDp, heightDp)
+
+            // the shared delete confirmation
+            tap(onNodeWithText(copy.delete))
+            await(copy.cancel)
+            assertInsideWindow(onNodeWithText(copy.delete), "$where confirm Delete", widthDp, heightDp)
+            assertInsideWindow(onNodeWithText(copy.cancel), "$where confirm Cancel", widthDp, heightDp)
+            tap(onNodeWithText(copy.cancel))
+            awaitDescription(copy.rowActions)
+            tap(onNodeWithContentDescription(copy.rowActions))
+            await(copy.rename)
 
             // the shared rename dialog
             tap(onNodeWithText(copy.rename))
