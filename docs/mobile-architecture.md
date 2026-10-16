@@ -1672,11 +1672,15 @@ Android and iOS, offline, with no new dependency. All logic is common Kotlin in
 `composeApp/ui/share`; the platforms contribute one narrow adapter each.
 
 ```
-Editor ⋯ "Share build" ──▶ TalentTreeScreen.onShareBuild(editing.current)   (sync, at the tap)
+Editor ⋯ "Share"        ──▶ TalentTreeScreen.onShareBuild(editing.current)   (sync, at the tap)
                            └▶ exportEditorState(state, identity = record.build)
                                 buildFileOf(…) → BuildShareCode.encode → BuildShareSheet
-All Builds ⋯ "Share"   ──▶ exportPersistedBuild(repository, localId)
-                                repository.load() (never open) → encode → BuildShareSheet
+Home Recent ⋯ "Share"  ┐
+All Builds ⋯ "Share"   ┴─▶ BuildActionsPresenter.sharePersisted(localId)
+                           └▶ exportPersistedBuild: repository.load() (never open) → encode → BuildShareSheet
+Home Recent / editor / All Builds ⋯ "Rename"
+                       ──▶ BuildActionsPresenter → RenameBuildDialog → BuildAutosaveCoordinator.rename
+                           └▶ flush() pending saves → writeLock { repository.renameBuild } (metadata only)
 BuildShareSheet: Share → BuildCodeSharing.shareText(code) · Copy code → copyToClipboard(code)
 
 Home / All Builds "Import build" ──▶ AppDestination.ImportBuild → ImportBuildScreen
@@ -1697,6 +1701,22 @@ All Builds exports the latest *persisted* build of exactly the chosen `localId` 
 `LocalBuildRepository.load` — `open` would advance `lastOpenedAt` — so no timestamp, name,
 payload or list order changes; a vanished record (`UnknownRecord`) or a read failure is a
 retryable notice.
+
+**Rename and Share everywhere.** Home's *Recent* rows (a 48 dp ⋯ beside each row: Rename ·
+Share), the editor's ⋯ (Rename · Share · Reset talents — Reset keeps its separated warning
+styling) and All Builds (Rename · Duplicate · Share · Delete) use ONE
+`BuildActionsPresenter` (`ui/builds`): the shared `RenameBuildDialog` (current name
+pre-filled, empty for a Draft, `MAX_BUILD_NAME_LENGTH` from the repository), the persisted
+share read and one single-flight guard (repeated taps never write twice; All Builds runs
+Duplicate and Delete through it too). The editor's Share stays the in-memory export above.
+Every repository operation is an unlocked read–modify–write of the whole library, so the
+rename goes through `BuildAutosaveCoordinator.rename`: it first flushes the saves submitted
+before it, then writes under the same lock as the autosave consumer — neither change can
+overwrite the other — and it is refused (`BuildRenameOutcome.PendingSaveFailed`, a dialog
+line) while the newest save of that build has failed, so the editor keeps its state and its
+Retry notice instead of proceeding. A storage-confirmed rename only updates the editor title
+(the session — allocation, history, selection, cameras — is never recreated) and reloads Home
+or All Builds; `updatedAt` is untouched, so nothing reorders.
 
 **Platform adapters** (`BuildCodeSharing`, `rememberPlatformBuildCodeSharing()`
 expect/actual; injected into `App(sharing = …)`, recorded by tests):
@@ -1722,8 +1742,9 @@ preview with a retryable error; success is reported only with the stored record'
 import keeps the code's exact client build (an older build opens on its own dataset), never
 merges with or overwrites an existing build, and the library schema is unchanged.
 
-**Copy.** EN/RU resources only (`share_*`, `import_*`, `editor_share_build`,
-`builds_action_share`). `importMessageOf` maps every typed failure to one category: empty,
+**Copy.** EN/RU resources only (`share_*`, `import_*`, `builds_action_share`,
+`builds_rename_pending_save_failed`; the ⋯ menus reuse `builds_action_rename` /
+`builds_action_share`, the row ⋯ reuses `builds_row_actions_*`). `importMessageOf` maps every typed failure to one category: empty,
 too long, not a code, unsupported version (`TF2…`, schema ≠ 1), damaged (checksum,
 truncation, malformed body), unshipped client build (named), unavailable class, invalid
 allocation (tree/engine issues), dataset problem; plus storage write, clipboard and native
@@ -1746,7 +1767,14 @@ latest-persisted export without writes, vanished record, RU), `BuildImportUiTest
 All Builds entries incl. the empty library, preview copy, one record, origin-correct Back,
 Cancel/system Back without writes, error messages, double tap, failed write + retry, RU,
 navigation saver), `ShareLayoutUiTest` (320×568, 393×852, 640×360, 915×412, 1280×800,
-800×1280 × 100/200 % × EN/RU: every primary action fully inside the window). Screenshots:
+800×1280 × 100/200 % × EN/RU: every primary action fully inside the window),
+`BuildRenameCoordinationTest` (rename waits for a pending save, a save during a rename keeps
+the name, refused after a failed save, another build's failure does not block, metadata only,
+typed failures), `BuildActionsUiTest` (Recent row vs ⋯, rename from Recent / the editor / All
+Builds with the title updated in place and the order kept, pending and failed autosave,
+failed write + retry, double tap, Share from Recent and right after Reset, vanished record,
+RU), `BuildActionsLayoutUiTest` (the ⋯ target, sheets, dialog and editor menu at 320×568,
+393×852, 640×360, 915×412, 1280×800 × 100/200 % × EN/RU). Screenshots:
 `M5Share2ScreenshotTest` (`-Dtalentforge.m5share2.screenshots=<dir>`), committed under
 `docs/screenshots/m5-share-2/`.
 

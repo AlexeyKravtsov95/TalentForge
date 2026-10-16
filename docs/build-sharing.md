@@ -349,14 +349,23 @@ and on Kotlin/Native (iOS).
 
 ## 9. UI integration (M5.SHARE.2)
 
-- **Export from the editor**: ⋯ → *Share build* encodes the editing session's
+- **Export from the editor**: ⋯ → *Share* encodes the editing session's
   current in-memory build (`buildFileOf` over the session's `BuildState`, bound
   to the record's game / client build / class) at the moment of the tap —
   never the persisted record, which a pending or failed autosave may lag
   behind, and never a cached code. Sharing changes no history and saves nothing.
-- **Export from All Builds**: the row ⋯ → *Share* reads the latest persisted
-  build of exactly that record with `LocalBuildRepository.load` (not `open`,
-  which would touch `lastOpenedAt`): no timestamp, name or order changes.
+- **Export from All Builds and Home**: the All Builds row ⋯ → *Share* and the
+  Home *Recent* row ⋯ → *Share* read the latest persisted build of exactly
+  that record with `LocalBuildRepository.load` (not `open`, which would touch
+  `lastOpenedAt`): no timestamp, name or order changes.
+- **Rename next to Share**: the same three places offer *Rename* (Home Recent
+  ⋯: Rename · Share; editor ⋯: Rename · Share · Reset talents; All Builds ⋯:
+  Rename · Duplicate · Share · Delete). One shared dialog and one write path
+  (`BuildAutosaveCoordinator.rename` → `LocalBuildRepository.renameBuild`):
+  the repository's trimming and 60-character rule, metadata only (no
+  allocation, `updatedAt` or order change), serialized with autosave, and
+  refused while the build's newest talent change failed to save. Renaming
+  does not touch the share code: a code never carries a name.
 - **Export surface**: the exact code (monospace, selectable), *Share* (Android
   `ACTION_SEND` chooser, iOS `UIActivityViewController`, desktop: copies) and
   *Copy code*. Only the canonical code is ever handed to the platform — no
