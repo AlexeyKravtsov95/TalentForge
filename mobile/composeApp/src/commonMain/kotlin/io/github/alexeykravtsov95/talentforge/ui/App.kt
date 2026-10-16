@@ -206,6 +206,8 @@ fun App(
                 onAllBuilds = { destinations = destinations + AppDestination.AllBuilds },
                 onNewBuild = { destinations = destinations + AppDestination.NewBuild },
                 onImportBuild = { destinations = destinations + AppDestination.ImportBuild },
+                autosave = autosave,
+                sharing = sharing,
             )
 
             AppDestination.NewBuild -> NewBuildScreen(
@@ -231,6 +233,7 @@ fun App(
                 onNewBuild = { destinations = destinations + AppDestination.NewBuild },
                 onImportBuild = { destinations = destinations + AppDestination.ImportBuild },
                 sharing = sharing,
+                autosave = autosave,
             )
 
             AppDestination.ImportBuild -> ImportBuildScreen(

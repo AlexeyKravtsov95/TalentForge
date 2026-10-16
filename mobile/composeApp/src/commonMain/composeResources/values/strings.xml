@@ -94,6 +94,7 @@
     <string name="builds_rename_title">Rename build</string>
     <string name="builds_rename_field_description">build name</string>
     <string name="builds_rename_failed">Couldn't rename the build</string>
+    <string name="builds_rename_pending_save_failed">Your latest talent changes aren't saved yet. Close this, tap Retry to save them, then rename.</string>
     <string name="builds_delete_title">Delete "%1$s"?</string>
     <string name="builds_delete_body">This permanently deletes the build from this device and cannot be undone.</string>
     <string name="builds_delete_failed">Couldn't delete the build</string>
@@ -240,7 +241,6 @@
     <!-- ================================================================ -->
 
     <!-- entry points -->
-    <string name="editor_share_build">Share build</string>
     <string name="builds_action_share">Share</string>
     <string name="import_build">Import build</string>
     <string name="import_build_action">import a build from a code</string>

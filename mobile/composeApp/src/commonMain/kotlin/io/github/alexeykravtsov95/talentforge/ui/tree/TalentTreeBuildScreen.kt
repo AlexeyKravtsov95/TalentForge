@@ -52,6 +52,8 @@ import io.github.alexeykravtsov95.talentforge.ui.assets.TalentDescriptionsLoader
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentIconsLoader
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentLocalizationLoader
 import androidx.compose.runtime.collectAsState
+import io.github.alexeykravtsov95.talentforge.ui.builds.BuildActionsOverlays
+import io.github.alexeykravtsov95.talentforge.ui.builds.rememberBuildActionsPresenter
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildAutosaveCoordinator
 import io.github.alexeykravtsov95.talentforge.ui.library.EditorFailure
 import io.github.alexeykravtsov95.talentforge.ui.library.EditorLoad
@@ -96,6 +98,15 @@ import org.jetbrains.compose.resources.stringResource
  * autosave neither blocks nor changes the shared code, and the save-error
  * notice stays as it was. Each Share re-encodes; no code is cached across
  * edits (the sheet is modal, so the build cannot change while it is open).
+ *
+ * M5.SHARE.2 rename: `Rename` in the ⋯ sheet opens the app's shared rename
+ * dialog (the persisted name pre-filled, empty for a Draft) through the one
+ * [io.github.alexeykravtsov95.talentforge.ui.builds.BuildActionsPresenter].
+ * The write is [BuildAutosaveCoordinator.rename]: it waits for every pending
+ * autosave, never runs concurrently with one, and is refused while the newest
+ * save of this build has failed (the dialog says so; the save notice keeps its
+ * Retry). Only a storage-confirmed rename changes the header title — the
+ * editing session itself is never recreated.
  */
 @Composable
 fun TalentTreeBuildScreen(
@@ -134,6 +145,7 @@ fun TalentTreeBuildScreen(
 
         is EditorLoad.Ready -> ReadyBuildEditor(
             session = current.session,
+            repository = repository,
             autosave = autosave,
             onBack = onBack,
             sharing = sharing,
@@ -144,6 +156,7 @@ fun TalentTreeBuildScreen(
 @Composable
 private fun ReadyBuildEditor(
     session: io.github.alexeykravtsov95.talentforge.ui.library.EditorSession,
+    repository: LocalBuildRepository,
     autosave: BuildAutosaveCoordinator,
     onBack: () -> Unit,
     sharing: BuildCodeSharing?,
@@ -154,9 +167,18 @@ private fun ReadyBuildEditor(
     // session restores the same build, and the sheet is modal)
     var shareCode by rememberSaveable(record.localId) { mutableStateOf<String?>(null) }
     var exportFailure by remember(record.localId) { mutableStateOf<BuildExportFailure?>(null) }
+    // M5.SHARE.2: the PERSISTED name — the session's at open, then whatever a
+    // storage-confirmed rename returned. Only the title changes: the editing
+    // session (allocation, history, selection, cameras) never restarts.
+    var persistedName by remember(record.localId) { mutableStateOf(record.name) }
+    val actions = rememberBuildActionsPresenter(
+        autosave = autosave,
+        repository = repository,
+        onRenamed = { renamed -> persistedName = renamed.name },
+    )
     // a user name verbatim; an unnamed build shows the localized "Draft",
     // resolved here at display time — `record.name` stays null in storage
-    val buildTitle = record.name ?: stringResource(Res.string.editor_draft_title)
+    val buildTitle = persistedName ?: stringResource(Res.string.editor_draft_title)
     val lastOutcome by autosave.lastOutcome.collectAsState()
     val saveFailed = lastOutcome?.let { it.localId == record.localId && it.failed } == true
 
@@ -201,6 +223,7 @@ private fun ReadyBuildEditor(
                     }
                 }
             },
+            onRenameBuild = { actions.startRename(record.localId, persistedName) },
         )
         if (saveFailed) {
             InlineNotice(
@@ -233,6 +256,9 @@ private fun ReadyBuildEditor(
                 onDismiss = { shareCode = null },
             )
         }
+        // the rename dialog (the editor shares its in-memory build above, never
+        // through the presenter's persisted-build path)
+        BuildActionsOverlays(presenter = actions, sharing = null, titleOf = { buildTitle })
     }
 }
 

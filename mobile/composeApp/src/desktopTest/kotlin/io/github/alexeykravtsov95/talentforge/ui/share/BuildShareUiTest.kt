@@ -154,8 +154,9 @@ class BuildShareUiTest {
 
     private fun openShareSheet() {
         composeRule.onNodeWithContentDescription("open build actions").performClick()
-        awaitText("Share build")
-        composeRule.onNodeWithText("Share build").performClick()
+        // the ⋯ item is the shared row-sheet label "Share" (the sheet itself is titled "Share build")
+        awaitText("Share")
+        composeRule.onNodeWithText("Share").performClick()
         awaitText("Copy code")
     }
 
@@ -399,8 +400,8 @@ class BuildShareUiTest {
         openEditorFromHome("Воин · Forever", continueLabel = "Продолжить")
 
         composeRule.onNodeWithContentDescription("открыть действия с билдом").performClick()
-        awaitText("Поделиться билдом")
-        composeRule.onNodeWithText("Поделиться билдом").performClick()
+        awaitText("Поделиться")
+        composeRule.onNodeWithText("Поделиться").performClick()
         awaitText("Копировать код")
         composeRule.onNodeWithText("Поделиться").assertExists()
         composeRule.onNodeWithText("Копировать код").performClick()

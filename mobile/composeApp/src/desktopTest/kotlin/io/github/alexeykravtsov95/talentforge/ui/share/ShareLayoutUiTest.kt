@@ -70,13 +70,13 @@ class ShareLayoutUiTest {
     private val english = Copy(
         importBuild = "Import build", continueEditing = "Continue editing", continueImport = "Continue",
         importConfirm = "Import", cancel = "Cancel", buildActions = "open build actions",
-        shareBuild = "Share build", share = "Share", copyCode = "Copy code", field = "build code", goBack = "go back",
+        shareBuild = "Share", share = "Share", copyCode = "Copy code", field = "build code", goBack = "go back",
     )
 
     private val russian = Copy(
         importBuild = "Импортировать билд", continueEditing = "Продолжить", continueImport = "Продолжить",
         importConfirm = "Импортировать", cancel = "Отмена", buildActions = "открыть действия с билдом",
-        shareBuild = "Поделиться билдом", share = "Поделиться", copyCode = "Копировать код", field = "код билда",
+        shareBuild = "Поделиться", share = "Поделиться", copyCode = "Копировать код", field = "код билда",
         goBack = "назад",
     )
 

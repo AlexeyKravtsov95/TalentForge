@@ -241,9 +241,12 @@ private const val BLOCKED_REASON_MS: Long = 2600
  * pan, zoom, Show and denied actions never report. Both are optional so the
  * lower-level M4 usage (tests, previews) still works standalone.
  *
- * M5.SHARE.2: [onShareBuild] (optional) adds `Share build` to the ⋯ sheet and
+ * M5.SHARE.2: [onShareBuild] (optional) adds `Share` to the ⋯ sheet and
  * receives the editing session's current [BuildState] at the moment of the
- * tap; it never mutates the session.
+ * tap; it never mutates the session. [onRenameBuild] (optional) adds `Rename`
+ * above it; the host owns the dialog and the write, and a new name arrives
+ * back only through [TalentTreeUiState.Ready.buildTitle] — the editing
+ * session (allocation, history, selection, cameras) is untouched.
  *
  * M5.UX.1: in portrait the tree is shown one section at a time behind section
  * tabs (approved direction 1A v2), each section with its own camera held in
@@ -264,6 +267,7 @@ fun TalentTreeScreen(
     sessionKey: String = "",
     sectionCameras: TalentTreeSectionCameras? = null,
     onShareBuild: ((BuildState) -> Unit)? = null,
+    onRenameBuild: (() -> Unit)? = null,
 ) {
     val colors = talentForgeColors()
     var selectedNodeId by rememberSaveable { mutableStateOf<Int?>(null) }
@@ -311,6 +315,7 @@ fun TalentTreeScreen(
                 sessionKey = sessionKey,
                 sectionCameras = sectionCameras,
                 onShareBuild = onShareBuild,
+                onRenameBuild = onRenameBuild,
             )
 
             is TalentTreeUiState.Failed -> Column(Modifier.fillMaxSize()) {
@@ -347,6 +352,7 @@ private fun ReadyTalentTreeScreen(
     sessionKey: String,
     sectionCameras: TalentTreeSectionCameras?,
     onShareBuild: ((BuildState) -> Unit)?,
+    onRenameBuild: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     // The editing session: which immutable BuildState is current + history.
@@ -1435,6 +1441,12 @@ private fun ReadyTalentTreeScreen(
                 {
                     buildActionsOpen = false
                     share(editing.current)
+                }
+            },
+            onRenameBuild = onRenameBuild?.let { rename ->
+                {
+                    buildActionsOpen = false
+                    rename()
                 }
             },
         )

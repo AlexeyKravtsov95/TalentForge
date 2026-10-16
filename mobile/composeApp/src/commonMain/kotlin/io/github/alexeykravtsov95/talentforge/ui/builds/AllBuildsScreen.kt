@@ -26,7 +26,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,6 +58,7 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.lib
 import io.github.alexeykravtsov95.talentforge.data.TalentDatasetRepository
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
+import io.github.alexeykravtsov95.talentforge.ui.library.BuildAutosaveCoordinator
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildCardModel
 import io.github.alexeykravtsov95.talentforge.ui.library.ClassArtworkMark
 import io.github.alexeykravtsov95.talentforge.ui.library.ClassArtworkSlot
@@ -75,10 +75,6 @@ import io.github.alexeykravtsov95.talentforge.ui.library.localizedClassName
 import io.github.alexeykravtsov95.talentforge.ui.library.relativeBuildTime
 import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
 import io.github.alexeykravtsov95.talentforge.ui.share.BuildCodeSharing
-import io.github.alexeykravtsov95.talentforge.ui.share.BuildExport
-import io.github.alexeykravtsov95.talentforge.ui.share.BuildExportFailure
-import io.github.alexeykravtsov95.talentforge.ui.share.BuildShareSheet
-import io.github.alexeykravtsov95.talentforge.ui.share.exportPersistedBuild
 import io.github.alexeykravtsov95.talentforge.ui.share.text
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTypography
@@ -87,7 +83,6 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
 import io.github.alexeykravtsov95.talentforge.ui.tree.BackChevronButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.stringResource
 
@@ -101,12 +96,7 @@ private sealed interface ManagementOverlay {
 
     data class Actions(val localId: String) : ManagementOverlay
 
-    data class Rename(val localId: String) : ManagementOverlay
-
     data class DeleteConfirm(val localId: String) : ManagementOverlay
-
-    /** M5.SHARE.2: the export sheet, holding the code read from storage at the tap. */
-    data class Share(val localId: String, val code: String) : ManagementOverlay
 }
 
 /** The screen-level notice strip: duplicate success (auto-dismisses) or retryable duplicate failure. */
@@ -117,9 +107,6 @@ private sealed interface ManagementNotice {
     data class Duplicated(val id: Int) : ManagementNotice
 
     data class DuplicateFailed(val localId: String) : ManagementNotice
-
-    /** M5.SHARE.2: the record could not be read for sharing (retryable). */
-    data class ShareFailed(val localId: String, val failure: BuildExportFailure) : ManagementNotice
 }
 
 /**
@@ -134,10 +121,13 @@ private sealed interface ManagementNotice {
  * retryable notice. The list count, order and empty state all come from the
  * reload.
  *
- * M5.SHARE.2: `Share` in the row sheet reads the LATEST persisted build of
- * exactly that `localId` at the tap ([exportPersistedBuild] — `load`, never
+ * M5.SHARE.2: Rename and `Share` in the row sheet go through the app's one
+ * [BuildActionsPresenter] (also used by Home and the editor): Share reads the
+ * LATEST persisted build of exactly that `localId` at the tap (`load`, never
  * `open`, so no timestamp, name or order changes) and shows its code in the
  * export sheet; a read failure or a vanished record is a retryable notice.
+ * The presenter's single-flight guard also runs Duplicate and Delete, so no
+ * two management operations ever overlap.
  * `Import build` (also in the empty state) opens the shared import flow.
  */
 @Composable
@@ -150,6 +140,7 @@ fun AllBuildsScreen(
     onNewBuild: () -> Unit,
     onImportBuild: () -> Unit,
     sharing: BuildCodeSharing,
+    autosave: BuildAutosaveCoordinator,
 ) {
     var data by remember { mutableStateOf<LibraryData<List<BuildCardModel>>>(LibraryData.Loading) }
     var reloadToken by remember { mutableStateOf(0) }
@@ -158,13 +149,17 @@ fun AllBuildsScreen(
         data = withContext(Dispatchers.Default) { loadBuildsModel(repository, datasets) }
     }
 
-    val scope = rememberCoroutineScope()
     var overlay by remember { mutableStateOf<ManagementOverlay>(ManagementOverlay.Hidden) }
-    var renameText by remember { mutableStateOf("") }
     var overlayError by remember { mutableStateOf(false) }
-    var operationInFlight by remember { mutableStateOf(false) }
     var notice by remember { mutableStateOf<ManagementNotice>(ManagementNotice.None) }
     var noticeEvent by remember { mutableStateOf(0) }
+    val actions = rememberBuildActionsPresenter(
+        autosave = autosave,
+        repository = repository,
+        onRenamed = { reloadToken += 1 },
+        onRecordMissing = { reloadToken += 1 },
+    )
+    val operationInFlight = actions.busy
 
     LaunchedEffect(notice) {
         if (notice is ManagementNotice.Duplicated) {
@@ -175,15 +170,7 @@ fun AllBuildsScreen(
 
     /** One management operation at a time; repeated presses are ignored while one runs. */
     fun launchManagement(action: suspend () -> Unit) {
-        if (operationInFlight) return
-        operationInFlight = true
-        scope.launch {
-            try {
-                action()
-            } finally {
-                operationInFlight = false
-            }
-        }
+        actions.launchExclusive(action)
     }
 
     /**
@@ -201,19 +188,6 @@ fun AllBuildsScreen(
             if (!operationInFlight) overlay = ManagementOverlay.Hidden
         },
     )
-
-    fun rename(localId: String, newName: String) {
-        launchManagement {
-            when (withContext(Dispatchers.Default) { repository.renameBuild(localId, newName) }) {
-                is BuildLibraryOutcome.Loaded -> {
-                    overlay = ManagementOverlay.Hidden
-                    overlayError = false
-                    reloadToken += 1
-                }
-                is BuildLibraryOutcome.Failed -> overlayError = true
-            }
-        }
-    }
 
     fun duplicate(localId: String) {
         launchManagement {
@@ -234,21 +208,10 @@ fun AllBuildsScreen(
         }
     }
 
+    // like a failed duplicate, the sheet closes either way: the share sheet or
+    // the retryable notice is the visible answer
     fun share(localId: String) {
-        launchManagement {
-            when (val export = withContext(Dispatchers.Default) { exportPersistedBuild(repository, localId) }) {
-                is BuildExport.Ready -> {
-                    if (notice is ManagementNotice.ShareFailed) notice = ManagementNotice.None
-                    overlay = ManagementOverlay.Share(localId, export.code)
-                }
-                is BuildExport.Failed -> {
-                    // like a failed duplicate: the sheet closes so the retryable
-                    // notice is the visible answer
-                    overlay = ManagementOverlay.Hidden
-                    notice = ManagementNotice.ShareFailed(localId, export.failure)
-                }
-            }
-        }
+        actions.sharePersisted(localId) { overlay = ManagementOverlay.Hidden }
     }
 
     fun delete(localId: String) {
@@ -303,6 +266,13 @@ fun AllBuildsScreen(
                         ),
                 )
             }
+            actions.shareFailure?.let { failure ->
+                InlineNotice(
+                    text = failure.failure.text(),
+                    actionText = stringResource(Res.string.common_retry),
+                    onAction = { share(failure.localId) },
+                )
+            }
             when (val current = notice) {
                 is ManagementNotice.Duplicated -> InlineNotice(
                     text = stringResource(Res.string.builds_duplicated),
@@ -315,12 +285,6 @@ fun AllBuildsScreen(
                     text = stringResource(Res.string.builds_duplicate_failed),
                     actionText = stringResource(Res.string.common_retry),
                     onAction = { duplicate(current.localId) },
-                )
-
-                is ManagementNotice.ShareFailed -> InlineNotice(
-                    text = current.failure.text(),
-                    actionText = stringResource(Res.string.common_retry),
-                    onAction = { share(current.localId) },
                 )
 
                 ManagementNotice.None -> {}
@@ -400,9 +364,9 @@ fun AllBuildsScreen(
                         busy = operationInFlight,
                         onDismiss = { overlay = ManagementOverlay.Hidden },
                         onRename = {
-                            renameText = card.record.name.orEmpty() // a Draft starts with an empty field
-                            overlayError = false
-                            overlay = ManagementOverlay.Rename(current.localId)
+                            overlay = ManagementOverlay.Hidden
+                            // a Draft starts with an empty field
+                            actions.startRename(current.localId, card.record.name)
                         },
                         onDuplicate = { duplicate(current.localId) },
                         onShare = { share(current.localId) },
@@ -413,28 +377,6 @@ fun AllBuildsScreen(
                     )
                 }
             }
-
-            is ManagementOverlay.Rename -> RenameBuildDialog(
-                text = renameText,
-                onTextChange = {
-                    renameText = it
-                    overlayError = false
-                },
-                maxLength = LocalBuildRepository.MAX_BUILD_NAME_LENGTH,
-                busy = operationInFlight,
-                error = overlayError,
-                onSave = { rename(current.localId, renameText) },
-                onCancel = { overlay = ManagementOverlay.Hidden },
-            )
-
-            is ManagementOverlay.Share -> BuildShareSheet(
-                code = current.code,
-                buildTitle = readyCards?.firstOrNull { it.record.localId == current.localId }
-                    ?.let { buildCardTitle(it) }
-                    .orEmpty(),
-                sharing = sharing,
-                onDismiss = { overlay = ManagementOverlay.Hidden },
-            )
 
             is ManagementOverlay.DeleteConfirm -> {
                 val card = readyCards?.firstOrNull { it.record.localId == current.localId }
@@ -449,6 +391,13 @@ fun AllBuildsScreen(
                 }
             }
         }
+        BuildActionsOverlays(
+            presenter = actions,
+            sharing = sharing,
+            titleOf = { localId ->
+                readyCards?.firstOrNull { it.record.localId == localId }?.let { buildCardTitle(it) }.orEmpty()
+            },
+        )
     }
 }
 
@@ -604,10 +553,11 @@ private fun rowMetaLine(
 /**
  * The row's `⋯` button — its own 48 dp click target, so pressing it opens the
  * management sheet and NEVER the build (the button's click target is a
- * sibling of the row's, not nested inside it).
+ * sibling of the row's, not nested inside it). M5.SHARE.2: Home's Recent
+ * rows use the same button.
  */
 @Composable
-private fun RowActionsButton(title: String, onClick: () -> Unit) {
+internal fun RowActionsButton(title: String, onClick: () -> Unit) {
     val description = stringResource(Res.string.builds_row_actions_description, title)
     Box(
         modifier = Modifier

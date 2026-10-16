@@ -94,6 +94,7 @@
     <string name="builds_rename_title">Новое название</string>
     <string name="builds_rename_field_description">название билда</string>
     <string name="builds_rename_failed">Не удалось переименовать билд</string>
+    <string name="builds_rename_pending_save_failed">Последние изменения талантов ещё не сохранены. Закройте окно, нажмите «Повторить», чтобы сохранить их, и переименуйте билд.</string>
     <string name="builds_delete_title">Удалить «%1$s»?</string>
     <string name="builds_delete_body">Билд будет навсегда удалён с этого устройства. Это действие нельзя отменить.</string>
     <string name="builds_delete_failed">Не удалось удалить билд</string>
@@ -252,7 +253,6 @@
     <!-- ================================================================ -->
 
     <!-- точки входа -->
-    <string name="editor_share_build">Поделиться билдом</string>
     <string name="builds_action_share">Поделиться</string>
     <string name="import_build">Импортировать билд</string>
     <string name="import_build_action">импортировать билд по коду</string>
