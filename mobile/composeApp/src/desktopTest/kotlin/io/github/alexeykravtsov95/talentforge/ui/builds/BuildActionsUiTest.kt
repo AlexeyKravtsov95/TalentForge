@@ -253,8 +253,11 @@ class BuildActionsUiTest {
 
         typeName("Feral PvP")
         composeRule.onNodeWithText("Save").performClick()
-        awaitText("Feral PvP")
+        // the dialog's own field also shows "Feral PvP": wait for it to close, then
+        // for Home's reload (a "Loading" frame first) to list both builds again
         awaitGone("Rename build")
+        awaitText("Feral PvP")
+        awaitText("Frost")
 
         assertEquals(older.copy(name = "Feral PvP"), persisted(older.localId), "only the name changed")
         assertEquals(newer, persisted(newer.localId), "the other build is untouched")
@@ -381,7 +384,10 @@ class BuildActionsUiTest {
 
         assertEquals(listOf(newer), persisted(), "only the selected build is gone, the other untouched")
         assertEquals(writes + 1, storage.writes, "one delete, one write")
-        assertTrue(has("Frost") && has("CONTINUE"), "still on Home with the remaining build")
+        // Home reloads from storage after the delete (a "Loading" frame first): wait for the new list
+        awaitText("Frost")
+        awaitText("CONTINUE")
+        assertTrue(!hasDescription("open build actions"), "still on Home with the remaining build")
         assertTrue(older.localId !in persisted().map { it.localId })
     }
 
