@@ -186,7 +186,8 @@ Google Play is deferred (#35). 🔑 = needs the owner's Huawei Developer account
 - [ ] After publication: the AppGallery-delivered APK's SHA-256 equals the owner's fingerprint (H-13)
 
 **Account and app record** ([testing-and-publication §2](appgallery/testing-and-publication.md#2-appgallery-publication-requirements-official-sources))
-- [ ] 🔑 HUAWEI ID registered; developer identity verification (individual or enterprise) approved
+- [x] Huawei developer account identity verification: **owner reports COMPLETE** (2026-10-17; not independently verified)
+- [ ] 🔑 **VERIFY IN CONSOLE**: the account can create the Android app in AppGallery Connect and submit it for release
 - [ ] 🔑 Android app created in AppGallery Connect: APK, *Mobile phone*, name `TalentForge`, category **App** (irreversible), no project, package `io.github.alexeykravtsov95.talentforge`
 - [ ] 🔑 Release countries chosen explicitly; Chinese mainland excluded (or its copyright certificates obtained)
 
@@ -205,7 +206,7 @@ Google Play is deferred (#35). 🔑 = needs the owner's Huawei Developer account
 
 **Testing and release** ([testing-and-publication §5–§6](appgallery/testing-and-publication.md#5-device-test-plan))
 - [ ] **(gate)** Huawei device scenarios H-1…H-14 executed on the signed release APK (UNVERIFIED in M5.GALLERY.1: no Huawei device)
-- [ ] 🔑 First AppGallery release as an Open Testing version; then the formal version, released in the same window as RuStore
+- [ ] 🔑 First AppGallery release as an Open Testing version; then the formal version as an AGC update with a **new APK and a higher `versionCode`**, the same APK released in RuStore in the same window ([testing-and-publication §6.1](appgallery/testing-and-publication.md#61-open-testing--formal-production-release))
 - [ ] Phased release is not available for the first version (updates only)
 
 **Observation recorded by M5.GALLERY.1:** the freshness check on 2026-10-17T15:30:54Z reported

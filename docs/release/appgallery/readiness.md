@@ -63,7 +63,7 @@ What the evidence says:
 | Google Play later | Provide the same key to Play before the first open/production release | [signing §4](multi-store-signing.md#4-preserving-compatibility-with-google-play-app-signing-deferred-issue-35) |
 | AGC app record | Android APK, Mobile phone, category **App**, no project | [testing §2.2](testing-and-publication.md#22-creating-the-app-in-agc-) |
 | Countries | Explicit list; exclude the Chinese mainland | [testing §2.9](testing-and-publication.md#29-release-countriesregions) |
-| First AppGallery release | Open Testing first, then the formal version, aligned with RuStore | [testing §2.10](testing-and-publication.md#210-testing-and-staged-release-options) |
+| First AppGallery release | Open Testing first; then the formal version as an AGC **update** with a new APK and a higher `versionCode`, the same APK released in RuStore in the same window | [testing §6.1](testing-and-publication.md#61-open-testing--formal-production-release) |
 | Listing copy | Variant A (trademark-free) by default; Variant B only after LR-2 review | [listing EN](store-listing-en.md), [RU](store-listing-ru.md) |
 | Privacy | "Collect personal data = No"; publish the RU/EN policy at a public URL | [privacy §5](privacy-and-compliance.md#5-store-privacy-declarations) |
 
@@ -108,8 +108,8 @@ Huawei device.
 | O-1 | Approve the signing strategy and the APK format | [signing §11](multi-store-signing.md#11-owner-actions) S-1 |
 | O-2 | Create, back up and drill-restore the release key; record the fingerprints | S-2, S-3 |
 | O-3 | Decide the first public `versionCode` / `versionName` | S-5 |
-| O-4 | 🔑 Register a HUAWEI ID; complete developer identity verification | [testing §2.1](testing-and-publication.md#21-developer-account-and-identity-verification-) |
-| O-5 | 🔑 Create the Android app record (category **App** is irreversible) and choose the release countries | testing §2.2, §2.9 |
+| O-4 | Huawei developer account identity verification: **owner reports COMPLETE** (2026-10-17; not independently verified). No new registration is needed | [testing §2.1](testing-and-publication.md#21-developer-account-and-identity-verification-) |
+| O-5 | 🔑 **VERIFY IN CONSOLE** that the account can create the Android app in AppGallery Connect and submit it for release (not independently verified); then create the app record (category **App** is irreversible) and choose the release countries | testing §2.2, §2.9, §6 step 1 |
 | O-6 | Legal review LR-1…LR-3, including store screenshots | [privacy §9](privacy-and-compliance.md#9-owner-and-legal-actions) P-1, P-3 |
 | O-7 | Choose the trademark/disclaimer approach (LR-2) and approve the listing copy | P-2 |
 | O-8 | Decide the OSS-notice mechanism (LR-4) | P-4 |
@@ -119,7 +119,7 @@ Huawei device.
 | O-12 | 🔑 Answer the age-rating questionnaires and the AppGallery AI declaration | P-8 |
 | O-13 | Provide a Huawei phone (no Google services) for H-1…H-14, or approve Cloud Testing as a supplement | [testing §5](testing-and-publication.md#5-device-test-plan) |
 | O-14 | Capture and approve the EN/RU screenshot sets from the signed release build | [assets §3](assets-checklist.md#3-screenshots) |
-| O-15 | 🔑 Open Testing round, then the formal release aligned with RuStore | [testing §6](testing-and-publication.md#6-publication-runbook-for-the-owner-not-executed) |
+| O-15 | 🔑 Open Testing round, then the formal release as an AGC update with a new, higher-`versionCode` APK that is also the RuStore release | [testing §6.1](testing-and-publication.md#61-open-testing--formal-production-release) |
 
 ## 7. Validation results
 
@@ -138,6 +138,14 @@ Huawei device.
 
 The curated files in [`evidence/mac/`](evidence/mac/) come from run 2. The bundletool size table
 is summarised there (the raw table has 2 072 rows).
+
+Both runs used the **first version of the runner** (as committed in `bd1272f`). That version selected
+`origin/main` implicitly (after `git fetch`) and wrote the curated files straight into
+`evidence/mac/`. `origin/main` was `f7494e1` both times; `00-summary.tsv` records the full SHA in
+every row. The PR #37 review replaced that behaviour: `--commit` is now mandatory, every output goes
+to a scratch directory outside all checkouts by default, and repository evidence is written only
+with `--publish-evidence NEW_NAME` ([evidence README](evidence/README.md)). The committed `mac/`
+results above are kept unchanged as the historical record; they were not regenerated.
 
 ### 7.2 Results
 
