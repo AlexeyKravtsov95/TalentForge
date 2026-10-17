@@ -11,5 +11,15 @@ import androidx.compose.runtime.remember
  * resource environment) reads.
  */
 @Composable
-actual fun platformPrimaryLanguageTag(): String =
-    remember { primaryLanguageTagOf(LocaleList.getDefault().toLanguageTags().split(',')) }
+actual fun platformPrimaryLanguageTag(): String = remember { devicePrimaryLanguageTag() }
+
+/*
+ * Kept as an androidMain function with a declared `String` type (TF-RC1-LINT):
+ * Android lint analyses only the androidMain sources of this KMP module, so a
+ * commonMain call as the last expression of the `remember` lambda has no
+ * resolvable type for lint, and its `RememberReturnType` check then reads the
+ * `remember` call as returning `Unit` — a false error. Same value, same
+ * remember-once behaviour.
+ */
+private fun devicePrimaryLanguageTag(): String =
+    primaryLanguageTagOf(LocaleList.getDefault().toLanguageTags().split(','))
