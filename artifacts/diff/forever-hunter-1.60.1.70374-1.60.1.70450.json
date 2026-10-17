@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 3,
+    "token": "HUNTER",
+    "name": "Hunter"
+  },
+  "fromBuild": "1.60.1.70374",
+  "toBuild": "1.60.1.70450",
+  "fromContentHash": "sha256:2a4ce67c9c206b3f005e9c4e4686b3f64592c690d73a79729d8b442487533105",
+  "toContentHash": "sha256:3e9ed264f208c8c7a704156129a621235d4c666bb9a447f602cf5d9fb2218f96",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 6,
+    "changesByKind": {
+      "descriptionChanged": 5,
+      "effectRankValueChanged": 4
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 104968,
+      "treeId": 1091,
+      "name": "Improved Mend Pet",
+      "changes": [
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129629,
+          "effectIndex": 1,
+          "rank": 1,
+          "old": 10,
+          "new": -10
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129629,
+          "effectIndex": 1,
+          "rank": 2,
+          "old": 20,
+          "new": -20
+        }
+      ]
+    },
+    {
+      "nodeId": 104983,
+      "treeId": 1091,
+      "name": "Resourcefulness",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129647,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Reduces the mana cost of your Trap abilities and melee abilities by $s1%. In addition, your critical strikes have a $m3% chance to allow $1242688s1% of your Mana regeneration to continue while casting for $1242688d.",
+          "new": "Reduces the Mana cost of your Trap and melee abilities by $s1%, and grants your melee and ranged ability Critical Strikes a $m2% chance to allow $1242688s1% of your Mana Regeneration to continue while casting for $1242688d."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129647,
+          "effectIndex": 1,
+          "rank": 1,
+          "old": -20,
+          "new": 50
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129647,
+          "effectIndex": 1,
+          "rank": 2,
+          "old": -40,
+          "new": 100
+        }
+      ]
+    },
+    {
+      "nodeId": 104985,
+      "treeId": 1091,
+      "name": "Expose Prey",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129649,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Your attacks against targets with Hunter's Mark have a $s1% chance to activate your Mongoose Bite for $1310726d.",
+          "new": "Grants your melee and ranged attacks against enemies afflicted by Hunter's Mark a $s1% chance to allow an activation of Mongoose Bite. Lasts $1310726d."
+        }
+      ]
+    },
+    {
+      "nodeId": 104999,
+      "treeId": 1091,
+      "name": "Rapid Recuperation",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129663,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Hitting a target with your Serpent Sting ability grants you $s1% and consuming Rapid Killing grants you $s2% of your Mana regeneration while casting for the next $1242512d.",
+          "new": "Afflicting a target with Serpent Sting allows $s1% of your Mana Regeneration to continue while casting for $1242512d, increased to $s2% when Rapid Killing is consumed."
+        }
+      ]
+    },
+    {
+      "nodeId": 105004,
+      "treeId": 1091,
+      "name": "Trueshot Aura",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129668,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases the Ranged Attack Power of party members within $a1 yds by $s1.",
+          "new": "Increases the Ranged Attack Power of party or raid members within $a1 yds by $s1."
+        }
+      ]
+    },
+    {
+      "nodeId": 110861,
+      "treeId": 1091,
+      "name": "Predator's Edge",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 137853,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases your melee critical strike damage by $s1% and your Off Hand weapon damage by $s2%.",
+          "new": "Increases your melee ability critical strike damage by $s1% and your Off Hand weapon damage by $s2%."
+        }
+      ]
+    }
+  ]
+}

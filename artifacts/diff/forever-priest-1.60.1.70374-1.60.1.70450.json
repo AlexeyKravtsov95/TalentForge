@@ -1,0 +1,580 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 5,
+    "token": "PRIEST",
+    "name": "Priest"
+  },
+  "fromBuild": "1.60.1.70374",
+  "toBuild": "1.60.1.70450",
+  "fromContentHash": "sha256:44a3f4e4281d80523c7d3251e0f76dbbc578e49f63ecba6c859939b57de393b9",
+  "toContentHash": "sha256:fc8950740dad4d81fa5fa391fd67fdc4637f049a84476667aa8c29369ee57ead",
+  "summary": {
+    "added": 0,
+    "removed": 1,
+    "changed": 11,
+    "changesByKind": {
+      "descriptionChanged": 8,
+      "effectAdded": 2,
+      "effectBasePointsChanged": 2,
+      "effectRankValueChanged": 15,
+      "effectRemoved": 3,
+      "maxRankChanged": 2,
+      "positionChanged": 3,
+      "spellReplaced": 2,
+      "unlockRequirementsChanged": 2
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [
+    {
+      "nodeId": 105827,
+      "treeId": 1114,
+      "name": "Improved Mind Blast",
+      "spellId": 15273,
+      "sectionIndex": 2,
+      "position": {
+        "x": 9080,
+        "y": 3330,
+        "row": 2,
+        "column": 0
+      },
+      "maxRank": 5,
+      "relatedNodeId": null
+    }
+  ],
+  "changed": [
+    {
+      "nodeId": 105819,
+      "treeId": 1114,
+      "name": "Devouring Contagion",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130548,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Reduces the mana cost of your Devouring Plague by $s1%.\r\n\r\nTargets that die while Devouring Plague is active spreads it, jumping to a nearby enemy within $s2 yds for the remaining duration.\r\n",
+          "new": "Reduces the mana cost of your Devouring Plague by $s1%.\r\n\r\nTargets that die while Devouring Plague is active spreads it, jumping to $s3 nearby enemies within $s2 yds for the remaining duration.\r\n"
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 130548,
+          "effectIndex": 2,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 2,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 2,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 105821,
+      "treeId": 1114,
+      "name": "Shadow Weaving",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130550,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Your Shadow damage spells have a $s1% chance to increase the Shadow damage you deal by $15258s1% for $15258d, stacking up to $15258u times.",
+          "new": "Your Shadow damage spells have a $s1% chance to increase the Shadow damage the target takes from you by $15258s1% for $15258d, stacking up to $15258u times."
+        }
+      ]
+    },
+    {
+      "nodeId": 105823,
+      "treeId": 1114,
+      "name": "Dark Inspiration",
+      "changes": [
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 2,
+          "new": 5
+        },
+        {
+          "kind": "spellReplaced",
+          "entryId": 130552,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 15274,
+            "name": "Improved Fade"
+          },
+          "new": {
+            "spellId": 1326159,
+            "name": "Dark Inspiration"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130552,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Decreases the cooldown of your Fade ability by $/1000;s1 sec.",
+          "new": "Your Mind Blast and fully channeled Mind Flay causes Dark Inspiration, increasing yours and your party's Spirit by $m1% for $1326168d."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130552,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": -3000,
+          "new": 3
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130552,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": -6000,
+          "new": 6
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130552,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": null,
+          "new": 9
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130552,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": null,
+          "new": 12
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130552,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": null,
+          "new": 15
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130552,
+          "effectIndex": 0,
+          "rank": null,
+          "old": -6000,
+          "new": 15
+        }
+      ]
+    },
+    {
+      "nodeId": 105825,
+      "treeId": 1114,
+      "name": "Improved Mind Flay",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130554,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Your Mind Flay now deals $s1% more damage, gains $s2 yards increased range, but slows the target's movement speed by ${$s4-($m3)}%.",
+          "new": "Each instance of damage of Mind Flay deals $s1% more damage than its previous instance of damage."
+        },
+        {
+          "kind": "effectRemoved",
+          "entryId": 130554,
+          "effectIndex": 1,
+          "rank": null,
+          "old": {
+            "index": 1,
+            "perRank": [
+              {
+                "rank": 1,
+                "value": 5
+              },
+              {
+                "rank": 2,
+                "value": 10
+              }
+            ],
+            "perRankStatus": "resolved",
+            "basePoints": 10,
+            "unresolvedReason": null
+          },
+          "new": null
+        },
+        {
+          "kind": "effectRemoved",
+          "entryId": 130554,
+          "effectIndex": 2,
+          "rank": null,
+          "old": {
+            "index": 2,
+            "perRank": [
+              {
+                "rank": 1,
+                "value": 15
+              },
+              {
+                "rank": 2,
+                "value": 30
+              }
+            ],
+            "perRankStatus": "resolved",
+            "basePoints": -30,
+            "unresolvedReason": null
+          },
+          "new": null
+        },
+        {
+          "kind": "effectRemoved",
+          "entryId": 130554,
+          "effectIndex": 3,
+          "rank": null,
+          "old": {
+            "index": 3,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 50,
+            "unresolvedReason": null
+          },
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 105831,
+      "treeId": 1114,
+      "name": "Improved Mind Blast",
+      "changes": [
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 3,
+          "new": 5
+        },
+        {
+          "kind": "spellReplaced",
+          "entryId": 130560,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 15318,
+            "name": "Shadow Affinity"
+          },
+          "new": {
+            "spellId": 15273,
+            "name": "Improved Mind Blast"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130560,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Reduces the threat generated by your Shadow spells by $s1%.",
+          "new": "Reduces the cooldown of your Mind Blast spell by $/1000;S1 sec."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130560,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": -10,
+          "new": -500
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130560,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": -20,
+          "new": -1000
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130560,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": -30,
+          "new": -1500
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130560,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": null,
+          "new": -2000
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130560,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": null,
+          "new": -2500
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130560,
+          "effectIndex": 0,
+          "rank": null,
+          "old": -8,
+          "new": -2500
+        }
+      ]
+    },
+    {
+      "nodeId": 105837,
+      "treeId": 1114,
+      "name": "Mental Strength",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 1620,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          },
+          "new": {
+            "x": 2220,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105842,
+                105843,
+                105844,
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105849,
+                105850,
+                110853
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130566,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 3,
+          "new": 2
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130566,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 6,
+          "new": 4
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130566,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 9,
+          "new": 6
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130566,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": 12,
+          "new": 8
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130566,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": 15,
+          "new": 10
+        }
+      ]
+    },
+    {
+      "nodeId": 105838,
+      "treeId": 1114,
+      "name": "Improved Mana Burn",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 2820,
+            "y": 3930,
+            "row": 3,
+            "column": 3
+          },
+          "new": {
+            "x": 1620,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 105840,
+      "treeId": 1114,
+      "name": "Divine Aegis",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130569,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Your critical heals create a protective shield on the target, absorbing $s1% of the amount healed. Lasts $431624d.",
+          "new": "Your non-periodic critical heals create a protective shield on the target, absorbing $s1% of the amount healed. Shields up to ${$s2*$pl} damage and lasts $431624d."
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 130569,
+          "effectIndex": 1,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 1,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 20,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 105846,
+      "treeId": 1114,
+      "name": "Improved Power Word: Shield",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 2220,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "new": {
+            "x": 2220,
+            "y": 3330,
+            "row": 2,
+            "column": 2
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105849,
+                105850,
+                110853
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105848,
+      "treeId": 1114,
+      "name": "Silent Resolve",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130577,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Reduces the threat generated by your Holy spells by $s1% and reduces the duration of Stun, Fear, and Silence effects inflicted on you by $m2%.\r\n",
+          "new": "Reduces the threat generated by your spells by $s1% and reduces the duration of Stun, Fear, and Silence effects inflicted on you by $m2%.\r\n"
+        }
+      ]
+    },
+    {
+      "nodeId": 110853,
+      "treeId": 1114,
+      "name": "Power in Light",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 137845,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Your Smite and Penance spells deal $m1% increased damage to targets afflicted with your Holy Fire.",
+          "new": "Your Smite and Penance spells deal $m1% increased damage to targets afflicted with your Holy Fire or Shadow Word: Pain."
+        }
+      ]
+    }
+  ]
+}

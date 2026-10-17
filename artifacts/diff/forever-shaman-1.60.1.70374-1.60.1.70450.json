@@ -1,0 +1,956 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 7,
+    "token": "SHAMAN",
+    "name": "Shaman"
+  },
+  "fromBuild": "1.60.1.70374",
+  "toBuild": "1.60.1.70450",
+  "fromContentHash": "sha256:3d57cca72bcc20a2e83a9f7633f70074c020cdfa99d5bb2e1c843d97c43dc93b",
+  "toContentHash": "sha256:2eaef445159f14d74b6b8f27873cd540e7177b8f55cc3b929bc2fce046061daa",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 15,
+    "changesByKind": {
+      "descriptionChanged": 12,
+      "effectAdded": 6,
+      "effectBasePointsChanged": 6,
+      "effectRankValueChanged": 16,
+      "effectRemoved": 2,
+      "positionChanged": 8,
+      "prerequisitesChanged": 4,
+      "renamed": 1,
+      "spellReplaced": 7
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 104729,
+      "treeId": 1082,
+      "name": "Tidal Focus",
+      "changes": [
+        {
+          "kind": "spellReplaced",
+          "entryId": 129389,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 16173,
+            "name": "Totemic Focus"
+          },
+          "new": {
+            "spellId": 16179,
+            "name": "Tidal Focus"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129389,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Reduces the Mana cost of your totems and any spells that summon or move them by $m1%.",
+          "new": "Reduces the Mana cost of your healing spells by $m1% and improves your chance to hit by $m2%."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129389,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": -5,
+          "new": -1
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129389,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": -10,
+          "new": -2
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129389,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": -15,
+          "new": -3
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129389,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": -20,
+          "new": -4
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129389,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": -25,
+          "new": -5
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 129389,
+          "effectIndex": 1,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 1,
+            "perRank": [
+              {
+                "rank": 1,
+                "value": 1
+              },
+              {
+                "rank": 2,
+                "value": 2
+              },
+              {
+                "rank": 3,
+                "value": 3
+              },
+              {
+                "rank": 4,
+                "value": 4
+              },
+              {
+                "rank": 5,
+                "value": 5
+              }
+            ],
+            "perRankStatus": "resolved",
+            "basePoints": 5,
+            "unresolvedReason": null
+          }
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 129389,
+          "effectIndex": 2,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 2,
+            "perRank": [
+              {
+                "rank": 1,
+                "value": 1
+              },
+              {
+                "rank": 2,
+                "value": 2
+              },
+              {
+                "rank": 3,
+                "value": 3
+              },
+              {
+                "rank": 4,
+                "value": 4
+              },
+              {
+                "rank": 5,
+                "value": 5
+              }
+            ],
+            "perRankStatus": "resolved",
+            "basePoints": 5,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 104732,
+      "treeId": 1082,
+      "name": "Water Shield",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129392,
+          "effectIndex": null,
+          "rank": null,
+          "old": "The caster is surrounded by $n globes of water. When a spell, melee, or ranged attack hits the caster or when one of the caster's healing spells gets a critical result, $408511s1% of maximum mana is restored to the caster, expending one water globe. Only one globe will activate every few seconds.  Lasts $d.\r\n\r\nOnly one Elemental Shield can be active on the Shaman at any one time.",
+          "new": "The caster is surrounded by $n globes of water. When a spell, melee, or ranged attack hits the caster or when one of the caster's spells gets a critical result, $408511s1% of maximum mana is restored to the caster, expending one water globe. Only one globe will activate every few seconds.  Lasts $d.\r\n\r\nOnly one Elemental Shield can be active on the Shaman at any one time."
+        }
+      ]
+    },
+    {
+      "nodeId": 104735,
+      "treeId": 1082,
+      "name": "Totemic Focus",
+      "changes": [
+        {
+          "kind": "spellReplaced",
+          "entryId": 129395,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 16179,
+            "name": "Tidal Focus"
+          },
+          "new": {
+            "spellId": 16173,
+            "name": "Totemic Focus"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129395,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Reduces the Mana cost of your healing spells by $m1% and improves your chance to hit by $m2%.",
+          "new": "Reduces the Mana cost of your totems and any spells that summon or move them by $m1%."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129395,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": -1,
+          "new": -5
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129395,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": -2,
+          "new": -10
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129395,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": -3,
+          "new": -15
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129395,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": -4,
+          "new": -20
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129395,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": -5,
+          "new": -25
+        },
+        {
+          "kind": "effectRemoved",
+          "entryId": 129395,
+          "effectIndex": 1,
+          "rank": null,
+          "old": {
+            "index": 1,
+            "perRank": [
+              {
+                "rank": 1,
+                "value": 1
+              },
+              {
+                "rank": 2,
+                "value": 2
+              },
+              {
+                "rank": 3,
+                "value": 3
+              },
+              {
+                "rank": 4,
+                "value": 4
+              },
+              {
+                "rank": 5,
+                "value": 5
+              }
+            ],
+            "perRankStatus": "resolved",
+            "basePoints": 5,
+            "unresolvedReason": null
+          },
+          "new": null
+        },
+        {
+          "kind": "effectRemoved",
+          "entryId": 129395,
+          "effectIndex": 2,
+          "rank": null,
+          "old": {
+            "index": 2,
+            "perRank": [
+              {
+                "rank": 1,
+                "value": 1
+              },
+              {
+                "rank": 2,
+                "value": 2
+              },
+              {
+                "rank": 3,
+                "value": 3
+              },
+              {
+                "rank": 4,
+                "value": 4
+              },
+              {
+                "rank": 5,
+                "value": 5
+              }
+            ],
+            "perRankStatus": "resolved",
+            "basePoints": 5,
+            "unresolvedReason": null
+          },
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 104758,
+      "treeId": 1082,
+      "name": "Elemental Mastery",
+      "changes": [
+        {
+          "kind": "prerequisitesChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "nodeId": 104759,
+              "kind": "sufficient",
+              "name": "Lightning Overload"
+            }
+          ],
+          "new": [
+            {
+              "nodeId": 104760,
+              "kind": "sufficient",
+              "name": "Lava Burst"
+            }
+          ]
+        },
+        {
+          "kind": "spellReplaced",
+          "entryId": 129418,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 408490,
+            "name": "Lava Burst"
+          },
+          "new": {
+            "spellId": 16166,
+            "name": "Elemental Mastery"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129418,
+          "effectIndex": null,
+          "rank": null,
+          "old": "You hurl molten lava at the target, dealing $s1 Fire damage. If your Flame Shock is on the target, Lava Burst deals $s2% increased damage.",
+          "new": "Gain mastery over Fire and Lightning, reducing the cast time of Lightning Bolt and Lava Burst by ${$m1/-1000}.1 sec, and removing the cooldown from Chain Lightning. Lasts $d."
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 129418,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 164,
+          "new": -500
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 129418,
+          "effectIndex": 1,
+          "rank": null,
+          "old": 20,
+          "new": -100
+        }
+      ]
+    },
+    {
+      "nodeId": 104759,
+      "treeId": 1082,
+      "name": "Lightning Overload",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 1620,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          },
+          "new": {
+            "x": 2220,
+            "y": 4530,
+            "row": 4,
+            "column": 2
+          }
+        },
+        {
+          "kind": "prerequisitesChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [],
+          "new": [
+            {
+              "nodeId": 104771,
+              "kind": "sufficient",
+              "name": "Elemental Alacrity"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 104760,
+      "treeId": 1082,
+      "name": "Lava Burst",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 2820,
+            "y": 4530,
+            "row": 4,
+            "column": 3
+          },
+          "new": {
+            "x": 1620,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          }
+        },
+        {
+          "kind": "spellReplaced",
+          "entryId": 129420,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 1222988,
+            "name": "Earthbound"
+          },
+          "new": {
+            "spellId": 408490,
+            "name": "Lava Burst"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129420,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Your Earthbind Totem Immobilizes nearby targets for $1238289d when cast.",
+          "new": "You hurl molten lava at the target, dealing $s1 Fire damage. If your Flame Shock is on the target, Lava Burst deals $s2% increased damage."
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 129420,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 100,
+          "new": 123
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 129420,
+          "effectIndex": 1,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 1,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 20,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 104761,
+      "treeId": 1082,
+      "name": "Elemental Reach",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129421,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases the range of your Lightning Bolt, Chain Lightning, Fire Nova, and Lava Burst spells by $m1 yards, and increases the range of your Flame Shock spell by $m2 yards.",
+          "new": "Increases the range of your Lightning Bolt, Chain Lightning, Fire Nova, and Lava Burst spells by $m1 yards and reduces the cooldown of Totemic Projection by ${$m3/-1000} sec."
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 129421,
+          "effectIndex": 2,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 2,
+            "perRank": [
+              {
+                "rank": 1,
+                "value": -10000
+              },
+              {
+                "rank": 2,
+                "value": -20000
+              }
+            ],
+            "perRankStatus": "resolved",
+            "basePoints": -20000,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 104762,
+      "treeId": 1082,
+      "name": "Earthbound",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 2220,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "new": {
+            "x": 2820,
+            "y": 3930,
+            "row": 3,
+            "column": 3
+          }
+        },
+        {
+          "kind": "prerequisitesChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "nodeId": 104765,
+              "kind": "sufficient",
+              "name": "Elemental Alacrity"
+            }
+          ],
+          "new": []
+        },
+        {
+          "kind": "spellReplaced",
+          "entryId": 129422,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 16120,
+            "name": "Call of Thunder"
+          },
+          "new": {
+            "spellId": 1222988,
+            "name": "Earthbound"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129422,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases the critical strike chance of your Lightning Bolt and Chain Lightning spells by $s1%.",
+          "new": "Your Earthbind Totem Immobilizes nearby targets for $1238289d when cast."
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 129422,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 3,
+          "new": 100
+        }
+      ]
+    },
+    {
+      "nodeId": 104764,
+      "treeId": 1082,
+      "name": "Trial by Fire",
+      "changes": [
+        {
+          "kind": "renamed",
+          "entryId": 129424,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Improved Fire Nova",
+          "new": "Trial by Fire"
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129424,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases the damage done by your Fire Nova spell by $m1% and reduces its cooldown by ${$m2/-1000} sec.",
+          "new": "Increases the damage done by your Fire Nova spell by $m1% and reduces its cooldown by ${$m2/-1000} sec, and increases the duration of your Magma Totem by ${$m3/1000} sec."
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 129424,
+          "effectIndex": 2,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 2,
+            "perRank": [
+              {
+                "rank": 1,
+                "value": 10000
+              },
+              {
+                "rank": 2,
+                "value": 20000
+              }
+            ],
+            "perRankStatus": "resolved",
+            "basePoints": 20000,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 104765,
+      "treeId": 1082,
+      "name": "Elemental Warding",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 2220,
+            "y": 3330,
+            "row": 2,
+            "column": 2
+          },
+          "new": {
+            "x": 1620,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          }
+        },
+        {
+          "kind": "spellReplaced",
+          "entryId": 129425,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 16578,
+            "name": "Elemental Alacrity"
+          },
+          "new": {
+            "spellId": 28996,
+            "name": "Elemental Warding"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129425,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Reduces the cast time of your Lightning Bolt, Chain Lightning, and Lava Burst spells by ${$m1/-1000}.2 sec.",
+          "new": "Reduces damage taken from Fire, Frost, and Nature effects by $m1%."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129425,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": -170,
+          "new": -3
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129425,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": -330,
+          "new": -7
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129425,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": -500,
+          "new": -10
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 129425,
+          "effectIndex": 0,
+          "rank": null,
+          "old": -200,
+          "new": -4
+        }
+      ]
+    },
+    {
+      "nodeId": 104766,
+      "treeId": 1082,
+      "name": "Elemental Fury",
+      "changes": [
+        {
+          "kind": "prerequisitesChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "nodeId": 104762,
+              "kind": "sufficient",
+              "name": "Call of Thunder"
+            }
+          ],
+          "new": [
+            {
+              "nodeId": 104759,
+              "kind": "sufficient",
+              "name": "Lightning Overload"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 104768,
+      "treeId": 1082,
+      "name": "Elemental Focus",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 1620,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "new": {
+            "x": 1020,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 104769,
+      "treeId": 1082,
+      "name": "Elemental Devastation",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 2820,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          },
+          "new": {
+            "x": 1020,
+            "y": 2730,
+            "row": 1,
+            "column": 0
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129429,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Your offensive spell critical strikes will increase your chance to get a critical strike with melee attacks by $m1% for $30165d.",
+          "new": "Your Critical Strikes with direct damage spells increase your chance to get a Critical Strike with melee attacks by $m1% for $30165d."
+        }
+      ]
+    },
+    {
+      "nodeId": 104770,
+      "treeId": 1082,
+      "name": "Call of Flame",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 2220,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "new": {
+            "x": 2820,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129430,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases the damage done by your Fire Totems and by your Flame Shock, Fire Nova, and Lava Burst spells by $m1%.",
+          "new": "Increases the damage done by your Fire Totems and by your Flame Shock, Fire Nova, and Lava Burst spells by $m1%, as well as increases the duration of your Flame Shock spell by ${$m3/1000} sec."
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 129430,
+          "effectIndex": 2,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 2,
+            "perRank": [
+              {
+                "rank": 1,
+                "value": 3000
+              },
+              {
+                "rank": 2,
+                "value": 6000
+              },
+              {
+                "rank": 3,
+                "value": 9000
+              }
+            ],
+            "perRankStatus": "resolved",
+            "basePoints": 9000,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 104771,
+      "treeId": 1082,
+      "name": "Elemental Alacrity",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 1020,
+            "y": 2730,
+            "row": 1,
+            "column": 0
+          },
+          "new": {
+            "x": 2220,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          }
+        },
+        {
+          "kind": "spellReplaced",
+          "entryId": 129431,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 28996,
+            "name": "Elemental Warding"
+          },
+          "new": {
+            "spellId": 16578,
+            "name": "Elemental Alacrity"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129431,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Reduces damage taken from Fire, Frost, and Nature effects by $m1%.",
+          "new": "Reduces the cast time of your Lightning Bolt, Chain Lightning, and Lava Burst spells by ${$m1/-1000}.2 sec."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129431,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": -3,
+          "new": -170
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129431,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": -7,
+          "new": -330
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129431,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": -10,
+          "new": -500
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 129431,
+          "effectIndex": 0,
+          "rank": null,
+          "old": -4,
+          "new": -200
+        }
+      ]
+    }
+  ]
+}
