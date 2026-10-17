@@ -336,6 +336,8 @@
         <item quantity="many">%1$d модулей</item>
         <item quantity="other">%1$d модуля</item>
     </plurals>
+    <string name="about_licenses_version">Версия %1$s</string>
+    <string name="about_licenses_linked_into">Статически встроен в %1$s</string>
     <string name="about_licenses_show_modules">Показать модули</string>
     <string name="about_licenses_hide_modules">Скрыть модули</string>
     <string name="about_license_show_text">Показать текст лицензии</string>

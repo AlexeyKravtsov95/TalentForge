@@ -1,5 +1,5 @@
 {
-  "schema": "talentforge.oss-notices.v1",
+  "schema": "talentforge.oss-notices.v2",
   "platform": "android",
   "source": ":composeApp:releaseRuntimeClasspath",
   "licenses": {
@@ -12,7 +12,9 @@
     {
       "name": "AndroidX (Android Jetpack)",
       "url": "https://developer.android.com/jetpack/androidx",
-      "license": "Apache-2.0",
+      "licenses": [
+        "Apache-2.0"
+      ],
       "modules": [
         "androidx.activity:activity-compose:1.13.0",
         "androidx.activity:activity-ktx:1.13.0",
@@ -107,7 +109,9 @@
     {
       "name": "Compose Multiplatform",
       "url": "https://github.com/JetBrains/compose-jb",
-      "license": "Apache-2.0",
+      "licenses": [
+        "Apache-2.0"
+      ],
       "modules": [
         "org.jetbrains.androidx.lifecycle:lifecycle-common:2.9.6",
         "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose:2.9.6",
@@ -137,7 +141,9 @@
     {
       "name": "Kotlin Standard Library",
       "url": "https://kotlinlang.org/",
-      "license": "Apache-2.0",
+      "licenses": [
+        "Apache-2.0"
+      ],
       "modules": [
         "org.jetbrains.kotlin:kotlin-stdlib:2.4.20"
       ]
@@ -145,7 +151,9 @@
     {
       "name": "kotlinx.coroutines",
       "url": "https://github.com/Kotlin/kotlinx.coroutines",
-      "license": "Apache-2.0",
+      "licenses": [
+        "Apache-2.0"
+      ],
       "modules": [
         "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0",
         "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.9.0",
@@ -155,7 +163,9 @@
     {
       "name": "kotlinx.serialization",
       "url": "https://github.com/Kotlin/kotlinx.serialization",
-      "license": "Apache-2.0",
+      "licenses": [
+        "Apache-2.0"
+      ],
       "modules": [
         "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.11.0",
         "org.jetbrains.kotlinx:kotlinx-serialization-core:1.11.0",
@@ -166,7 +176,9 @@
     {
       "name": "JetBrains Java Annotations",
       "url": "https://github.com/JetBrains/java-annotations",
-      "license": "Apache-2.0",
+      "licenses": [
+        "Apache-2.0"
+      ],
       "modules": [
         "org.jetbrains:annotations:23.0.0"
       ]
@@ -174,7 +186,9 @@
     {
       "name": "JSpecify",
       "url": "http://jspecify.org/",
-      "license": "Apache-2.0",
+      "licenses": [
+        "Apache-2.0"
+      ],
       "modules": [
         "org.jspecify:jspecify:1.0.0"
       ]
@@ -182,7 +196,9 @@
     {
       "name": "Guava ListenableFuture",
       "url": "https://github.com/google/guava",
-      "license": "Apache-2.0",
+      "licenses": [
+        "Apache-2.0"
+      ],
       "modules": [
         "com.google.guava:listenablefuture:1.0"
       ]

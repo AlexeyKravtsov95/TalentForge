@@ -15,8 +15,9 @@ enum class BackupStatement {
 /**
  * The bundled open-source notices of THIS platform's distributed binary, or
  * `null` when none are compiled for it. Android ships the generated
- * `oss-notices-android.json`; the iOS framework links a different set
- * (Skiko/Skia) whose notices are not compiled yet (TF-RC2B-IOS-NOTICES).
+ * `oss-notices-android.json`; the iOS framework links a different set — its
+ * klibs plus Skia and the third-party code statically linked into Skiko —
+ * listed in the generated `oss-notices-ios.json` (TF-RC2B-IOS-NOTICES).
  */
 expect val platformOpenSourceNoticesPath: String?
 
@@ -24,6 +25,7 @@ expect val platformOpenSourceNoticesPath: String?
 expect val platformBackupStatement: BackupStatement
 
 const val ANDROID_OSS_NOTICES_PATH = "files/legal/oss-notices-android.json"
+const val IOS_OSS_NOTICES_PATH = "files/legal/oss-notices-ios.json"
 
 /**
  * Public legal links (M5.RC.2b). The privacy-policy URL is an OWNER decision
