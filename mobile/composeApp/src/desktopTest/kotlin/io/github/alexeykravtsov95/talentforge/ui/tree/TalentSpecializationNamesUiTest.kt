@@ -35,8 +35,6 @@ import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAs
 import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
 import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.lang.LocalAppLanguage
-import io.github.alexeykravtsov95.talentforge.data.DatasetBundleId
-import io.github.alexeykravtsov95.talentforge.ui.library.PREVIOUS_PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
 import io.github.alexeykravtsov95.talentforge.ui.theme.classAccentFor
@@ -75,9 +73,9 @@ class TalentSpecializationNamesUiTest {
         reported.clear()
     }
 
-    /** A Ready session of one class of [bundle], the product bundle by default (icons are not needed here). */
-    private fun readyStateOf(classToken: String, bundle: DatasetBundleId = PRODUCT_BUNDLE): TalentTreeUiState.Ready = runBlocking {
-        val document = loadedDocument(classToken, bundle)
+    /** A Ready session of one class of the product bundle (icons are not needed here). */
+    private fun readyStateOf(classToken: String): TalentTreeUiState.Ready = runBlocking {
+        val document = loadedDocument(classToken)
         val engine = TalentAllocationEngine(document)
         TalentTreeUiState.Ready(
             classDisplayName = document.classInfo.name,
@@ -91,10 +89,10 @@ class TalentSpecializationNamesUiTest {
         )
     }
 
-    private fun loadedDocument(classToken: String, bundle: DatasetBundleId = PRODUCT_BUNDLE): TalentDataDocument = runBlocking {
+    private fun loadedDocument(classToken: String): TalentDataDocument = runBlocking {
         assertIs<DatasetOutcome.Loaded<TalentDataDocument>>(
             BundledTalentDatasetRepository(ComposeResourceDatasetAssetSource())
-                .document(DatasetId(bundle.game, bundle.clientBuild, ClassToken(classToken))),
+                .document(DatasetId(PRODUCT_BUNDLE.game, PRODUCT_BUNDLE.clientBuild, ClassToken(classToken))),
         ).value
     }
 
@@ -190,8 +188,7 @@ class TalentSpecializationNamesUiTest {
 
     @Test
     fun changingTheLanguageChangesOnlyTheLabels() {
-        // Mage's tabs on 1.60.1.70374: the product build's Mage tree publishes no sections
-        val state = readyStateOf("MAGE", PREVIOUS_PRODUCT_BUNDLE)
+        val state = readyStateOf("MAGE")
         val cameras = TalentTreeSectionCameras(sessionKey = "language-switch", treeId = state.model.treeId)
         var language by mutableStateOf(AppLanguage.ENGLISH)
 
@@ -261,8 +258,7 @@ class TalentSpecializationNamesUiTest {
 
     @Test
     fun atDoubleFontScaleTheTabShowsItsNumberAndTheFullNameForAccessibility() {
-        // Mage's tabs on 1.60.1.70374: the product build's Mage tree publishes no sections
-        val mage = readyStateOf("MAGE", PREVIOUS_PRODUCT_BUNDLE)
+        val mage = readyStateOf("MAGE")
 
         compose(mage, fontScale = 2f)
         // 1A v2 S8: from 175 % a tab reads its position number; its full

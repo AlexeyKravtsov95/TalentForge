@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import io.github.alexeykravtsov95.talentforge.allocation.BuildState
 import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.library.ALL_BUNDLES
-import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.navigation.DesktopBackDispatcher
 import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
@@ -205,16 +204,9 @@ class TalentTreeGesturesUiTest {
     @Test
     fun everyBundledClassSwitchesFromTreeOneToTreeTwoBySwipe() {
         val edgeModel = mutableListOf<String>()
-        val withoutTabs = mutableListOf<String>()
         for (bundle in ALL_BUNDLES) {
             for (token in CLASS_TOKENS) {
-                val state = readyStateOnBundle(bundle.clientBuild, token)
-                if (state.engine.tree.sections.isEmpty()) {
-                    // one whole-tree canvas, nothing to swipe to (TalentTreeSectionTabsUiTest)
-                    withoutTabs += "${bundle.clientBuild} $token"
-                    continue
-                }
-                onPhone(state) { session ->
+                onPhone(readyStateOnBundle(bundle.clientBuild, token)) { session ->
                     val label = "${bundle.clientBuild} $token"
                     val camera = session.cameras.stateOf(session.open())
                     val model = talentSectionSwipeModel(
@@ -235,8 +227,6 @@ class TalentTreeGesturesUiTest {
                 }
             }
         }
-        // only the product build's Mage tree has no tabs (docs/forever-dataset.md, M5.DATA.4)
-        assertEquals(listOf("${PRODUCT_BUNDLE.clientBuild} MAGE"), withoutTabs)
         println("PR #19 sections wider than a 360 dp phone at FIT (edge model): ${edgeModel.ifEmpty { listOf("none") }}")
     }
 

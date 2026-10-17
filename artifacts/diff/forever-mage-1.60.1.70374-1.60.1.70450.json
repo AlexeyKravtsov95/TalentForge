@@ -9,11 +9,11 @@
   "fromBuild": "1.60.1.70374",
   "toBuild": "1.60.1.70450",
   "fromContentHash": "sha256:ff18555901c4735442298384b7801f1c1a68b749a217a0e012e1ab43b02653f4",
-  "toContentHash": "sha256:0ffb2aae2f2f75428fb4eca86196d086032df2ff47bf9d46c848056b7e9ab7a8",
+  "toContentHash": "sha256:1c6b1f208d66777da50ccd5ea0440ed4922ac6d0c1ed7521bd7147bbe1079fd0",
   "summary": {
     "added": 1,
     "removed": 0,
-    "changed": 54,
+    "changed": 21,
     "changesByKind": {
       "descriptionChanged": 9,
       "effectBasePointsChanged": 5,
@@ -22,25 +22,17 @@
       "maxRankChanged": 3,
       "positionChanged": 1,
       "renamed": 1,
-      "sectionChanged": 54,
       "unlockRequirementsChanged": 11
     }
   },
-  "treeChanges": [
-    {
-      "treeId": 1112,
-      "kind": "sectionsChanged",
-      "old": 3,
-      "new": 0
-    }
-  ],
+  "treeChanges": [],
   "added": [
     {
       "nodeId": 113627,
       "treeId": 1112,
       "name": "Arcane Wrath",
       "spellId": 1326079,
-      "sectionIndex": null,
+      "sectionIndex": 0,
       "position": {
         "x": 2820,
         "y": 3930,
@@ -54,33 +46,10 @@
   "removed": [],
   "changed": [
     {
-      "nodeId": 105762,
-      "treeId": 1112,
-      "name": "Ice Barrier",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 2,
-          "new": null
-        }
-      ]
-    },
-    {
       "nodeId": 105763,
       "treeId": 1112,
       "name": "Winter's Chill",
       "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 2,
-          "new": null
-        },
         {
           "kind": "descriptionChanged",
           "entryId": 130492,
@@ -124,63 +93,10 @@
       ]
     },
     {
-      "nodeId": 105764,
-      "treeId": 1112,
-      "name": "Fingers of Frost",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 2,
-          "new": null
-        }
-      ]
-    },
-    {
-      "nodeId": 105765,
-      "treeId": 1112,
-      "name": "Improved Cone of Cold",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 2,
-          "new": null
-        }
-      ]
-    },
-    {
-      "nodeId": 105766,
-      "treeId": 1112,
-      "name": "Cold Snap",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 2,
-          "new": null
-        }
-      ]
-    },
-    {
       "nodeId": 105767,
       "treeId": 1112,
       "name": "Ice Lance",
       "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 2,
-          "new": null
-        },
         {
           "kind": "effectBasePointsChanged",
           "entryId": 130496,
@@ -192,48 +108,10 @@
       ]
     },
     {
-      "nodeId": 105768,
-      "treeId": 1112,
-      "name": "Shatter",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 2,
-          "new": null
-        }
-      ]
-    },
-    {
-      "nodeId": 105769,
-      "treeId": 1112,
-      "name": "Ice Block",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 2,
-          "new": null
-        }
-      ]
-    },
-    {
       "nodeId": 105770,
       "treeId": 1112,
       "name": "Arctic Reach",
       "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 2,
-          "new": null
-        },
         {
           "kind": "descriptionChanged",
           "entryId": 130499,
@@ -245,33 +123,10 @@
       ]
     },
     {
-      "nodeId": 105771,
-      "treeId": 1112,
-      "name": "Improved Blizzard",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 2,
-          "new": null
-        }
-      ]
-    },
-    {
       "nodeId": 105772,
       "treeId": 1112,
       "name": "Frost Channeling",
       "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 2,
-          "new": null
-        },
         {
           "kind": "effectRankValueChanged",
           "entryId": 130501,
@@ -299,108 +154,10 @@
       ]
     },
     {
-      "nodeId": 105773,
-      "treeId": 1112,
-      "name": "Piercing Ice",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 2,
-          "new": null
-        }
-      ]
-    },
-    {
-      "nodeId": 105774,
-      "treeId": 1112,
-      "name": "Frostbite",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 2,
-          "new": null
-        }
-      ]
-    },
-    {
-      "nodeId": 105775,
-      "treeId": 1112,
-      "name": "Improved Frost Nova",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 2,
-          "new": null
-        }
-      ]
-    },
-    {
-      "nodeId": 105776,
-      "treeId": 1112,
-      "name": "Permafrost",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 2,
-          "new": null
-        }
-      ]
-    },
-    {
-      "nodeId": 105777,
-      "treeId": 1112,
-      "name": "Ice Shards",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 2,
-          "new": null
-        }
-      ]
-    },
-    {
-      "nodeId": 105778,
-      "treeId": 1112,
-      "name": "Elemental Precision",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 2,
-          "new": null
-        }
-      ]
-    },
-    {
       "nodeId": 105779,
       "treeId": 1112,
       "name": "Improved Frostbolt",
       "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 2,
-          "new": null
-        },
         {
           "kind": "descriptionChanged",
           "entryId": 130508,
@@ -412,48 +169,10 @@
       ]
     },
     {
-      "nodeId": 105780,
-      "treeId": 1112,
-      "name": "Frost Warding",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 2,
-          "new": null
-        }
-      ]
-    },
-    {
-      "nodeId": 105781,
-      "treeId": 1112,
-      "name": "Combustion",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 1,
-          "new": null
-        }
-      ]
-    },
-    {
       "nodeId": 105782,
       "treeId": 1112,
       "name": "Fire Power",
       "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 1,
-          "new": null
-        },
         {
           "kind": "maxRankChanged",
           "entryId": null,
@@ -577,33 +296,10 @@
       ]
     },
     {
-      "nodeId": 105783,
-      "treeId": 1112,
-      "name": "Blast Wave",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 1,
-          "new": null
-        }
-      ]
-    },
-    {
       "nodeId": 105784,
       "treeId": 1112,
       "name": "Critical Mass",
       "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 1,
-          "new": null
-        },
         {
           "kind": "maxRankChanged",
           "entryId": null,
@@ -631,33 +327,10 @@
       ]
     },
     {
-      "nodeId": 105785,
-      "treeId": 1112,
-      "name": "Master of Elements",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 1,
-          "new": null
-        }
-      ]
-    },
-    {
       "nodeId": 105786,
       "treeId": 1112,
       "name": "Heating Up",
       "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 1,
-          "new": null
-        },
         {
           "kind": "descriptionChanged",
           "entryId": 130515,
@@ -669,168 +342,10 @@
       ]
     },
     {
-      "nodeId": 105787,
-      "treeId": 1112,
-      "name": "Improved Fire Ward",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 1,
-          "new": null
-        }
-      ]
-    },
-    {
-      "nodeId": 105788,
-      "treeId": 1112,
-      "name": "Improved Scorch",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 1,
-          "new": null
-        }
-      ]
-    },
-    {
-      "nodeId": 105789,
-      "treeId": 1112,
-      "name": "Burning Soul",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 1,
-          "new": null
-        }
-      ]
-    },
-    {
-      "nodeId": 105790,
-      "treeId": 1112,
-      "name": "Pyroblast",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 1,
-          "new": null
-        }
-      ]
-    },
-    {
-      "nodeId": 105791,
-      "treeId": 1112,
-      "name": "Improved Flamestrike",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 1,
-          "new": null
-        }
-      ]
-    },
-    {
-      "nodeId": 105792,
-      "treeId": 1112,
-      "name": "Impact",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 1,
-          "new": null
-        }
-      ]
-    },
-    {
-      "nodeId": 105793,
-      "treeId": 1112,
-      "name": "Flame Throwing",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 1,
-          "new": null
-        }
-      ]
-    },
-    {
-      "nodeId": 105794,
-      "treeId": 1112,
-      "name": "Ignite",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 1,
-          "new": null
-        }
-      ]
-    },
-    {
-      "nodeId": 105795,
-      "treeId": 1112,
-      "name": "Improved Fireball",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 1,
-          "new": null
-        }
-      ]
-    },
-    {
-      "nodeId": 105796,
-      "treeId": 1112,
-      "name": "Incineration",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 1,
-          "new": null
-        }
-      ]
-    },
-    {
       "nodeId": 105797,
       "treeId": 1112,
       "name": "Improved Fire Blast",
       "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 1,
-          "new": null
-        },
         {
           "kind": "renamed",
           "entryId": 130526,
@@ -874,78 +389,10 @@
       ]
     },
     {
-      "nodeId": 105798,
-      "treeId": 1112,
-      "name": "Arcane Power",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 0,
-          "new": null
-        }
-      ]
-    },
-    {
-      "nodeId": 105799,
-      "treeId": 1112,
-      "name": "Arcane Instability",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 0,
-          "new": null
-        }
-      ]
-    },
-    {
-      "nodeId": 105800,
-      "treeId": 1112,
-      "name": "Arcane Mind",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 0,
-          "new": null
-        }
-      ]
-    },
-    {
-      "nodeId": 105801,
-      "treeId": 1112,
-      "name": "Presence of Mind",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 0,
-          "new": null
-        }
-      ]
-    },
-    {
       "nodeId": 105802,
       "treeId": 1112,
       "name": "Missile Barrage",
       "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 0,
-          "new": null
-        },
         {
           "kind": "positionChanged",
           "entryId": null,
@@ -1037,14 +484,6 @@
       "name": "Arcane Meditation",
       "changes": [
         {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 0,
-          "new": null
-        },
-        {
           "kind": "unlockRequirementsChanged",
           "entryId": null,
           "effectIndex": null,
@@ -1094,14 +533,6 @@
       "treeId": 1112,
       "name": "Improved Counterspell",
       "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 0,
-          "new": null
-        },
         {
           "kind": "unlockRequirementsChanged",
           "entryId": null,
@@ -1153,14 +584,6 @@
       "name": "Arcane Shielding",
       "changes": [
         {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 0,
-          "new": null
-        },
-        {
           "kind": "unlockRequirementsChanged",
           "entryId": null,
           "effectIndex": null,
@@ -1210,14 +633,6 @@
       "treeId": 1112,
       "name": "Arcane Blast",
       "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 0,
-          "new": null
-        },
         {
           "kind": "unlockRequirementsChanged",
           "entryId": null,
@@ -1279,14 +694,6 @@
       "name": "Arcane Impact",
       "changes": [
         {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 0,
-          "new": null
-        },
-        {
           "kind": "unlockRequirementsChanged",
           "entryId": null,
           "effectIndex": null,
@@ -1330,14 +737,6 @@
       "treeId": 1112,
       "name": "Arcane Geometry",
       "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 0,
-          "new": null
-        },
         {
           "kind": "unlockRequirementsChanged",
           "entryId": null,
@@ -1383,14 +782,6 @@
       "name": "Arcane Resilience",
       "changes": [
         {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 0,
-          "new": null
-        },
-        {
           "kind": "unlockRequirementsChanged",
           "entryId": null,
           "effectIndex": null,
@@ -1426,14 +817,6 @@
       "treeId": 1112,
       "name": "Arcane Concentration",
       "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 0,
-          "new": null
-        },
         {
           "kind": "unlockRequirementsChanged",
           "entryId": null,
@@ -1471,14 +854,6 @@
       "name": "Magic Absorption",
       "changes": [
         {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 0,
-          "new": null
-        },
-        {
           "kind": "unlockRequirementsChanged",
           "entryId": null,
           "effectIndex": null,
@@ -1514,14 +889,6 @@
       "treeId": 1112,
       "name": "Arcane Subtlety",
       "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 0,
-          "new": null
-        },
         {
           "kind": "unlockRequirementsChanged",
           "entryId": null,
@@ -1559,50 +926,12 @@
       "name": "Improved Channeling",
       "changes": [
         {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 0,
-          "new": null
-        },
-        {
           "kind": "descriptionChanged",
           "entryId": 130542,
           "effectIndex": null,
           "rank": null,
           "old": "Gives you a $m1% chance to avoid interruption caused by damage while channeling Arcane Missiles and a $m2% chance while casting Arcane Blast.",
           "new": "Gives you a $m1% chance to avoid interruption caused by damage while channeling Arcane Missiles and a $m2% chance while casting Arcane Blast or Arcane Wrath."
-        }
-      ]
-    },
-    {
-      "nodeId": 105814,
-      "treeId": 1112,
-      "name": "Arcane Focus",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 0,
-          "new": null
-        }
-      ]
-    },
-    {
-      "nodeId": 105815,
-      "treeId": 1112,
-      "name": "Wand Specialization",
-      "changes": [
-        {
-          "kind": "sectionChanged",
-          "entryId": null,
-          "effectIndex": null,
-          "rank": null,
-          "old": 0,
-          "new": null
         }
       ]
     }

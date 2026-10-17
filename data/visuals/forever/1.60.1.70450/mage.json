@@ -3,7 +3,7 @@
   "game": "forever",
   "clientBuild": "1.60.1.70450",
   "classToken": "MAGE",
-  "talentDataContentHash": "sha256:0ffb2aae2f2f75428fb4eca86196d086032df2ff47bf9d46c848056b7e9ab7a8",
+  "talentDataContentHash": "sha256:1c6b1f208d66777da50ccd5ea0440ed4922ac6d0c1ed7521bd7147bbe1079fd0",
   "entries": [
     {
       "entryId": 130491,
@@ -391,7 +391,7 @@
       "iconFileDataId": 236222
     }
   ],
-  "contentHash": "sha256:bb49d2d1dae7ca34eea2e301d5d8ba52faec15e7aa220cc2ac9d7649acba7f32",
+  "contentHash": "sha256:23ab5af6359ab655158afb567d588f92a146d5777f276fff867f23371a12a7e7",
   "provenance": {
     "source": "wago.tools",
     "tables": [

@@ -7,16 +7,18 @@ the builds saved on them; 1.60.1.70009 stays the verified reference baseline. Ev
 here is generated from 70450's own client rows (DB2, icon files, tooltip tables, ruRU
 strings), never copied.
 
-70450 is a real balance patch (1 added, 1 removed, 98 changed nodes against 70374) and the
-first build whose Mage tree has no derivable talent tabs: the new node Arcane Wrath (113627)
-belongs to no node group any gate counts, so the gate groups no longer partition the tree.
-The pipeline keeps that verbatim (no section is guessed); these tests pin the cause, its
-consequences and every other fact. Facts and evidence: docs/forever-dataset.md.
+70450 is a real balance patch (1 added, 1 removed, 65 changed nodes against 70374) with one
+new kind of anomaly: the new Mage node Arcane Wrath (113627) belongs to no node group any
+gate counts. It joins the Arcane tab because its column lies in the Arcane columns (layout,
+flagged SECTION_NOT_GATE_COUNTED), while its gates stay exactly as the client rows say: no
+points gate, and its point counts toward no Arcane gate. These tests pin the cause, the rule
+and its fail-closed edges, and every other fact. Facts and evidence: docs/forever-dataset.md.
 """
 
 from __future__ import annotations
 
 import csv
+import dataclasses
 import json
 from pathlib import Path
 
@@ -30,6 +32,7 @@ from talent_data.localization.pipeline import check_canonical as check_localizat
 from talent_data.localization.pipeline import localize_build, read_localization_document
 from talent_data.localization.pipeline import read_coverage_report as read_localization_report
 from talent_data.models.talents import TalentDataDocument, TalentNode
+from talent_data.normalization.normalizer import normalize_class
 from talent_data.pipeline import diff_batch, read_document, read_manifest
 from talent_data.sources.local import LocalCsvDb2Source
 from talent_data.tooltips.coverage import render_markdown
@@ -39,7 +42,7 @@ from talent_data.validation.validators import validate_document
 from talent_data.visuals.pipeline import check_canonical as check_visuals
 from talent_data.visuals.pipeline import read_icon_registry, read_visuals_document
 from talent_data.visuals.resolver import VisualSourceTables, resolve_document
-from tests.conftest import ALL_CLASSES, normalize_fixture_class
+from tests.conftest import ALL_CLASSES, load_dataset, normalize_fixture_class
 from tests.helpers import DB2_FIXTURES, FIXTURES, PREVIOUS_PRODUCT_BUILD, PRODUCT_BUILD
 from tests.unit.test_known_anomalies import EXPECTED_WARNINGS
 
@@ -73,14 +76,14 @@ CLASS_STATS = {
     "rogue": (1111, 53, 51, 8, 139, 53, 3),
     "priest": (1114, 53, 51, 8, 153, 53, 3),
     "shaman": (1082, 50, 51, 7, 148, 50, 3),
-    "mage": (1112, 55, 51, 7, 148, 55, 0),
+    "mage": (1112, 55, 51, 7, 148, 55, 3),
     "warlock": (1116, 52, 51, 8, 146, 52, 3),
     "druid": (1089, 52, 51, 11, 148, 52, 3),
 }
 # The investigated warning set of 70450: the reference baseline's, except Mage (below).
 PRODUCT_WARNINGS = {
     **EXPECTED_WARNINGS,
-    "mage": {"OFF_GRID_NODE": 36, "SECTIONS_UNRESOLVED": 1},
+    "mage": {"SECTION_NOT_GATE_COUNTED": 1},
 }
 # class: (added, removed, changed) of the 70374 -> 70450 diff.
 DIFF_TOTALS = {
@@ -90,7 +93,7 @@ DIFF_TOTALS = {
     "rogue": (0, 0, 0),
     "priest": (0, 1, 11),
     "shaman": (0, 0, 15),
-    "mage": (1, 0, 54),
+    "mage": (1, 0, 21),
     "warlock": (0, 0, 5),
     "druid": (0, 0, 3),
 }
@@ -202,28 +205,37 @@ def test_committed_diff_against_the_previous_product_dataset_is_current(
         summary = report.summary
         totals = (summary.added, summary.removed, summary.changed)
         assert totals == DIFF_TOTALS[report.class_.token.lower()], file
-    assert (aggregate.total.added, aggregate.total.removed, aggregate.total.changed) == (1, 1, 98)
+    assert (aggregate.total.added, aggregate.total.removed, aggregate.total.changed) == (1, 1, 65)
 
 
 # --------------------------------------------------------------------------- the Mage anomaly
 
 
-def test_mage_tabs_are_unresolved_because_arcane_wrath_is_outside_every_gate_group(
+def test_arcane_wrath_is_in_no_gate_group_and_joins_the_arcane_tab_by_its_column(
     committed: dict[str, TalentDataDocument],
 ) -> None:
-    """Without Arcane Wrath the three maximal gate groups would partition the Mage tree
-    exactly as on 70374; with it, one node is in none of them, so no section is published
-    and no node names one. The pipeline does not assign the node by geometry."""
+    """The three maximal gate groups cover every Mage node except Arcane Wrath, exactly as
+    on 70374; Arcane Wrath's x lies inside the Arcane group's column range only, so it is the
+    Arcane tab's 19th node - while no gate counts it."""
     mage = committed["mage"]
     (tree,) = mage.trees
-    assert tree.sections == []
-    assert all(n.section_index is None for n in tree.nodes)
-    groups = _gate_groups(mage)
-    assert len(groups) == 3
-    assert sum(len(g) for g in groups) == len(frozenset().union(*groups))  # disjoint
-    assert frozenset().union(*groups) == frozenset(_nodes(mage)) - {ARCANE_WRATH}
+    nodes = _nodes(mage)
+    arcane, fire, frost = _gate_groups(mage)
+    assert sum(len(g) for g in (arcane, fire, frost)) == len(arcane | fire | frost)  # disjoint
+    assert arcane | fire | frost == frozenset(nodes) - {ARCANE_WRATH}
+    assert [sorted(s.node_ids) for s in tree.sections] == [
+        sorted(arcane | {ARCANE_WRATH}),
+        sorted(fire),
+        sorted(frost),
+    ]
+    assert nodes[ARCANE_WRATH].section_index == 0
+    assert (
+        min(nodes[i].position.x for i in arcane) <= 2820 <= max(nodes[i].position.x for i in arcane)
+    )
     counted = {i for n in tree.nodes for req in n.unlock_requirements for i in req.counted_node_ids}
     assert ARCANE_WRATH not in counted
+    warnings = [w for w in validate_document(mage).warnings if w.code == "SECTION_NOT_GATE_COUNTED"]
+    assert [w.node_id for w in warnings] == [ARCANE_WRATH]
 
 
 def test_arcane_wrath_is_ungated_and_requires_arcane_blast(
@@ -258,23 +270,45 @@ def test_arcane_wrath_raw_rows_point_at_four_single_node_groups_without_conditio
     assert [(int(r["LeftTraitNodeID"]), int(r["Type"])) for r in edges] == [(ARCANE_BLAST, 2)]
 
 
-def test_mage_off_grid_nodes_are_the_consequence_of_the_unresolved_tabs(
-    committed: dict[str, TalentDataDocument],
-) -> None:
-    """Without tabs the grid is fitted over the whole tree, so the Arcane columns (and
-    Arcane Wrath) sit 260 units left of it and the Fire columns 140 units right; the Frost
-    columns land on it. Every one of the 36 OFF_GRID_NODE warnings is such a node."""
-    mage = committed["mage"]
-    arcane, fire, frost = _gate_groups(mage)
-    nodes = _nodes(mage)
-    assert "Arcane Blast" in {nodes[i].name for i in arcane}
-    assert "Pyroblast" in {nodes[i].name for i in fire}
-    assert "Ice Lance" in {nodes[i].name for i in frost}
-    off_grid = {
-        issue.node_id for issue in validate_document(mage).warnings if issue.code == "OFF_GRID_NODE"
-    }
-    assert off_grid == arcane | fire | {ARCANE_WRATH}
-    assert not off_grid & frost
+def test_arcane_wrath_sits_on_the_arcane_grid(committed: dict[str, TalentDataDocument]) -> None:
+    """With the tabs resolved, Arcane Wrath is on its tab's grid: row 3, column 3 - Missile
+    Barrage's 70374 cell - and the Mage tree raises no off-grid warning."""
+    node = _nodes(committed["mage"])[ARCANE_WRATH]
+    assert (node.position.row, node.position.column) == (3, 3)
+    codes = validate_document(committed["mage"]).count_by_code()
+    assert "OFF_GRID_NODE" not in codes
+
+
+def _mage_with_arcane_wrath_at(x: int) -> TalentDataDocument:
+    """The real 70450 Mage rows with only Arcane Wrath's raw x moved."""
+    ds = load_dataset("mage", PRODUCT_BUILD)
+    moved = [
+        dataclasses.replace(n, pos_x=x) if n.id == ARCANE_WRATH else n
+        for n in ds.nodes_by_tree[1112]
+    ]
+    return normalize_class(
+        dataclasses.replace(ds, nodes_by_tree={**ds.nodes_by_tree, 1112: moved}),
+        game="forever",
+        class_key="mage",
+        source_name="fixture",
+    )
+
+
+def test_an_ungated_node_between_two_tabs_leaves_the_tabs_unresolved() -> None:
+    """Fail closed: x = 4000 lies between the Arcane (..2820) and Fire (5020..) columns, so
+    no tab contains it and no section is published - nothing is guessed."""
+    document = _mage_with_arcane_wrath_at(4000)
+    assert document.trees[0].sections == []
+    assert validate_document(document).count_by_code()["SECTIONS_UNRESOLVED"] == 1
+
+
+def test_an_ungated_node_follows_its_column_not_its_prerequisite() -> None:
+    """The rule is the column alone: moved into the Fire columns, Arcane Wrath would be a
+    Fire node although its prerequisite (Arcane Blast) is in Arcane."""
+    document = _mage_with_arcane_wrath_at(5620)
+    nodes = _nodes(document)
+    assert nodes[ARCANE_WRATH].section_index == 1
+    assert nodes[ARCANE_BLAST].section_index == 0
 
 
 # --------------------------------------------------------------------------- allocation
