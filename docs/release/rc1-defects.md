@@ -19,6 +19,11 @@ The [test matrix](rc1-test-matrix.md) lists the scenarios that could not be run 
 | P1 | 4 | TF-RC1-ICON, TF-RC1-SIGNING, TF-RC1-DATA, TF-RC1-IOS-PRIVACY (iOS only) |
 | P2 | 8 | TF-RC1-LINT, TF-RC1-IOS-SCENES, TF-RC1-COPY-NAME, TF-RC1-DRAFT-TITLE, TF-RC1-BADGE-200, TF-RC1-TABLET-WIDTH, TF-RC1-ANDROID-CONFIG, TF-RC1-CI |
 
+**M5.RC.2b status (2026-10-18).** TF-RC1-LINT is **RESOLVED**. TF-RC1-SIGNING is **implemented** and
+stays OPEN until the owner's key signs a verified APK. TF-RC1-ANDROID-CONFIG is partly resolved
+(backup off; the other items stay open). M5.RC.2b adds **TF-RC2B-IOS-NOTICES** (iOS only, below).
+Evidence: [rc2b-evidence](rc2b-evidence/README.md).
+
 No P0 was found. The audit found no evidence of saved-build corruption or silent loss.
 The device-level checks behind that statement ran on an Android emulator only (see the matrix); the physical-device run is UNVERIFIED.
 
@@ -85,9 +90,9 @@ The device-level checks behind that statement ran on an Android emulator only (s
 |---|---|
 | Severity | **P1** (packaging prerequisite that blocks publication) |
 | Platforms | Android (RuStore) |
-| Status | OPEN |
+| Status | **OPEN — engineering implemented in M5.RC.2b; closes when the owner's key signs an APK that passes `assemblePublishableRelease`** |
 | Owner | Owner / Release engineering (key custody is an owner decision) |
-| Planned resolution | M5.RC.2b |
+| Planned resolution | M5.RC.2b (implementation, done) → owner key and first verified signed APK before M5.RC.3 |
 
 **Evidence.**
 - E1-60: `apksigner verify composeApp-release-unsigned.apk` reports `DOES NOT VERIFY` and `ERROR: Missing META-INF/MANIFEST.MF`.
@@ -108,6 +113,16 @@ The device-level checks behind that statement ran on an Android emulator only (s
 - Decide APK vs AAB for RuStore.
 
 **Verification.** `apksigner verify --print-certs` on the release APK succeeds. The certificate fingerprint is recorded in the release notes (not in the repo).
+
+**M5.RC.2b implementation.** See the [owner guide](android-release-signing.md).
+- `build.gradle.kts` reads the four signing settings from the environment or `~/.gradle/gradle.properties`.
+- No settings: the unsigned technical build, as before. All four: signed.
+- Partial or invalid settings, a keystore inside the checkout, the debug keystore, or a committed `talentforge.release.*` key: every release build fails, naming the settings without values.
+- The release build type never uses the debug key.
+- `:composeApp:assemblePublishableRelease` is the only upload path. It requires the complete settings plus the owner's certificate SHA-256, and stages `TalentForge-<versionName>-<versionCode>.apk` only after `scripts/verify_release_apk.py` passes. That covers: apksigner verify, one signer, not the debug certificate, fingerprint match, RSA ≥ 4096, frozen `applicationId`, versions, not debuggable, universal APK with `arm64-v8a`, and the APK SHA-256 in a secret-free report.
+- Verified with a **temporary test key** only: 11/11 self-test scenarios pass ([evidence](rc2b-evidence/README.md#signing-self-test)).
+
+**Still open (owner):** create and back up the key, configure the settings, and build and verify the first signed APK.
 
 ---
 
@@ -187,6 +202,13 @@ The device-level checks behind that statement ran on an Android emulator only (s
 - **Expected:** a full lint run is clean or has a baseline. **Actual:** BUILD FAILED.
 - **Resolution:** confirm the false positive and suppress it locally with a justification, or restructure the expression. Add a lint baseline for intentional warnings. `commit()` is a deliberate fail-closed choice: keep it and document it.
 - **Verification:** `./gradlew :composeApp:lintRelease` exits 0.
+- **M5.RC.2b: RESOLVED at the root cause, with no suppression, no baseline and no disabled check.**
+  - Lint's release model contains only the `androidMain` sources of this KMP module.
+  - Its bundled Kotlin analysis also rejects the module's Kotlin 2.4 metadata: the lint log reports "expected version is 2.2.0".
+  - So the `commonMain` call `primaryLanguageTagOf(…)` that ended the `remember` lambda had no type for lint.
+  - The compose-runtime `RememberDetector` then read the `remember` call as `Unit`.
+  - Fix: the lambda now calls an `androidMain` helper with a declared `String` type. Same value, same remember-once behaviour.
+  - `lintRelease`: **0 errors, 9 warnings**, all pre-existing (risk assessment in the [evidence](rc2b-evidence/README.md#lint)). `DataExtractionRules`, raised by the new backup rules, was fixed by adding the API 26–30 rules, not suppressed.
 - **M5.RC.2a update:** `MissingApplicationIcon` is resolved. The icon integration adds 6 warnings (`ObsoleteSdkInt` on `res/mipmap-anydpi-v26`, `IconLauncherShape` on the 5 full-bleed raster fallbacks). These are icon regressions, not part of the pre-existing set. The pre-existing `RememberReturnType` error still fails the task. Current report: 1 error, 9 warnings ([rc2a-evidence/mac/lint](rc2a-evidence/mac/lint/lint-results-release.txt)).
 
 ### TF-RC1-IOS-SCENES — Built Info.plist enables multiple scenes despite the source plist disabling them
@@ -255,6 +277,28 @@ These are owner decisions. None of them blocks RuStore by itself.
 
 **Resolution:** decide each item in M5.RC.2b. Any R8 enablement needs a full device regression.
 
+**M5.RC.2b:**
+- `allowBackup` is **decided and implemented**:
+  - `android:allowBackup="false"`;
+  - `dataExtractionRules`, Android 12+: every domain excluded from `cloud-backup` and `device-transfer`;
+  - `fullBackupContent`, API 26–30: every domain excluded.
+- Verified in the merged release manifest; the privacy text is updated.
+- Vendor migration tools that bypass the Android backup framework are outside the app's control (UNVERIFIED on Huawei, H-12).
+- **Still open (owner decisions, not changed here):** R8/minify, ABI filtering (all four ABIs ship), `localeFilters`/`localeConfig`, `targetSdk` (`OldTargetApi`), first public `versionCode`/`versionName`.
+
+### TF-RC2B-IOS-NOTICES — iOS open-source notices not compiled (added in M5.RC.2b)
+
+- **Severity:** **P1 for an iOS App Store release**; not applicable to the Android (RuStore/AppGallery) release.
+- **Evidence:**
+  - The iOS framework links `org.jetbrains.skiko` (`iosArm64CompileKlibraries`). Skiko statically links the Skia graphics library and Skia's third-party code.
+  - Their licences (BSD-3-Clause for Skia, plus others) require their notices in the distribution. No notice text ships in the skiko klibs.
+  - The Android notices generated in M5.RC.2b do not cover them.
+- **Current behaviour:** the iOS About screen states that no open-source notices are included in the build. It never shows the Android list as if it were complete.
+- **Resolution:**
+  - Compile the iOS notice set: the resolved iOS dependencies, plus Skia and the third-party components linked into Skiko for iOS, with their licence texts.
+  - Add `oss-notices-ios.json`, and point `platformOpenSourceNoticesPath` (iosMain) at it.
+- **Verification:** an iOS About screen listing every component, and a drift check against the iOS klib set.
+
 ### TF-RC1-CI — GitHub Actions is infrastructure-blocked
 
 - **Platform:** process.
@@ -280,7 +324,7 @@ These are owner decisions. None of them blocks RuStore by itself.
 | ID | Item | Category |
 |---|---|---|
 | LR-1 | Talent icons are extracted from the Blizzard game client (BLP, `docs/talent-visuals.md`), and talent names and descriptions are Blizzard game text. Their redistribution in a store app is **not** established as permitted. | Potential legal risk — owner/legal review |
-| LR-2 | "World of Warcraft", "Forever" and class names are Blizzard trademarks. The app and listing have no non-affiliation disclaimer, and no about/legal surface exists in the app. | Potential legal risk — needs disclaimer decision |
+| LR-2 | "World of Warcraft", "Forever" and class names are Blizzard trademarks. The app and listing have no non-affiliation disclaimer, and no about/legal surface exists in the app. **M5.RC.2b:** the About screen shows the trademark-free draft statement (RU/EN); still not legally reviewed. | Potential legal risk — needs disclaimer decision (OPEN) |
 | LR-3 | The provenance and license of the 9 class artwork masters (`composeResources/drawable/class_*.png`) are not recorded in the repo. | Owner review |
-| LR-4 | No open-source notices or attribution surface (Kotlin, Compose Multiplatform, AndroidX, kotlinx are Apache-2.0). No `LICENSE` in the repo. | Potential compliance gap — review |
-| LR-5 | Privacy: no network, no account, data stays on the device (plus Android auto-backup, TF-RC1-ANDROID-CONFIG). Store forms still need answers: RuStore "Data Safety", Apple privacy nutrition label, and a privacy-policy URL. Apple's requirement for a URL is an assumption not re-verified in this audit. | Owner action |
+| LR-4 | No open-source notices or attribution surface (Kotlin, Compose Multiplatform, AndroidX, kotlinx are Apache-2.0). No `LICENSE` in the repo. **M5.RC.2b:** Android in-app notices (generated, 122 modules, Apache-2.0 text); iOS not compiled (TF-RC2B-IOS-NOTICES). | Potential compliance gap — owner/legal sign-off (OPEN) |
+| LR-5 | Privacy: no network, no account, data stays on the device (plus Android auto-backup, TF-RC1-ANDROID-CONFIG). Store forms still need answers: RuStore "Data Safety", Apple privacy nutrition label, and a privacy-policy URL. Apple's requirement for a URL is an assumption not re-verified in this audit. **M5.RC.2b:** Android backup off; in-app privacy summary; policy link slot empty until a URL is approved. | Owner action (OPEN) |

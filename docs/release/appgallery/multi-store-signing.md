@@ -2,15 +2,18 @@
 
 | | |
 |---|---|
-| Milestone | M5.GALLERY.1 — AppGallery release preparation (documentation and validation only) |
+| Milestone | M5.GALLERY.1 — AppGallery release preparation (strategy) · M5.RC.2b — implementation |
 | Tracking | GitHub issue #36 · Google Play deferred to backlog issue #35 |
 | Base | `main` @ `f7494e1` (merge of PR #34, M5.RC.2a) |
 | Sources checked | 2026-10-17, official store documentation listed in [§12](#12-sources) |
 | Related | [readiness](readiness.md) · [testing and publication](testing-and-publication.md) · [rc1-defects TF-RC1-SIGNING](../rc1-defects.md#tf-rc1-signing--android-release-artifact-is-unsigned-no-release-signing-configuration) |
 
-> **Status: design decision recorded, nothing implemented.** No key was generated, no signing
-> configuration was added, nothing was signed for release, nothing was uploaded. TF-RC1-SIGNING
-> stays **OPEN**. The Gradle snippet in §6 is a proposal for M5.RC.2b.
+> **Status (M5.RC.2b): signing implemented, no production key yet.** M5.GALLERY.1 recorded the
+> strategy. M5.RC.2b implemented the signing configuration (§6), the fail-closed publishable path and
+> the APK validator (§7, [owner guide](../android-release-signing.md)), verified with a
+> temporary test key only. No production key has been generated, nothing was signed for release,
+> nothing was uploaded. TF-RC1-SIGNING stays **OPEN** until the owner's key signs an APK that passes
+> `assemblePublishableRelease`.
 
 ## 1. Recommendation
 
@@ -177,64 +180,50 @@ Rules:
    digest, then delete the throwaway APK. Never upload it.
 4. Repeat with backup B. Record the date of the drill in the owner's release record.
 
-## 6. Signing through local configuration or environment variables (proposal for M5.RC.2b)
+## 6. Signing through local configuration or environment variables (implemented in M5.RC.2b)
 
-Not implemented in this PR (TF-RC1-SIGNING is resolved in M5.RC.2b). Proposed shape, for review:
+Implemented in `mobile/composeApp/build.gradle.kts`; the owner procedure is the
+[Android release signing guide](../android-release-signing.md). In short:
 
-```kotlin
-// mobile/composeApp/build.gradle.kts — PROPOSAL ONLY (M5.RC.2b, TF-RC1-SIGNING)
-// Values come from environment variables or from ~/.gradle/gradle.properties (outside the repo).
-// When any value is missing, the release build stays UNSIGNED — it never falls back to the debug key.
-val releaseSigning: Map<String, String?> = listOf("store_file", "store_password", "key_alias", "key_password")
-    .associateWith { name ->
-        providers.environmentVariable("TALENTFORGE_RELEASE_${name.uppercase()}")
-            .orElse(providers.gradleProperty("talentforge.release.$name"))
-            .orNull
-    }
+- The four settings (`TALENTFORGE_RELEASE_STORE_FILE`, `_STORE_PASSWORD`, `_KEY_ALIAS`,
+  `_KEY_PASSWORD`) come from the environment or from `~/.gradle/gradle.properties`
+  (`talentforge.release.*`); the environment wins. A `talentforge.release.*` key in the repository's
+  `gradle.properties` fails the build.
+- **None set:** `assembleRelease` builds the unsigned technical APK, as before.
+- **All four set and valid:** the release APK is signed with that key.
+- **Anything else** (partial settings, missing keystore, keystore inside the checkout, the SDK debug
+  keystore or the `androiddebugkey` alias): `checkReleaseSigning` fails every release build. The
+  message names the settings and never prints a value.
+- The upload artifact comes only from `:composeApp:assemblePublishableRelease`. That task also
+  requires the expected certificate fingerprint (`TALENTFORGE_RELEASE_CERT_SHA256`) and stages the
+  APK only after `scripts/verify_release_apk.py` passes (§7).
+- The proposed "missing credentials → unsigned" behaviour is kept for `assembleRelease` only. The
+  publishable path never produces an unsigned or debug-signed artifact.
 
-android {
-    signingConfigs {
-        if (releaseSigning.values.all { !it.isNullOrBlank() }) {
-            create("release") {
-                storeFile = file(releaseSigning.getValue("store_file")!!)
-                storePassword = releaseSigning.getValue("store_password")
-                keyAlias = releaseSigning.getValue("key_alias")
-                keyPassword = releaseSigning.getValue("key_password")
-            }
-        }
-    }
-    buildTypes {
-        getByName("release") {
-            signingConfig = signingConfigs.findByName("release") // null → unsigned, never "debug"
-        }
-    }
-}
-```
-
-Owner-side configuration (never in the repository):
-
-```properties
-# ~/.gradle/gradle.properties  (chmod 600)
-talentforge.release.store_file=/Volumes/<encrypted volume>/talentforge-release.p12
-talentforge.release.store_password=<from the password manager>
-talentforge.release.key_alias=talentforge
-talentforge.release.key_password=<from the password manager>
-```
-
-CI secrets are out of scope until CI works again (TF-RC1-CI).
+CI holds no production secret. `mobile-ci` runs `scripts/release_signing_selftest.sh` with a
+temporary test key that is deleted on exit (TF-RC1-CI still blocks CI runs).
 
 ## 7. Preventing accidental debug-key signing
 
-| Guard | How |
-|---|---|
-| No debug fallback | The `release` build type never references `signingConfigs.debug`. Missing credentials produce an unsigned APK, which both stores reject, never a debug-signed one. |
-| Never upload `*-debug.apk` | Upload only the release APK from a clean release build of the tagged release commit. |
-| Certificate check before every upload | `apksigner verify --print-certs --verbose <apk>`: the signer DN must **not** be the Android debug certificate (`apksigner` prints it as `C=US, O=Android, CN=Android Debug`), and the SHA-256 digest must equal the owner's recorded fingerprint (§5.1). |
-| Not debuggable | `aapt2 dump badging <apk>` must not print `application-debuggable`. RuStore lists `android:debuggable="true"` and a debug certificate among malware signs. |
-| Signature schemes | Record which schemes verify (`apksigner verify --verbose`). `minSdk 26` does not need the v1 scheme. |
+All guards below are implemented (M5.RC.2b) and run automatically in `assemblePublishableRelease`
+through `scripts/verify_release_apk.py`; the owner can also run the validator standalone on the file
+to upload.
 
-`run-gallery1-checks.sh` already shows the difference: the debug APK verifies with the Android
-debug certificate and the unsigned release APK does not verify. See [readiness §7](readiness.md#7-validation-results).
+| Guard | How (implemented) |
+|---|---|
+| No debug fallback | The `release` build type sets `signingConfig = signingConfigs.findByName("release")`: the owner's key or none, never `signingConfigs.debug`. The SDK debug keystore and the `androiddebugkey` alias are refused as release settings. |
+| No unsigned upload | `assemblePublishableRelease` fails before building without the complete signing settings and the expected fingerprint; it stages nothing unless every check passes. |
+| Never upload `*-debug.apk` | Upload only `build/outputs/publishable/TalentForge-<versionName>-<versionCode>.apk`. The validator rejects the debug APK (debug DN, debuggable). |
+| Certificate check | `apksigner verify --verbose --print-certs`: verifies, exactly one signer, the DN is **not** the Android debug subject, the certificate differs from the local debug keystore's, and its SHA-256 equals the owner's recorded fingerprint (§5.1). Key: RSA ≥ 4096. |
+| Package identity | `aapt2 dump badging`: `applicationId` is the frozen `io.github.alexeykravtsov95.talentforge`; `versionCode`/`versionName` equal the build's; no `application-debuggable`; not test-only. RuStore lists `android:debuggable="true"` and a debug certificate among malware signs. |
+| Universal APK | Not a split (`split=` absent), the `native-code` list equals the ABIs packaged under `lib/`, and `arm64-v8a` is present. |
+| Identity across stores | The JSON report records the APK's SHA-256; the same digest must be recorded for the RuStore and the AppGallery upload. |
+| Signature schemes | Recorded in the report. With `minSdk 26` the release APK is signed with v2 only (no v1 needed); the validator requires v2 or v3. |
+
+`run-gallery1-checks.sh` already showed the difference: the debug APK verifies with the Android
+debug certificate and the unsigned release APK does not verify ([readiness §7](readiness.md#7-validation-results)).
+M5.RC.2b's self-test shows every guard working with a temporary key
+([rc2b-evidence](../rc2b-evidence/README.md#signing-self-test)).
 
 ## 8. Certificate SHA-256 verification
 
@@ -310,7 +299,8 @@ The backup procedure in §5 is the only practical protection.
 | S-1 | Approve this strategy (APK, one key, no managed signing), or record a different decision | owner |
 | S-2 | Create the release keystore (§5.1) outside the repository; record the fingerprints | owner |
 | S-3 | Make backups A and B and run the recovery drill (§5.2, §5.3) | owner |
-| S-4 | M5.RC.2b: review and merge the signing configuration (§6) that closes TF-RC1-SIGNING | owner + engineering |
+| S-4 | M5.RC.2b: review and merge the signing configuration (§6, implemented); TF-RC1-SIGNING closes once the owner's key signs an APK that passes `assemblePublishableRelease` | owner + engineering |
+| S-4a | Configure the signing settings and the expected fingerprint on the release machine ([owner guide §3](../android-release-signing.md#3-configure-the-build-)) | owner |
 | S-5 | Decide the first public `versionCode` / `versionName` (existing checklist gate) | owner |
 | S-6 | In both consoles: do not enable AGC App Signing for the APK and do not upload a key to RuStore | owner's store accounts |
 | S-7 | For #35 later: provide the same key to Play before the first open/production release | owner (deferred) |

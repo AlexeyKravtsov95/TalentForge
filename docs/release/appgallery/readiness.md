@@ -9,6 +9,18 @@
 | Environment | owner's Mac (Apple silicon, macOS 26.3.1), JDK 17.0.19, Python 3.12.13, Android build-tools 37.0.0 ([evidence](evidence/README.md)) |
 | Documents | [Signing](multi-store-signing.md) · [Testing and publication](testing-and-publication.md) · [Privacy and compliance](privacy-and-compliance.md) · [Assets](assets-checklist.md) · [Listing EN](store-listing-en.md) · [Listing RU](store-listing-ru.md) · [Release checklist §9](../rc1-release-checklist.md#9-huawei-appgallery-publication-m5gallery1) |
 
+> **M5.RC.2b update (2026-10-18).** M5.RC.2b closed the engineering side of the release gates
+> below, with evidence in [rc2b-evidence](../rc2b-evidence/README.md):
+> - fail-closed release signing and the only upload path, `assemblePublishableRelease`, which
+>   verifies the APK ([owner guide](../android-release-signing.md));
+> - TF-RC1-LINT resolved;
+> - Android backup off;
+> - an in-app About / legal screen with the Android open-source notices.
+>
+> **The decision is still NO-GO for publication.** No production key exists, nothing was
+> signed for release or uploaded, and LR-1…LR-5, TF-RC1-DATA and the device runs remain open
+> (§8).
+
 ## 1. Executive summary
 
 **Decision: NO-GO for publication — unchanged from M5.RC.1.** This milestone prepares AppGallery
@@ -112,8 +124,8 @@ Huawei device.
 | O-5 | 🔑 **VERIFY IN CONSOLE** that the account can create the Android app in AppGallery Connect and submit it for release (not independently verified); then create the app record (category **App** is irreversible) and choose the release countries | testing §2.2, §2.9, §6 step 1 |
 | O-6 | Legal review LR-1…LR-3, including store screenshots | [privacy §9](privacy-and-compliance.md#9-owner-and-legal-actions) P-1, P-3 |
 | O-7 | Choose the trademark/disclaimer approach (LR-2) and approve the listing copy | P-2 |
-| O-8 | Decide the OSS-notice mechanism (LR-4) | P-4 |
-| O-9 | Decide `allowBackup`; finalise and host the privacy policy (RU + EN); decide on an in-app privacy link | P-5, P-6, P-7 |
+| O-8 | Approve the OSS-notice mechanism implemented in M5.RC.2b (About screen, generated Android notices) or request another (LR-4) | P-4 |
+| O-9 | ✅ `allowBackup` decided and implemented (off, M5.RC.2b). Still open: finalise and host the privacy policy (RU + EN) and provide the approved URL for the in-app link slot | P-5, P-6, P-7 |
 | O-10 | Decide on a Russian app name for RuStore (168-FZ recommendation) | [listing RU §2](store-listing-ru.md#2-название) |
 | O-11 | Provide a developer contact for the store cards | listing §9 |
 | O-12 | 🔑 Answer the age-rating questionnaires and the AppGallery AI declaration | P-8 |
@@ -197,12 +209,12 @@ None of the existing gates is closed by this milestone.
 | Gate | Status after M5.GALLERY.1 | AppGallery-specific note |
 |---|---|---|
 | TF-RC1-ICON | **OPEN.** Signed-release and physical-device verification outstanding | The store icon file meets AppGallery's 512×512 PNG ≤ 2 MB; the Huawei launcher check is H-11 |
-| TF-RC1-SIGNING | **OPEN.** No production signing; the release APK does not verify | The strategy is documented; implementation is M5.RC.2b |
+| TF-RC1-SIGNING | **OPEN, engineering done (M5.RC.2b).** Fail-closed signing and the verified `assemblePublishableRelease` path are implemented and tested with a temporary key; the owner key and the first signed APK are outstanding | The same verified APK goes to both stores; its SHA-256 is in the report |
 | TF-RC1-DATA | **OPEN, and the gap grew:** latest publishable `1.60.1.70450` vs product `1.60.1.70374` (M5.RC.1 found `70425`) | Refresh, or record the owner's decision, before RC.3 |
-| TF-RC1-LINT | **OPEN.** Unchanged: 1 error (`RememberReturnType`), 9 warnings | — |
-| LR-1…LR-5 | **OPEN.** Now explicit in both stores' rules | [privacy §7](privacy-and-compliance.md#7-intellectual-property-and-trademarks) |
+| TF-RC1-LINT | **RESOLVED (M5.RC.2b):** 0 errors, 9 pre-existing warnings | — |
+| LR-1…LR-5 | **OPEN.** Now explicit in both stores' rules. M5.RC.2b adds the in-app surface (draft disclaimer, privacy summary, Android OSS notices) but closes none | [privacy §7](privacy-and-compliance.md#7-intellectual-property-and-trademarks) |
 | M5.RC.3 final device testing | **PENDING.** Adds H-1…H-14 on a Huawei device | [testing §5](testing-and-publication.md#5-device-test-plan) |
-| TF-RC1-ANDROID-CONFIG (P2) | **OPEN.** `allowBackup`, R8, ABIs, `localeConfig`, versions | `allowBackup` now also determines the privacy text |
+| TF-RC1-ANDROID-CONFIG (P2) | **PARTLY RESOLVED (M5.RC.2b):** backup off and verified. Still open: R8, ABIs, `localeConfig`, `targetSdk`, versions | Backup behaviour on Huawei devices (Phone Clone) UNVERIFIED (H-12) |
 
 ## 9. Limitations
 
