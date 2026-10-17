@@ -121,7 +121,7 @@ def test_the_committed_vectors_are_what_python_computes() -> None:
 
 def test_every_bundled_overlay_is_a_vector_and_carries_its_python_hash() -> None:
     listed = json.loads(VECTORS.read_text(encoding="utf-8"))["overlays"]
-    assert len(listed) == 36  # 4 builds x 9 classes (M5.REL.3b.1)
+    assert len(listed) == 45  # 5 builds x 9 classes (M5.REL.3b.1, 70450 since M5.DATA.4)
     for row in listed:
         raw = json.loads((ROOT / row["path"]).read_text(encoding="utf-8"))
         assert raw["contentHash"] == row["contentHash"], row["path"]

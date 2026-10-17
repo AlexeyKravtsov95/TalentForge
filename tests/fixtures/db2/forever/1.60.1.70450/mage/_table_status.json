@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "tables": {
+    "TraitNodeEntryXTraitCost": {
+      "status": "absent",
+      "evidence": "wago.tools: GET /db2/TraitNodeEntryXTraitCost/csv?build=1.60.1.70450 -> HTTP 400 {\"errors\": \"Table not found.\"}"
+    },
+    "TraitNodeGroupXTraitCost": {
+      "status": "absent",
+      "evidence": "wago.tools: GET /db2/TraitNodeGroupXTraitCost/csv?build=1.60.1.70450 -> HTTP 400 {\"errors\": \"Table not found.\"}"
+    },
+    "TraitNodeXTraitCost": {
+      "status": "absent",
+      "evidence": "wago.tools: GET /db2/TraitNodeXTraitCost/csv?build=1.60.1.70450 -> HTTP 400 {\"errors\": \"Table not found.\"}"
+    }
+  }
+}

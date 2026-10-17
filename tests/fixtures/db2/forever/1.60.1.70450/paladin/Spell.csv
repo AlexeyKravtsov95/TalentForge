@@ -1,0 +1,53 @@
+ID,NameSubtext_lang,Description_lang,AuraDescription_lang
+5923,,"Increases the critical strike chance of your Holy Shock and Holy Strike spells by $m2%, and all other spells by $m1%.",
+9452,,"Gives your damaging melee attacks a chance to reduce the target's Attack Power by ${$m1/-3*$440667m1}, and increase your Attack Power by $m1% for $440667d.",
+9453,,Reduces the duration of Fear and Disorient effects on you by $s1%.,
+9799,,All critical strikes against you cause $s1% of the damage taken to the attacker as well. The damage caused by Eye for an Eye will not exceed 50% of the Paladin's total health.,
+20143,,Increases your armor value from items by $s1%.,
+20049,,Increases your Physical and Holy damage dealt by $s1% for $20050d after landing a non-periodic critical strike.  Stacks up to $20050u times.,
+20066,,"Puts the enemy target in a state of meditation, incapacitating them for up to $d. Any damage caused will awaken the target. Only works against Humanoids.",Incapacitated.
+20101,,Reduces the Mana cost of all instant cast spells and abilities by $m1%.,
+20127,,Damaging melee attacks against you have a $h% chance to increase your chance to block by $m1%.  Lasts $20128d or $20128n blocks.,
+20150,,"Increases the amount of damage absorbed by your shield by $m1%, and gives your blocks a $m2% chance to restore $1310925m1% of your maximum Mana.  May only occur once every $proccooldown sec.",
+20174,,Reduces the cooldown of your Blessing of Protection by $/60000;s1 min and increases the duration of your Blessing of Freedom by $/1000;s2 sec.,
+20177,,Gives you a $m1% chance after Blocking and a ${$m1*2.5}% chance after receiving a non-periodic critical strike to gain an extra attack. Stores up to $1326084u extra attacks. Cannot occur from Blocks more than once every ${$proccooldown}.1 sec.,
+20196,,Increases the damage you deal with one-handed melee weapons by $s1%.,
+20205,,"Gives your Flash of Light, Holy Light, and Light's Vigil spells a $s1% chance to not lose casting time when you take damage.",
+20210,,"After getting a critical effect from your Flash of Light, Holy Light, Light's Vigil, or Holy Shock heal spell you have a $m1% chance to gain Mana equal to $m3% of the base cost of the spell.",
+20216,,"When activated, gives your next Flash of Light, Holy Light, or Holy Shock spell a $s1% critical effect chance.","Critical effect chance of next Flash of Light, Holy Light, or Holy Shock spell increased by $s1%."
+20224,,Increases the damage done by your Seals and Judgements by $s1%.,
+20237,,"Increases the amount healed by your Holy Light, Flash of Light, and Holy Shock spells by $s1%.",
+20257,,Increases your total Intellect by $s1%.,
+20262,,Increases your Strength by $s1%.,
+20375,Rank 1,"Gives the Paladin a chance to deal additional Holy damage equal to $20424s1% of normal weapon damage.  Only one Seal can be active on the Paladin at any one time.  Lasts $d.
+
+Unleashing this Seal's energy will judge an enemy, instantly causing $/2;20467s1 Holy damage, $20467s1 if the target is stunned or incapacitated.",Melee attacks have a chance to deal additional Holy damage.
+20468,,"While Righteous Fury is active, all damage taken is reduced by $m1%.",
+20487,,Decreases the cooldown of your Hammer of Justice spell by $/1000;s1 sec.,
+20925,Rank 1,"Increases chance to block by $s1% for $d, and deals $s2 Holy damage for each attack blocked while active.  Damage caused by Holy Shield causes 20% additional threat. Each block expends a charge. $n charges.",Block chance increased by ${$m1/$m3}%. $w2 Holy damage dealt to attacker when blocked. Damage caused by Holy Shield causes 20% additional threat.$?$n>0[ $n charges.][]
+25956,,Decreases the cooldown of your Judgement ability by $/1000;s1 sec.,
+26022,,Increases movement speed and mounted movement speed by $s1%.  This does not stack with other movement speed increasing effects.,
+426065,,Your Holy Shock and Flash of Light critical hits reduce the cast time of your next Holy Light cast within $437063d by ${$m1/-1000}.1 sec.,
+429144,,Reduces the mana cost of your Cleanse and Purify spells by $m1% and reduces the cooldown of your Exorcism and Holy Wrath spells by $m2%.,
+1224697,,"Increases your total Stamina by $s1% and reduces the cooldown of your Divine Shield, Divine Protection, and Templar's Bulwark spells by ${$m2/-1000} sec.",
+1237268,,"Reduces the mana cost of your Consecration, Holy Wrath, Exorcism, and Hammer of Wrath spells by $m1%.",
+1310735,,"Reduces the Mana cost of your Seal spells by $s1%, and when you replace your Seal of Command, Seal of Righteousness, Seal of Fury, or Seal of Justice with a different Seal, you gain an Echo of that Seal. Your next melee attack applies the replaced Seal's effects, consuming the Echo.",
+1310897,,Grants you immunity to Silence and Interrupt effects for $d.,Immune to Silence and Interrupt effects.
+1310905,,Gives your Holy spells $m1% increased damage against the first $20924s3 enemies that enter your Consecration.,
+1310911,Rank 1,"Applies Light's Vigil to the target for $1310909d. Your next Holy Shock cast on them triggers no cooldown and causes enemy targets to suffer $1310914s1 Holy damage and refund $s2% of Light's Vigil's Mana cost, or allied targets to heal their party for $1310912s1. You may only have one Light's Vigil active per party.",
+1310994,,Finishes the remaining cooldown on your Judgement ability and reduces the Mana cost of your next Judgement by $s1%.,Mana cost of Judgement reduced by $s1%.
+1311015,,"When activated, this ability grants you an absorb shield equal to $s1% of your maximum health for $d. Applies Forbearance for $25771d. Cannot be cast while Forbearance is active.",Absorbs $w1 damage.
+1311034,,"Increases the threat generated by your Holy Strike ability by $m1%. While Righteous Fury is active, Holy Strike also reduces your damage taken by $m2% for $1311033d.",
+1311074,,Gives your Judgement ability a $m1% chance to return $m2% of the Mana cost of the judged seal.,
+1311084,,Increases your spell damage by up to $m1% of your Intellect.,
+1311085,,"Reduces the cast time of your Hammer of Wrath by ${$m1/-1000}.1 sec, and reduces all threat you generate by $m2% while Righteous Fury is not active.",
+1311087,,Increases the damage of your Holy Strike ability by $m1% and causes it to refresh all Judgement effects on the target.,
+1311606,Rank 1,"Blasts the target with Holy energy, causing $1311604s1 Holy damage to an enemy, or $1311605s1 healing to an ally.",
+1314103,,"When Seal of Fury's shield is fully absorbed, restore $m1 Mana, increased by $m2% per level the attacker is above you, up to ${$m2*$m3}%.",
+20060,,Increases your Parry chance by $s1%.,
+20096,,Increases your Defense Skill by $m1.,
+20111,,Increases the damage you deal with two-handed melee weapons by $s1%.,
+20117,,Improves your chance to get a critical strike with melee attacks by $s1%.,
+20189,Rank 1,Improves your chance to hit by $s1%.,
+1310899,,Allows $s1% of your Mana regeneration to continue while casting.,
+1310904,,Improves your chance to hit with Holy spells by $s1%.,

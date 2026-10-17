@@ -34,7 +34,9 @@ KNOWN_WARNING_CODES: dict[str, str] = {
     "on Rogue: cond 50984 combines a node reference with a group/spend gate; unknown "
     "combinations are surfaced, never silently flattened or dropped)",
     "SHARED_GRID_CELL": "two nodes map to the same derived grid cell",
-    "SECTIONS_UNRESOLVED": "talent tabs could not be derived from the gate groups",
+    "SECTIONS_UNRESOLVED": "talent tabs could not be derived from the gate groups (observed on "
+    "Mage 1.60.1.70425+: node 113627 Arcane Wrath belongs to no group any gate counts; no "
+    "section is guessed)",
 }
 
 KNOWN_ERROR_CODES: frozenset[str] = frozenset(

@@ -20,13 +20,20 @@ import pytest
 from talent_data.allocation import BuildState, TalentAllocationEngine
 from talent_data.models.talents import TalentDataDocument, TalentTree
 from tests.conformance.scenarios import BASELINE
-from tests.helpers import BUILD_70245, OLD_BUILD, PREVIOUS_PRODUCT_BUILD, PRODUCT_BUILD
+from tests.helpers import (
+    BUILD_70245,
+    BUILD_70338,
+    OLD_BUILD,
+    PREVIOUS_PRODUCT_BUILD,
+    PRODUCT_BUILD,
+)
 
 CLASSES = ["WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "MAGE", "WARLOCK", "DRUID"]
 BUILDS = [
     str(BASELINE),
     str(OLD_BUILD),
     str(BUILD_70245),
+    str(BUILD_70338),
     str(PREVIOUS_PRODUCT_BUILD),
     str(PRODUCT_BUILD),
 ]
@@ -39,11 +46,13 @@ def _docs(
     product_docs: dict[str, TalentDataDocument],
     previous_product_docs: dict[str, TalentDataDocument],
     build_70245_docs: dict[str, TalentDataDocument],
+    build_70338_docs: dict[str, TalentDataDocument],
 ) -> dict[str, TalentDataDocument]:
     return {
         str(BASELINE): docs,
         str(OLD_BUILD): old_docs,
         str(BUILD_70245): build_70245_docs,
+        str(BUILD_70338): build_70338_docs,
         str(PREVIOUS_PRODUCT_BUILD): previous_product_docs,
         str(PRODUCT_BUILD): product_docs,
     }[build]
@@ -59,8 +68,17 @@ def test_random_walk_invariants(
     product_docs: dict[str, TalentDataDocument],
     previous_product_docs: dict[str, TalentDataDocument],
     build_70245_docs: dict[str, TalentDataDocument],
+    build_70338_docs: dict[str, TalentDataDocument],
 ) -> None:
-    doc = _docs(build, docs, old_docs, product_docs, previous_product_docs, build_70245_docs)[cls]
+    doc = _docs(
+        build,
+        docs,
+        old_docs,
+        product_docs,
+        previous_product_docs,
+        build_70245_docs,
+        build_70338_docs,
+    )[cls]
     engine = TalentAllocationEngine(doc)
     twin = TalentAllocationEngine(doc)  # a second instance must answer identically
     rng = random.Random(f"{cls}-{build}")
