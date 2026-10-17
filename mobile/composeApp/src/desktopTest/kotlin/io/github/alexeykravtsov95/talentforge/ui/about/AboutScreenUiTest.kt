@@ -146,6 +146,8 @@ class AboutScreenUiTest {
         }
         awaitText("Apache License 2.0 · 1 module")
         awaitText("Apache License 2.0 · 88 modules")
+        // M5.LEGAL.OSS.1: the stdlib card carries the ThreeTen licence next to the POM's Apache-2.0
+        awaitText("Apache License 2.0, BSD 3-Clause License (ThreeTen) · 1 module")
         // no approved policy URL (LR-5): no link and no placeholder
         assertAbsent("Privacy policy")
     }
@@ -194,6 +196,7 @@ class AboutScreenUiTest {
         awaitText("Apache License 2.0 · 1 модуль")
         awaitText("Apache License 2.0 · 3 модуля")
         awaitText("Apache License 2.0 · 88 модулей")
+        awaitText("Apache License 2.0, BSD 3-Clause License (ThreeTen) · 1 модуль")
         clickText("Показать модули")
         awaitText("Скрыть модули")
         assertAbsent("Show modules")
@@ -261,7 +264,7 @@ class AboutScreenUiTest {
         awaitText("Guava ListenableFuture")
         val toggles = onAllNodes(clickLabelled("Show modules")).fetchSemanticsNodes() +
             onAllNodes(clickLabelled("Show license text")).fetchSemanticsNodes()
-        assertEquals(9, toggles.size, "8 component toggles and 1 licence toggle")
+        assertEquals(10, toggles.size, "8 component toggles and 2 licence toggles")
         // layout size, not the scroll-clipped bounds: most toggles are below the fold (density 1 → px = dp)
         for (toggle in toggles) {
             assertTrue(toggle.size.height >= 48, "toggle target ${toggle.size.height} px < 48 dp")

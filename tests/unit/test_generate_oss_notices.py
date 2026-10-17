@@ -254,6 +254,70 @@ def test_the_committed_ios_notices_are_what_the_generator_builds() -> None:
     )
 
 
+# --- embedded third-party code (M5.LEGAL.OSS.1) ---------------------------------------------
+
+
+def test_the_android_notices_carry_the_stdlibs_threeten_licence() -> None:
+    """The Android kotlin-stdlib jar embeds ThreeTen-derived kotlin.time: its BSD-3-Clause
+    text is listed on the component (with the POM's Apache-2.0 first), all 122 modules are
+    still listed, and the iOS document keeps attributing the code through its inventory."""
+    _, android_text, android_modules = committed("android")
+    assert len(android_modules) == 122
+    document = json.loads(android_text)
+    stdlib = next(c for c in document["components"] if c["name"] == "Kotlin Standard Library")
+    assert stdlib["modules"] == [STDLIB]
+    assert stdlib["licenses"] == ["Apache-2.0", "ThreeTen-BSD-3-Clause"]
+    assert document["licenses"]["ThreeTen-BSD-3-Clause"] == {
+        "name": "BSD 3-Clause License (ThreeTen)",
+        "file": "files/legal/LICENSE-ThreeTen.txt",
+    }
+    _, ios_text, _ = committed("ios")
+    ios_stdlib = next(
+        c for c in json.loads(ios_text)["components"] if c["name"] == "Kotlin Standard Library"
+    )
+    assert ios_stdlib["licenses"] == ["Apache-2.0"]
+
+
+def test_embedded_licences_are_shown_only_where_no_native_inventory_attributes_them() -> None:
+    android = json.loads(
+        gen.render(
+            gen.build_notices(gen.PLATFORMS["android"], list(MODULES), None, verify_poms=False)
+        )
+    )
+    android_stdlib = next(
+        c for c in android["components"] if c["name"] == "Kotlin Standard Library"
+    )
+    assert android_stdlib["licenses"] == ["Apache-2.0", "ThreeTen-BSD-3-Clause"]
+    ios = json.loads(
+        gen.render(gen.build_notices(gen.PLATFORMS["ios"], list(MODULES), {}, verify_poms=False))
+    )
+    ios_stdlib = next(c for c in ios["components"] if c["name"] == "Kotlin Standard Library")
+    assert ios_stdlib["licenses"] == ["Apache-2.0"]
+    linked = next(c for c in ios["components"] if c.get("linkedInto") == STDLIB)
+    assert linked["licenses"] == ["ThreeTen-BSD-3-Clause", "Apache-2.0"]
+
+
+def test_a_stdlib_version_without_established_embedded_licences_fails() -> None:
+    modules = [m if m != STDLIB else "org.jetbrains.kotlin:kotlin-stdlib:2.5.0" for m in MODULES]
+    pattern = r"kotlin-stdlib:2\.5\.0.*not established"
+    with pytest.raises(gen.NoticesError, match=pattern):
+        gen.build_notices(gen.PLATFORMS["android"], modules, None, verify_poms=False)
+    with pytest.raises(gen.NoticesError, match=pattern):
+        gen.build_notices(gen.PLATFORMS["ios"], modules, {}, verify_poms=False)
+
+
+def test_an_inventory_that_does_not_attribute_the_embedded_code_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        gen,
+        "EMBEDDED_LICENSES",
+        {STDLIB: ("ThreeTen-BSD-3-Clause", "IJG")},
+    )
+    with pytest.raises(gen.NoticesError, match=r"requires \['IJG'\].*no linked component"):
+        gen.build_notices(gen.PLATFORMS["ios"], list(MODULES), {}, verify_poms=False)
+
+
 def test_check_reports_the_module_drift(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     platform, text, modules = committed("android")
     target = tmp_path / "oss-notices-android.json"
