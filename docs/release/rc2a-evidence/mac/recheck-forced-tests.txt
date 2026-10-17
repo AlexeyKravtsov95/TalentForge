@@ -1,0 +1,10 @@
+> Task :shared:jvmTestProcessResources NO-SOURCE
+> Task :shared:jvmTestClasses UP-TO-DATE
+> Task :composeApp:desktopTestProcessResources UP-TO-DATE
+> Task :composeApp:desktopTestClasses UP-TO-DATE
+> Task :shared:jvmTest
+> Task :composeApp:desktopTest
+BUILD SUCCESSFUL in 1m 55s
+21 actionable tasks: 4 executed, 17 up-to-date
+shared:jvmTest: tests=338 failures=0 errors=0 skipped=0
+composeApp:desktopTest: tests=663 failures=0 errors=0 skipped=36

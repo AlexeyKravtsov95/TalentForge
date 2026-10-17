@@ -1,0 +1,77 @@
+{
+  "app": "<state>/evidence/dd-sim-Debug/Build/Products/Debug-iphonesimulator/iosApp.app",
+  "CFBundleIcons": {
+    "CFBundlePrimaryIcon": {
+      "CFBundleIconFiles": [
+        "AppIcon60x60"
+      ],
+      "CFBundleIconName": "AppIcon"
+    }
+  },
+  "CFBundleIcons~ipad": {
+    "CFBundlePrimaryIcon": {
+      "CFBundleIconFiles": [
+        "AppIcon60x60",
+        "AppIcon76x76"
+      ],
+      "CFBundleIconName": "AppIcon"
+    }
+  },
+  "bundle_icon_files": [
+    "AppIcon60x60@2x.png",
+    "AppIcon76x76@2x~ipad.png"
+  ],
+  "assets_car_bytes": 1749560,
+  "assets_car_appicon_renditions": [
+    {
+      "RenditionName": "AppIcon-1024.png",
+      "PixelWidth": 1024,
+      "PixelHeight": 1024,
+      "Idiom": "phone",
+      "Appearance": null,
+      "Scale": 1
+    },
+    {
+      "RenditionName": "AppIcon-1024.png",
+      "PixelWidth": 1024,
+      "PixelHeight": 1024,
+      "Idiom": "pad",
+      "Appearance": null,
+      "Scale": 1
+    },
+    {
+      "RenditionName": null,
+      "PixelWidth": null,
+      "PixelHeight": null,
+      "Idiom": "phone",
+      "Appearance": null,
+      "Scale": 1
+    },
+    {
+      "RenditionName": null,
+      "PixelWidth": null,
+      "PixelHeight": null,
+      "Idiom": "pad",
+      "Appearance": null,
+      "Scale": 1
+    }
+  ],
+  "bundle_icons_vs_source": {
+    "AppIcon60x60@2x.png": {
+      "size": [
+        120,
+        120
+      ],
+      "mean_abs_diff_vs_source_0_255": 3.09
+    },
+    "AppIcon76x76@2x~ipad.png": {
+      "size": [
+        152,
+        152
+      ],
+      "mean_abs_diff_vs_source_0_255": 2.62
+    }
+  },
+  "failures": [],
+  "result": "PASS"
+}

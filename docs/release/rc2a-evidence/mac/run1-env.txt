@@ -1,0 +1,24 @@
+Darwin MacBook-Pro-2.local 25.3.0 Darwin Kernel Version 25.3.0: Wed Jan 28 20:51:28 PST 2026; root:xnu-12377.91.3~2/RELEASE_ARM64_T6041 arm64
+ProductName:		macOS
+ProductVersion:		26.3.1
+ProductVersionExtra:	(a)
+BuildVersion:		25D771280a
+openjdk version "17.0.19" 2026-04-21
+OpenJDK Runtime Environment Homebrew (build 17.0.19+0)
+OpenJDK 64-Bit Server VM Homebrew (build 17.0.19+0, mixed mode, sharing)
+Xcode 26.4.1
+Build version 17E202
+3.12.13 (main, Mar  3 2026, 12:39:30) [Clang 21.0.0 (clang-2100.0.123.102)] 12.3.0
+aapt2: <home>/Library/Android/sdk/build-tools/37.0.0/aapt2
+Android Asset Packaging Tool (aapt) 2.20-15087165
+76d9d48780817c241dddc7b9dab7daaf087b0d79
+19596266fb2f30427b1e662f5a7cdb0ccc90a6c50458cce36a5e1a33149c9b0c  <worktree>/mobile/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png
+843d5bcfcc436f052d613963244ddaae261cb5bc839779461d603eced7e105e6  <worktree>/mobile/composeApp/src/androidMain/res/drawable-nodpi/ic_launcher_background.png
+a3e3eda8bbf0c0c4595ced0d867998451dcdbf68a384217ec6a28e0f03d6223a  <worktree>/mobile/composeApp/src/androidMain/res/drawable-nodpi/ic_launcher_foreground.png
+c1b0c78727ac7cea85e16a0197a7111ad254ec3decea8980be623bca7cc15f96  <worktree>/mobile/composeApp/src/androidMain/res/drawable-nodpi/ic_launcher_monochrome.png
+ada31da9e23f4520f3753e71ca23799a107431473daa3774b6cecac26847260c  <worktree>/mobile/composeApp/src/androidMain/res/mipmap-anydpi-v26/ic_launcher.xml
+dc377559cb9da9197d1ef97531ecbc27ee8714588d2f8fb286068a2c12136832  <worktree>/mobile/composeApp/src/androidMain/res/mipmap-hdpi/ic_launcher.png
+f41eab3bca2ddb36a81e51c150ef1fca8919b18bb51736de2302a40ec7c34319  <worktree>/mobile/composeApp/src/androidMain/res/mipmap-mdpi/ic_launcher.png
+7dacb5330a34bb520f127f7d6bb61f1433d0b8388f40af3b461f34d031e34863  <worktree>/mobile/composeApp/src/androidMain/res/mipmap-xhdpi/ic_launcher.png
+8df520e29b44ee41cfc463fdf9136bf5a468069768f1a3c8c5b534c93743cb8e  <worktree>/mobile/composeApp/src/androidMain/res/mipmap-xxhdpi/ic_launcher.png
+3ab9b09dd9e7215148a55c764b9b65af35524ccc831b5ab67f19900bd5b87dba  <worktree>/mobile/composeApp/src/androidMain/res/mipmap-xxxhdpi/ic_launcher.png

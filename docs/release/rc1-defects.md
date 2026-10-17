@@ -32,7 +32,7 @@ The device-level checks behind that statement ran on an Android emulator only (s
 |---|---|
 | Severity | **P1** |
 | Platforms | Android + iOS |
-| Status | **OPEN** (known, pre-existing; must stay OPEN during M5.RC.1) |
+| Status | **OPEN**. M5.RC.1: known, pre-existing. M5.RC.2a: approved artwork integrated; stays OPEN until platform rendering is verified (see below) |
 | Owner | Product/Design (artwork), Mobile engineering (integration) |
 | Planned resolution | **M5.RC.2a** — TalentForge branding and app icon |
 
@@ -61,6 +61,14 @@ The device-level checks behind that statement ran on an Android emulator only (s
 2. **M5.RC.2a requires original TalentForge artwork that the owner has approved** before it is integrated.
 3. **AI-assisted concept creation is allowed**, provided the result is approved by the owner and passes a rights review (originality, the tool's terms and output rights, no resemblance to third-party marks) before integration.
 4. **Not allowed:** Blizzard or World of Warcraft logos or artwork (class/talent icons included), any other borrowed or unauthorized artwork, downloaded stock icons without a cleared license, and placeholder icons shipped in a release build.
+
+**M5.RC.2a progress.** The owner-approved concept #3 is integrated byte-for-byte from the approved asset package: the Android adaptive icon (background, foreground and monochrome layers, raster fallbacks, `android:icon`) and the iOS 1024×1024 `AppIcon`. Source, checksums, asset QA and the build/rendering checks are in [rc2a-evidence/](rc2a-evidence/README.md). Verified with unsigned builds:
+- `aapt2` shows the packaged adaptive icon in the debug and release APKs.
+- `MissingApplicationIcon` is gone from lint.
+- The iOS simulator builds have no icon warnings, and `AppIcon` is in `Assets.car`.
+- The icon renders on the API 35 emulator under the circle mask (drawer, Home, themed on) and on the iOS 26.4 simulator Home screen (light and dark).
+
+**Status stays OPEN.** Still outstanding: the signed-release check, the physical devices (TECNO HiOS, iPhone, iPad), API 26 and 36, iOS tinted/clear appearances, and Archive → Validate App. The integration adds 6 lint warnings (`ObsoleteSdkInt`, `IconLauncherShape` ×5), recorded under TF-RC1-LINT.
 
 **Verification.**
 1. `aapt2 dump badging` on the signed release APK shows a non-empty `icon=` value.
@@ -179,6 +187,7 @@ The device-level checks behind that statement ran on an Android emulator only (s
 - **Expected:** a full lint run is clean or has a baseline. **Actual:** BUILD FAILED.
 - **Resolution:** confirm the false positive and suppress it locally with a justification, or restructure the expression. Add a lint baseline for intentional warnings. `commit()` is a deliberate fail-closed choice: keep it and document it.
 - **Verification:** `./gradlew :composeApp:lintRelease` exits 0.
+- **M5.RC.2a update:** `MissingApplicationIcon` is resolved. The icon integration adds 6 warnings (`ObsoleteSdkInt` on `res/mipmap-anydpi-v26`, `IconLauncherShape` on the 5 full-bleed raster fallbacks). These are icon regressions, not part of the pre-existing set. The pre-existing `RememberReturnType` error still fails the task. Current report: 1 error, 9 warnings ([rc2a-evidence/mac/lint](rc2a-evidence/mac/lint/lint-results-release.txt)).
 
 ### TF-RC1-IOS-SCENES — Built Info.plist enables multiple scenes despite the source plist disabling them
 

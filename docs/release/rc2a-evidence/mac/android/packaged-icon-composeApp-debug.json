@@ -1,0 +1,148 @@
+{
+  "apk": "<state>/evidence/composeApp-debug.apk",
+  "application_label": "TalentForge",
+  "application_icon": "res/mipmap-anydpi-v26/ic_launcher.xml",
+  "launchable_activity_icon": "",
+  "application_icon_by_density": {
+    "160": "res/mipmap-anydpi-v26/ic_launcher.xml",
+    "240": "res/mipmap-anydpi-v26/ic_launcher.xml",
+    "320": "res/mipmap-anydpi-v26/ic_launcher.xml",
+    "480": "res/mipmap-anydpi-v26/ic_launcher.xml",
+    "640": "res/mipmap-anydpi-v26/ic_launcher.xml",
+    "65534": "res/mipmap-anydpi-v26/ic_launcher.xml",
+    "65535": "res/mipmap-anydpi-v26/ic_launcher.xml"
+  },
+  "mipmap/ic_launcher": [
+    {
+      "config": "mdpi",
+      "path": "res/mipmap-mdpi-v4/ic_launcher.png",
+      "type": "PNG"
+    },
+    {
+      "config": "hdpi",
+      "path": "res/mipmap-hdpi-v4/ic_launcher.png",
+      "type": "PNG"
+    },
+    {
+      "config": "xhdpi",
+      "path": "res/mipmap-xhdpi-v4/ic_launcher.png",
+      "type": "PNG"
+    },
+    {
+      "config": "xxhdpi",
+      "path": "res/mipmap-xxhdpi-v4/ic_launcher.png",
+      "type": "PNG"
+    },
+    {
+      "config": "xxxhdpi",
+      "path": "res/mipmap-xxxhdpi-v4/ic_launcher.png",
+      "type": "PNG"
+    },
+    {
+      "config": "anydpi",
+      "path": "res/mipmap-anydpi-v26/ic_launcher.xml",
+      "type": "XML"
+    }
+  ],
+  "drawable/ic_launcher_background": [
+    {
+      "config": "nodpi",
+      "path": "res/drawable-nodpi-v4/ic_launcher_background.png",
+      "type": "PNG"
+    }
+  ],
+  "drawable/ic_launcher_foreground": [
+    {
+      "config": "nodpi",
+      "path": "res/drawable-nodpi-v4/ic_launcher_foreground.png",
+      "type": "PNG"
+    }
+  ],
+  "drawable/ic_launcher_monochrome": [
+    {
+      "config": "nodpi",
+      "path": "res/drawable-nodpi-v4/ic_launcher_monochrome.png",
+      "type": "PNG"
+    }
+  ],
+  "adaptive_xml": [
+    {
+      "config": "anydpi",
+      "path": "res/mipmap-anydpi-v26/ic_launcher.xml",
+      "type": "XML"
+    }
+  ],
+  "adaptive_xmltree": "N: android=http://schemas.android.com/apk/res/android (line=2)\n  E: adaptive-icon (line=2)\n      E: background (line=3)\n        A: http://schemas.android.com/apk/res/android:drawable(0x01010199)=@0x7f040006\n      E: foreground (line=4)\n        A: http://schemas.android.com/apk/res/android:drawable(0x01010199)=@0x7f040007\n      E: monochrome (line=5)\n        A: http://schemas.android.com/apk/res/android:drawable(0x01010199)=@0x7f040008\n",
+  "adaptive_layers": {
+    "background": "drawable/ic_launcher_background",
+    "foreground": "drawable/ic_launcher_foreground",
+    "monochrome": "drawable/ic_launcher_monochrome"
+  },
+  "packaged_vs_source_pixels": {
+    "ic_launcher_background (nodpi)": {
+      "same_size": true,
+      "max_alpha_diff": 0,
+      "max_visible_rgb_diff": 0,
+      "max_hidden_rgb_diff": 0,
+      "max_channel_diff": 0
+    },
+    "ic_launcher_foreground (nodpi)": {
+      "same_size": true,
+      "max_alpha_diff": 0,
+      "max_visible_rgb_diff": 0,
+      "max_hidden_rgb_diff": 0,
+      "max_channel_diff": 0
+    },
+    "ic_launcher_monochrome (nodpi)": {
+      "same_size": true,
+      "max_alpha_diff": 0,
+      "max_visible_rgb_diff": 0,
+      "max_hidden_rgb_diff": 0,
+      "max_channel_diff": 0
+    },
+    "mipmap-mdpi": {
+      "same_size": true,
+      "max_alpha_diff": 0,
+      "max_visible_rgb_diff": 0,
+      "max_hidden_rgb_diff": 0,
+      "max_channel_diff": 0
+    },
+    "mipmap-hdpi": {
+      "same_size": true,
+      "max_alpha_diff": 0,
+      "max_visible_rgb_diff": 0,
+      "max_hidden_rgb_diff": 0,
+      "max_channel_diff": 0
+    },
+    "mipmap-xhdpi": {
+      "same_size": true,
+      "max_alpha_diff": 0,
+      "max_visible_rgb_diff": 0,
+      "max_hidden_rgb_diff": 0,
+      "max_channel_diff": 0
+    },
+    "mipmap-xxhdpi": {
+      "same_size": true,
+      "max_alpha_diff": 0,
+      "max_visible_rgb_diff": 0,
+      "max_hidden_rgb_diff": 0,
+      "max_channel_diff": 0
+    },
+    "mipmap-xxxhdpi": {
+      "same_size": true,
+      "max_alpha_diff": 0,
+      "max_visible_rgb_diff": 0,
+      "max_hidden_rgb_diff": 0,
+      "max_channel_diff": 0
+    }
+  },
+  "raster_fallback_densities": [
+    "hdpi",
+    "mdpi",
+    "xhdpi",
+    "xxhdpi",
+    "xxxhdpi"
+  ],
+  "failures": [],
+  "result": "PASS"
+}

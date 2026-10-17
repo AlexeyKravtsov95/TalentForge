@@ -1,0 +1,41 @@
+id	status	exit	seconds	commit
+00-env	PASS	0	0	76d9d48780817c241dddc7b9dab7daaf087b0d79
+10-sync-datasets	PASS	0	0	76d9d48780817c241dddc7b9dab7daaf087b0d79
+11-shared-jvmTest	PASS	0	11	76d9d48780817c241dddc7b9dab7daaf087b0d79
+12-composeApp-desktopTest	PASS	0	4	76d9d48780817c241dddc7b9dab7daaf087b0d79
+20-assembleDebug	PASS	0	18	76d9d48780817c241dddc7b9dab7daaf087b0d79
+21-assembleRelease	PASS	0	14	76d9d48780817c241dddc7b9dab7daaf087b0d79
+30-lintRelease	FAIL-EXPECTED	1	4	76d9d48780817c241dddc7b9dab7daaf087b0d79
+31-lint-icon	FAIL	1	0	76d9d48780817c241dddc7b9dab7daaf087b0d79
+40-aapt2-composeApp-debug	PASS	0	0	76d9d48780817c241dddc7b9dab7daaf087b0d79
+41-icon-composeApp-debug	PASS	0	0	76d9d48780817c241dddc7b9dab7daaf087b0d79
+40-aapt2-composeApp-release-unsigned	PASS	0	0	76d9d48780817c241dddc7b9dab7daaf087b0d79
+41-icon-composeApp-release-unsigned	FAIL	1	0	76d9d48780817c241dddc7b9dab7daaf087b0d79
+50-xcode-sim-Debug	PASS	0	29	76d9d48780817c241dddc7b9dab7daaf087b0d79
+51-actool-warnings-Debug	PASS	0	0	76d9d48780817c241dddc7b9dab7daaf087b0d79
+52-ios-bundle-Debug	PASS	0	1	76d9d48780817c241dddc7b9dab7daaf087b0d79
+50-xcode-sim-Release	PASS	0	131	76d9d48780817c241dddc7b9dab7daaf087b0d79
+51-actool-warnings-Release	PASS	0	0	76d9d48780817c241dddc7b9dab7daaf087b0d79
+52-ios-bundle-Release	PASS	0	0	76d9d48780817c241dddc7b9dab7daaf087b0d79
+53-ios-sim-home	PASS	0	50	76d9d48780817c241dddc7b9dab7daaf087b0d79
+      was=$(xcrun simctl list devices | grep "$UDID" | grep -o "(Booted)\|(Shutdown)")
+      xcrun simctl boot "$UDID" 2>/dev/null; xcrun simctl bootstatus "$UDID" -b
+      ap=$(xcrun simctl ui "$UDID" appearance)
+      xcrun simctl uninstall "$UDID" "$PKG" 2>/dev/null
+      xcrun simctl install "$UDID" "$APP_DEBUG" || exit 1
+      xcrun simctl launch "$UDID" "$PKG" || exit 1
+      sleep 6; xcrun simctl terminate "$UDID" "$PKG"; sleep 3
+      xcrun simctl ui "$UDID" appearance light; sleep 2
+      xcrun simctl io "$UDID" screenshot "$OUT/ios-sim-home-light.png"
+      xcrun simctl ui "$UDID" appearance dark; sleep 3
+      xcrun simctl io "$UDID" screenshot "$OUT/ios-sim-home-dark.png"
+      xcrun simctl ui "$UDID" appearance "$ap"
+      xcrun simctl uninstall "$UDID" "$PKG"
+      [ "$was" = "(Shutdown)" ] && xcrun simctl shutdown "$UDID"
+      echo "appearance restored to $ap; the icon is visible only if it landed on the first Home page (review)"
+60-devcheck-apk	PASS	0	2	76d9d48780817c241dddc7b9dab7daaf087b0d79
+61-launcher-emulator	PASS	0	14	76d9d48780817c241dddc7b9dab7daaf087b0d79
+    "$ADB" -s "$SERIAL" install -r "$DEVAPK" || exit 1
+    "$PY" "$CHECKS" launcher --adb "$ADB" --serial "$SERIAL" --package "$PKG.devcheck" --tag "$TAG" --out "$OUT/launcher-$TAG"; rc=$?
+    "$ADB" -s "$SERIAL" uninstall "$PKG.devcheck"; exit $rc
+61-launcher-phone	BLOCKED	-	0	76d9d48780817c241dddc7b9dab7daaf087b0d79
