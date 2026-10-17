@@ -169,3 +169,45 @@ M5.RC.3 can pass only when **all** of these hold:
 8. [ ] GitHub Actions restored and green on the RC commit, or its unavailability documented with item 7 as the substitute.
 9. [ ] Owner/legal sign-off on LR-1…LR-5 and the store metadata.
 10. [ ] Version numbers decided; the release commit is tagged only after this checklist is complete.
+
+## 9. Huawei AppGallery publication (M5.GALLERY.1)
+
+Added by M5.GALLERY.1 ([appgallery/readiness.md](appgallery/readiness.md)). Sections 1–8 above stay
+valid unchanged: RuStore (§1, §6) and iOS (§2) requirements are not replaced. AppGallery receives the
+**same** Android product: the same `applicationId`, the same signed universal APK, the same
+`versionCode` and the same certificate as RuStore ([multi-store-signing.md](appgallery/multi-store-signing.md)).
+Google Play is deferred (#35). 🔑 = needs the owner's Huawei Developer account.
+
+**Package and signing** (shared with §1 and §5; nothing extra for AppGallery)
+- [x] No Google Mobile Services, Firebase, Play Billing or HMS dependency; no `INTERNET` permission; `arm64-v8a` packaged (64-bit requirement); `minSdk 26` (static evidence: [appgallery/evidence/mac](appgallery/evidence/mac/))
+- [ ] **(gate)** Owner approves the signing strategy: one owner-held RSA key, signed universal APK for both stores, no AGC App Signing, no RuStore AAB key upload ([multi-store-signing §1](appgallery/multi-store-signing.md#1-recommendation))
+- [ ] **(gate)** Release keystore created, backed up twice offline, recovery drill done (§5 above and [multi-store-signing §5](appgallery/multi-store-signing.md#5-keystore-creation-offline-backup-recovery-owner-procedure--not-executed-here))
+- [ ] **(gate)** The APK uploaded to AppGallery is byte-identical to the RuStore APK; `apksigner` SHA-256 equals the owner's recorded fingerprint; not the debug certificate; no `application-debuggable`
+- [ ] After publication: the AppGallery-delivered APK's SHA-256 equals the owner's fingerprint (H-13)
+
+**Account and app record** ([testing-and-publication §2](appgallery/testing-and-publication.md#2-appgallery-publication-requirements-official-sources))
+- [ ] 🔑 HUAWEI ID registered; developer identity verification (individual or enterprise) approved
+- [ ] 🔑 Android app created in AppGallery Connect: APK, *Mobile phone*, name `TalentForge`, category **App** (irreversible), no project, package `io.github.alexeykravtsov95.talentforge`
+- [ ] 🔑 Release countries chosen explicitly; Chinese mainland excluded (or its copyright certificates obtained)
+
+**Listing and assets**
+- [ ] Owner approves the EN/RU copy ([store-listing-en](appgallery/store-listing-en.md), [store-listing-ru](appgallery/store-listing-ru.md)); Variant B (trademark names) only after LR-2 review
+- [x] Store icon file meets AppGallery (216 or 512 px PNG ≤ 2 MB) and RuStore (512 px ≤ 3 MB, opaque) ([assets-checklist §2](appgallery/assets-checklist.md#2-icon))
+- [ ] EN and RU portrait screenshot sets (3–8 each, 1080×1920, ≤ 2 MB, no system UI) captured from the signed release build ([assets-checklist §3](appgallery/assets-checklist.md#3-screenshots))
+- [ ] 🔑 Icon and screenshots previewed in AGC for both localizations
+
+**Privacy, rating, declarations** ([privacy-and-compliance](appgallery/privacy-and-compliance.md))
+- [ ] **(gate)** Privacy policy (RU + EN) reviewed, owner fields filled, hosted at a public URL; backup paragraph matches the `allowBackup` decision (TF-RC1-ANDROID-CONFIG)
+- [ ] Owner/legal decision on an in-app privacy link (AppGallery Review Guidelines 7.1, RuStore moderation rule 5.1)
+- [ ] 🔑 Privacy tags: *Collect personal data = No* (after owner confirmation)
+- [ ] 🔑 Age-rating questionnaire answered from the content facts; AI function declaration answered (icon concept was AI-assisted)
+- [ ] **(gate)** LR-1…LR-5 signed off (same gate as §6 "Both stores"; AppGallery Review Guidelines §9 and RuStore rules 4.1/6.4 make it explicit)
+
+**Testing and release** ([testing-and-publication §5–§6](appgallery/testing-and-publication.md#5-device-test-plan))
+- [ ] **(gate)** Huawei device scenarios H-1…H-14 executed on the signed release APK (UNVERIFIED in M5.GALLERY.1: no Huawei device)
+- [ ] 🔑 First AppGallery release as an Open Testing version; then the formal version, released in the same window as RuStore
+- [ ] Phased release is not available for the first version (updates only)
+
+**Observation recorded by M5.GALLERY.1:** the freshness check on 2026-10-17T15:30:54Z reported
+**OUTDATED** with `1.60.1.70450` as the latest publishable build (product `1.60.1.70374`); §3's
+TF-RC1-DATA gate is unchanged and still open.
