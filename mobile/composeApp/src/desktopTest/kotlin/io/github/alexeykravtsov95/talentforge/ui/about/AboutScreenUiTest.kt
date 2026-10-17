@@ -223,6 +223,25 @@ class AboutScreenUiTest {
     }
 
     @Test
+    fun theIosNoticesListTheLinkedNativeCodeWithTheRequiredStatements() = onScreen(
+        content = about(noticesPath = IOS_OSS_NOTICES_PATH, backup = BackupStatement.IosDeviceBackup),
+    ) {
+        awaitText("Skiko")
+        awaitText("Apache License 2.0, Skiko NOTICE · 2 modules")
+        awaitText("Skia")
+        awaitText("BSD 3-Clause License (Skia) · Version m138 (JetBrains/skia 80d088a)")
+        awaitText("Statically linked into org.jetbrains.skiko:skiko-iosarm64:0.9.37.4", substring = true)
+        awaitText("This software is based in part on the work of the Independent JPEG Group.")
+        awaitText("This product includes DNG technology under license by Adobe Systems Incorporated.")
+        awaitText("Kotlin Standard Library: third-party code (ThreeTen, GWT, Guava)")
+        assertAbsent("Open-source notices are not included in this build.")
+        assertAbsent("JSpecify") // Android-only modules never appear in the iOS list
+        // linked components have no module list; every licence and notice text has its own toggle
+        assertEquals(7, onAllNodes(clickLabelled("Show modules")).fetchSemanticsNodes().size)
+        assertEquals(16, onAllNodes(clickLabelled("Show license text")).fetchSemanticsNodes().size)
+    }
+
+    @Test
     fun aConfiguredPolicyUrlBecomesAnExplicitLink() {
         val handler = RecordingUriHandler()
         val url = "https://policy.example.org/talentforge"

@@ -2,9 +2,9 @@ package io.github.alexeykravtsov95.talentforge.ui.about
 
 import platform.Foundation.NSBundle
 
-// The iOS framework statically links Skiko/Skia: its notices are not compiled yet
-// (TF-RC2B-IOS-NOTICES), so no list is shown rather than the Android one.
-actual val platformOpenSourceNoticesPath: String? = null
+// The iOS framework's own notices: its klibs plus the Skia and third-party code
+// statically linked into Skiko (TF-RC2B-IOS-NOTICES), never the Android list.
+actual val platformOpenSourceNoticesPath: String? = IOS_OSS_NOTICES_PATH
 
 actual val platformBackupStatement: BackupStatement = BackupStatement.IosDeviceBackup
 

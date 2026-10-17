@@ -44,10 +44,12 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.abo
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_failed
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_hide_modules
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_intro
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_linked_into
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_loading
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_module_count
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_show_modules
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_unavailable
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_version
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_backup_android
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_backup_ios
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_delete
@@ -222,7 +224,7 @@ fun AboutScreen(
 private fun NoticesContent(notices: OpenSourceNotices) {
     Body(stringResource(Res.string.about_licenses_intro))
     for (component in notices.components) {
-        ComponentCard(component, licenseName = notices.licenses.getValue(component.licenseId).name)
+        ComponentCard(component, licenseNames = component.licenseIds.joinToString(", ") { notices.licenses.getValue(it).name })
     }
     for (license in notices.licenses.values) {
         LicenseText(license)
@@ -230,9 +232,8 @@ private fun NoticesContent(notices: OpenSourceNotices) {
 }
 
 @Composable
-private fun ComponentCard(component: NoticeComponent, licenseName: String) {
+private fun ComponentCard(component: NoticeComponent, licenseNames: String) {
     val colors = talentForgeColors()
-    var expanded by rememberSaveable(component.name) { mutableStateOf(false) }
     Column(
         Modifier
             .fillMaxWidth()
@@ -242,17 +243,28 @@ private fun ComponentCard(component: NoticeComponent, licenseName: String) {
         verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.hairline),
     ) {
         BasicText(component.name, style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary))
-        val moduleCount = component.modules.size
-        Meta("$licenseName · ${pluralStringResource(Res.plurals.about_licenses_module_count, moduleCount, moduleCount)}")
-        Meta(component.url)
-        Toggle(
-            expanded = expanded,
-            show = stringResource(Res.string.about_licenses_show_modules),
-            hide = stringResource(Res.string.about_licenses_hide_modules),
-            onToggle = { expanded = !expanded },
-        )
-        if (expanded) {
-            BasicText(component.modules.joinToString("\n"), style = AboutMonoStyle.copy(color = colors.textSecondary))
+        when (component) {
+            is NoticeComponent.Packaged -> {
+                var expanded by rememberSaveable(component.name) { mutableStateOf(false) }
+                val moduleCount = component.modules.size
+                Meta("$licenseNames · ${pluralStringResource(Res.plurals.about_licenses_module_count, moduleCount, moduleCount)}")
+                Meta(component.url)
+                Toggle(
+                    expanded = expanded,
+                    show = stringResource(Res.string.about_licenses_show_modules),
+                    hide = stringResource(Res.string.about_licenses_hide_modules),
+                    onToggle = { expanded = !expanded },
+                )
+                if (expanded) {
+                    BasicText(component.modules.joinToString("\n"), style = AboutMonoStyle.copy(color = colors.textSecondary))
+                }
+            }
+            is NoticeComponent.Linked -> {
+                Meta("$licenseNames · ${stringResource(Res.string.about_licenses_version, component.version)}")
+                Meta(component.url)
+                Meta(stringResource(Res.string.about_licenses_linked_into, component.linkedInto))
+                component.attribution?.let { Body(it) }
+            }
         }
     }
 }

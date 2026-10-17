@@ -322,6 +322,8 @@
         <item quantity="one">%1$d module</item>
         <item quantity="other">%1$d modules</item>
     </plurals>
+    <string name="about_licenses_version">Version %1$s</string>
+    <string name="about_licenses_linked_into">Statically linked into %1$s</string>
     <string name="about_licenses_show_modules">Show modules</string>
     <string name="about_licenses_hide_modules">Hide modules</string>
     <string name="about_license_show_text">Show license text</string>
