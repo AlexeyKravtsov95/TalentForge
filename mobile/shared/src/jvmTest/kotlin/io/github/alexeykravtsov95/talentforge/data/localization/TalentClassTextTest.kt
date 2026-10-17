@@ -175,7 +175,9 @@ class TalentClassTextTest {
 
     @Test
     fun aDatasetWithoutANameKeepsNoNameUnlessTheOverlayTranslatesIt() = runTest {
-        // the UI then shows its localized "Talent <id>" fallback; a translated overlay name wins
+        // the UI then shows its localized "Talent <id>" fallback; a translated overlay name wins.
+        // 1.60.1.70374: Gore Drinker's ruRU name is untranslated there (70450 translates it).
+        val product = LocalizationCase("1.60.1.70374", "warrior")
         val document = product.document
         val nameless = document.copy(
             trees = document.trees.map { tree ->

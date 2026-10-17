@@ -21,9 +21,9 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 
-/** The four bundled builds, oldest first (M5.REL.3b.1 published nine overlays for each). */
-val LOCALIZED_BUILDS = listOf("1.60.1.70009", "1.60.1.70245", "1.60.1.70338", "1.60.1.70374")
-const val PRODUCT_BUILD = "1.60.1.70374"
+/** The five bundled builds, oldest first (nine overlays each: M5.REL.3b.1, 70450 by M5.DATA.4). */
+val LOCALIZED_BUILDS = listOf("1.60.1.70009", "1.60.1.70245", "1.60.1.70338", "1.60.1.70374", "1.60.1.70450")
+const val PRODUCT_BUILD = "1.60.1.70450"
 
 /**
  * The committed canonical files as a bundled asset root: `data/` has exactly the bundled

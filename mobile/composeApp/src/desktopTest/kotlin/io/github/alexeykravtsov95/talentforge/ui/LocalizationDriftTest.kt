@@ -36,9 +36,9 @@ class LocalizationDriftTest {
     fun exactlyNineClassOverlaysOfEveryBundledBuildAreBundled() {
         val classes = listOf("druid", "hunter", "mage", "paladin", "priest", "rogue", "shaman", "warlock", "warrior")
         val expected = ALL_BUNDLES.flatMap { bundle -> classes.map { "${bundle.clientBuild}/ruRU/$it.json" } }.toSet()
-        assertEquals(36, expected.size)
-        assertEquals(expected, relativeFiles(bundledRoot), "bundled overlays are not exactly 4 builds x 9 classes")
-        assertEquals(expected, relativeFiles(canonicalRoot), "canonical overlays are not exactly 4 builds x 9 classes")
+        assertEquals(45, expected.size)
+        assertEquals(expected, relativeFiles(bundledRoot), "bundled overlays are not exactly 5 builds x 9 classes")
+        assertEquals(expected, relativeFiles(canonicalRoot), "canonical overlays are not exactly 5 builds x 9 classes")
     }
 
     private fun relativeFiles(directory: File): Set<String> =

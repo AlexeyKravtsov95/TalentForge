@@ -145,8 +145,11 @@ class BuildImportBundledDatasetsTest {
     // ------------------------------------------------------------------ every class, every bundled build
 
     @Test
-    fun theFourShippedBuildsAreTheOnesUnderTest() {
-        assertEquals(listOf("1.60.1.70009", "1.60.1.70245", "1.60.1.70338", "1.60.1.70374"), bundledBuilds)
+    fun theFiveShippedBuildsAreTheOnesUnderTest() {
+        assertEquals(
+            listOf("1.60.1.70009", "1.60.1.70245", "1.60.1.70338", "1.60.1.70374", "1.60.1.70450"),
+            bundledBuilds,
+        )
     }
 
     @Test
@@ -182,7 +185,7 @@ class BuildImportBundledDatasetsTest {
                 }
             }
         }
-        assertEquals(4 * 9 * 3, codes.size)
+        assertEquals(5 * 9 * 3, codes.size)
         println("share-code length: max ${codes.keys.maxOf { it.length }}, min ${codes.keys.minOf { it.length }}")
     }
 
@@ -198,7 +201,7 @@ class BuildImportBundledDatasetsTest {
         assertEquals("1.60.1.70009", ready(codeOf(build), repository).clientBuild)
 
         // node 104951 became the 1-rank "Shifting Power" in 70245: the same allocation is no later build
-        for (later in listOf("1.60.1.70245", "1.60.1.70338", "1.60.1.70374")) {
+        for (later in listOf("1.60.1.70245", "1.60.1.70338", "1.60.1.70374", "1.60.1.70450")) {
             val codes = reasonCodes(codeOf(build.copy(clientBuild = later)), repository)
             assertTrue("RANK_OUT_OF_BOUNDS" in codes, "$later: $codes")
         }
@@ -232,6 +235,26 @@ class BuildImportBundledDatasetsTest {
         val onAdded = fileOf(added, warrior70338)
         ready(codeOf(onAdded), repository)
         assertTrue("UNKNOWN_NODE" in reasonCodes(codeOf(onAdded.copy(clientBuild = "1.60.1.70245")), repository))
+    }
+
+    @Test
+    fun priestAndMageNodesRemovedAndAddedBetween70374And70450() = runTest {
+        val repository = repository()
+        // Improved Mind Blast (105827) is gone in 70450: a 70374 code naming it imports only on 70374
+        val priest70374 = document(repository, "1.60.1.70374", "PRIEST")
+        val removed = purchased(engineOf(priest70374), 51, priority = listOf(IMPROVED_MIND_BLAST_70374))
+        assertEquals(5, removed.rankOf(IMPROVED_MIND_BLAST_70374))
+        val onRemoved = fileOf(removed, priest70374)
+        assertEquals(onRemoved, ready(codeOf(onRemoved), repository).build)
+        assertTrue("UNKNOWN_NODE" in reasonCodes(codeOf(onRemoved.copy(clientBuild = "1.60.1.70450")), repository))
+
+        // Arcane Wrath (113627) exists since 70425: a 70450 code naming it imports only on 70450
+        val mage70450 = document(repository, "1.60.1.70450", "MAGE")
+        val added = purchased(engineOf(mage70450), 51, priority = listOf(ARCANE_BLAST, ARCANE_WRATH))
+        assertEquals(1, added.rankOf(ARCANE_WRATH))
+        val onAdded = fileOf(added, mage70450)
+        assertEquals(onAdded, ready(codeOf(onAdded), repository).build)
+        assertTrue("UNKNOWN_NODE" in reasonCodes(codeOf(onAdded.copy(clientBuild = "1.60.1.70374")), repository))
     }
 
     @Test
@@ -356,6 +379,9 @@ class BuildImportBundledDatasetsTest {
         const val IMPROVED_CLEAVE = 105936
         const val IRON_WILL = 113570
         const val GORE_DRINKER = 113569
+        const val IMPROVED_MIND_BLAST_70374 = 105827
+        const val ARCANE_BLAST = 105806
+        const val ARCANE_WRATH = 113627
 
         const val DOC_DRUID_70009_FULL = "TF1043PCVVJCNV6AWGC64Q3CC1E64Q3EC1G60WGAH2JAN4M9G882VDV61P3H8C020RE0M0GA083041020R1080G208204102081080G2082041G20G2080G2081041G20HYGMB54"
         const val DOC_WARRIOR_70374_PARTIAL = "TF1043PCVVJCNV6AWGC64Q3CC1E64Q3EC1K6WT0ENT1A994JKTJVM40HMNV0TH96601088G40820411008206N3QGF90ABEE1AA"

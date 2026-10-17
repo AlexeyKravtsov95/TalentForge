@@ -555,6 +555,32 @@ class TalentTreeSectionTabsUiTest {
         assertNull(cameras.selectedSection)
     }
 
+    @Test
+    fun theProductMageTreeWithoutSectionsShowsWholeWithoutTabs() {
+        // 1.60.1.70450: Arcane Wrath is in no gate group, so Mage publishes no sections
+        val state = readyStateOf(PRODUCT_BUNDLE, "MAGE")
+        assertEquals(
+            TalentTreeSectionsResult.Unsectioned(TalentTreeSectionIssue.NoSections),
+            buildTalentTreeSections(state.engine.tree, state.model),
+        )
+
+        compose(state)
+
+        for (label in listOf("Arcane", "Fire", "Frost", "Tree 1")) composeRule.onNodeWithText(label).assertDoesNotExist()
+        // no node is hidden: all 55 talents, Arcane Wrath included, are on the one canvas
+        assertEquals(55, state.model.nodes.size)
+        for (node in state.model.nodes) {
+            assertTrue(
+                composeRule.onAllNodesWithContentDescription(node.name ?: "talent ${node.id}")
+                    .fetchSemanticsNodes().isNotEmpty(),
+                "${node.name} must stay visible",
+            )
+        }
+        composeRule.onNodeWithContentDescription("Arcane Wrath").assertExists()
+        composeRule.onNodeWithText("0 / 51").assertExists()
+        assertNull(cameras.selectedSection)
+    }
+
     // ------------------------------------------------------------------ helpers
 
     private fun readyStateOf(bundle: DatasetBundleId, classToken: String): TalentTreeUiState.Ready = runBlocking {

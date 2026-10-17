@@ -11,7 +11,7 @@ import kotlin.test.assertTrue
  * JVM mirror of `scripts/sync_mobile_datasets.py --check`: the bundled Compose
  * resources must stay byte-identical to the canonical `data/normalized` tree
  * for every bundled build — the reference baseline, the retained product
- * datasets 1.60.1.70245 and 1.60.1.70338 and the product dataset —
+ * datasets 1.60.1.70245, 1.60.1.70338 and 1.60.1.70374 and the product dataset —
  * so a canonical update without a bundle sync fails the build in CI.
  */
 class DatasetDriftTest {
@@ -37,7 +37,7 @@ class DatasetDriftTest {
     }
 
     @Test
-    fun exactlyTheFourBundledBuildsAreBundled() {
+    fun exactlyTheFiveBundledBuildsAreBundled() {
         val repoRoot = findRepoRoot(File(System.getProperty("user.dir")).absoluteFile)
         val bundledRoot = repoRoot
             .resolve("mobile/composeApp/src/commonMain/composeResources/files/dataset/forever")

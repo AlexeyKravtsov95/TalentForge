@@ -27,13 +27,15 @@ import kotlinx.coroutines.runBlocking
 
 /**
  * M5.UX.1 section projection against the REAL bundled datasets of EVERY bundled
- * client build (1.60.1.70009 reference, 1.60.1.70245 and 1.60.1.70338 retained
- * products, 1.60.1.70374 product), all nine classes:
+ * client build (1.60.1.70009 reference, 1.60.1.70245, 1.60.1.70338 and
+ * 1.60.1.70374 retained products, 1.60.1.70450 product), all nine classes:
  * the tree splits into exactly its published sections, no node id is lost or
  * duplicated, no connector is invented or broken, bounds come from each
  * section's own nodes, the geometry is the original one, the per-section
  * points add up to the engine's counter — and an unresolvable section layout
- * fails safe with a typed reason instead of hiding a node.
+ * fails safe with a typed reason instead of hiding a node. The one real tree
+ * without sections, Mage on 1.60.1.70450 (docs/forever-dataset.md), is that
+ * fail-safe case: one whole-tree canvas, every node on it.
  */
 class TalentTreeSectionsTest {
 
@@ -62,12 +64,16 @@ class TalentTreeSectionsTest {
     private fun everyDocument(): List<TalentDataDocument> =
         ALL_BUNDLES.flatMap { bundle -> classes.map { document(bundle, it) } }
 
+    /** Every bundled document whose tree publishes sections (all but the 70450 Mage tree). */
+    private fun everySectionedDocument(): List<TalentDataDocument> =
+        everyDocument().filter { it.trees.single().sections.isNotEmpty() }
+
     // ------------------------------------------------------------------ partition
 
     @Test
     fun everyRealTreeSplitsIntoExactlyItsPublishedSections() {
-        val documents = everyDocument()
-        assertEquals(36, documents.size, "nine classes on each of the four bundled builds")
+        val documents = everySectionedDocument()
+        assertEquals(44, documents.size, "nine classes on each of the five bundled builds, but 70450 Mage")
         for (document in documents) {
             val tree = document.trees.single()
             val label = "${document.classInfo.token} ${document.clientBuild}"
@@ -90,7 +96,7 @@ class TalentTreeSectionsTest {
 
     @Test
     fun noNodeIdIsLostOrDuplicatedAndEveryNodeKeepsItsIdentityAndPosition() {
-        for (document in everyDocument()) {
+        for (document in everySectionedDocument()) {
             val label = "${document.classInfo.token} ${document.clientBuild}"
             val whole = model(document)
             val result = sectioned(document)
@@ -114,7 +120,7 @@ class TalentTreeSectionsTest {
 
     @Test
     fun sectionConnectorsAreExactlyTheIntraSectionEdgesAndNoneIsLost() {
-        for (document in everyDocument()) {
+        for (document in everySectionedDocument()) {
             val label = "${document.classInfo.token} ${document.clientBuild}"
             val whole = model(document)
             val result = sectioned(document)
@@ -138,7 +144,7 @@ class TalentTreeSectionsTest {
     @Test
     fun sectionBoundsAreTightAroundTheSectionsOwnNodes() {
         val half = TalentTreeCanvasMetrics.NODE_VISUAL_DP / 2f
-        for (document in everyDocument()) {
+        for (document in everySectionedDocument()) {
             for (section in sectioned(document).sections) {
                 val nodes = section.model.nodes
                 val bounds = section.model.bounds
@@ -153,7 +159,7 @@ class TalentTreeSectionsTest {
 
     @Test
     fun readingOrderStartsAtTheTopLeftTalent() {
-        for (document in everyDocument()) {
+        for (document in everySectionedDocument()) {
             for (section in sectioned(document).sections) {
                 val first = section.model.nodes.first { it.id == section.readingOrderNodeIds.first() }
                 assertTrue(
@@ -205,11 +211,48 @@ class TalentTreeSectionsTest {
         }
     }
 
+    @Test
+    fun theProductMageTreeIsTheOnlyTreeWithoutSectionsAndShowsWholeWithEveryNode() {
+        val unsectioned = everyDocument().filter { it.trees.single().sections.isEmpty() }
+        assertEquals(
+            listOf("MAGE" to PRODUCT_BUNDLE.clientBuild),
+            unsectioned.map { it.classInfo.token.value to it.clientBuild },
+        )
+        val mage = unsectioned.single()
+        val whole = model(mage)
+        assertEquals(
+            TalentTreeSectionsResult.Unsectioned(TalentTreeSectionIssue.NoSections),
+            buildTalentTreeSections(mage.trees.single(), whole),
+        )
+        // the one canvas carries every node (Arcane Wrath included)
+        assertEquals(mage.trees.single().nodes.map { it.id }.toSet(), whole.nodes.map { it.id }.toSet())
+        assertEquals(55, whole.nodes.size)
+        assertTrue(whole.nodes.any { it.id == ARCANE_WRATH })
+        assertTrue(whole.nodes.all { it.sectionIndex == null })
+        // and no two hit targets overlap at any zoom on that canvas either
+        var scale = TalentTreeCanvasMetrics.ZOOM_MIN
+        while (scale <= TalentTreeCanvasMetrics.ZOOM_MAX + 1e-6f) {
+            val target = effectiveNodeTargetDp(
+                TalentTreeViewport(scale, Offset.Zero),
+                minimumNodeTargetDp(TalentTreeLayoutClass.PORTRAIT),
+            )
+            for (i in whole.nodes.indices) {
+                for (j in i + 1 until whole.nodes.size) {
+                    val a = whole.nodes[i]
+                    val b = whole.nodes[j]
+                    val chebyshev = maxOf(abs(a.centerX - b.centerX), abs(a.centerY - b.centerY)) * scale
+                    assertTrue(chebyshev >= target, "${a.name} / ${b.name} targets overlap at ${scale}×")
+                }
+            }
+            scale += 0.02f
+        }
+    }
+
     // ------------------------------------------------------------------ geometry on phones
 
     @Test
     fun hitTargetsOfOneSectionNeverOverlapAtAnyZoom() {
-        for (document in everyDocument()) {
+        for (document in everySectionedDocument()) {
             for (section in sectioned(document).sections) {
                 val nodes = section.model.nodes
                 var scale = TalentTreeCanvasMetrics.ZOOM_MIN
@@ -243,7 +286,7 @@ class TalentTreeSectionsTest {
             val canvas = Size(width, 600f)
             val expectedScale = (width / TalentTreeCanvasMetrics.SECTION_FIT_REFERENCE_WIDTH_DP)
                 .coerceIn(TalentTreeCanvasMetrics.ZOOM_MIN, 1f)
-            for (document in everyDocument()) {
+            for (document in everySectionedDocument()) {
                 for (section in sectioned(document).sections) {
                     val bounds = section.model.bounds
                     val fit = TalentTreeViewport.sectionFitFor(bounds, canvas, TalentTreeLayoutClass.PORTRAIT)
@@ -274,6 +317,9 @@ class TalentTreeSectionsTest {
     }
 
     private companion object {
+        /** Mage "Arcane Wrath": new in 1.60.1.70425, outside every gate group. */
+        const val ARCANE_WRATH = 113627
+
         /** Three pitches + one node: a four-column section at scale 1. */
         const val STANDARD_SECTION_WIDTH_DP: Float =
             3 * TalentTreeCanvasMetrics.GRID_STEP_DP + TalentTreeCanvasMetrics.NODE_VISUAL_DP

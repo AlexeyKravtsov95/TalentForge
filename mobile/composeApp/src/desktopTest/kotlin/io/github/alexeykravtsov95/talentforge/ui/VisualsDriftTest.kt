@@ -2,6 +2,7 @@ package io.github.alexeykravtsov95.talentforge.ui
 
 import io.github.alexeykravtsov95.talentforge.ui.library.ALL_BUNDLES
 import io.github.alexeykravtsov95.talentforge.ui.library.BUNDLE_70245
+import io.github.alexeykravtsov95.talentforge.ui.library.BUNDLE_70338
 import io.github.alexeykravtsov95.talentforge.ui.library.PREVIOUS_PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.library.REFERENCE_BUNDLE
@@ -25,12 +26,13 @@ class VisualsDriftTest {
         // nine sidecars + icons.json + one PNG per distinct FileDataID of that build
         assertBuildMirrors(REFERENCE_BUNDLE.clientBuild, files = 368, icons = 358)
         assertBuildMirrors(BUNDLE_70245.clientBuild, files = 367, icons = 357)
+        assertBuildMirrors(BUNDLE_70338.clientBuild, files = 368, icons = 358)
         assertBuildMirrors(PREVIOUS_PRODUCT_BUNDLE.clientBuild, files = 368, icons = 358)
-        assertBuildMirrors(PRODUCT_BUNDLE.clientBuild, files = 368, icons = 358)
+        assertBuildMirrors(PRODUCT_BUNDLE.clientBuild, files = 369, icons = 359)
     }
 
     @Test
-    fun exactlyTheFourBundledBuildsAreBundled() {
+    fun exactlyTheFiveBundledBuildsAreBundled() {
         val repoRoot = findRepoRoot(File(System.getProperty("user.dir")).absoluteFile)
         val bundledRoot = repoRoot
             .resolve("mobile/composeApp/src/commonMain/composeResources/files/visuals/forever")

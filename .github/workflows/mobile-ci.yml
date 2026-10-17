@@ -63,7 +63,7 @@ jobs:
       - name: OSS notices drift check (full content, licences re-read from POMs == committed Android notices)
         run: python3 scripts/generate_oss_notices.py --check --platform android
 
-      - name: Shared JVM contract tests (45 documents, 5 manifests, conformance, repository)
+      - name: Shared JVM contract tests (54 documents, 6 manifests, conformance, repository)
         working-directory: mobile
         run: ./gradlew :shared:jvmTest --console=plain
 
