@@ -18,22 +18,27 @@ Build the isolated APK first (from ``mobile/``)::
 
     ./gradlew :composeApp:assembleDebug -Ptalentforge.applicationIdSuffix=.devcheck
 
-then::
+then (normally via ``run-rc1-rerun.sh``, which sets ``RC1_REPO`` to the audited worktree)::
 
-    python3 docs/release/rc1-evidence/rc1_android_device_check.py --serial <adb serial> \
-        --out .cache/rc1-device [--screens]
+    RC1_REPO=<checkout> python3 docs/release/rc1-evidence/rc1_android_device_check.py \
+        --serial <adb serial> --out <dir> [--screens]
+
+There is no default serial; never commit real device identifiers.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 import time
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[3]
+# RC1_REPO points at the checkout/worktree under test (run-rc1-rerun.sh sets it to the
+# detached worktree of the audited commit); default: the checkout containing this file.
+REPO = Path(os.environ.get("RC1_REPO") or Path(__file__).resolve().parents[3]).resolve()
 sys.path.insert(0, str(REPO / "scripts"))
 import android_section_check as asc  # noqa: E402
 
