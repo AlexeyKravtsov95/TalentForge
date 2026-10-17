@@ -212,7 +212,7 @@ to upload.
 | Guard | How (implemented) |
 |---|---|
 | No debug fallback | The `release` build type sets `signingConfig = signingConfigs.findByName("release")`: the owner's key or none, never `signingConfigs.debug`. The SDK debug keystore and the `androiddebugkey` alias are refused as release settings. |
-| No unsigned upload | `assemblePublishableRelease` fails before building without the complete signing settings and the expected fingerprint; it stages nothing unless every check passes. |
+| No unsigned or stale upload | `assemblePublishableRelease` fails before building without the complete signing settings and the expected fingerprint; it stages nothing unless every check passes. Its output directory is cleared before any task of a publishable build runs, so a failed attempt never leaves an earlier APK behind (PR #38 review). |
 | Never upload `*-debug.apk` | Upload only `build/outputs/publishable/TalentForge-<versionName>-<versionCode>.apk`. The validator rejects the debug APK (debug DN, debuggable). |
 | Certificate check | `apksigner verify --verbose --print-certs`: verifies, exactly one signer, the DN is **not** the Android debug subject, the certificate differs from the local debug keystore's, and its SHA-256 equals the owner's recorded fingerprint (§5.1). Key: RSA ≥ 4096. |
 | Package identity | `aapt2 dump badging`: `applicationId` is the frozen `io.github.alexeykravtsov95.talentforge`; `versionCode`/`versionName` equal the build's; no `application-debuggable`; not test-only. RuStore lists `android:debuggable="true"` and a debug certificate among malware signs. |

@@ -1214,7 +1214,9 @@ App(storage, …, appVersion)          ← host: Android PackageManager / iOS NS
   - Every static archive in an iOS klib must be claimed, object-file family by family, by the
     curated inventory of that exact module version.
   - Every bundled licence text is SHA-256-pinned to its upstream revision.
-  - Both files are drift-checked in `mobile-ci` (Android on Linux, iOS on macOS).
+  - Both files are drift-checked in `mobile-ci` (Android on Linux, iOS on macOS). The check compares
+    the full content: coordinates, component mapping, licence metadata, POM licences re-read, and
+    for iOS the klibs' native archives.
   - `platformOpenSourceNoticesPath` is the Android file on Android and desktop (the desktop target
     is the Android UI's dev host and is not distributed) and the iOS file on iOS
     (TF-RC2B-IOS-NOTICES, [evidence](release/rc2b-evidence/ios-oss-notices.md)).
@@ -1227,7 +1229,8 @@ App(storage, …, appVersion)          ← host: Android PackageManager / iOS NS
 - **Release signing (`composeApp/build.gradle.kts`):** settings come from the environment or
   `~/.gradle/gradle.properties`. `checkReleaseSigning` runs before `preReleaseBuild`.
   `assemblePublishableRelease` stages `build/outputs/publishable/TalentForge-<vn>-<vc>.apk` only
-  after `scripts/verify_release_apk.py` passes. Owner procedure:
+  after `scripts/verify_release_apk.py` passes. A `taskGraph.whenReady` hook clears that directory
+  before any task of a publishable build runs, so a failed attempt never leaves an earlier APK. Owner procedure:
   [release/android-release-signing.md](release/android-release-signing.md).
 
 **Tests** (desktop):
@@ -1974,7 +1977,7 @@ cd mobile
 
 # (from the repository root) signing self-test with a temporary key; Android OSS notices drift check
 scripts/release_signing_selftest.sh
-python3 scripts/generate_oss_notices.py --check    # both platforms; regenerate without --check after a dependency change
+python3 scripts/generate_oss_notices.py --check    # both platforms, full content incl. POM licences; regenerate without --check after a change
 
 # M5.UX.2b.1 section navigation on a USB device (from the repository root; adb on PATH).
 # Builds and installs the isolated `.devcheck` application, runs the scenarios

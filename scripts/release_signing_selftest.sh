@@ -18,8 +18,14 @@
 #   7. publish-nocert all settings, no expected fingerprint: the publishable task fails
 #   8. publish-wrong  a wrong expected fingerprint: validation fails, nothing stays staged
 #   9. publish-ok     the correct fingerprint: the APK and its PASS report are staged
-#  10. debug-apk      the debug APK: the validator rejects the debug certificate
-#  11. no-secrets     no log, report or build file contains the password or the key path
+#  10. stale-wrong    after a successful publishable build, a build with a wrong fingerprint
+#                     fails and the previous APK is no longer staged
+#  11. stale-none     after a successful publishable build, a build without signing settings
+#                     fails and the previous APK is no longer staged
+#  12. stale-partial  after a successful publishable build, a build with partial settings
+#                     (fails in checkReleaseSigning) leaves no previous APK staged
+#  13. debug-apk      the debug APK: the validator rejects the debug certificate
+#  14. no-secrets     no log, report or build file contains the password or the key path
 #
 # The test key is created in a fresh directory OUTSIDE the repository, with a random
 # password that exists only in this process's environment (keytool reads it through
@@ -29,8 +35,8 @@
 # test-key output reaches the build cache.
 #
 # Usage: scripts/release_signing_selftest.sh [--evidence DIR]
-#   --evidence DIR  also copy the logs (home directory shown as ~) and the staged APK's
-#                   report into DIR. The certificate digest in them is public and belongs
+#   --evidence DIR  also copy the logs (as .txt, home directory shown as ~) and the staged
+#                   APK's report into DIR. The certificate digest in them is public and belongs
 #                   to the deleted test key.
 # Exit: 0 = every scenario passed, 1 = a scenario failed, 2 = cannot run.
 set -uo pipefail
@@ -243,12 +249,57 @@ else
   result publish-ok FAIL "assemblePublishableRelease failed with the correct fingerprint (see 09-publish-ok.log)"
 fi
 
-# 10 — the debug APK is rejected
+# 10-12 — a failed publishable attempt never leaves the previous attempt's APK staged.
+# Each scenario first stages a good APK (as in 9), then runs a failing attempt.
+publish_good() { # log-name → 0 when a good APK is staged
+  TALENTFORGE_RELEASE_CERT_SHA256="$CERT_SHA" with_signing gradle "$1" :composeApp:assemblePublishableRelease \
+    && ls "$PUBLISHABLE_DIR"/TalentForge-*.apk >/dev/null 2>&1
+}
+nothing_staged() { [ -z "$(ls -A "$PUBLISHABLE_DIR" 2>/dev/null)" ]; }
+
+if publish_good 10a-stage; then
+  if TALENTFORGE_RELEASE_CERT_SHA256="$WRONG" with_signing gradle 10-stale-wrong :composeApp:assemblePublishableRelease; then
+    result stale-wrong FAIL "the wrong-fingerprint attempt succeeded"
+  elif nothing_staged; then
+    result stale-wrong PASS "attempt failed; the previous APK is gone from outputs/publishable"
+  else
+    result stale-wrong FAIL "the previous APK is still staged: $(ls "$PUBLISHABLE_DIR")"
+  fi
+else
+  result stale-wrong FAIL "could not stage a good APK first (see 10a-stage.log)"
+fi
+
+if publish_good 11a-stage; then
+  if gradle 11-stale-none :composeApp:assemblePublishableRelease; then
+    result stale-none FAIL "the attempt without signing settings succeeded"
+  elif nothing_staged; then
+    result stale-none PASS "attempt failed before building; the previous APK is gone"
+  else
+    result stale-none FAIL "the previous APK is still staged: $(ls "$PUBLISHABLE_DIR")"
+  fi
+else
+  result stale-none FAIL "could not stage a good APK first (see 11a-stage.log)"
+fi
+
+if publish_good 12a-stage; then
+  if TALENTFORGE_RELEASE_STORE_FILE="$KEYSTORE" TALENTFORGE_RELEASE_KEY_ALIAS="$ALIAS" \
+    TALENTFORGE_RELEASE_CERT_SHA256="$CERT_SHA" gradle 12-stale-partial :composeApp:assemblePublishableRelease; then
+    result stale-partial FAIL "the attempt with partial settings succeeded"
+  elif nothing_staged; then
+    result stale-partial PASS "attempt failed in the signing checks; the previous APK is gone"
+  else
+    result stale-partial FAIL "the previous APK is still staged: $(ls "$PUBLISHABLE_DIR")"
+  fi
+else
+  result stale-partial FAIL "could not stage a good APK first (see 12a-stage.log)"
+fi
+
+# 13 — the debug APK is rejected
 DEBUG_APK="$MOBILE/composeApp/build/outputs/apk/debug/composeApp-debug.apk"
-if [ -f "$DEBUG_APK" ] || gradle 10-assembleDebug :composeApp:assembleDebug; then
-  validate 10-debug-validator "$DEBUG_APK" "$CERT_SHA" --debug-keystore "$DEBUG_KS"
+if [ -f "$DEBUG_APK" ] || gradle 13-assembleDebug :composeApp:assembleDebug; then
+  validate 13-debug-validator "$DEBUG_APK" "$CERT_SHA" --debug-keystore "$DEBUG_KS"
   rc=$?
-  if [ $rc -eq 1 ] && grep -q '^FAIL  not-debug-certificate-dn' "$LOGS/10-debug-validator.log"; then
+  if [ $rc -eq 1 ] && grep -q '^FAIL  not-debug-certificate-dn' "$LOGS/13-debug-validator.log"; then
     result debug-apk PASS "the validator rejects the debug certificate"
   else
     result debug-apk FAIL "validator exit $rc on the debug APK"
@@ -257,7 +308,7 @@ else
   result debug-apk FAIL "no debug APK"
 fi
 
-# 11 — no secret in the logs, the reports or the build directories
+# 14 — no secret in the logs, the reports or the build directories
 leaks="$(grep -rlF -e "$SECRET" -e "$KEYSTORE" "$LOGS" "$MOBILE/composeApp/build" "$MOBILE/build" 2>/dev/null)"
 if [ -z "$leaks" ]; then
   result no-secrets PASS "no password or keystore path in the logs, reports or build/"
@@ -269,7 +320,10 @@ if [ -n "$EVIDENCE" ]; then
   mkdir -p "$EVIDENCE"
   for f in "$LOGS"/*; do
     [ "$(basename "$f")" = 00-keytool.log ] && continue
-    sed -e "s|$TMP|<tmp>|g" -e "s|$HOME|~|g" "$f" >"$EVIDENCE/$(basename "$f")"
+    name="$(basename "$f")"
+    # *.log is git-ignored repository-wide: evidence logs are written as .txt so they can be committed
+    case "$name" in *.log) name="${name%.log}.txt" ;; esac
+    sed -e "s|$TMP|<tmp>|g" -e "s|$HOME|~|g" "$f" >"$EVIDENCE/$name"
   done
 fi
 echo "selftest: $([ $FAILED -eq 0 ] && echo PASS || echo FAIL) — the test key and test-signed outputs are deleted on exit"

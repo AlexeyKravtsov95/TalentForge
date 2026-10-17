@@ -1,15 +1,20 @@
-"""The OSS-notices generator, offline (M5.RC.2b LR-4, TF-RC2B-IOS-NOTICES).
+"""The OSS-notices generator and its drift check, offline (M5.RC.2b LR-4 and review,
+TF-RC2B-IOS-NOTICES).
 
 ``scripts/generate_oss_notices.py`` derives the Android and iOS notices from Gradle and
 from the static archives inside the iOS klibs. These tests pin, without Gradle or the
-network: the Mach-O universal / BSD ``ar`` parsing, the klib scan, every fail-closed
-rule of the native inventory, the bundled licence texts, and that the committed
-documents are exactly what the generator builds from their own module lists. That the
-module lists equal what Gradle resolves is ``--check``'s job (it needs Gradle).
+network (resolution and POM lookups are stubbed): the Mach-O universal / BSD ``ar``
+parsing, the klib scan, every fail-closed rule of the native inventory, the bundled
+licence texts, that the committed documents are exactly what the generator builds from
+their own module lists, and that ``--check`` fails on ANY difference — not only changed
+coordinates: a licence that changed upstream while the coordinates stayed the same, an
+edited licence id or name, a changed URL or attribution, or a module moved to another
+component. The real resolution runs in mobile-ci.
 """
 
 from __future__ import annotations
 
+import copy
 import importlib.util
 import json
 import struct
@@ -234,13 +239,13 @@ def committed(platform: str) -> tuple[Any, str, list[str]]:
 def test_the_committed_android_notices_are_what_the_generator_builds() -> None:
     platform, text, modules = committed("android")
     assert len(modules) == 122
-    assert gen.render(gen.build_notices(platform, modules, None, online=False)) == text
+    assert gen.render(gen.build_notices(platform, modules, None, verify_poms=False)) == text
 
 
 def test_the_committed_ios_notices_are_what_the_generator_builds() -> None:
     platform, text, modules = committed("ios")
     native = {SKIKO: skiko_content(), UIKIT: {"libCMPUIKitUtils.a": {"CMPViewController"}}}
-    built = gen.build_notices(platform, modules, native, online=False)
+    built = gen.build_notices(platform, modules, native, verify_poms=False)
     assert gen.render(built) == text
     linked = {c["name"]: c for c in built["components"] if "linkedInto" in c}
     assert linked["Skia"]["linkedInto"] == SKIKO
@@ -251,11 +256,181 @@ def test_the_committed_ios_notices_are_what_the_generator_builds() -> None:
 
 def test_check_reports_the_module_drift(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     platform, text, modules = committed("android")
-    copy = tmp_path / "oss-notices-android.json"
-    copy.write_text(text, encoding="utf-8")
+    target = tmp_path / "oss-notices-android.json"
+    target.write_text(text, encoding="utf-8")
     monkeypatch.setattr(gen, "ROOT", tmp_path)
-    moved = gen.Platform(platform.name, platform.configuration, copy, platform.native)
-    gen.check(moved, gen.build_notices(moved, modules, None, online=False))
-    drifted = gen.build_notices(moved, [*modules, "androidx.core:core:1.0.0"], None, online=False)
-    with pytest.raises(gen.NoticesError, match=r"not listed: \['androidx.core:core:1.0.0'\]"):
+    moved = gen.Platform(platform.name, platform.configuration, target, platform.native)
+    gen.check(moved, gen.build_notices(moved, modules, None, verify_poms=False))
+    drifted = gen.build_notices(
+        moved, [*modules, "androidx.core:core:1.0.0"], None, verify_poms=False
+    )
+    with pytest.raises(
+        gen.NoticesError, match=r"modules: not listed \['androidx.core:core:1.0.0'\]"
+    ):
         gen.check(moved, drifted)
+
+
+# --- --check fails on any difference (PR #38 review, ported to v2 and both platforms) -------
+
+MODULES = [
+    "androidx.activity:activity:1.13.0",
+    "com.google.guava:listenablefuture:1.0",
+    "org.jetbrains.kotlin:kotlin-stdlib:2.4.20",
+    "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0",
+]
+APACHE = ["The Apache Software License, Version 2.0"]
+
+
+@pytest.fixture
+def notices_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """Gradle resolves MODULES; every POM declares Apache-2.0; the notices live in tmp_path."""
+    path = tmp_path / "files" / "legal" / "oss-notices-android.json"
+    path.parent.mkdir(parents=True)
+    android = gen.PLATFORMS["android"]
+    monkeypatch.setattr(gen, "ROOT", tmp_path)
+    monkeypatch.setitem(
+        gen.PLATFORMS,
+        "android",
+        gen.Platform(android.name, android.configuration, path, android.native),
+    )
+    monkeypatch.setattr(gen, "resolve", lambda platform: gen.Resolution(list(MODULES), {}))
+    monkeypatch.setattr(gen, "declared_licenses", lambda group, artifact, version: list(APACHE))
+    return path
+
+
+def run(*args: str) -> int:
+    return int(gen.main([*args, "--platform", "android"]))
+
+
+def edit(path: Path, change: Any) -> None:
+    data = json.loads(path.read_text(encoding="utf-8"))
+    change(data)
+    path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+
+def component(data: dict[str, Any], name: str) -> dict[str, Any]:
+    return next(c for c in data["components"] if c["name"] == name)
+
+
+def test_generated_notices_pass_the_check(notices_file: Path) -> None:
+    assert run() == 0
+    assert run("--check") == 0
+
+
+def test_an_upstream_licence_change_with_unchanged_coordinates_fails(
+    notices_file: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    assert run() == 0
+    # the same coordinates, but the kotlinx.coroutines POM now declares another licence
+    monkeypatch.setattr(
+        gen,
+        "declared_licenses",
+        lambda group, artifact, version: ["MIT"] if artifact.startswith("kotlinx-") else APACHE,
+    )
+    assert run("--check") == 1
+    error = capsys.readouterr().err
+    assert "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0" in error
+    assert "MIT" in error
+
+
+def test_an_edited_component_licence_with_unchanged_coordinates_fails(
+    notices_file: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    assert run() == 0
+
+    def relicense(data: dict[str, Any]) -> None:
+        data["licenses"]["MIT"] = {"name": "MIT License", "file": "files/legal/LICENSE-MIT.txt"}
+        component(data, "kotlinx.coroutines")["licenses"] = ["MIT"]
+
+    edit(notices_file, relicense)
+    assert run("--check") == 1
+    error = capsys.readouterr().err
+    assert (
+        "notices.components[2].licenses: not listed ['Apache-2.0'], not expected ['MIT']" in error
+    )
+    assert "notices.licenses.MIT: not expected" in error
+
+
+@pytest.mark.parametrize(
+    ("change", "path"),
+    [
+        (
+            lambda d: d["licenses"]["Apache-2.0"].update(name="Apache License 2.1"),
+            "notices.licenses.Apache-2.0.name",
+        ),
+        (
+            lambda d: d["licenses"]["Apache-2.0"].update(file="files/legal/OTHER.txt"),
+            "notices.licenses.Apache-2.0.file",
+        ),
+        (
+            lambda d: component(d, "Guava ListenableFuture").update(url="https://example.org"),
+            "notices.components[3].url",
+        ),
+        (lambda d: d.update(schema="talentforge.oss-notices.v1"), "notices.schema"),
+        (lambda d: d.update(platform="ios"), "notices.platform"),
+        (lambda d: d.pop("source"), "notices.source: missing"),
+    ],
+)
+def test_any_licence_or_component_metadata_edit_fails(
+    notices_file: Path, capsys: pytest.CaptureFixture[str], change: Any, path: str
+) -> None:
+    assert run() == 0
+    edit(notices_file, change)
+    assert run("--check") == 1
+    assert path in capsys.readouterr().err
+
+
+def test_a_module_moved_to_another_component_fails(
+    notices_file: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    assert run() == 0
+
+    def move(data: dict[str, Any]) -> None:
+        stdlib = "org.jetbrains.kotlin:kotlin-stdlib:2.4.20"
+        component(data, "Kotlin Standard Library")["modules"].remove(stdlib)
+        component(data, "AndroidX (Android Jetpack)")["modules"].append(stdlib)
+
+    edit(notices_file, move)
+    assert run("--check") == 1
+    error = capsys.readouterr().err
+    assert "notices.components[0].modules: not listed [], not expected" in error
+
+
+def test_coordinate_drift_still_fails(
+    notices_file: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    assert run() == 0
+    monkeypatch.setattr(
+        gen, "resolve", lambda platform: gen.Resolution([*MODULES, "androidx.core:core:1.18.0"], {})
+    )
+    assert run("--check") == 1
+    assert "androidx.core:core:1.18.0" in capsys.readouterr().err
+
+
+def test_a_missing_or_malformed_file_fails(notices_file: Path) -> None:
+    assert run("--check") == 1
+    notices_file.write_text("{not json", encoding="utf-8")
+    assert run("--check") == 1
+
+
+def test_a_module_no_component_claims_fails(
+    notices_file: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        gen, "resolve", lambda platform: gen.Resolution([*MODULES, "com.example:unknown:1.0"], {})
+    )
+    assert run() == 1
+
+
+def test_an_edited_linked_component_in_the_ios_notices_fails() -> None:
+    platform, text, modules = committed("ios")
+    native = {SKIKO: skiko_content(), UIKIT: {"libCMPUIKitUtils.a": {"CMPViewController"}}}
+    expected = gen.build_notices(platform, modules, native, verify_poms=False)
+    edited = copy.deepcopy(json.loads(text))
+    dng = next(c for c in edited["components"] if c["name"] == "Adobe DNG SDK")
+    dng["attribution"] = None
+    dng["version"] = "1.5"
+    found = gen.differences(expected, edited)
+    assert any(".attribution: committed None" in line for line in found)
+    assert any(".version: committed '1.5', expected '1.4'" in line for line in found)
+    assert gen.differences(expected, json.loads(text)) == []

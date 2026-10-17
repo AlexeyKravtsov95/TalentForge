@@ -1,0 +1,16 @@
+FAIL  signature-verifies: apksigner verify failed: DOES NOT VERIFY; ERROR: Missing META-INF/MANIFEST.MF
+FAIL  single-signer: signers=None, certificates=0
+FAIL  not-debug-certificate-dn: signer DN is the Android debug subject, or no single DN was read
+FAIL  not-local-debug-certificate: no local debug keystore given; the DN and fingerprint checks decide
+FAIL  certificate-sha256-matches: certificate SHA-256 does not equal the expected fingerprint
+FAIL  rsa-key-size: key ? ? bits (required: RSA, at least 4096)
+FAIL  signature-scheme-v2-or-v3: schemes: ?
+PASS  application-id: applicationId='io.github.alexeykravtsov95.talentforge' (frozen: 'io.github.alexeykravtsov95.talentforge')
+PASS  version-code: versionCode=1 (expected: any > 0)
+PASS  version-name: versionName='0.1.0' (expected: non-empty)
+PASS  not-debuggable: debuggable=False
+PASS  not-test-only: testOnly=False
+PASS  universal-apk: split=None; native-code=['arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64']; lib/ ABIs=['arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64']
+PASS  abi-arm64-v8a: arm64-v8a packaged: True
+APK   composeApp-release-unsigned.apk  17191699 bytes  sha256 fe66aa8065014209396f392847a672971863587827f972bd5c37aa4378bfc609
+RESULT FAIL

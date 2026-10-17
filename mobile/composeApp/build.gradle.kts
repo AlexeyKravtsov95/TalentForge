@@ -214,7 +214,8 @@ tasks.matching { it.name == "preReleaseBuild" }.configureEach {
 /**
  * Copies the signed release APK to `build/outputs/publishable/TalentForge-<versionName>-<versionCode>.apk`
  * and keeps it only if scripts/verify_release_apk.py passes (report next to it). On any failure
- * the publishable directory is left empty: there is no other upload artifact.
+ * — validation or any exception — the publishable directory is deleted: there is no other upload
+ * artifact. (A failure BEFORE this task runs is covered by the task-graph hook below.)
  */
 abstract class AssemblePublishableApk @Inject constructor(private val execOps: ExecOperations) : DefaultTask() {
     @get:InputFiles
@@ -255,6 +256,15 @@ abstract class AssemblePublishableApk @Inject constructor(private val execOps: E
             ?: throw GradleException("Expected exactly one universal release APK, found ${built.elements.size}.")
         val out = outputDirectory.get().asFile
         out.deleteRecursively()
+        try {
+            stage(apk, out)
+        } catch (failure: Throwable) {
+            out.deleteRecursively()
+            throw failure
+        }
+    }
+
+    private fun stage(apk: File, out: File) {
         out.mkdirs()
         val name = "TalentForge-${versionName.get()}-${versionCode.get()}.apk"
         val staged = File(out, name)
@@ -278,7 +288,6 @@ abstract class AssemblePublishableApk @Inject constructor(private val execOps: E
         }
         logger.lifecycle(log.toString())
         if (result.exitValue != 0) {
-            out.deleteRecursively()
             throw GradleException("The release APK failed validation (exit ${result.exitValue}); nothing is publishable.")
         }
         logger.lifecycle("Publishable APK: ${staged.path}")
@@ -298,6 +307,19 @@ val assemblePublishableRelease = tasks.register<AssemblePublishableApk>("assembl
     expectedCertificateSha256.set(expectedReleaseCertSha256.orEmpty())
     outputDirectory.set(layout.buildDirectory.dir("outputs/publishable"))
     outputs.upToDateWhen { false }
+}
+
+// Fail-closed staging (M5.RC.2b review): a publishable build that fails ANYWHERE — the signing
+// checks, compilation, packaging, validation — must not leave the previous attempt's APK in
+// build/outputs/publishable/. Task order cannot guarantee that (checkReleaseSigning, compile or
+// :shared tasks may fail before any publishable task runs), so the directory is cleared as soon
+// as the task graph containing assemblePublishableRelease is ready, before any task executes.
+// It is refilled only by a fully successful assemblePublishableRelease.
+val publishableOutput = layout.buildDirectory.dir("outputs/publishable")
+gradle.taskGraph.whenReady {
+    if (hasTask("${project.path}:assemblePublishableRelease")) {
+        publishableOutput.get().asFile.deleteRecursively()
+    }
 }
 
 androidComponents {

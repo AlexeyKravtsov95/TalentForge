@@ -30,9 +30,14 @@ Fail-closed rules:
 - every bundled licence text must match its curated SHA-256: the verbatim upstream file
   at a pinned revision. Regeneration downloads a missing text from that revision.
 
-``--check`` rebuilds each document offline (no POM or text download) and fails when it
-differs from the committed file. Bills of materials (``*-bom``) are version constraints
-with no code and are not listed; ``:shared`` is TalentForge's own module.
+``--check`` rebuilds each document the same way (Gradle resolution, every POM licence
+re-verified, the klib archives re-scanned; no licence text is downloaded) and compares it
+with the committed file in full after JSON normalization, listing every differing path: a
+licence that changed upstream while the coordinates stayed the same, an edited licence or
+URL, or a module moved to another component all fail.
+
+Bills of materials (``*-bom``) are version constraints with no code and are not listed;
+``:shared`` is TalentForge's own module.
 """
 
 from __future__ import annotations
@@ -797,13 +802,16 @@ def build_notices(
     platform: Platform,
     modules: list[str],
     native: dict[str, dict[str, set[str]]] | None,
-    online: bool,
+    verify_poms: bool = True,
+    fetch_texts: bool = False,
 ) -> dict[str, object]:
-    """The notices document. ``native`` is the klibs' archive content (iOS) or ``None``."""
+    """The notices document. ``native`` is the klibs' archive content (iOS) or ``None``.
+    ``verify_poms`` re-reads every module's POM licence; ``fetch_texts`` downloads a missing
+    licence text from its pinned origin (regeneration only)."""
     grouped: dict[str, list[str]] = {}
     for module in modules:
         component = component_of(module)
-        if online:
+        if verify_poms:
             verify_license(module, component)
         grouped.setdefault(component.name, []).append(module)
     components: list[dict[str, object]] = [
@@ -832,7 +840,7 @@ def build_notices(
         if any(license_id in component["licenses"] for component in components)  # type: ignore[operator]
     ]
     for license_id in used:
-        verify_text(license_id, fetch=online)
+        verify_text(license_id, fetch=fetch_texts)
     return {
         "schema": SCHEMA,
         "platform": platform.name,
@@ -854,17 +862,58 @@ def listed_modules(notices: dict[str, object]) -> list[str]:
     return sorted(m for component in components for m in component.get("modules", []))
 
 
+def differences(expected: object, committed: object, path: str = "notices") -> list[str]:
+    """Every path at which the committed notices differ from the expected ones."""
+    if isinstance(expected, dict) and isinstance(committed, dict):
+        found: list[str] = []
+        for key in sorted(set(expected) | set(committed)):
+            if key not in committed:
+                found.append(f"{path}.{key}: missing in the committed file")
+            elif key not in expected:
+                found.append(f"{path}.{key}: not expected")
+            else:
+                found += differences(expected[key], committed[key], f"{path}.{key}")
+        return found
+    if isinstance(expected, list) and isinstance(committed, list):
+        if all(isinstance(item, str) for item in expected + committed):
+            missing = sorted(set(expected) - set(committed))
+            stale = sorted(set(committed) - set(expected))
+            if missing or stale:
+                return [f"{path}: not listed {missing}, not expected {stale}"]
+            if expected != committed:
+                return [f"{path}: order differs"]
+            return []
+        found = (
+            [f"{path}: {len(committed)} entries, expected {len(expected)}"]
+            if len(expected) != len(committed)
+            else []
+        )
+        for index, (want, have) in enumerate(zip(expected, committed, strict=False)):
+            found += differences(want, have, f"{path}[{index}]")
+        return found
+    if expected != committed:
+        return [f"{path}: committed {committed!r}, expected {expected!r}"]
+    return []
+
+
 def check(platform: Platform, notices: dict[str, object]) -> None:
+    """The committed file equals the expected notices in full (after JSON normalization):
+    schema, licence metadata, every component's name, URL, licences, modules and, for
+    linked components, version, module and attribution."""
     if not platform.notices.is_file():
         raise NoticesError(f"{platform.notices.relative_to(ROOT)} is missing; regenerate it")
-    committed = platform.notices.read_text(encoding="utf-8")
-    if committed != render(notices):
-        listed, built = set(listed_modules(json.loads(committed))), set(listed_modules(notices))
+    try:
+        committed = json.loads(platform.notices.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        raise NoticesError(f"{platform.notices.relative_to(ROOT)} is not valid JSON") from error
+    found = differences(notices, committed)
+    if found:
+        listed = "\n".join(f"  {line}" for line in found[:25])
+        more = f"\n  … and {len(found) - 25} more" if len(found) > 25 else ""
         raise NoticesError(
-            f"the {platform.name} OSS notices drift from :composeApp:{platform.configuration}; "
-            "regenerate them\n"
-            f"  not listed: {sorted(built - listed)}\n"
-            f"  no longer shipped: {sorted(listed - built)}"
+            f"the committed {platform.name} OSS notices differ from "
+            f":composeApp:{platform.configuration} and its licences; regenerate them\n"
+            f"{listed}{more}"
         )
 
 
@@ -879,7 +928,10 @@ def main(argv: list[str] | None = None) -> int:
             platform = PLATFORMS[name]
             resolution = resolve(platform)
             native = native_content(resolution) if platform.native else None
-            notices = build_notices(platform, resolution.modules, native, online=not args.check)
+            # every POM licence is re-verified in both modes; texts download only on regeneration
+            notices = build_notices(
+                platform, resolution.modules, native, verify_poms=True, fetch_texts=not args.check
+            )
             if args.check:
                 check(platform, notices)
                 print(f"OSS notices ({name}): OK ({len(resolution.modules)} modules)")
