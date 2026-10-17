@@ -61,7 +61,10 @@ def parse_badging(text: str) -> dict:
     m = re.search(r"package: name='([^']*)' versionCode='([^']*)' versionName='([^']*)'", text)
     if m:
         out["package"], out["versionCode"], out["versionName"] = m.groups()
-    for key, pattern in (("minSdkVersion", r"^(?:minSdkVersion|sdkVersion):'([^']*)'"), ("targetSdkVersion", r"^targetSdkVersion:'([^']*)'")):
+    for key, pattern in (
+        ("minSdkVersion", r"^(?:minSdkVersion|sdkVersion):'([^']*)'"),
+        ("targetSdkVersion", r"^targetSdkVersion:'([^']*)'"),
+    ):
         m = re.search(pattern, text, re.M)
         out[key] = m.group(1) if m else None
     out["debuggable"] = bool(re.search(r"^application-debuggable", text, re.M))
@@ -95,7 +98,9 @@ def parse_xmltree(text: str) -> list[dict]:
         if m and elements:
             name, raw = m.groups()
             val = re.match(r'^"([^"]*)"', raw)
-            raw = re.sub(r"^\(type 0x[0-9a-f]+\)", "", raw)  # aapt2 may print "(type 0x12)0xffffffff"
+            raw = re.sub(
+                r"^\(type 0x[0-9a-f]+\)", "", raw
+            )  # aapt2 may print "(type 0x12)0xffffffff"
             elements[-1]["attrs"][name] = val.group(1) if val else raw.split(" ")[0]
     return elements
 
@@ -108,7 +113,7 @@ def manifest_facts(elements: list[dict]) -> dict:
         return [e["attrs"].get("name", "?") for e in elements if e["tag"] == tag]
 
     exported = [
-        f'{e["tag"]}:{e["attrs"].get("name", "?")}'
+        f"{e['tag']}:{e['attrs'].get('name', '?')}"
         for e in elements
         if e["tag"] in ("activity", "activity-alias", "service", "receiver", "provider")
         and str(e["attrs"].get("exported", "")).lower() in ("true", "0xffffffff", "-1")
@@ -120,8 +125,14 @@ def manifest_facts(elements: list[dict]) -> dict:
             in_queries_depth = None
         if e["tag"] == "queries":
             in_queries_depth = e["depth"]
-        elif in_queries_depth is not None and e["tag"] in ("action", "package", "provider", "data", "category"):
-            queries.append(f'{e["tag"]}:{e["attrs"].get("name", e["attrs"].get("mimeType", ""))}')
+        elif in_queries_depth is not None and e["tag"] in (
+            "action",
+            "package",
+            "provider",
+            "data",
+            "category",
+        ):
+            queries.append(f"{e['tag']}:{e['attrs'].get('name', e['attrs'].get('mimeType', ''))}")
     return {
         "allowBackup": a.get("allowBackup", "(unset: platform default true)"),
         "fullBackupContent": a.get("fullBackupContent"),
@@ -151,14 +162,20 @@ def zip_facts(path: Path) -> dict:
     with zipfile.ZipFile(path) as z:
         infos = z.infolist()
         names = [i.filename for i in infos]
-        abis = sorted({n.split("/")[-2] for n in names if re.match(r"^(base/)?lib/[^/]+/[^/]+\.so$", n)})
+        abis = sorted(
+            {n.split("/")[-2] for n in names if re.match(r"^(base/)?lib/[^/]+/[^/]+\.so$", n)}
+        )
         sos = sorted({n.split("/")[-1] for n in names if n.endswith(".so")})
         prefixes: dict[str, int] = {}
         for i in infos:
             parts = i.filename.split("/")
-            top = "/".join(parts[:2]) if parts[0] in ("base", "assets") and len(parts) > 2 else parts[0]
+            top = (
+                "/".join(parts[:2])
+                if parts[0] in ("base", "assets") and len(parts) > 2
+                else parts[0]
+            )
             prefixes[top] = prefixes.get(top, 0) + i.compress_size
-        dex_hits = {k: False for k in DEX_NEEDLES}
+        dex_hits = dict.fromkeys(DEX_NEEDLES, False)
         for n in names:
             if re.match(r"^(base/dex/)?classes\d*\.dex$", n):
                 blob = z.read(n)
@@ -181,7 +198,12 @@ def zip_facts(path: Path) -> dict:
 def deps_facts(text: str) -> dict:
     hits = {k: sorted(set(re.findall(rf"({p}[\w.:-]+)", text))) for k, p in DEP_PATTERNS.items()}
     coords = sorted(set(re.findall(r"[+\\]--- ([\w.-]+:[\w.-]+)", text)))
-    return {"report_present": bool(text), "pattern_hits": hits, "distinct_modules": len(coords), "modules": coords}
+    return {
+        "report_present": bool(text),
+        "pattern_hits": hits,
+        "distinct_modules": len(coords),
+        "modules": coords,
+    }
 
 
 def apksigner_facts(text: str) -> dict:
@@ -197,8 +219,15 @@ def apksigner_facts(text: str) -> dict:
     }
 
 
-def test_facts(results_dir: Path) -> dict:
-    tot = {"results_dir_present": results_dir.is_dir(), "suites": 0, "tests": 0, "failures": 0, "errors": 0, "skipped": 0}
+def junit_facts(results_dir: Path) -> dict:
+    tot = {
+        "results_dir_present": results_dir.is_dir(),
+        "suites": 0,
+        "tests": 0,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+    }
     for f in sorted(results_dir.glob("*.xml")):
         try:
             r = ET.parse(f).getroot()
@@ -216,7 +245,9 @@ def lint_facts(xml_path: Path) -> dict:
     root = ET.parse(xml_path).getroot()
     issues: dict[str, dict] = {}
     for i in root.iter("issue"):
-        d = issues.setdefault(i.get("id", "?"), {"severity": i.get("severity"), "count": 0, "files": set()})
+        d = issues.setdefault(
+            i.get("id", "?"), {"severity": i.get("severity"), "count": 0, "files": set()}
+        )
         d["count"] += 1
         loc = i.find("location")
         if loc is not None and loc.get("file"):
@@ -227,7 +258,10 @@ def lint_facts(xml_path: Path) -> dict:
     return {
         "present": True,
         "by_severity": by_sev,
-        "issues": {k: {"severity": v["severity"], "count": v["count"], "files": sorted(v["files"])} for k, v in sorted(issues.items())},
+        "issues": {
+            k: {"severity": v["severity"], "count": v["count"], "files": sorted(v["files"])}
+            for k, v in sorted(issues.items())
+        },
     }
 
 
@@ -244,7 +278,9 @@ def main() -> int:
         "commit": a.sha,
         "artifacts": {
             "debug_apk": zip_facts(outputs / "apk/debug/composeApp-debug.apk"),
-            "release_apk_unsigned": zip_facts(outputs / "apk/release/composeApp-release-unsigned.apk"),
+            "release_apk_unsigned": zip_facts(
+                outputs / "apk/release/composeApp-release-unsigned.apk"
+            ),
             "release_aab": zip_facts(outputs / "bundle/release/composeApp-release.aab"),
         },
         "badging": {
@@ -261,8 +297,8 @@ def main() -> int:
         },
         "dependencies_releaseRuntimeClasspath": deps_facts(read(a.out / "34-deps-release.log")),
         "tests": {
-            "shared_jvmTest": test_facts(m / "shared/build/test-results/jvmTest"),
-            "composeApp_desktopTest": test_facts(m / "composeApp/build/test-results/desktopTest"),
+            "shared_jvmTest": junit_facts(m / "shared/build/test-results/jvmTest"),
+            "composeApp_desktopTest": junit_facts(m / "composeApp/build/test-results/desktopTest"),
         },
         "lintRelease": lint_facts(m / "composeApp/build/reports/lint-results-release.xml"),
         "bundletool_get_size": read(a.out / "52-bundletool-size.log").strip() or None,
@@ -272,30 +308,44 @@ def main() -> int:
         json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
 
-    rb, rm, rz = result["badging"]["release"], result["manifest"]["release"], result["artifacts"]["release_apk_unsigned"]
+    rb, rm, rz = (
+        result["badging"]["release"],
+        result["manifest"]["release"],
+        result["artifacts"]["release_apk_unsigned"],
+    )
     deps = result["dependencies_releaseRuntimeClasspath"]
+    sign_debug, sign_rel = result["apksigner"]["debug"], result["apksigner"]["release"]
+    lint = result["lintRelease"]
+    dex_hits = [k for k, v in (rz.get("dex_class_name_hits") or {}).items() if v]
+    dep_hits = [k for k, v in deps["pattern_hits"].items() if v]
     lines = [
         f"commit {a.sha}",
-        f"package {rb.get('package')} versionCode {rb.get('versionCode')} versionName {rb.get('versionName')}",
-        f"minSdk {rb.get('minSdkVersion')} targetSdk {rb.get('targetSdkVersion')} application-debuggable {rb.get('debuggable')}",
-        f"label {rb.get('application_label')!r} icon {rb.get('application_icon')!r} label-locales {rb.get('application_label_locales')}",
+        f"package {rb.get('package')} versionCode {rb.get('versionCode')} "
+        f"versionName {rb.get('versionName')}",
+        f"minSdk {rb.get('minSdkVersion')} targetSdk {rb.get('targetSdkVersion')} "
+        f"application-debuggable {rb.get('debuggable')}",
+        f"label {rb.get('application_label')!r} icon {rb.get('application_icon')!r} "
+        f"label-locales {rb.get('application_label_locales')}",
         f"uses-permission {rm['uses_permission']}",
-        f"allowBackup {rm['allowBackup']} | debuggable {rm['debuggable']} | cleartext {rm['usesCleartextTraffic']} | localeConfig {rm['localeConfig']}",
+        f"allowBackup {rm['allowBackup']} | debuggable {rm['debuggable']} | "
+        f"cleartext {rm['usesCleartextTraffic']} | localeConfig {rm['localeConfig']}",
         f"providers {rm['providers']}",
         f"meta-data {rm['meta_data']}",
         f"queries {rm['queries_entries']}",
         f"exported {rm['exported_components']}",
         f"uses-feature {rm['uses_feature']} uses-library {rm['uses_library']}",
         f"ABIs {rz.get('abis')} native libs {rz.get('native_libraries')}",
-        f"dex class-name hits {[k for k, v in (rz.get('dex_class_name_hits') or {}).items() if v]}",
-        f"dependency pattern hits {[k for k, v in deps['pattern_hits'].items() if v]} ({deps['distinct_modules']} modules)",
+        f"dex class-name hits {dex_hits}",
+        f"dependency pattern hits {dep_hits} ({deps['distinct_modules']} modules)",
         f"service config files {rz.get('service_config_files')}",
-        f"bytes debug {result['artifacts']['debug_apk'].get('bytes')} release-unsigned {rz.get('bytes')} aab {result['artifacts']['release_aab'].get('bytes')}",
-        f"apksigner debug: verifies={result['apksigner']['debug']['verifies']} debug-cert={result['apksigner']['debug']['debug_certificate']}",
-        f"apksigner release: verifies={result['apksigner']['release']['verifies']} errors={result['apksigner']['release']['errors']}",
+        f"bytes debug {result['artifacts']['debug_apk'].get('bytes')} "
+        f"release-unsigned {rz.get('bytes')} aab {result['artifacts']['release_aab'].get('bytes')}",
+        f"apksigner debug: verifies={sign_debug['verifies']} "
+        f"debug-cert={sign_debug['debug_certificate']}",
+        f"apksigner release: verifies={sign_rel['verifies']} errors={sign_rel['errors']}",
         f"tests shared {result['tests']['shared_jvmTest']}",
         f"tests desktop {result['tests']['composeApp_desktopTest']}",
-        f"lint {result['lintRelease'].get('by_severity')} ids {list((result['lintRelease'].get('issues') or {}).keys())}",
+        f"lint {lint.get('by_severity')} ids {list((lint.get('issues') or {}).keys())}",
     ]
     (a.curated / "gallery1-inspection.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("\n".join(lines))
