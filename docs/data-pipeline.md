@@ -376,6 +376,10 @@ per-class file name + tree ids + semantic `contentHash`, and validation counts w
 warnings broken down by code. It is the entry point a future mobile updater reads first;
 see `docs/forever-dataset.md` for an example and the write-only-if-all-classes-pass rule.
 
+Over-the-air delivery (M5.OTA.1, [ota/ota-contract-v1.md](ota/ota-contract-v1.md)) ships this
+manifest unchanged as the `DATASET_MANIFEST` file of a release, next to the class documents
+and their sidecars; nothing in the manifest contract changes.
+
 ## 7. Semantic diff
 
 `diff/engine.py` compares two documents of the same game + class; `diff/render.py` prints the

@@ -1,0 +1,28 @@
+# OTA — open decisions for the owner (M5.OTA.1)
+
+Each item has a recommended default that M5.OTA.2 / M5.OTA.3 can be built against. The "Blocks"
+column names what cannot proceed without the decision; the other items can change later
+without breaking the contract.
+
+| ID | Decision | Recommendation (default) | Blocks |
+| --- | --- | --- | --- |
+| OD-1 | **Hosting provider** for the static origin and CDN, and a hostname the project controls | An S3-compatible object store with a free tier and no egress fees, behind a CDN on a project-owned domain (e.g. Cloudflare R2 + custom domain). **Not chosen here:** any account, card or cost needs the owner's approval. Requirements: publisher design §3. | M5.OTA.2 upload commands (building, validating and signing do not need it); OTA public release |
+| OD-2 | **Custody of the production keys** (primary + backup) and where the staging key lives | Primary: a non-exportable key on a hardware token or in the OS keychain of the owner's machine; backup: encrypted on two offline media. Staging key: a CI secret is acceptable. Production signing never runs in CI. | generating production keys (before M5.OTA.3 pins them) |
+| OD-3 | **Rollback floor** — may a catalog move a device below the app's bundled product? | No: the bundled product is the floor (`KEEP_BUNDLED_FLOOR`). A broken bundled dataset is fixed by publishing a newer release (or a new revision of the same build with corrected presentation), not by going backwards. | M5.OTA.3 `ActivationPolicy` |
+| OD-4 | **Privacy and network disclosure**: `INTERNET` permission, store data-safety answers, privacy policy, `User-Agent`, user opt-out | Fixed `User-Agent: TalentForge/<version>`, no identifiers; disclose "IP address processed by the hosting provider to deliver data files"; a "Download talent data updates" switch, default on. | OTA public release |
+| OD-5 | **When to check and what the user sees**: triggers, cellular data, notices | Check at start and on return to the foreground after 6 h; download on any network (≈ 0.2–2.2 MB per build); no push notification; a short "talent data updated to 1.60.x" line on Home; a manual "check now" in settings. | M5.OTA.3 UI scope |
+| OD-6 | **Reproducible icon encoding** (PNG dedupe across builds) | Pin one environment for PNG encoding in `visuals normalize` (e.g. a Linux x86_64 container with the pinned Pillow) and record it in the icon provenance. Whether to re-encode 70450's icons to match 70374's bytes is a separate data PR. | publisher gate G8 |
+| OD-7 | **Withdrawing a published release** (bad data found after promotion) | v1 has no "withdrawn" state: make another release active (rollback) and keep the bad one listed so saved builds still open. Removing a listed release breaks saved builds on it and needs an explicit, recorded owner decision. A `withdrawn` flag can come with a catalog v2 if needed. | — |
+| OD-8 | **Corrected normalization of an already published client build** (talent data would change for the same `clientBuild`) | Forbidden in v1 (`BUILD_IDENTITY_CONFLICT`, gate G4). If a normalization bug is found, decide case by case: keep the old data (saved builds stay valid) or introduce a data revision in saved-build identity in a separate milestone. | — |
+| OD-9 | **Support period for `v1/`** | Serve `v1/` as long as any supported app version reads it; announce deprecation in release notes one app release ahead. | — |
+| OD-10 | **Freshness watcher after OTA** — compare wago.tools with `PRODUCT_BUNDLE` or with the production catalog's active release? | With the production catalog's active release once OTA is live (the watcher stays read-only and never publishes); `PRODUCT_BUNDLE` until then. | M5.OTA.2 (optional part) |
+| OD-11 | **HTTP client** on the device | Platform APIs behind the `BlobFetcher` port (HttpURLConnection / NSURLSession); no Ktor. Ktor is acceptable if confined to the adapter. | M5.OTA.3 |
+| OD-12 | **Where approval records live** | A committed `docs/ota/releases/<releaseId>.md` per promotion, merged by PR before the promotion (reviewable, versioned). | M5.OTA.2 |
+| OD-13 | **Catalog validity window and re-sign cadence** | `expiresAt = issuedAt + 45 days`; re-sign every 30 days or with any change. The contract maximum is 180 days. Shorter limits a freeze attack; longer tolerates a busy owner. | M5.OTA.2 defaults |
+| OD-14 | **May future app versions stop bundling old builds** (a smaller app) and rely on OTA for them? | Not yet: keep bundling every build saved builds may reference until OTA has run in production for at least one release cycle, then decide with data. Unbundling means those builds need the network once. | future data/release milestones |
+| OD-15 | **Which product is live Forever** (`wow_classic_beta` vs. `wowf`, see "Known gap" in `docs/dataset-freshness-watch.md`) and what counts as live-build evidence | Gate G7 requires recorded in-client evidence; the owner defines the accepted forms once (a screenshot of the client build on a live realm, or an official patch note naming it). | the first production promotion |
+
+Decided by ADR-0001 (change only with a new ADR): static content-addressed delivery; a per-file
+manifest rather than an archive; ECDSA P-256 over DSSE PAE; one signed catalog per channel;
+activation of `activeReleaseId` only; saved builds open only on their own client build; strict
+fail-closed parsing; no executable roles.

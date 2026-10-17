@@ -249,6 +249,7 @@ src/talent_data/
   visuals/        M5.V1 talent icons: resolution, BLP2 -> PNG conversion, sidecar publishing
   tooltips/       M5.V2 talent descriptions: template grammar, build-pinned renderer, coverage
   watch/          M5.DATA.WATCH freshness watcher: report reader, tracked-issue decision, GitHub Issues client
+  ota/            M5.OTA.1 OTA delivery contracts: envelope/catalog/release models + reference verifier
 data/normalized/  committed normalized documents + manifest per build (proof artifacts)
 data/visuals/     committed talent-visuals.v1 sidecars, talent-icons.v1 registry and PNG icons
 data/tooltips/    committed talent-tooltips.v1 sidecars (rendered descriptions per rank)
@@ -256,6 +257,7 @@ data/conformance/ allocation conformance vectors (for the future Kotlin engine)
 artifacts/diff/   committed diff output (per class + aggregate)
 docs/             data-pipeline.md (how it works), forever-dataset.md (the dataset itself),
                   talent-allocation-semantics.md (allocation rules + evidence)
+                  ota/ (remote dataset delivery: ADR, contract v1, fixtures, M5.OTA.2/3 briefs)
 tests/            unit (offline) + integration (network), real per-class DB2 fixtures,
                   conformance/ (authored scenarios + generator)
 ```
