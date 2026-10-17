@@ -27,8 +27,8 @@ private val PRODUCT = DatasetBundleId(GameId("forever"), "1.60.1.70450")
  * `talent-visuals.v1` / `talent-icons.v1` and `talent-tooltips.v1` — parses
  * under the strict readers, passes every repository identity check, and is
  * supported by the Kotlin allocation engine exactly like the reference
- * baseline (only Rogue Venom stays unresolved) — including the Mage tree,
- * which publishes no sections on this build (docs/forever-dataset.md). Another
+ * baseline (only Rogue Venom stays unresolved) — including Mage's Arcane
+ * Wrath, which no gate counts (docs/forever-dataset.md). Another
  * build's sidecars — such as those of the previous product dataset
  * 1.60.1.70374 — can never stand in for it: they fail with a typed build
  * mismatch.

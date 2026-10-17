@@ -3,7 +3,7 @@
   "game": "forever",
   "clientBuild": "1.60.1.70450",
   "classToken": "MAGE",
-  "talentDataContentHash": "sha256:0ffb2aae2f2f75428fb4eca86196d086032df2ff47bf9d46c848056b7e9ab7a8",
+  "talentDataContentHash": "sha256:1c6b1f208d66777da50ccd5ea0440ed4922ac6d0c1ed7521bd7147bbe1079fd0",
   "entries": [
     {
       "entryId": 130491,
@@ -4137,7 +4137,7 @@
       ]
     }
   ],
-  "contentHash": "sha256:17e5f89156c8d0b8407cd3578cf4b29a234aad8d896f62f1978aab7badae20ad",
+  "contentHash": "sha256:89438258ca0e78f3d95732763dbd58fab5b83ad03d714c82689917210184c9a0",
   "provenance": {
     "source": "wago.tools",
     "tables": [

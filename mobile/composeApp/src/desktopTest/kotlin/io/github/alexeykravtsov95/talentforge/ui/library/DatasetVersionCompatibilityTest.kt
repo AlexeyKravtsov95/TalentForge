@@ -213,9 +213,9 @@ class DatasetVersionCompatibilityTest {
     }
 
     @Test
-    fun aNewMageDraftOpensOnTheProductTreeThatPublishesNoSections() {
-        // 1.60.1.70450: Arcane Wrath belongs to no gate group, so the Mage tree has no
-        // derivable tabs (docs/forever-dataset.md); the draft still opens, whole and exact
+    fun aNewMageDraftOpensWithArcaneWrathInTheArcaneTab() {
+        // 1.60.1.70450: Arcane Wrath belongs to no gate group; the dataset places it in the
+        // Arcane tab by its column, and its gates stay literal (docs/forever-dataset.md)
         val created = assertIs<DraftCreation.Created>(
             runBlocking { createClassDraft(repository, datasets, ClassToken("MAGE")) },
         ).record
@@ -226,11 +226,13 @@ class DatasetVersionCompatibilityTest {
 
         val tree = session.engine.tree
         assertEquals(55, tree.nodes.size)
-        assertTrue(tree.sections.isEmpty())
-        assertTrue(tree.nodes.all { it.sectionIndex == null })
+        assertEquals(listOf(19, 17, 19), tree.sections.map { it.nodeIds.size })
         val wrath = tree.nodes.single { it.id == ARCANE_WRATH }
         assertEquals("Arcane Wrath", wrath.name)
+        assertEquals(0, wrath.sectionIndex)
+        assertTrue(ARCANE_WRATH in tree.sections.single { it.index == 0 }.nodeIds)
         assertTrue(wrath.unlockRequirements.isEmpty())
+        assertFalse(tree.nodes.any { n -> n.unlockRequirements.any { ARCANE_WRATH in it.countedNodeIds } })
         assertEquals(listOf(ARCANE_BLAST), wrath.prerequisites.map { it.nodeId })
         assertFalse(session.engine.canSpend(session.buildState, ARCANE_WRATH).allowed)
         assertTrue(ARCANE_WRATH in session.icons.nodeIds)
@@ -498,7 +500,7 @@ class DatasetVersionCompatibilityTest {
         /** Priest "Improved Mind Blast" (max 5): on 1.60.1.70374, removed in 1.60.1.70450. */
         const val IMPROVED_MIND_BLAST_70374 = 105827
 
-        /** Mage "Arcane Wrath" (new in 1.60.1.70425, outside every gate group) and its prerequisite. */
+        /** Mage "Arcane Wrath" (new in 1.60.1.70425, counted by no gate) and its prerequisite. */
         const val ARCANE_WRATH = 113627
         const val ARCANE_BLAST = 105806
     }

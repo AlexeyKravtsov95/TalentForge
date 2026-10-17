@@ -4,8 +4,8 @@
   "clientBuild": "1.60.1.70450",
   "classToken": "MAGE",
   "locale": "ruRU",
-  "talentDataContentHash": "sha256:0ffb2aae2f2f75428fb4eca86196d086032df2ff47bf9d46c848056b7e9ab7a8",
-  "tooltipsContentHash": "sha256:17e5f89156c8d0b8407cd3578cf4b29a234aad8d896f62f1978aab7badae20ad",
+  "talentDataContentHash": "sha256:1c6b1f208d66777da50ccd5ea0440ed4922ac6d0c1ed7521bd7147bbe1079fd0",
+  "tooltipsContentHash": "sha256:89438258ca0e78f3d95732763dbd58fab5b83ad03d714c82689917210184c9a0",
   "entries": [
     {
       "entryId": 130491,
@@ -3564,7 +3564,7 @@
       }
     }
   ],
-  "contentHash": "sha256:5ee4c5b4d68eb41ffda1dacc73866415ba00ba8a2d627f04bfb5b8645edb66f2",
+  "contentHash": "sha256:8e3b25120a78cff8691325ad9eb54dc276ed0008f54025ac742c408092687c05",
   "provenance": {
     "source": "wago.tools",
     "renderer": "talent_data.localization gates-v1 + talent_data.tooltips grammar-v1",

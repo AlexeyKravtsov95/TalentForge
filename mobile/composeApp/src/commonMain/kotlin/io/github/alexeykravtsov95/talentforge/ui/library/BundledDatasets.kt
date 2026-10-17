@@ -19,8 +19,8 @@ import io.github.alexeykravtsov95.talentforge.data.GameId
  * saved on them open on them like any saved build (see `loadEditorSession`);
  * none is ever a fallback for, or migrated to, this one — even where the
  * talent data is identical (70338 and 70374 are: same rows, different client
- * build). 70450's Mage tree publishes no sections (docs/forever-dataset.md),
- * so its editor shows the whole tree on one canvas.
+ * build). On 70450 the Mage talent Arcane Wrath is counted by no gate; the
+ * dataset shows it in the Arcane tab by its column (docs/forever-dataset.md).
  */
 val PRODUCT_BUNDLE: DatasetBundleId = DatasetBundleId(
     game = GameId("forever"),
