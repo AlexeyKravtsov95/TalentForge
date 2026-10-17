@@ -28,7 +28,7 @@ The release is blocked by packaging, data and store prerequisites, not by core l
 **Confirmed P1 blockers:**
 1. **TF-RC1-ICON**: no application icon on Android or iOS. Known and pre-existing; stays OPEN; resolution planned in M5.RC.2a.
 2. **TF-RC1-SIGNING**: the Android release artifact is unsigned and no release signing exists.
-3. **TF-RC1-DATA**: the dataset freshness check reports **OUTDATED**. `1.60.1.70425` is publishable and the product bundle is `1.60.1.70374`.
+3. **TF-RC1-DATA**: the dataset freshness check reports **OUTDATED**. `1.60.1.70425` is publishable and the product bundle is `1.60.1.70374`. *M5.DATA.4 (2026-10-17): resolved by refresh to `1.60.1.70450`, freshness `CURRENT`; effective on merge.*
 4. **TF-RC1-IOS-PRIVACY**: there is no `PrivacyInfo.xcprivacy`. This applies to the App Store only.
 
 Several critical scenarios remain **UNVERIFIED** because no physical device was available during pass 2 and no TalkBack/VoiceOver session was run. The highest of these are native share/clipboard on both platforms, a physical Android phone, Russian on a device, and screen readers. They must be executed before M5.RC.3.
@@ -76,7 +76,7 @@ What requires membership:
 |---|---|---|---|---|
 | TF-RC1-ICON | P1 | Android + iOS | Product/Design | **M5.RC.2a** |
 | TF-RC1-SIGNING | P1 | Android | Owner / Release eng. | M5.RC.2b |
-| TF-RC1-DATA | P1 gate | both | Data / Product | dataset-refresh milestone (M5.DATA.4) or owner decision, before M5.RC.3 |
+| TF-RC1-DATA | P1 gate | both | Data / Product | **M5.DATA.4: resolved by refresh to `1.60.1.70450`** (effective on merge; RC.3 re-check within 24 h) |
 | TF-RC1-IOS-PRIVACY | P1 (iOS only) | iOS | Mobile eng. | M5.RC.2b (before any App Store upload) |
 
 There are also non-defect gates that must be closed before publication:

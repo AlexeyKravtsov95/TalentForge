@@ -62,11 +62,12 @@ What can be verified without an account: simulator builds and tests, unsigned de
 ## 3. Dataset freshness
 
 - [x] Freshness check executed: 2026-10-16T19:37:52Z → **OUTDATED**. Product `1.60.1.70374`; latest publishable `1.60.1.70425` (`wow_classic_beta`, `isBgdl=false`).
-- [ ] **(gate)** TF-RC1-DATA closed:
+- [x] **(gate)** TF-RC1-DATA closed:
   - **either** a dataset-refresh milestone adds `70425` (normalize, diff, sync, conformance, keep all older bundled builds);
   - **or** the owner records why `70374` stays the product build.
+  - **M5.DATA.4 (2026-10-17):** refreshed to `1.60.1.70450`, which superseded `70425` (same talent data); freshness `CURRENT` at 2026-10-17T19:10:13Z. Effective on merge of the M5.DATA.4 PR ([data4-evidence](data4-evidence/README.md)).
 - [ ] **(gate)** Freshness re-run within 24 h before the RC.3 tag, with the result recorded (CURRENT, or the documented decision).
-- [ ] Never remove `1.60.1.70009`, `70245`, `70338` or `70374` while saved builds may reference them.
+- [ ] Never remove `1.60.1.70009`, `70245`, `70338`, `70374` or `70450` while saved builds may reference them.
 - [ ] Never change `PRODUCT_BUNDLE` outside a dedicated, reviewed milestone.
 
 ## 4. App icon readiness (TF-RC1-ICON)
@@ -161,7 +162,7 @@ M5.RC.3 can pass only when **all** of these hold:
 
 1. [ ] TF-RC1-ICON closed with the approved artwork, validated in signed release builds (§4).
 2. [ ] TF-RC1-SIGNING closed; the signed artifact verifies.
-3. [ ] TF-RC1-DATA closed by refresh or a documented owner decision; the freshness check was run within 24 h.
+3. [ ] TF-RC1-DATA closed by refresh or a documented owner decision; the freshness check was run within 24 h. (M5.DATA.4 closed it by refresh to `1.60.1.70450`; the 24 h re-check before the RC.3 tag is still open.)
 4. [ ] For an iOS release, TF-RC1-IOS-PRIVACY closed and the archive validated in App Store Connect. For a RuStore-only RC.3 this gate is deferred, explicitly.
    - [ ] **4a.** For an iOS release, the iPad multi-scene gate (§2) is closed: multiple scenes disabled and verified in the built `Info.plist`, **or** cross-scene-safe persistence implemented and two-window tested in a separately reviewed change. M5.RC.3 must not approve iPad multi-window support without one of these.
 5. [ ] No open P0 or P1. Each open P2 is accepted in writing or fixed.
@@ -212,7 +213,8 @@ Google Play is deferred (#35). 🔑 = needs the owner's Huawei Developer account
 
 **Observation recorded by M5.GALLERY.1:** the freshness check on 2026-10-17T15:30:54Z reported
 **OUTDATED** with `1.60.1.70450` as the latest publishable build (product `1.60.1.70374`); §3's
-TF-RC1-DATA gate is unchanged and still open.
+TF-RC1-DATA gate is unchanged and still open. *(M5.DATA.4 later refreshed the product to
+`1.60.1.70450`; see §3.)*
 
 ## 10. Android release hardening (M5.RC.2b)
 

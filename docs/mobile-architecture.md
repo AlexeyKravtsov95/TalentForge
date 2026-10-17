@@ -290,7 +290,7 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
   document disables that class conservatively — no invented name, no
   substitution; the header context names the data version the drafts are
   created on, "talent data 1.60.1", derived from the product manifest's exact
-  client build 1.60.1.70374 — no "up to date" / "latest" claim, since the app
+  client build 1.60.1.70450 — no "up to date" / "latest" claim, since the app
   has no runtime freshness mechanism; the repository-side check is
   `scripts/check_product_freshness.py`), draft creation on the product
   dataset (document → engine → `emptyState()` →
@@ -333,6 +333,13 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
     `nodeIds` list that disagrees with the nodes is a typed
     `TalentTreeSectionsResult.Unsectioned` reason: the screen then shows the
     whole tree on one canvas without tabs — nothing hidden or re-assigned.
+    A tree that publishes no sections at all is `Unsectioned(NoSections)`;
+    the one real case is the Mage tree of the product dataset 1.60.1.70450
+    (M5.DATA.4: Arcane Wrath belongs to no gate group, so no tabs are
+    derivable — [forever-dataset.md](forever-dataset.md#the-mage-tree-has-no-derivable-tabs-sections_unresolved-160170425)),
+    which therefore opens on one whole-tree canvas with no tabs and no
+    specialization names; every other tree keeps its tabs
+    (`TalentTreeSectionsTest`, `TalentTreeSectionTabsUiTest`).
     `sectionSpentPoints` counts each tab's points with the allocation rules'
     own `AllocationRules.pointsSpent` (the tier-gate count); for any valid
     build the tabs add up to the header counter;
@@ -1318,7 +1325,8 @@ Open string unions the schema explicitly allows are modelled faithfully:
    pipeline output, committed).
 2. `scripts/sync_mobile_datasets.py` mirrors `manifest.json` + the nine class
    documents of **every bundled build** (`BUNDLED_BUILDS` in
-   `scripts/mobile_bundles.py`: `1.60.1.70009`, `1.60.1.70245`, `1.60.1.70338` and `1.60.1.70374`) into
+   `scripts/mobile_bundles.py`: `1.60.1.70009`, `1.60.1.70245`, `1.60.1.70338`, `1.60.1.70374`
+   and `1.60.1.70450`) into
    `mobile/composeApp/src/commonMain/composeResources/files/dataset/forever/<build>/`;
    `sync_mobile_visuals.py`, `sync_mobile_tooltips.py` and `sync_mobile_localization.py` do
    the same for `files/visuals/…`, `files/tooltips/…` and `files/localization/…` through
@@ -1336,7 +1344,7 @@ Open string unions the schema explicitly allows are modelled faithfully:
 The bundled copy is deterministically derived and never hand-edited. Drift is
 caught in three places: the Python check scripts (CI), the JVM
 `DatasetDriftTest` / `VisualsDriftTest` / `TooltipsDriftTest` /
-`LocalizationDriftTest` (every bundled build, and exactly the four bundled
+`LocalizationDriftTest` (every bundled build, and exactly the five bundled
 builds), and the resource pipeline itself (files are packaged as-is); the
 localization bundle is also guarded by the Python
 `sync_mobile_localization.py --check` (CI and `test_mobile_bundles.py`).
@@ -1345,19 +1353,20 @@ localization bundle is also guarded by the Python
 
 ## Bundled datasets: product and reference (M5.DATA)
 
-The app bundles four complete Forever datasets side by side — documents, icons and
+The app bundles five complete Forever datasets side by side — documents, icons and
 descriptions of each, every one from its own client build:
 
 | Constant (`ui/library/BundledDatasets.kt`) | Client build | Role |
 | --- | --- | --- |
-| `PRODUCT_BUNDLE` | `1.60.1.70374` | The **product dataset** (M5.DATA.3): New Build lists its classes from this manifest and creates every new draft on it. Selected as the newest Forever build wago.tools listed on 2026-10-14 with `is_bgdl` explicitly `false` ([forever-dataset.md](forever-dataset.md#product-dataset-160170374-m5data3)) — not a claim that it is the build the live realms run. |
-| — | `1.60.1.70338` | The product dataset of M5.DATA.2 — the same talent rows, icons and descriptions as 70374, but its own dataset identity. Kept bundled, byte-for-byte unchanged, so that builds saved on it open on it; no app code names it (desktop tests do, as `PREVIOUS_PRODUCT_BUNDLE`) — a saved record carries its own client build. |
+| `PRODUCT_BUNDLE` | `1.60.1.70450` | The **product dataset** (M5.DATA.4): New Build lists its classes from this manifest and creates every new draft on it. Selected as the newest Forever build wago.tools listed on 2026-10-17 with `is_bgdl` explicitly `false` ([forever-dataset.md](forever-dataset.md#product-dataset-160170450-m5data4)) — not a claim that it is the build the live realms run. Its Mage tree publishes no sections and opens on one whole-tree canvas (see *M5.UX.1 section tabs*). |
+| — | `1.60.1.70374` | The product dataset of M5.DATA.3. Kept bundled, byte-for-byte unchanged, so that builds saved on it open on it; no app code names it (desktop tests do, as `PREVIOUS_PRODUCT_BUNDLE`) — a saved record carries its own client build. |
+| — | `1.60.1.70338` | The product dataset of M5.DATA.2 — the same talent rows, icons and descriptions as 70374, but its own dataset identity. Kept bundled, byte-for-byte unchanged, for the builds saved on it (desktop tests: `BUNDLE_70338`). |
 | — | `1.60.1.70245` | The product dataset of M5.DATA. Kept bundled, byte-for-byte unchanged, for the builds saved on it (desktop tests: `BUNDLE_70245`). |
 | `REFERENCE_BUNDLE` | `1.60.1.70009` | The **verified reference baseline**: the live-client evidence and the M2 conformance vectors are pinned to it, and every build saved before M5.DATA was created on it. Kept bundled, byte-for-byte unchanged. The M4/M5 tree UI fixture (`loadBaselineWarriorTreeState`) and the existing screenshot tests use it. |
 
 **Saved builds.** `loadEditorSession` and the build cards resolve each record's **own**
 `game` / `clientBuild` / `classToken` / `treeId` (unchanged since M5.1): a build saved on
-1.60.1.70009 (or 1.60.1.70245, or 1.60.1.70338) opens on that build's document, engine, icons and
+1.60.1.70009 (or 1.60.1.70245, 1.60.1.70338 or 1.60.1.70374) opens on that build's document, engine, icons and
 descriptions, with its exact ranks and points. Nothing is migrated: no node-id remapping,
 no rank or point recount against the product dataset, no rewrite of the stored record, and
 `allocation-build.v1` is unchanged. The data shows why this matters — the same node id can
@@ -1366,16 +1375,18 @@ on 70009 and *Shifting Power*, max rank 1, since 70245, so a valid 70009 build i
 the later ones), a node can disappear (Warrior *Toughness* 105973 exists on 70245, not on
 70338, so a 70245 Toughness build is invalid on 70338), and a build can keep *validating*
 while its talents change meaning (Warrior node 105953 is *Boundless Rage* on 70245 and
-*Furious Precision* on 70338, both max rank 3) — validity is no license to migrate. The
-same holds when nothing changed at all: 70338 and 70374 carry identical talent rows, and a
+*Furious Precision* on 70338, both max rank 3; Priest node 105823 is *Improved Fade*, max
+rank 2, on 70374 and *Dark Inspiration*, max rank 5, on 70450) — validity is no license to
+migrate. The same holds when nothing changed at all: 70338 and 70374 carry identical talent rows, and a
 70338 build still opens on 70338 (its own document hash, icons and descriptions). A record
-of a client build that is not bundled (e.g. 1.60.1.70170, or 1.60.1.70334 although its talent
-data equals 70338's and 70374's) keeps failing with the typed
+of a client build that is not bundled (e.g. 1.60.1.70170, 1.60.1.70334 although its talent
+data equals 70338's and 70374's, or 1.60.1.70425 although its talent data equals 70450's)
+keeps failing with the typed
 `DatasetLoadError.ManifestUnavailable(AssetMissing("dataset/forever/<build>/manifest.json"))`
 and reads nothing else — never a fallback to a bundled dataset.
 
 **What the UI states.** The New Build header shows "Forever · talent data
-1.60.1" (the data version of the exact client build 1.60.1.70374 the drafts
+1.60.1" (the data version of the exact client build 1.60.1.70450 the drafts
 are created on; the exact build is still pinned by the read-path tests below);
 Home's first-run line keeps the spec form "Forever talent data 1.60.1". Neither
 claims "latest" or "up to date". Build cards do not show a build yet: the
@@ -1383,24 +1394,27 @@ spec's "Built on older talent data" notice (UX/UI spec F.1) and any
 review/migration flow are out of scope.
 
 **Package size.** Each bundled build adds ≈ 5 MB of raw resources (dataset 0.98 MB,
-descriptions 0.89 MB, 357–358 PNG icons 3.1 MB); icons are not shared across builds, by
+descriptions 0.89 MB, 357–359 PNG icons 3.1 MB); icons are not shared across builds, by
 design (each build ships the icons of its own client files).
 
 **Tests.** `DatasetVersionCompatibilityTest` (desktop, real bundled resources, every
-asset read recorded to prove which build answered): New Build lists 70374; new Druid and
-Warrior drafts are created and open on 70374 (the reworked Warrior tree: Gore Drinker, Iron
-Will, Furious Precision with their own icons and descriptions); a 70009 Druid build with
-node 104951 (King of the Jungle) at 3/3 opens on 70009 unchanged and is invalid on 70338; a
-70245 Warrior build with Toughness 5/5 opens on 70245 unchanged and is invalid on 70338; a
-70245 Boundless Rage 3/3 build validates on 70338 but still opens on 70245 as Boundless
-Rage; a 70338 Warrior build with Gore Drinker maxed validates on 70374 (identical tree) and
-still opens on 70338 with 70338's document hash, icons and descriptions; cards of 70009,
-70245, 70338 and 70374 builds resolve their own datasets; unbundled builds (70170, 70334)
-fail typed and read nothing else. `ProductDatasetContractTest` (shared JVM): the committed
-70374 documents, manifest, visuals and tooltips pass the strict readers and repository
-identity checks, the Kotlin engine supports them exactly like 70009 (only Rogue Venom
-unresolved), and 70338's content-identical sidecars placed under 70374 fail with a typed
-`BuildMismatch`.
+asset read recorded to prove which build answered): New Build lists 70450; new Druid and
+Warrior drafts are created and open on 70450 (the reworked Warrior tree: Gore Drinker, Iron
+Will, Furious Precision with their own icons and descriptions); a new Mage draft opens on
+70450's tree without sections (55 nodes, Arcane Wrath with its own icon); a 70009 Druid
+build with node 104951 (King of the Jungle) at 3/3 opens on 70009 unchanged and is invalid
+on the product dataset; a 70245 Warrior build with Toughness 5/5 opens on 70245 unchanged
+and is invalid on the product dataset; a 70245 Boundless Rage 3/3 build validates on the
+product dataset but still opens on 70245 as Boundless Rage; a 70338 Warrior build with Gore Drinker maxed validates on 70374 (identical tree) and
+still opens on 70338 with 70338's document hash, icons and descriptions; a 70374 Priest
+build with Improved Mind Blast 5/5 opens on 70374 unchanged (its own icons and
+descriptions) and is rejected by 70450's engine; cards of 70009, 70245, 70374 and 70450
+builds resolve their own datasets; unbundled builds (70170, 70334, 70425) fail typed and
+read nothing else. `ProductDatasetContractTest` (shared JVM): the committed 70450
+documents, manifest, visuals and tooltips pass the strict readers and repository identity
+checks, the Kotlin engine supports them exactly like 70009 (only Rogue Venom unresolved,
+the sectionless Mage tree included), and 70374's sidecars placed under 70450 fail with a
+typed `BuildMismatch`.
 `BundledBaselineTest` loads every bundle through the real Compose resource pipeline.
 
 ## Runtime resource loading
@@ -1447,7 +1461,8 @@ and the ownership note for the artwork: [talent-visuals.md](talent-visuals.md).
 `composeResources/files/visuals/forever/<build>/` for every bundled build: nine
 `talent-visuals.v1` sidecars, the `talent-icons.v1` registry `icons.json` and
 `icons/<FileDataID>.png` (deduplicated by FileDataID across classes: 358 files
-for 1.60.1.70009, 357 for 1.60.1.70245, 358 for 1.60.1.70338 and 1.60.1.70374). Drift is caught by the script's `--check` (CI) and the JVM
+for 1.60.1.70009, 357 for 1.60.1.70245, 358 for 1.60.1.70338 and 1.60.1.70374, 359 for
+1.60.1.70450). Drift is caught by the script's `--check` (CI) and the JVM
 `VisualsDriftTest`, which also fail on a missing or extra file.
 
 **`shared` — `data/visuals/`.** `TalentVisualsDocument` / `TalentIconRegistry`
@@ -1561,8 +1576,10 @@ resolved, 43 partial, 0 unresolved, every gap listed):
 [research/forever-1.60.1.70009-tooltip-coverage.md](research/forever-1.60.1.70009-tooltip-coverage.md);
 for 1.60.1.70245 (1289 resolved, 43 partial, 1 unresolved):
 [research/forever-1.60.1.70245-tooltip-coverage.md](research/forever-1.60.1.70245-tooltip-coverage.md);
-for the product dataset 1.60.1.70374 (1281 resolved, 47 partial, 1 unresolved, identical to 70338):
-[research/forever-1.60.1.70374-tooltip-coverage.md](research/forever-1.60.1.70374-tooltip-coverage.md).
+for 1.60.1.70374 (1281 resolved, 47 partial, 1 unresolved, identical to 70338):
+[research/forever-1.60.1.70374-tooltip-coverage.md](research/forever-1.60.1.70374-tooltip-coverage.md);
+for the product dataset 1.60.1.70450 (1272 resolved, 55 partial, 1 unresolved):
+[research/forever-1.60.1.70450-tooltip-coverage.md](research/forever-1.60.1.70450-tooltip-coverage.md).
 
 **Contract and loading.** `talent-tooltips.v1` sidecars
 (`composeResources/files/tooltips/forever/<build>/<class>.json` of every bundled build, mirrored
@@ -1626,7 +1643,7 @@ editor.
 
 **Bundle.** `talent-localization.v1` overlays
 (`composeResources/files/localization/forever/<build>/ruRU/<class>.json` of every bundled
-build — 36 files, nine classes × four builds, mirrored byte-for-byte by
+build — 45 files, nine classes × five builds since M5.DATA.4, mirrored byte-for-byte by
 `scripts/sync_mobile_localization.py` through `scripts/mobile_bundles.py`, CI `--check` in
 `mobile-ci`). Presentation-only: never an input to allocation, validation, saved builds or
 any English contract; each overlay pins its build's dataset and English-tooltip revisions
@@ -1635,7 +1652,8 @@ any English contract; each overlay pins its build's dataset and English-tooltip 
 **Coverage (committed 2026-10-15).** Names translated / entries: 70009 — 467/469,
 70245 — 464/470, 70338 — 459/469, 70374 — 459/469 (0 missing everywhere). Descriptions
 rendered / entries (ranks): 70009 — 386/469 (1 143/1 333), 70245 — 365/470 (1 097/1 333),
-70338 — 355/469 (1 058/1 329), 70374 — identical to 70338. Everything else falls back to
+70338 — 355/469 (1 058/1 329), 70374 — identical to 70338. M5.DATA.4 added 70450 — names
+469/469, descriptions 383/469 (1 130/1 328), 0 missing. Everything else falls back to
 the English text with a recorded reason (plural selection, decimal separator, unresolved
 English source).
 
@@ -1715,12 +1733,12 @@ TalentTreeScreen: talentNodeDisplayText(appLanguage(), descriptions, localizatio
   (no two-line cap — only the compact strip ellipsizes, by design); at ≥ 175 % text the
   sheet's icon gives its width to the name and the landscape panel puts × above it.
 
-**Tests.** shared: `TalentLocalizationRepositoryTest` (36 overlays, every rejection),
+**Tests.** shared: `TalentLocalizationRepositoryTest` (45 overlays since M5.DATA.4, every rejection),
 `TalentClassTextTest` (the `test_display.py` port), `LocalizationContentHashTest`; desktop:
-`TalentLocalizationUiTest` (EN/RU inspector, Show/prerequisite/a11y, fallback, all four
-client builds, language change), `EditorLocalizationLayoutUiTest` (longest Russian names and
+`TalentLocalizationUiTest` (EN/RU inspector, Show/prerequisite/a11y, fallback, every
+bundled client build, language change), `EditorLocalizationLayoutUiTest` (longest Russian names and
 descriptions × 393 × 852 / 320 × 568 / 915 × 412 × 100 %/200 %), `LocalizationDriftTest`
-(bundle == `data/localization`, 4 builds × 9 classes). Screenshots:
+(bundle == `data/localization`, 5 builds × 9 classes). Screenshots:
 `M5Rel3b2ScreenshotTest` (`-Dtalentforge.m5rel3b2.screenshots=<dir>`), committed under
 `docs/screenshots/m5-rel-3b2/`.
 

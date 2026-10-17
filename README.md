@@ -25,12 +25,13 @@ python -m talent_data builds latest --game forever
 # Is the app's product dataset still the latest publishable build? (online, read-only)
 python scripts/check_product_freshness.py     # JSON on stdout; exit 0 CURRENT, 3 OUTDATED, 4 UNKNOWN
 
-# Reproduce the product dataset (M5.DATA.3: what the app creates new builds on)
-python -m talent_data fetch --game forever --build 1.60.1.70374
-python -m talent_data normalize --game forever --build 1.60.1.70374 --class all
-python -m talent_data diff --game forever --class all --from 1.60.1.70338 --to 1.60.1.70374
-# -> 9 classes, 0 errors, the same 12 investigated warnings; 0 added / 0 removed / 0 changed
-#    (70374 has 70338's talent rows byte for byte, yet is its own dataset)
+# Reproduce the product dataset (M5.DATA.4: what the app creates new builds on)
+python -m talent_data fetch --game forever --build 1.60.1.70450
+python -m talent_data normalize --game forever --build 1.60.1.70450 --class all
+python -m talent_data diff --game forever --class all --from 1.60.1.70374 --to 1.60.1.70450
+# -> 9 classes, 0 errors, 49 warnings (the 12 investigated ones + 37 on Mage, whose tree
+#    publishes no sections); 1 added / 1 removed / 98 changed
+#    (the same commands with 1.60.1.70374 / --from 1.60.1.70338 reproduce M5.DATA.3's)
 
 # Reproduce the verified reference baseline
 python -m talent_data fetch --game forever --build 1.60.1.70009
@@ -44,20 +45,21 @@ python -m talent_data diff --game forever --class all \
 # -> per-class diffs + aggregate artifacts/diff/forever-all-<a>-<b>.json + summary
 ```
 
-**Product dataset and reference baseline (M5.DATA, M5.DATA.2, M5.DATA.3).** Committed
-builds have distinct roles. `1.60.1.70374` is the **product dataset**: the newest Forever
-build wago.tools listed on 2026-10-14 whose `is_bgdl` is explicitly `false`; the mobile app
-creates new builds on it. `1.60.1.70338` (M5.DATA.2) and `1.60.1.70245` (M5.DATA), earlier
-product datasets, stay committed and bundled for the builds saved on them. `1.60.1.70009` stays the **verified reference
+**Product dataset and reference baseline (M5.DATA, M5.DATA.2, M5.DATA.3, M5.DATA.4).**
+Committed builds have distinct roles. `1.60.1.70450` is the **product dataset**: the newest
+Forever build wago.tools listed on 2026-10-17 whose `is_bgdl` is explicitly `false`; the
+mobile app creates new builds on it. `1.60.1.70374` (M5.DATA.3), `1.60.1.70338` (M5.DATA.2)
+and `1.60.1.70245` (M5.DATA), earlier product datasets, stay committed and bundled for the
+builds saved on them. `1.60.1.70009` stays the **verified reference
 baseline**: the live allocation evidence and the M2 conformance vectors are pinned to it,
 and builds saved on it keep opening on it. Each is committed with its own icons and
 descriptions and bundled in the app. None is a claim about the build the live realms run
 (wago.tools cannot say); `scripts/check_product_freshness.py` reports whether a newer
-publishable build exists. Selection evidence, the empty 70338 → 70374 diff and how it was
-verified, and the validity limits:
-[docs/forever-dataset.md](docs/forever-dataset.md#product-dataset-160170374-m5data3).
+publishable build exists. Selection evidence, the 70374 → 70450 diff, the Mage tree that
+publishes no sections, and the validity limits:
+[docs/forever-dataset.md](docs/forever-dataset.md#product-dataset-160170450-m5data4).
 Commands below that name `1.60.1.70009` reproduce or check the reference baseline; the
-same commands with `1.60.1.70374` do it for the product dataset.
+same commands with `1.60.1.70450` do it for the product dataset.
 
 Single classes keep working exactly as in M0 (reference baseline):
 
@@ -116,7 +118,7 @@ ownership note for the artwork: [docs/talent-visuals.md](docs/talent-visuals.md)
 python -m talent_data visuals fetch --build 1.60.1.70009                 # online, on demand
 python -m talent_data visuals normalize --build 1.60.1.70009 --offline   # data/visuals/…
 python -m talent_data visuals check --build 1.60.1.70009                 # offline, CI
-python -m talent_data visuals check --build 1.60.1.70374                 # product dataset: 469/469, 358 files
+python -m talent_data visuals check --build 1.60.1.70450                 # product dataset: 469/469, 359 icons
 python scripts/sync_mobile_visuals.py --check                            # bundle == canonical
 ```
 
@@ -135,7 +137,7 @@ is for the reference baseline 1.60.1.70009: 1290 of 1333 ranks resolved, 43 part
 python -m talent_data tooltips fetch --build 1.60.1.70009                # online, on demand
 python -m talent_data tooltips normalize --build 1.60.1.70009 --offline  # data/tooltips/… + report
 python -m talent_data tooltips check --build 1.60.1.70009                # offline, CI
-python -m talent_data tooltips check --build 1.60.1.70374                # product: 1281 resolved, 47 partial, 1 unresolved
+python -m talent_data tooltips check --build 1.60.1.70450                # product: 1272 resolved, 55 partial, 1 unresolved
 python scripts/sync_mobile_tooltips.py --check                           # bundle == canonical
 ```
 
@@ -145,10 +147,12 @@ The client's own `ruRU` names and description templates of the same pinned build
 same wago.tools DB2 exports (`&locale=ruRU`), verified against the enUS export and published
 as a separate `talent-localization.v1` overlay linked to the exact dataset and tooltip
 revisions - nothing is translated by hand or by machine, and the English dataset is
-unchanged. Builds 1.60.1.70338 and 1.60.1.70374 (the product build since M5.DATA.3) alike:
-459 / 469 names translated, 355 / 469 descriptions rendered; the rest falls back to English
-with a reason. Only the Warrior pilots of both builds are committed and the app does not use
-them yet (M5.REL.3b). Source evidence, contract, gates and plan:
+unchanged. Builds 1.60.1.70338 and 1.60.1.70374 (the product build of M5.DATA.3) alike:
+459 / 469 names translated, 355 / 469 descriptions rendered; the product build 1.60.1.70450
+(M5.DATA.4): 469 / 469 names, 383 / 469 descriptions; the rest falls back to English with a
+reason. Before M5.REL.3b.1 only the Warrior pilots of 70338 and 70374 were committed;
+M5.REL.3b.1 published all nine classes of the four builds then bundled (M5.DATA.4 those of
+70450) and M5.REL.3b.2 shows them in the editor. Source evidence, contract, gates and plan:
 [docs/talent-localization.md](docs/talent-localization.md).
 
 ```bash
@@ -209,11 +213,12 @@ loaded) — see
 rank, CURRENT / NEXT RANK, rank 1 as the prospective effect) from a strict
 `talent-tooltips.v1` sidecar - see
 [docs/mobile-architecture.md](docs/mobile-architecture.md#talent-descriptions-m5v2).
-**M5.DATA / M5.DATA.2 / M5.DATA.3** bundle the product dataset 1.60.1.70374 next to the
-unchanged 1.60.1.70338 and 1.60.1.70245 (earlier product datasets) and 1.60.1.70009
-(reference baseline): New Build creates drafts on 70374, every saved build opens on its own
-recorded build (no migration, even where two builds carry identical talent rows),
-an unbundled build fails with a typed error — see
+**M5.DATA / M5.DATA.2 / M5.DATA.3 / M5.DATA.4** bundle the product dataset 1.60.1.70450
+next to the unchanged 1.60.1.70374, 1.60.1.70338 and 1.60.1.70245 (earlier product
+datasets) and 1.60.1.70009 (reference baseline): New Build creates drafts on 70450 (its
+Mage tree, which publishes no sections, opens on one whole-tree canvas without tabs), every
+saved build opens on its own recorded build (no migration, even where two builds carry
+identical talent rows), an unbundled build fails with a typed error — see
 [docs/mobile-architecture.md](docs/mobile-architecture.md#bundled-datasets-product-and-reference-m5data).
 
 ```bash

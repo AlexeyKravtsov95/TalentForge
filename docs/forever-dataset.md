@@ -7,10 +7,11 @@ could not (yet) prove. Data basis: real client DB2 tables of builds `1.60.1.6989
 
 `1.60.1.70009` is the **verified reference baseline**: the allocation evidence and the
 conformance vectors are pinned to it, and the warning investigations below were made on it.
-Since M5.DATA.3 the **product dataset** — the one the app creates new builds on — is
-`1.60.1.70374` ([below](#product-dataset-160170374-m5data3)). `1.60.1.70338`, the product
-dataset of M5.DATA.2 ([below](#product-dataset-160170338-m5data2)), `1.60.1.70245`, the
-product dataset of M5.DATA ([below](#product-dataset-160170245-m5data)), and 70009 stay
+Since M5.DATA.4 the **product dataset** — the one the app creates new builds on — is
+`1.60.1.70450` ([below](#product-dataset-160170450-m5data4)). `1.60.1.70374`, the product
+dataset of M5.DATA.3 ([below](#product-dataset-160170374-m5data3)), `1.60.1.70338`, the
+product dataset of M5.DATA.2 ([below](#product-dataset-160170338-m5data2)), `1.60.1.70245`,
+the product dataset of M5.DATA ([below](#product-dataset-160170245-m5data)), and 70009 stay
 committed and bundled, unchanged, for the builds saved on them. None of them is claimed to be the
 build the live realms run (`builds latest` reports the newest detected build at the moment
 it runs; wago.tools has no "live" marker). Whether the product dataset is still the newest
@@ -203,6 +204,225 @@ The 69977→70009 all-class diff produces 24 changed nodes; the raw change kinds
 The machine-readable boundary lives in `talent_data.diff.models`
 (`USER_VISIBLE_CHANGE_KINDS` / `DIAGNOSTIC_CHANGE_KINDS`); it is a classification only —
 the raw engineering diff is never filtered.
+
+## Product dataset 1.60.1.70450 (M5.DATA.4)
+
+### Build selection
+
+Verified on **2026-10-17 at 18:40 UTC** with the repository's own check and against the raw
+index (`GET https://wago.tools/api/builds`, response `Date: Sat, 17 Oct 2026 18:40:47 GMT`;
+the M5.DATA.4 subset is committed as `tests/fixtures/wago/builds-2026-10-17.json`):
+
+```text
+$ python scripts/check_product_freshness.py --output freshness.json      # exit 3
+OUTDATED: 1.60.1.70450 is publishable (is_bgdl=false) and newer than the product build 1.60.1.70374
+```
+
+| Fact | Value |
+| --- | --- |
+| `PRODUCT_BUNDLE` before this milestone | `1.60.1.70374` |
+| Latest detected Forever build | `1.60.1.70450` (`wow_classic_beta`, created 2026-10-16 22:29:05) |
+| Latest publishable Forever build | `1.60.1.70450` |
+| `is_bgdl` of 70450 on the wire | JSON `false` (a strict boolean) |
+| Builds between 70374 and 70450 | `1.60.1.70425` (created 2026-10-16 00:50:05, `is_bgdl=false`) |
+| Newer non-publishable builds | none |
+| Source / checked at | wago.tools `/api/builds`, `checkedAt` 2026-10-17T18:40:34Z |
+
+70450 is product `wow_classic_beta`, branch `1.60` (`build_config
+84bea4233331e390fda8724c6f91ffa5`, `cdn_config ff7ab925e1032e8380dfdc125b3fe185`, same
+`product_config` as 70374), so **70450 is selected**. 70425 (`build_config
+ea9c525eef74f1d682c00a8ef39a5d2b`) was fetched and normalized too: every talent change below
+arrived with it, and its talent data equals 70450's (diff 70425 → 70450: 0 added, 0 removed,
+0 changed; the 23 trait tables are byte-identical, only `Spell`/`SpellEffect`/`SpellName`/
+`Curve`/`CurvePoint` differ, in rows no talent reads). Only 70450 is committed. `wow_cn_beta`
+still stops at 70374.
+
+**The `wowf` product, re-checked.** Unchanged since 2026-10-14: one entry, `1.60.1.70245`
+(created 2026-10-13 21:18:10, `is_bgdl=false`, `build_config
+e8c4ef4e67bd1d94d820254984258fa8`), older than the beta and not one of Forever's products
+(`GameConfig.products` stays `("wow_classic_beta",)`). One more fact surfaced: the beta's own
+70245 has a different `build_config` (`0bf141260c698dfc9cb3b5b7947b78c3`), yet wago.tools'
+table export is addressed by version string alone (`?build=1.60.1.70245`), so the pipeline's
+source cannot tell the two 70245 builds apart. Nothing in the index says that the source of
+the current Forever data moved off `wow_classic_beta`; the product mapping is unchanged and
+the gap stays recorded ([dataset-freshness-watch.md](dataset-freshness-watch.md#known-gap-the-wowf-product)).
+
+**Basis and its limit** (unchanged): 70450 is the newest Forever build whose `is_bgdl` is
+explicitly `false`. It is not evidence that the realms run 70450, and no 70450 client was
+observed.
+
+### Generation and integrity
+
+Every artifact is generated from 70450's own client rows with the unchanged pipeline;
+nothing is copied from 70374, nothing hand-edited, no check relaxed:
+
+```bash
+python -m talent_data fetch --game forever --build 1.60.1.70450
+python -m talent_data normalize --game forever --build 1.60.1.70450 --class all
+python -m talent_data diff --game forever --class all --from 1.60.1.70374 --to 1.60.1.70450
+python -m talent_data manifest data/normalized/forever/1.60.1.70450/manifest.json --expect-complete
+python -m talent_data visuals fetch|report|normalize|check --build 1.60.1.70450
+python -m talent_data tooltips fetch|report|normalize|check --build 1.60.1.70450
+python -m talent_data localization fetch|report|normalize|check --build 1.60.1.70450 --locale ruRU --classes all
+python scripts/extract_fixtures.py --build 1.60.1.70450 --classes all   # + --tooltips, --localization ruRU
+```
+
+* 9 classes, 469 nodes, **0 errors, 49 warnings**: the 12 investigated warnings of the
+  reference baseline (same codes, nodes and counts) plus **37 on Mage**
+  (`SECTIONS_UNRESOLVED` ×1, `OFF_GRID_NODE` ×36), all from one cause — investigated
+  [below](#the-mage-tree-has-no-derivable-tabs-sections_unresolved-160170425) and published
+  by owner decision. The manifest re-validates.
+* Real DB2, tooltip-table and enUS/ruRU fixtures of 70450 are committed
+  (`tests/fixtures/{db2,tooltips,localization}/forever/1.60.1.70450/`);
+  `tests/unit/test_product_build.py` regenerates the documents, icon sidecars, descriptions
+  and all nine ruRU overlays from them byte for byte, and pins the Mage anomaly. The 70374
+  tests moved unchanged to `tests/unit/test_build_70374.py`.
+
+| Class | Tree | Nodes | Prereq links | Total ranks | Sections | Point budget | Errors | Warnings |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Warrior | 1117 | 52 | 8 | 150 | 3 | 51 | 0 | — |
+| Paladin | 1100 | 50 | 7 | 138 | 3 | 51 | 0 | 2 × OFF_GRID_NODE |
+| Hunter | 1091 | 52 | 9 | 158 | 3 | 51 | 0 | 2 × OFF_GRID_NODE, 1 × DUPLICATE_SPELL_IDENTITY, 1 × SUFFICIENT_PREREQUISITE_CYCLE |
+| Rogue | 1111 | 53 | 8 | 139 | 3 | 51 | 0 | 1 × INCOMPLETE_RANK_CURVE, 1 × UNRESOLVED_CONDITION |
+| Priest | 1114 | **53** | 8 | 153 | 3 | 51 | 0 | 1 × OFF_GRID_NODE, 1 × DUPLICATE_SPELL_IDENTITY |
+| Shaman | 1082 | 50 | 7 | 148 | 3 | 51 | 0 | — |
+| Mage | 1112 | **55** | **7** | **148** | **0** | 51 | 0 | **1 × SECTIONS_UNRESOLVED, 36 × OFF_GRID_NODE** |
+| Warlock | 1116 | 52 | 8 | **146** | 3 | 51 | 0 | 2 × OFF_GRID_NODE |
+| Druid | 1089 | 52 | 11 | 148 | 3 | 51 | 0 | — |
+
+Tree ids, the 51-point budget, rank costs (1 point of currency 3820) and the gate rule are
+unchanged.
+
+### What changed 70374 → 70450
+
+`artifacts/diff/forever-all-1.60.1.70374-1.60.1.70450.json` (+ one file per class):
+**1 added, 1 removed, 98 changed nodes** — 54 of the Mage changes are `sectionChanged`
+(every Mage node lost its section, see below).
+
+* **Mage** (the Arcane layout):
+  * added: **Arcane Wrath** 113627 (max 1) at row 3, column 3 of the Arcane columns —
+    Missile Barrage's former cell — with a sufficient prerequisite on Arcane Blast and **no
+    points gate**;
+  * **Missile Barrage** 105802 moved row 3 → row 0, lost its 15-point gate, max rank 1 → 2
+    (20/40 % now resolved per rank); the 5/10/15-point Arcane gates count it (3 → 4, 7 → 8,
+    10 → 11 nodes);
+  * **Fire Power** max 5 → 3 (1/2/3 %, effect #1 no longer per-rank); **Critical Mass**
+    max 3 → 5; **Wake of Fire** renamed **Improved Fire Blast** (8/15 %); Winter's Chill
+    1/2/3/4 → 5/5/5/5; Frost Channeling #1 sign flip; Ice Lance, Arcane Blast base points;
+    descriptions of Winter's Chill, Arctic Reach, Improved Frostbolt, Fire Power, Heating Up,
+    Improved Fire Blast, Missile Barrage, Arcane Blast, Improved Channeling.
+* **Priest**: removed **Improved Mind Blast** 105827 (Shadow, max 5); node **105831** is now
+  **Improved Mind Blast** (spell 15273, max 3 → 5, −0.5…−2.5 s Mind Blast cooldown; was
+  Shadow Affinity 15318); node **105823** is now **Dark Inspiration** (spell 1326159, max 2 →
+  5, party Spirit 3…15 %; was Improved Fade 15274); **Mental Strength** row 3 → row 1
+  (gate 15 → 5, 3/6/9/12/15 → 2/4/6/8/10); **Improved Power Word: Shield** row 1 → row 2
+  (gate 5 → 10); **Improved Mana Burn** column 3 → 1; Devouring Contagion and Divine Aegis
+  gained an effect; Improved Mind Flay lost three; Shadow Weaving, Silent Resolve, Power in
+  Light texts.
+* **Shaman** (Elemental re-laid out): spells swapped between nodes — 104729/104735
+  (Totemic Focus ⇄ Tidal Focus), 104765/104771 (Elemental Alacrity ⇄ Elemental Warding),
+  104758 Lava Burst → Elemental Mastery, 104760 Earthbound → Lava Burst, 104762 Call of
+  Thunder → Earthbound; **Improved Fire Nova** renamed **Trial by Fire**; positions of
+  Lightning Overload, Lava Burst, Earthbound, Elemental Warding, Elemental Focus, Elemental
+  Devastation, Call of Flame, Elemental Alacrity; prerequisites: Elemental Mastery requires
+  Lava Burst (was Lightning Overload), Lightning Overload requires Elemental Alacrity (new),
+  Earthbound none (was Elemental Alacrity), Elemental Fury requires Lightning Overload (was
+  Call of Thunder); twelve description changes.
+* **Warlock**: node **105923** is now **Grim Reach** (spell 18218, max 5 → 2, 10/20; was
+  Malediction 1225177); **Shadow Mastery** 1…5 → 2…10 % (both effects); Demonic Embrace and
+  Amplify Curse lost an effect; Destructive Reach base points and text.
+* **Paladin**: Champion of the Light 20/40/60 → 10/20/30; Improved Seals base points;
+  Reckoning text. **Hunter**: Improved Mend Pet #1 sign flip (10/20 → −10/−20),
+  Resourcefulness #1 −20/−40 → 50/100; five texts. **Warrior**: Bloodthrill text.
+  **Druid**: Moonkin Form, Leader of the Pack, Furor texts.
+* **Rogue**: no change.
+
+A 70374 build can therefore be invalid on 70450 (Priest Improved Mind Blast 5/5 names a node
+that no longer exists) or validate while meaning another talent (Priest 105823 at 2/2:
+Improved Fade on 70374, Dark Inspiration on 70450). A saved build always opens on its own
+build and is never migrated (`test_a_previous_product_build_*`,
+`DatasetVersionCompatibilityTest`).
+
+### The Mage tree has no derivable tabs (SECTIONS_UNRESOLVED, 1.60.1.70425+)
+
+**Cause (client rows, `tests/fixtures/db2/forever/1.60.1.70450/mage/`).** The normalizer
+derives the three classic tabs from the node groups the tier gates count, and accepts them
+only if they partition the tree (§ *Known unresolved semantics*: tab names do not exist in
+client data either). Arcane Wrath 113627 has four `TraitNodeGroupXTraitNode` rows — groups
+12862, 12863, 12864, 12865 (`_Index` 2, 12, 12, 12) — and **each of these groups has no other
+member and no condition**: no `TraitCond`, `TraitNodeGroupXTraitCond` or
+`TraitNodeXTraitCond` row refers to them or to the node. Every other Mage node keeps its
+70374 memberships (`TraitCond` and `TraitNodeGroupXTraitCond` are byte-identical to 70374's).
+So the three maximal gate groups (18 Arcane, 17 Fire, 19 Frost nodes) are disjoint and cover
+every node **except** Arcane Wrath; the partition fails and `sections` stays empty, as the
+contract allows. A row-3 peer such as Arcane Meditation 105803 is in four groups too — its
+row group 11586 and the cumulative 30/25/20-point groups 11582/12730/12731, `_Index`
+3/13/13/13 — the same shape as Arcane Wrath's rows, but with the shared group ids.
+
+**Consequences, all mechanical and pinned by tests.**
+
+* `SECTIONS_UNRESOLVED` ×1 and no node has a `sectionIndex`.
+* `OFF_GRID_NODE` ×36: without tabs the grid is fitted over the whole tree instead of per
+  tab, so the 18 Arcane nodes and Arcane Wrath sit 260 units left of it and the 17 Fire
+  nodes 140 units right; the 19 Frost nodes land on it. Raw `x`/`y` stay authoritative.
+* The diff reports `sectionsChanged` 3 → 0 and `sectionChanged` on all 54 kept nodes.
+* Literal allocation semantics: Arcane Wrath has no unlock requirement (only its sufficient
+  prerequisite Arcane Blast, itself behind the 10-point Arcane gate), and its point counts
+  toward no Arcane gate. The engines implement exactly that; no rule was added for it.
+* The app shows the 70450 Mage tree on **one whole-tree canvas** — the existing fail-safe
+  `Unsectioned(NoSections)` path of `buildTalentTreeSections`: no tabs, no specialization
+  names, every node and connector on the canvas, no hit-target overlap at any zoom
+  (`TalentTreeSectionsTest`). Every other class and every older Mage tree keeps its tabs.
+
+**What is not established.** Whether this is an authoring slip (the four rows look like
+memberships that were meant to point at the shared groups) or intended (an ungated talent
+outside the tab totals) cannot be decided from DB2 rows, and no 70425/70450 client was
+observed. The pipeline does not guess a section by geometry or flatten the rows into a gate.
+**Owner decision (2026-10-17):** publish 70450 as the client data stands. If a later build
+puts 113627 into the gate groups, the tabs return through the unchanged pipeline (and this
+expected warning set changes, failing `test_warnings_are_exactly_the_investigated_set` until
+it is reviewed).
+
+### Allocation compatibility
+
+`python scripts/allocation_inventory.py --build 1.60.1.70450` (committed fixtures) differs
+from 70374 only in Priest (53 nodes, `Flags` 0×48/8×5, `MaxRanks` 1×12/2×12/3×14/5×15), Mage
+(55 nodes, `MaxRanks` 2×15, `Edge.Type` 2×7) and Warlock (`MaxRanks` 2×12/5×13): **no new
+node type, entry type, node flag, edge type, condition shape, currency or cost link**; the
+number of conditions per tree is unchanged. A node without a points gate is not new either
+(every row-0 node has none). The Python reference engine flags exactly one node as
+unsupported (Rogue Venom, cond 50984), the random-walk invariants pass on all nine 70450
+classes, the M2 vectors (pinned to 70009) replay 53/53, and `ProductDatasetContractTest`
+pins the Kotlin engine to the same answer. **The allocation engine needs no change for
+70450**; no confidence label changes (EDGE-ACTIVE / EDGE-SUF remain hypotheses).
+
+### Icons, descriptions and Russian text
+
+* Visuals: 469 / 469 entries resolved from 70450's own `TraitDefinition` → `SpellMisc` rows;
+  **359** icon files fetched from 70450 (new: 136127, 236222, 463284; no longer used: 136014,
+  136137). The 356 shared client files are byte-identical to 70374's (same `sourceSha256`)
+  and decode to identical pixels, but **their PNG bytes differ**: Pillow 12.3.0's macOS arm64
+  wheel links zlib-ng (`PIL.features.version("zlib")` = `1.3.1.zlib-ng`), and the compressed
+  stream depends on that build — see [talent-visuals.md](talent-visuals.md). The 70374 PNGs
+  stay as committed.
+* Descriptions: 1328 ranks — **1272 resolved, 55 partial, 1 unresolved** (Druid Shifting
+  Power `$c`, unchanged) — `docs/research/forever-1.60.1.70450-tooltip-coverage.md`. Status
+  changes against 70374 (explicit gaps, never guessed): newly partial Paladin Reckoning,
+  Priest Divine Aegis, Shaman Lava Burst, Warlock Amplify Curse and the new Mage Arcane
+  Wrath; newly resolved Hunter Resourcefulness and Shaman Elemental Mastery.
+* ruRU: the 70450 exports pass every source check of `talent_data.localization.source`;
+  coverage **469 / 469 names** translated (70374: 459), **383 / 469 descriptions**
+  (1130 / 1328 ranks; 70374: 355, 1058 / 1329) —
+  `docs/research/forever-1.60.1.70450-ruRU-coverage.md`. All nine overlays are committed,
+  linked to the 70450 dataset and tooltip hashes, and bundled.
+
+### Validity boundaries
+
+* Valid for WoW: Forever **1.60.1.70450** (and, by identical talent data, 70425) as published
+  by wago.tools; nothing carries over to another build without re-running the pipeline.
+* Not established: that 70450 is live on the realms, what the `wowf` product carries at
+  launch, whether the Arcane Wrath memberships are intended, and every semantic still listed
+  as unresolved below.
 
 ## Product dataset 1.60.1.70374 (M5.DATA.3)
 
@@ -481,7 +701,8 @@ GitHub Issue and is the mandatory release preflight
 (`"false"`, `0`) is an unexpected schema, not a publishability answer (it used to be coerced
 by the lax pydantic `bool`). On 2026-10-10 it answered `OUTDATED` for 70245 and `CURRENT`
 for 70338; on 2026-10-14 `OUTDATED` for 70338 (by 70374), and `CURRENT` for 70374 after
-`PRODUCT_BUNDLE` moved (M5.DATA.3, checked 17:28 UTC).
+`PRODUCT_BUNDLE` moved (M5.DATA.3, checked 17:28 UTC); on 2026-10-17 `OUTDATED` for 70374
+(by 70425, then 70450), and `CURRENT` for 70450 after `PRODUCT_BUNDLE` moved (M5.DATA.4).
 
 ## Product dataset 1.60.1.70245 (M5.DATA)
 
@@ -693,7 +914,7 @@ behavior was changed silently in M1.
 ## Fixture strategy
 
 `tests/fixtures/db2/forever/<build>/<class-token>/<Table>.csv` — for each of the nine
-classes and every captured build (69977, 70009, 70245, 70338), the strict subset of rows reachable
+classes and every captured build (69977, 70009, 70245, 70338, 70374, 70450), the strict subset of rows reachable
 from that class's tree (~1000 rows per class), extracted by
 `scripts/extract_fixtures.py` from the real wago.tools cache. Nothing is hand-written;
 the Warrior M0 fixtures are the same rows in the new layout. Because each class
@@ -724,6 +945,9 @@ python scripts/extract_fixtures.py --build 1.60.1.70338 --classes all   # + --to
   the source proves the per-group/node/entry cost tables absent (present or unknown fails
   closed); still no cost field in schema v1.
 * Tab names (Arms/Fury/Protection…) do not exist in client data; `section.name` is null.
+  Since 1.60.1.70425 the Mage tree has no derivable tabs at all (Arcane Wrath is in no gate
+  group — [above](#the-mage-tree-has-no-derivable-tabs-sections_unresolved-160170425));
+  `sections` stays empty rather than guessed.
 * Tooltips stay raw templates in `talent-data.v1`; per-rank numbers exist for curve-backed
   effects only. Rendered descriptions (M5.V2) live in the `talent-tooltips.v1` sidecar.
 * Whether the mis-placed duplicate nodes (Hunter/Priest) are drawn by the client is

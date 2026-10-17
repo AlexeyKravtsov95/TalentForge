@@ -193,6 +193,8 @@ The EMU numbers are debug builds on an emulator. They indicate the absence of gr
 | ID | Check | Env | Status | Evidence |
 |---|---|---|---|---|
 | DF-01 | `check_product_freshness.py` at 2026-10-16T19:37:52Z | MAC-PY (network: wago.tools) | **OUTDATED** | product `1.60.1.70374`, latest publishable and detected `1.60.1.70425` (TF-RC1-DATA) |
+| DF-02 | `check_product_freshness.py` at 2026-10-17T18:40:34Z (M5.DATA.4, before) | MAC-PY (network: wago.tools) | **OUTDATED** | product `1.60.1.70374`, latest publishable and detected `1.60.1.70450` |
+| DF-03 | `check_product_freshness.py` at 2026-10-17T19:10:13Z (M5.DATA.4, after integration) | MAC-PY (network: wago.tools) | **CURRENT** | product `1.60.1.70450` (TF-RC1-DATA resolved by refresh, effective on merge) |
 
 ## 16. Automated verification summary
 

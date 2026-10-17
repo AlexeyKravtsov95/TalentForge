@@ -6,17 +6,20 @@ strings come from, how they are bound to exactly one dataset revision, and when 
 description may be shown at all**, with the **Warrior pilot of `1.60.1.70338`**. M5.REL.3b.1
 (§12) completed the data: **36 overlays — all nine classes of every supported build
 (`1.60.1.70009`, `1.60.1.70245`, `1.60.1.70338`, `1.60.1.70374`), each generated from its
-own build's exports — are committed and bundled** as Compose Multiplatform resources.
-M5.REL.3b.2 (§13) wired them into the editor: on a Russian device the talent editor shows
-the client's Russian names and the descriptions that passed every gate, English everywhere
-else. No milestone translates anything or changes allocation, persistence or navigation.
+own build's exports — are committed and bundled** as Compose Multiplatform resources;
+M5.DATA.4 (§14) added the nine overlays of the product build `1.60.1.70450`, **45 overlays**
+in total. M5.REL.3b.2 (§13) wired them into the editor: on a Russian device the talent
+editor shows the client's Russian names and the descriptions that passed every gate, English
+everywhere else. No milestone translates anything or changes allocation, persistence or
+navigation.
 
 * Source evidence: [research/forever-ruRU-localization-feasibility.md](research/forever-ruRU-localization-feasibility.md)
 * Coverage per build (generated, every class):
   [70009](research/forever-1.60.1.70009-ruRU-coverage.md) ·
   [70245](research/forever-1.60.1.70245-ruRU-coverage.md) ·
   [70338](research/forever-1.60.1.70338-ruRU-coverage.md) ·
-  [70374](research/forever-1.60.1.70374-ruRU-coverage.md)
+  [70374](research/forever-1.60.1.70374-ruRU-coverage.md) ·
+  [70450](research/forever-1.60.1.70450-ruRU-coverage.md)
 * Contract: [`schema/talent-localization.v1.schema.json`](schema/talent-localization.v1.schema.json)
   (generated from `talent_data.models.localization`)
 
@@ -381,8 +384,8 @@ document; `talentDataContentHash`; `tooltipsContentHash`; the `contentHash` **re
 the same canonical JSON + SHA-256 as `content_hash` (pinned by cross-language vectors:
 `tests/fixtures/localization/content-hash-vectors.json`, generated and checked by
 `tests/unit/localization/test_content_hash_vectors.py`, recomputed by the Kotlin
-`LocalizationContentHashTest` together with all 36 published hashes); the complete, unique,
-`entryId`-ordered entry set; node/definition/spell/maxRank identity; the §3 field rules
+`LocalizationContentHashTest` together with all 36 published hashes — 45 since M5.DATA.4,
+§14); the complete, unique, `entryId`-ordered entry set; node/definition/spell/maxRank identity; the §3 field rules
 (text ⇔ `translated` with Cyrillic, ranks exactly `1..maxRank` ⇔ `rendered`, no empty segment,
 no markup); and every rendered rank over a resolved English rank with exactly its numbers and
 no decimal value. Beyond the Python check, `textSpellId` is verified too: it must equal the
@@ -410,3 +413,22 @@ partial English ranks stay English). At 200 % text the single word «жертв�
 landscape panel and wraps inside the word — nothing is cut, and every other name and
 description keeps its words whole (`EditorLocalizationLayoutUiTest`). The node monogram (shown
 only when an icon fails) keeps the English initials.
+
+## 14. M5.DATA.4: the product build 1.60.1.70450
+
+The product build moved to `1.60.1.70450` (`docs/forever-dataset.md`). The same pipeline was
+run on it, unchanged, from its own exports, for all nine classes at once; nothing of 70374
+was reused and the overlays, reports and Markdown of the four earlier builds are untouched.
+
+| | 1.60.1.70450 (2026-10-17) |
+| --- | --- |
+| Source support | `localization fetch --build 1.60.1.70450 --locale ruRU`: the exports pass every source check of `talent_data.localization.source` (§2) |
+| Coverage (every class) | names **469 / 469** translated (0 English, 0 missing; 70374: 459); descriptions **383 / 469** rendered (1130 / 1328 ranks; 70374: 355, 1058 / 1329): [research/forever-1.60.1.70450-ruRU-coverage.md](research/forever-1.60.1.70450-ruRU-coverage.md) |
+| Committed | all nine overlays `data/localization/forever/1.60.1.70450/ruRU/<class>.json`, `artifacts/localization/forever-1.60.1.70450-ruRU-coverage.json`, fixtures `tests/fixtures/localization/forever/1.60.1.70450/{enUS,ruRU}/` |
+| Linkage | each overlay's `talentDataContentHash` / `tooltipsContentHash` = its 70450 class document / tooltip sidecar (Warrior: `sha256:f346086e…` / `sha256:484488b1…`); `localization check --build 1.60.1.70450` passes |
+| Bundled | mirrored to `composeResources/files/localization/forever/1.60.1.70450/ruRU/` by `scripts/sync_mobile_localization.py`; 45 overlays, 5 builds × 9 classes (`LocalizationDriftTest`) |
+| Tests | `tests/unit/test_product_build.py` regenerates the nine overlays, report and Markdown from the fixtures byte for byte and checks the linkage and coverage; the former 70374 tests moved unchanged to `tests/unit/test_build_70374.py`; `test_all_builds.py` covers five builds |
+| Content-hash vectors | `tests/fixtures/localization/content-hash-vectors.json` regenerated: 45 overlays (`test_content_hash_vectors.py`; recomputed by the Kotlin `LocalizationContentHashTest`) |
+
+No gate, rule, schema or renderer changed; the §4/§10 fallbacks (plural forms, decimal
+separator, partial English ranks) apply unchanged.

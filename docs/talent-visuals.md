@@ -14,8 +14,15 @@ distinct icons (`data/visuals/forever/1.60.1.70338/`; compared with 70245: 13235
 and 236309 new, 132338 and 236310 no longer used, the 355 shared ones convert to identical
 PNGs). **M5.DATA.3** fetched the 358 icon files of **`1.60.1.70374`** from that build: they
 and the PNGs made from them are byte-identical to 70338's, and are still published as
-70374's own (`data/visuals/forever/1.60.1.70374/`). No icon is ever carried over from another
-build; each build is published and bundled with its own.
+70374's own (`data/visuals/forever/1.60.1.70374/`). **M5.DATA.4** did the same for the
+product dataset **`1.60.1.70450`** on 2026-10-17: 469 / 469 entries, 359 icon files fetched
+from that build (`data/visuals/forever/1.60.1.70450/`; compared with 70374: 136127, 236222
+and 463284 new, 136014 and 136137 no longer used). The 356 shared client files are
+byte-identical to 70374's (same `sourceSha256`) and decode to identical pixels, but their
+PNG bytes differ: they were generated with Pillow 12.3.0's macOS arm64 wheel, which links
+zlib-ng (`PIL.features.version("zlib")` = `1.3.1.zlib-ng`), and the compressed stream
+depends on that build (see §3). The 70374 PNGs stay as committed. No icon is ever carried
+over from another build; each build is published and bundled with its own.
 
 ```
 data/normalized/forever/<build>/<class>.json      (talent-data.v1, unchanged)
@@ -245,8 +252,12 @@ build time only (`visuals/icons.py`):
 * pixel-exact: tests decode the PNG and the BLP2 texture and compare the raw pixels.
 
 Pillow is an optional dependency (`pip install -e ".[visuals]"`, also part of `dev`),
-pinned to `12.3.0` so the PNG bytes are reproducible; it is needed only to *generate*
-assets. Checking committed assets parses the PNG header with the standard library.
+pinned to `12.3.0`; it is needed only to *generate* assets. The PNG bytes are reproducible
+only with the same Pillow build, including the zlib it bundles: the macOS arm64 wheel of
+12.3.0 links zlib-ng, and a different build of the same version can compress the same
+pixels into different bytes (observed in M5.DATA.4). Across Pillow builds only the decoded
+pixels are guaranteed, so tests that compare icons across builds compare pixels, not PNG
+bytes. Checking committed assets parses the PNG header with the standard library.
 
 ### Size
 
@@ -301,7 +312,8 @@ by `pytest -m integration` (manual workflow), separately.
 ## 5. Mobile bundle and consumer obligations
 
 `mobile/composeApp/src/commonMain/composeResources/files/visuals/forever/<build>/` (for
-every bundled build: 1.60.1.70009, 1.60.1.70245, 1.60.1.70338 and 1.60.1.70374) is a derived,
+every bundled build: 1.60.1.70009, 1.60.1.70245, 1.60.1.70338, 1.60.1.70374 and
+1.60.1.70450) is a derived,
 byte-identical copy of
 the canonical directory; never edit it by hand.
 

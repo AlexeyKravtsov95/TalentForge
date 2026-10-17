@@ -40,8 +40,21 @@ hypotheses; the new and moved Sufficient edges are evaluated by the same, unchan
 (empty diff, identical allocation inventory, §3 unchanged), so the same answer holds: no
 rule, evidence or confidence level changed, nothing was observed on a 70374 client, only
 Venom is unsupported, and the invariants run on all nine 70374 classes
-(`tests/unit/test_product_build.py`, `test_invariants.py`). EDGE-ACTIVE / EDGE-SUF remain
-hypotheses.
+(`tests/unit/test_build_70374.py`, formerly `test_product_build.py`; `test_invariants.py`).
+EDGE-ACTIVE / EDGE-SUF remain hypotheses.
+
+**M5.DATA.4 product dataset 1.60.1.70450.** A real balance patch (1 node added, 1 removed,
+98 changed against 70374), yet its allocation inventory (§3) differs from 70374's only in
+the Priest, Mage and Warlock rows, in counts: no new node type, entry type, node flag, edge
+type, condition shape, currency or cost link, and the number of conditions per tree is
+unchanged. The new Mage node Arcane Wrath 113627 has no points gate (only a Sufficient
+prerequisite on Arcane Blast) and belongs to no gate group, so its point counts toward no
+Arcane gate; it is read literally by the existing rules — a node without a points gate is
+not new (no row-0 node has one) — and no rule was added for it. The engine reports only
+Venom as unsupported, the invariants run on all nine 70450 classes
+(`tests/unit/test_product_build.py`, `test_invariants.py`), and the M2 vectors stay pinned
+to 70009 (53/53). No rule, evidence or confidence level changed and nothing was observed on
+a 70450 client; EDGE-ACTIVE / EDGE-SUF remain hypotheses.
 
 Confidence scale used below:
 
@@ -165,6 +178,15 @@ output to 70338): every row of 70245 and the condition-shape table are identical
 | Class | Tree | Nodes | Node.Type | Node.Flags | Entries/node | EntryType | MaxRanks | Edge.Type | Nodes w/ >1 prereq edge | Currency | Rank cost (tree) | Conds | Granted conds | Tree.Flags |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | WARRIOR | 1117 | 52 | 0x52 | 0x47, 8x5 | 1x52 | 1x52 | 1x12, 2x12, 3x13, 5x15 | 2x8 | 0 | 3820 (max 51) | 1x3820 curve 0 | 18 | 0 | 1 |
+
+1.60.1.70450 (M5.DATA.4, `--build 1.60.1.70450`): every row of 70374 and the
+condition-shape table are identical except
+
+| Class | Tree | Nodes | Node.Type | Node.Flags | Entries/node | EntryType | MaxRanks | Edge.Type | Nodes w/ >1 prereq edge | Currency | Rank cost (tree) | Conds | Granted conds | Tree.Flags |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| PRIEST | 1114 | 53 | 0x53 | 0x48, 8x5 | 1x53 | 1x53 | 1x12, 2x12, 3x14, 5x15 | 2x8 | 0 | 3820 (max 51) | 1x3820 curve 0 | 19 | 0 | 1 |
+| MAGE | 1112 | 55 | 0x55 | 0x55 | 1x55 | 1x55 | 1x12, 2x15, 3x17, 5x11 | 2x7 | 0 | 3820 (max 51) | 1x3820 curve 0 | 18 | 0 | 1 |
+| WARLOCK | 1116 | 52 | 0x52 | 0x51, 8x1 | 1x52 | 1x52 | 1x12, 2x12, 3x15, 5x13 | 2x8 | 0 | 3820 (max 51) | 1x3820 curve 0 | 18 | 0 | 1 |
 
 | TraitCond shape (non-zero functional fields) | Count |
 |---|---|
