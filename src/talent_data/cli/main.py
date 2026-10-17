@@ -54,6 +54,7 @@ from talent_data.models.tooltips import TalentTooltipsDocument
 from talent_data.models.visuals import TalentIconRegistry, TalentVisualsDocument
 from talent_data.normalization.class_resolution import ClassResolutionError
 from talent_data.normalization.normalizer import NormalizationError
+from talent_data.ota.models import OtaCatalog, OtaReleaseManifest, SignedEnvelope
 from talent_data.pipeline import (
     ALL_CLASSES,
     PipelineError,
@@ -572,6 +573,9 @@ def json_schemas() -> dict[str, str]:
         "talent-icons.v1.schema.json": _schema_text(TalentIconRegistry),
         "talent-tooltips.v1.schema.json": _schema_text(TalentTooltipsDocument),
         "talent-localization.v1.schema.json": _schema_text(TalentLocalizationDocument),
+        "ota-envelope.v1.schema.json": _schema_text(SignedEnvelope),
+        "ota-catalog.v1.schema.json": _schema_text(OtaCatalog),
+        "ota-release.v1.schema.json": _schema_text(OtaReleaseManifest),
     }
 
 

@@ -1,0 +1,130 @@
+{
+  "$defs": {
+    "CatalogRelease": {
+      "additionalProperties": false,
+      "properties": {
+        "clientBuild": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "title": "Clientbuild",
+          "type": "string"
+        },
+        "manifestByteLength": {
+          "exclusiveMinimum": 0,
+          "maximum": 16777216,
+          "title": "Manifestbytelength",
+          "type": "integer"
+        },
+        "manifestSha256": {
+          "description": "SHA-256 of the release manifest bytes; also its blob address",
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Manifestsha256",
+          "type": "string"
+        },
+        "minDataLevel": {
+          "description": "Lowest app data level that can read and interpret the release",
+          "minimum": 1,
+          "title": "Mindatalevel",
+          "type": "integer"
+        },
+        "publishedAt": {
+          "format": "date-time",
+          "title": "Publishedat",
+          "type": "string"
+        },
+        "releaseId": {
+          "description": "'<clientBuild>-r<revision>'; unique within the catalog",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+-r[1-9][0-9]{0,5}$",
+          "title": "Releaseid",
+          "type": "string"
+        },
+        "totalByteLength": {
+          "description": "Sum of the release's file sizes, copied from the release manifest",
+          "exclusiveMinimum": 0,
+          "maximum": 268435456,
+          "title": "Totalbytelength",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "releaseId",
+        "clientBuild",
+        "minDataLevel",
+        "manifestSha256",
+        "manifestByteLength",
+        "totalByteLength",
+        "publishedAt"
+      ],
+      "title": "CatalogRelease",
+      "type": "object"
+    },
+    "Channel": {
+      "enum": [
+        "production",
+        "staging"
+      ],
+      "title": "Channel",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "activeReleaseId": {
+      "description": "The release the publisher wants new builds to be created on",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+-r[1-9][0-9]{0,5}$",
+      "title": "Activereleaseid",
+      "type": "string"
+    },
+    "channel": {
+      "$ref": "#/$defs/Channel"
+    },
+    "expiresAt": {
+      "description": "After this instant the catalog is ignored (never trusted again)",
+      "format": "date-time",
+      "title": "Expiresat",
+      "type": "string"
+    },
+    "game": {
+      "pattern": "^[a-z][a-z0-9-]{0,31}$",
+      "title": "Game",
+      "type": "string"
+    },
+    "issuedAt": {
+      "format": "date-time",
+      "title": "Issuedat",
+      "type": "string"
+    },
+    "releases": {
+      "description": "Every retained release, ordered by (clientBuild, revision); entries are only ever added, so saved builds can always find their dataset",
+      "items": {
+        "$ref": "#/$defs/CatalogRelease"
+      },
+      "maxItems": 512,
+      "minItems": 1,
+      "title": "Releases",
+      "type": "array"
+    },
+    "schemaVersion": {
+      "const": 1,
+      "title": "Schemaversion",
+      "type": "integer"
+    },
+    "sequence": {
+      "description": "Strictly increases with every catalog published to the channel",
+      "minimum": 1,
+      "title": "Sequence",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "game",
+    "channel",
+    "sequence",
+    "issuedAt",
+    "expiresAt",
+    "activeReleaseId",
+    "releases"
+  ],
+  "title": "OtaCatalog",
+  "type": "object"
+}
