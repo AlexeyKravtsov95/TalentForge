@@ -222,11 +222,11 @@ key, uploaded or published.
 **Done in engineering**
 - [x] Fail-closed release signing in Gradle: settings only from the environment or `~/.gradle`; partial or invalid settings, a keystore inside the checkout, the debug keystore or a committed `talentforge.release.*` key fail every release build; no debug fallback ([owner guide](android-release-signing.md)).
 - [x] `:composeApp:assemblePublishableRelease` is the only upload path: complete signing settings + expected certificate SHA-256 required; the APK is staged only when `scripts/verify_release_apk.py` passes; report with the APK SHA-256 and no secrets.
-- [x] Signing self-test with a temporary key (11/11 scenarios), run in `mobile-ci`.
+- [x] Signing self-test with a temporary key (14/14 scenarios, incl. no stale APK after a failed publishable attempt), run in `mobile-ci`.
 - [x] TF-RC1-LINT resolved (0 errors).
 - [x] Backup off (`allowBackup="false"` + data-extraction / full-backup rules), privacy text updated.
 - [x] About / legal screen (RU/EN): version, data version, independent-project statement (draft), privacy summary, Android OSS notices + Apache-2.0 text, privacy-policy link slot (empty until approved).
-- [x] Android OSS notices generated from `releaseRuntimeClasspath` (122 modules, all Apache-2.0 by POM; no NOTICE file shipped); drift check in `mobile-ci`.
+- [x] Android OSS notices generated from `releaseRuntimeClasspath` (122 modules, all Apache-2.0 by POM; no NOTICE file shipped); full-content drift check (coordinates, component mapping, licences re-read from POMs) in `mobile-ci`.
 
 **Owner actions before M5.RC.3** (🔑 = owner only)
 - [ ] 🔑 Approve the signing strategy (S-1) and the APK format.

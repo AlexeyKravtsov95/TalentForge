@@ -120,7 +120,7 @@ The device-level checks behind that statement ran on an Android emulator only (s
 - Partial or invalid settings, a keystore inside the checkout, the debug keystore, or a committed `talentforge.release.*` key: every release build fails, naming the settings without values.
 - The release build type never uses the debug key.
 - `:composeApp:assemblePublishableRelease` is the only upload path. It requires the complete settings plus the owner's certificate SHA-256, and stages `TalentForge-<versionName>-<versionCode>.apk` only after `scripts/verify_release_apk.py` passes. That covers: apksigner verify, one signer, not the debug certificate, fingerprint match, RSA ≥ 4096, frozen `applicationId`, versions, not debuggable, universal APK with `arm64-v8a`, and the APK SHA-256 in a secret-free report.
-- Verified with a **temporary test key** only: 11/11 self-test scenarios pass ([evidence](rc2b-evidence/README.md#signing-self-test)).
+- Verified with a **temporary test key** only: 14/14 self-test scenarios pass, including the PR #38 review case (a failed publishable attempt leaves no earlier APK staged) ([evidence](rc2b-evidence/README.md#signing-self-test)).
 
 **Still open (owner):** create and back up the key, configure the settings, and build and verify the first signed APK.
 

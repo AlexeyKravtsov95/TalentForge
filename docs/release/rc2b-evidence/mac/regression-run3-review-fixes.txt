@@ -1,0 +1,10 @@
+14-oss-notices-check exit=0
+20-ruff-check exit=0
+21-ruff-format exit=0
+22-mypy exit=0
+23-pytest exit=0
+24-mypy-scripts exit=0
+31-desktopTest exit=0
+32-assembleDebug exit=0
+34-lintRelease exit=0
+40-selftest exit=0

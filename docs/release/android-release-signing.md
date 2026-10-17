@@ -104,7 +104,7 @@ check passes:
 - the APK is neither debuggable nor test-only;
 - it is a universal (non-split) APK that includes `arm64-v8a`.
 
-On any failure the directory is emptied and the build fails. The report contains public facts
+The directory is cleared as soon as Gradle has planned a build that includes this task, before any task runs. So a failed attempt (signing settings, fingerprint, compilation, packaging or validation) never leaves an earlier APK there to be uploaded by mistake. On any failure the build fails with the directory empty. The report contains public facts
 only: file name, size, **APK SHA-256**, package metadata, signer DN and certificate digest. It
 never contains a password, a keystore path or an environment value.
 
@@ -134,6 +134,7 @@ test key. It covers:
 - the debug keystore and a keystore inside the checkout;
 - a signed build;
 - the publishable task with no, wrong and correct fingerprints;
+- a successful publishable build followed by a failing one (wrong fingerprint, no settings, partial settings): the earlier APK must be gone;
 - the debug APK;
 - a secret-leak scan of the logs, reports and `build/`.
 

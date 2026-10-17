@@ -1,11 +1,11 @@
 {
   "schema": "talentforge.release-apk-report.v1",
-  "generatedAt": "2026-10-17T17:17:39Z",
+  "generatedAt": "2026-10-17T17:38:10Z",
   "result": "PASS",
   "apk": {
     "fileName": "TalentForge-0.1.0-1.apk",
     "sizeBytes": 17199891,
-    "sha256": "ca85b4b8cab738634d3de8bb442bbc70601d963bd17e80d708b27303ad2878e1"
+    "sha256": "7a87c25898282236a7651ca5438c43e6dfce618f9e2e5a30eac9be9a6daa2886"
   },
   "package": {
     "applicationId": "io.github.alexeykravtsov95.talentforge",
@@ -37,7 +37,7 @@
       "CN=TalentForge signing self-test - temporary - not a release key"
     ],
     "certificateSha256": [
-      "d7af84ea70a851d8b6bbe6b58efc66c373570863d685f3e1cfe8e5c56e1b9939"
+      "eca427a6639fe3ba5856fbececc8ccb84977ca46fed65e4852ad7be5209ae1e1"
     ],
     "keyAlgorithm": [
       "RSA"
