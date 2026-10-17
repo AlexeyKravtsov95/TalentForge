@@ -12,8 +12,14 @@ Regeneration reads every module's POM (``<licenses>``, following ``<parent>``) f
 Gradle cache or, when Gradle did not download it, from Google Maven / Maven Central, and
 fails unless each module's declared licence is the curated licence of its component.
 A module whose group no component claims also fails: a new dependency is never listed
-silently or under a guessed licence. ``--check`` compares only the module coordinates
-(no network); the licence check happens whenever the file is regenerated.
+silently or under a guessed licence.
+
+``--check`` rebuilds the complete expected notices the same way (Gradle resolution plus
+every POM licence, from the Gradle cache or the repositories) and compares them with the
+committed file in full after JSON normalization: schema, licence metadata, every
+component's name, URL, licence and module list. A licence that changed upstream while the
+coordinates stayed the same, an edited licence or URL, or a module moved to another
+component all fail the check, with the differing paths listed.
 
 Bills of materials (``*-bom``) are version constraints with no code and are not listed.
 ``:shared`` is TalentForge's own module. The iOS framework ships a different set (it
@@ -262,20 +268,55 @@ def build_notices(modules: list[str]) -> dict[str, object]:
     }
 
 
-def committed_modules() -> list[str]:
-    data = json.loads(NOTICES.read_text(encoding="utf-8"))
-    return sorted(m for component in data["components"] for m in component["modules"])
+def differences(expected: object, committed: object, path: str = "notices") -> list[str]:
+    """Every path at which the committed notices differ from the expected ones."""
+    if isinstance(expected, dict) and isinstance(committed, dict):
+        found: list[str] = []
+        for key in sorted(set(expected) | set(committed)):
+            if key not in committed:
+                found.append(f"{path}.{key}: missing in the committed file")
+            elif key not in expected:
+                found.append(f"{path}.{key}: not expected")
+            else:
+                found += differences(expected[key], committed[key], f"{path}.{key}")
+        return found
+    if isinstance(expected, list) and isinstance(committed, list):
+        if all(isinstance(item, str) for item in expected + committed):
+            missing = sorted(set(expected) - set(committed))
+            stale = sorted(set(committed) - set(expected))
+            if missing or stale:
+                return [f"{path}: not listed {missing}, not expected {stale}"]
+            if expected != committed:
+                return [f"{path}: order differs"]
+            return []
+        found = (
+            [f"{path}: {len(committed)} entries, expected {len(expected)}"]
+            if len(expected) != len(committed)
+            else []
+        )
+        for index, (want, have) in enumerate(zip(expected, committed, strict=False)):
+            found += differences(want, have, f"{path}[{index}]")
+        return found
+    if expected != committed:
+        return [f"{path}: committed {committed!r}, expected {expected!r}"]
+    return []
 
 
 def check(modules: list[str]) -> None:
     if not NOTICES.is_file():
         raise NoticesError(f"{NOTICES.relative_to(ROOT)} is missing; regenerate it")
-    listed = committed_modules()
-    missing, stale = sorted(set(modules) - set(listed)), sorted(set(listed) - set(modules))
-    if missing or stale:
+    try:
+        committed = json.loads(NOTICES.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        raise NoticesError(f"{NOTICES.relative_to(ROOT)} is not valid JSON") from error
+    expected = build_notices(modules)  # re-verifies every POM licence against its component
+    found = differences(expected, committed)
+    if found:
+        listed = "\n".join(f"  {line}" for line in found[:25])
+        more = f"\n  … and {len(found) - 25} more" if len(found) > 25 else ""
         raise NoticesError(
-            "the OSS notices drift from the release runtime classpath; regenerate them\n"
-            f"  not listed: {missing}\n  no longer shipped: {stale}"
+            "the committed OSS notices differ from the release runtime classpath and its "
+            f"licences; regenerate them\n{listed}{more}"
         )
 
 

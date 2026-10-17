@@ -60,7 +60,7 @@ jobs:
       - name: Localization drift check (bundled ruRU overlays == canonical, offline)
         run: python3 scripts/sync_mobile_localization.py --check
 
-      - name: OSS notices drift check (bundled Android notices == release runtime classpath)
+      - name: OSS notices drift check (full content, licences re-read from POMs == committed Android notices)
         run: python3 scripts/generate_oss_notices.py --check
 
       - name: Shared JVM contract tests (45 documents, 5 manifests, conformance, repository)
