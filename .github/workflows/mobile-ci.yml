@@ -17,6 +17,8 @@ on:
       - "scripts/sync_mobile_visuals.py"
       - "scripts/sync_mobile_tooltips.py"
       - "scripts/sync_mobile_localization.py"
+      - "scripts/verify_release_apk.py"
+      - "scripts/release_signing_selftest.sh"
       - ".github/workflows/mobile-ci.yml"
 
 concurrency:
@@ -68,6 +70,9 @@ jobs:
       - name: Android debug build
         working-directory: mobile
         run: ./gradlew :composeApp:assembleDebug --console=plain
+
+      - name: Release signing self-test (temporary test key, deleted on exit; not a production key)
+        run: scripts/release_signing_selftest.sh
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
