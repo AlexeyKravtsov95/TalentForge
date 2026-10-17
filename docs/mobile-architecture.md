@@ -334,15 +334,15 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
     `TalentTreeSectionsResult.Unsectioned` reason: the screen then shows the
     whole tree on one canvas without tabs — nothing hidden or re-assigned.
     A tree that publishes no sections at all is `Unsectioned(NoSections)`;
-    the one real case is the Mage tree of the product dataset 1.60.1.70450
-    (M5.DATA.4: Arcane Wrath belongs to no gate group, so no tabs are
-    derivable — [forever-dataset.md](forever-dataset.md#the-mage-tree-has-no-derivable-tabs-sections_unresolved-160170425)),
-    which therefore opens on one whole-tree canvas with no tabs and no
-    specialization names; every other tree keeps its tabs
-    (`TalentTreeSectionsTest`, `TalentTreeSectionTabsUiTest`).
+    no bundled tree does. (M5.DATA.4: on 1.60.1.70450 the Mage talent
+    Arcane Wrath is counted by no gate; the dataset places it in the Arcane
+    tab by its column — [forever-dataset.md](forever-dataset.md#arcane-wrath-a-node-no-gate-counts-section_not_gate_counted-160170425) —
+    and `TalentTreeSectionsTest` / `TalentTreeSectionTabsUiTest` pin it
+    there.)
     `sectionSpentPoints` counts each tab's points with the allocation rules'
-    own `AllocationRules.pointsSpent` (the tier-gate count); for any valid
-    build the tabs add up to the header counter;
+    own `AllocationRules.pointsSpent` (the tier-gate count — except that a
+    rank in 70450's Arcane Wrath, which no gate counts, is in the Arcane tab's
+    total too); for any valid build the tabs add up to the header counter;
   - `TalentTreeSectionTabs` — one tab per section (first-talent icon, label,
     points; icons hidden under 360 dp or above 115 % font scale), equal
     widths while each keeps 72 dp, otherwise a scrolling row; one tap
@@ -1358,7 +1358,7 @@ descriptions of each, every one from its own client build:
 
 | Constant (`ui/library/BundledDatasets.kt`) | Client build | Role |
 | --- | --- | --- |
-| `PRODUCT_BUNDLE` | `1.60.1.70450` | The **product dataset** (M5.DATA.4): New Build lists its classes from this manifest and creates every new draft on it. Selected as the newest Forever build wago.tools listed on 2026-10-17 with `is_bgdl` explicitly `false` ([forever-dataset.md](forever-dataset.md#product-dataset-160170450-m5data4)) — not a claim that it is the build the live realms run. Its Mage tree publishes no sections and opens on one whole-tree canvas (see *M5.UX.1 section tabs*). |
+| `PRODUCT_BUNDLE` | `1.60.1.70450` | The **product dataset** (M5.DATA.4): New Build lists its classes from this manifest and creates every new draft on it. Selected as the newest Forever build wago.tools listed on 2026-10-17 with `is_bgdl` explicitly `false` ([forever-dataset.md](forever-dataset.md#product-dataset-160170450-m5data4)) — not a claim that it is the build the live realms run. Its Mage talent Arcane Wrath is counted by no gate and shown in the Arcane tab by its column (see *M5.UX.1 section tabs*). |
 | — | `1.60.1.70374` | The product dataset of M5.DATA.3. Kept bundled, byte-for-byte unchanged, so that builds saved on it open on it; no app code names it (desktop tests do, as `PREVIOUS_PRODUCT_BUNDLE`) — a saved record carries its own client build. |
 | — | `1.60.1.70338` | The product dataset of M5.DATA.2 — the same talent rows, icons and descriptions as 70374, but its own dataset identity. Kept bundled, byte-for-byte unchanged, for the builds saved on it (desktop tests: `BUNDLE_70338`). |
 | — | `1.60.1.70245` | The product dataset of M5.DATA. Kept bundled, byte-for-byte unchanged, for the builds saved on it (desktop tests: `BUNDLE_70245`). |
@@ -1401,7 +1401,7 @@ design (each build ships the icons of its own client files).
 asset read recorded to prove which build answered): New Build lists 70450; new Druid and
 Warrior drafts are created and open on 70450 (the reworked Warrior tree: Gore Drinker, Iron
 Will, Furious Precision with their own icons and descriptions); a new Mage draft opens on
-70450's tree without sections (55 nodes, Arcane Wrath with its own icon); a 70009 Druid
+70450's tree with Arcane Wrath in the Arcane tab (55 nodes; its own icon); a 70009 Druid
 build with node 104951 (King of the Jungle) at 3/3 opens on 70009 unchanged and is invalid
 on the product dataset; a 70245 Warrior build with Toughness 5/5 opens on 70245 unchanged
 and is invalid on the product dataset; a 70245 Boundless Rage 3/3 build validates on the
@@ -1413,7 +1413,7 @@ builds resolve their own datasets; unbundled builds (70170, 70334, 70425) fail t
 read nothing else. `ProductDatasetContractTest` (shared JVM): the committed 70450
 documents, manifest, visuals and tooltips pass the strict readers and repository identity
 checks, the Kotlin engine supports them exactly like 70009 (only Rogue Venom unresolved,
-the sectionless Mage tree included), and 70374's sidecars placed under 70450 fail with a
+Mage's Arcane Wrath included), and 70374's sidecars placed under 70450 fail with a
 typed `BuildMismatch`.
 `BundledBaselineTest` loads every bundle through the real Compose resource pipeline.
 

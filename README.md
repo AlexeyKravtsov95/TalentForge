@@ -29,8 +29,8 @@ python scripts/check_product_freshness.py     # JSON on stdout; exit 0 CURRENT, 
 python -m talent_data fetch --game forever --build 1.60.1.70450
 python -m talent_data normalize --game forever --build 1.60.1.70450 --class all
 python -m talent_data diff --game forever --class all --from 1.60.1.70374 --to 1.60.1.70450
-# -> 9 classes, 0 errors, 49 warnings (the 12 investigated ones + 37 on Mage, whose tree
-#    publishes no sections); 1 added / 1 removed / 98 changed
+# -> 9 classes, 0 errors, 13 warnings (the 12 investigated ones + SECTION_NOT_GATE_COUNTED
+#    for Mage Arcane Wrath); 1 added / 1 removed / 65 changed
 #    (the same commands with 1.60.1.70374 / --from 1.60.1.70338 reproduce M5.DATA.3's)
 
 # Reproduce the verified reference baseline
@@ -55,8 +55,8 @@ baseline**: the live allocation evidence and the M2 conformance vectors are pinn
 and builds saved on it keep opening on it. Each is committed with its own icons and
 descriptions and bundled in the app. None is a claim about the build the live realms run
 (wago.tools cannot say); `scripts/check_product_freshness.py` reports whether a newer
-publishable build exists. Selection evidence, the 70374 → 70450 diff, the Mage tree that
-publishes no sections, and the validity limits:
+publishable build exists. Selection evidence, the 70374 → 70450 diff, the Mage talent
+Arcane Wrath that no gate counts, and the validity limits:
 [docs/forever-dataset.md](docs/forever-dataset.md#product-dataset-160170450-m5data4).
 Commands below that name `1.60.1.70009` reproduce or check the reference baseline; the
 same commands with `1.60.1.70450` do it for the product dataset.
@@ -215,8 +215,7 @@ rank, CURRENT / NEXT RANK, rank 1 as the prospective effect) from a strict
 [docs/mobile-architecture.md](docs/mobile-architecture.md#talent-descriptions-m5v2).
 **M5.DATA / M5.DATA.2 / M5.DATA.3 / M5.DATA.4** bundle the product dataset 1.60.1.70450
 next to the unchanged 1.60.1.70374, 1.60.1.70338 and 1.60.1.70245 (earlier product
-datasets) and 1.60.1.70009 (reference baseline): New Build creates drafts on 70450 (its
-Mage tree, which publishes no sections, opens on one whole-tree canvas without tabs), every
+datasets) and 1.60.1.70009 (reference baseline): New Build creates drafts on 70450, every
 saved build opens on its own recorded build (no migration, even where two builds carry
 identical talent rows), an unbundled build fails with a typed error — see
 [docs/mobile-architecture.md](docs/mobile-architecture.md#bundled-datasets-product-and-reference-m5data).

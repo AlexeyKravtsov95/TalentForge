@@ -20,9 +20,9 @@ the live realms run. The RC.3 re-check within 24 h of the tag is still required.
 
 | Check | Result |
 | --- | --- |
-| `ruff check .` / `ruff format --check .` | PASS / 207 files formatted |
+| `ruff check .` / `ruff format --check .` | PASS / PASS |
 | `mypy` | PASS (72 source files) |
-| `pytest` | 1183 passed, 11 deselected |
+| `pytest` | 1185 passed, 11 deselected |
 | `pytest -m integration` (live wago.tools) | 11 passed |
 | `manifest --expect-complete`, `visuals check`, `tooltips check`, `localization check` × 5 bundled builds | all PASS |
 | `allocation replay --build 1.60.1.70009 --all` | 53/53 |
@@ -37,7 +37,7 @@ the live realms run. The RC.3 re-check within 24 h of the tag is still required.
 | `:composeApp:linkDebugFrameworkIosSimulatorArm64` | PASS |
 | `iosApp` simulator `xcodebuild` (Debug, `CODE_SIGNING_ALLOWED=NO`) | BUILD SUCCEEDED |
 | `:composeApp:assembleDebug` / `:composeApp:assembleRelease` | PASS / PASS (release unsigned; signing unchanged) |
-| `:composeApp:lintRelease` | PASS: 0 errors, 9 warnings — the same 9 pre-existing warnings as M5.RC.2b |
+| `:composeApp:lintRelease` (analysis rerun) | PASS: 0 errors, 9 warnings — the same 9 pre-existing warnings as M5.RC.2b |
 
 ## iOS simulator (iPhone 17 Pro, iOS 26.4)
 
@@ -48,8 +48,8 @@ Debug build of the M5.DATA.4 branch, installed over the existing app — its sav
 | [01](ios-simulator/01-home-existing-builds.png) | the four builds saved before the refresh, listed with their points |
 | [02](ios-simulator/02-saved-paladin-51-opens.png) | a saved Paladin 51/51 build opens unchanged (Holy 15 / Protection 5 / Retribution 31) |
 | [03](ios-simulator/03-new-build-nine-classes.png) | New Build lists all nine classes of the product manifest ("talent data 1.60.1") |
-| [04](ios-simulator/04-mage-70450-one-canvas.png) | a new Mage build on 70450: one whole-tree canvas, no tabs (Missile Barrage now in row 0) |
-| [05](ios-simulator/05-arcane-wrath-inspector.png) | Arcane Wrath selected: 0/1, "Requires Arcane Blast 1/1", **Show** |
+| [04](ios-simulator/04-mage-70450-arcane-tab.png) | a Mage build on 70450: Arcane / Fire / Frost tabs; Arcane Wrath in the Arcane tab (row 3, column 3), Missile Barrage now in row 0 |
+| [05](ios-simulator/05-arcane-wrath-inspector.png) | Arcane Wrath selected: 0/1, "Requires Arcane Blast 1/1" (no points gate, as in the client rows), **Show** |
 
 Not checked by hand: a physical device, and Russian on the device (the RU text paths are
 covered by the localization repository and UI tests).

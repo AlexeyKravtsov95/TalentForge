@@ -9,9 +9,10 @@ Committed builds have distinct roles (M5.DATA, M5.DATA.2, M5.DATA.3, M5.DATA.4):
 
 * `1.60.1.70450` is the **product dataset** — the newest Forever build wago.tools listed
   on 2026-10-17 with `is_bgdl` explicitly `false`; the mobile app creates new builds on it.
-  It went through the same unchanged pipeline (§9 commands with `--build 1.60.1.70450`); its
-  Mage tree publishes no sections (`SECTIONS_UNRESOLVED`, published as is by owner
-  decision — `docs/forever-dataset.md`).
+  It went through the same pipeline (§9 commands with `--build 1.60.1.70450`), extended by
+  one fail-closed tab rule: a node no gate counts (Mage Arcane Wrath) joins the tab whose
+  columns contain it, flagged `SECTION_NOT_GATE_COUNTED` (owner decision —
+  `docs/forever-dataset.md`).
 * `1.60.1.70374` (M5.DATA.3; talent rows equal to 70338's, yet its own dataset),
   `1.60.1.70338` (M5.DATA.2) and `1.60.1.70245` (M5.DATA), earlier product datasets, are
   kept unchanged for the builds saved on them.
@@ -364,7 +365,7 @@ ValidationIssue(
 
 Current warning codes: `OFF_GRID_NODE`, `DUPLICATE_SPELL_IDENTITY`,
 `SUFFICIENT_PREREQUISITE_CYCLE`, `INCOMPLETE_RANK_CURVE`, `UNRESOLVED_RANK_CURVE`,
-`SHARED_GRID_CELL`, `SECTIONS_UNRESOLVED` (plus `UNRESOLVED_CONDITION`, currently produced
+`SHARED_GRID_CELL`, `SECTIONS_UNRESOLVED`, `SECTION_NOT_GATE_COUNTED` (plus `UNRESOLVED_CONDITION`, currently produced
 by no real Forever data).
 
 ### 6c. Dataset manifest (M1)

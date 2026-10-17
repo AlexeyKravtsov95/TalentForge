@@ -44,7 +44,7 @@ Venom is unsupported, and the invariants run on all nine 70374 classes
 EDGE-ACTIVE / EDGE-SUF remain hypotheses.
 
 **M5.DATA.4 product dataset 1.60.1.70450.** A real balance patch (1 node added, 1 removed,
-98 changed against 70374), yet its allocation inventory (§3) differs from 70374's only in
+65 changed against 70374), yet its allocation inventory (§3) differs from 70374's only in
 the Priest, Mage and Warlock rows, in counts: no new node type, entry type, node flag, edge
 type, condition shape, currency or cost link, and the number of conditions per tree is
 unchanged. The new Mage node Arcane Wrath 113627 has no points gate (only a Sufficient

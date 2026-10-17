@@ -172,14 +172,15 @@ The device-level checks behind that statement ran on an Android emulator only (s
 **M5.DATA.4 resolution (2026-10-17).**
 - Freshness before the refresh: **OUTDATED** at 2026-10-17T18:40:34Z — by then `1.60.1.70450`
   (`wow_classic_beta`, created 2026-10-16 22:29:05, `isBgdl=false`) had superseded `70425`.
-- `70450` was normalized, diffed against `70374` (1 added, 1 removed, 98 changed nodes in
+- `70450` was normalized, diffed against `70374` (1 added, 1 removed, 65 changed nodes in
   eight classes; Rogue unchanged), published with icons, descriptions and all nine ruRU
   overlays, and bundled. `PRODUCT_BUNDLE` = `1.60.1.70450`; `1.60.1.70009`, `70245`, `70338`
   and `70374` stay bundled and unchanged, and saved builds keep opening on their own build.
   `70425` carries the same talent data as `70450` and is not committed.
-- One investigated anomaly, published by owner decision: the 70450 Mage tree has no talent
-  tabs (new node Arcane Wrath belongs to no gate group); the app shows it on one whole-tree
-  canvas. Details: [forever-dataset.md](../forever-dataset.md#the-mage-tree-has-no-derivable-tabs-sections_unresolved-160170425).
+- One investigated anomaly: the new Mage talent Arcane Wrath belongs to no gate group. By
+  owner decision it is shown in the Arcane tab by its column (new warning
+  `SECTION_NOT_GATE_COUNTED`), and its gates stay as the client rows say. Details:
+  [forever-dataset.md](../forever-dataset.md#arcane-wrath-a-node-no-gate-counts-section_not_gate_counted-160170425).
 - Freshness after integration: **CURRENT** at 2026-10-17T19:10:13Z (exit 0).
 - Limits unchanged: "publishable" is not "live"; the product stays `wow_classic_beta`; the
   `wowf` product still lists only `1.60.1.70245` and is not consulted.

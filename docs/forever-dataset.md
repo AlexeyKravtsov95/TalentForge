@@ -267,11 +267,10 @@ python -m talent_data localization fetch|report|normalize|check --build 1.60.1.7
 python scripts/extract_fixtures.py --build 1.60.1.70450 --classes all   # + --tooltips, --localization ruRU
 ```
 
-* 9 classes, 469 nodes, **0 errors, 49 warnings**: the 12 investigated warnings of the
-  reference baseline (same codes, nodes and counts) plus **37 on Mage**
-  (`SECTIONS_UNRESOLVED` ×1, `OFF_GRID_NODE` ×36), all from one cause — investigated
-  [below](#the-mage-tree-has-no-derivable-tabs-sections_unresolved-160170425) and published
-  by owner decision. The manifest re-validates.
+* 9 classes, 469 nodes, **0 errors, 13 warnings**: the 12 investigated warnings of the
+  reference baseline (same codes, nodes and counts) plus **one on Mage**,
+  `SECTION_NOT_GATE_COUNTED` for Arcane Wrath — investigated
+  [below](#arcane-wrath-a-node-no-gate-counts-section_not_gate_counted-160170425). The manifest re-validates.
 * Real DB2, tooltip-table and enUS/ruRU fixtures of 70450 are committed
   (`tests/fixtures/{db2,tooltips,localization}/forever/1.60.1.70450/`);
   `tests/unit/test_product_build.py` regenerates the documents, icon sidecars, descriptions
@@ -286,7 +285,7 @@ python scripts/extract_fixtures.py --build 1.60.1.70450 --classes all   # + --to
 | Rogue | 1111 | 53 | 8 | 139 | 3 | 51 | 0 | 1 × INCOMPLETE_RANK_CURVE, 1 × UNRESOLVED_CONDITION |
 | Priest | 1114 | **53** | 8 | 153 | 3 | 51 | 0 | 1 × OFF_GRID_NODE, 1 × DUPLICATE_SPELL_IDENTITY |
 | Shaman | 1082 | 50 | 7 | 148 | 3 | 51 | 0 | — |
-| Mage | 1112 | **55** | **7** | **148** | **0** | 51 | 0 | **1 × SECTIONS_UNRESOLVED, 36 × OFF_GRID_NODE** |
+| Mage | 1112 | **55** | **7** | **148** | 3 | 51 | 0 | **1 × SECTION_NOT_GATE_COUNTED** |
 | Warlock | 1116 | 52 | 8 | **146** | 3 | 51 | 0 | 2 × OFF_GRID_NODE |
 | Druid | 1089 | 52 | 11 | 148 | 3 | 51 | 0 | — |
 
@@ -296,13 +295,12 @@ unchanged.
 ### What changed 70374 → 70450
 
 `artifacts/diff/forever-all-1.60.1.70374-1.60.1.70450.json` (+ one file per class):
-**1 added, 1 removed, 98 changed nodes** — 54 of the Mage changes are `sectionChanged`
-(every Mage node lost its section, see below).
+**1 added, 1 removed, 65 changed nodes**.
 
 * **Mage** (the Arcane layout):
-  * added: **Arcane Wrath** 113627 (max 1) at row 3, column 3 of the Arcane columns —
+  * added: **Arcane Wrath** 113627 (max 1) at row 3, column 3 of the Arcane tab —
     Missile Barrage's former cell — with a sufficient prerequisite on Arcane Blast and **no
-    points gate**;
+    points gate** ([below](#arcane-wrath-a-node-no-gate-counts-section_not_gate_counted-160170425));
   * **Missile Barrage** 105802 moved row 3 → row 0, lost its 15-point gate, max rank 1 → 2
     (20/40 % now resolved per rank); the 5/10/15-point Arcane gates count it (3 → 4, 7 → 8,
     10 → 11 nodes);
@@ -343,45 +341,48 @@ Improved Fade on 70374, Dark Inspiration on 70450). A saved build always opens o
 build and is never migrated (`test_a_previous_product_build_*`,
 `DatasetVersionCompatibilityTest`).
 
-### The Mage tree has no derivable tabs (SECTIONS_UNRESOLVED, 1.60.1.70425+)
+### Arcane Wrath: a node no gate counts (SECTION_NOT_GATE_COUNTED, 1.60.1.70425+)
 
 **Cause (client rows, `tests/fixtures/db2/forever/1.60.1.70450/mage/`).** The normalizer
-derives the three classic tabs from the node groups the tier gates count, and accepts them
-only if they partition the tree (§ *Known unresolved semantics*: tab names do not exist in
-client data either). Arcane Wrath 113627 has four `TraitNodeGroupXTraitNode` rows — groups
-12862, 12863, 12864, 12865 (`_Index` 2, 12, 12, 12) — and **each of these groups has no other
-member and no condition**: no `TraitCond`, `TraitNodeGroupXTraitCond` or
+derives the three classic tabs from the node groups the tier gates count (tab names do not
+exist in the trait tables). Arcane Wrath 113627 has four `TraitNodeGroupXTraitNode` rows —
+groups 12862, 12863, 12864, 12865 (`_Index` 2, 12, 12, 12) — and **each of these groups has
+no other member and no condition**: no `TraitCond`, `TraitNodeGroupXTraitCond` or
 `TraitNodeXTraitCond` row refers to them or to the node. Every other Mage node keeps its
-70374 memberships (`TraitCond` and `TraitNodeGroupXTraitCond` are byte-identical to 70374's).
-So the three maximal gate groups (18 Arcane, 17 Fire, 19 Frost nodes) are disjoint and cover
-every node **except** Arcane Wrath; the partition fails and `sections` stays empty, as the
-contract allows. A row-3 peer such as Arcane Meditation 105803 is in four groups too — its
-row group 11586 and the cumulative 30/25/20-point groups 11582/12730/12731, `_Index`
-3/13/13/13 — the same shape as Arcane Wrath's rows, but with the shared group ids.
+70374 memberships (`TraitCond` and `TraitNodeGroupXTraitCond` are byte-identical to 70374's),
+so the three maximal gate groups (18 Arcane, 17 Fire, 19 Frost nodes) are disjoint and cover
+every node except Arcane Wrath. A row-3 peer such as Arcane Meditation 105803 is in four
+groups too — its row group 11586 and the cumulative 30/25/20-point groups
+11582/12730/12731, `_Index` 3/13/13/13 — the same shape as Arcane Wrath's rows, but with the
+shared group ids. Whether Arcane Wrath's rows are an authoring slip or intended cannot be
+decided from DB2 rows, and no 70425/70450 client was observed.
 
-**Consequences, all mechanical and pinned by tests.**
+**Tab: by its column (owner decision, 2026-10-17).** Arcane Wrath stands in the Arcane
+columns (x = 2820; the Arcane group spans x 1020…2820, Fire 5020…6820, Frost 9080…10880), the
+panel the client draws it in, and Wowhead's Forever calculator — datamined from the same
+tables (spell 1326079, definition 145958) — lists it in the Arcane tree. The normalizer
+therefore resolves tabs as before and then places **a node that no gate counts** in the
+**one** tab whose column range contains its raw x
+(`normalization.normalizer._resolve_sections`). The rule is fail-closed: an x inside no
+tab's range or inside more than one leaves the tree without sections
+(`SECTIONS_UNRESOLVED`), and nothing else (prerequisites, names) is consulted. It changes no
+earlier build (every node of 70009…70374 is counted by a gate; their documents regenerate
+byte for byte). The validator flags every such node as **`SECTION_NOT_GATE_COUNTED`** — a
+new, investigated warning code — so the placement is never mistaken for a gate fact.
 
-* `SECTIONS_UNRESOLVED` ×1 and no node has a `sectionIndex`.
-* `OFF_GRID_NODE` ×36: without tabs the grid is fitted over the whole tree instead of per
-  tab, so the 18 Arcane nodes and Arcane Wrath sit 260 units left of it and the 17 Fire
-  nodes 140 units right; the 19 Frost nodes land on it. Raw `x`/`y` stay authoritative.
-* The diff reports `sectionsChanged` 3 → 0 and `sectionChanged` on all 54 kept nodes.
-* Literal allocation semantics: Arcane Wrath has no unlock requirement (only its sufficient
-  prerequisite Arcane Blast, itself behind the 10-point Arcane gate), and its point counts
-  toward no Arcane gate. The engines implement exactly that; no rule was added for it.
-* The app shows the 70450 Mage tree on **one whole-tree canvas** — the existing fail-safe
-  `Unsectioned(NoSections)` path of `buildTalentTreeSections`: no tabs, no specialization
-  names, every node and connector on the canvas, no hit-target overlap at any zoom
-  (`TalentTreeSectionsTest`). Every other class and every older Mage tree keeps its tabs.
+**Gates stay literal.** Arcane Wrath has no unlock requirement (only its sufficient
+prerequisite Arcane Blast, itself behind the 10-point Arcane gate), and its point counts
+toward no Arcane gate; the engines read exactly that. Wowhead shows a 15-point requirement
+for it, but Wowhead's `requiredPoints` equals row × 5 for all 466 nodes it lists — the
+classic convention, not the client's condition rows (every other node agrees with the
+client gates) — so it is no evidence for a gate, and none is added. One visible consequence
+in the app: the Arcane tab's point counter sums the tab's nodes, so after taking Arcane Wrath
+it is one point above what the Arcane gates count.
 
-**What is not established.** Whether this is an authoring slip (the four rows look like
-memberships that were meant to point at the shared groups) or intended (an ungated talent
-outside the tab totals) cannot be decided from DB2 rows, and no 70425/70450 client was
-observed. The pipeline does not guess a section by geometry or flatten the rows into a gate.
-**Owner decision (2026-10-17):** publish 70450 as the client data stands. If a later build
-puts 113627 into the gate groups, the tabs return through the unchanged pipeline (and this
-expected warning set changes, failing `test_warnings_are_exactly_the_investigated_set` until
-it is reviewed).
+**Old classic tables.** The Forever client still ships `TalentTab` (Arcane 81 / Fire 41 /
+Frost 61, with names) and `Talent` (432 rows), but `Talent` is the classic layout: it covers
+351 of the 469 70450 nodes, none of the Forever-new talents, and places some kept ones
+differently, so it is no evidence for Arcane Wrath's tab either.
 
 ### Allocation compatibility
 
@@ -945,9 +946,9 @@ python scripts/extract_fixtures.py --build 1.60.1.70338 --classes all   # + --to
   the source proves the per-group/node/entry cost tables absent (present or unknown fails
   closed); still no cost field in schema v1.
 * Tab names (Arms/Fury/Protection…) do not exist in client data; `section.name` is null.
-  Since 1.60.1.70425 the Mage tree has no derivable tabs at all (Arcane Wrath is in no gate
-  group — [above](#the-mage-tree-has-no-derivable-tabs-sections_unresolved-160170425));
-  `sections` stays empty rather than guessed.
+  Since 1.60.1.70425 one node, Mage Arcane Wrath, is in no gate group; it joins the tab whose
+  columns contain it, flagged `SECTION_NOT_GATE_COUNTED`
+  ([above](#arcane-wrath-a-node-no-gate-counts-section_not_gate_counted-160170425)).
 * Tooltips stay raw templates in `talent-data.v1`; per-rank numbers exist for curve-backed
   effects only. Rendered descriptions (M5.V2) live in the `talent-tooltips.v1` sidecar.
 * Whether the mis-placed duplicate nodes (Hunter/Priest) are drawn by the client is
