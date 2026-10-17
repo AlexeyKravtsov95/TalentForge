@@ -1,0 +1,4003 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "clientBuild": "1.60.1.70450",
+  "classToken": "PALADIN",
+  "talentDataContentHash": "sha256:4c22ad4a9022d6c7f60de6310523a809a017462eea675f215d101220150a4da0",
+  "entries": [
+    {
+      "entryId": 130014,
+      "definitionId": 134815,
+      "spellId": 1310911,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Applies Light's Vigil to the target for "
+            },
+            {
+              "kind": "value",
+              "text": "30 sec"
+            },
+            {
+              "kind": "text",
+              "text": ". Your next Holy Shock cast on them triggers no cooldown and causes enemy targets to suffer "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " Holy damage and refund "
+            },
+            {
+              "kind": "value",
+              "text": "75%"
+            },
+            {
+              "kind": "text",
+              "text": " of Light's Vigil's Mana cost, or allied targets to heal their party for "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": ". You may only have one Light's Vigil active per party."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "cross-spell-effect-value",
+              "classification": "contextDependent",
+              "fragment": "$1310914s1",
+              "token": "$1310914s1",
+              "reason": "spell 1310914 effect 0: EffectBonusCoefficient=0.429 on a damage/healing/absorb amount, the amount includes the caster's spell power"
+            },
+            {
+              "category": "cross-spell-effect-value",
+              "classification": "contextDependent",
+              "fragment": "$1310912s1",
+              "token": "$1310912s1",
+              "reason": "spell 1310912 effect 0: EffectRealPointsPerLevel=1.2, the amount scales with the caster's level"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "entryId": 130015,
+      "definitionId": 134816,
+      "spellId": 5923,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike chance of your Holy Shock and Holy Strike spells by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": ", and all other spells by "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike chance of your Holy Shock and Holy Strike spells by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": ", and all other spells by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike chance of your Holy Shock and Holy Strike spells by "
+            },
+            {
+              "kind": "value",
+              "text": "9%"
+            },
+            {
+              "kind": "text",
+              "text": ", and all other spells by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike chance of your Holy Shock and Holy Strike spells by "
+            },
+            {
+              "kind": "value",
+              "text": "12%"
+            },
+            {
+              "kind": "text",
+              "text": ", and all other spells by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike chance of your Holy Shock and Holy Strike spells by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": ", and all other spells by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130017,
+      "definitionId": 134818,
+      "spellId": 1311606,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Blasts the target with Holy energy, causing "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " Holy damage to an enemy, or "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " healing to an ally."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "cross-spell-effect-value",
+              "classification": "contextDependent",
+              "fragment": "$1311604s1",
+              "token": "$1311604s1",
+              "reason": "spell 1311604 effect 0: EffectBonusCoefficient=0.429 on a damage/healing/absorb amount, the amount includes the caster's spell power"
+            },
+            {
+              "category": "cross-spell-effect-value",
+              "classification": "contextDependent",
+              "fragment": "$1311605s1",
+              "token": "$1311605s1",
+              "reason": "spell 1311605 effect 0: EffectBonusCoefficient=0.429 on a damage/healing/absorb amount, the amount includes the caster's spell power"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "entryId": 130018,
+      "definitionId": 134819,
+      "spellId": 1310904,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Improves your chance to hit with Holy spells by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Improves your chance to hit with Holy spells by "
+            },
+            {
+              "kind": "value",
+              "text": "12%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Improves your chance to hit with Holy spells by "
+            },
+            {
+              "kind": "value",
+              "text": "18%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130019,
+      "definitionId": 134820,
+      "spellId": 20216,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "When activated, gives your next Flash of Light, Holy Light, or Holy Shock spell a "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " critical effect chance."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130021,
+      "definitionId": 134822,
+      "spellId": 429144,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the mana cost of your Cleanse and Purify spells by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " and reduces the cooldown of your Exorcism and Holy Wrath spells by "
+            },
+            {
+              "kind": "value",
+              "text": "17%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the mana cost of your Cleanse and Purify spells by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " and reduces the cooldown of your Exorcism and Holy Wrath spells by "
+            },
+            {
+              "kind": "value",
+              "text": "33%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130023,
+      "definitionId": 134824,
+      "spellId": 20210,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "After getting a critical effect from your Flash of Light, Holy Light, Light's Vigil, or Holy Shock heal spell you have a "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to gain Mana equal to "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " of the base cost of the spell."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "After getting a critical effect from your Flash of Light, Holy Light, Light's Vigil, or Holy Shock heal spell you have a "
+            },
+            {
+              "kind": "value",
+              "text": "40%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to gain Mana equal to "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " of the base cost of the spell."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "After getting a critical effect from your Flash of Light, Holy Light, Light's Vigil, or Holy Shock heal spell you have a "
+            },
+            {
+              "kind": "value",
+              "text": "60%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to gain Mana equal to "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " of the base cost of the spell."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "After getting a critical effect from your Flash of Light, Holy Light, Light's Vigil, or Holy Shock heal spell you have a "
+            },
+            {
+              "kind": "value",
+              "text": "80%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to gain Mana equal to "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " of the base cost of the spell."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "After getting a critical effect from your Flash of Light, Holy Light, Light's Vigil, or Holy Shock heal spell you have a "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to gain Mana equal to "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " of the base cost of the spell."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130024,
+      "definitionId": 134825,
+      "spellId": 1310897,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Grants you immunity to Silence and Interrupt effects for "
+            },
+            {
+              "kind": "value",
+              "text": "6 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130025,
+      "definitionId": 134826,
+      "spellId": 9453,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the duration of Fear and Disorient effects on you by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the duration of Fear and Disorient effects on you by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130026,
+      "definitionId": 134827,
+      "spellId": 20257,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your total Intellect by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your total Intellect by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your total Intellect by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your total Intellect by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your total Intellect by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130027,
+      "definitionId": 134828,
+      "spellId": 20237,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the amount healed by your Holy Light, Flash of Light, and Holy Shock spells by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the amount healed by your Holy Light, Flash of Light, and Holy Shock spells by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the amount healed by your Holy Light, Flash of Light, and Holy Shock spells by "
+            },
+            {
+              "kind": "value",
+              "text": "12%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130028,
+      "definitionId": 134829,
+      "spellId": 20224,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your Seals and Judgements by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your Seals and Judgements by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your Seals and Judgements by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130029,
+      "definitionId": 134830,
+      "spellId": 20205,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Flash of Light, Holy Light, and Light's Vigil spells a "
+            },
+            {
+              "kind": "value",
+              "text": "35%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to not lose casting time when you take damage."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Flash of Light, Holy Light, and Light's Vigil spells a "
+            },
+            {
+              "kind": "value",
+              "text": "70%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to not lose casting time when you take damage."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130349,
+      "definitionId": 135150,
+      "spellId": 1311015,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "When activated, this ability grants you an absorb shield equal to "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " of your maximum health for "
+            },
+            {
+              "kind": "value",
+              "text": "8 sec"
+            },
+            {
+              "kind": "text",
+              "text": ". Applies Forbearance for "
+            },
+            {
+              "kind": "value",
+              "text": "1 min"
+            },
+            {
+              "kind": "text",
+              "text": ". Cannot be cast while Forbearance is active."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130350,
+      "definitionId": 135151,
+      "spellId": 20127,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Damaging melee attacks against you have a "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to increase your chance to block by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": ". Lasts "
+            },
+            {
+              "kind": "value",
+              "text": "10 sec"
+            },
+            {
+              "kind": "text",
+              "text": " or "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " blocks."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Damaging melee attacks against you have a "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to increase your chance to block by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": ". Lasts "
+            },
+            {
+              "kind": "value",
+              "text": "10 sec"
+            },
+            {
+              "kind": "text",
+              "text": " or "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " blocks."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Damaging melee attacks against you have a "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to increase your chance to block by "
+            },
+            {
+              "kind": "value",
+              "text": "12%"
+            },
+            {
+              "kind": "text",
+              "text": ". Lasts "
+            },
+            {
+              "kind": "value",
+              "text": "10 sec"
+            },
+            {
+              "kind": "text",
+              "text": " or "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " blocks."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Damaging melee attacks against you have a "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to increase your chance to block by "
+            },
+            {
+              "kind": "value",
+              "text": "16%"
+            },
+            {
+              "kind": "text",
+              "text": ". Lasts "
+            },
+            {
+              "kind": "value",
+              "text": "10 sec"
+            },
+            {
+              "kind": "text",
+              "text": " or "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " blocks."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Damaging melee attacks against you have a "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to increase your chance to block by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": ". Lasts "
+            },
+            {
+              "kind": "value",
+              "text": "10 sec"
+            },
+            {
+              "kind": "text",
+              "text": " or "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " blocks."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130351,
+      "definitionId": 135152,
+      "spellId": 20177,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": " chance after Blocking and a "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " chance after receiving a non-periodic critical strike to gain an extra attack. Stores up to "
+            },
+            {
+              "kind": "value",
+              "text": "4"
+            },
+            {
+              "kind": "text",
+              "text": " extra attacks. Cannot occur from Blocks more than once every "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "named-variable",
+              "classification": "unsupported",
+              "fragment": "${$proccooldown}.1",
+              "token": "$proccooldown",
+              "reason": "named variable $proccooldown has no source in the build's DB2 tables (a client-side value); SpellAuraOptions.ProcCategoryRecovery is a plausible source but is not proven to be what the client substitutes"
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "16%"
+            },
+            {
+              "kind": "text",
+              "text": " chance after Blocking and a "
+            },
+            {
+              "kind": "value",
+              "text": "40%"
+            },
+            {
+              "kind": "text",
+              "text": " chance after receiving a non-periodic critical strike to gain an extra attack. Stores up to "
+            },
+            {
+              "kind": "value",
+              "text": "4"
+            },
+            {
+              "kind": "text",
+              "text": " extra attacks. Cannot occur from Blocks more than once every "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "named-variable",
+              "classification": "unsupported",
+              "fragment": "${$proccooldown}.1",
+              "token": "$proccooldown",
+              "reason": "named variable $proccooldown has no source in the build's DB2 tables (a client-side value); SpellAuraOptions.ProcCategoryRecovery is a plausible source but is not proven to be what the client substitutes"
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "24%"
+            },
+            {
+              "kind": "text",
+              "text": " chance after Blocking and a "
+            },
+            {
+              "kind": "value",
+              "text": "60%"
+            },
+            {
+              "kind": "text",
+              "text": " chance after receiving a non-periodic critical strike to gain an extra attack. Stores up to "
+            },
+            {
+              "kind": "value",
+              "text": "4"
+            },
+            {
+              "kind": "text",
+              "text": " extra attacks. Cannot occur from Blocks more than once every "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "named-variable",
+              "classification": "unsupported",
+              "fragment": "${$proccooldown}.1",
+              "token": "$proccooldown",
+              "reason": "named variable $proccooldown has no source in the build's DB2 tables (a client-side value); SpellAuraOptions.ProcCategoryRecovery is a plausible source but is not proven to be what the client substitutes"
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "32%"
+            },
+            {
+              "kind": "text",
+              "text": " chance after Blocking and a "
+            },
+            {
+              "kind": "value",
+              "text": "80%"
+            },
+            {
+              "kind": "text",
+              "text": " chance after receiving a non-periodic critical strike to gain an extra attack. Stores up to "
+            },
+            {
+              "kind": "value",
+              "text": "4"
+            },
+            {
+              "kind": "text",
+              "text": " extra attacks. Cannot occur from Blocks more than once every "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "named-variable",
+              "classification": "unsupported",
+              "fragment": "${$proccooldown}.1",
+              "token": "$proccooldown",
+              "reason": "named variable $proccooldown has no source in the build's DB2 tables (a client-side value); SpellAuraOptions.ProcCategoryRecovery is a plausible source but is not proven to be what the client substitutes"
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "40%"
+            },
+            {
+              "kind": "text",
+              "text": " chance after Blocking and a "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " chance after receiving a non-periodic critical strike to gain an extra attack. Stores up to "
+            },
+            {
+              "kind": "value",
+              "text": "4"
+            },
+            {
+              "kind": "text",
+              "text": " extra attacks. Cannot occur from Blocks more than once every "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "named-variable",
+              "classification": "unsupported",
+              "fragment": "${$proccooldown}.1",
+              "token": "$proccooldown",
+              "reason": "named variable $proccooldown has no source in the build's DB2 tables (a client-side value); SpellAuraOptions.ProcCategoryRecovery is a plausible source but is not proven to be what the client substitutes"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "entryId": 130352,
+      "definitionId": 135153,
+      "spellId": 20925,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases chance to block by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "10 sec"
+            },
+            {
+              "kind": "text",
+              "text": ", and deals "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " Holy damage for each attack blocked while active. Damage caused by Holy Shield causes 20% additional threat. Each block expends a charge. "
+            },
+            {
+              "kind": "value",
+              "text": "4"
+            },
+            {
+              "kind": "text",
+              "text": " charges."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "local-effect-value",
+              "classification": "contextDependent",
+              "fragment": "$s2",
+              "token": "$s2",
+              "reason": "spell 20925 effect 1: EffectBonusCoefficient=0.08 on a value, the amount includes the caster's spell power"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "entryId": 130353,
+      "definitionId": 135154,
+      "spellId": 20196,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage you deal with one-handed melee weapons by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage you deal with one-handed melee weapons by "
+            },
+            {
+              "kind": "value",
+              "text": "7%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage you deal with one-handed melee weapons by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130354,
+      "definitionId": 135155,
+      "spellId": 20143,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your armor value from items by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your armor value from items by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your armor value from items by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your armor value from items by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your armor value from items by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130356,
+      "definitionId": 135157,
+      "spellId": 1224697,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your total Stamina by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": " and reduces the cooldown of your Divine Shield, Divine Protection, and Templar's Bulwark spells by "
+            },
+            {
+              "kind": "value",
+              "text": "30"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your total Stamina by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": " and reduces the cooldown of your Divine Shield, Divine Protection, and Templar's Bulwark spells by "
+            },
+            {
+              "kind": "value",
+              "text": "60"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130357,
+      "definitionId": 135158,
+      "spellId": 20487,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Decreases the cooldown of your Hammer of Justice spell by "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Decreases the cooldown of your Hammer of Justice spell by "
+            },
+            {
+              "kind": "value",
+              "text": "10"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Decreases the cooldown of your Hammer of Justice spell by "
+            },
+            {
+              "kind": "value",
+              "text": "15"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130358,
+      "definitionId": 135159,
+      "spellId": 20468,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "While Righteous Fury is active, all damage taken is reduced by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "While Righteous Fury is active, all damage taken is reduced by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "While Righteous Fury is active, all damage taken is reduced by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130360,
+      "definitionId": 135161,
+      "spellId": 20096,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Defense Skill by "
+            },
+            {
+              "kind": "value",
+              "text": "4"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Defense Skill by "
+            },
+            {
+              "kind": "value",
+              "text": "8"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Defense Skill by "
+            },
+            {
+              "kind": "value",
+              "text": "12"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Defense Skill by "
+            },
+            {
+              "kind": "value",
+              "text": "16"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Defense Skill by "
+            },
+            {
+              "kind": "value",
+              "text": "20"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130361,
+      "definitionId": 135162,
+      "spellId": 20174,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown of your Blessing of Protection by "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": " min and increases the duration of your Blessing of Freedom by "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown of your Blessing of Protection by "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": " min and increases the duration of your Blessing of Freedom by "
+            },
+            {
+              "kind": "value",
+              "text": "6"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130362,
+      "definitionId": 135163,
+      "spellId": 20189,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Improves your chance to hit by "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Improves your chance to hit by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Improves your chance to hit by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130363,
+      "definitionId": 135164,
+      "spellId": 20262,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Strength by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Strength by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Strength by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Strength by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Strength by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130421,
+      "definitionId": 135222,
+      "spellId": 1310735,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Mana cost of your Seal spells by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": ", and when you replace your Seal of Command, Seal of Righteousness, Seal of Fury, or Seal of Justice with a different Seal, you gain an Echo of that Seal. Your next melee attack applies the replaced Seal's effects, consuming the Echo."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130422,
+      "definitionId": 135223,
+      "spellId": 20049,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Physical and Holy damage dealt by "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "30 sec"
+            },
+            {
+              "kind": "text",
+              "text": " after landing a non-periodic critical strike. Stacks up to "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": " times."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Physical and Holy damage dealt by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "30 sec"
+            },
+            {
+              "kind": "text",
+              "text": " after landing a non-periodic critical strike. Stacks up to "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": " times."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Physical and Holy damage dealt by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "30 sec"
+            },
+            {
+              "kind": "text",
+              "text": " after landing a non-periodic critical strike. Stacks up to "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": " times."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130423,
+      "definitionId": 135224,
+      "spellId": 20066,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Puts the enemy target in a state of meditation, incapacitating them for up to "
+            },
+            {
+              "kind": "value",
+              "text": "6 sec"
+            },
+            {
+              "kind": "text",
+              "text": ". Any damage caused will awaken the target. Only works against Humanoids."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130425,
+      "definitionId": 135226,
+      "spellId": 20375,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives the Paladin a chance to deal additional Holy damage equal to "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": "% of normal weapon damage. Only one Seal can be active on the Paladin at any one time. Lasts "
+            },
+            {
+              "kind": "value",
+              "text": "30 sec"
+            },
+            {
+              "kind": "text",
+              "text": ".\n\nUnleashing this Seal's energy will judge an enemy, instantly causing "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " Holy damage, "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " if the target is stunned or incapacitated."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "cross-spell-effect-value",
+              "classification": "contextDependent",
+              "fragment": "$20424s1",
+              "token": "$20424s1",
+              "reason": "spell 20424 effect 0: EffectBonusCoefficient=0.29 on a value, the amount includes the caster's spell power"
+            },
+            {
+              "category": "scaled-value",
+              "classification": "contextDependent",
+              "fragment": "$/2;20467s1",
+              "token": "$/2;20467s1",
+              "reason": "spell 20467 effect 0: EffectRealPointsPerLevel=5.6, the amount scales with the caster's level"
+            },
+            {
+              "category": "cross-spell-effect-value",
+              "classification": "contextDependent",
+              "fragment": "$20467s1",
+              "token": "$20467s1",
+              "reason": "spell 20467 effect 0: EffectRealPointsPerLevel=5.6, the amount scales with the caster's level"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "entryId": 130426,
+      "definitionId": 135227,
+      "spellId": 20111,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage you deal with two-handed melee weapons by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage you deal with two-handed melee weapons by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage you deal with two-handed melee weapons by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130427,
+      "definitionId": 135228,
+      "spellId": 9799,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "All critical strikes against you cause "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": " of the damage taken to the attacker as well. The damage caused by Eye for an Eye will not exceed 50% of the Paladin's total health."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "All critical strikes against you cause "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " of the damage taken to the attacker as well. The damage caused by Eye for an Eye will not exceed 50% of the Paladin's total health."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130428,
+      "definitionId": 135229,
+      "spellId": 26022,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases movement speed and mounted movement speed by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": ". This does not stack with other movement speed increasing effects."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases movement speed and mounted movement speed by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": ". This does not stack with other movement speed increasing effects."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130429,
+      "definitionId": 135230,
+      "spellId": 1311087,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage of your Holy Strike ability by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " and causes it to refresh all Judgement effects on the target."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130430,
+      "definitionId": 135231,
+      "spellId": 1311074,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Judgement ability a "
+            },
+            {
+              "kind": "value",
+              "text": "33%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to return "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " of the Mana cost of the judged seal."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Judgement ability a "
+            },
+            {
+              "kind": "value",
+              "text": "66%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to return "
+            },
+            {
+              "kind": "value",
+              "text": "40%"
+            },
+            {
+              "kind": "text",
+              "text": " of the Mana cost of the judged seal."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Judgement ability a "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to return "
+            },
+            {
+              "kind": "value",
+              "text": "60%"
+            },
+            {
+              "kind": "text",
+              "text": " of the Mana cost of the judged seal."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130431,
+      "definitionId": 135232,
+      "spellId": 9452,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your damaging melee attacks a chance to reduce the target's Attack Power by "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": ", and increase your Attack Power by "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "30 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "cross-spell-effect-value",
+              "classification": "contextDependent",
+              "fragment": "${$m1/-3*$440667m1}",
+              "token": "$440667m1",
+              "reason": "spell 440667 effect 0: EffectRealPointsPerLevel=-3.5, the amount scales with the caster's level"
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your damaging melee attacks a chance to reduce the target's Attack Power by "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": ", and increase your Attack Power by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "30 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "cross-spell-effect-value",
+              "classification": "contextDependent",
+              "fragment": "${$m1/-3*$440667m1}",
+              "token": "$440667m1",
+              "reason": "spell 440667 effect 0: EffectRealPointsPerLevel=-3.5, the amount scales with the caster's level"
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your damaging melee attacks a chance to reduce the target's Attack Power by "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": ", and increase your Attack Power by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "30 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "cross-spell-effect-value",
+              "classification": "contextDependent",
+              "fragment": "${$m1/-3*$440667m1}",
+              "token": "$440667m1",
+              "reason": "spell 440667 effect 0: EffectRealPointsPerLevel=-3.5, the amount scales with the caster's level"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "entryId": 130432,
+      "definitionId": 135233,
+      "spellId": 20117,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Improves your chance to get a critical strike with melee attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Improves your chance to get a critical strike with melee attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Improves your chance to get a critical strike with melee attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Improves your chance to get a critical strike with melee attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Improves your chance to get a critical strike with melee attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130433,
+      "definitionId": 135234,
+      "spellId": 1237268,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the mana cost of your Consecration, Holy Wrath, Exorcism, and Hammer of Wrath spells by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the mana cost of your Consecration, Holy Wrath, Exorcism, and Hammer of Wrath spells by "
+            },
+            {
+              "kind": "value",
+              "text": "40%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130434,
+      "definitionId": 135235,
+      "spellId": 25956,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Decreases the cooldown of your Judgement ability by "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Decreases the cooldown of your Judgement ability by "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130435,
+      "definitionId": 135236,
+      "spellId": 20101,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Mana cost of all instant cast spells and abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Mana cost of all instant cast spells and abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Mana cost of all instant cast spells and abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Mana cost of all instant cast spells and abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Mana cost of all instant cast spells and abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130436,
+      "definitionId": 135237,
+      "spellId": 20060,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Parry chance by "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Parry chance by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Parry chance by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Parry chance by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Parry chance by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 137869,
+      "definitionId": 142623,
+      "spellId": 1310899,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Allows "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Mana regeneration to continue while casting."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Allows "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Mana regeneration to continue while casting."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Allows "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Mana regeneration to continue while casting."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 137870,
+      "definitionId": 142624,
+      "spellId": 1310905,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Holy spells "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": " increased damage against the first "
+            },
+            {
+              "kind": "value",
+              "text": "4"
+            },
+            {
+              "kind": "text",
+              "text": " enemies that enter your Consecration."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Holy spells "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " increased damage against the first "
+            },
+            {
+              "kind": "value",
+              "text": "4"
+            },
+            {
+              "kind": "text",
+              "text": " enemies that enter your Consecration."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 137871,
+      "definitionId": 142625,
+      "spellId": 426065,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your Holy Shock and Flash of Light critical hits reduce the cast time of your next Holy Light cast within "
+            },
+            {
+              "kind": "value",
+              "text": "15 sec"
+            },
+            {
+              "kind": "text",
+              "text": " by "
+            },
+            {
+              "kind": "value",
+              "text": "0.5"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your Holy Shock and Flash of Light critical hits reduce the cast time of your next Holy Light cast within "
+            },
+            {
+              "kind": "value",
+              "text": "15 sec"
+            },
+            {
+              "kind": "text",
+              "text": " by "
+            },
+            {
+              "kind": "value",
+              "text": "1.0"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 137872,
+      "definitionId": 142626,
+      "spellId": 20150,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the amount of damage absorbed by your shield by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": ", and gives your blocks a "
+            },
+            {
+              "kind": "value",
+              "text": "33%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to restore "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": " of your maximum Mana. May only occur once every "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "named-variable",
+              "classification": "unsupported",
+              "fragment": "$proccooldown",
+              "token": "$proccooldown",
+              "reason": "named variable $proccooldown has no source in the build's DB2 tables (a client-side value); SpellAuraOptions.ProcCategoryRecovery is a plausible source but is not proven to be what the client substitutes"
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the amount of damage absorbed by your shield by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": ", and gives your blocks a "
+            },
+            {
+              "kind": "value",
+              "text": "66%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to restore "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": " of your maximum Mana. May only occur once every "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "named-variable",
+              "classification": "unsupported",
+              "fragment": "$proccooldown",
+              "token": "$proccooldown",
+              "reason": "named variable $proccooldown has no source in the build's DB2 tables (a client-side value); SpellAuraOptions.ProcCategoryRecovery is a plausible source but is not proven to be what the client substitutes"
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the amount of damage absorbed by your shield by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": ", and gives your blocks a "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to restore "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": " of your maximum Mana. May only occur once every "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "named-variable",
+              "classification": "unsupported",
+              "fragment": "$proccooldown",
+              "token": "$proccooldown",
+              "reason": "named variable $proccooldown has no source in the build's DB2 tables (a client-side value); SpellAuraOptions.ProcCategoryRecovery is a plausible source but is not proven to be what the client substitutes"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "entryId": 137873,
+      "definitionId": 142627,
+      "spellId": 1314103,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "When Seal of Fury's shield is fully absorbed, restore "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " Mana, increased by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": " per level the attacker is above you, up to "
+            },
+            {
+              "kind": "value",
+              "text": "45%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "local-effect-value",
+              "classification": "contextDependent",
+              "fragment": "$m1",
+              "token": "$m1",
+              "reason": "spell 1314103 effect 0: EffectRealPointsPerLevel=1, the amount scales with the caster's level"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "entryId": 137876,
+      "definitionId": 142630,
+      "spellId": 1310994,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Finishes the remaining cooldown on your Judgement ability and reduces the Mana cost of your next Judgement by "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 137877,
+      "definitionId": 142631,
+      "spellId": 1311034,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the threat generated by your Holy Strike ability by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": ". While Righteous Fury is active, Holy Strike also reduces your damage taken by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "6 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the threat generated by your Holy Strike ability by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": ". While Righteous Fury is active, Holy Strike also reduces your damage taken by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "6 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the threat generated by your Holy Strike ability by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": ". While Righteous Fury is active, Holy Strike also reduces your damage taken by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "6 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the threat generated by your Holy Strike ability by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": ". While Righteous Fury is active, Holy Strike also reduces your damage taken by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "6 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the threat generated by your Holy Strike ability by "
+            },
+            {
+              "kind": "value",
+              "text": "25%"
+            },
+            {
+              "kind": "text",
+              "text": ". While Righteous Fury is active, Holy Strike also reduces your damage taken by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "6 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 137878,
+      "definitionId": 142632,
+      "spellId": 1311085,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cast time of your Hammer of Wrath by "
+            },
+            {
+              "kind": "value",
+              "text": "0.5"
+            },
+            {
+              "kind": "text",
+              "text": " sec, and reduces all threat you generate by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " while Righteous Fury is not active."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cast time of your Hammer of Wrath by "
+            },
+            {
+              "kind": "value",
+              "text": "1.0"
+            },
+            {
+              "kind": "text",
+              "text": " sec, and reduces all threat you generate by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " while Righteous Fury is not active."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 137880,
+      "definitionId": 142634,
+      "spellId": 1311084,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your spell damage by up to "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Intellect."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your spell damage by up to "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Intellect."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your spell damage by up to "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Intellect."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    }
+  ],
+  "contentHash": "sha256:749b3b6794332a89ec625d721d14824b9ca695f500a67090fd86cc81b2a62c8b",
+  "provenance": {
+    "source": "wago.tools",
+    "tables": [
+      "Spell",
+      "SpellEffect",
+      "SpellMisc",
+      "SpellDuration",
+      "SpellRadius",
+      "SpellAuraOptions",
+      "SpellXDescriptionVariables",
+      "SpellDescriptionVariables",
+      "GlobalStrings"
+    ],
+    "renderer": "talent_data.tooltips grammar-v1"
+  }
+}

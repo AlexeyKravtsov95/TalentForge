@@ -1,0 +1,4209 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "clientBuild": "1.60.1.70450",
+  "classToken": "PRIEST",
+  "talentDataContentHash": "sha256:fc8950740dad4d81fa5fa391fd67fdc4637f049a84476667aa8c29369ee57ead",
+  "entries": [
+    {
+      "entryId": 130546,
+      "definitionId": 135347,
+      "spellId": 15473,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Assume Shadowform, increasing your Shadow damage by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": ", reducing the Mana cost of all Shadow spells by "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": ", increasing the critical strike damage bonus of your Shadow spells by "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": ", and reducing Physical damage taken by you by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": ". However, you may not cast healing spells while in this form."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130547,
+      "definitionId": 135348,
+      "spellId": 15259,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Shadow damage done by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Shadow damage done by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Shadow damage done by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Shadow damage done by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Shadow damage done by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130548,
+      "definitionId": 135349,
+      "spellId": 1309950,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the mana cost of your Devouring Plague by "
+            },
+            {
+              "kind": "value",
+              "text": "25%"
+            },
+            {
+              "kind": "text",
+              "text": ".\n\nTargets that die while Devouring Plague is active spreads it, jumping to "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": " nearby enemies within "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " yds for the remaining duration."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the mana cost of your Devouring Plague by "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": ".\n\nTargets that die while Devouring Plague is active spreads it, jumping to "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": " nearby enemies within "
+            },
+            {
+              "kind": "value",
+              "text": "10"
+            },
+            {
+              "kind": "text",
+              "text": " yds for the remaining duration."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130549,
+      "definitionId": 135350,
+      "spellId": 15286,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Afflicts your target with Shadow energy that causes all party members to be healed for "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " of any Shadow spell damage you deal for "
+            },
+            {
+              "kind": "value",
+              "text": "30 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130550,
+      "definitionId": 135351,
+      "spellId": 15257,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your Shadow damage spells have a "
+            },
+            {
+              "kind": "value",
+              "text": "33%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to increase the Shadow damage the target takes from you by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "15 sec"
+            },
+            {
+              "kind": "text",
+              "text": ", stacking up to "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " times."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your Shadow damage spells have a "
+            },
+            {
+              "kind": "value",
+              "text": "67%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to increase the Shadow damage the target takes from you by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "15 sec"
+            },
+            {
+              "kind": "text",
+              "text": ", stacking up to "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " times."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your Shadow damage spells have a "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to increase the Shadow damage the target takes from you by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "15 sec"
+            },
+            {
+              "kind": "text",
+              "text": ", stacking up to "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " times."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130552,
+      "definitionId": 135353,
+      "spellId": 1326159,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your Mind Blast and fully channeled Mind Flay causes Dark Inspiration, increasing yours and your party's Spirit by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "10 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your Mind Blast and fully channeled Mind Flay causes Dark Inspiration, increasing yours and your party's Spirit by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "10 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your Mind Blast and fully channeled Mind Flay causes Dark Inspiration, increasing yours and your party's Spirit by "
+            },
+            {
+              "kind": "value",
+              "text": "9%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "10 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your Mind Blast and fully channeled Mind Flay causes Dark Inspiration, increasing yours and your party's Spirit by "
+            },
+            {
+              "kind": "value",
+              "text": "12%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "10 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your Mind Blast and fully channeled Mind Flay causes Dark Inspiration, increasing yours and your party's Spirit by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "10 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130553,
+      "definitionId": 135354,
+      "spellId": 15487,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Silences the target, preventing them from casting spells for "
+            },
+            {
+              "kind": "value",
+              "text": "5 sec"
+            },
+            {
+              "kind": "text",
+              "text": " and interrupting their spellcasts for "
+            },
+            {
+              "kind": "value",
+              "text": "3 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130554,
+      "definitionId": 135355,
+      "spellId": 1225139,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Each instance of damage of Mind Flay deals "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " more damage than its previous instance of damage."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Each instance of damage of Mind Flay deals "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " more damage than its previous instance of damage."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130555,
+      "definitionId": 135356,
+      "spellId": 15407,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Assault the target's mind with Shadow energy, causing "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " Shadow damage over "
+            },
+            {
+              "kind": "value",
+              "text": "3 sec"
+            },
+            {
+              "kind": "text",
+              "text": " and slowing their movement speed by "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "local-periodic-total",
+              "classification": "contextDependent",
+              "fragment": "$o1",
+              "token": "$o1",
+              "reason": "spell 15407 effect 0: EffectBonusCoefficient=0.167 on a damage/healing/absorb amount, the amount includes the caster's spell power"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "entryId": 130557,
+      "definitionId": 135358,
+      "spellId": 15392,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown of your Psychic Scream spell by "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown of your Psychic Scream spell by "
+            },
+            {
+              "kind": "value",
+              "text": "4"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130558,
+      "definitionId": 135359,
+      "spellId": 17322,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the range of your offensive Shadow spells by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the range of your offensive Shadow spells by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130559,
+      "definitionId": 135360,
+      "spellId": 15275,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the duration of your Shadow Word: Pain spell by "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the duration of your Shadow Word: Pain spell by "
+            },
+            {
+              "kind": "value",
+              "text": "6"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130560,
+      "definitionId": 135361,
+      "spellId": 15273,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown of your Mind Blast spell by "
+            },
+            {
+              "kind": "value",
+              "text": "0.5"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown of your Mind Blast spell by "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown of your Mind Blast spell by "
+            },
+            {
+              "kind": "value",
+              "text": "1.5"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown of your Mind Blast spell by "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown of your Mind Blast spell by "
+            },
+            {
+              "kind": "value",
+              "text": "2.5"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130561,
+      "definitionId": 135362,
+      "spellId": 15326,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Shadow damage spells a "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to stun the target for "
+            },
+            {
+              "kind": "value",
+              "text": "3 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Shadow damage spells a "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to stun the target for "
+            },
+            {
+              "kind": "value",
+              "text": "3 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Shadow damage spells a "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to stun the target for "
+            },
+            {
+              "kind": "value",
+              "text": "3 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Shadow damage spells a "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to stun the target for "
+            },
+            {
+              "kind": "value",
+              "text": "3 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Shadow damage spells a "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to stun the target for "
+            },
+            {
+              "kind": "value",
+              "text": "3 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130562,
+      "definitionId": 135363,
+      "spellId": 15270,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to increase your Spirit by "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "15 sec"
+            },
+            {
+              "kind": "text",
+              "text": " after killing a non-trivial target or when an enemy afflicted by your Vampiric Embrace dies. For the duration, "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Mana regeneration will continue while casting."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "40%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to increase your Spirit by "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "15 sec"
+            },
+            {
+              "kind": "text",
+              "text": " after killing a non-trivial target or when an enemy afflicted by your Vampiric Embrace dies. For the duration, "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Mana regeneration will continue while casting."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "60%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to increase your Spirit by "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "15 sec"
+            },
+            {
+              "kind": "text",
+              "text": " after killing a non-trivial target or when an enemy afflicted by your Vampiric Embrace dies. For the duration, "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Mana regeneration will continue while casting."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "80%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to increase your Spirit by "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "15 sec"
+            },
+            {
+              "kind": "text",
+              "text": " after killing a non-trivial target or when an enemy afflicted by your Vampiric Embrace dies. For the duration, "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Mana regeneration will continue while casting."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to increase your Spirit by "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "15 sec"
+            },
+            {
+              "kind": "text",
+              "text": " after killing a non-trivial target or when an enemy afflicted by your Vampiric Embrace dies. For the duration, "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Mana regeneration will continue while casting."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130563,
+      "definitionId": 135364,
+      "spellId": 402174,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Launches a volley of holy light at the target, causing "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " Holy damage to an enemy, or "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " healing to an ally, instantly and every "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": " sec for "
+            },
+            {
+              "kind": "value",
+              "text": "2 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "cross-spell-effect-value",
+              "classification": "contextDependent",
+              "fragment": "$402284s1",
+              "token": "$402284s1",
+              "reason": "spell 402284 effect 0: EffectRealPointsPerLevel=0.29, the amount scales with the caster's level"
+            },
+            {
+              "category": "cross-spell-effect-value",
+              "classification": "contextDependent",
+              "fragment": "$402289s1",
+              "token": "$402289s1",
+              "reason": "spell 402289 effect 0: EffectRealPointsPerLevel=0.87, the amount scales with the caster's level"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "entryId": 130564,
+      "definitionId": 135365,
+      "spellId": 425280,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your heals from Flash Heal, Binding Heal, Lesser Heal, Heal, Greater Heal, and Penance gain "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": " increased critical strike chance when cast on targets with Weakened Soul, and reduce the remaining duration of Weakened Soul on their target by "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your heals from Flash Heal, Binding Heal, Lesser Heal, Heal, Greater Heal, and Penance gain "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": " increased critical strike chance when cast on targets with Weakened Soul, and reduce the remaining duration of Weakened Soul on their target by "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your heals from Flash Heal, Binding Heal, Lesser Heal, Heal, Greater Heal, and Penance gain "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": " increased critical strike chance when cast on targets with Weakened Soul, and reduce the remaining duration of Weakened Soul on their target by "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your heals from Flash Heal, Binding Heal, Lesser Heal, Heal, Greater Heal, and Penance gain "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": " increased critical strike chance when cast on targets with Weakened Soul, and reduce the remaining duration of Weakened Soul on their target by "
+            },
+            {
+              "kind": "value",
+              "text": "4"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your heals from Flash Heal, Binding Heal, Lesser Heal, Heal, Greater Heal, and Penance gain "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " increased critical strike chance when cast on targets with Weakened Soul, and reduce the remaining duration of Weakened Soul on their target by "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130565,
+      "definitionId": 135366,
+      "spellId": 10060,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Infuses the target with power, increasing their spell damage and healing done by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "15 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130566,
+      "definitionId": 135367,
+      "spellId": 18551,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your total Intellect by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your total Intellect by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your total Intellect by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your total Intellect by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your total Intellect by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130567,
+      "definitionId": 135368,
+      "spellId": 14750,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the casting time of your Mana Burn spell by "
+            },
+            {
+              "kind": "value",
+              "text": "0.5"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the casting time of your Mana Burn spell by "
+            },
+            {
+              "kind": "value",
+              "text": "1.0"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130568,
+      "definitionId": 135369,
+      "spellId": 402000,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown on your Power Word: Shield spell by "
+            },
+            {
+              "kind": "value",
+              "text": "4"
+            },
+            {
+              "kind": "text",
+              "text": " sec and reduces its mana cost by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130569,
+      "definitionId": 135370,
+      "spellId": 431622,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your non-periodic critical heals create a protective shield on the target, absorbing "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": " of the amount healed. Shields up to "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " damage and lasts "
+            },
+            {
+              "kind": "value",
+              "text": "12 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "named-variable",
+              "classification": "unsupported",
+              "fragment": "${$s2*$pl}",
+              "token": "$pl",
+              "reason": "named variable $pl has no source in the build's DB2 tables (a client-side value)"
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your non-periodic critical heals create a protective shield on the target, absorbing "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " of the amount healed. Shields up to "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " damage and lasts "
+            },
+            {
+              "kind": "value",
+              "text": "12 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "named-variable",
+              "classification": "unsupported",
+              "fragment": "${$s2*$pl}",
+              "token": "$pl",
+              "reason": "named variable $pl has no source in the build's DB2 tables (a client-side value)"
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your non-periodic critical heals create a protective shield on the target, absorbing "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": " of the amount healed. Shields up to "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " damage and lasts "
+            },
+            {
+              "kind": "value",
+              "text": "12 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "named-variable",
+              "classification": "unsupported",
+              "fragment": "${$s2*$pl}",
+              "token": "$pl",
+              "reason": "named variable $pl has no source in the build's DB2 tables (a client-side value)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "entryId": 130570,
+      "definitionId": 135371,
+      "spellId": 14747,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the Armor bonus of your Inner Fire spell by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": " and increases its total charges by "
+            },
+            {
+              "kind": "value",
+              "text": "4"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the Armor bonus of your Inner Fire spell by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " and increases its total charges by "
+            },
+            {
+              "kind": "value",
+              "text": "8"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the Armor bonus of your Inner Fire spell by "
+            },
+            {
+              "kind": "value",
+              "text": "45%"
+            },
+            {
+              "kind": "text",
+              "text": " and increases its total charges by "
+            },
+            {
+              "kind": "value",
+              "text": "12"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130571,
+      "definitionId": 135372,
+      "spellId": 14520,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the mana cost of your Smite, Holy Fire, and instant cast spells by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the mana cost of your Smite, Holy Fire, and instant cast spells by "
+            },
+            {
+              "kind": "value",
+              "text": "7%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the mana cost of your Smite, Holy Fire, and instant cast spells by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130572,
+      "definitionId": 135373,
+      "spellId": 14521,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Allows "
+            },
+            {
+              "kind": "value",
+              "text": "17%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Mana regeneration to continue while casting."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Allows "
+            },
+            {
+              "kind": "value",
+              "text": "33%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Mana regeneration to continue while casting."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Allows "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Mana regeneration to continue while casting."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130573,
+      "definitionId": 135374,
+      "spellId": 14751,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "When activated, reduces the Mana cost of your next spell by "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " and increases its critical effect chance by "
+            },
+            {
+              "kind": "value",
+              "text": "25%"
+            },
+            {
+              "kind": "text",
+              "text": " if it is a non-periodic spell and capable of a critical effect."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130574,
+      "definitionId": 135375,
+      "spellId": 14531,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to gain Focused Casting for "
+            },
+            {
+              "kind": "value",
+              "text": "6 sec"
+            },
+            {
+              "kind": "text",
+              "text": " after being the victim of a melee or ranged critical strike. The Focused Casting effect prevents you from losing casting time when taking damage and increases your resistance to Interrupt effects by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to gain Focused Casting for "
+            },
+            {
+              "kind": "value",
+              "text": "6 sec"
+            },
+            {
+              "kind": "text",
+              "text": " after being the victim of a melee or ranged critical strike. The Focused Casting effect prevents you from losing casting time when taking damage and increases your resistance to Interrupt effects by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130575,
+      "definitionId": 135376,
+      "spellId": 14748,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage absorbed by your Power Word: Shield by "
+            },
+            {
+              "kind": "value",
+              "text": "7%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage absorbed by your Power Word: Shield by "
+            },
+            {
+              "kind": "value",
+              "text": "14%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage absorbed by your Power Word: Shield by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130577,
+      "definitionId": 135378,
+      "spellId": 14523,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the threat generated by your spells by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " and reduces the duration of Stun, Fear, and Silence effects inflicted on you by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the threat generated by your spells by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " and reduces the duration of Stun, Fear, and Silence effects inflicted on you by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the threat generated by your spells by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " and reduces the duration of Stun, Fear, and Silence effects inflicted on you by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130578,
+      "definitionId": 135379,
+      "spellId": 1225132,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage and healing of your instant cast spells by "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage and healing of your instant cast spells by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage and healing of your instant cast spells by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage and healing of your instant cast spells by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage and healing of your instant cast spells by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130579,
+      "definitionId": 135380,
+      "spellId": 14524,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your damage with Wands by "
+            },
+            {
+              "kind": "value",
+              "text": "13%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your damage with Wands by "
+            },
+            {
+              "kind": "value",
+              "text": "25%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130580,
+      "definitionId": 135381,
+      "spellId": 401859,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Places a spell on the target that heals them for "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " the next time they take damage or receive non-periodic healing. When the heal occurs, Prayer of Mending jumps to a party or raid member within "
+            },
+            {
+              "kind": "value",
+              "text": "20"
+            },
+            {
+              "kind": "text",
+              "text": " yards. Jumps up to "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " times and lasts "
+            },
+            {
+              "kind": "value",
+              "text": "30 sec"
+            },
+            {
+              "kind": "text",
+              "text": " after each jump. This spell can only be placed on one target at a time per caster."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "local-effect-value",
+              "classification": "contextDependent",
+              "fragment": "${($m1+($bh*$bc))*$<mult>}",
+              "token": "$m1",
+              "reason": "spell 401859 effect 0: EffectBonusCoefficient=0.429 on a value, the amount includes the caster's spell power"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "entryId": 130581,
+      "definitionId": 135382,
+      "spellId": 14898,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the amount healed by your spells by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the amount healed by your spells by "
+            },
+            {
+              "kind": "value",
+              "text": "7%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the amount healed by your spells by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130582,
+      "definitionId": 135383,
+      "spellId": 14901,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your spell healing by up to "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": " of your total Spirit and your spell damage by up to "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": " of your total Spirit."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your spell healing by up to "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " of your total Spirit and your spell damage by up to "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": " of your total Spirit."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your spell healing by up to "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": " of your total Spirit and your spell damage by up to "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": " of your total Spirit."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your spell healing by up to "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " of your total Spirit and your spell damage by up to "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": " of your total Spirit."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your spell healing by up to "
+            },
+            {
+              "kind": "value",
+              "text": "25%"
+            },
+            {
+              "kind": "text",
+              "text": " of your total Spirit and your spell damage by up to "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": " of your total Spirit."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130583,
+      "definitionId": 135384,
+      "spellId": 20711,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Upon death, the priest becomes the Spirit of Redemption for "
+            },
+            {
+              "kind": "value",
+              "text": "15 sec"
+            },
+            {
+              "kind": "text",
+              "text": ". The Spirit of Redemption cannot move, attack, be attacked or targeted by any spells or effects. While in this form the priest can cast any healing spell free of cost. When the effect ends, the priest dies."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130584,
+      "definitionId": 135385,
+      "spellId": 1317006,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "When you cast a healing spell, gain Mana equal to "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": " of the base cost of the spell if your previous heal was a different spell."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "When you cast a healing spell, gain Mana equal to "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " of the base cost of the spell if your previous heal was a different spell."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130585,
+      "definitionId": 135386,
+      "spellId": 401937,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Heals a friendly target and the caster for "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": ". Low threat."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "local-effect-value",
+              "classification": "contextDependent",
+              "fragment": "$s1",
+              "token": "$s1",
+              "reason": "spell 401937 effect 0: EffectRealPointsPerLevel=2.2, the amount scales with the caster's level"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "entryId": 130586,
+      "definitionId": 135387,
+      "spellId": 14909,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Holy damage done by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": ", and gives a "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": " chance each time your Holy Fire spell deals periodic damage for your next Holy Nova to cost no Mana."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Holy damage done by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": ", and gives a "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " chance each time your Holy Fire spell deals periodic damage for your next Holy Nova to cost no Mana."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130587,
+      "definitionId": 135388,
+      "spellId": 14912,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Mana cost of your Lesser Heal, Heal, Greater Heal, Penance, and Prayer of Mending spells by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Mana cost of your Lesser Heal, Heal, Greater Heal, Penance, and Prayer of Mending spells by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Mana cost of your Lesser Heal, Heal, Greater Heal, Penance, and Prayer of Mending spells by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130588,
+      "definitionId": 135389,
+      "spellId": 27789,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the range of your Smite and Holy Fire spells and the radius of your Prayer of Healing and Holy Nova spells by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the range of your Smite and Holy Fire spells and the radius of your Prayer of Healing and Holy Nova spells by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130589,
+      "definitionId": 135390,
+      "spellId": 14892,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your non-periodic critical heals increase your target's Armor by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "15 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your non-periodic critical heals increase your target's Armor by "
+            },
+            {
+              "kind": "value",
+              "text": "17%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "15 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your non-periodic critical heals increase your target's Armor by "
+            },
+            {
+              "kind": "value",
+              "text": "25%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "15 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130590,
+      "definitionId": 135391,
+      "spellId": 27811,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "After being struck by a melee or ranged critical hit, or suffering more than "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " of your maximum Health from a single attack, heal "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": " of the damage taken over "
+            },
+            {
+              "kind": "value",
+              "text": "6 sec"
+            },
+            {
+              "kind": "text",
+              "text": ". Refreshing this effect carries over any remaining healing."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "After being struck by a melee or ranged critical hit, or suffering more than "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " of your maximum Health from a single attack, heal "
+            },
+            {
+              "kind": "value",
+              "text": "17%"
+            },
+            {
+              "kind": "text",
+              "text": " of the damage taken over "
+            },
+            {
+              "kind": "value",
+              "text": "6 sec"
+            },
+            {
+              "kind": "text",
+              "text": ". Refreshing this effect carries over any remaining healing."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "After being struck by a melee or ranged critical hit, or suffering more than "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " of your maximum Health from a single attack, heal "
+            },
+            {
+              "kind": "value",
+              "text": "25%"
+            },
+            {
+              "kind": "text",
+              "text": " of the damage taken over "
+            },
+            {
+              "kind": "value",
+              "text": "6 sec"
+            },
+            {
+              "kind": "text",
+              "text": ". Refreshing this effect carries over any remaining healing."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130591,
+      "definitionId": 135392,
+      "spellId": 15237,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Causes an explosion of holy light around the caster, causing "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " Holy damage to all enemy targets within "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " yards and healing all party members within "
+            },
+            {
+              "kind": "value",
+              "text": "10"
+            },
+            {
+              "kind": "text",
+              "text": " yards for "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": ". These effects cause no threat."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "local-effect-value",
+              "classification": "contextDependent",
+              "fragment": "$s1",
+              "token": "$s1",
+              "reason": "spell 15237 effect 0: EffectRealPointsPerLevel=0.2, the amount scales with the caster's level"
+            },
+            {
+              "category": "local-radius",
+              "classification": "unsupported",
+              "fragment": "$a1",
+              "token": "$a1",
+              "reason": "spell 15237 effect 0 has EffectRadiusIndex [0, 13]; which one $a1 reads is only proven when the first is set and the second is empty or equal"
+            },
+            {
+              "category": "cross-spell-effect-value",
+              "classification": "contextDependent",
+              "fragment": "$23455s1",
+              "token": "$23455s1",
+              "reason": "spell 23455 effect 0: EffectRealPointsPerLevel=0.4, the amount scales with the caster's level"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "entryId": 130592,
+      "definitionId": 135393,
+      "spellId": 18530,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the casting time of your Smite, Holy Fire, Heal, and Greater Heal spells by "
+            },
+            {
+              "kind": "value",
+              "text": "0.1"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the casting time of your Smite, Holy Fire, Heal, and Greater Heal spells by "
+            },
+            {
+              "kind": "value",
+              "text": "0.2"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the casting time of your Smite, Holy Fire, Heal, and Greater Heal spells by "
+            },
+            {
+              "kind": "value",
+              "text": "0.3"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the casting time of your Smite, Holy Fire, Heal, and Greater Heal spells by "
+            },
+            {
+              "kind": "value",
+              "text": "0.4"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the casting time of your Smite, Holy Fire, Heal, and Greater Heal spells by "
+            },
+            {
+              "kind": "value",
+              "text": "0.5"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130593,
+      "definitionId": 135394,
+      "spellId": 27900,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces all spell damage taken by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces all spell damage taken by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces all spell damage taken by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces all spell damage taken by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces all spell damage taken by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130594,
+      "definitionId": 135395,
+      "spellId": 14889,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical effect chance of your Holy spells by "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical effect chance of your Holy spells by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical effect chance of your Holy spells by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical effect chance of your Holy spells by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical effect chance of your Holy spells by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130595,
+      "definitionId": 135396,
+      "spellId": 14908,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the amount healed by your Renew spell by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the amount healed by your Renew spell by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the amount healed by your Renew spell by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130596,
+      "definitionId": 135397,
+      "spellId": 14913,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "23%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to avoid interruption caused by damage while casting any spell."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "47%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to avoid interruption caused by damage while casting any spell."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "70%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to avoid interruption caused by damage while casting any spell."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 137843,
+      "definitionId": 142597,
+      "spellId": 15260,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Improves your chance to hit with Shadow spells by "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Improves your chance to hit with Shadow spells by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Improves your chance to hit with Shadow spells by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Improves your chance to hit with Shadow spells by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Improves your chance to hit with Shadow spells by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 137844,
+      "definitionId": 142598,
+      "spellId": 1309957,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Improves your chance to hit with Holy spells by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Improves your chance to hit with Holy spells by "
+            },
+            {
+              "kind": "value",
+              "text": "12%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Improves your chance to hit with Holy spells by "
+            },
+            {
+              "kind": "value",
+              "text": "18%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 137845,
+      "definitionId": 142599,
+      "spellId": 1309969,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your Smite and Penance spells deal "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": " increased damage to targets afflicted with your Holy Fire or Shadow Word: Pain."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your Smite and Penance spells deal "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": " increased damage to targets afflicted with your Holy Fire or Shadow Word: Pain."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your Smite and Penance spells deal "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": " increased damage to targets afflicted with your Holy Fire or Shadow Word: Pain."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your Smite and Penance spells deal "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": " increased damage to targets afflicted with your Holy Fire or Shadow Word: Pain."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your Smite and Penance spells deal "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " increased damage to targets afflicted with your Holy Fire or Shadow Word: Pain."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 137846,
+      "definitionId": 142600,
+      "spellId": 1310076,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases Shadow Word: Death's critical strike chance on targets at or below "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " health by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases Shadow Word: Death's critical strike chance on targets at or below "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " health by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 137847,
+      "definitionId": 142601,
+      "spellId": 14889,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical effect chance of your Holy spells by "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical effect chance of your Holy spells by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical effect chance of your Holy spells by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical effect chance of your Holy spells by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical effect chance of your Holy spells by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    }
+  ],
+  "contentHash": "sha256:cb54321734d1ef324a89ede806f5853049d3fbabbe0b420fc400d078fd002210",
+  "provenance": {
+    "source": "wago.tools",
+    "tables": [
+      "Spell",
+      "SpellEffect",
+      "SpellMisc",
+      "SpellDuration",
+      "SpellRadius",
+      "SpellAuraOptions",
+      "SpellXDescriptionVariables",
+      "SpellDescriptionVariables",
+      "GlobalStrings"
+    ],
+    "renderer": "talent_data.tooltips grammar-v1"
+  }
+}

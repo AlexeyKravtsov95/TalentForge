@@ -19,8 +19,8 @@ from types import ModuleType
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-REFERENCE, BUILD_70245 = "1.60.1.70009", "1.60.1.70245"
-PREVIOUS_PRODUCT, PRODUCT = "1.60.1.70338", "1.60.1.70374"
+REFERENCE, BUILD_70245, BUILD_70338 = "1.60.1.70009", "1.60.1.70245", "1.60.1.70338"
+PREVIOUS_PRODUCT, PRODUCT = "1.60.1.70374", "1.60.1.70450"
 
 
 def load_script(name: str) -> ModuleType:
@@ -49,10 +49,22 @@ KINDS = {
 # committed files per kind and build: 9 class files (+ manifest | + registry and icons |
 # + the ruRU overlay of each class under localization)
 FILE_COUNTS = {
-    "dataset": {REFERENCE: 10, BUILD_70245: 10, PREVIOUS_PRODUCT: 10, PRODUCT: 10},
-    "visuals": {REFERENCE: 368, BUILD_70245: 367, PREVIOUS_PRODUCT: 368, PRODUCT: 368},
-    "tooltips": {REFERENCE: 9, BUILD_70245: 9, PREVIOUS_PRODUCT: 9, PRODUCT: 9},
-    "localization": {REFERENCE: 9, BUILD_70245: 9, PREVIOUS_PRODUCT: 9, PRODUCT: 9},
+    "dataset": {REFERENCE: 10, BUILD_70245: 10, BUILD_70338: 10, PREVIOUS_PRODUCT: 10, PRODUCT: 10},
+    "visuals": {
+        REFERENCE: 368,
+        BUILD_70245: 367,
+        BUILD_70338: 368,
+        PREVIOUS_PRODUCT: 368,
+        PRODUCT: 369,
+    },
+    "tooltips": {REFERENCE: 9, BUILD_70245: 9, BUILD_70338: 9, PREVIOUS_PRODUCT: 9, PRODUCT: 9},
+    "localization": {
+        REFERENCE: 9,
+        BUILD_70245: 9,
+        BUILD_70338: 9,
+        PREVIOUS_PRODUCT: 9,
+        PRODUCT: 9,
+    },
 }
 
 
@@ -66,7 +78,13 @@ def no_network(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_the_reference_the_retained_and_the_current_product_builds_are_bundled() -> None:
-    assert bundles.BUNDLED_BUILDS == (REFERENCE, BUILD_70245, PREVIOUS_PRODUCT, PRODUCT)
+    assert bundles.BUNDLED_BUILDS == (
+        REFERENCE,
+        BUILD_70245,
+        BUILD_70338,
+        PREVIOUS_PRODUCT,
+        PRODUCT,
+    )
 
 
 def test_the_app_s_product_bundle_is_the_newest_bundled_build() -> None:
@@ -81,7 +99,7 @@ def test_committed_bundle_matches_canonical_without_network(kind: str, no_networ
     assert KINDS[kind].bundled_root == resources / kind / "forever"
     assert SCRIPTS[kind].main(["--check"]) == 0
     total = sum(FILE_COUNTS[kind].values())
-    assert f"bundle in sync: {total} files of 4 builds" in capsys.readouterr().out
+    assert f"bundle in sync: {total} files of 5 builds" in capsys.readouterr().out
     for build, count in FILE_COUNTS[kind].items():
         assert len(bundles.relative_files(KINDS[kind].bundled_root / build)) == count
 
@@ -151,7 +169,7 @@ def test_syncing_one_build_never_removes_another_build_s_bundle(mirror, capsys) 
     assert (mirror.bundled_root / PREVIOUS_PRODUCT / "warrior.json").is_file()
     assert bundles.drift(mirror, builds=(PRODUCT,)) == [
         f"{build}: in bundle but not a bundled build (BUNDLED_BUILDS in scripts/mobile_bundles.py)"
-        for build in (REFERENCE, BUILD_70245, PREVIOUS_PRODUCT)
+        for build in (REFERENCE, BUILD_70245, BUILD_70338, PREVIOUS_PRODUCT)
     ]
     assert bundles.check(mirror, builds=(PRODUCT,)) == 1
 
