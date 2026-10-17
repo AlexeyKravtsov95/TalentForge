@@ -1,0 +1,781 @@
+{
+  "commit": "f7494e1ee7d863613fc43b28acff88e9458e5cb9",
+  "artifacts": {
+    "debug_apk": {
+      "present": true,
+      "bytes": 20346191,
+      "entries": 1743,
+      "abis": [
+        "arm64-v8a",
+        "armeabi-v7a",
+        "x86",
+        "x86_64"
+      ],
+      "native_libraries": [
+        "libandroidx.graphics.path.so"
+      ],
+      "dex_class_name_hits": {
+        "google_play_services": false,
+        "firebase": false,
+        "play_billing": false,
+        "play_core": false,
+        "huawei_hms": false,
+        "huawei_agconnect": false,
+        "okhttp": false,
+        "ktor": false,
+        "java_net_HttpURLConnection": false,
+        "java_net_Socket": true,
+        "android_webkit_WebView": true
+      },
+      "service_config_files": [],
+      "largest_compressed_prefixes": [
+        {
+          "prefix": "assets/composeResources",
+          "compressed_bytes": 9580971
+        },
+        {
+          "prefix": "classes.dex",
+          "compressed_bytes": 6046894
+        },
+        {
+          "prefix": "classes22.dex",
+          "compressed_bytes": 2442595
+        },
+        {
+          "prefix": "classes19.dex",
+          "compressed_bytes": 433001
+        },
+        {
+          "prefix": "res",
+          "compressed_bytes": 230456
+        },
+        {
+          "prefix": "resources.arsc",
+          "compressed_bytes": 150888
+        },
+        {
+          "prefix": "classes3.dex",
+          "compressed_bytes": 99906
+        },
+        {
+          "prefix": "classes16.dex",
+          "compressed_bytes": 80170
+        }
+      ]
+    },
+    "release_apk_unsigned": {
+      "present": true,
+      "bytes": 17148789,
+      "entries": 1727,
+      "abis": [
+        "arm64-v8a",
+        "armeabi-v7a",
+        "x86",
+        "x86_64"
+      ],
+      "native_libraries": [
+        "libandroidx.graphics.path.so"
+      ],
+      "dex_class_name_hits": {
+        "google_play_services": false,
+        "firebase": false,
+        "play_billing": false,
+        "play_core": false,
+        "huawei_hms": false,
+        "huawei_agconnect": false,
+        "okhttp": false,
+        "ktor": false,
+        "java_net_HttpURLConnection": false,
+        "java_net_Socket": true,
+        "android_webkit_WebView": true
+      },
+      "service_config_files": [],
+      "largest_compressed_prefixes": [
+        {
+          "prefix": "assets/composeResources",
+          "compressed_bytes": 9255518
+        },
+        {
+          "prefix": "classes.dex",
+          "compressed_bytes": 4264745
+        },
+        {
+          "prefix": "classes2.dex",
+          "compressed_bytes": 2550487
+        },
+        {
+          "prefix": "res",
+          "compressed_bytes": 218501
+        },
+        {
+          "prefix": "resources.arsc",
+          "compressed_bytes": 149328
+        },
+        {
+          "prefix": "lib",
+          "compressed_bytes": 37392
+        },
+        {
+          "prefix": "META-INF",
+          "compressed_bytes": 15014
+        },
+        {
+          "prefix": "kotlin",
+          "compressed_bytes": 12425
+        }
+      ]
+    },
+    "release_aab": {
+      "present": true,
+      "bytes": 17047508,
+      "entries": 1733,
+      "abis": [
+        "arm64-v8a",
+        "armeabi-v7a",
+        "x86",
+        "x86_64"
+      ],
+      "native_libraries": [
+        "libandroidx.graphics.path.so"
+      ],
+      "dex_class_name_hits": {
+        "google_play_services": false,
+        "firebase": false,
+        "play_billing": false,
+        "play_core": false,
+        "huawei_hms": false,
+        "huawei_agconnect": false,
+        "okhttp": false,
+        "ktor": false,
+        "java_net_HttpURLConnection": false,
+        "java_net_Socket": true,
+        "android_webkit_WebView": true
+      },
+      "service_config_files": [],
+      "largest_compressed_prefixes": [
+        {
+          "prefix": "base/assets",
+          "compressed_bytes": 9225432
+        },
+        {
+          "prefix": "base/dex",
+          "compressed_bytes": 6815232
+        },
+        {
+          "prefix": "base/res",
+          "compressed_bytes": 216847
+        },
+        {
+          "prefix": "base",
+          "compressed_bytes": 45637
+        },
+        {
+          "prefix": "base/root",
+          "compressed_bytes": 28755
+        },
+        {
+          "prefix": "base/lib",
+          "compressed_bytes": 17846
+        },
+        {
+          "prefix": "BUNDLE-METADATA",
+          "compressed_bytes": 13208
+        },
+        {
+          "prefix": "base/manifest",
+          "compressed_bytes": 1608
+        }
+      ]
+    }
+  },
+  "badging": {
+    "debug": {
+      "package": "io.github.alexeykravtsov95.talentforge",
+      "versionCode": "1",
+      "versionName": "0.1.0",
+      "minSdkVersion": "26",
+      "targetSdkVersion": "36",
+      "debuggable": true,
+      "densities": [
+        "160",
+        "240",
+        "320",
+        "480",
+        "640",
+        "65534",
+        "65535"
+      ],
+      "uses_permission": [
+        "io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+      ],
+      "application_label_locales": 85,
+      "locales": [
+        "--_--",
+        "af",
+        "am",
+        "ar",
+        "as",
+        "az",
+        "be",
+        "bg",
+        "bn",
+        "bs",
+        "ca",
+        "cs",
+        "da",
+        "de",
+        "el",
+        "en-AU",
+        "en-CA",
+        "en-GB",
+        "en-IN",
+        "en-XC",
+        "es",
+        "es-US",
+        "et",
+        "eu",
+        "fa",
+        "fi",
+        "fr",
+        "fr-CA",
+        "gl",
+        "gu",
+        "hi",
+        "hr",
+        "hu",
+        "hy",
+        "in",
+        "is",
+        "it",
+        "iw",
+        "ja",
+        "ka",
+        "kk",
+        "km",
+        "kn",
+        "ko",
+        "ky",
+        "lo",
+        "lt",
+        "lv",
+        "mk",
+        "ml",
+        "mn",
+        "mr",
+        "ms",
+        "my",
+        "nb",
+        "ne",
+        "nl",
+        "or",
+        "pa",
+        "pl",
+        "pt",
+        "pt-BR",
+        "pt-PT",
+        "ro",
+        "ru",
+        "si",
+        "sk",
+        "sl",
+        "sq",
+        "sr",
+        "sr-Latn",
+        "sv",
+        "sw",
+        "ta",
+        "te",
+        "th",
+        "tl",
+        "tr",
+        "uk",
+        "ur",
+        "uz",
+        "vi",
+        "zh-CN",
+        "zh-HK",
+        "zh-TW",
+        "zu"
+      ],
+      "application_label": "TalentForge",
+      "application_icon": "res/mipmap-anydpi-v26/ic_launcher.xml",
+      "native_code": [
+        "arm64-v8a",
+        "armeabi-v7a",
+        "x86",
+        "x86_64"
+      ],
+      "uses_feature": []
+    },
+    "release": {
+      "package": "io.github.alexeykravtsov95.talentforge",
+      "versionCode": "1",
+      "versionName": "0.1.0",
+      "minSdkVersion": "26",
+      "targetSdkVersion": "36",
+      "debuggable": false,
+      "densities": [
+        "160",
+        "240",
+        "320",
+        "480",
+        "640",
+        "65534",
+        "65535"
+      ],
+      "uses_permission": [
+        "io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+      ],
+      "application_label_locales": 85,
+      "locales": [
+        "--_--",
+        "af",
+        "am",
+        "ar",
+        "as",
+        "az",
+        "be",
+        "bg",
+        "bn",
+        "bs",
+        "ca",
+        "cs",
+        "da",
+        "de",
+        "el",
+        "en-AU",
+        "en-CA",
+        "en-GB",
+        "en-IN",
+        "en-XC",
+        "es",
+        "es-US",
+        "et",
+        "eu",
+        "fa",
+        "fi",
+        "fr",
+        "fr-CA",
+        "gl",
+        "gu",
+        "hi",
+        "hr",
+        "hu",
+        "hy",
+        "in",
+        "is",
+        "it",
+        "iw",
+        "ja",
+        "ka",
+        "kk",
+        "km",
+        "kn",
+        "ko",
+        "ky",
+        "lo",
+        "lt",
+        "lv",
+        "mk",
+        "ml",
+        "mn",
+        "mr",
+        "ms",
+        "my",
+        "nb",
+        "ne",
+        "nl",
+        "or",
+        "pa",
+        "pl",
+        "pt",
+        "pt-BR",
+        "pt-PT",
+        "ro",
+        "ru",
+        "si",
+        "sk",
+        "sl",
+        "sq",
+        "sr",
+        "sr-Latn",
+        "sv",
+        "sw",
+        "ta",
+        "te",
+        "th",
+        "tl",
+        "tr",
+        "uk",
+        "ur",
+        "uz",
+        "vi",
+        "zh-CN",
+        "zh-HK",
+        "zh-TW",
+        "zu"
+      ],
+      "application_label": "TalentForge",
+      "application_icon": "res/BW.xml",
+      "native_code": [
+        "arm64-v8a",
+        "armeabi-v7a",
+        "x86",
+        "x86_64"
+      ],
+      "uses_feature": []
+    }
+  },
+  "manifest": {
+    "debug": {
+      "allowBackup": "(unset: platform default true)",
+      "fullBackupContent": null,
+      "dataExtractionRules": null,
+      "debuggable": "true",
+      "usesCleartextTraffic": "(unset)",
+      "networkSecurityConfig": null,
+      "localeConfig": null,
+      "extractNativeLibs": "false",
+      "uses_permission": [
+        "io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+      ],
+      "permission_declared": [
+        "io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+      ],
+      "activities": [
+        "io.github.alexeykravtsov95.talentforge.ui.MainActivity"
+      ],
+      "services": [],
+      "receivers": [
+        "androidx.profileinstaller.ProfileInstallReceiver"
+      ],
+      "providers": [
+        "org.jetbrains.compose.resources.AndroidContextProvider",
+        "androidx.startup.InitializationProvider"
+      ],
+      "meta_data": [
+        "androidx.emoji2.text.EmojiCompatInitializer",
+        "androidx.lifecycle.ProcessLifecycleInitializer",
+        "androidx.profileinstaller.ProfileInstallerInitializer"
+      ],
+      "uses_library": [
+        "androidx.window.extensions",
+        "androidx.window.sidecar"
+      ],
+      "uses_feature": [],
+      "exported_components": [
+        "activity:io.github.alexeykravtsov95.talentforge.ui.MainActivity",
+        "receiver:androidx.profileinstaller.ProfileInstallReceiver"
+      ],
+      "queries_entries": []
+    },
+    "release": {
+      "allowBackup": "(unset: platform default true)",
+      "fullBackupContent": null,
+      "dataExtractionRules": null,
+      "debuggable": "(unset)",
+      "usesCleartextTraffic": "(unset)",
+      "networkSecurityConfig": null,
+      "localeConfig": null,
+      "extractNativeLibs": "false",
+      "uses_permission": [
+        "io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+      ],
+      "permission_declared": [
+        "io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+      ],
+      "activities": [
+        "io.github.alexeykravtsov95.talentforge.ui.MainActivity"
+      ],
+      "services": [],
+      "receivers": [
+        "androidx.profileinstaller.ProfileInstallReceiver"
+      ],
+      "providers": [
+        "org.jetbrains.compose.resources.AndroidContextProvider",
+        "androidx.startup.InitializationProvider"
+      ],
+      "meta_data": [
+        "androidx.emoji2.text.EmojiCompatInitializer",
+        "androidx.lifecycle.ProcessLifecycleInitializer",
+        "androidx.profileinstaller.ProfileInstallerInitializer"
+      ],
+      "uses_library": [
+        "androidx.window.extensions",
+        "androidx.window.sidecar"
+      ],
+      "uses_feature": [],
+      "exported_components": [
+        "activity:io.github.alexeykravtsov95.talentforge.ui.MainActivity",
+        "receiver:androidx.profileinstaller.ProfileInstallReceiver"
+      ],
+      "queries_entries": []
+    }
+  },
+  "apksigner": {
+    "debug": {
+      "log_present": true,
+      "verifies": true,
+      "does_not_verify": false,
+      "signer_dns": [
+        "C=US, O=Android, CN=Android Debug"
+      ],
+      "schemes": {
+        "v1 scheme (JAR signing)": "false",
+        "v2 scheme (APK Signature Scheme v2)": "true",
+        "v3 scheme (APK Signature Scheme v3)": "false",
+        "v3.1 scheme (APK Signature Scheme v3.1)": "false",
+        "v3.2 scheme (APK Signature Scheme v3.2)": "false",
+        "v4 scheme (APK Signature Scheme v4)": "false"
+      },
+      "errors": [],
+      "debug_certificate": true
+    },
+    "release": {
+      "log_present": true,
+      "verifies": false,
+      "does_not_verify": true,
+      "signer_dns": [],
+      "schemes": {},
+      "errors": [
+        "Missing META-INF/MANIFEST.MF"
+      ],
+      "debug_certificate": false
+    }
+  },
+  "dependencies_releaseRuntimeClasspath": {
+    "report_present": true,
+    "pattern_hits": {
+      "google_play_services": [],
+      "firebase": [],
+      "play_billing": [],
+      "play_core": [],
+      "huawei": [],
+      "okhttp": [],
+      "ktor": [],
+      "retrofit": []
+    },
+    "distinct_modules": 124,
+    "modules": [
+      "androidx.activity:activity",
+      "androidx.activity:activity-compose",
+      "androidx.activity:activity-ktx",
+      "androidx.annotation:annotation",
+      "androidx.annotation:annotation-experimental",
+      "androidx.annotation:annotation-jvm",
+      "androidx.arch.core:core-common",
+      "androidx.arch.core:core-runtime",
+      "androidx.autofill:autofill",
+      "androidx.collection:collection",
+      "androidx.collection:collection-jvm",
+      "androidx.collection:collection-ktx",
+      "androidx.compose.animation:animation",
+      "androidx.compose.animation:animation-android",
+      "androidx.compose.animation:animation-core",
+      "androidx.compose.animation:animation-core-android",
+      "androidx.compose.foundation:foundation",
+      "androidx.compose.foundation:foundation-android",
+      "androidx.compose.foundation:foundation-layout",
+      "androidx.compose.foundation:foundation-layout-android",
+      "androidx.compose.runtime:runtime",
+      "androidx.compose.runtime:runtime-android",
+      "androidx.compose.runtime:runtime-annotation",
+      "androidx.compose.runtime:runtime-annotation-android",
+      "androidx.compose.runtime:runtime-retain",
+      "androidx.compose.runtime:runtime-retain-android",
+      "androidx.compose.runtime:runtime-saveable",
+      "androidx.compose.runtime:runtime-saveable-android",
+      "androidx.compose.ui:ui",
+      "androidx.compose.ui:ui-android",
+      "androidx.compose.ui:ui-geometry",
+      "androidx.compose.ui:ui-geometry-android",
+      "androidx.compose.ui:ui-graphics",
+      "androidx.compose.ui:ui-graphics-android",
+      "androidx.compose.ui:ui-text",
+      "androidx.compose.ui:ui-text-android",
+      "androidx.compose.ui:ui-unit",
+      "androidx.compose.ui:ui-unit-android",
+      "androidx.compose.ui:ui-util",
+      "androidx.compose.ui:ui-util-android",
+      "androidx.concurrent:concurrent-futures",
+      "androidx.core:core",
+      "androidx.core:core-ktx",
+      "androidx.core:core-viewtree",
+      "androidx.customview:customview-poolingcontainer",
+      "androidx.documentfile:documentfile",
+      "androidx.dynamicanimation:dynamicanimation",
+      "androidx.emoji2:emoji2",
+      "androidx.graphics:graphics-path",
+      "androidx.interpolator:interpolator",
+      "androidx.legacy:legacy-support-core-utils",
+      "androidx.lifecycle:lifecycle-common",
+      "androidx.lifecycle:lifecycle-common-jvm",
+      "androidx.lifecycle:lifecycle-livedata",
+      "androidx.lifecycle:lifecycle-livedata-core",
+      "androidx.lifecycle:lifecycle-livedata-core-ktx",
+      "androidx.lifecycle:lifecycle-process",
+      "androidx.lifecycle:lifecycle-runtime",
+      "androidx.lifecycle:lifecycle-runtime-android",
+      "androidx.lifecycle:lifecycle-runtime-compose",
+      "androidx.lifecycle:lifecycle-runtime-compose-android",
+      "androidx.lifecycle:lifecycle-runtime-ktx",
+      "androidx.lifecycle:lifecycle-runtime-ktx-android",
+      "androidx.lifecycle:lifecycle-viewmodel",
+      "androidx.lifecycle:lifecycle-viewmodel-android",
+      "androidx.lifecycle:lifecycle-viewmodel-ktx",
+      "androidx.lifecycle:lifecycle-viewmodel-savedstate",
+      "androidx.lifecycle:lifecycle-viewmodel-savedstate-android",
+      "androidx.loader:loader",
+      "androidx.localbroadcastmanager:localbroadcastmanager",
+      "androidx.navigationevent:navigationevent",
+      "androidx.navigationevent:navigationevent-android",
+      "androidx.navigationevent:navigationevent-compose",
+      "androidx.navigationevent:navigationevent-compose-android",
+      "androidx.print:print",
+      "androidx.profileinstaller:profileinstaller",
+      "androidx.savedstate:savedstate",
+      "androidx.savedstate:savedstate-android",
+      "androidx.savedstate:savedstate-compose",
+      "androidx.savedstate:savedstate-compose-android",
+      "androidx.savedstate:savedstate-ktx",
+      "androidx.startup:startup-runtime",
+      "androidx.tracing:tracing",
+      "androidx.transition:transition",
+      "androidx.versionedparcelable:versionedparcelable",
+      "androidx.window:window",
+      "androidx.window:window-core",
+      "androidx.window:window-core-android",
+      "com.google.guava:listenablefuture",
+      "org.jetbrains.androidx.lifecycle:lifecycle-common",
+      "org.jetbrains.androidx.lifecycle:lifecycle-runtime",
+      "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose",
+      "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel",
+      "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-savedstate",
+      "org.jetbrains.androidx.savedstate:savedstate",
+      "org.jetbrains.androidx.savedstate:savedstate-compose",
+      "org.jetbrains.compose.animation:animation",
+      "org.jetbrains.compose.animation:animation-core",
+      "org.jetbrains.compose.annotation-internal:annotation",
+      "org.jetbrains.compose.collection-internal:collection",
+      "org.jetbrains.compose.components:components-resources",
+      "org.jetbrains.compose.components:components-resources-android",
+      "org.jetbrains.compose.foundation:foundation",
+      "org.jetbrains.compose.foundation:foundation-layout",
+      "org.jetbrains.compose.runtime:runtime",
+      "org.jetbrains.compose.runtime:runtime-saveable",
+      "org.jetbrains.compose.ui:ui",
+      "org.jetbrains.compose.ui:ui-geometry",
+      "org.jetbrains.compose.ui:ui-graphics",
+      "org.jetbrains.compose.ui:ui-text",
+      "org.jetbrains.compose.ui:ui-unit",
+      "org.jetbrains.compose.ui:ui-util",
+      "org.jetbrains.kotlin:kotlin-stdlib",
+      "org.jetbrains.kotlinx:kotlinx-coroutines-android",
+      "org.jetbrains.kotlinx:kotlinx-coroutines-bom",
+      "org.jetbrains.kotlinx:kotlinx-coroutines-core",
+      "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm",
+      "org.jetbrains.kotlinx:kotlinx-serialization-bom",
+      "org.jetbrains.kotlinx:kotlinx-serialization-core",
+      "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
+      "org.jetbrains.kotlinx:kotlinx-serialization-json",
+      "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm",
+      "org.jetbrains:annotations",
+      "org.jspecify:jspecify"
+    ]
+  },
+  "tests": {
+    "shared_jvmTest": {
+      "results_dir_present": true,
+      "suites": 28,
+      "tests": 338,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "composeApp_desktopTest": {
+      "results_dir_present": true,
+      "suites": 86,
+      "tests": 663,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 36
+    }
+  },
+  "lintRelease": {
+    "present": true,
+    "by_severity": {
+      "Warning": 9,
+      "Error": 1
+    },
+    "issues": {
+      "ApplySharedPref": {
+        "severity": "Warning",
+        "count": 1,
+        "files": [
+          "mobile/composeApp/src/androidMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/library/AndroidBuildLibraryStorage.kt"
+        ]
+      },
+      "IconLauncherShape": {
+        "severity": "Warning",
+        "count": 5,
+        "files": [
+          "mobile/composeApp/src/androidMain/res/mipmap-hdpi/ic_launcher.png",
+          "mobile/composeApp/src/androidMain/res/mipmap-mdpi/ic_launcher.png",
+          "mobile/composeApp/src/androidMain/res/mipmap-xhdpi/ic_launcher.png",
+          "mobile/composeApp/src/androidMain/res/mipmap-xxhdpi/ic_launcher.png",
+          "mobile/composeApp/src/androidMain/res/mipmap-xxxhdpi/ic_launcher.png"
+        ]
+      },
+      "ObsoleteSdkInt": {
+        "severity": "Warning",
+        "count": 1,
+        "files": [
+          "mobile/composeApp/src/androidMain/res/mipmap-anydpi-v26"
+        ]
+      },
+      "OldTargetApi": {
+        "severity": "Warning",
+        "count": 1,
+        "files": [
+          "mobile/composeApp/build.gradle.kts"
+        ]
+      },
+      "RememberReturnType": {
+        "severity": "Error",
+        "count": 1,
+        "files": [
+          "mobile/composeApp/src/androidMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/lang/AppLanguage.android.kt"
+        ]
+      },
+      "UseKtx": {
+        "severity": "Warning",
+        "count": 1,
+        "files": [
+          "mobile/composeApp/src/androidMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/library/AndroidBuildLibraryStorage.kt"
+        ]
+      }
+    }
+  },
+  "bundletool_get_size": {
+    "source": "52-bundletool-size.txt (summarised)",
+    "rows": 2072,
+    "per_abi_bytes": {
+      "arm64-v8a": {
+        "min": 16284067,
+        "max": 16326346
+      },
+      "armeabi-v7a": {
+        "min": 16283743,
+        "max": 16326022
+      },
+      "x86": {
+        "min": 16284441,
+        "max": 16326720
+      },
+      "x86_64": {
+        "min": 16284324,
+        "max": 16326603
+      }
+    }
+  }
+}

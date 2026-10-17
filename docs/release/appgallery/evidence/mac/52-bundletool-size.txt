@@ -1,0 +1,9 @@
+# bundletool get-size total --dimensions=ABI,SCREEN_DENSITY,LANGUAGE on the release AAB
+# summarised from the raw output (2072 ABI x density x language rows; raw kept in the run's log directory)
+# estimated per-device download size in bytes, min and max over all densities and languages
+ABI,MIN,MAX
+arm64-v8a,16284067,16326346
+armeabi-v7a,16283743,16326022
+x86,16284441,16326720
+x86_64,16284324,16326603
+ALL,16283743,16326720

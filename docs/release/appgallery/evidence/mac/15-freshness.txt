@@ -1,0 +1,24 @@
+OUTDATED: 1.60.1.70450 is publishable (is_bgdl=false) and newer than the product build 1.60.1.70374
+{
+  "schemaVersion": 1,
+  "kind": "product-freshness",
+  "game": "forever",
+  "status": "OUTDATED",
+  "productBuild": "1.60.1.70374",
+  "latestPublishable": {
+    "version": "1.60.1.70450",
+    "product": "wow_classic_beta",
+    "createdAt": "2026-10-16 22:29:05",
+    "isBgdl": false
+  },
+  "latestDetected": {
+    "version": "1.60.1.70450",
+    "product": "wow_classic_beta",
+    "createdAt": "2026-10-16 22:29:05",
+    "isBgdl": false
+  },
+  "newerUnpublishable": [],
+  "reason": "1.60.1.70450 is publishable (is_bgdl=false) and newer than the product build 1.60.1.70374",
+  "source": "wago.tools",
+  "checkedAt": "2026-10-17T15:30:54Z"
+}
