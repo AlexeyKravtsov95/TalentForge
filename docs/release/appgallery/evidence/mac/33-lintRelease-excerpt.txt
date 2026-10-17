@@ -1,0 +1,12 @@
+> Task :shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :composeApp:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :composeApp:lintRelease FAILED
+Lint found 1 error, 9 warnings. First failure:
+<worktree>/mobile/composeApp/src/androidMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/lang/AppLanguage.android.kt:15: Error: remember calls must not return Unit [RememberReturnType from androidx.compose.runtime]
+* What went wrong:
+> Lint found errors in the project; aborting build.
+  Lint found 1 error, 9 warnings. First failure:
+  <worktree>/mobile/composeApp/src/androidMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/lang/AppLanguage.android.kt:15: Error: remember calls must not return Unit [RememberReturnType from androidx.compose.runtime]
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+BUILD FAILED in 464ms
