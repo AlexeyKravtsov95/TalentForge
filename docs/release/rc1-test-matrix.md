@@ -96,7 +96,7 @@ A PASS in MAC-JVM proves the shared/common behaviour. It does **not** prove the 
 | AS-08 | Reset followed by immediate navigation | — | UNVERIFIED (device) | covered in common by AS-04 + AL-06 |
 | AS-09 | App backgrounded / process killed during a pending write | — | UNVERIFIED | needs a device run (`am kill` while held) |
 | AS-10 | Concurrent writes (autosave vs duplicate/delete/import) | STATIC | UNVERIFIED → suspected risk SR-1 | — |
-| AS-11 | iPad multi-window same build | STATIC + artifact | UNVERIFIED → SR-2 / TF-RC1-IOS-SCENES | built Info.plist |
+| AS-11 | iPad multi-window same build | STATIC + artifact | UNVERIFIED → SR-2 / TF-RC1-IOS-SCENES | built Info.plist; **release gate**: checklist §2 / §8 item 4a |
 | AS-12 | Large library behaviour | — | UNVERIFIED (SR-5) | procedure below |
 
 ## 7. Export / import

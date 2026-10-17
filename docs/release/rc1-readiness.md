@@ -134,11 +134,15 @@ P2 findings (8) are listed in [rc1-defects.md](rc1-defects.md#p2--non-blocking).
    - **M5.DATA.4** (proposed, can run in parallel): refresh to `1.60.1.70425` or record the decision not to (TF-RC1-DATA).
    - **M5.RC.2b:** engineering blockers and selected P2s (see checklist §8).
    - **M5.RC.3:** final RC verification on physical devices, with CI restored.
-7. **M5.RC.2a icon and branding requirements:** see [checklist §4](rc1-release-checklist.md#4-app-icon-readiness-tf-rc1-icon). The icon must be original TalentForge artwork with no Blizzard/WoW artwork. It needs an Android adaptive icon (108 dp layers, 66 dp safe zone, monochrome layer), a RuStore 512×512 opaque PNG/JPG, and an iOS 1024×1024 master with default, dark and tinted appearances.
+7. **M5.RC.2a icon and branding requirements:** see [checklist §4](rc1-release-checklist.md#4-app-icon-readiness-tf-rc1-icon).
+   - M5.RC.1 generates and integrates no icon; `TF-RC1-ICON` stays OPEN / P1.
+   - M5.RC.2a needs original TalentForge artwork approved by the owner. AI-assisted concepts are allowed if the result is approved and passes a rights review.
+   - No Blizzard/WoW logos or artwork, no other unauthorized artwork, no placeholder icon in a release build.
+   - Deliverables: an Android adaptive icon (108 dp layers, 66 dp safe zone, monochrome layer), a RuStore 512×512 opaque PNG/JPG, and an iOS 1024×1024 master with default, dark and tinted appearances.
 8. **Proposed M5.RC.2b tasks:**
    - release signing config read from local or env secrets (TF-RC1-SIGNING);
    - iOS `PrivacyInfo.xcprivacy` (TF-RC1-IOS-PRIVACY);
-   - single-scene decision for iPad (TF-RC1-IOS-SCENES);
+   - iPad multi-scene: disable multiple scenes for v1 and verify the built `Info.plist`, or implement cross-scene-safe persistence in a separately reviewed change (TF-RC1-IOS-SCENES);
    - fix or justify the lint error and add a lint baseline (TF-RC1-LINT);
    - Android release hardening decisions: R8, `allowBackup`, `localeFilters`, `localeConfig`, version numbers (TF-RC1-ANDROID-CONFIG);
    - an in-app About/legal screen with a non-affiliation disclaimer and OSS notices, if the owner decides on one (LR-2, LR-4);
@@ -147,6 +151,7 @@ P2 findings (8) are listed in [rc1-defects.md](rc1-defects.md#p2--non-blocking).
 9. **Conditions before M5.RC.3:**
    - all P1s closed (TF-RC1-DATA closed by refresh or recorded decision);
    - legal and owner review signed off;
+   - for an iOS RC: the iPad multi-scene gate is closed (scenes disabled and verified in the built `Info.plist`, or cross-scene-safe persistence two-window tested); iPad multi-window is not approved without verification;
    - CI green, or the infrastructure block documented with a full local run on the RC commit;
    - every UNVERIFIED critical scenario in §6 executed on a physical Android phone (ru and en) and, for iOS, on a physical device or TestFlight;
    - a freshness check run within 24 h of the RC.

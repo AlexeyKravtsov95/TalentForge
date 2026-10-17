@@ -46,7 +46,7 @@ How to read this checklist:
 - [x] Built with Xcode 26.4.1 / iOS 26.4 SDK. This meets Apple's "Xcode 26 / iOS 26 SDK" upload minimum (in effect since 2026-04-28).
 - [ ] **(gate)** `PrivacyInfo.xcprivacy` added. It must declare User Defaults plus the Compose/Kotlin categories, with reason codes confirmed against Apple's documentation (TF-RC1-IOS-PRIVACY).
 - [ ] **(gate)** AppIcon 1024×1024 integrated (TF-RC1-ICON)
-- [ ] Multi-scene decision for iPad (TF-RC1-IOS-SCENES)
+- [ ] **(gate)** iPad multi-scene (TF-RC1-IOS-SCENES): **either** multiple scenes disabled for the first release **and** `UIApplicationSupportsMultipleScenes = false` confirmed in the **built** release `Info.plist`, **or** cross-scene-safe persistence implemented and tested with two iPad windows in a separately reviewed change. iPad multi-window must not be approved without one of these.
 - [ ] `ITSAppUsesNonExemptEncryption` set (the app uses no encryption), so each upload skips the export-compliance question.
 - [ ] Launch screen: the generated empty `UILaunchScreen` shows the system background before Compose paints dark. Accept or style it.
 
@@ -71,7 +71,11 @@ What can be verified without an account: simulator builds and tests, unsigned de
 
 **Status: OPEN, P1, Android + iOS. Owner: Product/Design. Planned: M5.RC.2a.**
 
-The source must be original, approved TalentForge artwork. It must not be World of Warcraft/Blizzard artwork, a downloaded icon or a placeholder.
+**Icon policy (applies to M5.RC.1 → M5.RC.2a).**
+1. **M5.RC.1 generates and integrates no icon.** This milestone only records the gap; `TF-RC1-ICON` stays **OPEN / P1**.
+2. **M5.RC.2a requires original TalentForge artwork that the owner has approved** before it is integrated.
+3. **AI-assisted concept creation is allowed**, provided the result is approved by the owner and passes a rights review (originality, the tool's terms and output rights, no resemblance to third-party marks) before integration.
+4. **Not allowed:** Blizzard or World of Warcraft logos or artwork (class/talent icons included), any other borrowed or unauthorized artwork, downloaded stock icons without a cleared license, and placeholder icons shipped in a release build.
 
 **Android launcher, adaptive icon** ([developer.android.com](https://developer.android.com/develop/ui/views/launch/icon_design_adaptive)):
 - [ ] Foreground and background layers, 108×108 dp each. The inner 66×66 dp safe zone holds the logo, which is at least 48 dp and at most 66 dp. The outer 18 dp on each side is reserved for masking. Vector preferred.
@@ -107,7 +111,8 @@ The source must be original, approved TalentForge artwork. It must not be World 
 **RuStore.** Confirmed from the official publication and signing pages:
 - [ ] Signed APK, or AAB plus signing key. Package name unique.
 - [ ] Icon 512×512 (see §4).
-- [ ] ≥ 3 phone screenshots, PNG/JPG, ≤ 3 MB each, max 2160×3840. Tablet screenshots (≥ 3) if tablets are targeted.
+- [ ] Phone screenshots (mandatory): at least 3, PNG/JPG, **up to 3 MB each**, max 2160×3840.
+- [ ] Tablet screenshots (optional): if supplied, at least 3, PNG/JPG, **up to 5 MB each**.
 - [ ] App name ≤ 30 characters; short description ≤ 80; full description ≤ 4000.
 - [ ] Category, age rating, at least one developer contact.
 - [ ] **Data Safety** declaration: no data collected or shared; local storage only; Android auto-backup per the `allowBackup` decision.
@@ -146,6 +151,7 @@ M5.RC.3 can pass only when **all** of these hold:
 2. [ ] TF-RC1-SIGNING closed; the signed artifact verifies.
 3. [ ] TF-RC1-DATA closed by refresh or a documented owner decision; the freshness check was run within 24 h.
 4. [ ] For an iOS release, TF-RC1-IOS-PRIVACY closed and the archive validated in App Store Connect. For a RuStore-only RC.3 this gate is deferred, explicitly.
+   - [ ] **4a.** For an iOS release, the iPad multi-scene gate (§2) is closed: multiple scenes disabled and verified in the built `Info.plist`, **or** cross-scene-safe persistence implemented and two-window tested in a separately reviewed change. M5.RC.3 must not approve iPad multi-window support without one of these.
 5. [ ] No open P0 or P1. Each open P2 is accepted in writing or fixed.
 6. [ ] Every UNVERIFIED critical scenario in [rc1-readiness §6](rc1-readiness.md#6-limitations-and-unverified-critical-scenarios) executed, with results recorded (§7 of this checklist).
 7. [ ] Full validation on the RC commit: Python baseline, four sync checks, `jvmTest`, `desktopTest`, `iosSimulatorArm64Test` (forced, not from cache), `assembleRelease`/`bundleRelease`, `lintRelease`, iOS links and `xcodebuild`.

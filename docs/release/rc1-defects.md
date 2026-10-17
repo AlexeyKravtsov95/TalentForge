@@ -56,7 +56,11 @@ The device-level checks behind that statement ran on an Android emulator only (s
 - Android: an adaptive icon in `mipmap-anydpi-v26/ic_launcher.xml` (foreground, background and monochrome layers), legacy densities, and `android:icon` in the manifest.
 - iOS: the 1024×1024 master in `AppIcon.appiconset`, or an Icon Composer `.icon`, with dark/tinted variants as the design provides.
 
-Do **not** use placeholder, generated or World of Warcraft artwork.
+**Icon policy (applies to M5.RC.1 → M5.RC.2a).**
+1. **M5.RC.1 generates and integrates no icon.** This milestone only records the gap; `TF-RC1-ICON` stays **OPEN / P1**.
+2. **M5.RC.2a requires original TalentForge artwork that the owner has approved** before it is integrated.
+3. **AI-assisted concept creation is allowed**, provided the result is approved by the owner and passes a rights review (originality, the tool's terms and output rights, no resemblance to third-party marks) before integration.
+4. **Not allowed:** Blizzard or World of Warcraft logos or artwork (class/talent icons included), any other borrowed or unauthorized artwork, downloaded stock icons without a cleared license, and placeholder icons shipped in a release build.
 
 **Verification.**
 1. `aapt2 dump badging` on the signed release APK shows a non-empty `icon=` value.
@@ -186,8 +190,12 @@ Do **not** use placeholder, generated or World of Warcraft artwork.
   - On iPad, two windows each compose their own `App`, each with its own `BuildAutosaveCoordinator` and write lock, over the same `NSUserDefaults` key.
   - The repository does a whole-library read–modify–write. Editing the same build in two windows ends as last-writer-wins.
   - Overlapping writes could drop an unrelated record's update.
-- **Resolution:** decide on single-scene support for v1 (set `INFOPLIST_KEY_UIApplicationSupportsMultipleScenes = NO` or remove the generation key) or make writes cross-scene safe.
-- **Verification:** inspect the built `Info.plist`. On an iPad simulator, check that "New Window"/split view is unavailable, or run the two-window scenario.
+- **Classification:** the *configuration mismatch* is the confirmed P2 defect. The data-loss scenario stays a *suspected* risk (SR-2) until it is reproduced; it is not counted as a defect.
+- **Release gate (iPad, M5.RC.3).** The persistence model is a whole-library read–modify–write with one write coordinator per `App` composition. M5.RC.3 therefore **must not approve iPad multi-window support without verification**. One of the following must be true before an iOS RC is accepted:
+  - **(a)** multiple scenes are **disabled** for the first release, and the **built** `Info.plist` of the release archive shows `UIApplicationSupportsMultipleScenes = false` (checking the source plist is not enough, see the evidence above); **or**
+  - **(b)** cross-scene-safe persistence is implemented and tested (for example one process-wide serialized writer, or compare-and-swap on the stored payload) **in a separately reviewed change**, with a two-window iPad test showing that neither concurrent edits nor edits to different builds lose data.
+- **Resolution:** option (a) is the smaller change for v1 (`INFOPLIST_KEY_UIApplicationSupportsMultipleScenes = NO`, or drop the scene-manifest generation key).
+- **Verification:** `plutil -p <archive>.app/Info.plist | grep UIApplicationSupportsMultipleScenes`, and on an iPad simulator check that a second window cannot be opened; for option (b), the two-window scenario.
 
 ### TF-RC1-COPY-NAME — Duplicate names are persisted in English (" (copy)", "Draft (copy)") in the Russian UI
 
