@@ -32,6 +32,12 @@ anywhere in these documents and is out of scope.
 
 ### 2.1 Developer account and identity verification 🔑
 
+> **Status for TalentForge (2026-10-17):** the owner reports that Huawei developer account identity
+> verification is **COMPLETE**. This was not independently verified in this milestone. Whether the
+> account can create the Android app in AppGallery Connect and submit it for release is
+> **VERIFY IN CONSOLE** (§6 step 1). The registration steps below are kept as reference only; they do
+> not need to be repeated.
+
 From [Getting Started](https://developer.huawei.com/consumer/en/doc/app/agc-help-getstarted-0000001100316670)
 (updated 2026-03-13) and the identity-verification pages:
 
@@ -170,7 +176,7 @@ Same guide:
 
 | Option | Official facts | Use for TalentForge |
 |---|---|---|
-| [Open Testing](https://developer.huawei.com/consumer/en/doc/AppGallery-connect-Guides/agc-betatest-introduction-0000001071477284) | Invite test users with HUAWEI IDs; Android APK/AAB; phones and tablets only; test period with start and end; manual review is skipped when there are ≤ 100 test users (other restrictions apply) | **Recommended first step** 🔑: release the signed RC APK as an open-testing version to the owner's own HUAWEI ID and a few testers, then run §5 on the delivered build |
+| [Open Testing](https://developer.huawei.com/consumer/en/doc/AppGallery-connect-Guides/agc-betatest-introduction-0000001071477284) | Invite test users with HUAWEI IDs; Android APK/AAB; phones and tablets only; test period ≤ 90 days; ≤ 100 test users when manual review is skipped, ≤ 5000 with manual review ([Restrictions](https://developer.huawei.com/consumer/en/doc/AppGallery-connect-Guides/agc-betatest-restriction-0000001071399071)). The formal version is released "by updating the released version" with *Version for open testing* = No ([Releasing a Formal Version](https://developer.huawei.com/consumer/en/doc/AppGallery-connect-Guides/agc-betatest-officialrelease-0000001071159046)) | **Recommended first step** 🔑: release the signed RC APK as an open-testing version to the owner's own HUAWEI ID and a few testers, run §5 on the delivered build, then follow §6.1 |
 | Scheduled release | Release immediately after approval or at a set time; *Release now* is possible before that time | Align the AppGallery go-live with RuStore |
 | [Phased release](https://developer.huawei.com/consumer/en/doc/app/agc-help-phased-release-0000001099836872) | Only for **updates** of an app that already has a full release; APK on phones; ≤ 30 days; the percentage only increases; **no rollback** | Not available for the first release; consider for later updates |
 | Cloud Testing / Cloud Debugging | Huawei remote real devices, optional | Optional supplement when no physical Huawei phone is available; does not replace §5 |
@@ -221,7 +227,9 @@ Huawei tablet if available. Cloud Testing (§2.10) is an optional supplement.
 | H-2 | Empty library; create a build for each of the 9 classes | Class art, talent trees, icons and descriptions load offline |
 | H-3 | Spend/refund with the inspector buttons, Max, Undo/Redo, Reset; pan and pinch | Matches the B3 contract; no crash |
 | H-4 | Force-stop and relaunch; reboot the device | Builds persist exactly |
-| H-5 | Rename, Duplicate, Delete (and their Cancel paths) from Home, All Builds and the editor | As on other devices |
+| H-5a | **Home → Recent → ⋯** offers exactly *Rename · Share · Delete*. Rename (confirm and Cancel), Share (then close the sheet), Delete (confirm and Cancel) | Rename: new name shown, row order unchanged; Cancel changes nothing. Delete: the row disappears only after confirming; Cancel keeps it. Force-stop + relaunch: the results persist |
+| H-5b | **All Builds → ⋯** offers exactly *Rename · Duplicate · Share · Delete*. Each action, with Cancel where a dialog exists (Rename, Delete) | Duplicate adds one independent copy; Rename/Delete as in H-5a; force-stop + relaunch: the list is exactly as left |
+| H-5c | **Talent editor → ⋯** offers exactly *Rename · Share · Reset talents* (no Delete). Rename (confirm and Cancel); Reset talents, then its Undo; Reset without Undo | The title updates in place; Undo restores the allocation; after force-stop + relaunch the build reopens with the last saved state |
 | H-6 | **Share**: editor ⋯ → Share → system chooser → a messenger; cancel the chooser; rotate with the sheet open | Chooser opens; the received text is the exact `TF1…` code; cancelling shows nothing |
 | H-7 | **Copy code**, then Import → Paste | The clipboard holds the exact code; Paste reads it; record any vendor clipboard-access notice |
 | H-8 | Import a valid, a damaged and an older-build code | Preview or the typed error described in [build-sharing.md](../../build-sharing.md) |
@@ -237,7 +245,9 @@ Huawei tablet if available. Cloud Testing (§2.10) is an optional supplement.
 Pre-conditions: every gate in [readiness §8](readiness.md#8-release-blockers) is closed, the signed
 release APK passed §5, and the owner approved the store copy and assets.
 
-1. 🔑 Register a HUAWEI ID and complete identity verification (§2.1); wait for approval.
+1. 🔑 Identity verification is reported **complete** by the owner (§2.1); do not register again.
+   **VERIFY IN CONSOLE** that the account can open *Apps and atomic services → Android* and create an
+   app, and record the result. AGC publication privileges were not independently verified.
 2. 🔑 AGC → *Apps and atomic services* → *Android* → *Release*: APK, Mobile phone, `TalentForge`,
    category **App**, default language (§2.2).
 3. 🔑 *App information*: EN + RU localization (name, brief and full introduction from the listing
@@ -248,9 +258,52 @@ release APK passed §5, and the owner approved the store copy and assets.
    (*Collect personal data = No* once the owner confirms [privacy §5](privacy-and-compliance.md#5-store-privacy-declarations)),
    the AI declaration, and reviewer notes ("offline app, no account, no sign-in").
 5. 🔑 Submit. After approval, run §5 (H-13, H-14) on the Open-Testing build.
-6. 🔑 New version with Open testing = **No** (the same APK and `versionCode`, or a higher
-   `versionCode` if the build changed), with the release time aligned with RuStore.
+6. 🔑 Formal release: follow §6.1. It is an **update** of the open-testing version with a **new APK
+   and a higher `versionCode`**; the same APK goes to RuStore in the same release window.
 7. Record the delivered APK's SHA-256 and the final release countries in the owner's release record.
+
+### 6.1 Open Testing → formal (production) release
+
+What the official documentation says:
+
+- [Releasing a Formal Version](https://developer.huawei.com/consumer/en/doc/AppGallery-connect-Guides/agc-betatest-officialrelease-0000001071159046)
+  (updated 2024-12-10): after open testing, "release the formal version of the app by updating the
+  released version" (see *Releasing an App Update*), selecting **No** for *Version for open testing*.
+- [Releasing an App Update](https://developer.huawei.com/consumer/en/doc/app/agc-help-update-version-0000001146436549)
+  (updated 2025-11-06): *Update* creates *New version – Draft*; for an APK, "the version code of the
+  uploaded app package is not earlier than that of the released version" and the signature must be
+  the same as the released package. If the code is the **same**, AGC warns that "users who have
+  already installed this version will not be able to update to the new one". The page also notes that
+  the *Update* button may be absent while the last version has not been released.
+- Whether AGC accepts re-submitting the **identical** open-testing APK as the formal version is not
+  documented and is **UNVERIFIED**. This runbook does not rely on it.
+
+Procedure (owner 🔑 = console step):
+
+| # | Step | Who |
+|---|---|---|
+| 1 | Open-testing version *N* (signed release APK, `versionCode` *N*) is approved and released to testers; §5 passes on the delivered APK | 🔑 owner + QA |
+| 2 | Decide go/no-go for production; fix anything found and go back to step 1 if code changed | owner |
+| 3 | Build **one** new signed release APK from the release commit with `versionCode` *N + k* (k ≥ 1) and the intended `versionName`; verify it (`apksigner` SHA-256 = owner fingerprint, not debuggable; [signing §7–§8](multi-store-signing.md#7-preventing-accidental-debug-key-signing)) | engineering + owner (key) |
+| 4 | 🔑 AGC → the app → *Update* → *New version – Draft*: *Version for open testing* = **No**; *Manage packages* → upload the APK from step 3; Release type = *Full release* (phased release is only for updates of an app that already has a full release); check countries, privacy, rating and reviewer notes; Submit | owner |
+| 5 | 🔑 RuStore Console: upload the **same** APK file from step 3 (same SHA-256, same `versionCode`) as the RuStore release; submit for moderation | owner |
+| 6 | 🔑 Schedule both releases for the same window (AGC: specified release time or *Release now*; RuStore: its publication settings) so that neither store lags | owner |
+| 7 | After publication: install from each store, `adb pull` the delivered APK, compare SHA-256 (H-13); run H-14 | owner + QA |
+
+`versionCode` policy:
+
+- Every built APK gets a **unique, strictly increasing** `versionCode`; a number is never reused for
+  different bytes.
+- Open-testing builds **consume** their numbers. The production APK always has a higher
+  `versionCode` than every APK uploaded to either store before it.
+- The production APK is **byte-identical** in AppGallery and RuStore (one file, one `versionCode`).
+- If a store rejects the build and a fix is needed, the fixed APK gets a new, higher `versionCode` and
+  replaces the pending submission in **both** stores.
+- The first public `versionCode` / `versionName` are still an owner decision (release checklist §5).
+
+Is a new APK needed? **Yes**, by this policy: the formal release uses a newly built APK with a higher
+`versionCode`, even if the code is unchanged since the open-testing build. This avoids the documented
+same-`versionCode` update warning and the undocumented question of re-submitting an identical APK.
 
 ## 7. Sources
 
@@ -267,5 +320,7 @@ Accessed 2026-10-17 (Huawei pages show their own "Last updated" date).
 - [Categorization](https://developer.huawei.com/consumer/en/doc/app/50103) — 2024-09-09
 - [Open Testing: Service Introduction](https://developer.huawei.com/consumer/en/doc/AppGallery-connect-Guides/agc-betatest-introduction-0000001071477284) — 2025-01-08
 - [Releasing an App by Phase](https://developer.huawei.com/consumer/en/doc/app/agc-help-phased-release-0000001099836872) — 2026-01-07
+- [Releasing an App Update](https://developer.huawei.com/consumer/en/doc/app/agc-help-update-version-0000001146436549) — 2025-11-06
+- [Open Testing: Releasing a Formal Version](https://developer.huawei.com/consumer/en/doc/AppGallery-connect-Guides/agc-betatest-officialrelease-0000001071159046) — 2024-12-10; [Restrictions](https://developer.huawei.com/consumer/en/doc/AppGallery-connect-Guides/agc-betatest-restriction-0000001071399071) — 2024-11-11
 - [App Signing: Service Introduction](https://developer.huawei.com/consumer/en/doc/AppGallery-connect-Guides/agc-appsigning-introduction-0000001051379577) — 2025-07-16
 - RuStore — [Правила модерации RuStore](https://www.rustore.ru/help/developers/publishing-and-verifying-apps/requirement-apps)

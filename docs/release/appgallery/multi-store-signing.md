@@ -278,8 +278,10 @@ updates for an app it did not install, and whether RuStore does. Neither store d
 Android 14+, "update ownership" applies only if the installing store requests it. Verify on a device
 during M5.RC.3 ([testing-and-publication §5](testing-and-publication.md#5-device-test-plan)).
 
-Version policy: one `versionCode` per built APK; upload the same file to both stores; publish to
-both in the same release window. RuStore may delist an app whose RuStore version lags the version
+Version policy: one `versionCode` per built APK, strictly increasing and never reused; upload the
+same file to both stores; publish to both in the same release window. Open-testing builds consume
+their own numbers; the production APK is a new build with a higher `versionCode`
+([testing-and-publication §6.1](testing-and-publication.md#61-open-testing--formal-production-release)). RuStore may delist an app whose RuStore version lags the version
 the developer distributes through other stores ([moderation rules §8.5](https://www.rustore.ru/help/developers/publishing-and-verifying-apps/requirement-apps)).
 
 ## 10. Consequences of losing (or leaking) the signing key
