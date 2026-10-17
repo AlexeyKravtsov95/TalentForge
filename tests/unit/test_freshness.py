@@ -1,8 +1,9 @@
 """Product freshness check (M5.DATA.2): CURRENT / OUTDATED / UNKNOWN, offline.
 
 Every case runs the real ``WagoBuildSource`` + ``HttpClient`` against an
-``httpx.MockTransport`` serving ``tests/fixtures/wago/builds-2026-10-10.json`` or
-``builds-2026-10-14.json`` (real ``/api/builds`` subsets) or a variant of one derived
+``httpx.MockTransport`` serving ``tests/fixtures/wago/builds-2026-10-10.json``,
+``builds-2026-10-14.json`` or ``builds-2026-10-17.json`` (real ``/api/builds`` subsets) or a
+variant of one derived
 explicitly in the test. A network,
 HTTP or schema failure must be UNKNOWN - never CURRENT ("no update").
 """
@@ -33,10 +34,13 @@ BUILDS = ROOT / "tests" / "fixtures" / "wago" / "builds-2026-10-10.json"
 # The index of the M5.DATA.3 decision (2026-10-14 16:50 UTC): 70374 is the newest Forever
 # build, explicitly not a background download; a new `wowf` product appeared with 70245.
 BUILDS_70374 = ROOT / "tests" / "fixtures" / "wago" / "builds-2026-10-14.json"
+# The index of the M5.DATA.4 decision (2026-10-17 18:40 UTC): 70425 and then 70450 appeared,
+# both explicitly not background downloads; `wowf` still lists only 70245.
+BUILDS_70450 = ROOT / "tests" / "fixtures" / "wago" / "builds-2026-10-17.json"
 GAME = get_game("forever")
 NOW = datetime(2026, 10, 10, 17, 28, 14, tzinfo=UTC)
 V70245, V70291, V70334, V70338 = "1.60.1.70245", "1.60.1.70291", "1.60.1.70334", "1.60.1.70338"
-V70374 = "1.60.1.70374"
+V70374, V70425, V70450 = "1.60.1.70374", "1.60.1.70425", "1.60.1.70450"
 
 Handler = Callable[[httpx.Request], httpx.Response]
 
@@ -48,6 +52,11 @@ def payload() -> dict[str, Any]:
 
 def payload_70374() -> dict[str, Any]:
     data: dict[str, Any] = json.loads(BUILDS_70374.read_text(encoding="utf-8"))
+    return data
+
+
+def payload_70450() -> dict[str, Any]:
+    data: dict[str, Any] = json.loads(BUILDS_70450.read_text(encoding="utf-8"))
     return data
 
 
@@ -145,6 +154,37 @@ def test_the_wowf_product_is_outside_the_game_s_products() -> None:
     assert GAME.products == ("wow_classic_beta",)
     assert [e["version"] for e in payload_70374()["wowf"]] == [V70245]
     report = check(serving(payload_70374()), V70374)
+    assert report.latest_publishable is not None
+    assert report.latest_publishable.info.product == "wow_classic_beta"
+
+
+def test_the_m5_data_4_index_makes_the_previous_product_outdated() -> None:
+    """The transition M5.DATA.4 made: 70374 was the product, 70425 and 70450 appeared
+    publishable; the newest one is the answer."""
+    report = check(serving(payload_70450()), V70374)
+    assert report.status is FreshnessStatus.OUTDATED
+    assert latest_publishable(report) == V70450
+    assert report.latest_publishable is not None
+    assert report.latest_publishable.background_download is False
+    assert "1.60.1.70450 is publishable (is_bgdl=false)" in report.reason
+    assert check(serving(payload_70450()), V70425).status is FreshnessStatus.OUTDATED
+
+
+def test_the_m5_data_4_index_is_current_for_70450() -> None:
+    report = check(serving(payload_70450()), V70450)
+    assert report.status is FreshnessStatus.CURRENT
+    assert latest_publishable(report) == V70450
+    assert report.latest_detected is not None
+    assert str(report.latest_detected.info.version) == V70450
+    assert report.newer_unpublishable == ()
+
+
+def test_the_wowf_product_is_unchanged_in_the_m5_data_4_index() -> None:
+    """Three days later ``wowf`` still carries only 1.60.1.70245 (and ``wow_cn_beta`` stops
+    at 70374): nothing in the index moves the Forever product off ``wow_classic_beta``."""
+    assert [e["version"] for e in payload_70450()["wowf"]] == [V70245]
+    assert payload_70450()["wowf"] == payload_70374()["wowf"]
+    report = check(serving(payload_70450()), V70450)
     assert report.latest_publishable is not None
     assert report.latest_publishable.info.product == "wow_classic_beta"
 
@@ -359,7 +399,7 @@ def test_script_checks_the_app_s_product_bundle(
     script = load_script("check_product_freshness")
     declared = script.product_build()
     assert declared in script.BUNDLED_BUILDS
-    monkeypatch.setattr(cli, "_http", lambda: http(serving(payload_70374())))
+    monkeypatch.setattr(cli, "_http", lambda: http(serving(payload_70450())))
     code = script.main([])
     result = json.loads(capsys.readouterr().out)
     # the app declares the build this index names as the latest publishable one

@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 1,
+    "token": "WARRIOR",
+    "name": "Warrior"
+  },
+  "fromBuild": "1.60.1.70374",
+  "toBuild": "1.60.1.70450",
+  "fromContentHash": "sha256:e47bd92d7cf2896c65e9e33124929752de4dbbee3b58c33f67356972be6e2158",
+  "toContentHash": "sha256:f346086edd76c3b5ce8844ffb55370c0c3235d753f91a92271d56182303f0969",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 1,
+    "changesByKind": {
+      "descriptionChanged": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 110524,
+      "treeId": 1117,
+      "name": "Bloodthrill",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 137214,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Your Main Hand melee attacks against enemies afflicted by your Rend have a $s1% chance to allow the use of your Overpower ability on the target. Lasts $1289681d.",
+          "new": "Grants your Main Hand melee attacks against enemies afflicted by your Rend a $s1% chance to allow an activation of Overpower."
+        }
+      ]
+    }
+  ]
+}

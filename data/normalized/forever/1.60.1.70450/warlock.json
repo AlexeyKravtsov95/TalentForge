@@ -1,0 +1,4096 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "clientBuild": "1.60.1.70450",
+  "class": {
+    "id": 9,
+    "token": "WARLOCK",
+    "name": "Warlock"
+  },
+  "trees": [
+    {
+      "id": 1116,
+      "pointBudget": {
+        "currencyId": 3820,
+        "maxPoints": 51
+      },
+      "layout": {
+        "xStep": 600,
+        "yStep": 600
+      },
+      "sections": [
+        {
+          "index": 0,
+          "name": null,
+          "nodeIds": [
+            105909,
+            105910,
+            105911,
+            105912,
+            105913,
+            105914,
+            105916,
+            105917,
+            105918,
+            105919,
+            105920,
+            105921,
+            105922,
+            105923,
+            105924,
+            105925,
+            110876
+          ]
+        },
+        {
+          "index": 1,
+          "name": null,
+          "nodeIds": [
+            105890,
+            105891,
+            105892,
+            105893,
+            105894,
+            105895,
+            105896,
+            105897,
+            105898,
+            105899,
+            105900,
+            105901,
+            105902,
+            105903,
+            105904,
+            105905,
+            105906,
+            105907,
+            105908
+          ]
+        },
+        {
+          "index": 2,
+          "name": null,
+          "nodeIds": [
+            105874,
+            105875,
+            105876,
+            105877,
+            105878,
+            105879,
+            105880,
+            105881,
+            105882,
+            105883,
+            105884,
+            105885,
+            105886,
+            105887,
+            105888,
+            105889
+          ]
+        }
+      ],
+      "nodes": [
+        {
+          "id": 105921,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 2120,
+            "row": 0,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 18182,
+          "name": "Improved Life Tap",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130651,
+              "definitionId": 135452,
+              "spellId": 18182,
+              "name": "Improved Life Tap",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the amount of Mana awarded by your Life Tap spell by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105925,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 18174,
+          "name": "Suppression",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130655,
+              "definitionId": 135456,
+              "spellId": 18174,
+              "name": "Suppression",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Improves your chance to hit by $m1% and reduces all threat you generate by $m3%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -4
+                    },
+                    {
+                      "rank": 2,
+                      "value": -8
+                    },
+                    {
+                      "rank": 3,
+                      "value": -12
+                    },
+                    {
+                      "rank": 4,
+                      "value": -16
+                    },
+                    {
+                      "rank": 5,
+                      "value": -20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105924,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 2130,
+            "row": 0,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 17810,
+          "name": "Improved Corruption",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130654,
+              "definitionId": 135455,
+              "spellId": 17810,
+              "name": "Improved Corruption",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the casting time of your Corruption spell by $/1000;S1 sec and increases the damage it deals by $m2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -400
+                    },
+                    {
+                      "rank": 2,
+                      "value": -800
+                    },
+                    {
+                      "rank": 3,
+                      "value": -1200
+                    },
+                    {
+                      "rank": 4,
+                      "value": -1600
+                    },
+                    {
+                      "rank": 5,
+                      "value": -2000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -2000,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105923,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 2730,
+            "row": 1,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 18218,
+          "name": "Grim Reach",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105921,
+                105924,
+                105925
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130653,
+              "definitionId": 135454,
+              "spellId": 18218,
+              "name": "Grim Reach",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the range of your Affliction spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105922,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 437032,
+          "name": "Soul Harvest",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105921,
+                105924,
+                105925
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130652,
+              "definitionId": 135453,
+              "spellId": 437032,
+              "name": "Soul Harvest",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Killing a non-trivial target afflicted by your Drain Soul increases your Mana regeneration by $m1% for $1242853d and allows $m2% of normal Mana regeneration to continue while casting.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 50
+                    },
+                    {
+                      "rank": 2,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 50
+                    },
+                    {
+                      "rank": 2,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105920,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 403511,
+          "name": "Improved Drains",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105921,
+                105924,
+                105925
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130650,
+              "definitionId": 135451,
+              "spellId": 403511,
+              "name": "Improved Drains",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases health drained or damage done by your Drain Life, Drain Soul, and Wrack spells by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 7
+                    },
+                    {
+                      "rank": 2,
+                      "value": 13
+                    },
+                    {
+                      "rank": 3,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105919,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 18827,
+          "name": "Improved Bane of Agony",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105920,
+                105921,
+                105922,
+                105923,
+                105924,
+                105925
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130649,
+              "definitionId": 135450,
+              "spellId": 18827,
+              "name": "Improved Bane of Agony",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the damage done by your Bane of Agony by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 2,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105918,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 17783,
+          "name": "Fel Concentration",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105920,
+                105921,
+                105922,
+                105923,
+                105924,
+                105925
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130648,
+              "definitionId": 135449,
+              "spellId": 17783,
+              "name": "Fel Concentration",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Gives you a $s1% chance to avoid interruption caused by damage while channeling or casting your Drain Life, Drain Mana, Drain Soul, or Wrack spells.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 23
+                    },
+                    {
+                      "rank": 2,
+                      "value": 47
+                    },
+                    {
+                      "rank": 3,
+                      "value": 70
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 70,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105916,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 3320,
+            "row": 2,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 18288,
+          "name": "Amplify Curse",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105920,
+                105921,
+                105922,
+                105923,
+                105924,
+                105925
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130646,
+              "definitionId": 135447,
+              "spellId": 18288,
+              "name": "Amplify Curse",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the effect of your next Curse of Weakness or Bane of Agony by $s1%, or your next Curse of Exhaustion by $s2%.  Lasts $d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 50,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105917,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2820,
+            "y": 3330,
+            "row": 2,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 427712,
+          "name": "Pandemic",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105920,
+                105921,
+                105922,
+                105923,
+                105924,
+                105925
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130647,
+              "definitionId": 135448,
+              "spellId": 427712,
+              "name": "Pandemic",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the critical strike damage bonus of your Corruption, Bane of Agony, Bane of Doom, Drain Soul, Drain Life, Siphon Life, and Wrack spells by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 33
+                    },
+                    {
+                      "rank": 2,
+                      "value": 67
+                    },
+                    {
+                      "rank": 3,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 110876,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1020,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 8,
+          "maxRank": 5,
+          "spellId": 1310949,
+          "name": "Malevolence",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105916,
+                105917,
+                105918,
+                105919,
+                105920,
+                105921,
+                105922,
+                105923,
+                105924,
+                105925
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 137874,
+              "definitionId": 142628,
+              "spellId": 1310949,
+              "name": "Malevolence",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the critical effect chance of your Shadow spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 1
+                    },
+                    {
+                      "rank": 2,
+                      "value": 2
+                    },
+                    {
+                      "rank": 3,
+                      "value": 3
+                    },
+                    {
+                      "rank": 4,
+                      "value": 4
+                    },
+                    {
+                      "rank": 5,
+                      "value": 5
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 5,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105914,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 18094,
+          "name": "Nightfall",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105916,
+                105917,
+                105918,
+                105919,
+                105920,
+                105921,
+                105922,
+                105923,
+                105924,
+                105925
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130644,
+              "definitionId": 135445,
+              "spellId": 18094,
+              "name": "Nightfall",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Gives your Corruption, Drain Soul, Drain Life, and Wrack spells a $m1% chance to cause you to enter a Shadow Trance after damaging the opponent. The Shadow Trance reduces the casting time of your next Shadow Bolt spell by $17941s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 4,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105913,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 18223,
+          "name": "Curse of Exhaustion",
+          "prerequisites": [
+            {
+              "nodeId": 105916,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105916,
+                105917,
+                105918,
+                105919,
+                105920,
+                105921,
+                105922,
+                105923,
+                105924,
+                105925
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130643,
+              "definitionId": 135444,
+              "spellId": 18223,
+              "name": "Curse of Exhaustion",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the target's movement speed by $s1% for $d.  Only one Curse per Warlock can be active on any one target.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": -30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105912,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 18265,
+          "name": "Siphon Life",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105913,
+                105914,
+                105916,
+                105917,
+                105918,
+                105919,
+                105920,
+                105921,
+                105922,
+                105923,
+                105924,
+                105925,
+                110876
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130642,
+              "definitionId": 135443,
+              "spellId": 18265,
+              "name": "Siphon Life",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Transfers $s1 health from the target to the caster every $t1 sec.  Lasts $d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 11,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105911,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 4530,
+            "row": 4,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 17804,
+          "name": "Soul Siphon",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105913,
+                105914,
+                105916,
+                105917,
+                105918,
+                105919,
+                105920,
+                105921,
+                105922,
+                105923,
+                105924,
+                105925,
+                110876
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130641,
+              "definitionId": 135442,
+              "spellId": 17804,
+              "name": "Soul Siphon",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the damage done or health drained by your Drain Life, Drain Soul, and Wrack spells by $s1% per each of your other Affliction effects active on the target, up to a maximum increase of ${$m1*3}%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 4
+                    },
+                    {
+                      "rank": 2,
+                      "value": 8
+                    },
+                    {
+                      "rank": 3,
+                      "value": 12
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 12,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105910,
+          "sectionIndex": 0,
+          "position": {
+            "x": 2220,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 18271,
+          "name": "Shadow Mastery",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105911,
+                105912,
+                105913,
+                105914,
+                105916,
+                105917,
+                105918,
+                105919,
+                105920,
+                105921,
+                105922,
+                105923,
+                105924,
+                105925,
+                110876
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130640,
+              "definitionId": 135441,
+              "spellId": 18271,
+              "name": "Shadow Mastery",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the damage dealt or life drained by your Shadow spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 2,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 2,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105909,
+          "sectionIndex": 0,
+          "position": {
+            "x": 1620,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 1316697,
+          "name": "Wrack",
+          "prerequisites": [
+            {
+              "nodeId": 105912,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105909,
+                105910,
+                105911,
+                105912,
+                105913,
+                105914,
+                105916,
+                105917,
+                105918,
+                105919,
+                105920,
+                105921,
+                105922,
+                105923,
+                105924,
+                105925,
+                110876
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130639,
+              "definitionId": 135440,
+              "spellId": 1316697,
+              "name": "Wrack",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Tears the target apart from within, inflicting $s1 Shadow damage every $t sec and increasing the damage they take from your other Shadow damage over time effects by $s2% for $d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 36,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105905,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 2130,
+            "row": 0,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 18703,
+          "name": "Improved Health Funnel",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130635,
+              "definitionId": 135436,
+              "spellId": 18703,
+              "name": "Improved Health Funnel",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the amount of health transferred by your Health Funnel spell by $m1%, reduces its health cost by $m2%, and reduces all threat your Health Funnel generates by $m3%. Allows Health Funnel to be used regardless of your demon's health.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 20
+                    },
+                    {
+                      "rank": 2,
+                      "value": 40
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 40,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -15
+                    },
+                    {
+                      "rank": 2,
+                      "value": -30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -30,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -50
+                    },
+                    {
+                      "rank": 2,
+                      "value": -100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -100,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 3,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -15
+                    },
+                    {
+                      "rank": 2,
+                      "value": -30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105908,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 18694,
+          "name": "Improved Imp",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130638,
+              "definitionId": 135439,
+              "spellId": 18694,
+              "name": "Improved Imp",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the damage of your Imp's Firebolt spell by $s2% and the effect of its Fire Shield spell by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    },
+                    {
+                      "rank": 3,
+                      "value": 30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    },
+                    {
+                      "rank": 3,
+                      "value": 30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -300
+                    },
+                    {
+                      "rank": 2,
+                      "value": -700
+                    },
+                    {
+                      "rank": 3,
+                      "value": -1000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -1000,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105907,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 2130,
+            "row": 0,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 18697,
+          "name": "Demonic Embrace",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130637,
+              "definitionId": 135438,
+              "spellId": 18697,
+              "name": "Demonic Embrace",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your total Stamina by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 6
+                    },
+                    {
+                      "rank": 3,
+                      "value": 9
+                    },
+                    {
+                      "rank": 4,
+                      "value": 12
+                    },
+                    {
+                      "rank": 5,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105906,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6820,
+            "y": 2130,
+            "row": 0,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 18769,
+          "name": "Unholy Power",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130636,
+              "definitionId": 135437,
+              "spellId": 18769,
+              "name": "Unholy Power",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases all damage done by your Imp, Voidwalker, Succubus, Incubus, and Felhunter pets by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105902,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 2730,
+            "row": 1,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 1235316,
+          "name": "Demonic Aegis",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105905,
+                105906,
+                105907,
+                105908
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130632,
+              "definitionId": 135433,
+              "spellId": 1235316,
+              "name": "Demonic Aegis",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the effectiveness of your Demon Skin and Demon Armor spells by $m1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 15
+                    },
+                    {
+                      "rank": 2,
+                      "value": 30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105904,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 18705,
+          "name": "Improved Voidwalker",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105905,
+                105906,
+                105907,
+                105908
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130634,
+              "definitionId": 135435,
+              "spellId": 18705,
+              "name": "Improved Voidwalker",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the effectiveness of your Voidwalker's Torment, Consume Shadows, Sacrifice, and Suffering spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    },
+                    {
+                      "rank": 3,
+                      "value": 30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105903,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 18731,
+          "name": "Fel Vitality",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105905,
+                105906,
+                105907,
+                105908
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130633,
+              "definitionId": 135434,
+              "spellId": 18731,
+              "name": "Fel Vitality",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the maximum health and Mana of your Imp, Voidwalker, Succubus, Incubus, and Felhunter by $s1%, and increases your maximum Mana by $s2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    },
+                    {
+                      "rank": 3,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 5
+                    },
+                    {
+                      "rank": 2,
+                      "value": 10
+                    },
+                    {
+                      "rank": 3,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105899,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6820,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 1225214,
+          "name": "Demonic Energies",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105905,
+                105906,
+                105907,
+                105908
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130629,
+              "definitionId": 135430,
+              "spellId": 1225214,
+              "name": "Demonic Energies",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "You heal your pet for $s1% of all spell damage you deal. When you gain Mana from Life Tap, your summoned demon gains $m2% of the Mana you gain.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 8
+                    },
+                    {
+                      "rank": 2,
+                      "value": 15
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 50
+                    },
+                    {
+                      "rank": 2,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105901,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 18754,
+          "name": "Improved Sayaad",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105899,
+                105902,
+                105903,
+                105904,
+                105905,
+                105906,
+                105907,
+                105908
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130631,
+              "definitionId": 135432,
+              "spellId": 18754,
+              "name": "Improved Sayaad",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the effect of your Succubus' and Incubus' Lash of Pain and Soothing Kiss spells by $s1%, and increases the duration of your Succubus' and Incubus' Seduction and Lesser Invisibility spells by $s2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    },
+                    {
+                      "rank": 3,
+                      "value": 30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    },
+                    {
+                      "rank": 3,
+                      "value": 30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105900,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 18788,
+          "name": "Demonic Sacrifice",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105899,
+                105902,
+                105903,
+                105904,
+                105905,
+                105906,
+                105907,
+                105908
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130630,
+              "definitionId": 135431,
+              "spellId": 18788,
+              "name": "Demonic Sacrifice",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "When activated, sacrifices your summoned Demon to enhance the opposing aspect of your power, granting you an effect that lasts $18789d. The effect is canceled if any Demon is summoned.\r\n\r\nImp: Increases your Shadow damage by $18789s1%.\r\n\r\nVoidwalker: Restores $18792s1% of your total Mana every $18792t1 sec.\r\n\r\nSuccubus/Incubus: Increases your Fire damage by $18791s1%.\r\n\r\nFelhunter: Restores $18790s1% of your total Health every $18790t1 sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105898,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 3330,
+            "row": 2,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 18709,
+          "name": "Master Summoner",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105899,
+                105902,
+                105903,
+                105904,
+                105905,
+                105906,
+                105907,
+                105908
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130628,
+              "definitionId": 135429,
+              "spellId": 18709,
+              "name": "Master Summoner",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the casting time of your Imp, Voidwalker, Succubus, Incubus, and Felhunter Summoning spells by $/1000;s1 sec and the Mana cost by $s2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -2000
+                    },
+                    {
+                      "rank": 2,
+                      "value": -4000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -4000,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -20
+                    },
+                    {
+                      "rank": 2,
+                      "value": -40
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -40,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105897,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 440870,
+          "name": "Decimation",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105898,
+                105899,
+                105900,
+                105901,
+                105902,
+                105903,
+                105904,
+                105905,
+                105906,
+                105907,
+                105908
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130627,
+              "definitionId": 135428,
+              "spellId": 440870,
+              "name": "Decimation",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the cooldown of your Soul Fire spell by $m2%. When you cast Shadow Bolt or Searing Pain on an enemy below $m3% health, they deal $m4% increased damage, and for the next $440873d your Soul Fire spell has its cast time reduced by $m1% and costs no Soul Shards.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -20
+                    },
+                    {
+                      "rank": 2,
+                      "value": -40
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 40,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -45
+                    },
+                    {
+                      "rank": 2,
+                      "value": -90
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -90,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 35,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 3,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 6
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105895,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 18708,
+          "name": "Fel Domination",
+          "prerequisites": [
+            {
+              "nodeId": 105898,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105898,
+                105899,
+                105900,
+                105901,
+                105902,
+                105903,
+                105904,
+                105905,
+                105906,
+                105907,
+                105908
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130625,
+              "definitionId": 135426,
+              "spellId": 18708,
+              "name": "Fel Domination",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Your next Imp, Voidwalker, Succubus, Incubus, or Felhunter Summon spell has its casting time reduced by $/1000;S1 sec and its Mana cost reduced by $s2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": -5500,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": -50,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105896,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6820,
+            "y": 3930,
+            "row": 3,
+            "column": 3
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 1293695,
+          "name": "Demonic Brand",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105898,
+                105899,
+                105900,
+                105901,
+                105902,
+                105903,
+                105904,
+                105905,
+                105906,
+                105907,
+                105908
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130626,
+              "definitionId": 135427,
+              "spellId": 1293695,
+              "name": "Demonic Brand",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Your Searing Pain generates $s1% less threat and brands the target for $1293696d. Your pet's next $m2 attacks against the target deal $<minDam> to $<maxDam> Fire or Shadow damage based on the pet. If Shadow damage is dealt, it has high threat.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -17
+                    },
+                    {
+                      "rank": 2,
+                      "value": -33
+                    },
+                    {
+                      "rank": 3,
+                      "value": -50
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -50,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 3,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105894,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5020,
+            "y": 4530,
+            "row": 4,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 1225217,
+          "name": "Improved Felhunter",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105895,
+                105896,
+                105897,
+                105898,
+                105899,
+                105900,
+                105901,
+                105902,
+                105903,
+                105904,
+                105905,
+                105906,
+                105907,
+                105908
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130624,
+              "definitionId": 135425,
+              "spellId": 1225217,
+              "name": "Improved Felhunter",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the Attack Power reduction of your Felhunter's Tainted Blood, the healing of its Devour Magic, and the detection level of its Paranoia by $s1%, and reduces the cooldown of its Spell Lock by ${$m2/-1000} sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    },
+                    {
+                      "rank": 3,
+                      "value": 30
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 30,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -2000
+                    },
+                    {
+                      "rank": 2,
+                      "value": -4000
+                    },
+                    {
+                      "rank": 3,
+                      "value": -6000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -6000,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105892,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 19028,
+          "name": "Soul Link",
+          "prerequisites": [
+            {
+              "nodeId": 105900,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105895,
+                105896,
+                105897,
+                105898,
+                105899,
+                105900,
+                105901,
+                105902,
+                105903,
+                105904,
+                105905,
+                105906,
+                105907,
+                105908
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130622,
+              "definitionId": 135423,
+              "spellId": 19028,
+              "name": "Soul Link",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "When active, $18814s1% of all damage taken by the caster is taken by your Imp, Voidwalker, Succubus, Incubus, or Felhunter Demon instead. In addition, both the Demon and the master will inflict $25228s1% more damage. Lasts as long as the Demon is active.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105893,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 4530,
+            "row": 4,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 412732,
+          "name": "Demonic Knowledge",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105895,
+                105896,
+                105897,
+                105898,
+                105899,
+                105900,
+                105901,
+                105902,
+                105903,
+                105904,
+                105905,
+                105906,
+                105907,
+                105908
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130623,
+              "definitionId": 135424,
+              "spellId": 412732,
+              "name": "Demonic Knowledge",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases your spell damage and your Demon pet's spell damage by up to $s1% of your level while you have a summoned Demon pet active.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 33
+                    },
+                    {
+                      "rank": 2,
+                      "value": 67
+                    },
+                    {
+                      "rank": 3,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105891,
+          "sectionIndex": 1,
+          "position": {
+            "x": 6220,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 23785,
+          "name": "Master Demonologist",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105892,
+                105893,
+                105894,
+                105895,
+                105896,
+                105897,
+                105898,
+                105899,
+                105900,
+                105901,
+                105902,
+                105903,
+                105904,
+                105905,
+                105906,
+                105907,
+                105908
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130621,
+              "definitionId": 135422,
+              "spellId": 23785,
+              "name": "Master Demonologist",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Grants both the Warlock and the summoned demon an effect as long as that demon is active.\r\n\r\nImp - Increases Fire damage done by $m1%.\r\n\r\nVoidwalker - Reduces Physical damage taken by $m2%.\r\n\r\nSuccubus/Incubus - Increases Shadow damage done by $m3%.\r\n\r\nFelhunter - Reduces Magic damage taken by $m4%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -2
+                    },
+                    {
+                      "rank": 2,
+                      "value": -4
+                    },
+                    {
+                      "rank": 3,
+                      "value": -6
+                    },
+                    {
+                      "rank": 4,
+                      "value": -8
+                    },
+                    {
+                      "rank": 5,
+                      "value": -10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 3,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -2
+                    },
+                    {
+                      "rank": 2,
+                      "value": -4
+                    },
+                    {
+                      "rank": 3,
+                      "value": -6
+                    },
+                    {
+                      "rank": 4,
+                      "value": -8
+                    },
+                    {
+                      "rank": 5,
+                      "value": -10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105890,
+          "sectionIndex": 1,
+          "position": {
+            "x": 5620,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 425464,
+          "name": "Demonic Pact",
+          "prerequisites": [
+            {
+              "nodeId": 105892,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105890,
+                105891,
+                105892,
+                105893,
+                105894,
+                105895,
+                105896,
+                105897,
+                105898,
+                105899,
+                105900,
+                105901,
+                105902,
+                105903,
+                105904,
+                105905,
+                105906,
+                105907,
+                105908
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130620,
+              "definitionId": 135421,
+              "spellId": 425464,
+              "name": "Demonic Pact",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Your Demonic Sacrifice effect is no longer cancelled by summoning a different Demon pet. Resummoning the sacrificed pet will still cancel the effect.\r\n",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105881,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 2130,
+            "row": 0,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 17917,
+          "name": "Destructive Reach",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130611,
+              "definitionId": 135412,
+              "spellId": 17917,
+              "name": "Destructive Reach",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the range of your Destruction spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": null,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105889,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 17793,
+          "name": "Improved Shadow Bolt",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130619,
+              "definitionId": 135420,
+              "spellId": 17793,
+              "name": "Improved Shadow Bolt",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Your Shadow Bolt critical strikes increase Shadow damage taken by the target from your attacks by $m1% for $17794d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 4
+                    },
+                    {
+                      "rank": 2,
+                      "value": 8
+                    },
+                    {
+                      "rank": 3,
+                      "value": 12
+                    },
+                    {
+                      "rank": 4,
+                      "value": 16
+                    },
+                    {
+                      "rank": 5,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105888,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 2130,
+            "row": 0,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 17788,
+          "name": "Bane",
+          "prerequisites": [],
+          "unlockRequirements": [],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130618,
+              "definitionId": 135419,
+              "spellId": 17788,
+              "name": "Bane",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the casting time of your Shadow Bolt, Immolate, and Incinerate spells by $/1000;S1 sec and your Soul Fire spell by $/1000;S2 sec.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -100
+                    },
+                    {
+                      "rank": 2,
+                      "value": -200
+                    },
+                    {
+                      "rank": 3,
+                      "value": -300
+                    },
+                    {
+                      "rank": 4,
+                      "value": -400
+                    },
+                    {
+                      "rank": 5,
+                      "value": -500
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -500,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -400
+                    },
+                    {
+                      "rank": 2,
+                      "value": -800
+                    },
+                    {
+                      "rank": 3,
+                      "value": -1200
+                    },
+                    {
+                      "rank": 4,
+                      "value": -1600
+                    },
+                    {
+                      "rank": 5,
+                      "value": -2000
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -2000,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105885,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 2730,
+            "row": 1,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 1225220,
+          "name": "Molten Skin",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105881,
+                105888,
+                105889
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130615,
+              "definitionId": 135416,
+              "spellId": 1225220,
+              "name": "Molten Skin",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces all damage taken by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -2
+                    },
+                    {
+                      "rank": 2,
+                      "value": -4
+                    },
+                    {
+                      "rank": 3,
+                      "value": -6
+                    },
+                    {
+                      "rank": 4,
+                      "value": -8
+                    },
+                    {
+                      "rank": 5,
+                      "value": -10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105887,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 17778,
+          "name": "Cataclysm",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105881,
+                105888,
+                105889
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130617,
+              "definitionId": 135418,
+              "spellId": 17778,
+              "name": "Cataclysm",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Reduces the Mana cost of your Destruction spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": -3
+                    },
+                    {
+                      "rank": 2,
+                      "value": -6
+                    },
+                    {
+                      "rank": 3,
+                      "value": -10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": -10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105886,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 18119,
+          "name": "Aftermath",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105881,
+                105888,
+                105889
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130616,
+              "definitionId": 135417,
+              "spellId": 18119,
+              "name": "Aftermath",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the initial damage of your Immolate spell by $m2% and your Conflagrate spell has a $m1% chance to Daze the target, reducing the target's movement speed by $18118m1% for $18118d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 20
+                    },
+                    {
+                      "rank": 2,
+                      "value": 40
+                    },
+                    {
+                      "rank": 3,
+                      "value": 60
+                    },
+                    {
+                      "rank": 4,
+                      "value": 80
+                    },
+                    {
+                      "rank": 5,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 10
+                    },
+                    {
+                      "rank": 2,
+                      "value": 20
+                    },
+                    {
+                      "rank": 3,
+                      "value": 30
+                    },
+                    {
+                      "rank": 4,
+                      "value": 40
+                    },
+                    {
+                      "rank": 5,
+                      "value": 50
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 50,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105883,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 17959,
+          "name": "Ruin",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105881,
+                105885,
+                105886,
+                105887,
+                105888,
+                105889
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130613,
+              "definitionId": 135414,
+              "spellId": 17959,
+              "name": "Ruin",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the critical strike damage bonus of your Destruction spells by $s1%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 20
+                    },
+                    {
+                      "rank": 2,
+                      "value": 40
+                    },
+                    {
+                      "rank": 3,
+                      "value": 60
+                    },
+                    {
+                      "rank": 4,
+                      "value": 80
+                    },
+                    {
+                      "rank": 5,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105884,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 3330,
+            "row": 2,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 17877,
+          "name": "Shadowburn",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105881,
+                105885,
+                105886,
+                105887,
+                105888,
+                105889
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130614,
+              "definitionId": 135415,
+              "spellId": 17877,
+              "name": "Shadowburn",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Instantly blasts the target for $s2 Shadow damage.  If a non-trivial target dies within $d of being hit with Shadowburn, the caster gains a Soul Shard.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 1,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 66,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105882,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 18135,
+          "name": "Intensity",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105881,
+                105883,
+                105884,
+                105885,
+                105886,
+                105887,
+                105888,
+                105889
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130612,
+              "definitionId": 135413,
+              "spellId": 18135,
+              "name": "Intensity",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Gives you a $s1% chance to resist interruption caused by damage while casting or channeling any Destruction spell.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 23
+                    },
+                    {
+                      "rank": 2,
+                      "value": 47
+                    },
+                    {
+                      "rank": 3,
+                      "value": 70
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 70,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105879,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 17927,
+          "name": "Agonizing Flames",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105881,
+                105883,
+                105884,
+                105885,
+                105886,
+                105887,
+                105888,
+                105889
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130609,
+              "definitionId": 135410,
+              "spellId": 17927,
+              "name": "Agonizing Flames",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the critical strike chance of your Searing Pain spell by $m1% and the damage done by all your Destruction spells by $m2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 7
+                    },
+                    {
+                      "rank": 3,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 7
+                    },
+                    {
+                      "rank": 3,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 7
+                    },
+                    {
+                      "rank": 3,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105880,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 1293817,
+          "name": "Conflagrate",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105881,
+                105883,
+                105884,
+                105885,
+                105886,
+                105887,
+                105888,
+                105889
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130610,
+              "definitionId": 135411,
+              "spellId": 1293817,
+              "name": "Conflagrate",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Ignites a target that is already afflicted by your Immolate spell, dealing $s1 Fire damage and consuming your Immolate effect.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 95,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105878,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9080,
+            "y": 4530,
+            "row": 4,
+            "column": 0
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 2,
+          "spellId": 18073,
+          "name": "Pyroclasm",
+          "prerequisites": [
+            {
+              "nodeId": 105882,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105879,
+                105880,
+                105881,
+                105882,
+                105883,
+                105884,
+                105885,
+                105886,
+                105887,
+                105888,
+                105889
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130608,
+              "definitionId": 135409,
+              "spellId": 18073,
+              "name": "Pyroclasm",
+              "maxRank": 2,
+              "entryType": 1,
+              "descriptionTemplate": "Gives your Soul Fire spell a $s1% chance to Stun the target for $18093d, and your Rain of Fire and Hellfire spells a $s1% chance over their duration to Stun targets they damage for $18093d.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 13
+                    },
+                    {
+                      "rank": 2,
+                      "value": 26
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 26,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 0,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105876,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 1225228,
+          "name": "Bane of Havoc",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105879,
+                105880,
+                105881,
+                105882,
+                105883,
+                105884,
+                105885,
+                105886,
+                105887,
+                105888,
+                105889
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130606,
+              "definitionId": 135407,
+              "spellId": 1225228,
+              "name": "Bane of Havoc",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Afflicts the target for $d, causing $s1% of all damage done by the Warlock to other targets to also be dealt to the cursed target. Bane of Havoc is limited to 1 target, and only one Bane per Warlock can be active on any one target.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 15,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105877,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 4530,
+            "row": 4,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 3,
+          "spellId": 412751,
+          "name": "Fire and Brimstone",
+          "prerequisites": [
+            {
+              "nodeId": 105880,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105879,
+                105880,
+                105881,
+                105882,
+                105883,
+                105884,
+                105885,
+                105886,
+                105887,
+                105888,
+                105889
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130607,
+              "definitionId": 135408,
+              "spellId": 412751,
+              "name": "Fire and Brimstone",
+              "maxRank": 3,
+              "entryType": 1,
+              "descriptionTemplate": "Increases the critical strike chance of your Conflagrate spell by $m2%.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 3
+                    },
+                    {
+                      "rank": 2,
+                      "value": 7
+                    },
+                    {
+                      "rank": 3,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 8
+                    },
+                    {
+                      "rank": 2,
+                      "value": 17
+                    },
+                    {
+                      "rank": 3,
+                      "value": 25
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 25,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105875,
+          "sectionIndex": 2,
+          "position": {
+            "x": 10280,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 5,
+          "spellId": 426316,
+          "name": "Shadow and Flame",
+          "prerequisites": [],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105876,
+                105877,
+                105878,
+                105879,
+                105880,
+                105881,
+                105882,
+                105883,
+                105884,
+                105885,
+                105886,
+                105887,
+                105888,
+                105889
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130605,
+              "definitionId": 135406,
+              "spellId": 426316,
+              "name": "Shadow and Flame",
+              "maxRank": 5,
+              "entryType": 1,
+              "descriptionTemplate": "Hitting an enemy with Conflagrate increases all Shadow damage you deal by $m3% for $1293816d, and hitting an enemy with Shadowburn increases all Fire damage you deal by $m4% for $426311d. In addition, Conflagrate has a $m2% chance not to consume Immolate, and Shadowburn has a $m2% chance to instantly refund a Soul Shard.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 4
+                    },
+                    {
+                      "rank": 2,
+                      "value": 8
+                    },
+                    {
+                      "rank": 3,
+                      "value": 12
+                    },
+                    {
+                      "rank": 4,
+                      "value": 16
+                    },
+                    {
+                      "rank": 5,
+                      "value": 20
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 20,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 20
+                    },
+                    {
+                      "rank": 2,
+                      "value": 40
+                    },
+                    {
+                      "rank": 3,
+                      "value": 60
+                    },
+                    {
+                      "rank": 4,
+                      "value": 80
+                    },
+                    {
+                      "rank": 5,
+                      "value": 100
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 100,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 2,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 3,
+                  "perRank": [
+                    {
+                      "rank": 1,
+                      "value": 2
+                    },
+                    {
+                      "rank": 2,
+                      "value": 4
+                    },
+                    {
+                      "rank": 3,
+                      "value": 6
+                    },
+                    {
+                      "rank": 4,
+                      "value": 8
+                    },
+                    {
+                      "rank": 5,
+                      "value": 10
+                    }
+                  ],
+                  "perRankStatus": "resolved",
+                  "basePoints": 10,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 105874,
+          "sectionIndex": 2,
+          "position": {
+            "x": 9680,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          },
+          "type": "single",
+          "flags": 0,
+          "maxRank": 1,
+          "spellId": 412758,
+          "name": "Incinerate",
+          "prerequisites": [
+            {
+              "nodeId": 105876,
+              "kind": "sufficient"
+            }
+          ],
+          "unlockRequirements": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105874,
+                105875,
+                105876,
+                105877,
+                105878,
+                105879,
+                105880,
+                105881,
+                105882,
+                105883,
+                105884,
+                105885,
+                105886,
+                105887,
+                105888,
+                105889
+              ]
+            }
+          ],
+          "unresolvedConditionIds": [],
+          "entries": [
+            {
+              "id": 130604,
+              "definitionId": 135405,
+              "spellId": 412758,
+              "name": "Incinerate",
+              "maxRank": 1,
+              "entryType": 1,
+              "descriptionTemplate": "Deals $s1 Fire damage to your target and an additional $m2% damage if the target is afflicted by Immolate.",
+              "effects": [
+                {
+                  "index": 0,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 97,
+                  "unresolvedReason": null
+                },
+                {
+                  "index": 1,
+                  "perRank": null,
+                  "perRankStatus": "none",
+                  "basePoints": 25,
+                  "unresolvedReason": null
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "visualOnlyEdges": []
+    }
+  ],
+  "contentHash": "sha256:ab71480dea8add54dd3920d5931f22a8388635a13aba8a2a695c64106c9a2a12",
+  "generatedAt": "2026-10-17T19:37:04Z",
+  "provenance": {
+    "source": "wago.tools",
+    "tables": [
+      "ChrClasses",
+      "SkillRaceClassInfo",
+      "SkillLineXTraitTree",
+      "TraitTree",
+      "TraitTreeXTraitCurrency",
+      "TraitCurrency",
+      "TraitTreeXTraitCost",
+      "TraitCost",
+      "TraitNode",
+      "TraitNodeXTraitNodeEntry",
+      "TraitNodeEntry",
+      "TraitDefinition",
+      "TraitEdge",
+      "TraitNodeGroupXTraitNode",
+      "TraitNodeGroupXTraitCond",
+      "TraitNodeXTraitCond",
+      "TraitCond",
+      "TraitDefinitionEffectPoints",
+      "Curve",
+      "CurvePoint",
+      "Spell",
+      "SpellName",
+      "SpellEffect"
+    ]
+  }
+}

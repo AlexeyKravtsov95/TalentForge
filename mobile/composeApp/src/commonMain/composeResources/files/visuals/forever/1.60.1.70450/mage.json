@@ -1,0 +1,403 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "clientBuild": "1.60.1.70450",
+  "classToken": "MAGE",
+  "talentDataContentHash": "sha256:1c6b1f208d66777da50ccd5ea0440ed4922ac6d0c1ed7521bd7147bbe1079fd0",
+  "entries": [
+    {
+      "entryId": 130491,
+      "definitionId": 135292,
+      "spellId": 11426,
+      "displaySpellId": 11426,
+      "iconFileDataId": 135988
+    },
+    {
+      "entryId": 130492,
+      "definitionId": 135293,
+      "spellId": 11180,
+      "displaySpellId": 11180,
+      "iconFileDataId": 135836
+    },
+    {
+      "entryId": 130493,
+      "definitionId": 135294,
+      "spellId": 400647,
+      "displaySpellId": 400647,
+      "iconFileDataId": 236227
+    },
+    {
+      "entryId": 130494,
+      "definitionId": 135295,
+      "spellId": 11190,
+      "displaySpellId": 11190,
+      "iconFileDataId": 135852
+    },
+    {
+      "entryId": 130495,
+      "definitionId": 135296,
+      "spellId": 12472,
+      "displaySpellId": 12472,
+      "iconFileDataId": 135865
+    },
+    {
+      "entryId": 130496,
+      "definitionId": 135297,
+      "spellId": 1312002,
+      "displaySpellId": 1312002,
+      "iconFileDataId": 135844
+    },
+    {
+      "entryId": 130497,
+      "definitionId": 135298,
+      "spellId": 11170,
+      "displaySpellId": 11170,
+      "iconFileDataId": 135849
+    },
+    {
+      "entryId": 130498,
+      "definitionId": 135299,
+      "spellId": 11958,
+      "displaySpellId": 11958,
+      "iconFileDataId": 135841
+    },
+    {
+      "entryId": 130499,
+      "definitionId": 135300,
+      "spellId": 16757,
+      "displaySpellId": 16757,
+      "iconFileDataId": 136141
+    },
+    {
+      "entryId": 130500,
+      "definitionId": 135301,
+      "spellId": 11185,
+      "displaySpellId": 11185,
+      "iconFileDataId": 135857
+    },
+    {
+      "entryId": 130501,
+      "definitionId": 135302,
+      "spellId": 11160,
+      "displaySpellId": 11160,
+      "iconFileDataId": 135860
+    },
+    {
+      "entryId": 130502,
+      "definitionId": 135303,
+      "spellId": 11151,
+      "displaySpellId": 11151,
+      "iconFileDataId": 135845
+    },
+    {
+      "entryId": 130503,
+      "definitionId": 135304,
+      "spellId": 11071,
+      "displaySpellId": 11071,
+      "iconFileDataId": 135842
+    },
+    {
+      "entryId": 130504,
+      "definitionId": 135305,
+      "spellId": 11165,
+      "displaySpellId": 11165,
+      "iconFileDataId": 135840
+    },
+    {
+      "entryId": 130505,
+      "definitionId": 135306,
+      "spellId": 11175,
+      "displaySpellId": 11175,
+      "iconFileDataId": 135864
+    },
+    {
+      "entryId": 130506,
+      "definitionId": 135307,
+      "spellId": 11207,
+      "displaySpellId": 11207,
+      "iconFileDataId": 135855
+    },
+    {
+      "entryId": 130507,
+      "definitionId": 135308,
+      "spellId": 29438,
+      "displaySpellId": 29438,
+      "iconFileDataId": 135989
+    },
+    {
+      "entryId": 130508,
+      "definitionId": 135309,
+      "spellId": 11070,
+      "displaySpellId": 11070,
+      "iconFileDataId": 135846
+    },
+    {
+      "entryId": 130509,
+      "definitionId": 135310,
+      "spellId": 11189,
+      "displaySpellId": 11189,
+      "iconFileDataId": 135850
+    },
+    {
+      "entryId": 130510,
+      "definitionId": 135311,
+      "spellId": 11129,
+      "displaySpellId": 11129,
+      "iconFileDataId": 135824
+    },
+    {
+      "entryId": 130511,
+      "definitionId": 135312,
+      "spellId": 11124,
+      "displaySpellId": 11124,
+      "iconFileDataId": 135817
+    },
+    {
+      "entryId": 130512,
+      "definitionId": 135313,
+      "spellId": 11113,
+      "displaySpellId": 11113,
+      "iconFileDataId": 135903
+    },
+    {
+      "entryId": 130513,
+      "definitionId": 135314,
+      "spellId": 11115,
+      "displaySpellId": 11115,
+      "iconFileDataId": 136115
+    },
+    {
+      "entryId": 130514,
+      "definitionId": 135315,
+      "spellId": 29074,
+      "displaySpellId": 29074,
+      "iconFileDataId": 135820
+    },
+    {
+      "entryId": 130515,
+      "definitionId": 135316,
+      "spellId": 400624,
+      "displaySpellId": 400624,
+      "iconFileDataId": 135809
+    },
+    {
+      "entryId": 130516,
+      "definitionId": 135317,
+      "spellId": 11094,
+      "displaySpellId": 11094,
+      "iconFileDataId": 135806
+    },
+    {
+      "entryId": 130517,
+      "definitionId": 135318,
+      "spellId": 11095,
+      "displaySpellId": 11095,
+      "iconFileDataId": 135831
+    },
+    {
+      "entryId": 130518,
+      "definitionId": 135319,
+      "spellId": 11083,
+      "displaySpellId": 11083,
+      "iconFileDataId": 135805
+    },
+    {
+      "entryId": 130519,
+      "definitionId": 135320,
+      "spellId": 11366,
+      "displaySpellId": 11366,
+      "iconFileDataId": 135808
+    },
+    {
+      "entryId": 130520,
+      "definitionId": 135321,
+      "spellId": 11108,
+      "displaySpellId": 11108,
+      "iconFileDataId": 135826
+    },
+    {
+      "entryId": 130521,
+      "definitionId": 135322,
+      "spellId": 11103,
+      "displaySpellId": 11103,
+      "iconFileDataId": 135821
+    },
+    {
+      "entryId": 130522,
+      "definitionId": 135323,
+      "spellId": 11100,
+      "displaySpellId": 11100,
+      "iconFileDataId": 135815
+    },
+    {
+      "entryId": 130523,
+      "definitionId": 135324,
+      "spellId": 11119,
+      "displaySpellId": 11119,
+      "iconFileDataId": 135818
+    },
+    {
+      "entryId": 130524,
+      "definitionId": 135325,
+      "spellId": 11069,
+      "displaySpellId": 11069,
+      "iconFileDataId": 135812
+    },
+    {
+      "entryId": 130525,
+      "definitionId": 135326,
+      "spellId": 18459,
+      "displaySpellId": 18459,
+      "iconFileDataId": 135813
+    },
+    {
+      "entryId": 130526,
+      "definitionId": 135327,
+      "spellId": 11078,
+      "displaySpellId": 11078,
+      "iconFileDataId": 135819
+    },
+    {
+      "entryId": 130527,
+      "definitionId": 135328,
+      "spellId": 12042,
+      "displaySpellId": 12042,
+      "iconFileDataId": 136048
+    },
+    {
+      "entryId": 130528,
+      "definitionId": 135329,
+      "spellId": 15058,
+      "displaySpellId": 15058,
+      "iconFileDataId": 136222
+    },
+    {
+      "entryId": 130529,
+      "definitionId": 135330,
+      "spellId": 11232,
+      "displaySpellId": 11232,
+      "iconFileDataId": 136129
+    },
+    {
+      "entryId": 130530,
+      "definitionId": 135331,
+      "spellId": 12043,
+      "displaySpellId": 12043,
+      "iconFileDataId": 136031
+    },
+    {
+      "entryId": 130531,
+      "definitionId": 135332,
+      "spellId": 400588,
+      "displaySpellId": 400588,
+      "iconFileDataId": 236221
+    },
+    {
+      "entryId": 130532,
+      "definitionId": 135333,
+      "spellId": 18462,
+      "displaySpellId": 18462,
+      "iconFileDataId": 136208
+    },
+    {
+      "entryId": 130533,
+      "definitionId": 135334,
+      "spellId": 11255,
+      "displaySpellId": 11255,
+      "iconFileDataId": 135856
+    },
+    {
+      "entryId": 130534,
+      "definitionId": 135335,
+      "spellId": 11252,
+      "displaySpellId": 11252,
+      "iconFileDataId": 136153
+    },
+    {
+      "entryId": 130535,
+      "definitionId": 135336,
+      "spellId": 400574,
+      "displaySpellId": 400574,
+      "iconFileDataId": 135735
+    },
+    {
+      "entryId": 130536,
+      "definitionId": 135337,
+      "spellId": 11242,
+      "displaySpellId": 11242,
+      "iconFileDataId": 136116
+    },
+    {
+      "entryId": 130537,
+      "definitionId": 135338,
+      "spellId": 11247,
+      "displaySpellId": 11247,
+      "iconFileDataId": 6035311
+    },
+    {
+      "entryId": 130538,
+      "definitionId": 135339,
+      "spellId": 28574,
+      "displaySpellId": 28574,
+      "iconFileDataId": 135733
+    },
+    {
+      "entryId": 130539,
+      "definitionId": 135340,
+      "spellId": 11213,
+      "displaySpellId": 11213,
+      "iconFileDataId": 136170
+    },
+    {
+      "entryId": 130540,
+      "definitionId": 135341,
+      "spellId": 29441,
+      "displaySpellId": 29441,
+      "iconFileDataId": 136011
+    },
+    {
+      "entryId": 130541,
+      "definitionId": 135342,
+      "spellId": 11210,
+      "displaySpellId": 11210,
+      "iconFileDataId": 135894
+    },
+    {
+      "entryId": 130542,
+      "definitionId": 135343,
+      "spellId": 11237,
+      "displaySpellId": 11237,
+      "iconFileDataId": 136096
+    },
+    {
+      "entryId": 130543,
+      "definitionId": 135344,
+      "spellId": 11222,
+      "displaySpellId": 11222,
+      "iconFileDataId": 135892
+    },
+    {
+      "entryId": 130544,
+      "definitionId": 135345,
+      "spellId": 6057,
+      "displaySpellId": 6057,
+      "iconFileDataId": 135463
+    },
+    {
+      "entryId": 141289,
+      "definitionId": 145958,
+      "spellId": 1326079,
+      "displaySpellId": 1326079,
+      "iconFileDataId": 236222
+    }
+  ],
+  "contentHash": "sha256:23ab5af6359ab655158afb567d588f92a146d5777f276fff867f23371a12a7e7",
+  "provenance": {
+    "source": "wago.tools",
+    "tables": [
+      "TraitDefinition",
+      "SpellMisc"
+    ],
+    "iconColumn": "SpellMisc.SpellIconFileDataID"
+  }
+}

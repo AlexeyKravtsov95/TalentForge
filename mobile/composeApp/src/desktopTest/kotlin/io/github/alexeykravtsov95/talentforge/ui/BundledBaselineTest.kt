@@ -10,6 +10,7 @@ import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
 import io.github.alexeykravtsov95.talentforge.ui.library.ALL_BUNDLES
 import io.github.alexeykravtsov95.talentforge.ui.library.BUNDLE_70245
+import io.github.alexeykravtsov95.talentforge.ui.library.BUNDLE_70338
 import io.github.alexeykravtsov95.talentforge.ui.library.PREVIOUS_PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.library.REFERENCE_BUNDLE
@@ -21,8 +22,8 @@ import kotlinx.coroutines.test.runTest
 
 /**
  * Bundled runtime verification: every packaged bundle — the 1.60.1.70009
- * reference baseline, the retained 1.60.1.70245 and 1.60.1.70338 datasets and
- * the 1.60.1.70374 product dataset — loads through the
+ * reference baseline, the retained 1.60.1.70245, 1.60.1.70338 and 1.60.1.70374
+ * datasets and the 1.60.1.70450 product dataset — loads through the
  * real Compose Multiplatform resource pipeline on the desktop target, the
  * same source the Android and iOS hosts use.
  */
@@ -34,8 +35,9 @@ class BundledBaselineTest {
     fun bundlesAreTheReferenceBaselineTheRetainedAndTheCurrentProductDatasets() {
         assertEquals("1.60.1.70009", REFERENCE_BUNDLE.clientBuild)
         assertEquals("1.60.1.70245", BUNDLE_70245.clientBuild)
-        assertEquals("1.60.1.70338", PREVIOUS_PRODUCT_BUNDLE.clientBuild)
-        assertEquals("1.60.1.70374", PRODUCT_BUNDLE.clientBuild)
+        assertEquals("1.60.1.70338", BUNDLE_70338.clientBuild)
+        assertEquals("1.60.1.70374", PREVIOUS_PRODUCT_BUNDLE.clientBuild)
+        assertEquals("1.60.1.70450", PRODUCT_BUNDLE.clientBuild)
         assertEquals(setOf(REFERENCE_BUNDLE.game), ALL_BUNDLES.map { it.game }.toSet())
     }
 

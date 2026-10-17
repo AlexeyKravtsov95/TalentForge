@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 11,
+    "token": "DRUID",
+    "name": "Druid"
+  },
+  "fromBuild": "1.60.1.70374",
+  "toBuild": "1.60.1.70450",
+  "fromContentHash": "sha256:366cd67153bf2418727d229f6b88a8f39a32c2c12fa8d0dd421758ac5040b567",
+  "toContentHash": "sha256:8dea4e498e691d777f93df13a1822797aad7bfcbe40ef07ee861a112344984c0",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 3,
+    "changesByKind": {
+      "descriptionChanged": 3
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 104937,
+      "treeId": 1089,
+      "name": "Moonkin Form",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129597,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Shapeshift into Moonkin Form, increasing Omen of Clarity's chance to trigger by $s5%, Armor contribution from items by $24905s1%, and all party members within $24907a1 yards have their Critical Strike chance increased by $24907s1%, exclusive with Leader of the Pack.  Also protects the caster from Polymorph effects and prevents the use of healing spells.\r\n\r\nThe act of shapeshifting frees the caster of Polymorph and Movement Impairing effects.",
+          "new": "Shapeshift into Moonkin Form, increasing Omen of Clarity's chance to trigger by $s5%, Armor contribution from items by $24905s1%, and all party or raid members within $24907a1 yards have their spell Critical Strike chance increased by $24907s1%.  Also protects the caster from Polymorph effects and prevents the use of healing spells.\r\n\r\nThe act of shapeshifting frees the caster of Polymorph and Movement Impairing effects."
+        }
+      ]
+    },
+    {
+      "nodeId": 104955,
+      "treeId": 1089,
+      "name": "Leader of the Pack",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129615,
+          "effectIndex": null,
+          "rank": null,
+          "old": "While in Cat Form, Bear Form, or Dire Bear Form, the Leader of the Pack increases the critical strike chance of all party members within $24932a1 yards by $24932s1%, exclusive with Moonkin Aura.",
+          "new": "While in Cat Form, Bear Form, or Dire Bear Form, the Leader of the Pack increases the melee and ranged Critical Strike chance of all party or raid members within $24932a1 yards by $24932s1%."
+        }
+      ]
+    },
+    {
+      "nodeId": 104958,
+      "treeId": 1089,
+      "name": "Furor",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129618,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Gives you a $m1% chance to gain $/10;17057s1 Rage when shapeshifting into Bear Form or Dire Bear Form. Shapeshifting into Cat Form restores ${100*($m2/100)}% of the Energy you had when last in Cat Form, plus ${10*($m2/100)} Energy per sec spent outside Cat Form, up to ${100*($m2/100)} Energy.\r\n\r\nBear Form and Dire Bear Form forfeit this Energy and halt its restoration while active.",
+          "new": "Gives you a $m1% chance to gain $/10;17057s1 Rage when shapeshifting into Bear Form or Dire Bear Form. Shapeshifting into Cat Form restores ${100*($m2/100)}% of the Energy you had when last in Cat Form, plus ${10*($m2/100)} Energy per second spent outside Bear Form or Dire Bear Form, up to ${100*($m2/100)} Energy."
+        }
+      ]
+    }
+  ]
+}

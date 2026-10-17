@@ -1,0 +1,3995 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "clientBuild": "1.60.1.70450",
+  "classToken": "WARRIOR",
+  "talentDataContentHash": "sha256:f346086edd76c3b5ce8844ffb55370c0c3235d753f91a92271d56182303f0969",
+  "entries": [
+    {
+      "entryId": 130656,
+      "definitionId": 135457,
+      "spellId": 20504,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown of your Intercept ability by "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown of your Intercept ability by "
+            },
+            {
+              "kind": "value",
+              "text": "10"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130657,
+      "definitionId": 135458,
+      "spellId": 12328,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "When activated, increases your Physical damage done by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " and makes you immune to Fear effects, but increases all damage you take by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": ". Lasts "
+            },
+            {
+              "kind": "value",
+              "text": "30 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130658,
+      "definitionId": 135459,
+      "spellId": 12319,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your melee attack speed by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": " for your next "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": " swings after dealing a melee critical strike."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your melee attack speed by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " for your next "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": " swings after dealing a melee critical strike."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your melee attack speed by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": " for your next "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": " swings after dealing a melee critical strike."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your melee attack speed by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " for your next "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": " swings after dealing a melee critical strike."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your melee attack speed by "
+            },
+            {
+              "kind": "value",
+              "text": "25%"
+            },
+            {
+              "kind": "text",
+              "text": " for your next "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": " swings after dealing a melee critical strike."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130660,
+      "definitionId": 135461,
+      "spellId": 23881,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Instantly attack the target causing damage equal to "
+            },
+            {
+              "kind": "value",
+              "text": "45%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Attack Power plus "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " and increasing your movement speed by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "10 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "local-effect-value",
+              "classification": "contextDependent",
+              "fragment": "$s1",
+              "token": "$s1",
+              "reason": "spell 23881 effect 0: EffectBonusCoefficient=1 on a damage/healing/absorb amount, the amount includes the caster's spell power"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "entryId": 130661,
+      "definitionId": 135462,
+      "spellId": 12317,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to deal "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": " increased Physical damage for "
+            },
+            {
+              "kind": "value",
+              "text": "12 sec"
+            },
+            {
+              "kind": "text",
+              "text": " after being the victim of any damaging attack."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to deal "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": " increased Physical damage for "
+            },
+            {
+              "kind": "value",
+              "text": "12 sec"
+            },
+            {
+              "kind": "text",
+              "text": " after being the victim of any damaging attack."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to deal "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": " increased Physical damage for "
+            },
+            {
+              "kind": "value",
+              "text": "12 sec"
+            },
+            {
+              "kind": "text",
+              "text": " after being the victim of any damaging attack."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to deal "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": " increased Physical damage for "
+            },
+            {
+              "kind": "value",
+              "text": "12 sec"
+            },
+            {
+              "kind": "text",
+              "text": " after being the victim of any damaging attack."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to deal "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " increased Physical damage for "
+            },
+            {
+              "kind": "value",
+              "text": "12 sec"
+            },
+            {
+              "kind": "text",
+              "text": " after being the victim of any damaging attack."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130662,
+      "definitionId": 135463,
+      "spellId": 20502,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Rage cost of your Execute ability by "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Rage cost of your Execute ability by "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130663,
+      "definitionId": 135464,
+      "spellId": 23584,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your off-hand weapon by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": " and the Rage generated by your off-hand attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your off-hand weapon by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " and the Rage generated by your off-hand attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your off-hand weapon by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": " and the Rage generated by your off-hand attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your off-hand weapon by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " and the Rage generated by your off-hand attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "40%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your off-hand weapon by "
+            },
+            {
+              "kind": "value",
+              "text": "25%"
+            },
+            {
+              "kind": "text",
+              "text": " and the Rage generated by your off-hand attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130664,
+      "definitionId": 135465,
+      "spellId": 16487,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Regenerates "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": " of your total Health over "
+            },
+            {
+              "kind": "value",
+              "text": "6 sec"
+            },
+            {
+              "kind": "text",
+              "text": " after being the victim of a critical strike or suffering more than "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " of your maximum Health from a single attack."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Regenerates "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": " of your total Health over "
+            },
+            {
+              "kind": "value",
+              "text": "6 sec"
+            },
+            {
+              "kind": "text",
+              "text": " after being the victim of a critical strike or suffering more than "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " of your maximum Health from a single attack."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Regenerates "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": " of your total Health over "
+            },
+            {
+              "kind": "value",
+              "text": "6 sec"
+            },
+            {
+              "kind": "text",
+              "text": " after being the victim of a critical strike or suffering more than "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " of your maximum Health from a single attack."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130665,
+      "definitionId": 135466,
+      "spellId": 12323,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Causes all enemies within "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " yds to be Dazed, reducing movement speed by "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "6 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "local-radius",
+              "classification": "missingData",
+              "fragment": "$a2",
+              "token": "$a2",
+              "reason": "spell 12323 has no SpellEffect row for effect index 1 (DifficultyID 0) in 1.60.1.70450"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "entryId": 130667,
+      "definitionId": 135468,
+      "spellId": 12322,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "12%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to generate "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": " additional Rage when you deal melee damage with a weapon."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "24%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to generate "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": " additional Rage when you deal melee damage with a weapon."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "36%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to generate "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": " additional Rage when you deal melee damage with a weapon."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "48%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to generate "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": " additional Rage when you deal melee damage with a weapon."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives you a "
+            },
+            {
+              "kind": "value",
+              "text": "60%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to generate "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": " additional Rage when you deal melee damage with a weapon."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130668,
+      "definitionId": 135469,
+      "spellId": 12321,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the area of effect of your Shouts by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " and reduces their Rage cost by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the area of effect of your Shouts by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " and reduces their Rage cost by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the area of effect of your Shouts by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " and reduces their Rage cost by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the area of effect of your Shouts by "
+            },
+            {
+              "kind": "value",
+              "text": "40%"
+            },
+            {
+              "kind": "text",
+              "text": " and reduces their Rage cost by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the area of effect of your Shouts by "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " and reduces their Rage cost by "
+            },
+            {
+              "kind": "value",
+              "text": "25%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130669,
+      "definitionId": 135470,
+      "spellId": 12320,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Improves your chance to get a critical strike with melee attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Improves your chance to get a critical strike with melee attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Improves your chance to get a critical strike with melee attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Improves your chance to get a critical strike with melee attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Improves your chance to get a critical strike with melee attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130671,
+      "definitionId": 135472,
+      "spellId": 12294,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "A vicious strike that deals weapon damage plus "
+            },
+            {
+              "kind": "value",
+              "text": "85"
+            },
+            {
+              "kind": "text",
+              "text": " and wounds the target, reducing the effectiveness of any healing by "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "10 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130672,
+      "definitionId": 135473,
+      "spellId": 12289,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Hamstring ability a "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to immobilize the target for "
+            },
+            {
+              "kind": "value",
+              "text": "5 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Hamstring ability a "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to immobilize the target for "
+            },
+            {
+              "kind": "value",
+              "text": "5 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Hamstring ability a "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to immobilize the target for "
+            },
+            {
+              "kind": "value",
+              "text": "5 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130674,
+      "definitionId": 135475,
+      "spellId": 1290261,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your melee weapon attacks a benefit depending on the weapon.\n\nAxe/Polearm: Increases your\ncritical strike chance by "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": ".\n\nMace/Staff: Your attacks ignore\n"
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": " of your target's armor.\n\nSword: Your successful melee\nattacks have a "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to\ntrigger an extra attack on the\ntarget."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your melee weapon attacks a benefit depending on the weapon.\n\nAxe/Polearm: Increases your\ncritical strike chance by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": ".\n\nMace/Staff: Your attacks ignore\n"
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": " of your target's armor.\n\nSword: Your successful melee\nattacks have a "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to\ntrigger an extra attack on the\ntarget."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your melee weapon attacks a benefit depending on the weapon.\n\nAxe/Polearm: Increases your\ncritical strike chance by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": ".\n\nMace/Staff: Your attacks ignore\n"
+            },
+            {
+              "kind": "value",
+              "text": "9%"
+            },
+            {
+              "kind": "text",
+              "text": " of your target's armor.\n\nSword: Your successful melee\nattacks have a "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to\ntrigger an extra attack on the\ntarget."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your melee weapon attacks a benefit depending on the weapon.\n\nAxe/Polearm: Increases your\ncritical strike chance by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": ".\n\nMace/Staff: Your attacks ignore\n"
+            },
+            {
+              "kind": "value",
+              "text": "12%"
+            },
+            {
+              "kind": "text",
+              "text": " of your target's armor.\n\nSword: Your successful melee\nattacks have a "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to\ntrigger an extra attack on the\ntarget."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your melee weapon attacks a benefit depending on the weapon.\n\nAxe/Polearm: Increases your\ncritical strike chance by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": ".\n\nMace/Staff: Your attacks ignore\n"
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": " of your target's armor.\n\nSword: Your successful melee\nattacks have a "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to\ntrigger an extra attack on the\ntarget."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130675,
+      "definitionId": 135476,
+      "spellId": 12292,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your next "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " melee attacks strike an additional nearby opponent."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130677,
+      "definitionId": 135478,
+      "spellId": 16493,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike damage bonus of your abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike damage bonus of your abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130678,
+      "definitionId": 135479,
+      "spellId": 12163,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage you deal with two-handed melee weapons by "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage you deal with two-handed melee weapons by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage you deal with two-handed melee weapons by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130679,
+      "definitionId": 135480,
+      "spellId": 1310222,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "A brutal attack that deals "
+            },
+            {
+              "kind": "value",
+              "text": "40%"
+            },
+            {
+              "kind": "text",
+              "text": " weapon damage. Deals an additional "
+            },
+            {
+              "kind": "value",
+              "text": "80%"
+            },
+            {
+              "kind": "text",
+              "text": " weapon damage against Giants, Dragonkin, and mounted targets. Mounted targets are dismounted."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130680,
+      "definitionId": 135481,
+      "spellId": 12834,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your critical strikes cause your opponent to Bleed, dealing "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " of your melee weapon's average damage over "
+            },
+            {
+              "kind": "value",
+              "text": "12 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your critical strikes cause your opponent to Bleed, dealing "
+            },
+            {
+              "kind": "value",
+              "text": "40%"
+            },
+            {
+              "kind": "text",
+              "text": " of your melee weapon's average damage over "
+            },
+            {
+              "kind": "value",
+              "text": "12 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your critical strikes cause your opponent to Bleed, dealing "
+            },
+            {
+              "kind": "value",
+              "text": "60%"
+            },
+            {
+              "kind": "text",
+              "text": " of your melee weapon's average damage over "
+            },
+            {
+              "kind": "value",
+              "text": "12 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130681,
+      "definitionId": 135482,
+      "spellId": 12296,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Generates "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": " Rage every "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": " sec while in combat, and reduces Rage loss while out of combat by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130682,
+      "definitionId": 135483,
+      "spellId": 12290,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike chance of your Overpower ability by "
+            },
+            {
+              "kind": "value",
+              "text": "25%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike chance of your Overpower ability by "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130683,
+      "definitionId": 135484,
+      "spellId": 1323963,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your chance to hit with off-hand attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your chance to hit with off-hand attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "7%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your chance to hit with off-hand attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130684,
+      "definitionId": 135485,
+      "spellId": 12295,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Tactical Mastery lets you retain up to an additional "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": " Rage when you change stances."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Tactical Mastery lets you retain up to an additional "
+            },
+            {
+              "kind": "value",
+              "text": "6"
+            },
+            {
+              "kind": "text",
+              "text": " Rage when you change stances."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Tactical Mastery lets you retain up to an additional "
+            },
+            {
+              "kind": "value",
+              "text": "9"
+            },
+            {
+              "kind": "text",
+              "text": " Rage when you change stances."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Tactical Mastery lets you retain up to an additional "
+            },
+            {
+              "kind": "value",
+              "text": "12"
+            },
+            {
+              "kind": "text",
+              "text": " Rage when you change stances."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Tactical Mastery lets you retain up to an additional "
+            },
+            {
+              "kind": "value",
+              "text": "15"
+            },
+            {
+              "kind": "text",
+              "text": " Rage when you change stances."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130685,
+      "definitionId": 135486,
+      "spellId": 12285,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the Rage generated by your Charge ability by "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the Rage generated by your Charge ability by "
+            },
+            {
+              "kind": "value",
+              "text": "6"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130686,
+      "definitionId": 135487,
+      "spellId": 12286,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the Bleed damage done by your Rend ability by "
+            },
+            {
+              "kind": "value",
+              "text": "12%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the Bleed damage done by your Rend ability by "
+            },
+            {
+              "kind": "value",
+              "text": "23%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the Bleed damage done by your Rend ability by "
+            },
+            {
+              "kind": "value",
+              "text": "35%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130687,
+      "definitionId": 135488,
+      "spellId": 16462,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Parry chance by "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Parry chance by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Parry chance by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Parry chance by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Parry chance by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130688,
+      "definitionId": 135489,
+      "spellId": 12282,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cost of your Heroic Strike ability by "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": " Rage."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cost of your Heroic Strike ability by "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": " Rage."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cost of your Heroic Strike ability by "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": " Rage."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130689,
+      "definitionId": 135490,
+      "spellId": 23922,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Slam the target with your shield, causing "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " damage, increased by your Block Value, and has a 50% chance of dispelling "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": " magic effect on the target. Causes a very high amount of threat."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "local-effect-value",
+              "classification": "contextDependent",
+              "fragment": "$s2",
+              "token": "$s2",
+              "reason": "spell 23922 effect 1: EffectBonusCoefficient=1 on a damage/healing/absorb amount, the amount includes the caster's spell power"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "entryId": 130691,
+      "definitionId": 135492,
+      "spellId": 29787,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Rage cost of your offensive abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Rage cost of your offensive abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Rage cost of your offensive abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130692,
+      "definitionId": 135493,
+      "spellId": 16538,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases all damage you deal by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": " while a shield is equipped."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases all damage you deal by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": " while a shield is equipped."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases all damage you deal by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": " while a shield is equipped."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases all damage you deal by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": " while a shield is equipped."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases all damage you deal by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " while a shield is equipped."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130693,
+      "definitionId": 135494,
+      "spellId": 12311,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Shield Bash ability a "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to Silence the target for "
+            },
+            {
+              "kind": "value",
+              "text": "3 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Shield Bash ability a "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to Silence the target for "
+            },
+            {
+              "kind": "value",
+              "text": "3 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130694,
+      "definitionId": 135495,
+      "spellId": 12312,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown of your Shield Wall ability by "
+            },
+            {
+              "kind": "value",
+              "text": "5.5"
+            },
+            {
+              "kind": "text",
+              "text": " min."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown of your Shield Wall ability by "
+            },
+            {
+              "kind": "value",
+              "text": "11.0"
+            },
+            {
+              "kind": "text",
+              "text": " min."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130695,
+      "definitionId": 135496,
+      "spellId": 12809,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Stuns the target for "
+            },
+            {
+              "kind": "value",
+              "text": "5 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130696,
+      "definitionId": 135497,
+      "spellId": 1310317,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your Charge ability is now usable while in Defensive Stance."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130697,
+      "definitionId": 135498,
+      "spellId": 12313,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown of your Disarm ability by "
+            },
+            {
+              "kind": "value",
+              "text": "7"
+            },
+            {
+              "kind": "text",
+              "text": " secs."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown of your Disarm ability by "
+            },
+            {
+              "kind": "value",
+              "text": "13"
+            },
+            {
+              "kind": "text",
+              "text": " secs."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown of your Disarm ability by "
+            },
+            {
+              "kind": "value",
+              "text": "20"
+            },
+            {
+              "kind": "text",
+              "text": " secs."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130698,
+      "definitionId": 135499,
+      "spellId": 12308,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Rage cost of your Sunder Armor ability by "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Rage cost of your Sunder Armor ability by "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Rage cost of your Sunder Armor ability by "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130699,
+      "definitionId": 135500,
+      "spellId": 12797,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases damage dealt by your Revenge ability by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases damage dealt by your Revenge ability by "
+            },
+            {
+              "kind": "value",
+              "text": "40%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases damage dealt by your Revenge ability by "
+            },
+            {
+              "kind": "value",
+              "text": "60%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130700,
+      "definitionId": 135501,
+      "spellId": 12975,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "When activated, this ability temporarily grants you "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " of your maximum health for "
+            },
+            {
+              "kind": "value",
+              "text": "20 sec"
+            },
+            {
+              "kind": "text",
+              "text": ". After the effect expires, the health is lost."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130701,
+      "definitionId": 135502,
+      "spellId": 1310316,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Grants you a "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to generate "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " Rage when you Dodge or Parry while a shield is equipped."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Grants you a "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to generate "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " Rage when you Dodge or Parry while a shield is equipped."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130702,
+      "definitionId": 135503,
+      "spellId": 12287,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Rage cost of your Thunder Clap ability by "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Rage cost of your Thunder Clap ability by "
+            },
+            {
+              "kind": "value",
+              "text": "4"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Rage cost of your Thunder Clap ability by "
+            },
+            {
+              "kind": "value",
+              "text": "6"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130704,
+      "definitionId": 135505,
+      "spellId": 12301,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases all the Rage generated by your Bloodrage ability by "
+            },
+            {
+              "kind": "value",
+              "text": "25%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases all the Rage generated by your Bloodrage ability by "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130705,
+      "definitionId": 135506,
+      "spellId": 12297,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Defense Skill by "
+            },
+            {
+              "kind": "value",
+              "text": "4"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Defense Skill by "
+            },
+            {
+              "kind": "value",
+              "text": "8"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Defense Skill by "
+            },
+            {
+              "kind": "value",
+              "text": "12"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Defense Skill by "
+            },
+            {
+              "kind": "value",
+              "text": "16"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Defense Skill by "
+            },
+            {
+              "kind": "value",
+              "text": "20"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130706,
+      "definitionId": 135507,
+      "spellId": 12298,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your chance to Block attacks with your shield by "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": " and grants you a "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to generate "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " Rage when you Block."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your chance to Block attacks with your shield by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": " and grants you a "
+            },
+            {
+              "kind": "value",
+              "text": "40%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to generate "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " Rage when you Block."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your chance to Block attacks with your shield by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": " and grants you a "
+            },
+            {
+              "kind": "value",
+              "text": "60%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to generate "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " Rage when you Block."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your chance to Block attacks with your shield by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": " and grants you a "
+            },
+            {
+              "kind": "value",
+              "text": "80%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to generate "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " Rage when you Block."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your chance to Block attacks with your shield by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": " and grants you a "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to generate "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " Rage when you Block."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130707,
+      "definitionId": 135508,
+      "spellId": 1310315,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Rage cost of your Cleave and Whirlwind abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 130708,
+      "definitionId": 135509,
+      "spellId": 20500,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your Berserker Rage ability will instantly generate "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " Rage and has a "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to remove all movement impairing effects when activated."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your Berserker Rage ability will instantly generate "
+            },
+            {
+              "kind": "value",
+              "text": "10"
+            },
+            {
+              "kind": "text",
+              "text": " Rage and has a "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to remove all movement impairing effects when activated."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 137214,
+      "definitionId": 141974,
+      "spellId": 1289682,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Grants your Main Hand melee attacks against enemies afflicted by your Rend a "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to allow an activation of Overpower."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Grants your Main Hand melee attacks against enemies afflicted by your Rend a "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to allow an activation of Overpower."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Grants your Main Hand melee attacks against enemies afflicted by your Rend a "
+            },
+            {
+              "kind": "value",
+              "text": "12%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to allow an activation of Overpower."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Grants your Main Hand melee attacks against enemies afflicted by your Rend a "
+            },
+            {
+              "kind": "value",
+              "text": "16%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to allow an activation of Overpower."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Grants your Main Hand melee attacks against enemies afflicted by your Rend a "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to allow an activation of Overpower."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 137848,
+      "definitionId": 142602,
+      "spellId": 12792,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases all threat generated in Defensive stance by an additional "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": " while a shield is equipped."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases all threat generated in Defensive stance by an additional "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " while a shield is equipped."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases all threat generated in Defensive stance by an additional "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": " while a shield is equipped."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 137849,
+      "definitionId": 142603,
+      "spellId": 1323964,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the time before your Rage begins to decay after leaving combat by "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the time before your Rage begins to decay after leaving combat by "
+            },
+            {
+              "kind": "value",
+              "text": "4"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the time before your Rage begins to decay after leaving combat by "
+            },
+            {
+              "kind": "value",
+              "text": "6"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the time before your Rage begins to decay after leaving combat by "
+            },
+            {
+              "kind": "value",
+              "text": "8"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the time before your Rage begins to decay after leaving combat by "
+            },
+            {
+              "kind": "value",
+              "text": "10"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 137850,
+      "definitionId": 142604,
+      "spellId": 12862,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the global cooldown and cast time of your Slam ability by "
+            },
+            {
+              "kind": "value",
+              "text": "0.25"
+            },
+            {
+              "kind": "text",
+              "text": " sec. In addition, Slam no longer interrupts or delays your melee swing and Slam's cooldown is reduced by "
+            },
+            {
+              "kind": "value",
+              "text": "3.0"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the global cooldown and cast time of your Slam ability by "
+            },
+            {
+              "kind": "value",
+              "text": "0.50"
+            },
+            {
+              "kind": "text",
+              "text": " sec. In addition, Slam no longer interrupts or delays your melee swing and Slam's cooldown is reduced by "
+            },
+            {
+              "kind": "value",
+              "text": "3.0"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 141191,
+      "definitionId": 145863,
+      "spellId": 1323967,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your Enrage, Berserker Rage, Bloodrage, Death Wish, and Bloodthirst abilities cause your next "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": " melee attacks to restore "
+            },
+            {
+              "kind": "value",
+              "text": "0.5%"
+            },
+            {
+              "kind": "text",
+              "text": " of your maximum Health."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your Enrage, Berserker Rage, Bloodrage, Death Wish, and Bloodthirst abilities cause your next "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": " melee attacks to restore "
+            },
+            {
+              "kind": "value",
+              "text": "1.0%"
+            },
+            {
+              "kind": "text",
+              "text": " of your maximum Health."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 141192,
+      "definitionId": 145864,
+      "spellId": 12962,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the duration of Stun and Fear effects inflicted on you by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the duration of Stun and Fear effects inflicted on you by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the duration of Stun and Fear effects inflicted on you by "
+            },
+            {
+              "kind": "value",
+              "text": "9%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the duration of Stun and Fear effects inflicted on you by "
+            },
+            {
+              "kind": "value",
+              "text": "12%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the duration of Stun and Fear effects inflicted on you by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    }
+  ],
+  "contentHash": "sha256:484488b1f460351fe1dff5ed79d108329d5588050ea81bcf18c94fbac33ce13a",
+  "provenance": {
+    "source": "wago.tools",
+    "tables": [
+      "Spell",
+      "SpellEffect",
+      "SpellMisc",
+      "SpellDuration",
+      "SpellRadius",
+      "SpellAuraOptions",
+      "SpellXDescriptionVariables",
+      "SpellDescriptionVariables",
+      "GlobalStrings"
+    ],
+    "renderer": "talent_data.tooltips grammar-v1"
+  }
+}

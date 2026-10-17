@@ -346,6 +346,20 @@ def _validate_sections(tree: TalentTree, node_ids: set[int], report: ValidationR
                 tree=tree.id,
                 node=node.id,
             )
+    # A tab member that no gate of the tree counts was placed by layout, not by a gate group
+    # (normalizer._resolve_sections): its points count toward no tab gate. Observed on Mage
+    # since 1.60.1.70425 (Arcane Wrath); surfaced so that it is never mistaken for normal.
+    counted = {i for n in tree.nodes for req in n.unlock_requirements for i in req.counted_node_ids}
+    if counted:
+        for node in tree.nodes:
+            if node.section_index is not None and node.id not in counted:
+                report.warning(
+                    "SECTION_NOT_GATE_COUNTED",
+                    f"tree {tree.id} node {node.id} ({node.name}): in section "
+                    f"{node.section_index} by layout, counted by no gate",
+                    tree=tree.id,
+                    node=node.id,
+                )
 
 
 def _find_cycle(graph: dict[int, list[int]]) -> list[int] | None:

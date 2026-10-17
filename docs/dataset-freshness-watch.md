@@ -1,7 +1,7 @@
 # Dataset freshness watcher (M5.DATA.WATCH)
 
 The watcher answers one question every day: is the app's product dataset
-(`PRODUCT_BUNDLE`, currently `1.60.1.70374`) still the latest **publishable** Forever
+(`PRODUCT_BUNDLE`, currently `1.60.1.70450`) still the latest **publishable** Forever
 build? It reports through **one** tracked GitHub Issue and changes nothing else.
 
 It never switches `PRODUCT_BUNDLE`, never edits `BUNDLED_BUILDS`, normalized data,
@@ -278,6 +278,14 @@ at `wowf`. What `wowf` is (for example, the product of the launched game) is not
 in the repository. Until it is, list it by hand (the `curl` above shows it) whenever a release
 is prepared, and treat a `wowf` build that differs from `PRODUCT_BUNDLE` as a question for a
 product decision - never as an automatic switch.
+
+Re-checked by M5.DATA.4 on 2026-10-17 (18:40 UTC): the index still listed only
+`1.60.1.70245` under `wowf` (`build_config e8c4ef4e67bd1d94d820254984258fa8`), now older
+than the beta's product build 70450. The beta's own 70245 has a different `build_config`
+(`0bf141260c698dfc9cb3b5b7947b78c3`), yet wago.tools' table export is addressed by version
+string alone (`?build=1.60.1.70245`), so the pipeline's source cannot tell the two 70245
+builds apart. The product mapping is unchanged
+([forever-dataset.md](forever-dataset.md#product-dataset-160170450-m5data4)).
 
 ## Testing
 

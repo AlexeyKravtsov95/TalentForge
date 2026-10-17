@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 4,
+    "token": "ROGUE",
+    "name": "Rogue"
+  },
+  "fromBuild": "1.60.1.70374",
+  "toBuild": "1.60.1.70450",
+  "fromContentHash": "sha256:0f8395215f4b932cb5fb1466d57c46207415e2e972b6b5b61226c05e483047fd",
+  "toContentHash": "sha256:783b9632deff825c0194895b847da2bddcc0c0e1288dd1aa2d63243d84ac01ed",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 0,
+    "changesByKind": {}
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": []
+}

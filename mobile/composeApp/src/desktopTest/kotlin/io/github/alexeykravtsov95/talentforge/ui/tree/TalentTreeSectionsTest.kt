@@ -27,8 +27,8 @@ import kotlinx.coroutines.runBlocking
 
 /**
  * M5.UX.1 section projection against the REAL bundled datasets of EVERY bundled
- * client build (1.60.1.70009 reference, 1.60.1.70245 and 1.60.1.70338 retained
- * products, 1.60.1.70374 product), all nine classes:
+ * client build (1.60.1.70009 reference, 1.60.1.70245, 1.60.1.70338 and
+ * 1.60.1.70374 retained products, 1.60.1.70450 product), all nine classes:
  * the tree splits into exactly its published sections, no node id is lost or
  * duplicated, no connector is invented or broken, bounds come from each
  * section's own nodes, the geometry is the original one, the per-section
@@ -67,7 +67,7 @@ class TalentTreeSectionsTest {
     @Test
     fun everyRealTreeSplitsIntoExactlyItsPublishedSections() {
         val documents = everyDocument()
-        assertEquals(36, documents.size, "nine classes on each of the four bundled builds")
+        assertEquals(45, documents.size, "nine classes on each of the five bundled builds")
         for (document in documents) {
             val tree = document.trees.single()
             val label = "${document.classInfo.token} ${document.clientBuild}"
@@ -205,6 +205,20 @@ class TalentTreeSectionsTest {
         }
     }
 
+    @Test
+    fun theProductArcaneTabCarriesArcaneWrathAlthoughNoGateCountsIt() {
+        // 1.60.1.70450: Arcane Wrath is in no gate group; the dataset places it in the Arcane
+        // tab by its column (docs/forever-dataset.md), and the projection shows it there
+        val mage = document(PRODUCT_BUNDLE, "MAGE")
+        val tree = mage.trees.single()
+        val arcane = sectioned(mage).sections.first()
+        assertEquals(19, arcane.model.nodes.size)
+        assertTrue(arcane.model.nodes.any { it.id == ARCANE_WRATH && it.name == "Arcane Wrath" })
+        assertEquals(listOf(19, 17, 19), sectioned(mage).sections.map { it.model.nodes.size })
+        val counted = tree.nodes.flatMap { n -> n.unlockRequirements.flatMap { it.countedNodeIds } }.toSet()
+        assertFalse(ARCANE_WRATH in counted, "no gate counts Arcane Wrath")
+    }
+
     // ------------------------------------------------------------------ geometry on phones
 
     @Test
@@ -274,6 +288,9 @@ class TalentTreeSectionsTest {
     }
 
     private companion object {
+        /** Mage "Arcane Wrath": new in 1.60.1.70425, counted by no gate group. */
+        const val ARCANE_WRATH = 113627
+
         /** Three pitches + one node: a four-column section at scale 1. */
         const val STANDARD_SECTION_WIDTH_DP: Float =
             3 * TalentTreeCanvasMetrics.GRID_STEP_DP + TalentTreeCanvasMetrics.NODE_VISUAL_DP

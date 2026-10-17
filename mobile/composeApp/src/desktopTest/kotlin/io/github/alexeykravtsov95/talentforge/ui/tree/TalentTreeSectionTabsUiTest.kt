@@ -555,6 +555,21 @@ class TalentTreeSectionTabsUiTest {
         assertNull(cameras.selectedSection)
     }
 
+    @Test
+    fun theProductMageArcaneTabShowsArcaneWrath() {
+        // 1.60.1.70450: Arcane Wrath is counted by no gate; the dataset places it in Arcane by its column
+        val state = readyStateOf(PRODUCT_BUNDLE, "MAGE")
+        assertIs<TalentTreeSectionsResult.Sectioned>(buildTalentTreeSections(state.engine.tree, state.model))
+
+        compose(state)
+
+        composeRule.onNodeWithText("Arcane").assertIsSelected()
+        composeRule.onNodeWithText("Fire").assertExists()
+        composeRule.onNodeWithText("Frost").assertExists()
+        composeRule.onNodeWithContentDescription("Arcane Wrath").assertExists()
+        composeRule.onNodeWithText("0 / 51").assertExists()
+    }
+
     // ------------------------------------------------------------------ helpers
 
     private fun readyStateOf(bundle: DatasetBundleId, classToken: String): TalentTreeUiState.Ready = runBlocking {

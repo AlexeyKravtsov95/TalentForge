@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 2,
+    "token": "PALADIN",
+    "name": "Paladin"
+  },
+  "fromBuild": "1.60.1.70374",
+  "toBuild": "1.60.1.70450",
+  "fromContentHash": "sha256:a1e51d116f801864ffef01250d9adf4307b875a70ee87300bba5f7f2ee58b616",
+  "toContentHash": "sha256:4c22ad4a9022d6c7f60de6310523a809a017462eea675f215d101220150a4da0",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 3,
+    "changesByKind": {
+      "descriptionChanged": 1,
+      "effectBasePointsChanged": 1,
+      "effectRankValueChanged": 3
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 105334,
+      "treeId": 1100,
+      "name": "Improved Seals",
+      "changes": [
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130028,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 3,
+          "new": 0
+        }
+      ]
+    },
+    {
+      "nodeId": 105627,
+      "treeId": 1100,
+      "name": "Reckoning",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130351,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Gives you a $m1% chance to gain an extra attack after Blocking a melee attack and a ${$m1*2.5}% chance to gain an extra attack after being the victim of a non-periodic critical strike. Cannot occur more often than once every 1.5 sec.",
+          "new": "Gives you a $m1% chance after Blocking and a ${$m1*2.5}% chance after receiving a non-periodic critical strike to gain an extra attack. Stores up to $1326084u extra attacks. Cannot occur from Blocks more than once every ${$proccooldown}.1 sec."
+        }
+      ]
+    },
+    {
+      "nodeId": 110882,
+      "treeId": 1100,
+      "name": "Champion of the Light",
+      "changes": [
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137880,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 20,
+          "new": 10
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137880,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 40,
+          "new": 20
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137880,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 60,
+          "new": 30
+        }
+      ]
+    }
+  ]
+}

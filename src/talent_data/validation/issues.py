@@ -35,6 +35,9 @@ KNOWN_WARNING_CODES: dict[str, str] = {
     "combinations are surfaced, never silently flattened or dropped)",
     "SHARED_GRID_CELL": "two nodes map to the same derived grid cell",
     "SECTIONS_UNRESOLVED": "talent tabs could not be derived from the gate groups",
+    "SECTION_NOT_GATE_COUNTED": "a node no gate counts, placed in the tab whose columns contain "
+    "it (observed on Mage 1.60.1.70425+: Arcane Wrath 113627; its points count toward no tab "
+    "gate, as in the client rows)",
 }
 
 KNOWN_ERROR_CODES: frozenset[str] = frozenset(

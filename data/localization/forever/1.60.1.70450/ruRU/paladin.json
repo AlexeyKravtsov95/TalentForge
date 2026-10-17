@@ -1,0 +1,3230 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "clientBuild": "1.60.1.70450",
+  "classToken": "PALADIN",
+  "locale": "ruRU",
+  "talentDataContentHash": "sha256:4c22ad4a9022d6c7f60de6310523a809a017462eea675f215d101220150a4da0",
+  "tooltipsContentHash": "sha256:749b3b6794332a89ec625d721d14824b9ca695f500a67090fd86cc81b2a62c8b",
+  "entries": [
+    {
+      "entryId": 130014,
+      "nodeId": 105320,
+      "definitionId": 134815,
+      "spellId": 1310911,
+      "textSpellId": 1310911,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Дозор Света",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130015,
+      "nodeId": 105321,
+      "definitionId": 134816,
+      "spellId": 5923,
+      "textSpellId": 5923,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Священная сила",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта \"Шока небес\" и \"Священного удара\" на "
+              },
+              {
+                "kind": "value",
+                "text": "3"
+              },
+              {
+                "kind": "text",
+                "text": ", а других ваших заклинаний – на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта \"Шока небес\" и \"Священного удара\" на "
+              },
+              {
+                "kind": "value",
+                "text": "6"
+              },
+              {
+                "kind": "text",
+                "text": ", а других ваших заклинаний – на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта \"Шока небес\" и \"Священного удара\" на "
+              },
+              {
+                "kind": "value",
+                "text": "9"
+              },
+              {
+                "kind": "text",
+                "text": ", а других ваших заклинаний – на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта \"Шока небес\" и \"Священного удара\" на "
+              },
+              {
+                "kind": "value",
+                "text": "12"
+              },
+              {
+                "kind": "text",
+                "text": ", а других ваших заклинаний – на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта \"Шока небес\" и \"Священного удара\" на "
+              },
+              {
+                "kind": "value",
+                "text": "15"
+              },
+              {
+                "kind": "text",
+                "text": ", а других ваших заклинаний – на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130017,
+      "nodeId": 105323,
+      "definitionId": 134818,
+      "spellId": 1311606,
+      "textSpellId": 1311606,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Шок небес",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130018,
+      "nodeId": 105324,
+      "definitionId": 134819,
+      "spellId": 1310904,
+      "textSpellId": 1310904,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Божественная точность",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания заклинаниями светлой магии на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания заклинаниями светлой магии на "
+              },
+              {
+                "kind": "value",
+                "text": "12%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания заклинаниями светлой магии на "
+              },
+              {
+                "kind": "value",
+                "text": "18%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130019,
+      "nodeId": 105325,
+      "definitionId": 134820,
+      "spellId": 20216,
+      "textSpellId": 20216,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Божественное одобрение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "При приведении в действие это заклинание дает вашим следующим заклинаниям \"Свет небес\", \"Вспышка Света\" или \"Шок небес\" "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " шанса на критическое воздействие."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130021,
+      "nodeId": 105327,
+      "definitionId": 134822,
+      "spellId": 429144,
+      "textSpellId": 429144,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Очищающая сила",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на \"Очищение\" и \"Омовение\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": ", а также сокращает время восстановления \"Экзорцизма\" и \"Гнева небес\" на "
+              },
+              {
+                "kind": "value",
+                "text": "17%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на \"Очищение\" и \"Омовение\" на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": ", а также сокращает время восстановления \"Экзорцизма\" и \"Гнева небес\" на "
+              },
+              {
+                "kind": "value",
+                "text": "33%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130023,
+      "nodeId": 105329,
+      "definitionId": 134824,
+      "spellId": 20210,
+      "textSpellId": 20210,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Свечение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "При критическом эффекте заклинаний \"Вспышка Света\", \"Свет небес\", \"Дозор Света\" и критическом исцеляющем эффекте \"Шока небес\" вы с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " восполняете "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " базовой стоимости заклинания."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "При критическом эффекте заклинаний \"Вспышка Света\", \"Свет небес\", \"Дозор Света\" и критическом исцеляющем эффекте \"Шока небес\" вы с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": " восполняете "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " базовой стоимости заклинания."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "При критическом эффекте заклинаний \"Вспышка Света\", \"Свет небес\", \"Дозор Света\" и критическом исцеляющем эффекте \"Шока небес\" вы с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "60%"
+              },
+              {
+                "kind": "text",
+                "text": " восполняете "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " базовой стоимости заклинания."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "При критическом эффекте заклинаний \"Вспышка Света\", \"Свет небес\", \"Дозор Света\" и критическом исцеляющем эффекте \"Шока небес\" вы с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "80%"
+              },
+              {
+                "kind": "text",
+                "text": " восполняете "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " базовой стоимости заклинания."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "При критическом эффекте заклинаний \"Вспышка Света\", \"Свет небес\", \"Дозор Света\" и критическом исцеляющем эффекте \"Шока небес\" вы с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " восполняете "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " базовой стоимости заклинания."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130024,
+      "nodeId": 105330,
+      "definitionId": 134825,
+      "spellId": 1310897,
+      "textSpellId": 1310897,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Глас истины",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Дает невосприимчивость к эффектам немоты и прерывания на "
+              },
+              {
+                "kind": "value",
+                "text": "6 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130025,
+      "nodeId": 105331,
+      "definitionId": 134826,
+      "spellId": 9453,
+      "textSpellId": 9453,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Непоколебимая вера",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Сокращает время действия на вас эффектов страха и дезориентации на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Сокращает время действия на вас эффектов страха и дезориентации на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130026,
+      "nodeId": 105332,
+      "definitionId": 134827,
+      "spellId": 20257,
+      "textSpellId": 20257,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Божественный интеллект",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение интеллекта на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение интеллекта на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение интеллекта на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение интеллекта на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение интеллекта на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130027,
+      "nodeId": 105333,
+      "definitionId": 134828,
+      "spellId": 20237,
+      "textSpellId": 20237,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Исцеляющий Свет",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Свет небес\", \"Вспышка Света\" и \"Шок небес\" восстанавливают на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": " больше здоровья."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Свет небес\", \"Вспышка Света\" и \"Шок небес\" восстанавливают на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": " больше здоровья."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Свет небес\", \"Вспышка Света\" и \"Шок небес\" восстанавливают на "
+              },
+              {
+                "kind": "value",
+                "text": "12%"
+              },
+              {
+                "kind": "text",
+                "text": " больше здоровья."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130028,
+      "nodeId": 105334,
+      "definitionId": 134829,
+      "spellId": 20224,
+      "textSpellId": 20224,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенные печати",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от всех печатей и заклинаний категории \"Правосудие\" на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от всех печатей и заклинаний категории \"Правосудие\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от всех печатей и заклинаний категории \"Правосудие\" на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130029,
+      "nodeId": 105335,
+      "definitionId": 134830,
+      "spellId": 20205,
+      "textSpellId": 20205,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Духовное концентрация",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Позволяет с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "35%"
+              },
+              {
+                "kind": "text",
+                "text": " избежать задержки при применении \"Вспышки Света\", \"Света небес\" и \"Дозора Света\", когда вы получаете урон."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Позволяет с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "70%"
+              },
+              {
+                "kind": "text",
+                "text": " избежать задержки при применении \"Вспышки Света\", \"Света небес\" и \"Дозора Света\", когда вы получаете урон."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130349,
+      "nodeId": 105625,
+      "definitionId": 135150,
+      "spellId": 1311015,
+      "textSpellId": 1311015,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Щит храмовника",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "При активации эта способность дает щит в размере "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " максимального запаса здоровья. Время действия – "
+              },
+              {
+                "kind": "value",
+                "text": "8 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Применяет \"Воздержанность\" на "
+              },
+              {
+                "kind": "value",
+                "text": "1 мин"
+              },
+              {
+                "kind": "text",
+                "text": ". Нельзя применять во время действия \"Воздержанности\"."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130350,
+      "nodeId": 105626,
+      "definitionId": 135151,
+      "spellId": 20127,
+      "textSpellId": 20127,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Оплот",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "pluralRuleUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130351,
+      "nodeId": 105627,
+      "definitionId": 135152,
+      "spellId": 20177,
+      "textSpellId": 20177,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Расплата",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "untranslated",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130352,
+      "nodeId": 105628,
+      "definitionId": 135153,
+      "spellId": 20925,
+      "textSpellId": 20925,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Щит небес",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130353,
+      "nodeId": 105629,
+      "definitionId": 135154,
+      "spellId": 20196,
+      "textSpellId": 20196,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Специализация на одноручном оружии",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": " урона, наносимого используемым одноручным оружием ближнего боя."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение на "
+              },
+              {
+                "kind": "value",
+                "text": "7%"
+              },
+              {
+                "kind": "text",
+                "text": " урона, наносимого используемым одноручным оружием ближнего боя."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " урона, наносимого используемым одноручным оружием ближнего боя."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130354,
+      "nodeId": 105630,
+      "definitionId": 135155,
+      "spellId": 20143,
+      "textSpellId": 20143,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Крепость",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": " эффективности усиления брони за счет носимой экипировки."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": " эффективности усиления брони за счет носимой экипировки."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": " эффективности усиления брони за счет носимой экипировки."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": " эффективности усиления брони за счет носимой экипировки."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " эффективности усиления брони за счет носимой экипировки."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130356,
+      "nodeId": 105632,
+      "definitionId": 135157,
+      "spellId": 1224697,
+      "textSpellId": 1224697,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Священный долг",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает выносливость на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": " и сокращает время восстановления \"Божественного щита\", \"Божественной защиты\" и \"Щита храмовника\" на "
+              },
+              {
+                "kind": "value",
+                "text": "30"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает выносливость на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": " и сокращает время восстановления \"Божественного щита\", \"Божественной защиты\" и \"Щита храмовника\" на "
+              },
+              {
+                "kind": "value",
+                "text": "60"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130357,
+      "nodeId": 105633,
+      "definitionId": 135158,
+      "spellId": 20487,
+      "textSpellId": 20487,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенный молот правосудия",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Сокращение времени восстановления заклинания \"Молот правосудия\" на "
+              },
+              {
+                "kind": "value",
+                "text": "5"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Сокращение времени восстановления заклинания \"Молот правосудия\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Сокращение времени восстановления заклинания \"Молот правосудия\" на "
+              },
+              {
+                "kind": "value",
+                "text": "15"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130358,
+      "nodeId": 105634,
+      "definitionId": 135159,
+      "spellId": 20468,
+      "textSpellId": 20468,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенное праведное неистовство",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Праведное неистовство\" уменьшает получаемый урон на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Праведное неистовство\" уменьшает получаемый урон на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Праведное неистовство\" уменьшает получаемый урон на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130360,
+      "nodeId": 105636,
+      "definitionId": 135161,
+      "spellId": 20096,
+      "textSpellId": 20096,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Предчувствие",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает навык защиты на "
+              },
+              {
+                "kind": "value",
+                "text": "4"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает навык защиты на "
+              },
+              {
+                "kind": "value",
+                "text": "8"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает навык защиты на "
+              },
+              {
+                "kind": "value",
+                "text": "12"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает навык защиты на "
+              },
+              {
+                "kind": "value",
+                "text": "16"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает навык защиты на "
+              },
+              {
+                "kind": "value",
+                "text": "20"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130361,
+      "nodeId": 105637,
+      "definitionId": 135162,
+      "spellId": 20174,
+      "textSpellId": 20174,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Помощь стража",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Сокращает время восстановления \"Благословения защиты\" на "
+              },
+              {
+                "kind": "value",
+                "text": "1"
+              },
+              {
+                "kind": "text",
+                "text": " мин. Продлевает время действия \"Благословения свободы\" на "
+              },
+              {
+                "kind": "value",
+                "text": "3"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Сокращает время восстановления \"Благословения защиты\" на "
+              },
+              {
+                "kind": "value",
+                "text": "2"
+              },
+              {
+                "kind": "text",
+                "text": " мин. Продлевает время действия \"Благословения свободы\" на "
+              },
+              {
+                "kind": "value",
+                "text": "6"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130362,
+      "nodeId": 105638,
+      "definitionId": 135163,
+      "spellId": 20189,
+      "textSpellId": 20189,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Точность",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130363,
+      "nodeId": 105639,
+      "definitionId": 135164,
+      "spellId": 20262,
+      "textSpellId": 20262,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Божественная сила",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает силу на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает силу на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает силу на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает силу на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает силу на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130421,
+      "nodeId": 105692,
+      "definitionId": 135222,
+      "spellId": 1310735,
+      "textSpellId": 1310735,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Искаженный свет",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Затраты маны на ваши \"Печати\" снижаются на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": ". Когда вы заменяете \"Печать повиновения\", \"Печать праведности\", \"Печать ярости\" или \"Печать справедливости\" другой печатью, то получаете ее отголосок. Следующая атака ближнего боя применяет эффект замененной печати и поглощает отголосок."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130422,
+      "nodeId": 105693,
+      "definitionId": 135223,
+      "spellId": 20049,
+      "textSpellId": 20049,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Отмщение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда вы совершаете критический удар атакой, наносимый вами физический урон и урон от светлой магии увеличиваются на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "30 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Эффект суммируется до "
+              },
+              {
+                "kind": "value",
+                "text": "3"
+              },
+              {
+                "kind": "text",
+                "text": " раз."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда вы совершаете критический удар атакой, наносимый вами физический урон и урон от светлой магии увеличиваются на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "30 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Эффект суммируется до "
+              },
+              {
+                "kind": "value",
+                "text": "3"
+              },
+              {
+                "kind": "text",
+                "text": " раз."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда вы совершаете критический удар атакой, наносимый вами физический урон и урон от светлой магии увеличиваются на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "30 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Эффект суммируется до "
+              },
+              {
+                "kind": "value",
+                "text": "3"
+              },
+              {
+                "kind": "text",
+                "text": " раз."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130423,
+      "nodeId": 105694,
+      "definitionId": 135224,
+      "spellId": 20066,
+      "textSpellId": 20066,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Покаяние",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Вводит противника в состояние глубокой задумчивости, лишающее возможности действовать на "
+              },
+              {
+                "kind": "value",
+                "text": "6 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Любой нанесенный урон выводит цель из этого состояния. Действует только против гуманоидов."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130425,
+      "nodeId": 105696,
+      "definitionId": 135226,
+      "spellId": 20375,
+      "textSpellId": 20375,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Печать повиновения",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130426,
+      "nodeId": 105697,
+      "definitionId": 135227,
+      "spellId": 20111,
+      "textSpellId": 20111,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Специализация на двуручном оружии",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение урона от вашего двуручного оружия ближнего боя на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение урона от вашего двуручного оружия ближнего боя на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение урона от вашего двуручного оружия ближнего боя на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130427,
+      "nodeId": 105698,
+      "definitionId": 135228,
+      "spellId": 9799,
+      "textSpellId": 9799,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Око за око",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда вы получаете критические удары, атакующий противник также получает "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": " урона. Урон, наносимый способностью \"Око за око\", не может превышать 50% вашего максимального запаса здоровья."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда вы получаете критические удары, атакующий противник также получает "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " урона. Урон, наносимый способностью \"Око за око\", не может превышать 50% вашего максимального запаса здоровья."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130428,
+      "nodeId": 105699,
+      "definitionId": 135229,
+      "spellId": 26022,
+      "textSpellId": 26022,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Погоня за справедливостью",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает скорость передвижения пешком и на транспорте на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": ". Не суммируется с другими эффектами, повышающими скорость передвижения."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает скорость передвижения пешком и на транспорте на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": ". Не суммируется с другими эффектами, повышающими скорость передвижения."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130429,
+      "nodeId": 105700,
+      "definitionId": 135230,
+      "spellId": 1311087,
+      "textSpellId": 1311087,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Священный вершитель",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает наносимый \"Священным ударом\" урон на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " и обновляет время действия всех эффектов \"Правосудия\" на цели."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130430,
+      "nodeId": 105701,
+      "definitionId": 135231,
+      "spellId": 1311074,
+      "textSpellId": 1311074,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Священное правосудие",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Правосудие\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "33%"
+              },
+              {
+                "kind": "text",
+                "text": " восполняет ману в объеме "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " затрат на применение соответствующей печати."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Правосудие\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "66%"
+              },
+              {
+                "kind": "text",
+                "text": " восполняет ману в объеме "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": " затрат на применение соответствующей печати."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Правосудие\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " восполняет ману в объеме "
+              },
+              {
+                "kind": "value",
+                "text": "60%"
+              },
+              {
+                "kind": "text",
+                "text": " затрат на применение соответствующей печати."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130431,
+      "nodeId": 105702,
+      "definitionId": 135232,
+      "spellId": 9452,
+      "textSpellId": 9452,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Подтверждение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130432,
+      "nodeId": 105703,
+      "definitionId": 135233,
+      "spellId": 20117,
+      "textSpellId": 20117,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Приговор",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара атак в ближнем бою на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара атак в ближнем бою на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара атак в ближнем бою на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара атак в ближнем бою на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического удара атак в ближнем бою на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130433,
+      "nodeId": 105704,
+      "definitionId": 135234,
+      "spellId": 1237268,
+      "textSpellId": 1237268,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Священный проводник",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на \"Освящение\", \"Гнев небес\", \"Экзорцизм\" и \"Молот гнева\" на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на \"Освящение\", \"Гнев небес\", \"Экзорцизм\" и \"Молот гнева\" на "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130434,
+      "nodeId": 105705,
+      "definitionId": 135235,
+      "spellId": 25956,
+      "textSpellId": 25956,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенное провосудие",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Сокращает время восстановления \"Правосудия\" на "
+              },
+              {
+                "kind": "value",
+                "text": "1"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Сокращает время восстановления \"Правосудия\" на "
+              },
+              {
+                "kind": "value",
+                "text": "2"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130435,
+      "nodeId": 105706,
+      "definitionId": 135236,
+      "spellId": 20101,
+      "textSpellId": 20101,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Благодарение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на применение мгновенных заклинаний и способностей на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на применение мгновенных заклинаний и способностей на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на применение мгновенных заклинаний и способностей на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на применение мгновенных заклинаний и способностей на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на применение мгновенных заклинаний и способностей на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130436,
+      "nodeId": 105707,
+      "definitionId": 135237,
+      "spellId": 20060,
+      "textSpellId": 20060,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Отражение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает вероятность парирования атак на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает вероятность парирования атак на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает вероятность парирования атак на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает вероятность парирования атак на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает вероятность парирования атак на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 137869,
+      "nodeId": 110871,
+      "definitionId": 142623,
+      "spellId": 1310899,
+      "textSpellId": 1310899,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Благоговение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Во время применения заклинаний мана продолжает восполняться со скоростью "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Во время применения заклинаний мана продолжает восполняться со скоростью "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Во время применения заклинаний мана продолжает восполняться со скоростью "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 137870,
+      "nodeId": 110872,
+      "definitionId": 142624,
+      "spellId": 1310905,
+      "textSpellId": 1310905,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Освященная земля",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Ваши заклинания светлой магии наносят на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": " больше урона "
+              },
+              {
+                "kind": "value",
+                "text": "4"
+              },
+              {
+                "kind": "text",
+                "text": " первым противникам, попавшим в область \"Освящения\"."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Ваши заклинания светлой магии наносят на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " больше урона "
+              },
+              {
+                "kind": "value",
+                "text": "4"
+              },
+              {
+                "kind": "text",
+                "text": " первым противникам, попавшим в область \"Освящения\"."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 137871,
+      "nodeId": 110873,
+      "definitionId": 142625,
+      "spellId": 426065,
+      "textSpellId": 426065,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Прилив Света",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "decimalFormatUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 137872,
+      "nodeId": 110874,
+      "definitionId": 142626,
+      "spellId": 20150,
+      "textSpellId": 20150,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Специализация на щитах",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 137873,
+      "nodeId": 110875,
+      "definitionId": 142627,
+      "spellId": 1314103,
+      "textSpellId": 1314103,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенная печать ярости",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 137876,
+      "nodeId": 110878,
+      "definitionId": 142630,
+      "spellId": 1310994,
+      "textSpellId": 1310994,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Стремительное правосудие",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Сбрасывает оставшееся время восстановления \"Правосудия\" и снижает затраты маны на следующее применение \"Правосудия\" на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 137877,
+      "nodeId": 110879,
+      "definitionId": 142631,
+      "spellId": 1311034,
+      "textSpellId": 1311034,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Железная вера",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает уровень угрозы от \"Священного удара\" на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": ". Пока действует \"Праведное неистовство\", \"Священный удар\" также уменьшает получаемый урон на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "6 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает уровень угрозы от \"Священного удара\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": ". Пока действует \"Праведное неистовство\", \"Священный удар\" также уменьшает получаемый урон на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "6 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает уровень угрозы от \"Священного удара\" на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": ". Пока действует \"Праведное неистовство\", \"Священный удар\" также уменьшает получаемый урон на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "6 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает уровень угрозы от \"Священного удара\" на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": ". Пока действует \"Праведное неистовство\", \"Священный удар\" также уменьшает получаемый урон на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "6 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает уровень угрозы от \"Священного удара\" на "
+              },
+              {
+                "kind": "value",
+                "text": "25%"
+              },
+              {
+                "kind": "text",
+                "text": ". Пока действует \"Праведное неистовство\", \"Священный удар\" также уменьшает получаемый урон на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "6 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 137878,
+      "nodeId": 110880,
+      "definitionId": 142632,
+      "spellId": 1311085,
+      "textSpellId": 1311085,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Орудие закона",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "decimalFormatUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 137880,
+      "nodeId": 110882,
+      "definitionId": 142634,
+      "spellId": 1311084,
+      "textSpellId": 1311084,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Воитель Света",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от заклинаний максимум на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " интеллекта."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от заклинаний максимум на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " интеллекта."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон от заклинаний максимум на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " интеллекта."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "contentHash": "sha256:ed3c5a35eea3df97cfa799e533e2ab45256a89aaf18665dcf596bb91816ce1cb",
+  "provenance": {
+    "source": "wago.tools",
+    "renderer": "talent_data.localization gates-v1 + talent_data.tooltips grammar-v1",
+    "tables": [
+      {
+        "table": "SpellName",
+        "locale": "enUS",
+        "url": "https://wago.tools/db2/SpellName/csv?build=1.60.1.70450"
+      },
+      {
+        "table": "TraitDefinition",
+        "locale": "enUS",
+        "url": "https://wago.tools/db2/TraitDefinition/csv?build=1.60.1.70450"
+      },
+      {
+        "table": "Spell",
+        "locale": "enUS",
+        "url": "https://wago.tools/db2/Spell/csv?build=1.60.1.70450"
+      },
+      {
+        "table": "GlobalStrings",
+        "locale": "enUS",
+        "url": "https://wago.tools/db2/GlobalStrings/csv?build=1.60.1.70450"
+      },
+      {
+        "table": "SpellName",
+        "locale": "ruRU",
+        "url": "https://wago.tools/db2/SpellName/csv?build=1.60.1.70450&locale=ruRU"
+      },
+      {
+        "table": "TraitDefinition",
+        "locale": "ruRU",
+        "url": "https://wago.tools/db2/TraitDefinition/csv?build=1.60.1.70450&locale=ruRU"
+      },
+      {
+        "table": "Spell",
+        "locale": "ruRU",
+        "url": "https://wago.tools/db2/Spell/csv?build=1.60.1.70450&locale=ruRU"
+      },
+      {
+        "table": "GlobalStrings",
+        "locale": "ruRU",
+        "url": "https://wago.tools/db2/GlobalStrings/csv?build=1.60.1.70450&locale=ruRU"
+      }
+    ]
+  }
+}

@@ -20,13 +20,16 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 
 /**
- * M5.REL.3b.2: the runtime overlay check against the 36 committed overlays and tampered
+ * M5.REL.3b.2: the runtime overlay check against the 45 committed overlays and tampered
  * copies, each of which must be rejected **as a whole** with the typed
  * [LocalizationLoadError] that names its problem. Assets are repository files; no network.
  */
 class TalentLocalizationRepositoryTest {
 
     private val warrior = LocalizationCase(PRODUCT_BUILD, "warrior")
+
+    /** 1.60.1.70374's Warrior overlay, where Gore Drinker's ruRU name is still English (untranslated). */
+    private val untranslatedWarrior = LocalizationCase("1.60.1.70374", "warrior")
 
     // ----------------------------------------------------------------- valid overlays
 
@@ -45,7 +48,7 @@ class TalentLocalizationRepositoryTest {
                 overlays++
             }
         }
-        assertEquals(36, overlays)
+        assertEquals(45, overlays)
     }
 
     @Test
@@ -293,6 +296,7 @@ class TalentLocalizationRepositoryTest {
 
     @Test
     fun nameStatusAndTextMustAgree() = runTest {
+        val warrior = untranslatedWarrior
         val json = warrior.json()
         fun name(entryId: Int, change: (JsonObject) -> JsonObject) =
             json.withEntry(entryId) { it.with("name", change(it.obj("name"))) }.rehashed()

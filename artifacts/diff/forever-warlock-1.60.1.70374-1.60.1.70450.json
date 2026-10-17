@@ -1,0 +1,303 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 9,
+    "token": "WARLOCK",
+    "name": "Warlock"
+  },
+  "fromBuild": "1.60.1.70374",
+  "toBuild": "1.60.1.70450",
+  "fromContentHash": "sha256:c0ee75875088a97d5fb37344369f3d18a2cd4393962e6135fe2a4e94e0cd4c36",
+  "toContentHash": "sha256:ab71480dea8add54dd3920d5931f22a8388635a13aba8a2a695c64106c9a2a12",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 5,
+    "changesByKind": {
+      "descriptionChanged": 2,
+      "effectBasePointsChanged": 2,
+      "effectRankValueChanged": 15,
+      "effectRemoved": 3,
+      "maxRankChanged": 1,
+      "spellReplaced": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 105881,
+      "treeId": 1116,
+      "name": "Destructive Reach",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130611,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases the range of your damaging spells by $s1%.",
+          "new": "Increases the range of your Destruction spells by $s1%."
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130611,
+          "effectIndex": 1,
+          "rank": null,
+          "old": 10,
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 105907,
+      "treeId": 1116,
+      "name": "Demonic Embrace",
+      "changes": [
+        {
+          "kind": "effectRemoved",
+          "entryId": 130637,
+          "effectIndex": 1,
+          "rank": null,
+          "old": {
+            "index": 1,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": -1,
+            "unresolvedReason": null
+          },
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 105910,
+      "treeId": 1116,
+      "name": "Shadow Mastery",
+      "changes": [
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130640,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 1,
+          "new": 2
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130640,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 2,
+          "new": 4
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130640,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 3,
+          "new": 6
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130640,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": 4,
+          "new": 8
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130640,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": 5,
+          "new": 10
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130640,
+          "effectIndex": 1,
+          "rank": 1,
+          "old": 1,
+          "new": 2
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130640,
+          "effectIndex": 1,
+          "rank": 2,
+          "old": 2,
+          "new": 4
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130640,
+          "effectIndex": 1,
+          "rank": 3,
+          "old": 3,
+          "new": 6
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130640,
+          "effectIndex": 1,
+          "rank": 4,
+          "old": 4,
+          "new": 8
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130640,
+          "effectIndex": 1,
+          "rank": 5,
+          "old": 5,
+          "new": 10
+        }
+      ]
+    },
+    {
+      "nodeId": 105916,
+      "treeId": 1116,
+      "name": "Amplify Curse",
+      "changes": [
+        {
+          "kind": "effectRemoved",
+          "entryId": 130646,
+          "effectIndex": 1,
+          "rank": null,
+          "old": {
+            "index": 1,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": -20,
+            "unresolvedReason": null
+          },
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 105923,
+      "treeId": 1116,
+      "name": "Grim Reach",
+      "changes": [
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 5,
+          "new": 2
+        },
+        {
+          "kind": "spellReplaced",
+          "entryId": 130653,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 1225177,
+            "name": "Malediction"
+          },
+          "new": {
+            "spellId": 18218,
+            "name": "Grim Reach"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130653,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases all periodic damage done by your Warlock spells by $s1%.",
+          "new": "Increases the range of your Affliction spells by $s1%."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130653,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 1,
+          "new": 10
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130653,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 2,
+          "new": 20
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130653,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 3,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130653,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": 4,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130653,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": 5,
+          "new": null
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130653,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 10,
+          "new": 20
+        },
+        {
+          "kind": "effectRemoved",
+          "entryId": 130653,
+          "effectIndex": 1,
+          "rank": null,
+          "old": {
+            "index": 1,
+            "perRank": [
+              {
+                "rank": 1,
+                "value": 1
+              },
+              {
+                "rank": 2,
+                "value": 2
+              },
+              {
+                "rank": 3,
+                "value": 3
+              },
+              {
+                "rank": 4,
+                "value": 4
+              },
+              {
+                "rank": 5,
+                "value": 5
+              }
+            ],
+            "perRankStatus": "resolved",
+            "basePoints": 10,
+            "unresolvedReason": null
+          },
+          "new": null
+        }
+      ]
+    }
+  ]
+}

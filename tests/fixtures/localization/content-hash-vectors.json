@@ -280,6 +280,42 @@
     {
       "path": "data/localization/forever/1.60.1.70374/ruRU/warrior.json",
       "contentHash": "sha256:ff5ba413147cddfd4bc3bce5942e15c3d418da07594c56b418f28c9d8a43aef7"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70450/ruRU/druid.json",
+      "contentHash": "sha256:7f06c62309343777ec77aabf4d1b909bc2f3b451244dce6d7f3ee3702a32f2b0"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70450/ruRU/hunter.json",
+      "contentHash": "sha256:a6c3fef82ecb219a981af797999c49218911760e26786405ae91f87b882cc1a1"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70450/ruRU/mage.json",
+      "contentHash": "sha256:8e3b25120a78cff8691325ad9eb54dc276ed0008f54025ac742c408092687c05"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70450/ruRU/paladin.json",
+      "contentHash": "sha256:ed3c5a35eea3df97cfa799e533e2ab45256a89aaf18665dcf596bb91816ce1cb"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70450/ruRU/priest.json",
+      "contentHash": "sha256:dc2efb3cbbadb1ac5f318ef61fad93d9c498442cd9f86b0eb46fc78fd4505707"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70450/ruRU/rogue.json",
+      "contentHash": "sha256:b0774c02dbd1796479bb7b0940aaeb9471dcd11287fa94986777a550b729be9f"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70450/ruRU/shaman.json",
+      "contentHash": "sha256:94ab17bac568d642d25f67c7a7ecb946ef4696667d68116ecc0f6117898bdf72"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70450/ruRU/warlock.json",
+      "contentHash": "sha256:5a64626e4890b83dc68e331701c589060690a33f3c790a0f51cb50cb968e74dc"
+    },
+    {
+      "path": "data/localization/forever/1.60.1.70450/ruRU/warrior.json",
+      "contentHash": "sha256:997fdd9de45a74a14ff439da976254e45be39dc2eff830f0620643faa381599b"
     }
   ]
 }

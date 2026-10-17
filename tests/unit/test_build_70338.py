@@ -1,7 +1,8 @@
 """M5.DATA.2: the Forever dataset 1.60.1.70338, end to end and offline.
 
-1.60.1.70338 was the product dataset of M5.DATA.2; since M5.DATA.3 new builds are created
-on 1.60.1.70374 (tests/unit/test_product_build.py), and 70338 stays committed and bundled
+1.60.1.70338 was the product dataset of M5.DATA.2; since then new builds are created on
+1.60.1.70374 (M5.DATA.3, tests/unit/test_build_70374.py) and now 1.60.1.70450 (M5.DATA.4,
+tests/unit/test_product_build.py), and 70338 stays committed and bundled
 so that builds saved on it keep opening on it, unchanged. 1.60.1.70245 (M5.DATA,
 tests/unit/test_build_70245.py) stays bundled too; 1.60.1.70009 stays the verified
 reference baseline the live-client evidence and the M2 conformance vectors are pinned to.
@@ -31,8 +32,7 @@ from talent_data.visuals.pipeline import check_canonical as check_visuals
 from talent_data.visuals.pipeline import read_icon_registry, read_visuals_document
 from talent_data.visuals.resolver import VisualSourceTables, resolve_document
 from tests.conftest import ALL_CLASSES, normalize_fixture_class
-from tests.helpers import BUILD_70245, FIXTURES
-from tests.helpers import PREVIOUS_PRODUCT_BUILD as BUILD_70338
+from tests.helpers import BUILD_70245, BUILD_70338, FIXTURES
 from tests.unit.test_known_anomalies import EXPECTED_WARNINGS
 
 ROOT = Path(__file__).resolve().parents[2]

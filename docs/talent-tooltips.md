@@ -21,8 +21,15 @@ Piercing Howl (`$a2`); see
 **M5.DATA.3** rendered the product dataset **`1.60.1.70374`** from its own tooltip tables
 (byte-identical to 70338's): the same 1281 / 47 / 1 statuses, rank for rank —
 [research/forever-1.60.1.70374-tooltip-coverage.md](research/forever-1.60.1.70374-tooltip-coverage.md).
-The table and column facts below are observed on the reference baseline; the 70245, 70338
-and 70374 exports have the same shapes (the typed table readers accept them unchanged).
+**M5.DATA.4** rendered the product dataset **`1.60.1.70450`** from its own tooltip tables:
+469 entries, 1328 ranks — 1272 resolved, 55 partial, 1 unresolved (still Shifting Power's
+`$c`); newly partial are Paladin Reckoning, Priest Divine Aegis, Shaman Lava Burst, Warlock
+Amplify Curse and the new Mage Arcane Wrath, newly resolved Hunter Resourcefulness and
+Shaman Elemental Mastery; see
+[research/forever-1.60.1.70450-tooltip-coverage.md](research/forever-1.60.1.70450-tooltip-coverage.md).
+The table and column facts below are observed on the reference baseline; the 70245, 70338,
+70374 and 70450 exports have the same shapes (the typed table readers accept them
+unchanged).
 
 ```
 exact Forever build
@@ -213,7 +220,8 @@ Resourcefulness `$m3` (a rank curve for effect 2, but the spell has no `EffectIn
 
 **Unknown syntax** (anything outside the grammar) makes the whole rank `unresolved` with an
 `unclassified` gap: the extent of an unknown construct is unknown, so the text around it is
-not trusted either. 1.60.1.70009 has none; 1.60.1.70245, 1.60.1.70338 and 1.60.1.70374 have one (`$c` in
+not trusted either. 1.60.1.70009 has none; 1.60.1.70245, 1.60.1.70338, 1.60.1.70374 and
+1.60.1.70450 have one (`$c` in
 Druid Shifting Power, rank 1 → `unresolved`, shown as "unavailable" in the app).
 
 ## Mobile

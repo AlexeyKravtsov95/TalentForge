@@ -17,7 +17,7 @@ import kotlinx.serialization.json.jsonPrimitive
  * in `tests/fixtures/localization/content-hash-vectors.json` are generated — and re-checked in
  * CI — by `tests/unit/localization/test_content_hash_vectors.py` with
  * `talent_data.models.visuals.content_hash`; Kotlin must reproduce every canonical string
- * and hash, and recompute the published hash of all 36 bundled overlays.
+ * and hash, and recompute the published hash of all 45 bundled overlays.
  */
 class LocalizationContentHashTest {
 
@@ -65,7 +65,7 @@ class LocalizationContentHashTest {
     @Test
     fun everyBundledOverlaysHashIsRecomputedExactlyAsPythonPublishedIt() {
         val overlays = vectors.getValue("overlays").jsonArray.map { it.jsonObject }
-        assertEquals(36, overlays.size)
+        assertEquals(45, overlays.size)
         for (row in overlays) {
             val path = row.getValue("path").jsonPrimitive.content
             val document = TalentDataContract.decodeTalentLocalizationDocument(

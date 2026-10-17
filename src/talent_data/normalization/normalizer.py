@@ -399,7 +399,14 @@ def _resolve_sections(
     not a column anywhere; it is the node group that the deepest tier gate counts ("spend 30
     points in <group>"). We take every node group referenced by a gate, keep the maximal
     ones (not a strict subset of another referenced group), and accept them as sections only
-    if they partition the tree's nodes. Otherwise sections stay empty (unresolved).
+    if they are disjoint and cover the tree's nodes. Otherwise sections stay empty (unresolved).
+
+    A node that no gate counts at all (since 1.60.1.70425: Mage Arcane Wrath 113627, whose
+    four group rows point at single-node groups without a condition) joins the one tab whose
+    columns contain its raw x - the panel the client draws it in. This is layout only: its
+    gates and prerequisites stay exactly as the rows say, and the validator flags it
+    (SECTION_NOT_GATE_COUNTED). If its x lies in no tab's column range or in more than one,
+    sections stay unresolved; nothing is guessed.
     """
     all_ids = frozenset(n.id for n in nodes)
     referenced = {
@@ -413,11 +420,24 @@ def _resolve_sections(
         if covered & group:
             return []
         covered |= group
-    if covered != all_ids:
-        return []
     by_x = {n.id: n.pos_x for n in nodes}
+    members = {group: set(group) for group in maximal}
+    for node_id in sorted(all_ids - covered):
+        containing = [
+            group
+            for group in maximal
+            if min(by_x[i] for i in group) <= by_x[node_id] <= max(by_x[i] for i in group)
+        ]
+        if len(containing) != 1:
+            return []
+        members[containing[0]].add(node_id)
+    if set().union(*members.values()) != all_ids:
+        return []
     ordered = sorted(maximal, key=lambda g: (min(by_x[i] for i in g), min(g)))
-    return [Section(index=i, name=None, node_ids=sorted(group)) for i, group in enumerate(ordered)]
+    return [
+        Section(index=i, name=None, node_ids=sorted(members[group]))
+        for i, group in enumerate(ordered)
+    ]
 
 
 # --------------------------------------------------------------------------- edges

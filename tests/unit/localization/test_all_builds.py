@@ -4,6 +4,7 @@ The pilot (M5.REL.3a) committed Warrior only, for 70338 and 70374. This mileston
 publishes 36 overlays: every class of every bundled build (70009, 70245, 70338, 70374),
 each generated from its own build's enUS/ruRU exports - never copied across builds - and
 each leaving the canonical English data and the previously committed pilots untouched.
+Since M5.DATA.4 the product build 70450 is a fifth bundled build with its own nine overlays.
 """
 
 from __future__ import annotations
@@ -27,6 +28,7 @@ from talent_data.versions import ClientVersion
 from tests.conftest import ALL_CLASSES
 from tests.helpers import (
     BUILD_70245,
+    BUILD_70338,
     NEW_BUILD,
     PREVIOUS_PRODUCT_BUILD,
     PRODUCT_BUILD,
@@ -35,23 +37,26 @@ from tests.helpers import (
 ROOT = Path(__file__).resolve().parents[3]
 GAME = get_game("forever")
 LOCALE = "ruRU"
-BUNDLED_BUILDS = (NEW_BUILD, BUILD_70245, PREVIOUS_PRODUCT_BUILD, PRODUCT_BUILD)
-# 70338 and 70374 regenerate in their own suites (tests/unit/localization,
-# test_product_build); these two builds get fixtures with this milestone.
+BUNDLED_BUILDS = (NEW_BUILD, BUILD_70245, BUILD_70338, PREVIOUS_PRODUCT_BUILD, PRODUCT_BUILD)
+# 70338, 70374 and 70450 regenerate in their own suites (tests/unit/localization,
+# test_build_70374, test_product_build); these two builds get fixtures with this milestone.
 FIXTURED_BUILDS = (NEW_BUILD, BUILD_70245)
 
 # (build, totals) of the committed coverage reports: names translated/untranslated/missing,
 # descriptions rendered, rendered ranks / ranks. 70338 and 70374 share their ruRU exports
-# (docs/talent-localization.md §11); 70009 and 70245 were measured in §9 step 2.
+# (docs/talent-localization.md §11); 70009 and 70245 were measured in §9 step 2; 70450 by
+# M5.DATA.4 (§14).
 COVERAGE_TOTALS = {
     "1.60.1.70009": ((467, 2, 0), 386, (1143, 1333)),
     "1.60.1.70245": ((464, 6, 0), 365, (1097, 1333)),
     "1.60.1.70338": ((459, 10, 0), 355, (1058, 1329)),
     "1.60.1.70374": ((459, 10, 0), 355, (1058, 1329)),
+    "1.60.1.70450": ((469, 0, 0), 383, (1130, 1328)),
 }
 
 # sha256 over the sorted (relative path, bytes) of the committed canonical English trees at
-# the start of M5.REL.3b.1 (main after M5.DATA.3). Publishing overlays must not change a
+# the start of M5.REL.3b.1 (main after M5.DATA.3; 70450 as published by M5.DATA.4).
+# Publishing overlays must not change a
 # byte of the English data; a changed digest is a conscious dataset revision, never a side
 # effect of localization.
 ENGLISH_TREE_DIGESTS = {
@@ -78,6 +83,12 @@ ENGLISH_TREE_DIGESTS = {
     ),
     ("1.60.1.70374", "tooltips"): (
         "sha256:b28912195f095d36a76f721b0e539189200d21573543242064660e2242416b3f"
+    ),
+    ("1.60.1.70450", "normalized"): (
+        "sha256:c5aed0bbeb647324a4237ba3316778ceff2ed67972ea54985c5ebfced56d1780"
+    ),
+    ("1.60.1.70450", "tooltips"): (
+        "sha256:923a380a27498f52bee08d35a24ef2413c4bf8c32bf8ff4d44296a3c4869b19c"
     ),
 }
 

@@ -25,14 +25,17 @@ DB2_FIXTURES = FIXTURES / "db2" / "forever"
 # The two real consecutive Forever builds captured in tests/fixtures/db2/forever/.
 OLD_BUILD = ClientVersion.parse("1.60.1.69977")
 NEW_BUILD = ClientVersion.parse("1.60.1.70009")
-# The product dataset of M5.DATA.3 (also captured in tests/fixtures/db2/forever/). NEW_BUILD
+# The product dataset of M5.DATA.4 (also captured in tests/fixtures/db2/forever/). NEW_BUILD
 # stays the verified reference baseline the M0-M5.V2 tests and the conformance pin to.
-PRODUCT_BUILD = ClientVersion.parse("1.60.1.70374")
-# The product dataset of M5.DATA.2, still committed and bundled: builds saved on it keep
-# opening on it (also captured in tests/fixtures/db2/forever/). It is also the build the
-# M5.REL.3a ruRU pilot, its fixtures and tests/unit/localization/ are pinned to.
-PREVIOUS_PRODUCT_BUILD = ClientVersion.parse("1.60.1.70338")
-PILOT_BUILD = PREVIOUS_PRODUCT_BUILD
+PRODUCT_BUILD = ClientVersion.parse("1.60.1.70450")
+# The product dataset of M5.DATA.3, still committed and bundled: builds saved on it keep
+# opening on it (also captured in tests/fixtures/db2/forever/).
+PREVIOUS_PRODUCT_BUILD = ClientVersion.parse("1.60.1.70374")
+# The product dataset of M5.DATA.2, still committed and bundled for the builds saved on it
+# (also captured in tests/fixtures/db2/forever/). It is also the build the M5.REL.3a ruRU
+# pilot, its fixtures and tests/unit/localization/ are pinned to.
+BUILD_70338 = ClientVersion.parse("1.60.1.70338")
+PILOT_BUILD = BUILD_70338
 # The product dataset of M5.DATA, still committed and bundled for the builds saved on it.
 BUILD_70245 = ClientVersion.parse("1.60.1.70245")
 FIXED_TIME = datetime(2026, 9, 27, 12, 0, tzinfo=UTC)

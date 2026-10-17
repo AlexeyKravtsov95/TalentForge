@@ -1,0 +1,830 @@
+{
+  "game": "forever",
+  "clientBuild": "1.60.1.70450",
+  "locale": "ruRU",
+  "classes": [
+    {
+      "entries": 52,
+      "names": {
+        "translated": 52,
+        "untranslated": 0,
+        "missing": 0
+      },
+      "descriptions": {
+        "missing": 0,
+        "untranslated": 0,
+        "sourceNotResolved": 3,
+        "pluralRuleUnverified": 2,
+        "structureMismatch": 0,
+        "renderGap": 0,
+        "decimalFormatUnverified": 2,
+        "rendered": 45
+      },
+      "ranks": 150,
+      "renderedRanks": 136,
+      "classToken": "WARRIOR",
+      "published": true
+    },
+    {
+      "entries": 50,
+      "names": {
+        "translated": 50,
+        "untranslated": 0,
+        "missing": 0
+      },
+      "descriptions": {
+        "missing": 0,
+        "untranslated": 1,
+        "sourceNotResolved": 7,
+        "pluralRuleUnverified": 1,
+        "structureMismatch": 0,
+        "renderGap": 0,
+        "decimalFormatUnverified": 2,
+        "rendered": 39
+      },
+      "ranks": 138,
+      "renderedRanks": 113,
+      "classToken": "PALADIN",
+      "published": true
+    },
+    {
+      "entries": 52,
+      "names": {
+        "translated": 52,
+        "untranslated": 0,
+        "missing": 0
+      },
+      "descriptions": {
+        "missing": 0,
+        "untranslated": 1,
+        "sourceNotResolved": 1,
+        "pluralRuleUnverified": 3,
+        "structureMismatch": 0,
+        "renderGap": 0,
+        "decimalFormatUnverified": 1,
+        "rendered": 46
+      },
+      "ranks": 158,
+      "renderedRanks": 141,
+      "classToken": "HUNTER",
+      "published": true
+    },
+    {
+      "entries": 53,
+      "names": {
+        "translated": 53,
+        "untranslated": 0,
+        "missing": 0
+      },
+      "descriptions": {
+        "missing": 0,
+        "untranslated": 0,
+        "sourceNotResolved": 3,
+        "pluralRuleUnverified": 1,
+        "structureMismatch": 0,
+        "renderGap": 0,
+        "decimalFormatUnverified": 1,
+        "rendered": 48
+      },
+      "ranks": 139,
+      "renderedRanks": 131,
+      "classToken": "ROGUE",
+      "published": true
+    },
+    {
+      "entries": 53,
+      "names": {
+        "translated": 53,
+        "untranslated": 0,
+        "missing": 0
+      },
+      "descriptions": {
+        "missing": 0,
+        "untranslated": 1,
+        "sourceNotResolved": 6,
+        "pluralRuleUnverified": 1,
+        "structureMismatch": 0,
+        "renderGap": 0,
+        "decimalFormatUnverified": 3,
+        "rendered": 42
+      },
+      "ranks": 153,
+      "renderedRanks": 125,
+      "classToken": "PRIEST",
+      "published": true
+    },
+    {
+      "entries": 50,
+      "names": {
+        "translated": 50,
+        "untranslated": 0,
+        "missing": 0
+      },
+      "descriptions": {
+        "missing": 0,
+        "untranslated": 0,
+        "sourceNotResolved": 3,
+        "pluralRuleUnverified": 2,
+        "structureMismatch": 0,
+        "renderGap": 0,
+        "decimalFormatUnverified": 5,
+        "rendered": 40
+      },
+      "ranks": 148,
+      "renderedRanks": 123,
+      "classToken": "SHAMAN",
+      "published": true
+    },
+    {
+      "entries": 55,
+      "names": {
+        "translated": 55,
+        "untranslated": 0,
+        "missing": 0
+      },
+      "descriptions": {
+        "missing": 0,
+        "untranslated": 2,
+        "sourceNotResolved": 6,
+        "pluralRuleUnverified": 3,
+        "structureMismatch": 0,
+        "renderGap": 0,
+        "decimalFormatUnverified": 3,
+        "rendered": 41
+      },
+      "ranks": 148,
+      "renderedRanks": 117,
+      "classToken": "MAGE",
+      "published": true
+    },
+    {
+      "entries": 52,
+      "names": {
+        "translated": 52,
+        "untranslated": 0,
+        "missing": 0
+      },
+      "descriptions": {
+        "missing": 0,
+        "untranslated": 1,
+        "sourceNotResolved": 7,
+        "pluralRuleUnverified": 0,
+        "structureMismatch": 0,
+        "renderGap": 0,
+        "decimalFormatUnverified": 3,
+        "rendered": 41
+      },
+      "ranks": 146,
+      "renderedRanks": 124,
+      "classToken": "WARLOCK",
+      "published": true
+    },
+    {
+      "entries": 52,
+      "names": {
+        "translated": 52,
+        "untranslated": 0,
+        "missing": 0
+      },
+      "descriptions": {
+        "missing": 0,
+        "untranslated": 0,
+        "sourceNotResolved": 5,
+        "pluralRuleUnverified": 1,
+        "structureMismatch": 0,
+        "renderGap": 0,
+        "decimalFormatUnverified": 5,
+        "rendered": 41
+      },
+      "ranks": 148,
+      "renderedRanks": 120,
+      "classToken": "DRUID",
+      "published": true
+    }
+  ],
+  "totals": {
+    "entries": 469,
+    "names": {
+      "translated": 469,
+      "untranslated": 0,
+      "missing": 0
+    },
+    "descriptions": {
+      "missing": 0,
+      "untranslated": 6,
+      "sourceNotResolved": 41,
+      "pluralRuleUnverified": 14,
+      "structureMismatch": 0,
+      "renderGap": 0,
+      "decimalFormatUnverified": 25,
+      "rendered": 383
+    },
+    "ranks": 1328,
+    "renderedRanks": 1130
+  },
+  "nameExceptions": [],
+  "descriptionExceptions": [
+    {
+      "classToken": "WARRIOR",
+      "entryId": 130658,
+      "textSpellId": 12319,
+      "englishName": "Flurry",
+      "status": "pluralRuleUnverified"
+    },
+    {
+      "classToken": "WARRIOR",
+      "entryId": 130660,
+      "textSpellId": 23881,
+      "englishName": "Bloodthirst",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "WARRIOR",
+      "entryId": 130665,
+      "textSpellId": 12323,
+      "englishName": "Piercing Howl",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "WARRIOR",
+      "entryId": 130689,
+      "textSpellId": 23922,
+      "englishName": "Shield Slam",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "WARRIOR",
+      "entryId": 130694,
+      "textSpellId": 12312,
+      "englishName": "Improved Shield Wall",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "WARRIOR",
+      "entryId": 137850,
+      "textSpellId": 12862,
+      "englishName": "Improved Slam",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "WARRIOR",
+      "entryId": 141191,
+      "textSpellId": 1323967,
+      "englishName": "Gore Drinker",
+      "status": "pluralRuleUnverified"
+    },
+    {
+      "classToken": "PALADIN",
+      "entryId": 130014,
+      "textSpellId": 1310911,
+      "englishName": "Light's Vigil",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "PALADIN",
+      "entryId": 130017,
+      "textSpellId": 1311606,
+      "englishName": "Holy Shock",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "PALADIN",
+      "entryId": 130350,
+      "textSpellId": 20127,
+      "englishName": "Redoubt",
+      "status": "pluralRuleUnverified"
+    },
+    {
+      "classToken": "PALADIN",
+      "entryId": 130351,
+      "textSpellId": 20177,
+      "englishName": "Reckoning",
+      "status": "untranslated"
+    },
+    {
+      "classToken": "PALADIN",
+      "entryId": 130352,
+      "textSpellId": 20925,
+      "englishName": "Holy Shield",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "PALADIN",
+      "entryId": 130425,
+      "textSpellId": 20375,
+      "englishName": "Seal of Command",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "PALADIN",
+      "entryId": 130431,
+      "textSpellId": 9452,
+      "englishName": "Vindication",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "PALADIN",
+      "entryId": 137871,
+      "textSpellId": 426065,
+      "englishName": "Infusion of Light",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "PALADIN",
+      "entryId": 137872,
+      "textSpellId": 20150,
+      "englishName": "Shield Specialization",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "PALADIN",
+      "entryId": 137873,
+      "textSpellId": 1314103,
+      "englishName": "Improved Seal of Fury",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "PALADIN",
+      "entryId": 137878,
+      "textSpellId": 1311085,
+      "englishName": "Instrument of Law",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "HUNTER",
+      "entryId": 129627,
+      "textSpellId": 1293241,
+      "englishName": "Summon Hawk",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "HUNTER",
+      "entryId": 129629,
+      "textSpellId": 19572,
+      "englishName": "Improved Mend Pet",
+      "status": "pluralRuleUnverified"
+    },
+    {
+      "classToken": "HUNTER",
+      "entryId": 129661,
+      "textSpellId": 1310687,
+      "englishName": "Sniper Shot",
+      "status": "pluralRuleUnverified"
+    },
+    {
+      "classToken": "HUNTER",
+      "entryId": 129670,
+      "textSpellId": 19454,
+      "englishName": "Improved Arcane Shot",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "HUNTER",
+      "entryId": 129677,
+      "textSpellId": 19498,
+      "englishName": "Hawk Eye",
+      "status": "pluralRuleUnverified"
+    },
+    {
+      "classToken": "HUNTER",
+      "entryId": 137853,
+      "textSpellId": 1310627,
+      "englishName": "Predator's Edge",
+      "status": "untranslated"
+    },
+    {
+      "classToken": "ROGUE",
+      "entryId": 130438,
+      "textSpellId": 1310707,
+      "englishName": "Mutilate",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "ROGUE",
+      "entryId": 130446,
+      "textSpellId": 14168,
+      "englishName": "Improved Expose Armor",
+      "status": "pluralRuleUnverified"
+    },
+    {
+      "classToken": "ROGUE",
+      "entryId": 130464,
+      "textSpellId": 14251,
+      "englishName": "Riposte",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "ROGUE",
+      "entryId": 130471,
+      "textSpellId": 13741,
+      "englishName": "Improved Gouge",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "ROGUE",
+      "entryId": 130488,
+      "textSpellId": 14179,
+      "englishName": "Relentless Strikes",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "PRIEST",
+      "entryId": 130555,
+      "textSpellId": 15407,
+      "englishName": "Mind Flay",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "PRIEST",
+      "entryId": 130560,
+      "textSpellId": 15273,
+      "englishName": "Improved Mind Blast",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "PRIEST",
+      "entryId": 130563,
+      "textSpellId": 402174,
+      "englishName": "Penance",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "PRIEST",
+      "entryId": 130567,
+      "textSpellId": 14750,
+      "englishName": "Improved Mana Burn",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "PRIEST",
+      "entryId": 130569,
+      "textSpellId": 431622,
+      "englishName": "Divine Aegis",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "PRIEST",
+      "entryId": 130570,
+      "textSpellId": 14747,
+      "englishName": "Improved Inner Fire",
+      "status": "pluralRuleUnverified"
+    },
+    {
+      "classToken": "PRIEST",
+      "entryId": 130580,
+      "textSpellId": 401859,
+      "englishName": "Prayer of Mending",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "PRIEST",
+      "entryId": 130585,
+      "textSpellId": 401937,
+      "englishName": "Binding Heal",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "PRIEST",
+      "entryId": 130591,
+      "textSpellId": 15237,
+      "englishName": "Holy Nova",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "PRIEST",
+      "entryId": 130592,
+      "textSpellId": 18530,
+      "englishName": "Divine Fury",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "PRIEST",
+      "entryId": 137845,
+      "textSpellId": 1309969,
+      "englishName": "Power in Light",
+      "status": "untranslated"
+    },
+    {
+      "classToken": "SHAMAN",
+      "entryId": 129384,
+      "textSpellId": 408521,
+      "englishName": "Riptide",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "SHAMAN",
+      "entryId": 129388,
+      "textSpellId": 16190,
+      "englishName": "Mana Tide Totem",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "SHAMAN",
+      "entryId": 129392,
+      "textSpellId": 408510,
+      "englishName": "Water Shield",
+      "status": "pluralRuleUnverified"
+    },
+    {
+      "classToken": "SHAMAN",
+      "entryId": 129399,
+      "textSpellId": 16182,
+      "englishName": "Improved Healing Wave",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "SHAMAN",
+      "entryId": 129407,
+      "textSpellId": 16256,
+      "englishName": "Flurry",
+      "status": "pluralRuleUnverified"
+    },
+    {
+      "classToken": "SHAMAN",
+      "entryId": 129412,
+      "textSpellId": 16262,
+      "englishName": "Improved Ghost Wolf",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "SHAMAN",
+      "entryId": 129418,
+      "textSpellId": 16166,
+      "englishName": "Elemental Mastery",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "SHAMAN",
+      "entryId": 129420,
+      "textSpellId": 408490,
+      "englishName": "Lava Burst",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "SHAMAN",
+      "entryId": 129427,
+      "textSpellId": 16040,
+      "englishName": "Reverberation",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "SHAMAN",
+      "entryId": 129431,
+      "textSpellId": 16578,
+      "englishName": "Elemental Alacrity",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "MAGE",
+      "entryId": 130491,
+      "textSpellId": 11426,
+      "englishName": "Ice Barrier",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "MAGE",
+      "entryId": 130493,
+      "textSpellId": 400647,
+      "englishName": "Fingers of Frost",
+      "status": "pluralRuleUnverified"
+    },
+    {
+      "classToken": "MAGE",
+      "entryId": 130496,
+      "textSpellId": 1312002,
+      "englishName": "Ice Lance",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "MAGE",
+      "entryId": 130500,
+      "textSpellId": 11185,
+      "englishName": "Improved Blizzard",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "MAGE",
+      "entryId": 130508,
+      "textSpellId": 11070,
+      "englishName": "Improved Frostbolt",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "MAGE",
+      "entryId": 130510,
+      "textSpellId": 11129,
+      "englishName": "Combustion",
+      "status": "pluralRuleUnverified"
+    },
+    {
+      "classToken": "MAGE",
+      "entryId": 130512,
+      "textSpellId": 11113,
+      "englishName": "Blast Wave",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "MAGE",
+      "entryId": 130519,
+      "textSpellId": 11366,
+      "englishName": "Pyroblast",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "MAGE",
+      "entryId": 130522,
+      "textSpellId": 11100,
+      "englishName": "Flame Throwing",
+      "status": "pluralRuleUnverified"
+    },
+    {
+      "classToken": "MAGE",
+      "entryId": 130524,
+      "textSpellId": 11069,
+      "englishName": "Improved Fireball",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "MAGE",
+      "entryId": 130531,
+      "textSpellId": 400588,
+      "englishName": "Missile Barrage",
+      "status": "untranslated"
+    },
+    {
+      "classToken": "MAGE",
+      "entryId": 130535,
+      "textSpellId": 400574,
+      "englishName": "Arcane Blast",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "MAGE",
+      "entryId": 130542,
+      "textSpellId": 11237,
+      "englishName": "Improved Channeling",
+      "status": "untranslated"
+    },
+    {
+      "classToken": "MAGE",
+      "entryId": 141289,
+      "textSpellId": 1326079,
+      "englishName": "Arcane Wrath",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "WARLOCK",
+      "entryId": 130604,
+      "textSpellId": 412758,
+      "englishName": "Incinerate",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "WARLOCK",
+      "entryId": 130610,
+      "textSpellId": 1293817,
+      "englishName": "Conflagrate",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "WARLOCK",
+      "entryId": 130611,
+      "textSpellId": 17917,
+      "englishName": "Destructive Reach",
+      "status": "untranslated"
+    },
+    {
+      "classToken": "WARLOCK",
+      "entryId": 130614,
+      "textSpellId": 17877,
+      "englishName": "Shadowburn",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "WARLOCK",
+      "entryId": 130618,
+      "textSpellId": 17788,
+      "englishName": "Bane",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "WARLOCK",
+      "entryId": 130625,
+      "textSpellId": 18708,
+      "englishName": "Fel Domination",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "WARLOCK",
+      "entryId": 130626,
+      "textSpellId": 1293695,
+      "englishName": "Demonic Brand",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "WARLOCK",
+      "entryId": 130639,
+      "textSpellId": 1316697,
+      "englishName": "Wrack",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "WARLOCK",
+      "entryId": 130642,
+      "textSpellId": 18265,
+      "englishName": "Siphon Life",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "WARLOCK",
+      "entryId": 130646,
+      "textSpellId": 18288,
+      "englishName": "Amplify Curse",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "WARLOCK",
+      "entryId": 130654,
+      "textSpellId": 17810,
+      "englishName": "Improved Corruption",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "DRUID",
+      "entryId": 129570,
+      "textSpellId": 408120,
+      "englishName": "Wild Growth",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "DRUID",
+      "entryId": 129578,
+      "textSpellId": 414673,
+      "englishName": "Gift of the Earthmother",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "DRUID",
+      "entryId": 129582,
+      "textSpellId": 17069,
+      "englishName": "Naturalist",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "DRUID",
+      "entryId": 129583,
+      "textSpellId": 16814,
+      "englishName": "Improved Wrath",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "DRUID",
+      "entryId": 129590,
+      "textSpellId": 5570,
+      "englishName": "Insect Swarm",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "DRUID",
+      "entryId": 129593,
+      "textSpellId": 16850,
+      "englishName": "Improved Starfire",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "DRUID",
+      "entryId": 129595,
+      "textSpellId": 408248,
+      "englishName": "Eclipse",
+      "status": "pluralRuleUnverified"
+    },
+    {
+      "classToken": "DRUID",
+      "entryId": 129601,
+      "textSpellId": 16940,
+      "englishName": "Brutal Impact",
+      "status": "decimalFormatUnverified"
+    },
+    {
+      "classToken": "DRUID",
+      "entryId": 129602,
+      "textSpellId": 16929,
+      "englishName": "Thick Hide",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "DRUID",
+      "entryId": 129611,
+      "textSpellId": 1322605,
+      "englishName": "Shifting Power",
+      "status": "sourceNotResolved"
+    },
+    {
+      "classToken": "DRUID",
+      "entryId": 129616,
+      "textSpellId": 417141,
+      "englishName": "Berserk",
+      "status": "sourceNotResolved"
+    }
+  ]
+}
