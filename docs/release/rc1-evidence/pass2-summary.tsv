@@ -1,0 +1,11 @@
+10-shared-jvmTest-rerun	0	8
+11-desktopTest-rerun	0	111
+12-iosSimulatorArm64Test-rerun	0	2
+13-lint-report	0	0
+20-build-devcheck	0	2
+21-section-check-phone	1	0
+22-rc1-device-phone	1	0
+23-rc1-device-emulator	0	166
+24-restore-plain-debug	0	2
+30-ios-iphone17e	0	49
+31-ios-ipad-air-11	0	42
