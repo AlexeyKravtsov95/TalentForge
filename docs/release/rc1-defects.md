@@ -336,9 +336,10 @@ These are owner decisions. None of them blocks RuStore by itself.
 - **Open items for legal (LR-4), not defects of the notice list:**
   - the OFL reference in Skia's embedded SpiderSymbol probe font;
   - Adobe DNG SDK §5 indemnification;
-  - whether the K/N runtime's `mpmc_queue` code ships;
-  - the Android notices lack the ThreeTen text for kotlin-stdlib's `kotlin.time`.
+  - whether the K/N runtime's `mpmc_queue` code ships.
 
+  The Android notices' missing ThreeTen text for kotlin-stdlib's `kotlin.time` was resolved by
+  M5.LEGAL.OSS.1 (the BSD-3-Clause text is bundled, generated and drift-checked).
   See [§5 of the evidence](rc2b-evidence/ios-oss-notices.md#5-open-items-not-resolved-here-ownerlegal-review).
 
 ### TF-RC1-CI — GitHub Actions is infrastructure-blocked
@@ -368,5 +369,5 @@ These are owner decisions. None of them blocks RuStore by itself.
 | LR-1 | Talent icons are extracted from the Blizzard game client (BLP, `docs/talent-visuals.md`), and talent names and descriptions are Blizzard game text. Their redistribution in a store app is **not** established as permitted. | Potential legal risk — owner/legal review |
 | LR-2 | "World of Warcraft", "Forever" and class names are Blizzard trademarks. The app and listing have no non-affiliation disclaimer, and no about/legal surface exists in the app. **M5.RC.2b:** the About screen shows the trademark-free draft statement (RU/EN); still not legally reviewed. | Potential legal risk — needs disclaimer decision (OPEN) |
 | LR-3 | The provenance and license of the 9 class artwork masters (`composeResources/drawable/class_*.png`) are not recorded in the repo. | Owner review |
-| LR-4 | No open-source notices or attribution surface (Kotlin, Compose Multiplatform, AndroidX, kotlinx are Apache-2.0). No `LICENSE` in the repo. **M5.RC.2b:** Android in-app notices (generated, 122 modules, Apache-2.0 text). iOS in-app notices (generated: 80 modules plus Skia and 11 other linked components, 16 verbatim licence texts; TF-RC2B-IOS-NOTICES resolved). Open legal points: [ios-oss-notices §5](rc2b-evidence/ios-oss-notices.md#5-open-items-not-resolved-here-ownerlegal-review). | Potential compliance gap — owner/legal sign-off (OPEN) |
+| LR-4 | No open-source notices or attribution surface (Kotlin, Compose Multiplatform, AndroidX, kotlinx are Apache-2.0). No `LICENSE` in the repo. **M5.RC.2b:** Android in-app notices (generated, 122 modules, Apache-2.0 text). iOS in-app notices (generated: 80 modules plus Skia and 11 other linked components, 16 verbatim licence texts; TF-RC2B-IOS-NOTICES resolved). **M5.LEGAL.OSS.1:** the Android notices also carry the ThreeTen BSD-3-Clause text for the stdlib jar's ThreeTen-derived `kotlin.time` (§5.4 of the evidence, resolved). Remaining open legal points: [ios-oss-notices §5](rc2b-evidence/ios-oss-notices.md#5-open-items-not-resolved-here-ownerlegal-review). | Potential compliance gap — owner/legal sign-off (OPEN) |
 | LR-5 | Privacy: no network, no account, data stays on the device (plus Android auto-backup, TF-RC1-ANDROID-CONFIG). Store forms still need answers: RuStore "Data Safety", Apple privacy nutrition label, and a privacy-policy URL. Apple's requirement for a URL is an assumption not re-verified in this audit. **M5.RC.2b:** Android backup off; in-app privacy summary; policy link slot empty until a URL is approved. | Owner action (OPEN) |

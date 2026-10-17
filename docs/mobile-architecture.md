@@ -1218,6 +1218,9 @@ App(storage, …, appVersion)          ← host: Android PackageManager / iOS NS
     third-party code that is not a Gradle module (*linked* components). That code is Skia and the
     libraries statically linked into Skiko's klib, and the Kotlin stdlib's incorporated code.
   - Every POM licence is checked against a curated component.
+  - Licences a shipped artifact's own embedded third-party code requires are listed on its
+    component (Android: the Kotlin stdlib jar's ThreeTen-derived `kotlin.time`, M5.LEGAL.OSS.1);
+    on iOS the same code is attributed by the stdlib's native inventory instead.
   - Every static archive in an iOS klib must be claimed, object-file family by family, by the
     curated inventory of that exact module version.
   - Every bundled licence text is SHA-256-pinned to its upstream revision.

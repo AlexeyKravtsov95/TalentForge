@@ -145,8 +145,10 @@ Notes on the evidence:
    - libbacktrace is not linked (no `backtrace_*` definitions).
    - The Boost-derived `Utils.cpp` is under BSL-1.0, which requires no notice for object code; it
      is not listed.
-4. **Android follow-up (outside this change).** The Android `kotlin-stdlib` jar contains the same
-   ThreeTen-derived `kotlin.time` code. The Android notices list kotlin-stdlib under Apache-2.0
-   only (its POM), without the ThreeTen text.
+4. **Android follow-up — resolved by M5.LEGAL.OSS.1.** The Android `kotlin-stdlib` jar contains
+   the same ThreeTen-derived `kotlin.time` code (the `kotlin/time/*` classes of
+   `kotlin-stdlib-2.4.20.jar`). The Android notices now list the ThreeTen BSD-3-Clause text on
+   the Kotlin Standard Library component, next to the POM's Apache-2.0; iOS keeps attributing
+   the code through the stdlib's native inventory, and its notices are unchanged.
 5. **Scope.** The notices describe the device framework (`iosArm64`). The simulator framework is
    not distributed.
