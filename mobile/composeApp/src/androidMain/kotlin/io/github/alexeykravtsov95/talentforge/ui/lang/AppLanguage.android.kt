@@ -15,7 +15,8 @@ actual fun platformPrimaryLanguageTag(): String = remember { devicePrimaryLangua
 
 /*
  * Kept as an androidMain function with a declared `String` type (TF-RC1-LINT):
- * Android lint analyses only the androidMain sources of this KMP module, so a
+ * Android lint analyses only the androidMain sources of this KMP module, and its
+ * bundled Kotlin analysis cannot read the module's newer Kotlin metadata, so a
  * commonMain call as the last expression of the `remember` lambda has no
  * resolvable type for lint, and its `RememberReturnType` check then reads the
  * `remember` call as returning `Unit` — a false error. Same value, same
