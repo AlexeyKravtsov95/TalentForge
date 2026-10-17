@@ -27,6 +27,7 @@ How to read this checklist:
 - [ ] **(gate)** Release artifact signed with the owner's long-lived key. Keystore and passwords stay outside git (TF-RC1-SIGNING).
 - [ ] **(gate)** `apksigner verify --print-certs` passes on the exact artifact to upload.
 - [ ] `lintRelease` exits 0, or a justified baseline is committed (TF-RC1-LINT).
+  - M5.RC.2a: still fails only on the pre-existing `RememberReturnType` error. `MissingApplicationIcon` is gone. The icon integration **adds 6 warnings**: `ObsoleteSdkInt` (the `mipmap-anydpi-v26` folder could be `mipmap-anydpi`) and `IconLauncherShape` ×5 (the full-bleed raster fallbacks). The owner decides whether to fix them or baseline them ([lint](rc2a-evidence/mac/lint/lint-results-release.txt)).
 - [ ] R8/minify decision. If enabled, run a full device regression (TF-RC1-ANDROID-CONFIG).
 - [ ] Optional: `localeFilters` (en, ru) and `localeConfig` (TF-RC1-ANDROID-CONFIG).
 - [x] Artifact sizes recorded: debug 20.1 MB, release APK 16.9 MB (unsigned), AAB 16.8 MB.
@@ -99,8 +100,13 @@ What can be verified without an account: simulator builds and tests, unsigned de
 
 **Validation in release builds:**
 - [ ] Android: `aapt2 dump badging <signed release apk>` shows a non-empty `icon=`. Lint reports no `MissingApplicationIcon`.
+  - M5.RC.2a, **unsigned** builds: debug `icon='res/mipmap-anydpi-v26/ic_launcher.xml'`, release `icon='res/BW.xml'` (resource paths shortened by the release build). The adaptive XML references the background, foreground and monochrome drawables. Every packaged layer and fallback matches the source pixel-for-pixel: alpha and visible RGB are identical. The release build re-encodes the monochrome PNG as a palette PNG, which changes only the invisible RGB under fully transparent pixels. `MissingApplicationIcon` is gone. **Still open:** the same check on the signed artifact (TF-RC1-SIGNING).
 - [ ] Android: visual check on API 26 and 33+ (themed on/off) and 36, on a circle-mask launcher and on a vendor launcher (TECNO HiOS).
+  - [x] M5.RC.2a: emulator API 35, Pixel Launcher (circle mask), 420 dpi: the app drawer, the Home screen and the hotseat suggestion show the approved icon unclipped. With themed icons **on**, the monochrome silhouette is tinted correctly; the setting was restored to off afterwards ([screenshots](rc2a-evidence/mac/android/)). The isolated `.devcheck` build was used.
+  - [ ] Still open: API 26, API 36, the TECNO HiOS launcher, any physical device.
 - [ ] iOS: Archive → Validate App passes with no icon errors. Check the Home Screen in default, dark and tinted appearances on a device or simulator, plus Spotlight, Settings and the share sheet.
+  - [x] M5.RC.2a: simulator Debug and Release builds succeed (Xcode, `CODE_SIGNING_ALLOWED=NO`) with no asset-catalog or icon warnings. The built `Info.plist` has `CFBundleIconName = AppIcon`. `Assets.car` holds the 1024 rendition for phone and pad, and the bundle holds `AppIcon60x60@2x` (120 px) and `AppIcon76x76@2x~ipad` (152 px). Both match the master: mean difference 3.1 and 2.6 out of 255. On the iPhone 17e simulator (iOS 26.4), the Home screen shows the icon in light and dark appearance with the system mask ([screenshots](rc2a-evidence/mac/ios/)).
+  - [ ] Still open: Archive → Validate App (needs signing), tinted and clear appearances, Spotlight, Settings, the share sheet, iPad, a physical device.
 - [ ] Store listings preview the icon correctly (RuStore console, App Store Connect).
 
 ## 5. Signing and versioning

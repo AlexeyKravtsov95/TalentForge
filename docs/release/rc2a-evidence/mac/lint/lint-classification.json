@@ -1,0 +1,95 @@
+{
+  "report": "<state>/evidence/lint-results-release.xml",
+  "total": 10,
+  "errors": 1,
+  "icon_related": [
+    {
+      "id": "ObsoleteSdkInt",
+      "severity": "Warning",
+      "category": "Performance",
+      "file": "mobile/composeApp/src/androidMain/res/mipmap-anydpi-v26",
+      "line": null,
+      "message": "This folder configuration (`v26`) is unnecessary; `minSdkVersion` is 26. Merge all the resources in this folder into `mipmap-anydpi`."
+    },
+    {
+      "id": "IconLauncherShape",
+      "severity": "Warning",
+      "category": "Usability:Icons",
+      "file": "mobile/composeApp/src/androidMain/res/mipmap-hdpi/ic_launcher.png",
+      "line": null,
+      "message": "Launcher icons should not fill every pixel of their square region; see the design guide for details"
+    },
+    {
+      "id": "IconLauncherShape",
+      "severity": "Warning",
+      "category": "Usability:Icons",
+      "file": "mobile/composeApp/src/androidMain/res/mipmap-mdpi/ic_launcher.png",
+      "line": null,
+      "message": "Launcher icons should not fill every pixel of their square region; see the design guide for details"
+    },
+    {
+      "id": "IconLauncherShape",
+      "severity": "Warning",
+      "category": "Usability:Icons",
+      "file": "mobile/composeApp/src/androidMain/res/mipmap-xhdpi/ic_launcher.png",
+      "line": null,
+      "message": "Launcher icons should not fill every pixel of their square region; see the design guide for details"
+    },
+    {
+      "id": "IconLauncherShape",
+      "severity": "Warning",
+      "category": "Usability:Icons",
+      "file": "mobile/composeApp/src/androidMain/res/mipmap-xxhdpi/ic_launcher.png",
+      "line": null,
+      "message": "Launcher icons should not fill every pixel of their square region; see the design guide for details"
+    },
+    {
+      "id": "IconLauncherShape",
+      "severity": "Warning",
+      "category": "Usability:Icons",
+      "file": "mobile/composeApp/src/androidMain/res/mipmap-xxxhdpi/ic_launcher.png",
+      "line": null,
+      "message": "Launcher icons should not fill every pixel of their square region; see the design guide for details"
+    }
+  ],
+  "pre_existing_rc1_issues": [
+    {
+      "id": "ApplySharedPref",
+      "severity": "Warning",
+      "category": "Correctness",
+      "file": "mobile/composeApp/src/androidMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/library/AndroidBuildLibraryStorage.kt",
+      "line": "28",
+      "message": "Consider using `apply()` instead; `commit` writes its data to persistent storage immediately, whereas `apply` will handle it in the background"
+    },
+    {
+      "id": "OldTargetApi",
+      "severity": "Warning",
+      "category": "Correctness",
+      "file": "mobile/composeApp/build.gradle.kts",
+      "line": "67",
+      "message": "Not targeting the latest versions of Android; compatibility modes apply. Consider testing and updating this version. Consult the `android.os.Build.VERSION_CODES` javadoc for details."
+    },
+    {
+      "id": "RememberReturnType",
+      "severity": "Error",
+      "category": "Correctness",
+      "file": "mobile/composeApp/src/androidMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/lang/AppLanguage.android.kt",
+      "line": "15",
+      "message": "`remember` calls must not return `Unit`"
+    },
+    {
+      "id": "UseKtx",
+      "severity": "Warning",
+      "category": "Productivity",
+      "file": "mobile/composeApp/src/androidMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/library/AndroidBuildLibraryStorage.kt",
+      "line": "26",
+      "message": "Use the KTX extension function `SharedPreferences.edit` instead?"
+    }
+  ],
+  "other_not_in_rc1_baseline": [],
+  "failures": [
+    "6 icon-related lint issue(s)"
+  ],
+  "result": "FAIL",
+  "note": "lintRelease may still exit non-zero because of pre-existing issues (TF-RC1-LINT); this verdict covers icon integration only."
+}

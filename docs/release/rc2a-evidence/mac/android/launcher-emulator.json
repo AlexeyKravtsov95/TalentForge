@@ -1,0 +1,104 @@
+{
+  "model": "sdk_gphone64_arm64",
+  "manufacturer": "Google",
+  "sdk": 35,
+  "density": "Physical density: 420",
+  "size": "Physical size: 1080x2424",
+  "launcher": "com.google.android.apps.nexuslauncher/.NexusLauncherActivity",
+  "package": "io.github.alexeykravtsov95.talentforge.devcheck",
+  "installed_with_same_prefix": [
+    "package:io.github.alexeykravtsov95.talentforge.devcheck",
+    "package:io.github.alexeykravtsov95.talentforge"
+  ],
+  "steps": {
+    "drawer": "PASS: gold entry at (293, 1697, 540, 2029) (gold share 0.0228)",
+    "home": "PASS: placed via drag, at (824, 1897, 997, 2092)",
+    "themed": "PASS: com.google.android.apps.nexuslauncher.grid_control themed=1 (restored to 0); gold share at the icon 0.0 (themed tint replaces gold) - review the crop"
+  },
+  "matches": {
+    "drawer0": [
+      {
+        "bounds": [
+          46,
+          2327,
+          293,
+          2424
+        ],
+        "fully_visible": false,
+        "gold_fraction": 0.0,
+        "crop": "emulator-drawer0-match0.png"
+      },
+      {
+        "bounds": [
+          293,
+          2327,
+          540,
+          2424
+        ],
+        "fully_visible": false,
+        "gold_fraction": 0.0104,
+        "crop": "emulator-drawer0-match1.png"
+      },
+      {
+        "bounds": [
+          787,
+          263,
+          1034,
+          553
+        ],
+        "fully_visible": true,
+        "gold_fraction": 0.0,
+        "crop": "emulator-drawer0-match2.png"
+      }
+    ],
+    "drawer1": [
+      {
+        "bounds": [
+          46,
+          1697,
+          293,
+          2029
+        ],
+        "fully_visible": true,
+        "gold_fraction": 0.0,
+        "crop": "emulator-drawer1-match0.png"
+      },
+      {
+        "bounds": [
+          293,
+          1697,
+          540,
+          2029
+        ],
+        "fully_visible": true,
+        "gold_fraction": 0.0228,
+        "crop": "emulator-drawer1-match1.png"
+      }
+    ],
+    "home": [
+      {
+        "bounds": [
+          314,
+          1091,
+          519,
+          1381
+        ],
+        "fully_visible": true,
+        "gold_fraction": 0.0314,
+        "crop": "emulator-home-match0.png"
+      },
+      {
+        "bounds": [
+          824,
+          1897,
+          997,
+          2092
+        ],
+        "fully_visible": true,
+        "gold_fraction": 0.0349,
+        "crop": "emulator-home-match1.png"
+      }
+    ]
+  },
+  "result": "PASS"
+}

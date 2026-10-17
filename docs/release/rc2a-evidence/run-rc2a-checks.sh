@@ -100,8 +100,9 @@ step 00-env "$ROOT" 'uname -a; sw_vers 2>/dev/null; java -version 2>&1; xcodebui
 # --- documented mobile baseline (the icon touches no Kotlin; run anyway) ---
 if [ "$SKIP_TESTS" = 0 ]; then
   step 10-sync-datasets "$ROOT" '"$PY" scripts/sync_mobile_datasets.py --check'
-  step 11-shared-jvmTest "$ROOT/mobile" "$G :shared:jvmTest"
-  step 12-composeApp-desktopTest "$ROOT/mobile" "$G :composeApp:desktopTest"
+  # forced: never restore test results from the build cache
+  step 11-shared-jvmTest "$ROOT/mobile" "$G --no-build-cache :shared:jvmTest --rerun"
+  step 12-composeApp-desktopTest "$ROOT/mobile" "$G --no-build-cache :composeApp:desktopTest --rerun"
 fi
 
 # --- Android ---

@@ -1,0 +1,148 @@
+{
+  "apk": "<state>/evidence/composeApp-release-unsigned.apk",
+  "application_label": "TalentForge",
+  "application_icon": "res/BW.xml",
+  "launchable_activity_icon": "",
+  "application_icon_by_density": {
+    "160": "res/BW.xml",
+    "240": "res/BW.xml",
+    "320": "res/BW.xml",
+    "480": "res/BW.xml",
+    "640": "res/BW.xml",
+    "65534": "res/BW.xml",
+    "65535": "res/BW.xml"
+  },
+  "mipmap/ic_launcher": [
+    {
+      "config": "mdpi",
+      "path": "res/9w.png",
+      "type": "PNG"
+    },
+    {
+      "config": "hdpi",
+      "path": "res/yn.png",
+      "type": "PNG"
+    },
+    {
+      "config": "xhdpi",
+      "path": "res/FS.png",
+      "type": "PNG"
+    },
+    {
+      "config": "xxhdpi",
+      "path": "res/RJ.png",
+      "type": "PNG"
+    },
+    {
+      "config": "xxxhdpi",
+      "path": "res/o-.png",
+      "type": "PNG"
+    },
+    {
+      "config": "anydpi",
+      "path": "res/BW.xml",
+      "type": "XML"
+    }
+  ],
+  "drawable/ic_launcher_background": [
+    {
+      "config": "nodpi",
+      "path": "res/K8.png",
+      "type": "PNG"
+    }
+  ],
+  "drawable/ic_launcher_foreground": [
+    {
+      "config": "nodpi",
+      "path": "res/Wn.png",
+      "type": "PNG"
+    }
+  ],
+  "drawable/ic_launcher_monochrome": [
+    {
+      "config": "nodpi",
+      "path": "res/XW.png",
+      "type": "PNG"
+    }
+  ],
+  "adaptive_xml": [
+    {
+      "config": "anydpi",
+      "path": "res/BW.xml",
+      "type": "XML"
+    }
+  ],
+  "adaptive_xmltree": "N: android=http://schemas.android.com/apk/res/android (line=2)\n  E: adaptive-icon (line=2)\n      E: background (line=3)\n        A: http://schemas.android.com/apk/res/android:drawable(0x01010199)=@0x7f040006\n      E: foreground (line=4)\n        A: http://schemas.android.com/apk/res/android:drawable(0x01010199)=@0x7f040007\n      E: monochrome (line=5)\n        A: http://schemas.android.com/apk/res/android:drawable(0x01010199)=@0x7f040008\n",
+  "adaptive_layers": {
+    "background": "drawable/ic_launcher_background",
+    "foreground": "drawable/ic_launcher_foreground",
+    "monochrome": "drawable/ic_launcher_monochrome"
+  },
+  "packaged_vs_source_pixels": {
+    "ic_launcher_background (nodpi)": {
+      "same_size": true,
+      "max_alpha_diff": 0,
+      "max_visible_rgb_diff": 0,
+      "max_hidden_rgb_diff": 0,
+      "max_channel_diff": 0
+    },
+    "ic_launcher_foreground (nodpi)": {
+      "same_size": true,
+      "max_alpha_diff": 0,
+      "max_visible_rgb_diff": 0,
+      "max_hidden_rgb_diff": 0,
+      "max_channel_diff": 0
+    },
+    "ic_launcher_monochrome (nodpi)": {
+      "same_size": true,
+      "max_alpha_diff": 0,
+      "max_visible_rgb_diff": 0,
+      "max_hidden_rgb_diff": 255,
+      "max_channel_diff": 0
+    },
+    "mipmap-mdpi": {
+      "same_size": true,
+      "max_alpha_diff": 0,
+      "max_visible_rgb_diff": 0,
+      "max_hidden_rgb_diff": 0,
+      "max_channel_diff": 0
+    },
+    "mipmap-hdpi": {
+      "same_size": true,
+      "max_alpha_diff": 0,
+      "max_visible_rgb_diff": 0,
+      "max_hidden_rgb_diff": 0,
+      "max_channel_diff": 0
+    },
+    "mipmap-xhdpi": {
+      "same_size": true,
+      "max_alpha_diff": 0,
+      "max_visible_rgb_diff": 0,
+      "max_hidden_rgb_diff": 0,
+      "max_channel_diff": 0
+    },
+    "mipmap-xxhdpi": {
+      "same_size": true,
+      "max_alpha_diff": 0,
+      "max_visible_rgb_diff": 0,
+      "max_hidden_rgb_diff": 0,
+      "max_channel_diff": 0
+    },
+    "mipmap-xxxhdpi": {
+      "same_size": true,
+      "max_alpha_diff": 0,
+      "max_visible_rgb_diff": 0,
+      "max_hidden_rgb_diff": 0,
+      "max_channel_diff": 0
+    }
+  },
+  "raster_fallback_densities": [
+    "hdpi",
+    "mdpi",
+    "xhdpi",
+    "xxhdpi",
+    "xxxhdpi"
+  ],
+  "failures": [],
+  "result": "PASS"
+}

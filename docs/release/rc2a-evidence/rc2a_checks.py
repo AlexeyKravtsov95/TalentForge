@@ -55,11 +55,26 @@ def write(out: Path, name: str, report: dict) -> None:
 
 
 def pixel_diff(a: Image.Image, b: Image.Image) -> dict:
+    """Visible-pixel comparison: alpha must match exactly, RGB only where alpha > 0.
+
+    Release builds re-encode PNGs (e.g. RGBA -> palette); the RGB stored under fully
+    transparent pixels is invisible and may change, so it is reported but not judged.
+    """
     a, b = a.convert("RGBA"), b.convert("RGBA")
     if a.size != b.size:
         return {"same_size": False, "a": a.size, "b": b.size}
-    d = ImageChops.difference(a, b)
-    return {"same_size": True, "max_channel_diff": max(hi for _, hi in d.getextrema())}
+    alpha = ImageChops.difference(a.getchannel("A"), b.getchannel("A")).getextrema()[1]
+    visible = a.getchannel("A").point(lambda v: 255 if v > 0 else 0)
+    rgb = ImageChops.difference(a.convert("RGB"), b.convert("RGB"))
+    shown = Image.composite(rgb, Image.new("RGB", a.size), visible)
+    hidden = Image.composite(Image.new("RGB", a.size), rgb, visible)
+    return {
+        "same_size": True,
+        "max_alpha_diff": alpha,
+        "max_visible_rgb_diff": max(hi for _, hi in shown.getextrema()),
+        "max_hidden_rgb_diff": max(hi for _, hi in hidden.getextrema()),
+        "max_channel_diff": max(alpha, max(hi for _, hi in shown.getextrema())),
+    }
 
 
 # ---------------------------------------------------------------- apk
@@ -279,18 +294,19 @@ class Adb:
         self.sh("uiautomator", "dump", "/sdcard/rc2a-ui.xml", check=False)
         return self.sh("cat", "/sdcard/rc2a-ui.xml", check=False)
 
-    def find(self, label: str) -> tuple[int, int, int, int] | None:
+    def find_all(self, label: str) -> list[tuple[int, int, int, int]]:
         xml = self._dump()
         try:
             root = ET.fromstring(xml[xml.find("<?xml") :] if "<?xml" in xml else xml)
         except ET.ParseError:
-            return None
+            return []
+        boxes = []
         for n in root.iter("node"):
             if label in (n.get("text"), n.get("content-desc")):
                 x1, y1, x2, y2 = map(int, re.findall(r"\d+", n.get("bounds", "")))
                 if x2 > x1 and y2 > y1:
-                    return x1, y1, x2, y2
-        return None
+                    boxes.append((x1, y1, x2, y2))
+        return boxes
 
     def tap_text(self, pattern: str) -> bool:
         for m in re.finditer(
@@ -309,7 +325,23 @@ def crop(img: Image.Image, box: tuple[int, int, int, int], path: Path) -> None:
     c.resize((c.width * 3, c.height * 3), Image.NEAREST).save(path.with_name(path.stem + "-x3.png"))
 
 
+def gold_fraction(img: Image.Image, box: tuple[int, int, int, int]) -> float:
+    """Share of amber/gold pixels: the approved icon has many, a default icon has none."""
+    c = img.convert("RGB").crop(box)
+    px = list(c.getdata())
+    gold = sum(1 for r, g, b in px if r > 170 and 90 < g < 215 and b < 110 and r - b > 100)
+    return round(gold / max(1, len(px)), 4)
+
+
+GOLD_MIN = 0.01
+
+
 def cmd_launcher(a: argparse.Namespace) -> int:
+    """Finds the launcher entry of ``--package`` among entries sharing ``--label``.
+
+    Other installs with the same label (e.g. an older build of the real app) are recorded and
+    cropped but never touched. The entry is identified by its amber/gold share.
+    """
     d, out, tag = Adb(a.adb, a.serial), Path(a.out), a.tag
     out.mkdir(parents=True, exist_ok=True)
 
@@ -340,6 +372,9 @@ def cmd_launcher(a: argparse.Namespace) -> int:
         "size": d.sh("wm", "size", check=False).strip(),
         "launcher": home[-1] if home else None,
         "package": a.package,
+        "installed_with_same_prefix": d.sh(
+            "pm", "list", "packages", a.package.rsplit(".", 1)[0], check=False
+        ).split(),
         "steps": {},
     }
     if f"package:{a.package}" not in d.sh("pm", "list", "packages", a.package, check=False).split():
@@ -348,44 +383,70 @@ def cmd_launcher(a: argparse.Namespace) -> int:
         write(out, f"launcher-{tag}.json", report)
         return 1
     w, h = map(int, re.findall(r"(\d+)x(\d+)", report["size"])[-1])
+    bottom_limit = int(h * 0.92)  # above the gesture bar / screen edge
 
+    def best(img: Image.Image, boxes: list, key: str) -> tuple | None:
+        rows, pick = [], None
+        for i, b in enumerate(boxes):
+            full = b[3] <= bottom_limit
+            g = gold_fraction(img, b)
+            name = f"{tag}-{key}-match{i}.png"
+            crop(img, b, out / name)
+            rows.append({"bounds": b, "fully_visible": full, "gold_fraction": g, "crop": name})
+            if full and g >= GOLD_MIN and (pick is None or g > pick[1]):
+                pick = (b, g, name)
+        report.setdefault("matches", {})[key] = rows
+        return pick
+
+    # App drawer: scroll until the gold entry is fully visible.
     d.sh("input", "keyevent", "KEYCODE_HOME")
     time.sleep(1.5)
     d.sh("input", "swipe", str(w // 2), str(int(h * 0.85)), str(w // 2), str(int(h * 0.25)), "350")
     time.sleep(2.0)
-    box = d.find(a.label)
-    if box is None:  # long drawers: type into the drawer search
-        d.sh("input", "text", a.label)
-        time.sleep(2.5)
-        box = d.find(a.label)
-    img = d.screencap(out / f"{tag}-app-drawer.png")
-    if box:
-        crop(img, box, out / f"{tag}-app-drawer-icon.png")
-        report["steps"]["drawer"] = f"PASS: '{a.label}' found at {box}"
-    else:
-        report["steps"]["drawer"] = "FAIL: launcher entry not found in the app drawer"
+    pick = None
+    for i in range(8):
+        img = d.screencap(out / f"{tag}-app-drawer-{i}.png")
+        pick = best(img, d.find_all(a.label), f"drawer{i}")
+        if pick:
+            shutil.copy2(out / f"{tag}-app-drawer-{i}.png", out / f"{tag}-app-drawer.png")
+            shutil.copy2(out / pick[2], out / f"{tag}-app-drawer-icon.png")
+            break
+        d.sh(
+            "input", "swipe", str(w // 2), str(int(h * 0.7)), str(w // 2), str(int(h * 0.45)), "400"
+        )
+        time.sleep(1.2)
+    report["steps"]["drawer"] = (
+        f"PASS: gold entry at {pick[0]} (gold share {pick[1]})"
+        if pick
+        else "FAIL: no fully visible launcher entry with the approved icon colours"
+    )
 
-    # Home screen: best effort "Add to Home screen" from the long-press menu.
+    # Home screen: "Add to home screen" from the long-press menu, else drag to Home.
     on_home = None
-    if box:
-        cx, cy = (box[0] + box[2]) // 2, box[1] + (box[3] - box[1]) // 3
-        d.sh("input", "swipe", str(cx), str(cy), str(cx), str(cy), "900")
-        time.sleep(1.5)
-        if d.tap_text(r"add to home"):
-            time.sleep(2.0)
-            d.sh("input", "keyevent", "KEYCODE_HOME")
-            time.sleep(1.5)
-            on_home = d.find(a.label)
-        else:
+    if pick:
+        b = pick[0]
+        cx, cy = (b[0] + b[2]) // 2, b[1] + (b[3] - b[1]) // 3
+        d.sh("input", "swipe", str(cx), str(cy), str(cx), str(cy), "1200")
+        time.sleep(2.0)
+        how = "menu"
+        if not d.tap_text(r"add to home|home screen"):
             d.sh("input", "keyevent", "KEYCODE_BACK")
-    d.sh("input", "keyevent", "KEYCODE_HOME")
-    time.sleep(1.0)
-    home_img = d.screencap(out / f"{tag}-home.png")
-    if on_home:
-        crop(home_img, on_home, out / f"{tag}-home-icon.png")
-        report["steps"]["home"] = f"PASS: on Home at {on_home}"
+            time.sleep(1.0)
+            how = "drag"
+            d.sh("input", "draganddrop", str(cx), str(cy), str(w // 2), str(h // 2), "2500")
+        time.sleep(2.5)
+        d.sh("input", "keyevent", "KEYCODE_HOME")
+        time.sleep(1.5)
+        home_img = d.screencap(out / f"{tag}-home.png")
+        found = best(home_img, d.find_all(a.label), "home")
+        if found:
+            on_home = found[0]
+            shutil.copy2(out / found[2], out / f"{tag}-home-icon.png")
+            report["steps"]["home"] = f"PASS: placed via {how}, at {on_home}"
+        else:
+            report["steps"]["home"] = f"BLOCKED: placing on Home via {how} did not succeed"
     else:
-        report["steps"]["home"] = "BLOCKED: could not place the icon on Home automatically"
+        report["steps"]["home"] = "BLOCKED: no drawer entry"
 
     # Android 13+ themed icons via the launcher grid_control provider (restored afterwards).
     if sdk < 33:
@@ -411,16 +472,15 @@ def cmd_launcher(a: argparse.Namespace) -> int:
                 continue
             original = m.group(1) == "1"
             d.sh("content", "update", "--uri", uri, "--bind", "boolean_value:b:true", check=False)
-            time.sleep(2.5)
+            time.sleep(3.0)
             d.sh("input", "keyevent", "KEYCODE_HOME")
             time.sleep(1.5)
             now = re.search(
                 r"boolean_value=(\d)", d.sh("content", "query", "--uri", uri, check=False)
             )
-            spot = d.find(a.label)
             themed = d.screencap(out / f"{tag}-home-themed.png")
-            if spot:
-                crop(themed, spot, out / f"{tag}-home-themed-icon.png")
+            crop(themed, on_home, out / f"{tag}-home-themed-icon.png")
+            g = gold_fraction(themed, on_home)
             d.sh(
                 "content",
                 "update",
@@ -430,10 +490,10 @@ def cmd_launcher(a: argparse.Namespace) -> int:
                 f"boolean_value:b:{'true' if original else 'false'}",
                 check=False,
             )
-            ok = bool(now and now.group(1) == "1" and spot)
+            ok = bool(now and now.group(1) == "1" and g < GOLD_MIN)
             report["steps"]["themed"] = (
                 f"{'PASS' if ok else 'BLOCKED'}: {auth} themed=1 (restored to {int(original)}); "
-                f"icon {'found' if spot else 'not found'} on Home - review the crop visually"
+                f"gold share at the icon {g} (themed tint replaces gold) - review the crop"
             )
             break
     d.sh("input", "keyevent", "KEYCODE_HOME")

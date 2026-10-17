@@ -73,3 +73,39 @@ docs/release/rc2a-evidence/run-rc2a-checks.sh --out <dir> [--emulator <serial>] 
 `lintRelease` is expected to keep failing on the pre-existing `RememberReturnType` error
 (`TF-RC1-LINT`); step `31-lint-icon` judges only the icon (no `MissingApplicationIcon`, no
 icon-category issue).
+
+## Results (owner's Mac, 2026-10-17)
+
+Environment: macOS 26.3.1 (Apple silicon), Xcode 26.4.1, JDK 17.0.19, Android build-tools 37.0.0 (`aapt2` 2.20), Python 3.12.13 + Pillow 12.3.0 (`mac/run1-env.txt`).
+
+**Run 1** (`run-rc2a-checks.sh` at the rebased branch tip `76d9d48`, over `origin/main` `1b59d1f` = merge of PR #33). Summary: `mac/run1-summary.tsv`.
+**Recheck** (`m5rc2a.sh recheck`): run after three problems were found in run 1:
+- the Gradle tests had been restored from the build cache;
+- the release-APK pixel check had compared invisible RGB;
+- the launcher capture had cropped the wrong entry.
+
+The recheck used the helper as committed in this PR.
+
+| Check | Result |
+|---|---|
+| `sync_mobile_datasets.py --check` | PASS |
+| `:shared:jvmTest`, `:composeApp:desktopTest` | Run 1 restored both FROM-CACHE (not counted). Recheck `--rerun --no-build-cache`: **338/0 failed** and **663/0 failed, 36 opt-in skipped** (`mac/recheck-forced-tests.txt`) |
+| `:composeApp:assembleDebug`, `:composeApp:assembleRelease` | PASS |
+| `:composeApp:lintRelease` | FAIL, as expected: the pre-existing `RememberReturnType` error (TF-RC1-LINT). `MissingApplicationIcon` is **gone**. **The icon adds 6 warnings**: `ObsoleteSdkInt` (`mipmap-anydpi-v26` could be `mipmap-anydpi`, since `minSdk` is 26) and `IconLauncherShape` ×5 (the full-bleed raster fallbacks). Report: 1 error, 9 warnings (`mac/lint/`) |
+| `aapt2 dump badging` | debug `icon='res/mipmap-anydpi-v26/ic_launcher.xml'`; release `icon='res/BW.xml'` (paths shortened by the release build), all densities (`mac/android/aapt2-badging-*.txt`) |
+| Packaged icon contents | Both APKs: adaptive XML → `drawable/ic_launcher_{background,foreground,monochrome}`. Every layer and every fallback matches the source (alpha and visible RGB identical). Release re-encodes the monochrome layer as a palette PNG; only the invisible RGB under transparent pixels differs (`mac/android/packaged-icon-*.json`). Run 1 flagged this as FAIL because its check also compared invisible RGB; the check is corrected |
+| `xcodebuild` simulator Debug / Release | PASS. No asset-catalog or icon warnings; the only warning is the unrelated `appintentsmetadataprocessor` note |
+| iOS bundle | `CFBundleIconName = AppIcon`. `Assets.car`: 1024 rendition (phone, pad). `AppIcon60x60@2x.png` 120 px and `AppIcon76x76@2x~ipad.png` 152 px; mean difference vs. the master 3.1 / 2.6 (out of 255) (`mac/ios/`) |
+| iOS simulator Home (iPhone 17e, iOS 26.4) | Icon visible, system-masked, composition intact, in light and dark appearance (`mac/ios/ios-sim-home-{light,dark}.png`). The appearance was restored and the app uninstalled afterwards |
+| Android emulator (API 35, Pixel Launcher, circle mask, 420 dpi) | The isolated `.devcheck` build was used and uninstalled afterwards. App drawer: approved icon, unclipped (`emulator-app-drawer*.png`). Home: placed by drag (`emulator-home.png`, `emulator-home-match0.png`); the hotseat also showed it as a suggested app (`match1`). Themed icons **on**: the monochrome silhouette is tinted correctly (`emulator-home-themed*.png`); the setting was restored to off |
+| Physical phone | BLOCKED: no phone serial was given |
+
+The emulator also has the real `io.github.alexeykravtsov95.talentforge` app installed from an older build without an icon; it shows the default icon. It was not touched. In run 1, that entry was cropped by mistake, so run 1's launcher crop is not evidence. The recheck crops every entry with the same label and identifies ours by its amber share (`launcher-emulator.json`, `matches`).
+
+### Still unverified (TF-RC1-ICON stays OPEN)
+
+- A signed release artifact (TF-RC1-SIGNING) and iOS Archive → Validate App.
+- Physical devices: the TECNO KM5n (HiOS launcher and its mask), an iPhone, an iPad.
+- Android API 26 and API 36; non-circle OEM masks on a device. Squircle, rounded-square and teardrop masks are simulated only.
+- iOS tinted and clear appearances, Spotlight, Settings and the share sheet. No designed dark/tinted variants were supplied.
+- The 6 icon lint warnings: fix or baseline, owner decision.
