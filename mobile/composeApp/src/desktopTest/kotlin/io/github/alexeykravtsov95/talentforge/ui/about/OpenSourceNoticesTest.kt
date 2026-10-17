@@ -9,11 +9,12 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 
 /**
- * LR-4: the bundled Android (M5.RC.2b) and iOS (TF-RC2B-IOS-NOTICES) notices,
- * read through the same resource API the About screen uses, every bundled
- * licence text byte for byte, and the strict parser's fail-closed rules. That
- * the lists equal what the binaries ship is checked by
- * `scripts/generate_oss_notices.py --check` (it needs Gradle and the klibs).
+ * LR-4: the bundled Android (M5.RC.2b; its stdlib's ThreeTen licence by
+ * M5.LEGAL.OSS.1) and iOS (TF-RC2B-IOS-NOTICES) notices, read through the same
+ * resource API the About screen uses, every bundled licence text byte for byte,
+ * and the strict parser's fail-closed rules. That the lists equal what the
+ * binaries ship is checked by `scripts/generate_oss_notices.py --check` (it needs
+ * Gradle and the klibs).
  */
 class OpenSourceNoticesTest {
 
@@ -27,7 +28,7 @@ class OpenSourceNoticesTest {
     @Test
     fun theBundledAndroidNoticesParseStrictly() {
         assertEquals("android", android.platform)
-        assertEquals(setOf("Apache-2.0"), android.licenses.keys)
+        assertEquals(setOf("Apache-2.0", "ThreeTen-BSD-3-Clause"), android.licenses.keys)
         assertEquals(
             listOf(
                 "AndroidX (Android Jetpack)",
@@ -40,6 +41,12 @@ class OpenSourceNoticesTest {
                 "Guava ListenableFuture",
             ),
             android.components.map { it.name },
+        )
+        // the stdlib jar embeds ThreeTen-derived kotlin.time (M5.LEGAL.OSS.1): its
+        // BSD-3-Clause notice is listed next to the POM's Apache-2.0
+        assertEquals(
+            listOf("Apache-2.0", "ThreeTen-BSD-3-Clause"),
+            android.components.single { it.name == "Kotlin Standard Library" }.licenseIds,
         )
         assertTrue(android.linked().isEmpty(), "the APK links no native third-party code of its own")
         val modules = android.modules()

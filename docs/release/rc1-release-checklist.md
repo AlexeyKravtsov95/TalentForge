@@ -228,7 +228,7 @@ key, uploaded or published.
 - [x] TF-RC1-LINT resolved (0 errors).
 - [x] Backup off (`allowBackup="false"` + data-extraction / full-backup rules), privacy text updated.
 - [x] About / legal screen (RU/EN): version, data version, independent-project statement (draft), privacy summary, Android OSS notices + Apache-2.0 text, privacy-policy link slot (empty until approved).
-- [x] Android OSS notices generated from `releaseRuntimeClasspath` (122 modules, all Apache-2.0 by POM; no NOTICE file shipped); full-content drift check (coordinates, component mapping, licences re-read from POMs) in `mobile-ci`.
+- [x] Android OSS notices generated from `releaseRuntimeClasspath` (122 modules, all Apache-2.0 by POM; no NOTICE file shipped) plus the stdlib jar's ThreeTen-derived `kotlin.time` attributed with the bundled BSD-3-Clause text (M5.LEGAL.OSS.1); full-content drift check (coordinates, component mapping, licences re-read from POMs) in `mobile-ci`.
 - [x] iOS OSS notices (TF-RC2B-IOS-NOTICES) generated from `iosArm64CompileKlibraries` (80 modules) plus the code linked into Skiko (Skia, HarfBuzz, ICU, libjpeg-turbo, libpng, libwebp, Wuffs, zlib, Expat, Adobe DNG SDK, Piex) and the stdlib's third-party code; 16 verbatim licence texts; archive-level drift check in `mobile-ci` (macOS). Evidence: [ios-oss-notices](rc2b-evidence/ios-oss-notices.md).
 
 **Owner actions before M5.RC.3** (🔑 = owner only)

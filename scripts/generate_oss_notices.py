@@ -9,7 +9,10 @@ lists from Gradle — never by hand:
     python3 scripts/generate_oss_notices.py --check             # fail when either drifts
     python3 scripts/generate_oss_notices.py --check --platform ios
 
-Android (M5.RC.2b) lists the external modules of ``:composeApp:releaseRuntimeClasspath``.
+Android (M5.RC.2b) lists the external modules of ``:composeApp:releaseRuntimeClasspath``, plus
+the licences their artifacts' own embedded third-party code requires — the Kotlin stdlib jar's
+ThreeTen-derived ``kotlin.time`` (M5.LEGAL.OSS.1; on iOS that code is attributed by the stdlib's
+native inventory instead).
 iOS (TF-RC2B-IOS-NOTICES) lists the external modules of
 ``:composeApp:iosArm64CompileKlibraries`` — the klibs ``linkReleaseFrameworkIosArm64``
 links into the device framework — plus native code that is not a Gradle module: Skiko's
@@ -492,6 +495,22 @@ KLIB_TARGET = "ios_arm64"
 # Compiler-generated cinterop stubs of the module's own definitions
 KLIB_NATIVE_OWN = frozenset({"cstubs.bc"})
 
+# Third-party code compiled into a module's own artifact — neither a separate Gradle
+# module nor a native archive. Established for the exact resolved version, like the
+# native inventories: JetBrains' license/README.md at v2.4.20 attributes the stdlib's
+# kotlin.time to ThreeTen (BSD-3-Clause), and the Android kotlin-stdlib-2.4.20 jar
+# carries those classes (kotlin/time/*; rc2b-evidence/ios-oss-notices.md §3). The
+# GWT- and Guava-derived code in the same artifact is Apache-2.0, its POM's licence.
+# A platform without a native inventory (Android: the jar inside the APK) lists these
+# licences on the claiming component; a platform with one (iOS) must attribute them
+# through the module's native inventory (KOTLIN_STDLIB_2_4_20 does).
+EMBEDDED_LICENSES: dict[str, tuple[str, ...]] = {
+    "org.jetbrains.kotlin:kotlin-stdlib:2.4.20": ("ThreeTen-BSD-3-Clause",),
+}
+# Modules whose artifacts embed third-party code: every resolved version needs its
+# entry, on every platform.
+EMBEDDED_MODULES = frozenset(m.rsplit(":", 1)[0] for m in EMBEDDED_LICENSES)
+
 
 @dataclass(frozen=True)
 class Platform:
@@ -655,6 +674,19 @@ def verify_license(module: str, component: Component) -> None:
         )
 
 
+def embedded_notice_licenses(module: str) -> tuple[str, ...]:
+    """The licences the module artifact's embedded third-party code requires, established
+    for its exact resolved version. A module known to embed third-party code fails on a
+    version whose embedded code has not been established."""
+    licenses = EMBEDDED_LICENSES.get(module)
+    if licenses is None and module.rsplit(":", 1)[0] in EMBEDDED_MODULES:
+        raise NoticesError(
+            f"{module}: its artifact embeds third-party code whose licences are not "
+            "established for this version; establish them in EMBEDDED_LICENSES"
+        )
+    return licenses or ()
+
+
 # --- static archives (Mach-O universal file / BSD ar) --------------------------------------
 
 FAT_MAGIC = 0xCAFEBABE
@@ -807,22 +839,51 @@ def build_notices(
 ) -> dict[str, object]:
     """The notices document. ``native`` is the klibs' archive content (iOS) or ``None``.
     ``verify_poms`` re-reads every module's POM licence; ``fetch_texts`` downloads a missing
-    licence text from its pinned origin (regeneration only)."""
+    licence text from its pinned origin (regeneration only). On a platform without a native
+    inventory the licences a module artifact's embedded third-party code requires are listed
+    on its claiming component; on a platform with one they must be attributed by that
+    inventory's linked components."""
     grouped: dict[str, list[str]] = {}
+    embedded: dict[str, list[str]] = {}
     for module in modules:
         component = component_of(module)
         if verify_poms:
             verify_license(module, component)
         grouped.setdefault(component.name, []).append(module)
-    components: list[dict[str, object]] = [
-        {"name": c.name, "url": c.url, "licenses": list(c.licenses), "modules": grouped[c.name]}
-        for c in COMPONENTS
-        if c.name in grouped
-    ]
+        embedded.setdefault(component.name, []).extend(embedded_notice_licenses(module))
+    components: list[dict[str, object]] = []
+    for curated in COMPONENTS:
+        if curated.name not in grouped:
+            continue
+        licenses = list(curated.licenses)
+        if native is None:
+            # the platform ships the artifacts as Gradle resolved them (the jars/aars inside
+            # the APK): the licences their embedded third-party code requires are shown on
+            # the claiming component
+            licenses += sorted(set(embedded.get(curated.name, ())))
+        components.append(
+            {
+                "name": curated.name,
+                "url": curated.url,
+                "licenses": licenses,
+                "modules": grouped[curated.name],
+            }
+        )
     if native is not None:
         for module in modules:
             verify_native(module, native.get(module, {}))
             inventory = NATIVE_INVENTORIES.get(module)
+            attributed = {
+                license_id
+                for linked in (inventory.components if inventory else ())
+                for license_id in linked.licenses
+            }
+            unattributed = sorted(set(embedded_notice_licenses(module)) - attributed)
+            if unattributed:
+                raise NoticesError(
+                    f"{module}: its embedded third-party code requires {unattributed}, which "
+                    "no linked component of its native inventory attributes"
+                )
             components += [
                 {
                     "name": linked.name,
