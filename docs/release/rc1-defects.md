@@ -32,7 +32,7 @@ The device-level checks behind that statement ran on an Android emulator only (s
 |---|---|
 | Severity | **P1** |
 | Platforms | Android + iOS |
-| Status | **OPEN** (known, pre-existing; must stay OPEN during M5.RC.1) |
+| Status | **OPEN**. M5.RC.1: known, pre-existing. M5.RC.2a: approved artwork integrated; stays OPEN until platform rendering is verified (see below) |
 | Owner | Product/Design (artwork), Mobile engineering (integration) |
 | Planned resolution | **M5.RC.2a** — TalentForge branding and app icon |
 
@@ -61,6 +61,8 @@ The device-level checks behind that statement ran on an Android emulator only (s
 2. **M5.RC.2a requires original TalentForge artwork that the owner has approved** before it is integrated.
 3. **AI-assisted concept creation is allowed**, provided the result is approved by the owner and passes a rights review (originality, the tool's terms and output rights, no resemblance to third-party marks) before integration.
 4. **Not allowed:** Blizzard or World of Warcraft logos or artwork (class/talent icons included), any other borrowed or unauthorized artwork, downloaded stock icons without a cleared license, and placeholder icons shipped in a release build.
+
+**M5.RC.2a progress.** The owner-approved concept #3 is integrated byte-for-byte from the approved asset package: the Android adaptive icon (background, foreground and monochrome layers, raster fallbacks, `android:icon`) and the iOS 1024×1024 `AppIcon`. Source, checksums, asset QA and the build/rendering checks are in [rc2a-evidence/](rc2a-evidence/README.md). The status is not changed to closed: the signed-release, physical-device and themed-icon checks below are still outstanding.
 
 **Verification.**
 1. `aapt2 dump badging` on the signed release APK shows a non-empty `icon=` value.

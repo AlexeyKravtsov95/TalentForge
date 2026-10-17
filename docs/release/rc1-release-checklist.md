@@ -19,7 +19,7 @@ How to read this checklist:
 - [x] Only the launcher `MainActivity` is exported.
 - [x] No dangerous or user-visible permissions. Only the AndroidX signature permission `…DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`. No INTERNET, consistent with offline-first.
 - [ ] `android:allowBackup` decided explicitly and reflected in the privacy text (TF-RC1-ANDROID-CONFIG).
-- [ ] **(gate)** `android:icon` set to the approved adaptive icon (TF-RC1-ICON).
+- [x] **(gate)** `android:icon` set to the approved adaptive icon (TF-RC1-ICON). M5.RC.2a: `android:icon="@mipmap/ic_launcher"`; packaging and rendering checks in §4 ([rc2a-evidence](rc2a-evidence/README.md)).
 
 **Build and packaging**
 - [x] `assembleDebug`, `assembleRelease`, `bundleRelease` succeed (E1-43/44/45).
@@ -45,7 +45,7 @@ How to read this checklist:
 - [x] `xcodebuild` simulator Debug, simulator Release, device Release with `CODE_SIGNING_ALLOWED=NO` (E1-51/52/53)
 - [x] Built with Xcode 26.4.1 / iOS 26.4 SDK. This meets Apple's "Xcode 26 / iOS 26 SDK" upload minimum (in effect since 2026-04-28).
 - [ ] **(gate)** `PrivacyInfo.xcprivacy` added. It must declare User Defaults plus the Compose/Kotlin categories, with reason codes confirmed against Apple's documentation (TF-RC1-IOS-PRIVACY).
-- [ ] **(gate)** AppIcon 1024×1024 integrated (TF-RC1-ICON)
+- [x] **(gate)** AppIcon 1024×1024 integrated (TF-RC1-ICON). M5.RC.2a: approved master in `AppIcon.appiconset`; build and rendering checks in §4 ([rc2a-evidence](rc2a-evidence/README.md)).
 - [ ] **(gate)** iPad multi-scene (TF-RC1-IOS-SCENES): **either** multiple scenes disabled for the first release **and** `UIApplicationSupportsMultipleScenes = false` confirmed in the **built** release `Info.plist`, **or** cross-scene-safe persistence implemented and tested with two iPad windows in a separately reviewed change. iPad multi-window must not be approved without one of these.
 - [ ] `ITSAppUsesNonExemptEncryption` set (the app uses no encryption), so each upload skips the export-compliance question.
 - [ ] Launch screen: the generated empty `UILaunchScreen` shows the system background before Compose paints dark. Accept or style it.
@@ -71,6 +71,8 @@ What can be verified without an account: simulator builds and tests, unsigned de
 
 **Status: OPEN, P1, Android + iOS. Owner: Product/Design. Planned: M5.RC.2a.**
 
+**M5.RC.2a (integration):** the owner-approved concept #3 (amber/gold talent tree on dark charcoal) is integrated byte-for-byte from the approved asset package on both platforms. Source, checksums, offline asset QA and the build/rendering scripts: [rc2a-evidence](rc2a-evidence/README.md). `TF-RC1-ICON` stays **OPEN** until platform rendering is verified (see *Validation in release builds* below).
+
 **Icon policy (applies to M5.RC.1 → M5.RC.2a).**
 1. **M5.RC.1 generates and integrates no icon.** This milestone only records the gap; `TF-RC1-ICON` stays **OPEN / P1**.
 2. **M5.RC.2a requires original TalentForge artwork that the owner has approved** before it is integrated.
@@ -78,19 +80,22 @@ What can be verified without an account: simulator builds and tests, unsigned de
 4. **Not allowed:** Blizzard or World of Warcraft logos or artwork (class/talent icons included), any other borrowed or unauthorized artwork, downloaded stock icons without a cleared license, and placeholder icons shipped in a release build.
 
 **Android launcher, adaptive icon** ([developer.android.com](https://developer.android.com/develop/ui/views/launch/icon_design_adaptive)):
-- [ ] Foreground and background layers, 108×108 dp each. The inner 66×66 dp safe zone holds the logo, which is at least 48 dp and at most 66 dp. The outer 18 dp on each side is reserved for masking. Vector preferred.
-- [ ] Monochrome layer for Android 13+ themed icons.
-- [ ] `res/mipmap-anydpi-v26/ic_launcher.xml` with `<adaptive-icon>` (background, foreground, monochrome).
-- [ ] Legacy raster `mipmap-*dpi/ic_launcher.png` for API < 26 is not needed (`minSdk` is 26), but keep a fallback if the design team wants one for non-adaptive launchers.
-- [ ] `android:icon="@mipmap/ic_launcher"` in the manifest. `android:roundIcon` is optional.
+- [x] Foreground and background layers, 108×108 dp each. The inner 66×66 dp safe zone holds the logo, which is at least 48 dp and at most 66 dp. The outer 18 dp on each side is reserved for masking. Vector preferred.
+  - M5.RC.2a: 432×432 px PNG layers (108 dp at 4 px/dp). Foreground 57.5 × 61.8 dp, farthest pixel 32.9 dp from the centre: inside the 33 dp safe radius. **Not vector:** the layers are bitmap-derived from the approved raster; a vector redraw is optional and only needed if device QA fails.
+- [x] Monochrome layer for Android 13+ themed icons. M5.RC.2a: alpha-only silhouette, farthest pixel 32.6 dp from the centre.
+- [x] `res/mipmap-anydpi-v26/ic_launcher.xml` with `<adaptive-icon>` (background, foreground, monochrome).
+- [x] Legacy raster `mipmap-*dpi/ic_launcher.png` for API < 26 is not needed (`minSdk` is 26), but keep a fallback if the design team wants one for non-adaptive launchers. M5.RC.2a: the package's fallbacks are kept (mdpi…xxxhdpi, 48–192 px, opaque).
+- [x] `android:icon="@mipmap/ic_launcher"` in the manifest. `android:roundIcon` is optional. M5.RC.2a: no `roundIcon`; the adaptive icon is masked by the launcher.
 
 **RuStore store icon** ([rustore.ru](https://www.rustore.ru/help/developers/publishing-and-verifying-apps/app-publication)):
 - [ ] 512×512 px, PNG or JPG, ≤ 3 MB, with a background that fills the whole area: no transparent or empty edges.
+  - M5.RC.2a: the approved package's `TalentForge-RuStore-512.png` meets this (512×512, opaque RGB, 181 KB; kept in `rc2a-evidence/source/`). Open until it is uploaded and previewed in the RuStore console (publication, out of scope).
 
 **iOS / iPadOS** ([Apple HIG — App icons](https://developer.apple.com/design/human-interface-guidelines/app-icons)):
-- [ ] 1024×1024 px square master, unmasked (the system applies the rounded mask). Colour space sRGB or Display P3.
+- [x] 1024×1024 px square master, unmasked (the system applies the rounded mask). Colour space sRGB or Display P3. M5.RC.2a: opaque RGB, no alpha channel, no embedded profile (treated as sRGB).
 - [ ] Appearances: default, dark, clear and tinted. The system auto-generates variants that are not provided; providing designed dark/tinted variants is recommended.
-- [ ] Integrated as `AppIcon.appiconset` (single size 1024), or as an Icon Composer `.icon` (Xcode 26), with `ASSETCATALOG_COMPILER_APPICON_NAME` matching.
+  - M5.RC.2a: the approved package has **no** dark or tinted variant, and none was invented. The default icon is integrated; designed variants are an owner/design decision.
+- [x] Integrated as `AppIcon.appiconset` (single size 1024), or as an Icon Composer `.icon` (Xcode 26), with `ASSETCATALOG_COMPILER_APPICON_NAME` matching. M5.RC.2a: `AppIcon.appiconset`, `ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon` (Debug and Release).
 
 **Validation in release builds:**
 - [ ] Android: `aapt2 dump badging <signed release apk>` shows a non-empty `icon=`. Lint reports no `MissingApplicationIcon`.
