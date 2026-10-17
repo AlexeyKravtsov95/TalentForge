@@ -1,0 +1,269 @@
+# M5.RC.1 — Defects, suspected risks and review items
+
+Audit base: `main` @ `5648941` (merge of PR #32). Audit date: 2026-10-17 (UTC+7).
+Evidence references (`E1-…`, `E2-…`) point to [`rc1-evidence/README.md`](rc1-evidence/README.md).
+
+This file keeps three kinds of finding apart:
+
+1. **Confirmed defects**: reproduced, or read directly from a build artifact or source. These are counted.
+2. **Suspected risks**: plausible from code reading but not reproduced. These are **not** counted as defects.
+3. **Owner / legal review items**: decisions or rights questions an audit cannot settle.
+
+The [test matrix](rc1-test-matrix.md) lists the scenarios that could not be run (UNVERIFIED).
+
+## Counts (confirmed only)
+
+| Priority | Count | IDs |
+|---|---|---|
+| P0 | 0 | — |
+| P1 | 4 | TF-RC1-ICON, TF-RC1-SIGNING, TF-RC1-DATA, TF-RC1-IOS-PRIVACY (iOS only) |
+| P2 | 8 | TF-RC1-LINT, TF-RC1-IOS-SCENES, TF-RC1-COPY-NAME, TF-RC1-DRAFT-TITLE, TF-RC1-BADGE-200, TF-RC1-TABLET-WIDTH, TF-RC1-ANDROID-CONFIG, TF-RC1-CI |
+
+No P0 was found. The audit found no evidence of saved-build corruption or silent loss.
+The device-level checks behind that statement ran on an Android emulator only (see the matrix); the physical-device run is UNVERIFIED.
+
+---
+
+## P1 — Release blockers
+
+### TF-RC1-ICON — Application icon missing
+
+| Field | Value |
+|---|---|
+| Severity | **P1** |
+| Platforms | Android + iOS |
+| Status | **OPEN** (known, pre-existing; must stay OPEN during M5.RC.1) |
+| Owner | Product/Design (artwork), Mobile engineering (integration) |
+| Planned resolution | **M5.RC.2a** — TalentForge branding and app icon |
+
+**Summary.** TalentForge ships no application icon on either platform.
+
+**Evidence.**
+- Android source: `mobile/composeApp/src/androidMain/AndroidManifest.xml` has no `android:icon` or `android:roundIcon`. `mobile/composeApp/src/androidMain/res/` contains only `values/themes.xml`: no `mipmap-*`, no `mipmap-anydpi-v26/ic_launcher.xml`.
+- Android artifacts (E1-60): `aapt2 dump badging` of both the debug APK and the release APK reports `application: label='TalentForge' icon=''` and `launchable-activity … icon=''`.
+- Android lint (E2-13): `AndroidManifest.xml:4: Warning: Should explicitly set android:icon, there is no default [MissingApplicationIcon]`.
+- iOS source: `mobile/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/` contains only `Contents.json`, with one `universal / ios / 1024x1024` slot and no `filename`, so there is no image. `ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon` (E1-50).
+- iOS artifact (E1-60): the Release simulator `.app` has an 18 KB `Assets.car` and no icon files.
+
+**Reproduction.** Build `:composeApp:assembleRelease`, then run `aapt2 dump badging composeApp-release-unsigned.apk | grep icon`. On iOS, open `AppIcon.appiconset` in Xcode and see the empty 1024 slot.
+
+**Expected.** The launcher and Home Screen show the approved TalentForge icon. The RuStore listing has a 512×512 store icon.
+**Actual.** Android launchers fall back to the system default icon. iOS shows a blank placeholder icon.
+
+**Required assets.** These are listed in full in the [release checklist §4](rc1-release-checklist.md#4-app-icon-readiness-tf-rc1-icon).
+
+**Suggested resolution (M5.RC.2a).** Integrate the *approved* design only:
+- Android: an adaptive icon in `mipmap-anydpi-v26/ic_launcher.xml` (foreground, background and monochrome layers), legacy densities, and `android:icon` in the manifest.
+- iOS: the 1024×1024 master in `AppIcon.appiconset`, or an Icon Composer `.icon`, with dark/tinted variants as the design provides.
+
+Do **not** use placeholder, generated or World of Warcraft artwork.
+
+**Verification.**
+1. `aapt2 dump badging` on the signed release APK shows a non-empty `icon=` value.
+2. Lint shows no `MissingApplicationIcon`.
+3. Visual check of the launcher on Android 8, 13+ (themed icons) and 16, and on a round-mask launcher.
+4. The Xcode archive shows no AppIcon warnings, and the icon renders on the simulator and on a device.
+5. On iOS, App Store Connect validation passes for the icon.
+
+---
+
+### TF-RC1-SIGNING — Android release artifact is unsigned; no release signing configuration
+
+| Field | Value |
+|---|---|
+| Severity | **P1** (packaging prerequisite that blocks publication) |
+| Platforms | Android (RuStore) |
+| Status | OPEN |
+| Owner | Owner / Release engineering (key custody is an owner decision) |
+| Planned resolution | M5.RC.2b |
+
+**Evidence.**
+- E1-60: `apksigner verify composeApp-release-unsigned.apk` reports `DOES NOT VERIFY` and `ERROR: Missing META-INF/MANIFEST.MF`.
+- `mobile/composeApp/build.gradle.kts` defines no `signingConfigs` and no release signing.
+
+**Expected.** A release APK, or an AAB plus a RuStore-uploaded signing key, signed with a long-lived key held by the owner.
+**Actual.** Unsigned output.
+
+**Notes.**
+- RuStore requires a signed APK. For AAB, the signing key is uploaded separately during upload.
+- Changing the key later requires RuStore support, and all existing versions are archived.
+- Pick the key once and keep it.
+- No keys were created during this audit.
+
+**Resolution.**
+- Generate and store a release keystore outside the repository.
+- Wire it through `signingConfigs` read from local or environment properties, never committed.
+- Decide APK vs AAB for RuStore.
+
+**Verification.** `apksigner verify --print-certs` on the release APK succeeds. The certificate fingerprint is recorded in the release notes (not in the repo).
+
+---
+
+### TF-RC1-DATA — Product dataset is OUTDATED against the latest publishable Forever build
+
+| Field | Value |
+|---|---|
+| Severity | **P1 release gate** (closed by a refresh *or* a documented owner decision) |
+| Platforms | Android + iOS (shared dataset) |
+| Status | OPEN |
+| Owner | Data pipeline / Product |
+| Planned resolution | Dedicated dataset-refresh milestone (proposed **M5.DATA.4**) before M5.RC.3 |
+
+**Evidence (E1-30, `release-freshness.json`).**
+- Check timestamp: **2026-10-16T19:37:52Z**.
+- Source: wago.tools `/api/builds`.
+- Command: `python scripts/check_product_freshness.py --output release-freshness.json`, exit code 3.
+
+| Field | Value |
+|---|---|
+| status | **OUTDATED** |
+| PRODUCT_BUNDLE | `1.60.1.70374` |
+| latestPublishable | `1.60.1.70425` (`wow_classic_beta`, created 2026-10-16 00:50:05, `isBgdl=false`) |
+| latestDetected | `1.60.1.70425` |
+| newerUnpublishable | none |
+
+**Limitations.**
+- "Publishable" means `is_bgdl=false` on wago.tools. It is **not** proof that `70425` is the live client.
+- The product is listed as `wow_classic_beta`.
+- Whether `70425` changes any talent data is unknown until it is normalized and diffed.
+- The scheduled GitHub freshness watcher is infrastructure-blocked (TF-RC1-CI), so it gives no corroboration.
+
+**Resolution.**
+- Run the established refresh pipeline (M5.DATA.3 precedent): normalize `70425`, diff it against `70374`, add it to `BUNDLED_BUILDS`, and decide on `PRODUCT_BUNDLE`.
+- Never remove `70009/70245/338/374`, which saved builds may reference.
+- Alternatively, the owner records why `70374` stays the product build.
+- Do **not** update the bundle silently, and do not update it in this PR.
+
+**Verification.** Re-run the freshness check immediately before M5.RC.3. It must report `CURRENT`, or a signed-off decision must be recorded in `rc3` notes.
+
+---
+
+### TF-RC1-IOS-PRIVACY — No privacy manifest (`PrivacyInfo.xcprivacy`) in the iOS app
+
+| Field | Value |
+|---|---|
+| Severity | **P1 for iOS App Store submission**; not applicable to the Android/RuStore release |
+| Platforms | iOS |
+| Status | OPEN (absence confirmed; App Store rejection not observed — no upload was possible) |
+| Owner | Mobile engineering |
+| Planned resolution | M5.RC.2b (before the iOS release, not needed for RuStore) |
+
+**Evidence.**
+- `find mobile/iosApp -name '*.xcprivacy'` returns nothing (static review), and the Release `.app` bundle has no `PrivacyInfo.xcprivacy` (E1-60).
+- The app stores the build library in `NSUserDefaults` (`IosBuildLibraryStorage.kt`), a required-reason API category.
+- JetBrains documents that Compose Multiplatform binaries may contain `stat`/`fstat` (reason `0A2A.1`) and `mach_absolute_time` (`35F9.1`) usages that Apple can flag.
+- Apple states: "Starting May 1, 2024, apps that don't describe their use of required reason API in their privacy manifest file aren't accepted by App Store Connect."
+
+**Resolution.**
+- Add an app-level `PrivacyInfo.xcprivacy` declaring the User Defaults category and the categories the Compose and Kotlin binaries use.
+- Confirm the exact reason codes against Apple's current documentation at implementation time. This audit could not render Apple's reason table, so the codes for User Defaults are **unverified here**.
+- Declare `NSPrivacyTracking = false` and no collected data types.
+
+**Verification.** Upload a signed archive to App Store Connect (TestFlight). There must be no ITMS-91053 email or validation error.
+
+---
+
+## P2 — Non-blocking
+
+### TF-RC1-LINT — `:composeApp:lintRelease` fails on `RememberReturnType`
+
+- **Platform:** Android build tooling.
+- **Evidence (E1-49, E2-13):**
+  - `AppLanguage.android.kt:15: Error: remember calls must not return Unit [RememberReturnType]` on `remember { primaryLanguageTagOf(…) }`. The expression is typed `String`, so this looks like a lint false positive (UAST/K2).
+  - 4 warnings: `ApplySharedPref`, `UseKtx`, `OldTargetApi` (targetSdk 36), `MissingApplicationIcon`.
+  - `lintVitalRelease` inside `assembleRelease` passes, so packaging is not blocked.
+- **Expected:** a full lint run is clean or has a baseline. **Actual:** BUILD FAILED.
+- **Resolution:** confirm the false positive and suppress it locally with a justification, or restructure the expression. Add a lint baseline for intentional warnings. `commit()` is a deliberate fail-closed choice: keep it and document it.
+- **Verification:** `./gradlew :composeApp:lintRelease` exits 0.
+
+### TF-RC1-IOS-SCENES — Built Info.plist enables multiple scenes despite the source plist disabling them
+
+- **Platform:** iOS (iPad).
+- **Evidence (E1-60):**
+  - Source `iosApp/Info.plist` declares `UIApplicationSupportsMultipleScenes = false`.
+  - The built Release `.app` Info.plist contains `"UIApplicationSupportsMultipleScenes" => true` (from `INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES`).
+- **Risk (suspected, not reproduced):**
+  - On iPad, two windows each compose their own `App`, each with its own `BuildAutosaveCoordinator` and write lock, over the same `NSUserDefaults` key.
+  - The repository does a whole-library read–modify–write. Editing the same build in two windows ends as last-writer-wins.
+  - Overlapping writes could drop an unrelated record's update.
+- **Resolution:** decide on single-scene support for v1 (set `INFOPLIST_KEY_UIApplicationSupportsMultipleScenes = NO` or remove the generation key) or make writes cross-scene safe.
+- **Verification:** inspect the built `Info.plist`. On an iPad simulator, check that "New Window"/split view is unavailable, or run the two-window scenario.
+
+### TF-RC1-COPY-NAME — Duplicate names are persisted in English (" (copy)", "Draft (copy)") in the Russian UI
+
+- **Platform:** both.
+- **Evidence:** `LocalBuildRepository.copyNameOf` uses the constants `" (copy)"` and `"Draft"`. This is documented as a known limitation in `docs/mobile-architecture.md` (M5.REL.2a and M5.REL.2b "Known limitations").
+- **Repro:** set the device to Russian, then All Builds → ⋯ → Duplicate. The new row is named `… (copy)`.
+- **Resolution:** a localized copy-name policy. This is a persistence change and needs its own decision.
+- **Verification:** a unit test plus a RU device check.
+
+### TF-RC1-DRAFT-TITLE — The same unnamed build is titled differently on Home/All Builds and in the editor
+
+- **Platform:** both.
+- **Evidence (E2-23 screenshots `rc1-evidence/screenshots/emulator-font2.0-home.png`, `rc1-evidence/screenshots/emulator-compact-568x320dp-editor-landscape.png`):**
+  - Home shows the unnamed record as **"Warrior build"**: the display-only `<Class> build` fallback (M5.UI.1).
+  - The editor header shows **"Draft"** (`editor_draft_title`).
+  - Duplication persists **"Draft (copy)"**.
+- **Expected:** one consistent naming rule. **Actual:** three names for one record.
+- **Resolution:** a product/design decision. Then align `TalentTreeBuildScreen` with `BuildCardModel.title`, or document the rule.
+- **Verification:** UI tests for an unnamed build's title on Home, All Builds and the editor.
+
+### TF-RC1-BADGE-200 — Rank badge text clipped at 200 % font scale
+
+- **Platform:** Android (observed on the emulator). iOS is not checked.
+- **Evidence:** E2-23 `rc1-evidence/screenshots/emulator-font2.0-editor.png`: node badges `0/3` and `0/5` are vertically cut. At 150 % they are intact (`rc1-evidence/screenshots/emulator-font1.5-editor.png`).
+- **Cosmetic:** the counter, inspector and actions stay usable.
+- **Resolution:** a minimum badge height that scales with font, or a cap on the badge font scale.
+- **Verification:** compare screenshots at 1.0, 1.5 and 2.0 scale.
+
+### TF-RC1-TABLET-WIDTH — Tablet Home stretches content and primary actions to full width
+
+- **Platform:** iOS iPad (simulator, E2-31). Android tablets are not checked.
+- **Evidence:** `rc1-evidence/screenshots/ios-ipad-air-11-launch.png`: "New build" spans the full 1640 px width and the body text runs edge to edge.
+- **Cosmetic:** no functional loss.
+- **Resolution:** a max content width for shell screens on wide windows, following the B+ design system.
+
+### TF-RC1-ANDROID-CONFIG — Android release configuration not hardened
+
+These are owner decisions. None of them blocks RuStore by itself.
+
+**Evidence (E1-60, `build.gradle.kts`, manifest):**
+- No R8/minify or resource shrinking. The release APK is 16.9 MB.
+- 4 ABIs are bundled (`arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64`).
+- 85 `application-label-*` locales come from dependencies, while the app supports en/ru only.
+- `android:allowBackup` is unset (it defaults to `true`), so the SharedPreferences library is included in cloud backup and device transfer. Disclose this in the privacy text or set it explicitly.
+- No `localeConfig`, so there is no Android 13+ per-app language entry.
+- `targetSdk = 36` triggers lint `OldTargetApi`.
+- `versionCode = 1` / `versionName = "0.1.0"`, pending a release decision.
+
+**Resolution:** decide each item in M5.RC.2b. Any R8 enablement needs a full device regression.
+
+### TF-RC1-CI — GitHub Actions is infrastructure-blocked
+
+- **Platform:** process.
+- **Evidence (E1-03):** the last 40 runs since at least 2026-10-13 (`CI`, `mobile-ci`, `Dataset freshness`, on main, PR and schedule) all have `conclusion=failure` with **0 steps executed** per job.
+- These are not test failures. CI simply provides **no** verification at present, and every result in this audit comes from local Mac runs.
+- **Resolution:** the owner checks the Actions billing, spending limit and runner availability, then re-runs `mobile-ci` on `main`.
+- **Verification:** a green `mobile-ci` and `CI` on the RC.3 commit.
+
+---
+
+## Suspected risks (not counted; need confirmation)
+
+| ID | Risk | Basis | How to confirm |
+|---|---|---|---|
+| SR-1 | Unlocked library writes. `deleteBuild`, `duplicateBuild`, `open` (touch) and `createDraft` run on `Dispatchers.Default` **outside** `BuildAutosaveCoordinator.writeLock`. Safety relies on the invariant that leaving the editor first `flush()`es. A future entry point that writes while an autosave is pending would lose an update. | Code: `AllBuildsScreen.kt:194`, `BuildActionsPresenter.kt:214`, `BuildImportController.kt:177`, `BuildLoaders.kt:171,321` vs `BuildAutosaveCoordinator.kt` | Stress test with a held storage plus concurrent duplicate/delete; or route all writes through one serialized writer |
+| SR-2 | iPad multi-window last-writer-wins / lost update (see TF-RC1-IOS-SCENES) | Built plist + per-window coordinator | iPad two-window manual test |
+| SR-3 | Import confirm during Activity recreation: phase/preview is `remember`, not saveable. A rotation while `createDraft` is in flight could return to Editing after the record was written, and a second Import would create a second record. The window is milliseconds. | `ImportBuildScreen.kt` / `BuildImportController.kt` | Held-storage UI test with state restoration |
+| SR-4 | iOS storage write failures are undetectable. `NSUserDefaults.setObject` neither throws nor reports, so the typed `StorageWrite` / Retry path is unreachable on iOS and persistence relies on `cfprefsd`. | `IosBuildLibraryStorage.kt` | Device test (low disk) plus `synchronize()` evaluation |
+| SR-5 | Large libraries: every operation re-reads and re-encodes the whole library (O(n) JSON per tap-save) | `LocalBuildRepository` | Seed 500+ builds and time autosave/open (procedure in the matrix) |
+
+## Owner / legal review items (not defects; must be decided before publication)
+
+| ID | Item | Category |
+|---|---|---|
+| LR-1 | Talent icons are extracted from the Blizzard game client (BLP, `docs/talent-visuals.md`), and talent names and descriptions are Blizzard game text. Their redistribution in a store app is **not** established as permitted. | Potential legal risk — owner/legal review |
+| LR-2 | "World of Warcraft", "Forever" and class names are Blizzard trademarks. The app and listing have no non-affiliation disclaimer, and no about/legal surface exists in the app. | Potential legal risk — needs disclaimer decision |
+| LR-3 | The provenance and license of the 9 class artwork masters (`composeResources/drawable/class_*.png`) are not recorded in the repo. | Owner review |
+| LR-4 | No open-source notices or attribution surface (Kotlin, Compose Multiplatform, AndroidX, kotlinx are Apache-2.0). No `LICENSE` in the repo. | Potential compliance gap — review |
+| LR-5 | Privacy: no network, no account, data stays on the device (plus Android auto-backup, TF-RC1-ANDROID-CONFIG). Store forms still need answers: RuStore "Data Safety", Apple privacy nutrition label, and a privacy-policy URL. Apple's requirement for a URL is an assumption not re-verified in this audit. | Owner action |
