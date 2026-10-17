@@ -308,4 +308,39 @@
     <string name="import_error_storage">Не удалось сохранить билд на этом устройстве. Попробуйте ещё раз.</string>
     <string name="import_error_paste_empty">В буфере обмена нет текста</string>
     <string name="import_error_paste_failed">Не удалось прочитать буфер обмена. Вставьте код в поле вручную.</string>
+
+    <!-- О приложении / правовая информация (M5.RC.2b). Оговорка и сводка о конфиденциальности —
+         черновики из docs/release/appgallery/privacy-and-compliance.md §7.3 / §8, ждут проверки
+         владельцем и юристом (LR-2, LR-5). -->
+    <string name="home_about">О приложении</string>
+    <string name="home_about_action">открыть сведения о TalentForge</string>
+    <string name="about_title">О приложении</string>
+    <string name="about_version">Версия %1$s (%2$s)</string>
+    <string name="about_section_project">НЕЗАВИСИМЫЙ ПРОЕКТ</string>
+    <string name="about_disclaimer">TalentForge — независимый неофициальный проект. Он не связан с разработчиком и издателем игры, не одобрен и не поддерживается ими.</string>
+    <string name="about_section_privacy">КОНФИДЕНЦИАЛЬНОСТЬ</string>
+    <string name="about_privacy_offline">TalentForge работает без интернета, без учётной записи, без рекламы и без аналитики. Разработчик не собирает, не получает и не передаёт ваши персональные данные.</string>
+    <string name="about_privacy_storage">Ваши билды — класс, таланты, версия игровых данных, введённое вами название и время создания, изменения и открытия — хранятся только в закрытом хранилище приложения на этом устройстве.</string>
+    <string name="about_privacy_backup_android">Приложение отключает резервное копирование Android и перенос своих данных на новое устройство, поэтому Android не копирует ваши билды в резервные копии устройства или облака. Собственные инструменты переноса некоторых производителей могут работать иначе; чтобы перенести билды на другое устройство, поделитесь ими в виде кодов.</string>
+    <string name="about_privacy_backup_ios">Если на устройстве включено резервное копирование (iCloud или компьютер), копия может включать данные приложения. Её хранит сервис резервного копирования по своим правилам; у разработчика нет к ней доступа.</string>
+    <string name="about_privacy_sharing">Приложение помещает код в буфер обмена только после нажатия «Копировать код», читает буфер только после нажатия «Вставить» и передаёт код билда в системное меню «Поделиться» только после нажатия «Поделиться». Код не содержит названия билда и сведений о вас.</string>
+    <string name="about_privacy_permissions">Приложение работает без интернета и не запрашивает доступ к местоположению, контактам, камере, микрофону, файлам или уведомлениям.</string>
+    <string name="about_privacy_delete">Удалите билд в приложении либо удалите приложение или очистите его данные — тогда сохранённые билды будут удалены с устройства.</string>
+    <string name="about_privacy_policy_link">Политика конфиденциальности</string>
+    <string name="about_privacy_policy_action">открыть политику конфиденциальности в браузере</string>
+    <string name="about_section_licenses">ЛИЦЕНЗИИ ОТКРЫТОГО ПО</string>
+    <string name="about_licenses_intro">TalentForge создан с использованием этих компонентов с открытым исходным кодом на условиях их лицензий.</string>
+    <plurals name="about_licenses_module_count">
+        <item quantity="one">%1$d модуль</item>
+        <item quantity="few">%1$d модуля</item>
+        <item quantity="many">%1$d модулей</item>
+        <item quantity="other">%1$d модуля</item>
+    </plurals>
+    <string name="about_licenses_show_modules">Показать модули</string>
+    <string name="about_licenses_hide_modules">Скрыть модули</string>
+    <string name="about_license_show_text">Показать текст лицензии</string>
+    <string name="about_license_hide_text">Скрыть текст лицензии</string>
+    <string name="about_licenses_loading">Загрузка сведений…</string>
+    <string name="about_licenses_failed">Не удалось загрузить сведения о лицензиях</string>
+    <string name="about_licenses_unavailable">Сведения о лицензиях открытого ПО не входят в эту сборку.</string>
 </resources>

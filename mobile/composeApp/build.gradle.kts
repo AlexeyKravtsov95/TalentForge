@@ -327,6 +327,7 @@ androidComponents {
 // `-Dtalentforge.m5rel2b.screenshots` (M5.REL.2b, localized talent editor) or
 // `-Dtalentforge.m5rel3b2.screenshots` (M5.REL.3b.2, Russian talent text) or
 // `-Dtalentforge.m5share2.screenshots` (M5.SHARE.2, build export/import) or
+// `-Dtalentforge.m5rc2b.screenshots` (M5.RC.2b, About / legal) or
 // `-Dtalentforge.pr19.recording`
 // (PR #19, gesture frames) — skipped by default.
 tasks.named<Test>("desktopTest") {
@@ -377,6 +378,9 @@ tasks.named<Test>("desktopTest") {
     }
     System.getProperty("talentforge.m5share2.screenshots")?.let {
         systemProperty("talentforge.m5share2.screenshots", it)
+    }
+    System.getProperty("talentforge.m5rc2b.screenshots")?.let {
+        systemProperty("talentforge.m5rc2b.screenshots", it)
     }
     System.getProperty("talentforge.pr19.recording")?.let {
         systemProperty("talentforge.pr19.recording", it)

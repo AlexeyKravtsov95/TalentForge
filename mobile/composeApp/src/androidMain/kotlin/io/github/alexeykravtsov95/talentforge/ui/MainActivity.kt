@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import io.github.alexeykravtsov95.talentforge.ui.about.installedAppVersion
 import io.github.alexeykravtsov95.talentforge.ui.library.AndroidBuildLibraryStorage
 
 class MainActivity : ComponentActivity() {
@@ -21,8 +22,9 @@ class MainActivity : ComponentActivity() {
             statusBarStyle = SystemBarStyle.dark(Color.Transparent.toArgb()),
             navigationBarStyle = SystemBarStyle.dark(Color.Transparent.toArgb()),
         )
+        val appVersion = installedAppVersion(applicationContext)
         setContent {
-            App(storage = AndroidBuildLibraryStorage(applicationContext))
+            App(storage = AndroidBuildLibraryStorage(applicationContext), appVersion = appVersion)
         }
     }
 }

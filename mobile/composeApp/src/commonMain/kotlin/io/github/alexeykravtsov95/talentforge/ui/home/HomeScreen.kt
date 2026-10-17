@@ -49,6 +49,8 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.com
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_new_build_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_open_build_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_retry
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_about
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_about_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_all_builds_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_all_builds_link
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_continue_editing
@@ -138,6 +140,7 @@ fun HomeScreen(
     onAllBuilds: () -> Unit,
     onNewBuild: () -> Unit,
     onImportBuild: () -> Unit,
+    onAbout: () -> Unit,
     autosave: BuildAutosaveCoordinator,
     sharing: BuildCodeSharing,
 ) {
@@ -189,7 +192,7 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.rowGap),
                 ) {
                     Spacer(Modifier.height(TalentForgeSpacing.group))
-                    BrandHeader()
+                    BrandHeader(onAbout = onAbout)
                     actions.shareFailure?.let { failure ->
                         InlineNotice(
                             text = failure.failure.text(),
@@ -383,11 +386,16 @@ private fun NewUserContent(emptyCopyTopGap: Dp) {
     }
 }
 
-/** The temporary brand mark: outlined diamond with an accent core + wordmark (spec B). */
+/**
+ * The temporary brand mark: outlined diamond with an accent core + wordmark
+ * (spec B), and (M5.RC.2b) the low-emphasis `About` link at the row's end — a
+ * 48 dp text target, the only way to the About screen (no persistent chrome).
+ */
 @Composable
-private fun BrandHeader() {
+private fun BrandHeader(onAbout: () -> Unit) {
     val colors = talentForgeColors()
     Row(
+        modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
     ) {
@@ -399,6 +407,19 @@ private fun BrandHeader() {
         BasicText(
             "TalentForge",
             style = HomeBrandStyle.copy(color = colors.textPrimary),
+        )
+        Spacer(Modifier.weight(1f))
+        BasicText(
+            text = stringResource(Res.string.home_about),
+            style = HomeLinkStyle.copy(color = colors.textSecondary),
+            modifier = Modifier
+                .heightIn(min = 48.dp)
+                .clickable(
+                    role = Role.Button,
+                    onClickLabel = stringResource(Res.string.home_about_action),
+                    onClick = onAbout,
+                )
+                .padding(horizontal = TalentForgeSpacing.inline, vertical = 16.dp),
         )
     }
 }
