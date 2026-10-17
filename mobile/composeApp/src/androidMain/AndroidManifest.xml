@@ -1,7 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!--
+      Backup policy (M5.RC.2b, TF-RC1-ANDROID-CONFIG): TalentForge keeps the build
+      library only on the device and has no backup of its own, so Android backup is
+      off. allowBackup="false" disables Auto Backup, adb backup and (Android 11 and
+      lower) device-to-device transfer; on Android 12+ it may not stop
+      device-to-device transfer on some vendors' devices, so dataExtractionRules
+      (Android 12+) and fullBackupContent (Android 11 and lower) also exclude every
+      data domain. Vendor migration tools that do not use the Android backup
+      framework are outside the app's control.
+    -->
     <application
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="TalentForge"
         android:theme="@style/Theme.TalentForge">

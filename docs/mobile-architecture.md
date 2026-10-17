@@ -1186,6 +1186,65 @@ panes (dataset diagnostic, engine reason, reason codes) are not translated.
 `Draft (copy)` names produced by duplication are persisted by the shared
 repository in English (unchanged, see M5.REL.2a).
 
+## About / legal screen and release signing (M5.RC.2b)
+
+**About** is a pushed destination (`AppDestination.About`, saved as `about`). Home's header ends in
+a drawn ⓘ glyph, a 48 dp target named "About" / "О приложении". Back returns to Home, and no
+persistent navigation is added (UX/UI spec 02 §1). The spec defines no About surface. This entry is
+the one addition the release-hardening milestone required.
+
+```
+App(storage, …, appVersion)          ← host: Android PackageManager / iOS NSBundle / desktop null
+  Home ⓘ ──▶ AboutScreen(appVersion, platformOpenSourceNoticesPath, platformBackupStatement,
+                         LegalLinks.privacyPolicyUrl, onBack)
+     loadOpenSourceNotices(path) → parseOpenSourceNotices (strict, typed OpenSourceNoticesException)
+     licence texts → readLegalResource("files/legal/LICENSE-*.txt" …) on demand
+```
+
+- **Version:** passed in by the host. `installedAppVersion(context)` on Android,
+  `bundleAppVersion()` on iOS, `null` on the desktop dev host. The row is omitted when it is
+  `null`, never invented.
+- **Notices:** `scripts/generate_oss_notices.py` generates two files (schema
+  `talentforge.oss-notices.v2`):
+  - `files/legal/oss-notices-android.json` from the resolved `:composeApp:releaseRuntimeClasspath`;
+  - `files/legal/oss-notices-ios.json` from `:composeApp:iosArm64CompileKlibraries`, plus the
+    third-party code that is not a Gradle module (*linked* components). That code is Skia and the
+    libraries statically linked into Skiko's klib, and the Kotlin stdlib's incorporated code.
+  - Every POM licence is checked against a curated component.
+  - Every static archive in an iOS klib must be claimed, object-file family by family, by the
+    curated inventory of that exact module version.
+  - Every bundled licence text is SHA-256-pinned to its upstream revision.
+  - Both files are drift-checked in `mobile-ci` (Android on Linux, iOS on macOS). The check compares
+    the full content: coordinates, component mapping, licence metadata, POM licences re-read, and
+    for iOS the klibs' native archives.
+  - `platformOpenSourceNoticesPath` is the Android file on Android and desktop (the desktop target
+    is the Android UI's dev host and is not distributed) and the iOS file on iOS
+    (TF-RC2B-IOS-NOTICES, [evidence](release/rc2b-evidence/ios-oss-notices.md)).
+- **Privacy:** factual summary of the draft policy. `BackupStatement` picks the paragraph that is
+  true per platform. The policy link renders only for an approved `https://` URL in
+  `LegalLinks.privacyPolicyUrl`, which is deliberately `null` (LR-5).
+- **Backup (manifest):** `allowBackup="false"`, `dataExtractionRules`
+  (`res/xml/data_extraction_rules.xml`) and `fullBackupContent` (`res/xml/backup_rules.xml`). Every
+  domain is excluded from cloud backup and device transfer.
+- **Release signing (`composeApp/build.gradle.kts`):** settings come from the environment or
+  `~/.gradle/gradle.properties`. `checkReleaseSigning` runs before `preReleaseBuild`.
+  `assemblePublishableRelease` stages `build/outputs/publishable/TalentForge-<vn>-<vc>.apk` only
+  after `scripts/verify_release_apk.py` passes. A `taskGraph.whenReady` hook clears that directory
+  before any task of a publishable build runs, so a failed attempt never leaves an earlier APK. Owner procedure:
+  [release/android-release-signing.md](release/android-release-signing.md).
+
+**Tests** (desktop):
+- `AboutScreenUiTest`: EN/RU copy, version/no version, iOS variant, notices failure + Retry, link
+  only when configured, Back, toggles ≥ 48 dp at 320 dp / 200 %, and Home → About → Back,
+  including RU at 320×568 / 200 %.
+- `OpenSourceNoticesTest`: the bundled notices, the Apache-2.0 digest, strict-parser failures, and
+  the privacy-URL rule.
+- `AppNavigationStateTest`: `about` round-trips.
+
+Python: `tests/unit/test_verify_release_apk.py`. End to end:
+`scripts/release_signing_selftest.sh` (temporary key). Screenshots: `M5Rc2bScreenshotTest`
+(`-Dtalentforge.m5rc2b.screenshots=<dir>`), committed under `docs/release/rc2b-evidence/screenshots/`.
+
 ## Version stack (all stable)
 
 | Component | Version |
@@ -1911,6 +1970,14 @@ cd mobile
 
 # Android
 ./gradlew :composeApp:assembleDebug    # -> composeApp/build/outputs/apk/debug/
+./gradlew :composeApp:assembleRelease  # unsigned technical APK unless the owner's signing settings are set
+./gradlew :composeApp:lintRelease
+# the ONLY upload artifact (owner's key + expected fingerprint required; see release/android-release-signing.md)
+./gradlew :composeApp:assemblePublishableRelease   # -> composeApp/build/outputs/publishable/
+
+# (from the repository root) signing self-test with a temporary key; Android OSS notices drift check
+scripts/release_signing_selftest.sh
+python3 scripts/generate_oss_notices.py --check    # both platforms, full content incl. POM licences; regenerate without --check after a change
 
 # M5.UX.2b.1 section navigation on a USB device (from the repository root; adb on PATH).
 # Builds and installs the isolated `.devcheck` application, runs the scenarios
@@ -1928,6 +1995,7 @@ cd iosApp && xcodebuild -project iosApp.xcodeproj -scheme iosApp \
 JDK 17 and an Android SDK (`ANDROID_HOME` or `mobile/local.properties`) are
 required; Xcode is required for the iosApp build. The Gradle wrapper needs no
 global Gradle install. CI (`.github/workflows/mobile-ci.yml`) runs the drift
-check, JVM/shared contract tests, desktop tests and the Android debug build on
-Linux, and iOS compilation, framework linking and the iosApp simulator build
-on macOS — no release signing anywhere.
+checks (including the OSS notices), JVM/shared contract tests, desktop tests,
+the Android debug build and the release-signing self-test (a temporary test key,
+deleted on exit) on Linux, and iOS compilation, framework linking and the
+iosApp simulator build on macOS. CI holds no production signing secret.

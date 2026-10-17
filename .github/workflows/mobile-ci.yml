@@ -17,6 +17,9 @@ on:
       - "scripts/sync_mobile_visuals.py"
       - "scripts/sync_mobile_tooltips.py"
       - "scripts/sync_mobile_localization.py"
+      - "scripts/verify_release_apk.py"
+      - "scripts/generate_oss_notices.py"
+      - "scripts/release_signing_selftest.sh"
       - ".github/workflows/mobile-ci.yml"
 
 concurrency:
@@ -57,6 +60,9 @@ jobs:
       - name: Localization drift check (bundled ruRU overlays == canonical, offline)
         run: python3 scripts/sync_mobile_localization.py --check
 
+      - name: OSS notices drift check (full content, licences re-read from POMs == committed Android notices)
+        run: python3 scripts/generate_oss_notices.py --check --platform android
+
       - name: Shared JVM contract tests (45 documents, 5 manifests, conformance, repository)
         working-directory: mobile
         run: ./gradlew :shared:jvmTest --console=plain
@@ -68,6 +74,9 @@ jobs:
       - name: Android debug build
         working-directory: mobile
         run: ./gradlew :composeApp:assembleDebug --console=plain
+
+      - name: Release signing self-test (temporary test key, deleted on exit; not a production key)
+        run: scripts/release_signing_selftest.sh
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
@@ -94,6 +103,9 @@ jobs:
 
       - name: Show Xcode version
         run: xcodebuild -version
+
+      - name: OSS notices drift check (full content, POM licences and klib native archives == committed iOS notices)
+        run: python3 scripts/generate_oss_notices.py --check --platform ios
 
       - name: Shared iOS compilation and simulator tests
         working-directory: mobile

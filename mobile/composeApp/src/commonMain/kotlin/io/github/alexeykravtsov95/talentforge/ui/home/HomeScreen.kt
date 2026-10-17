@@ -37,6 +37,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -49,6 +51,8 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.com
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_new_build_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_open_build_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_retry
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_about
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_about_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_all_builds_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_all_builds_link
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_continue_editing
@@ -138,6 +142,7 @@ fun HomeScreen(
     onAllBuilds: () -> Unit,
     onNewBuild: () -> Unit,
     onImportBuild: () -> Unit,
+    onAbout: () -> Unit,
     autosave: BuildAutosaveCoordinator,
     sharing: BuildCodeSharing,
 ) {
@@ -189,7 +194,7 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.rowGap),
                 ) {
                     Spacer(Modifier.height(TalentForgeSpacing.group))
-                    BrandHeader()
+                    BrandHeader(onAbout = onAbout)
                     actions.shareFailure?.let { failure ->
                         InlineNotice(
                             text = failure.failure.text(),
@@ -383,11 +388,18 @@ private fun NewUserContent(emptyCopyTopGap: Dp) {
     }
 }
 
-/** The temporary brand mark: outlined diamond with an accent core + wordmark (spec B). */
+/**
+ * The temporary brand mark: outlined diamond with an accent core + wordmark
+ * (spec B), and (M5.RC.2b) the low-emphasis About entry at the row's end — a
+ * drawn ⓘ glyph in a 48 dp target named "About" for accessibility, the only
+ * way to the About screen (no persistent chrome). A glyph, not a text link:
+ * the header stays one line at 320 dp and 200 % text in every language.
+ */
 @Composable
-private fun BrandHeader() {
+private fun BrandHeader(onAbout: () -> Unit) {
     val colors = talentForgeColors()
     Row(
+        modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
     ) {
@@ -400,7 +412,42 @@ private fun BrandHeader() {
             "TalentForge",
             style = HomeBrandStyle.copy(color = colors.textPrimary),
         )
+        Spacer(Modifier.weight(1f))
+        val aboutLabel = stringResource(Res.string.home_about)
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clickable(
+                    role = Role.Button,
+                    onClickLabel = stringResource(Res.string.home_about_action),
+                    onClick = onAbout,
+                )
+                .semantics { contentDescription = aboutLabel },
+            contentAlignment = Alignment.Center,
+        ) {
+            Box(
+                Modifier
+                    .size(22.dp)
+                    .drawBehind { drawInfoGlyph(colors.textSecondary) },
+            )
+        }
     }
+}
+
+/** An ⓘ: a stroked circle with a dot and a stem, drawn so it renders identically everywhere. */
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawInfoGlyph(color: Color) {
+    val stroke = 1.6.dp.toPx()
+    val radius = size.minDimension / 2f - stroke / 2f
+    drawCircle(color = color, radius = radius, style = Stroke(width = stroke))
+    val centerX = size.width / 2f
+    drawCircle(color = color, radius = stroke * 0.8f, center = Offset(centerX, size.height * 0.31f))
+    drawLine(
+        color = color,
+        start = Offset(centerX, size.height * 0.45f),
+        end = Offset(centerX, size.height * 0.72f),
+        strokeWidth = stroke,
+        cap = androidx.compose.ui.graphics.StrokeCap.Round,
+    )
 }
 
 /** Spec B: the mark is a temporary "outlined diamond with an accent core". */

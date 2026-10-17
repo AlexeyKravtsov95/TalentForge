@@ -226,3 +226,9 @@ Claude outputs/
 .cache/
 *.part
 *.tmp
+
+# Android signing material (M5.RC.2b): the release keystore lives outside every checkout
+*.jks
+*.keystore
+*.p12
+*.pk8

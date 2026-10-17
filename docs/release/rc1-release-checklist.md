@@ -18,15 +18,16 @@ How to read this checklist:
 **Manifest and permissions**
 - [x] Only the launcher `MainActivity` is exported.
 - [x] No dangerous or user-visible permissions. Only the AndroidX signature permission `…DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`. No INTERNET, consistent with offline-first.
-- [ ] `android:allowBackup` decided explicitly and reflected in the privacy text (TF-RC1-ANDROID-CONFIG).
+- [x] `android:allowBackup` decided explicitly and reflected in the privacy text (TF-RC1-ANDROID-CONFIG). M5.RC.2b: `allowBackup="false"` + `dataExtractionRules` (Android 12+) + `fullBackupContent` (API 26–30), every domain excluded; verified in the merged release manifest ([rc2b-evidence](rc2b-evidence/README.md#backup-policy)); privacy text updated. Owner confirms the policy choice.
 - [x] **(gate)** `android:icon` set to the approved adaptive icon (TF-RC1-ICON). M5.RC.2a: `android:icon="@mipmap/ic_launcher"`; packaging and rendering checks in §4 ([rc2a-evidence](rc2a-evidence/README.md)).
 
 **Build and packaging**
 - [x] `assembleDebug`, `assembleRelease`, `bundleRelease` succeed (E1-43/44/45).
 - [x] Localization resources packaged: `values` + `values-ru` compose resources (desktop tests and EMU en-US run).
 - [ ] **(gate)** Release artifact signed with the owner's long-lived key. Keystore and passwords stay outside git (TF-RC1-SIGNING).
-- [ ] **(gate)** `apksigner verify --print-certs` passes on the exact artifact to upload.
-- [ ] `lintRelease` exits 0, or a justified baseline is committed (TF-RC1-LINT).
+  - M5.RC.2b: the mechanism is implemented and verified with a temporary test key (`assemblePublishableRelease`, [owner guide](android-release-signing.md)). Still open: the owner's key and the first verified signed APK.
+- [ ] **(gate)** `apksigner verify --print-certs` passes on the exact artifact to upload. M5.RC.2b: `scripts/verify_release_apk.py` performs this and every identity check automatically; to be run on the owner-signed APK.
+- [x] `lintRelease` exits 0, or a justified baseline is committed (TF-RC1-LINT). M5.RC.2b: **0 errors, 9 warnings**, root-cause fix, no baseline or suppression.
   - M5.RC.2a: still fails only on the pre-existing `RememberReturnType` error. `MissingApplicationIcon` is gone. The icon integration **adds 6 warnings**: `ObsoleteSdkInt` (the `mipmap-anydpi-v26` folder could be `mipmap-anydpi`) and `IconLauncherShape` ×5 (the full-bleed raster fallbacks). The owner decides whether to fix them or baseline them ([lint](rc2a-evidence/mac/lint/lint-results-release.txt)).
 - [ ] R8/minify decision. If enabled, run a full device regression (TF-RC1-ANDROID-CONFIG).
 - [ ] Optional: `localeFilters` (en, ru) and `localeConfig` (TF-RC1-ANDROID-CONFIG).
@@ -112,8 +113,8 @@ What can be verified without an account: simulator builds and tests, unsigned de
 ## 5. Signing and versioning
 
 - [ ] **(gate)** Android release keystore created **by the owner**, backed up, never committed. Use one key for the app's lifetime: a RuStore key change requires support and archives all versions.
-- [ ] Gradle `signingConfigs.release` reads from `local.properties` or environment variables. CI secrets come later, once CI works.
-- [ ] APK vs AAB decided for RuStore. For AAB, the signing key is uploaded separately during upload.
+- [x] Gradle `signingConfigs.release` reads from environment variables or `~/.gradle/gradle.properties` (not `local.properties`, which lives inside the checkout). M5.RC.2b; CI holds no production secret.
+- [ ] APK vs AAB decided for RuStore. For AAB, the signing key is uploaded separately during upload. (M5.GALLERY.1 recommends APK; owner approval pending, S-1.)
 - [ ] **(gate)** iOS: team, certificates and profiles (Apple account).
 - [ ] **(gate)** Version numbers for the first release decided and applied in a dedicated, reviewed change (Android `versionCode`/`versionName`; iOS `MARKETING_VERSION`/`CURRENT_PROJECT_VERSION`).
 
@@ -134,7 +135,7 @@ What can be verified without an account: simulator builds and tests, unsigned de
 - [ ] Privacy manifest (§2), App Privacy label ("Data Not Collected"), new age-rating questionnaire answers, privacy-policy URL. The URL requirement is an assumption to confirm.
 
 **Both stores:**
-- [ ] **(gate)** Owner/legal review LR-1…LR-5: Blizzard artwork and text, trademarks and a non-affiliation disclaimer, class-artwork provenance, OSS notices, privacy policy.
+- [ ] **(gate)** Owner/legal review LR-1…LR-5: Blizzard artwork and text, trademarks and a non-affiliation disclaimer, class-artwork provenance, OSS notices, privacy policy. M5.RC.2b ships the in-app About surface (draft disclaimer, privacy summary, Android and iOS OSS notices); none of LR-1…LR-5 is closed by it. The iOS notices leave legal points open ([ios-oss-notices §5](rc2b-evidence/ios-oss-notices.md#5-open-items-not-resolved-here-ownerlegal-review)).
 - [ ] Screenshots must show only approved branding. Do not generate marketing artwork in engineering milestones.
 
 ## 7. Manual device verification (to be executed before M5.RC.3)
@@ -212,3 +213,32 @@ Google Play is deferred (#35). 🔑 = needs the owner's Huawei Developer account
 **Observation recorded by M5.GALLERY.1:** the freshness check on 2026-10-17T15:30:54Z reported
 **OUTDATED** with `1.60.1.70450` as the latest publishable build (product `1.60.1.70374`); §3's
 TF-RC1-DATA gate is unchanged and still open.
+
+## 10. Android release hardening (M5.RC.2b)
+
+Added by M5.RC.2b ([evidence](rc2b-evidence/README.md)). Nothing here was signed with a production
+key, uploaded or published.
+
+**Done in engineering**
+- [x] Fail-closed release signing in Gradle: settings only from the environment or `~/.gradle`; partial or invalid settings, a keystore inside the checkout, the debug keystore or a committed `talentforge.release.*` key fail every release build; no debug fallback ([owner guide](android-release-signing.md)).
+- [x] `:composeApp:assemblePublishableRelease` is the only upload path: complete signing settings + expected certificate SHA-256 required; the APK is staged only when `scripts/verify_release_apk.py` passes; report with the APK SHA-256 and no secrets.
+- [x] Signing self-test with a temporary key (14/14 scenarios, incl. no stale APK after a failed publishable attempt), run in `mobile-ci`.
+- [x] TF-RC1-LINT resolved (0 errors).
+- [x] Backup off (`allowBackup="false"` + data-extraction / full-backup rules), privacy text updated.
+- [x] About / legal screen (RU/EN): version, data version, independent-project statement (draft), privacy summary, Android OSS notices + Apache-2.0 text, privacy-policy link slot (empty until approved).
+- [x] Android OSS notices generated from `releaseRuntimeClasspath` (122 modules, all Apache-2.0 by POM; no NOTICE file shipped); full-content drift check (coordinates, component mapping, licences re-read from POMs) in `mobile-ci`.
+- [x] iOS OSS notices (TF-RC2B-IOS-NOTICES) generated from `iosArm64CompileKlibraries` (80 modules) plus the code linked into Skiko (Skia, HarfBuzz, ICU, libjpeg-turbo, libpng, libwebp, Wuffs, zlib, Expat, Adobe DNG SDK, Piex) and the stdlib's third-party code; 16 verbatim licence texts; archive-level drift check in `mobile-ci` (macOS). Evidence: [ios-oss-notices](rc2b-evidence/ios-oss-notices.md).
+
+**Owner actions before M5.RC.3** (🔑 = owner only)
+- [ ] 🔑 Approve the signing strategy (S-1) and the APK format.
+- [ ] 🔑 Create the RSA 4096 release key outside every checkout; record the SHA-256 ([guide §1](android-release-signing.md#1-create-the-key-once-)).
+- [ ] 🔑 Two offline encrypted backups + recovery drill ([guide §2](android-release-signing.md#2-back-it-up-before-the-first-upload-)).
+- [ ] 🔑 Configure the four signing settings and `cert_sha256` on the release machine ([guide §3](android-release-signing.md#3-configure-the-build-)).
+- [ ] 🔑 Decide the first public `versionCode` / `versionName` (applied in a reviewed change).
+- [ ] 🔑 Build `assemblePublishableRelease` from the release commit; record the report's APK SHA-256; the same file goes to both stores.
+- [ ] Legal/owner: LR-1…LR-5 sign-off, including the in-app draft disclaimer (LR-2), the OSS-notice mechanism (LR-4) and the privacy policy text, hosting and URL (LR-5). Set `LegalLinks.privacyPolicyUrl` in a reviewed change once approved.
+- [ ] Owner: the remaining TF-RC1-ANDROID-CONFIG decisions (R8, ABI filtering, `localeConfig`, `targetSdk`).
+- [ ] Device runs of the signed APK (M5.RC.3): install/update, About screen, backup behaviour (`adb shell bmgr` / a vendor transfer on a Huawei and a TECNO device). **Not run in M5.RC.2b.**
+
+**Still blocking an iOS release:** TF-RC1-IOS-PRIVACY and TF-RC1-IOS-SCENES. **TF-RC2B-IOS-NOTICES** is resolved: the iOS About
+screen lists the framework's notices. Its legal points stay with LR-4, and the screen was checked on the iOS simulator; a physical-device check is part of the M5.RC.3 iOS runs.

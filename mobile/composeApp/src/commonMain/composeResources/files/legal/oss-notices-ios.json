@@ -1,0 +1,342 @@
+{
+  "schema": "talentforge.oss-notices.v2",
+  "platform": "ios",
+  "source": ":composeApp:iosArm64CompileKlibraries",
+  "licenses": {
+    "Apache-2.0": {
+      "name": "Apache License 2.0",
+      "file": "files/legal/LICENSE-Apache-2.0.txt"
+    },
+    "Skiko-NOTICE": {
+      "name": "Skiko NOTICE",
+      "file": "files/legal/NOTICE-Skiko.txt"
+    },
+    "Skia-BSD-3-Clause": {
+      "name": "BSD 3-Clause License (Skia)",
+      "file": "files/legal/LICENSE-Skia.txt"
+    },
+    "HarfBuzz-Old-MIT": {
+      "name": "HarfBuzz License (Old MIT)",
+      "file": "files/legal/LICENSE-HarfBuzz.txt"
+    },
+    "ICU": {
+      "name": "ICU License (Unicode License V3 and third-party notices)",
+      "file": "files/legal/LICENSE-ICU.txt"
+    },
+    "libjpeg-turbo": {
+      "name": "libjpeg-turbo Licenses (IJG, BSD 3-Clause, zlib)",
+      "file": "files/legal/LICENSE-libjpeg-turbo.md"
+    },
+    "IJG": {
+      "name": "Independent JPEG Group README (IJG License)",
+      "file": "files/legal/README-libjpeg-turbo-IJG.txt"
+    },
+    "libpng-2.0": {
+      "name": "PNG Reference Library License version 2",
+      "file": "files/legal/LICENSE-libpng.txt"
+    },
+    "libwebp-BSD-3-Clause": {
+      "name": "BSD 3-Clause License (WebM Project)",
+      "file": "files/legal/LICENSE-libwebp.txt"
+    },
+    "libwebp-PATENTS": {
+      "name": "WebM Additional IP Rights Grant (Patents)",
+      "file": "files/legal/PATENTS-libwebp.txt"
+    },
+    "Zlib": {
+      "name": "zlib License",
+      "file": "files/legal/LICENSE-zlib.txt"
+    },
+    "Chromium-BSD-3-Clause": {
+      "name": "BSD 3-Clause License (The Chromium Authors)",
+      "file": "files/legal/LICENSE-Chromium.txt"
+    },
+    "Expat-MIT": {
+      "name": "MIT License (Expat)",
+      "file": "files/legal/LICENSE-Expat.txt"
+    },
+    "DNG-SDK": {
+      "name": "Adobe DNG SDK License Agreement",
+      "file": "files/legal/LICENSE-DNG-SDK.txt"
+    },
+    "DNG-PATENTS": {
+      "name": "Adobe DNG Specification Patent License",
+      "file": "files/legal/PATENTS-DNG-SDK.txt"
+    },
+    "ThreeTen-BSD-3-Clause": {
+      "name": "BSD 3-Clause License (ThreeTen)",
+      "file": "files/legal/LICENSE-ThreeTen.txt"
+    }
+  },
+  "components": [
+    {
+      "name": "AndroidX (Android Jetpack)",
+      "url": "https://developer.android.com/jetpack/androidx",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "modules": [
+        "androidx.annotation:annotation-iosarm64:1.9.1",
+        "androidx.annotation:annotation:1.9.1",
+        "androidx.collection:collection-iosarm64:1.5.0",
+        "androidx.collection:collection:1.5.0",
+        "androidx.compose.runtime:runtime-annotation-iosarm64:1.10.5",
+        "androidx.compose.runtime:runtime-annotation:1.10.5",
+        "androidx.compose.runtime:runtime-iosarm64:1.10.5",
+        "androidx.compose.runtime:runtime-retain-iosarm64:1.10.5",
+        "androidx.compose.runtime:runtime-retain:1.10.5",
+        "androidx.compose.runtime:runtime-saveable-iosarm64:1.10.5",
+        "androidx.compose.runtime:runtime-saveable:1.10.5",
+        "androidx.compose.runtime:runtime:1.10.5",
+        "androidx.lifecycle:lifecycle-common-iosarm64:2.9.4",
+        "androidx.lifecycle:lifecycle-common:2.9.4",
+        "androidx.lifecycle:lifecycle-runtime-compose-iosarm64:2.9.4",
+        "androidx.lifecycle:lifecycle-runtime-compose:2.9.4",
+        "androidx.lifecycle:lifecycle-runtime-iosarm64:2.9.4",
+        "androidx.lifecycle:lifecycle-runtime:2.9.4",
+        "androidx.lifecycle:lifecycle-viewmodel-iosarm64:2.9.4",
+        "androidx.lifecycle:lifecycle-viewmodel-savedstate-iosarm64:2.9.4",
+        "androidx.lifecycle:lifecycle-viewmodel-savedstate:2.9.4",
+        "androidx.lifecycle:lifecycle-viewmodel:2.9.4",
+        "androidx.navigationevent:navigationevent-iosarm64:1.0.2",
+        "androidx.navigationevent:navigationevent:1.0.2",
+        "androidx.savedstate:savedstate-compose-iosarm64:1.3.3",
+        "androidx.savedstate:savedstate-compose:1.3.3",
+        "androidx.savedstate:savedstate-iosarm64:1.3.3",
+        "androidx.savedstate:savedstate:1.3.3"
+      ]
+    },
+    {
+      "name": "Compose Multiplatform",
+      "url": "https://github.com/JetBrains/compose-jb",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "modules": [
+        "org.jetbrains.androidx.lifecycle:lifecycle-common:2.9.6",
+        "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose-uikitarm64:2.9.6",
+        "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose:2.9.6",
+        "org.jetbrains.androidx.lifecycle:lifecycle-runtime:2.9.6",
+        "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-savedstate:2.9.6",
+        "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel:2.9.6",
+        "org.jetbrains.androidx.savedstate:savedstate-compose-uikitarm64:1.3.6",
+        "org.jetbrains.androidx.savedstate:savedstate-compose:1.3.6",
+        "org.jetbrains.androidx.savedstate:savedstate:1.3.6",
+        "org.jetbrains.compose.animation:animation-core-uikitarm64:1.10.3",
+        "org.jetbrains.compose.animation:animation-core:1.10.3",
+        "org.jetbrains.compose.animation:animation-uikitarm64:1.10.3",
+        "org.jetbrains.compose.animation:animation:1.10.3",
+        "org.jetbrains.compose.annotation-internal:annotation:1.10.3",
+        "org.jetbrains.compose.collection-internal:collection:1.10.3",
+        "org.jetbrains.compose.components:components-resources-iosArm64:1.10.3",
+        "org.jetbrains.compose.components:components-resources:1.10.3",
+        "org.jetbrains.compose.foundation:foundation-layout-uikitarm64:1.10.3",
+        "org.jetbrains.compose.foundation:foundation-layout:1.10.3",
+        "org.jetbrains.compose.foundation:foundation-uikitarm64:1.10.3",
+        "org.jetbrains.compose.foundation:foundation:1.10.3",
+        "org.jetbrains.compose.runtime:runtime-saveable-uikitarm64:1.10.3",
+        "org.jetbrains.compose.runtime:runtime-saveable:1.10.3",
+        "org.jetbrains.compose.runtime:runtime-uikitarm64:1.10.3",
+        "org.jetbrains.compose.runtime:runtime:1.10.3",
+        "org.jetbrains.compose.ui:ui-backhandler-uikitarm64:1.10.3",
+        "org.jetbrains.compose.ui:ui-backhandler:1.10.3",
+        "org.jetbrains.compose.ui:ui-geometry-uikitarm64:1.10.3",
+        "org.jetbrains.compose.ui:ui-geometry:1.10.3",
+        "org.jetbrains.compose.ui:ui-graphics-uikitarm64:1.10.3",
+        "org.jetbrains.compose.ui:ui-graphics:1.10.3",
+        "org.jetbrains.compose.ui:ui-text-uikitarm64:1.10.3",
+        "org.jetbrains.compose.ui:ui-text:1.10.3",
+        "org.jetbrains.compose.ui:ui-uikit-uikitarm64:1.10.3",
+        "org.jetbrains.compose.ui:ui-uikit:1.10.3",
+        "org.jetbrains.compose.ui:ui-uikitarm64:1.10.3",
+        "org.jetbrains.compose.ui:ui-unit-uikitarm64:1.10.3",
+        "org.jetbrains.compose.ui:ui-unit:1.10.3",
+        "org.jetbrains.compose.ui:ui-util-uikitarm64:1.10.3",
+        "org.jetbrains.compose.ui:ui-util:1.10.3",
+        "org.jetbrains.compose.ui:ui:1.10.3"
+      ]
+    },
+    {
+      "name": "Kotlin Standard Library",
+      "url": "https://kotlinlang.org/",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "modules": [
+        "org.jetbrains.kotlin:kotlin-stdlib:2.4.20"
+      ]
+    },
+    {
+      "name": "kotlinx.coroutines",
+      "url": "https://github.com/Kotlin/kotlinx.coroutines",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "modules": [
+        "org.jetbrains.kotlinx:kotlinx-coroutines-core-iosarm64:1.9.0",
+        "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0"
+      ]
+    },
+    {
+      "name": "kotlinx.serialization",
+      "url": "https://github.com/Kotlin/kotlinx.serialization",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "modules": [
+        "org.jetbrains.kotlinx:kotlinx-serialization-core-iosarm64:1.11.0",
+        "org.jetbrains.kotlinx:kotlinx-serialization-core:1.11.0",
+        "org.jetbrains.kotlinx:kotlinx-serialization-json-iosarm64:1.11.0",
+        "org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0"
+      ]
+    },
+    {
+      "name": "kotlinx.atomicfu",
+      "url": "https://github.com/Kotlin/kotlinx.atomicfu",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "modules": [
+        "org.jetbrains.kotlinx:atomicfu-iosarm64:0.27.0",
+        "org.jetbrains.kotlinx:atomicfu:0.27.0"
+      ]
+    },
+    {
+      "name": "Skiko",
+      "url": "https://www.github.com/JetBrains/skiko",
+      "licenses": [
+        "Apache-2.0",
+        "Skiko-NOTICE"
+      ],
+      "modules": [
+        "org.jetbrains.skiko:skiko-iosarm64:0.9.37.4",
+        "org.jetbrains.skiko:skiko:0.9.37.4"
+      ]
+    },
+    {
+      "name": "Kotlin Standard Library: third-party code (ThreeTen, GWT, Guava)",
+      "url": "https://github.com/JetBrains/kotlin/blob/v2.4.20/license/README.md",
+      "licenses": [
+        "ThreeTen-BSD-3-Clause",
+        "Apache-2.0"
+      ],
+      "version": "2.4.20",
+      "linkedInto": "org.jetbrains.kotlin:kotlin-stdlib:2.4.20",
+      "attribution": null
+    },
+    {
+      "name": "Skia",
+      "url": "https://skia.org/",
+      "licenses": [
+        "Skia-BSD-3-Clause"
+      ],
+      "version": "m138 (JetBrains/skia 80d088a)",
+      "linkedInto": "org.jetbrains.skiko:skiko-iosarm64:0.9.37.4",
+      "attribution": null
+    },
+    {
+      "name": "HarfBuzz",
+      "url": "https://harfbuzz.github.io/",
+      "licenses": [
+        "HarfBuzz-Old-MIT"
+      ],
+      "version": "11.2.1",
+      "linkedInto": "org.jetbrains.skiko:skiko-iosarm64:0.9.37.4",
+      "attribution": null
+    },
+    {
+      "name": "ICU (International Components for Unicode)",
+      "url": "https://icu.unicode.org/",
+      "licenses": [
+        "ICU"
+      ],
+      "version": "74.2",
+      "linkedInto": "org.jetbrains.skiko:skiko-iosarm64:0.9.37.4",
+      "attribution": null
+    },
+    {
+      "name": "libjpeg-turbo",
+      "url": "https://libjpeg-turbo.org/",
+      "licenses": [
+        "libjpeg-turbo",
+        "IJG"
+      ],
+      "version": "3.1.0",
+      "linkedInto": "org.jetbrains.skiko:skiko-iosarm64:0.9.37.4",
+      "attribution": "This software is based in part on the work of the Independent JPEG Group."
+    },
+    {
+      "name": "libpng",
+      "url": "http://www.libpng.org/pub/png/libpng.html",
+      "licenses": [
+        "libpng-2.0"
+      ],
+      "version": "1.6.43",
+      "linkedInto": "org.jetbrains.skiko:skiko-iosarm64:0.9.37.4",
+      "attribution": null
+    },
+    {
+      "name": "libwebp",
+      "url": "https://developers.google.com/speed/webp",
+      "licenses": [
+        "libwebp-BSD-3-Clause",
+        "libwebp-PATENTS"
+      ],
+      "version": "1.4.0",
+      "linkedInto": "org.jetbrains.skiko:skiko-iosarm64:0.9.37.4",
+      "attribution": null
+    },
+    {
+      "name": "Wuffs",
+      "url": "https://github.com/google/wuffs",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "version": "0.3",
+      "linkedInto": "org.jetbrains.skiko:skiko-iosarm64:0.9.37.4",
+      "attribution": null
+    },
+    {
+      "name": "zlib (Chromium)",
+      "url": "https://chromium.googlesource.com/chromium/src/third_party/zlib",
+      "licenses": [
+        "Zlib",
+        "Chromium-BSD-3-Clause"
+      ],
+      "version": "1.3.0.1",
+      "linkedInto": "org.jetbrains.skiko:skiko-iosarm64:0.9.37.4",
+      "attribution": null
+    },
+    {
+      "name": "Expat",
+      "url": "https://libexpat.github.io/",
+      "licenses": [
+        "Expat-MIT"
+      ],
+      "version": "2.7.1",
+      "linkedInto": "org.jetbrains.skiko:skiko-iosarm64:0.9.37.4",
+      "attribution": null
+    },
+    {
+      "name": "Adobe DNG SDK",
+      "url": "https://helpx.adobe.com/camera-raw/digital-negative.html",
+      "licenses": [
+        "DNG-SDK",
+        "DNG-PATENTS"
+      ],
+      "version": "1.4",
+      "linkedInto": "org.jetbrains.skiko:skiko-iosarm64:0.9.37.4",
+      "attribution": "This product includes DNG technology under license by Adobe Systems Incorporated."
+    },
+    {
+      "name": "Piex",
+      "url": "https://github.com/google/piex",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "version": "bb217ac",
+      "linkedInto": "org.jetbrains.skiko:skiko-iosarm64:0.9.37.4",
+      "attribution": null
+    }
+  ]
+}

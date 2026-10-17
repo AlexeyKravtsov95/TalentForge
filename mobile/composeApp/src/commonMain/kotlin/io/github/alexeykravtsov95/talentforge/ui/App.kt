@@ -14,6 +14,11 @@ import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryStorage
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildIdGenerator
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.data.builds.RandomLocalBuildIdGenerator
+import io.github.alexeykravtsov95.talentforge.ui.about.AboutScreen
+import io.github.alexeykravtsov95.talentforge.ui.about.AppVersion
+import io.github.alexeykravtsov95.talentforge.ui.about.LegalLinks
+import io.github.alexeykravtsov95.talentforge.ui.about.platformBackupStatement
+import io.github.alexeykravtsov95.talentforge.ui.about.platformOpenSourceNoticesPath
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentDescriptionsLoader
 import io.github.alexeykravtsov95.talentforge.ui.assets.TalentLocalizationLoader
@@ -41,7 +46,8 @@ import kotlinx.coroutines.launch
  * - Home → Builds → tree (push): Back → Builds;
  * - Home or Builds → Import build (push, M5.SHARE.2): Back → where it was
  *   opened; a confirmed import REPLACES the import screen with the new
- *   record's editor, so Back from it returns to Home or Builds likewise.
+ *   record's editor, so Back from it returns to Home or Builds likewise;
+ * - Home → About (push, M5.RC.2b): Back → Home.
  *
  * The editor opens by opaque local build id — never by passing mutable UI
  * state between screens. Navigation state is not the persistence model: the
@@ -58,6 +64,8 @@ sealed interface AppDestination {
 
     data object ImportBuild : AppDestination
 
+    data object About : AppDestination
+
     data class Editor(
         val localId: String,
         val openedFrom: EditorOrigin,
@@ -68,7 +76,7 @@ enum class EditorOrigin { CreatedNew, FromHome, FromAllBuilds, Imported }
 
 /**
  * Save/restore of the back stack as plain strings (`home`, `new-build`,
- * `all-builds`, `import-build`, `editor␟localId␟origin`). A decoded stack must be non-empty
+ * `all-builds`, `import-build`, `about`, `editor␟localId␟origin`). A decoded stack must be non-empty
  * and rooted at Home — anything else (blank, malformed entries, a stack that
  * does not start with Home) fails closed to the initial Home-only stack:
  * navigation state is not user data, and a corrupt bundle must never restore
@@ -86,6 +94,7 @@ internal fun encodeDestination(destination: AppDestination): String = when (dest
     AppDestination.NewBuild -> "new-build"
     AppDestination.AllBuilds -> "all-builds"
     AppDestination.ImportBuild -> "import-build"
+    AppDestination.About -> "about"
     is AppDestination.Editor ->
         "editor$DESTINATION_SEPARATOR${destination.localId}$DESTINATION_SEPARATOR${destination.openedFrom.name}"
 }
@@ -100,6 +109,7 @@ internal fun decodeDestinations(values: List<String>): List<AppDestination>? {
             "new-build" -> AppDestination.NewBuild
             "all-builds" -> AppDestination.AllBuilds
             "import-build" -> AppDestination.ImportBuild
+            "about" -> AppDestination.About
             else -> {
                 val parts = value.split(DESTINATION_SEPARATOR)
                 val localId = parts.getOrNull(1)
@@ -121,7 +131,8 @@ internal fun decodeDestinations(values: List<String>): List<AppDestination>? {
  * App entry shared by the Android, iOS and desktop hosts.
  *
  * Since M5.1 the app is a local multi-build application: the host injects its
- * platform [storage] (and, in tests, a fixed clock/id generator); Home is the
+ * platform [storage] and its installed [appVersion] (About; `null` when the
+ * host cannot report one) (and, in tests, a fixed clock/id generator); Home is the
  * production root and a small explicit back stack — no navigation framework
  * for four local screens — routes Home, New Build, All Builds and the
  * dataset-bound editor. The stack is `rememberSaveable`, so a configuration
@@ -139,6 +150,7 @@ fun App(
     clock: BuildClock = platformBuildClock(),
     ids: LocalBuildIdGenerator = RandomLocalBuildIdGenerator(clock),
     sharing: BuildCodeSharing = rememberPlatformBuildCodeSharing(),
+    appVersion: AppVersion? = null,
 ) {
     val environment = remember(storage, clock, ids) {
         val bundledAssets = ComposeResourceDatasetAssetSource()
@@ -206,8 +218,17 @@ fun App(
                 onAllBuilds = { destinations = destinations + AppDestination.AllBuilds },
                 onNewBuild = { destinations = destinations + AppDestination.NewBuild },
                 onImportBuild = { destinations = destinations + AppDestination.ImportBuild },
+                onAbout = { destinations = destinations + AppDestination.About },
                 autosave = autosave,
                 sharing = sharing,
+            )
+
+            AppDestination.About -> AboutScreen(
+                appVersion = appVersion,
+                noticesPath = platformOpenSourceNoticesPath,
+                backupStatement = platformBackupStatement,
+                privacyPolicyUrl = LegalLinks.privacyPolicyUrl,
+                onBack = ::navigateUp,
             )
 
             AppDestination.NewBuild -> NewBuildScreen(

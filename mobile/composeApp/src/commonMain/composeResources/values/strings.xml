@@ -296,4 +296,39 @@
     <string name="import_error_storage">Couldn't save the build on this device. Try again.</string>
     <string name="import_error_paste_empty">The clipboard has no text to paste</string>
     <string name="import_error_paste_failed">Couldn't read the clipboard. Paste into the field instead.</string>
+
+    <!-- About / legal (M5.RC.2b). Disclaimer and privacy summary: drafts from
+         docs/release/appgallery/privacy-and-compliance.md §7.3 / §8, pending owner and
+         legal review (LR-2, LR-5). -->
+    <string name="home_about">About</string>
+    <string name="home_about_action">open About TalentForge</string>
+    <string name="about_title">About</string>
+    <string name="about_version">Version %1$s (%2$s)</string>
+    <string name="about_section_project">INDEPENDENT PROJECT</string>
+    <string name="about_disclaimer">TalentForge is an independent, unofficial project. It is not affiliated with, endorsed by or sponsored by the game's developer or publisher.</string>
+    <string name="about_section_privacy">PRIVACY</string>
+    <string name="about_privacy_offline">TalentForge works offline, without an account, ads or analytics. The developer does not collect, receive or share your personal data.</string>
+    <string name="about_privacy_storage">Your builds — class, talents, game-data version, the name you typed and when they were created, changed and opened — are stored only in the app's private storage on this device.</string>
+    <string name="about_privacy_backup_android">The app turns off Android backup and transfer of its data to a new device, so Android does not copy your builds into device or cloud backups. Some manufacturers' own transfer tools may work differently; to move builds to another device, share them as codes.</string>
+    <string name="about_privacy_backup_ios">If your device's backup (iCloud or a computer) is on, it can include the app's data. That backup is kept under its provider's terms; the developer has no access to it.</string>
+    <string name="about_privacy_sharing">The app writes to the clipboard only when you tap Copy code, reads it only when you tap Paste, and hands a build code to the system share menu only when you tap Share. A code contains no build name and nothing about you.</string>
+    <string name="about_privacy_permissions">The app works without the internet and does not ask for access to your location, contacts, camera, microphone, files or notifications.</string>
+    <string name="about_privacy_delete">Delete a build in the app, or uninstall the app or clear its storage, to remove saved builds from this device.</string>
+    <string name="about_privacy_policy_link">Privacy policy</string>
+    <string name="about_privacy_policy_action">open the privacy policy in the browser</string>
+    <string name="about_section_licenses">OPEN-SOURCE LICENSES</string>
+    <string name="about_licenses_intro">TalentForge is built with these open-source components, used under their licenses.</string>
+    <plurals name="about_licenses_module_count">
+        <item quantity="one">%1$d module</item>
+        <item quantity="other">%1$d modules</item>
+    </plurals>
+    <string name="about_licenses_version">Version %1$s</string>
+    <string name="about_licenses_linked_into">Statically linked into %1$s</string>
+    <string name="about_licenses_show_modules">Show modules</string>
+    <string name="about_licenses_hide_modules">Hide modules</string>
+    <string name="about_license_show_text">Show license text</string>
+    <string name="about_license_hide_text">Hide license text</string>
+    <string name="about_licenses_loading">Loading the notices…</string>
+    <string name="about_licenses_failed">Couldn't load the open-source notices</string>
+    <string name="about_licenses_unavailable">Open-source notices are not included in this build.</string>
 </resources>

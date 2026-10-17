@@ -1,0 +1,14 @@
+# aapt2 dump xmltree AndroidManifest.xml — composeApp-release-unsigned.apk @ a020e1b (application element attributes)
+      E: application (line=26)
+        A: http://schemas.android.com/apk/res/android:theme(0x01010000)=@0x7f0a0007
+        A: http://schemas.android.com/apk/res/android:label(0x01010001)="TalentForge" (Raw: "TalentForge")
+        A: http://schemas.android.com/apk/res/android:icon(0x01010002)=@0x7f080000
+        A: http://schemas.android.com/apk/res/android:allowBackup(0x01010280)=false
+        A: http://schemas.android.com/apk/res/android:extractNativeLibs(0x010104ea)=false
+        A: http://schemas.android.com/apk/res/android:fullBackupContent(0x010104eb)=@0x7f0c0000
+        A: http://schemas.android.com/apk/res/android:appComponentFactory(0x0101057a)="androidx.core.app.CoreComponentFactory" (Raw: "androidx.core.app.CoreComponentFactory")
+        A: http://schemas.android.com/apk/res/android:dataExtractionRules(0x0101063e)=@0x7f0c0001
+
+# packaged backup rule files
+    resource 0x7f0c0000 xml/backup_rules
+    resource 0x7f0c0001 xml/data_extraction_rules
