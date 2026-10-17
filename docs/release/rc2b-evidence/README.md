@@ -119,4 +119,5 @@ following `<parent>`; Google Maven / Maven Central were used where Gradle had ca
   requires no NOTICE text. The APK already carried four AndroidX copies of the Apache licence. The
   official `LICENSE-2.0.txt` (SHA-256 `cfc7749b…3d30`) is now bundled and shown in-app.
 - **iOS:** the framework also links `org.jetbrains.skiko` (Skia and third-party code). Those
-  notices are **not** compiled (TF-RC2B-IOS-NOTICES).
+  notices were **not** compiled in this run (TF-RC2B-IOS-NOTICES). They were resolved afterwards:
+  see [ios-oss-notices.md](ios-oss-notices.md).

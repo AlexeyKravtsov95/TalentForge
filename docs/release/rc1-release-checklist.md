@@ -135,7 +135,7 @@ What can be verified without an account: simulator builds and tests, unsigned de
 - [ ] Privacy manifest (§2), App Privacy label ("Data Not Collected"), new age-rating questionnaire answers, privacy-policy URL. The URL requirement is an assumption to confirm.
 
 **Both stores:**
-- [ ] **(gate)** Owner/legal review LR-1…LR-5: Blizzard artwork and text, trademarks and a non-affiliation disclaimer, class-artwork provenance, OSS notices, privacy policy. M5.RC.2b ships the in-app About surface (draft disclaimer, privacy summary, Android OSS notices); none of LR-1…LR-5 is closed by it.
+- [ ] **(gate)** Owner/legal review LR-1…LR-5: Blizzard artwork and text, trademarks and a non-affiliation disclaimer, class-artwork provenance, OSS notices, privacy policy. M5.RC.2b ships the in-app About surface (draft disclaimer, privacy summary, Android and iOS OSS notices); none of LR-1…LR-5 is closed by it. The iOS notices leave legal points open ([ios-oss-notices §5](rc2b-evidence/ios-oss-notices.md#5-open-items-not-resolved-here-ownerlegal-review)).
 - [ ] Screenshots must show only approved branding. Do not generate marketing artwork in engineering milestones.
 
 ## 7. Manual device verification (to be executed before M5.RC.3)
@@ -227,6 +227,7 @@ key, uploaded or published.
 - [x] Backup off (`allowBackup="false"` + data-extraction / full-backup rules), privacy text updated.
 - [x] About / legal screen (RU/EN): version, data version, independent-project statement (draft), privacy summary, Android OSS notices + Apache-2.0 text, privacy-policy link slot (empty until approved).
 - [x] Android OSS notices generated from `releaseRuntimeClasspath` (122 modules, all Apache-2.0 by POM; no NOTICE file shipped); drift check in `mobile-ci`.
+- [x] iOS OSS notices (TF-RC2B-IOS-NOTICES) generated from `iosArm64CompileKlibraries` (80 modules) plus the code linked into Skiko (Skia, HarfBuzz, ICU, libjpeg-turbo, libpng, libwebp, Wuffs, zlib, Expat, Adobe DNG SDK, Piex) and the stdlib's third-party code; 16 verbatim licence texts; archive-level drift check in `mobile-ci` (macOS). Evidence: [ios-oss-notices](rc2b-evidence/ios-oss-notices.md).
 
 **Owner actions before M5.RC.3** (🔑 = owner only)
 - [ ] 🔑 Approve the signing strategy (S-1) and the APK format.
@@ -239,5 +240,5 @@ key, uploaded or published.
 - [ ] Owner: the remaining TF-RC1-ANDROID-CONFIG decisions (R8, ABI filtering, `localeConfig`, `targetSdk`).
 - [ ] Device runs of the signed APK (M5.RC.3): install/update, About screen, backup behaviour (`adb shell bmgr` / a vendor transfer on a Huawei and a TECNO device). **Not run in M5.RC.2b.**
 
-**Still blocking an iOS release** (unchanged plus one new item): TF-RC1-IOS-PRIVACY, TF-RC1-IOS-SCENES, and
-**TF-RC2B-IOS-NOTICES** (iOS open-source notices not compiled; the iOS About screen states that none are included).
+**Still blocking an iOS release:** TF-RC1-IOS-PRIVACY and TF-RC1-IOS-SCENES. **TF-RC2B-IOS-NOTICES** is resolved: the iOS About
+screen lists the framework's notices. Its legal points stay with LR-4, and the screen was checked on the iOS simulator; a physical-device check is part of the M5.RC.3 iOS runs.

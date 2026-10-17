@@ -21,8 +21,9 @@ The [test matrix](rc1-test-matrix.md) lists the scenarios that could not be run 
 
 **M5.RC.2b status (2026-10-18).** TF-RC1-LINT is **RESOLVED**. TF-RC1-SIGNING is **implemented** and
 stays OPEN until the owner's key signs a verified APK. TF-RC1-ANDROID-CONFIG is partly resolved
-(backup off; the other items stay open). M5.RC.2b adds **TF-RC2B-IOS-NOTICES** (iOS only, below).
-Evidence: [rc2b-evidence](rc2b-evidence/README.md).
+(backup off; the other items stay open). M5.RC.2b adds **TF-RC2B-IOS-NOTICES** (iOS only, below),
+now **RESOLVED**: the iOS About screen lists the framework's notices.
+Evidence: [rc2b-evidence](rc2b-evidence/README.md), [ios-oss-notices](rc2b-evidence/ios-oss-notices.md).
 
 No P0 was found. The audit found no evidence of saved-build corruption or silent loss.
 The device-level checks behind that statement ran on an Android emulator only (see the matrix); the physical-device run is UNVERIFIED.
@@ -286,18 +287,38 @@ These are owner decisions. None of them blocks RuStore by itself.
 - Vendor migration tools that bypass the Android backup framework are outside the app's control (UNVERIFIED on Huawei, H-12).
 - **Still open (owner decisions, not changed here):** R8/minify, ABI filtering (all four ABIs ship), `localeFilters`/`localeConfig`, `targetSdk` (`OldTargetApi`), first public `versionCode`/`versionName`.
 
-### TF-RC2B-IOS-NOTICES — iOS open-source notices not compiled (added in M5.RC.2b)
+### TF-RC2B-IOS-NOTICES — iOS open-source notices not compiled (added in M5.RC.2b) — **RESOLVED**
 
 - **Severity:** **P1 for an iOS App Store release**; not applicable to the Android (RuStore/AppGallery) release.
-- **Evidence:**
+- **Evidence (original):**
   - The iOS framework links `org.jetbrains.skiko` (`iosArm64CompileKlibraries`). Skiko statically links the Skia graphics library and Skia's third-party code.
   - Their licences (BSD-3-Clause for Skia, plus others) require their notices in the distribution. No notice text ships in the skiko klibs.
   - The Android notices generated in M5.RC.2b do not cover them.
-- **Current behaviour:** the iOS About screen states that no open-source notices are included in the build. It never shows the Android list as if it were complete.
 - **Resolution:**
-  - Compile the iOS notice set: the resolved iOS dependencies, plus Skia and the third-party components linked into Skiko for iOS, with their licence texts.
-  - Add `oss-notices-ios.json`, and point `platformOpenSourceNoticesPath` (iosMain) at it.
-- **Verification:** an iOS About screen listing every component, and a drift check against the iOS klib set.
+  - `scripts/generate_oss_notices.py` now also generates `files/legal/oss-notices-ios.json` (schema `talentforge.oss-notices.v2`, shared with Android). It contains:
+    - the 80 external modules of `:composeApp:iosArm64CompileKlibraries` (POM licences verified);
+    - 12 *linked* components (third-party code that is not a Gradle module):
+      - Skia, HarfBuzz, ICU, libjpeg-turbo, libpng, libwebp, Wuffs, zlib (Chromium), Expat, Adobe DNG SDK and Piex, inside `skiko-iosarm64:0.9.37.4`;
+      - the Kotlin standard library's third-party code (ThreeTen, GWT, Guava).
+  - 16 licence and notice texts are bundled verbatim from pinned upstream revisions and SHA-256-pinned. The IJG and Adobe DNG attribution statements appear verbatim.
+  - The iosMain `platformOpenSourceNoticesPath` points at the file.
+  - Full evidence (archive inventory, symbol and version strings, Skia DEPS pins, licence provenance): [rc2b-evidence/ios-oss-notices.md](rc2b-evidence/ios-oss-notices.md).
+- **Drift check (fail-closed):** `generate_oss_notices.py --check --platform ios` runs in `mobile-ci` (macOS job). It fails when any of these changes:
+  - the klib module set;
+  - any static archive or object-file family inside a klib that the curated inventory of that exact module version does not claim (a new skiko version therefore fails until it is established);
+  - any licence text's hash.
+- **Verification:**
+  - Desktop UI test renders the iOS notices: linked components, attributions, 16 licence toggles.
+  - Strict-parser tests, offline generator tests, `linkReleaseFrameworkIosArm64`.
+  - The iOS simulator build shows the list and licence texts on the About screen ([evidence §4](rc2b-evidence/ios-oss-notices.md#4-on-the-ios-simulator)).
+  - A physical-device look remains part of the M5.RC.3 iOS runs.
+- **Open items for legal (LR-4), not defects of the notice list:**
+  - the OFL reference in Skia's embedded SpiderSymbol probe font;
+  - Adobe DNG SDK §5 indemnification;
+  - whether the K/N runtime's `mpmc_queue` code ships;
+  - the Android notices lack the ThreeTen text for kotlin-stdlib's `kotlin.time`.
+
+  See [§5 of the evidence](rc2b-evidence/ios-oss-notices.md#5-open-items-not-resolved-here-ownerlegal-review).
 
 ### TF-RC1-CI — GitHub Actions is infrastructure-blocked
 
@@ -326,5 +347,5 @@ These are owner decisions. None of them blocks RuStore by itself.
 | LR-1 | Talent icons are extracted from the Blizzard game client (BLP, `docs/talent-visuals.md`), and talent names and descriptions are Blizzard game text. Their redistribution in a store app is **not** established as permitted. | Potential legal risk — owner/legal review |
 | LR-2 | "World of Warcraft", "Forever" and class names are Blizzard trademarks. The app and listing have no non-affiliation disclaimer, and no about/legal surface exists in the app. **M5.RC.2b:** the About screen shows the trademark-free draft statement (RU/EN); still not legally reviewed. | Potential legal risk — needs disclaimer decision (OPEN) |
 | LR-3 | The provenance and license of the 9 class artwork masters (`composeResources/drawable/class_*.png`) are not recorded in the repo. | Owner review |
-| LR-4 | No open-source notices or attribution surface (Kotlin, Compose Multiplatform, AndroidX, kotlinx are Apache-2.0). No `LICENSE` in the repo. **M5.RC.2b:** Android in-app notices (generated, 122 modules, Apache-2.0 text); iOS not compiled (TF-RC2B-IOS-NOTICES). | Potential compliance gap — owner/legal sign-off (OPEN) |
+| LR-4 | No open-source notices or attribution surface (Kotlin, Compose Multiplatform, AndroidX, kotlinx are Apache-2.0). No `LICENSE` in the repo. **M5.RC.2b:** Android in-app notices (generated, 122 modules, Apache-2.0 text). iOS in-app notices (generated: 80 modules plus Skia and 11 other linked components, 16 verbatim licence texts; TF-RC2B-IOS-NOTICES resolved). Open legal points: [ios-oss-notices §5](rc2b-evidence/ios-oss-notices.md#5-open-items-not-resolved-here-ownerlegal-review). | Potential compliance gap — owner/legal sign-off (OPEN) |
 | LR-5 | Privacy: no network, no account, data stays on the device (plus Android auto-backup, TF-RC1-ANDROID-CONFIG). Store forms still need answers: RuStore "Data Safety", Apple privacy nutrition label, and a privacy-policy URL. Apple's requirement for a URL is an assumption not re-verified in this audit. **M5.RC.2b:** Android backup off; in-app privacy summary; policy link slot empty until a URL is approved. | Owner action (OPEN) |
