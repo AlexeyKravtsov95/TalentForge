@@ -37,6 +37,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -388,8 +390,10 @@ private fun NewUserContent(emptyCopyTopGap: Dp) {
 
 /**
  * The temporary brand mark: outlined diamond with an accent core + wordmark
- * (spec B), and (M5.RC.2b) the low-emphasis `About` link at the row's end — a
- * 48 dp text target, the only way to the About screen (no persistent chrome).
+ * (spec B), and (M5.RC.2b) the low-emphasis About entry at the row's end — a
+ * drawn ⓘ glyph in a 48 dp target named "About" for accessibility, the only
+ * way to the About screen (no persistent chrome). A glyph, not a text link:
+ * the header stays one line at 320 dp and 200 % text in every language.
  */
 @Composable
 private fun BrandHeader(onAbout: () -> Unit) {
@@ -409,19 +413,41 @@ private fun BrandHeader(onAbout: () -> Unit) {
             style = HomeBrandStyle.copy(color = colors.textPrimary),
         )
         Spacer(Modifier.weight(1f))
-        BasicText(
-            text = stringResource(Res.string.home_about),
-            style = HomeLinkStyle.copy(color = colors.textSecondary),
+        val aboutLabel = stringResource(Res.string.home_about)
+        Box(
             modifier = Modifier
-                .heightIn(min = 48.dp)
+                .size(48.dp)
                 .clickable(
                     role = Role.Button,
                     onClickLabel = stringResource(Res.string.home_about_action),
                     onClick = onAbout,
                 )
-                .padding(horizontal = TalentForgeSpacing.inline, vertical = 16.dp),
-        )
+                .semantics { contentDescription = aboutLabel },
+            contentAlignment = Alignment.Center,
+        ) {
+            Box(
+                Modifier
+                    .size(22.dp)
+                    .drawBehind { drawInfoGlyph(colors.textSecondary) },
+            )
+        }
     }
+}
+
+/** An ⓘ: a stroked circle with a dot and a stem, drawn so it renders identically everywhere. */
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawInfoGlyph(color: Color) {
+    val stroke = 1.6.dp.toPx()
+    val radius = size.minDimension / 2f - stroke / 2f
+    drawCircle(color = color, radius = radius, style = Stroke(width = stroke))
+    val centerX = size.width / 2f
+    drawCircle(color = color, radius = stroke * 0.8f, center = Offset(centerX, size.height * 0.31f))
+    drawLine(
+        color = color,
+        start = Offset(centerX, size.height * 0.45f),
+        end = Offset(centerX, size.height * 0.72f),
+        strokeWidth = stroke,
+        cap = androidx.compose.ui.graphics.StrokeCap.Round,
+    )
 }
 
 /** Spec B: the mark is a temporary "outlined diamond with an accent core". */

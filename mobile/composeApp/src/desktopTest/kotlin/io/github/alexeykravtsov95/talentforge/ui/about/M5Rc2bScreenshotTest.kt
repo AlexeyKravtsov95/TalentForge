@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onRoot
@@ -117,7 +118,9 @@ class M5Rc2bScreenshotTest {
             val ru = language == AppLanguage.RUSSIAN
             val tag = if (ru) "ru" else "en"
             onScreen(language, content = { App(storage = FakeBuildLibraryStorage(), clock = FixedClock(), ids = SequentialIds()) }) {
-                awaitText(if (ru) "О приложении" else "About")
+                waitUntil(timeoutMillis = 20_000) {
+                    onAllNodesWithContentDescription(if (ru) "О приложении" else "About").fetchSemanticsNodes().isNotEmpty()
+                }
                 shoot("$tag-01-home-about-link.png")
             }
             onScreen(language, content = about) {

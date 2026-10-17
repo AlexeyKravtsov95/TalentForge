@@ -253,10 +253,27 @@ class AboutScreenUiTest {
     // ------------------------------------------------------------- through App
 
     @Test
+    fun theRussianHomeEntryIsNamedAndOpensAbout() = onScreen(
+        language = AppLanguage.RUSSIAN,
+        widthDp = 320,
+        heightDp = 568,
+        fontScale = 2f,
+        content = { App(storage = FakeBuildLibraryStorage(), clock = FixedClock(), ids = SequentialIds()) },
+    ) {
+        awaitText("Новый билд")
+        onAllNodes(clickLabelled("открыть сведения о TalentForge")).onFirst().performClick()
+        awaitText("О приложении")
+        awaitText("НЕЗАВИСИМЫЙ ПРОЕКТ")
+    }
+
+    @Test
     fun homeOpensAboutAndBackReturnsHome() = onScreen(
         content = { App(storage = FakeBuildLibraryStorage(), clock = FixedClock(), ids = SequentialIds(), appVersion = version) },
     ) {
         awaitText("New build")
+        // the Home entry: a 48 dp glyph named "About", one line with the wordmark
+        val entry = onAllNodesWithContentDescription("About").fetchSemanticsNodes().single()
+        assertTrue(entry.size.width >= 48 && entry.size.height >= 48, "About entry ${entry.size} < 48 dp")
         onAllNodes(clickLabelled("open About TalentForge")).onFirst().performClick()
         awaitText("Version 0.1.0 (1)")
         onAllNodesWithContentDescription("go back").onFirst().performClick()
