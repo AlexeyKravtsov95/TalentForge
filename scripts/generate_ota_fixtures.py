@@ -42,7 +42,13 @@ from talent_data.ota.models import (
     FileRole,
     OtaReleaseManifest,
     ReleaseFile,
-    ReleaseProvenance,
+)
+from talent_data.ota.release import (
+    build_manifest,
+    release_files,
+)
+from talent_data.ota.release import (
+    serialize_manifest as manifest_bytes,
 )
 from talent_data.ota.verify import pae, sha256_ref
 
@@ -141,22 +147,13 @@ def envelope(
 
 
 # --------------------------------------------------------------------------- releases
-
-
-def _role(path: str) -> FileRole:
-    head, rest = path.split("/", 1)
-    name = rest.split("/", 2)[2]
-    if head == "dataset":
-        return FileRole.DATASET_MANIFEST if name == "manifest.json" else FileRole.TALENT_DATA
-    if head == "visuals":
-        if name == "icons.json":
-            return FileRole.ICON_REGISTRY
-        return FileRole.ICON_IMAGE if name.startswith("icons/") else FileRole.VISUALS
-    return FileRole.TOOLTIPS if head == "tooltips" else FileRole.LOCALIZATION
+# The release layout (roles, file ordering, manifest bytes) lives in the package
+# (talent_data.ota.release) so the publisher and the fixtures cannot drift; this script
+# keeps only the fixture-specific inputs (working-tree snapshot, fixed stamps, keys).
 
 
 def snapshot(build: str) -> dict[str, bytes]:
-    """Release path -> bytes of every committed file of ``build``."""
+    """Release path -> bytes of every committed file of ``build`` (working tree)."""
     files: dict[str, bytes] = {}
     for head, base in ROOT_DIRS.items():
         build_dir = base / GAME / build
@@ -166,46 +163,19 @@ def snapshot(build: str) -> dict[str, bytes]:
     return files
 
 
-def release_files(contents: dict[str, bytes]) -> list[ReleaseFile]:
-    return [
-        ReleaseFile(path=p, role=_role(p), sha256=sha256_ref(d), byte_length=len(d))
-        for p, d in sorted(contents.items(), key=lambda item: item[0].encode("utf-8"))
-    ]
-
-
 def release_manifest(
     build: str, revision: int, files: list[ReleaseFile], *, min_level: int = 1
 ) -> OtaReleaseManifest:
-    return OtaReleaseManifest(
-        schema_version=1,
+    return build_manifest(
         game=GAME,
         client_build=build,
-        release_id=f"{build}-r{revision}",
+        revision=revision,
         min_data_level=min_level,
         created_at=ISSUED - timedelta(hours=1),
-        provenance=ReleaseProvenance(repository_commit=COMMIT, validation=VALIDATION_NOTE),
+        repository_commit=COMMIT,
+        validation_note=VALIDATION_NOTE,
         files=files,
-        total_byte_length=sum(f.byte_length for f in files),
     )
-
-
-def manifest_bytes(manifest: OtaReleaseManifest | dict[str, Any]) -> bytes:
-    """Indented JSON with one line per file entry. Any byte form is valid on the wire (the
-    catalog pins the bytes, nothing is canonicalized); this one keeps diffs readable."""
-    doc = (
-        manifest.model_dump(mode="json", by_alias=True)
-        if isinstance(manifest, OtaReleaseManifest)
-        else manifest
-    )
-    members = []
-    for key, value in doc.items():
-        if key == "files" and isinstance(value, list) and value:
-            rows = ",\n".join(f"    {json.dumps(f, ensure_ascii=False)}" for f in value)
-            members.append(f'  "files": [\n{rows}\n  ]')
-        else:
-            text = json.dumps(value, indent=2, ensure_ascii=False).replace("\n", "\n  ")
-            members.append(f"  {json.dumps(key)}: {text}")
-    return ("{\n" + ",\n".join(members) + "\n}\n").encode("utf-8")
 
 
 def entry_for(
