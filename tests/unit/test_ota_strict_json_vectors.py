@@ -37,7 +37,7 @@ EDGE_CASES: list[tuple[str, bytes]] = [
     ("top-level string", b'"x"'),
     ("top-level number", b"-12.5e+3"),
     ("top-level literals", b"[true,false,null]"),
-    ("surrounding whitespace", b" \r\n\t{ \"a\" : 1 } \n"),
+    ("surrounding whitespace", b' \r\n\t{ "a" : 1 } \n'),
     ("duplicate top level, different values", b'{"a":1,"a":2}'),
     ("duplicate top level, equal values", b'{"a":1,"a":1}'),
     ("duplicate in reverse order", b'{"b":1,"a":2,"b":3}'),
@@ -48,7 +48,10 @@ EDGE_CASES: list[tuple[str, bytes]] = [
     ("duplicate after unicode escape", b'{"activeReleaseId":1,"activeRelease\\u0049d":2}'),
     ("duplicate after escaped solidus", b'{"a/b":1,"a\\/b":2}'),
     ("duplicate after short escapes", b'{"a\\nb":1,"a\\u000ab":2}'),
-    ("duplicate raw vs escaped non-ASCII", '{"\N{LATIN SMALL LETTER E WITH ACUTE}":1,"\\u00e9":2}'.encode()),
+    (
+        "duplicate raw vs escaped non-ASCII",
+        '{"\N{LATIN SMALL LETTER E WITH ACUTE}":1,"\\u00e9":2}'.encode(),
+    ),
     ("duplicate raw emoji vs surrogate pair", '{"\U0001f600":1,"\\ud83d\\ude00":2}'.encode()),
     ("duplicate surrogate pair, mixed case hex", b'{"\\ud83d\\ude00":1,"\\uD83D\\uDE00":2}'),
     ("lone high surrogate escape", b'{"\\ud83d":1}'),
@@ -107,7 +110,18 @@ EDGE_CASES: list[tuple[str, bytes]] = [
 ]
 
 NAMES = ["a", "b", "id", "releaseId", "é", "\U0001f600", "x y", "a\\u0062", "k\\n", "\\u0041"]
-SCALARS = ["1", "-0.5e-3", "true", "false", "null", '"s"', '"\\u00e9\\n"', '"ф"', "0", "12345678901234567890"]
+SCALARS = [
+    "1",
+    "-0.5e-3",
+    "true",
+    "false",
+    "null",
+    '"s"',
+    '"\\u00e9\\n"',
+    '"ф"',
+    "0",
+    "12345678901234567890",
+]
 
 
 def _random_value(rng: random.Random, depth: int) -> str:
@@ -132,7 +146,11 @@ def _mutate(rng: random.Random, text: str) -> str:
         return text[: start - 1] + f'"{name}":0,' + text[start - 1 :]
     if choice == 1:
         position = rng.randrange(len(text) + 1)
-        return text[:position] + rng.choice([",", ":", "}", "]", '"', "\\", " ", "\x01"]) + text[position:]
+        return (
+            text[:position]
+            + rng.choice([",", ":", "}", "]", '"', "\\", " ", "\x01"])
+            + text[position:]
+        )
     if choice == 2 and text:
         position = rng.randrange(len(text))
         return text[:position] + text[position + 1 :]
@@ -158,7 +176,11 @@ def _verdict(document: bytes) -> bool:
 def generate() -> dict[str, Any]:
     rng = random.Random(SEED)
     vectors: list[dict[str, Any]] = [
-        {"name": name, "document": base64.b64encode(document).decode("ascii"), "valid": _verdict(document)}
+        {
+            "name": name,
+            "document": base64.b64encode(document).decode("ascii"),
+            "valid": _verdict(document),
+        }
         for name, document in EDGE_CASES
     ]
     for index in range(RANDOM_DOCUMENTS):
@@ -196,7 +218,9 @@ def test_vectors_cover_both_verdicts_and_every_edge_case() -> None:
     assert verdicts == {True, False}
     names = {vector["name"] for vector in vectors}
     assert {name for name, _ in EDGE_CASES} <= names
-    duplicates = [v for v in vectors if v["name"].startswith("duplicate") and "sibling" not in v["name"]]
+    duplicates = [
+        v for v in vectors if v["name"].startswith("duplicate") and "sibling" not in v["name"]
+    ]
     assert duplicates and not any(v["valid"] for v in duplicates)
 
 

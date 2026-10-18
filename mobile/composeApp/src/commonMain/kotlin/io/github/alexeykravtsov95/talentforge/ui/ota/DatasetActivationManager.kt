@@ -129,7 +129,11 @@ class DatasetActivationManager(
         // the payload of the last accepted catalog: named by the state, written before it
         val seen = current.catalog
         lastCatalog = seen?.let { s -> cache.readCatalogPayload(s.payloadSha256)?.let { catalogs.reloadAccepted(it, s) } }
-        if (readable && seen != null) cache.deleteOtherCatalogPayloads(seen.payloadSha256)
+        // payloads no committed state names are orphans of a crash before the state write;
+        // with an unreadable state nothing is deleted (contract §7.2)
+        if (readable) {
+            if (seen != null) cache.deleteOtherCatalogPayloads(seen.payloadSha256) else cache.deleteAllCatalogPayloads()
+        }
 
         // installed releases: the recorded ones must be intact; unrecorded ones are adopted
         // when the last accepted catalog pins exactly their manifest bytes (a crash between the

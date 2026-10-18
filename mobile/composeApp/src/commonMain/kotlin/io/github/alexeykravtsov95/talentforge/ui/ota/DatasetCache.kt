@@ -103,6 +103,9 @@ class DatasetCache(val store: OtaFileStore, val game: String, val channel: OtaCh
         }
     }
 
+    /** No state names any payload (none committed yet): every payload is an orphan. */
+    fun deleteAllCatalogPayloads() = store.delete(catalogDir)
+
     // ------------------------------------------------------------ releases and staging
 
     fun installedDirectoryNames(): List<String> = store.list(releasesDir).filter { it.isDirectory }.map { it.name }

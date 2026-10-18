@@ -84,6 +84,10 @@ _PRODUCT_BUNDLE_RE = re.compile(
     r'game = GameId\("(?P<game>[a-z]+)"\),\s*'
     r'clientBuild = "(?P<build>\d+\.\d+\.\d+\.\d+)",\s*\)'
 )
+# The app's runtime list of bundled builds (M5.OTA.3): the OTA dataset resolver reads it.
+_BUNDLED_CLIENT_BUILDS_RE = re.compile(
+    r"\bval BUNDLED_CLIENT_BUILDS: Set<String> = linkedSetOf\((?P<body>[^)]*)\)"
+)
 
 
 @dataclass(frozen=True)
@@ -150,6 +154,53 @@ def product_build(source: Path = BUNDLED_DATASETS_KT) -> str:
     if match["game"] != GAME:
         raise ValueError(f"{source}: PRODUCT_BUNDLE is for game {match['game']!r}, not {GAME!r}")
     return match["build"]
+
+
+def kotlin_bundled_builds(source: Path = BUNDLED_DATASETS_KT) -> tuple[str, ...]:
+    """The client builds ``BUNDLED_CLIENT_BUILDS`` declares in Kotlin (M5.OTA.3), in order.
+
+    The OTA client decides what is bundled from this constant without probing resources, so it
+    must name exactly ``BUNDLED_BUILDS``; anything but one declaration of the expected shape is
+    an error, never a guess.
+    """
+    matches = list(_BUNDLED_CLIENT_BUILDS_RE.finditer(source.read_text(encoding="utf-8")))
+    if len(matches) != 1:
+        raise ValueError(
+            f"{source}: expected exactly one BUNDLED_CLIENT_BUILDS declaration "
+            f"(val BUNDLED_CLIENT_BUILDS: Set<String> = linkedSetOf(...)), found {len(matches)}"
+        )
+    body = matches[0]["body"]
+    builds = tuple(re.findall(r'"(\d+\.\d+\.\d+\.\d+)"', body))
+    leftover = re.sub(r'"\d+\.\d+\.\d+\.\d+"', "", body).replace(",", "").split()
+    if leftover:
+        raise ValueError(
+            f"{source}: BUNDLED_CLIENT_BUILDS holds something else than builds: {leftover}"
+        )
+    return builds
+
+
+def bundled_builds_drift(source: Path = BUNDLED_DATASETS_KT) -> list[str]:
+    """Every way ``BUNDLED_CLIENT_BUILDS`` (Kotlin) differs from ``BUNDLED_BUILDS``."""
+    try:
+        declared = kotlin_bundled_builds(source)
+    except ValueError as exc:
+        return [str(exc)]
+    if declared == BUNDLED_BUILDS:
+        return []
+    return [
+        f"BUNDLED_CLIENT_BUILDS {list(declared)} != BUNDLED_BUILDS {list(BUNDLED_BUILDS)} "
+        "(BundledDatasets.kt vs scripts/mobile_bundles.py)"
+    ]
+
+
+def check_kotlin_bundled_builds(source: Path = BUNDLED_DATASETS_KT) -> int:
+    problems = bundled_builds_drift(source)
+    if problems:
+        print("the app's bundled build list is out of sync:", file=sys.stderr)
+        for problem in problems:
+            print(f"  - {problem}", file=sys.stderr)
+        return 1
+    return 0
 
 
 def relative_files(directory: Path) -> set[str]:
@@ -298,6 +349,8 @@ def run(kind: BundleKind, argv: list[str] | None = None, doc: str | None = None)
     args = parser.parse_args(argv)
     if not args.check:
         return sync(kind)  # all-or-nothing: its preflight runs before any file change
+    if check_kotlin_bundled_builds() != 0:
+        return 1
     missing = missing_canonical(kind, BUNDLED_BUILDS)
     if missing:
         print(f"canonical {kind.name} files are missing in {kind.canonical_root}:", file=sys.stderr)
@@ -305,3 +358,23 @@ def run(kind: BundleKind, argv: list[str] | None = None, doc: str | None = None)
             print(f"  - {name}", file=sys.stderr)
         return 1
     return check(kind)
+
+
+def main(argv: list[str] | None = None) -> int:
+    """``python3 scripts/mobile_bundles.py --check``: the Kotlin ``BUNDLED_CLIENT_BUILDS``
+    and ``PRODUCT_BUNDLE`` against ``BUNDLED_BUILDS`` (the per-kind file mirrors are checked by
+    the four ``sync_mobile_*.py --check`` scripts)."""
+    parser = argparse.ArgumentParser(description=main.__doc__)
+    parser.add_argument("--check", action="store_true", required=True)
+    parser.parse_args(argv)
+    if check_kotlin_bundled_builds() != 0:
+        return 1
+    if product_build() != BUNDLED_BUILDS[-1]:
+        print("PRODUCT_BUNDLE is not the newest bundled build", file=sys.stderr)
+        return 1
+    print(f"bundled build list in sync: {', '.join(BUNDLED_BUILDS)} (product {product_build()})")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

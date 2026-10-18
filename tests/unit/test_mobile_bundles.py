@@ -93,6 +93,30 @@ def test_the_app_s_product_bundle_is_the_newest_bundled_build() -> None:
     assert bundles.product_build() == PRODUCT == bundles.BUNDLED_BUILDS[-1]
 
 
+def test_the_app_s_runtime_bundled_build_list_equals_bundled_builds() -> None:
+    """BUNDLED_CLIENT_BUILDS (M5.OTA.3) is how the OTA client knows what is bundled."""
+    assert bundles.kotlin_bundled_builds() == bundles.BUNDLED_BUILDS
+    assert bundles.bundled_builds_drift() == []
+    assert bundles.main(["--check"]) == 0
+
+
+def test_a_drifted_runtime_bundled_build_list_fails_every_check(tmp_path: Path, capsys) -> None:
+    source = bundles.BUNDLED_DATASETS_KT.read_text(encoding="utf-8")
+    dropped = tmp_path / "Dropped.kt"
+    dropped.write_text(source.replace('    "1.60.1.70245",\n', ""), encoding="utf-8")
+    assert bundles.bundled_builds_drift(dropped) != []
+    garbled = tmp_path / "Garbled.kt"
+    garbled.write_text(source.replace('"1.60.1.70245",', "OTHER,"), encoding="utf-8")
+    assert "something else than builds" in bundles.bundled_builds_drift(garbled)[0]
+    missing = tmp_path / "Missing.kt"
+    missing.write_text(
+        source.replace("val BUNDLED_CLIENT_BUILDS", "val SOMETHING_ELSE"), encoding="utf-8"
+    )
+    assert "expected exactly one BUNDLED_CLIENT_BUILDS" in bundles.bundled_builds_drift(missing)[0]
+    assert bundles.check_kotlin_bundled_builds(dropped) == 1
+    assert "out of sync" in capsys.readouterr().err
+
+
 @pytest.mark.parametrize("kind", KINDS)
 def test_committed_bundle_matches_canonical_without_network(kind: str, no_network, capsys):
     resources = ROOT / "mobile/composeApp/src/commonMain/composeResources/files"
