@@ -2,6 +2,7 @@ package io.github.alexeykravtsov95.talentforge.ui.about
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -19,6 +20,7 @@ import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
 import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.library.dataVersionOf
+import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTypography
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -210,11 +212,6 @@ class AboutScreenUiTest {
         for (language in AppLanguage.entries) {
             onScreen(language = language, widthDp = 320, heightDp = 640, fontScale = 2f, content = about()) {
                 awaitText(if (language == AppLanguage.RUSSIAN) "Лицензии сторонних компонентов" else "Third-party licenses")
-                // the name wraps below the icon instead of breaking mid-word
-                val layouts = mutableListOf<TextLayoutResult>()
-                onAllNodesWithText("TalentForge").onFirst().fetchSemanticsNode()
-                    .config.getOrNull(SemanticsActions.GetTextLayoutResult)?.action?.invoke(layouts)
-                assertEquals(1, layouts.single().lineCount, "the app name breaks across lines")
                 val targets = onAllNodes(anyClickable).fetchSemanticsNodes()
                 val labels = targets.map { it.config.getOrNull(SemanticsActions.OnClick)?.label }
                 assertEquals(3, targets.size, "Back, the privacy toggle and the licenses row: $labels")
@@ -228,6 +225,42 @@ class AboutScreenUiTest {
                 }
             }
         }
+    }
+
+    /**
+     * The name is one word: it never breaks, is never cut, and never runs past
+     * the screen, whatever the platform font's real width. Widths down to
+     * 260 dp at 200 % leave less room than "TalentForge" needs at full size
+     * with any font (Linux CI's font is wider than macOS's), so the fit is
+     * proven by measurement, not by one font happening to be narrow enough.
+     */
+    @Test
+    fun theAppNameStaysOneWholeWordAtAnyWidthAndFontScale() {
+        for (widthDp in listOf(320, 300, 280, 260)) {
+            onScreen(widthDp = widthDp, heightDp = 640, fontScale = 2f, content = about()) {
+                val (node, layout) = nameLayout()
+                val where = "$widthDp dp @200 %"
+                assertEquals("TalentForge", layout.layoutInput.text.text, "$where: the name is shown whole")
+                assertEquals(1, layout.lineCount, "$where: the name breaks across lines")
+                assertTrue(!layout.hasVisualOverflow, "$where: the name is clipped (${layout.size} for ${layout.multiParagraph.width})")
+                assertTrue(
+                    node.positionInRoot.x + layout.size.width <= widthDp,
+                    "$where: the name runs past the screen (x ${node.positionInRoot.x} + ${layout.size.width})",
+                )
+            }
+        }
+        // where it fits, the name keeps the frozen ScreenTitle size (24 sp): it only ever shrinks to fit
+        onScreen(content = about()) {
+            assertEquals(TalentForgeTypography.title.fontSize, nameLayout().second.layoutInput.style.fontSize)
+        }
+    }
+
+    private fun ComposeUiTest.nameLayout(): Pair<SemanticsNode, TextLayoutResult> {
+        awaitText("TalentForge")
+        val node = onAllNodesWithText("TalentForge").onFirst().fetchSemanticsNode()
+        val layouts = mutableListOf<TextLayoutResult>()
+        node.config.getOrNull(SemanticsActions.GetTextLayoutResult)?.action?.invoke(layouts)
+        return node to layouts.single()
     }
 
     // ------------------------------------------------------------- through App

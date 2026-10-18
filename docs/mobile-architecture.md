@@ -1204,7 +1204,9 @@ Since M5.UI.ABOUT.1 (store-listing cleanup) the About screen names no technology
 module. It shows, top to bottom:
 - the app icon (`drawable/app_icon.png`, a byte-for-byte copy of the approved xxxhdpi launcher
   raster, guarded by `AppIconResourceTest`), the name, a one-sentence description and the installed
-  version. The header wraps the name below the icon on narrow, large-text screens;
+  version. The header wraps the name below the icon on narrow, large-text screens. The name is one
+  line: it keeps the 24 sp ScreenTitle size where it fits and otherwise shrinks to the measured
+  width (`TextAutoSize`), because platform fonts differ in width (Linux CI's is wider than macOS's);
 - **Talent data**: the data version in use; the OTA source line and "Check for updates" only in
   OTA-enabled builds;
 - the independent-project statement;

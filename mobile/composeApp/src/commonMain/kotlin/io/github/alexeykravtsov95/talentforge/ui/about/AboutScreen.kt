@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -185,7 +186,11 @@ fun AboutScreen(
 /**
  * The approved launcher artwork, the name and the installed version, side by
  * side — or the name below the icon when both do not fit (a narrow phone at a
- * large font scale), so the name never breaks mid-word.
+ * large font scale). The name is one word and stays one line: it keeps the
+ * ScreenTitle size wherever it fits and, only where even the full width is too
+ * narrow for it, shrinks to the size that fits — measured from the platform
+ * font's real glyphs, since Linux, Android, iOS and macOS fonts differ in
+ * width. Never broken, cut or ellipsized.
  */
 @Composable
 private fun AppIdentity(appVersion: AppVersion?) {
@@ -209,7 +214,12 @@ private fun AppIdentity(appVersion: AppVersion?) {
                 .border(1.dp, colors.borderDefault, iconShape),
         )
         Column(verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.hairline)) {
-            BasicText("TalentForge", style = TalentForgeTypography.title.copy(color = colors.textPrimary))
+            BasicText(
+                text = "TalentForge",
+                style = TalentForgeTypography.title.copy(color = colors.textPrimary),
+                maxLines = 1,
+                autoSize = TextAutoSize.StepBased(maxFontSize = TalentForgeTypography.title.fontSize),
+            )
             if (appVersion != null) {
                 AboutMeta(stringResource(Res.string.about_version, appVersion.name, appVersion.code.toString()))
             }
