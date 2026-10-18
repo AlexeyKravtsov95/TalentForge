@@ -35,6 +35,11 @@ class OtaConfig private constructor(
     val supportedDataLevel: Int,
     /** Concurrent blob downloads (client design §4.3; measured in test-plan §7). */
     val parallelism: Int,
+    /**
+     * The pauses before each repeat of a GET whose transfer did not complete (client design
+     * §4.2); its size is the number of repeats. Answers of the origin are never repeated.
+     */
+    val fetchRetryDelaysMillis: List<Long>,
 ) {
     /** `GET <base>/v1/channels/<channel>/catalog.json` (contract §1). */
     val catalogUrl: String get() = "$baseUrl/v1/channels/${channel.wire}/catalog.json"
@@ -69,6 +74,13 @@ class OtaConfig private constructor(
          * connections, one TLS handshake each.
          */
         const val DEFAULT_PARALLELISM: Int = 8
+
+        /**
+         * Two repeats, 0.5 s and 2 s after a failed transfer: a new TCP connection replaces one
+         * the origin never accepted or answered (M5.OTA.4b: 7–11 % of new connections to the
+         * staging origin), without turning a real outage into a long wait.
+         */
+        val DEFAULT_FETCH_RETRY_DELAYS_MILLIS: List<Long> = listOf(500L, 2_000L)
 
         /**
          * The key-id prefix of each channel's keys (publisher-and-security §5.1): a keyring pins
@@ -108,7 +120,7 @@ class OtaConfig private constructor(
                 return Resolution.Disabled(DisabledReason.PRODUCTION_NEEDS_BACKUP_KEY)
             }
             return Resolution.Enabled(
-                OtaConfig(GAME, settings.channel, baseUrl, keyring, OtaContract.SUPPORTED_DATA_LEVEL, DEFAULT_PARALLELISM),
+                OtaConfig(GAME, settings.channel, baseUrl, keyring, OtaContract.SUPPORTED_DATA_LEVEL, DEFAULT_PARALLELISM, DEFAULT_FETCH_RETRY_DELAYS_MILLIS),
             )
         }
 
@@ -123,6 +135,7 @@ class OtaConfig private constructor(
             channel: OtaChannel = OtaChannel.PRODUCTION,
             supportedDataLevel: Int = OtaContract.SUPPORTED_DATA_LEVEL,
             parallelism: Int = DEFAULT_PARALLELISM,
-        ): OtaConfig = OtaConfig(GAME, channel, baseUrl, keyring, supportedDataLevel, parallelism)
+            fetchRetryDelaysMillis: List<Long> = DEFAULT_FETCH_RETRY_DELAYS_MILLIS,
+        ): OtaConfig = OtaConfig(GAME, channel, baseUrl, keyring, supportedDataLevel, parallelism, fetchRetryDelaysMillis)
     }
 }
