@@ -1,6 +1,7 @@
 package io.github.alexeykravtsov95.talentforge.ui.about
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.getOrNull
@@ -12,6 +13,7 @@ import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.rememberTextMeasurer
 import io.github.alexeykravtsov95.talentforge.ui.App
 import io.github.alexeykravtsov95.talentforge.ui.FakeBuildLibraryStorage
 import io.github.alexeykravtsov95.talentforge.ui.FixedClock
@@ -21,6 +23,7 @@ import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.library.dataVersionOf
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTypography
+import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -249,9 +252,24 @@ class AboutScreenUiTest {
                 )
             }
         }
-        // where it fits, the name keeps the frozen ScreenTitle size (24 sp): it only ever shrinks to fit
-        onScreen(content = about()) {
-            assertEquals(TalentForgeTypography.title.fontSize, nameLayout().second.layoutInput.style.fontSize)
+        // where it fits, the name keeps the frozen ScreenTitle size (24 sp): it only ever shrinks to fit.
+        // Read from the glyphs: an auto-sized layout reports its declared style whatever size it drew.
+        var fullSizeGlyph = Rect.Zero
+        val withReference: @Composable () -> Unit = {
+            fullSizeGlyph = rememberTextMeasurer().measure("TalentForge", TalentForgeTypography.title, softWrap = false).getBoundingBox(0)
+            about()()
+        }
+        onScreen(content = withReference) {
+            val glyph = nameLayout().second.getBoundingBox(0)
+            assertTrue(
+                abs(glyph.width - fullSizeGlyph.width) < 0.01f && abs(glyph.height - fullSizeGlyph.height) < 0.01f,
+                "the name shrank although it fits: $glyph vs $fullSizeGlyph at 24 sp",
+            )
+        }
+        // and where the full-size word does not fit, it is drawn smaller
+        onScreen(widthDp = 260, heightDp = 640, fontScale = 2f, content = withReference) {
+            val glyph = nameLayout().second.getBoundingBox(0)
+            assertTrue(glyph.width < fullSizeGlyph.width, "the name kept 24 sp although it does not fit 260 dp at 200 %")
         }
     }
 
