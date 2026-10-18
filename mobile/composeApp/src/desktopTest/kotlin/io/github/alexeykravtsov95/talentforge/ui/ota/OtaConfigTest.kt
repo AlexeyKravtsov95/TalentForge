@@ -52,6 +52,8 @@ class OtaConfigTest {
         val enabled = assertIs<OtaConfig.Resolution.Enabled>(OtaConfig.resolve(settings(keys = arrayOf(key("tf-prod-a", primary), key("tf-prod-b", backup))))).config
         assertEquals("https://ota.example.org/v1/channels/production/catalog.json", enabled.catalogUrl)
         assertEquals("https://ota.example.org/v1/blobs/sha256/" + "a".repeat(64), enabled.blobUrl("a".repeat(64)))
+        // an app repeats a failed transfer twice, 0.5 s and 2 s later
+        assertEquals(listOf(500L, 2_000L), enabled.fetchRetryDelaysMillis)
         // a staging channel may pin one key
         assertIs<OtaConfig.Resolution.Enabled>(OtaConfig.resolve(settings(OtaChannel.STAGING, keys = arrayOf(key("tf-staging-2026", primary)))))
     }
