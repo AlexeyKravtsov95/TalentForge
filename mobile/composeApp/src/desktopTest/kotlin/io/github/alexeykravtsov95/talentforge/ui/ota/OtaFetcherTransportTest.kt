@@ -17,7 +17,9 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import javax.net.ssl.KeyManagerFactory
 import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSocketFactory
 import kotlin.concurrent.thread
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -26,6 +28,7 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 
 /**
  * The Android/JVM fetcher over real sockets: which transfer failures may be repeated
@@ -207,6 +210,32 @@ class OtaFetcherTransportTest {
             assertEquals(1, counting.calls.get(), "tried once")
             assertTrue((System.nanoTime() - started) / 1_000_000 < 10_000, "no pause waited")
         }
+    }
+
+    // ------------------------------------------------------------------ an unexpected failure in the platform stack
+
+    /** A platform TLS stack that fails with an unchecked exception — not an `IOException` — when a connection is layered. */
+    private class BrokenTls : SSLSocketFactory() {
+        override fun getDefaultCipherSuites(): Array<String> = emptyArray()
+        override fun getSupportedCipherSuites(): Array<String> = emptyArray()
+        override fun createSocket(s: Socket, host: String, port: Int, autoClose: Boolean): Socket = throw IllegalStateException("broken TLS stack (test)")
+        override fun createSocket(host: String, port: Int): Socket = throw IllegalStateException("broken TLS stack (test)")
+        override fun createSocket(host: String, port: Int, localHost: InetAddress, localPort: Int): Socket = throw IllegalStateException("broken TLS stack (test)")
+        override fun createSocket(host: InetAddress, port: Int): Socket = throw IllegalStateException("broken TLS stack (test)")
+        override fun createSocket(address: InetAddress, port: Int, localAddress: InetAddress, localPort: Int): Socket =
+            throw IllegalStateException("broken TLS stack (test)")
+    }
+
+    @Test
+    fun anUnexpectedExceptionInTheTransferEndsTheFetchInsteadOfHangingIt() = SilentOrigin().test { origin ->
+        val broken = PlatformBlobFetcher(userAgent = "TalentForge/test", sslSocketFactory = BrokenTls())
+        // a timeout here (a CancellationException) would mean the fetch never ended
+        val failure = runBlocking { withTimeout(5_000) { runCatching { broken.fetch("https://127.0.0.1:${origin.port}/x", 10) }.exceptionOrNull() } }
+        assertTrue(failure != null && failure !is CancellationException, "the fetch ends with the transfer's failure: $failure")
+        assertTrue(
+            generateSequence(failure) { it.cause }.any { it is IllegalStateException && it.message == "broken TLS stack (test)" },
+            "the platform stack's own exception reaches the caller (the JDK may wrap it): $failure",
+        )
     }
 
     // ------------------------------------------------------------------ cancellation inside socket I/O

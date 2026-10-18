@@ -102,7 +102,15 @@ class PlatformBlobFetcher(
         }
         val abandoned = AtomicBoolean(false)
         val result = CompletableDeferred<FetchResult>()
-        IO.execute { result.complete(transfer(connection, maxBytes, abandoned)) }
+        IO.execute {
+            // every outcome completes the deferred: an unchecked exception of the platform stack
+            // (not an IOException) reaches the caller as it did before, and never leaves it waiting
+            try {
+                result.complete(transfer(connection, maxBytes, abandoned))
+            } catch (e: Throwable) {
+                result.completeExceptionally(e)
+            }
+        }
         return try {
             result.await()
         } catch (e: CancellationException) {
