@@ -426,6 +426,8 @@ class ApprovalRecord:
     release_id: str
     accepted_gates: frozenset[Gate]
     live_build_evidence: str | None
+    #: pins the exact manifest bytes the record approves, when the record states one
+    manifest_sha256: str | None = None
 
     def accepts(self, gate: Gate) -> bool:
         return gate in self.accepted_gates
@@ -435,7 +437,9 @@ def load_approval_record(release_id: str, docs_dir: Path) -> ApprovalRecord | No
     """Parse ``docs_dir/<releaseId>.md``; ``None`` when no record exists.
 
     A record can only accept G5/G7 findings: one that names a STOP gate is itself an
-    error (publisher design §2.2)."""
+    error (publisher design §2.2). The optional ``Manifest SHA-256`` line pins the
+    manifest bytes being approved; ``promote`` refuses a record whose pin does not
+    match the release it is presented for."""
     path = docs_dir / f"{release_id}.md"
     if not path.is_file():
         return None
@@ -445,6 +449,7 @@ def load_approval_record(release_id: str, docs_dir: Path) -> ApprovalRecord | No
             ("release", "- Release: "),
             ("accepted", "- Accepted gates: "),
             ("evidence", "- Live-build evidence: "),
+            ("manifest", "- Manifest SHA-256: "),
         ):
             if line.startswith(prefix) and name not in fields:
                 fields[name] = line.removeprefix(prefix).strip()
@@ -468,8 +473,16 @@ def load_approval_record(release_id: str, docs_dir: Path) -> ApprovalRecord | No
     evidence = fields.get("evidence")
     if Gate.G7 in accepted and not evidence:
         raise OtaPublisherError(f"{path}: G7 acceptance requires 'Live-build evidence'")
+    manifest_sha = fields.get("manifest")
+    if manifest_sha is not None and not manifest_sha.startswith("sha256:"):
+        raise OtaPublisherError(
+            f"{path}: 'Manifest SHA-256' must be 'sha256:<64 hex>', got {manifest_sha!r}"
+        )
     return ApprovalRecord(
-        release_id=release_id, accepted_gates=accepted, live_build_evidence=evidence
+        release_id=release_id,
+        accepted_gates=accepted,
+        live_build_evidence=evidence,
+        manifest_sha256=manifest_sha,
     )
 
 

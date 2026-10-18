@@ -93,24 +93,35 @@ def sign_der(key: ec.EllipticCurvePrivateKey, payload: bytes) -> bytes:
     )
 
 
+def fixture_manifest_sha256(release_id: str) -> str:
+    """The manifest SHA of a fixture release - the bytes build-release reproduces."""
+    import hashlib
+
+    data = (FIXTURES / "releases" / f"{release_id}.release.json").read_bytes()
+    return "sha256:" + hashlib.sha256(data).hexdigest()
+
+
 def write_approval_record(
     docs_dir: Path,
     release_id: str,
     *,
     accepted: str = "G5, G7",
     evidence: str | None = "offline E2E rehearsal record (pytest)",
+    manifest_sha256: str | None = None,
 ) -> Path:
     """An OD-12 approval record; only G5/G7 may be accepted.
 
-    ``evidence=None`` omits the evidence line (a record that does not accept G7
-    does not need one)."""
+    ``evidence=None`` omits the evidence line (a record that does not accept G7 does
+    not need one); ``manifest_sha256`` pins the exact manifest bytes the record
+    approves (``promote`` enforces the pin when present)."""
     docs_dir.mkdir(parents=True, exist_ok=True)
     evidence_line = "" if evidence is None else f"- Live-build evidence: {evidence}\n"
+    pin = "" if manifest_sha256 is None else f"- Manifest SHA-256: {manifest_sha256}\n"
     path = docs_dir / f"{release_id}.md"
     path.write_text(
         f"# OTA promotion approval: {release_id}\n\n"
         f"- Release: {release_id}\n"
-        f"- Manifest SHA-256: sha256:{'0' * 64}\n"
+        f"{pin}"
         f"- Source commit: {COMMIT}\n"
         f"- Accepted gates: {accepted}\n"
         f"{evidence_line}"

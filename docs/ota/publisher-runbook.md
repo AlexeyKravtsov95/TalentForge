@@ -70,8 +70,18 @@ talent-data ota attach-signature --payload artifacts/ota/pending-production.payl
 talent-data ota verify-live --store <store> --keyring <public keyring>
 ```
 
-`attach-signature` re-checks the live `sequence` before writing: if anything was
-published between steps 4 and 6, it aborts and the promotion restarts at step 4.
+`attach-signature` never trusts the earlier steps alone: before writing it re-proves
+the whole publication from the signed bytes — the payload must hash to the pin the
+pending meta recorded at `promote` time (bytes edited in between never land), be a
+catalog of the exact `--channel`/`--game`, be a valid successor of the live catalog
+(sequence exactly live + 1, every live release still listed with identical members),
+reference only blobs that exist and hash to their pins, and the live `sequence` is
+re-read one final time inside the write. If anything was published between steps 4
+and 6, it aborts and the promotion restarts at step 4.
+
+`stage` publishes to the **staging channel only** — `--channel production` is not an
+accepted argument, and the handler refuses it independently — so a staging/test-signed
+catalog can never replace the production one.
 
 ## 2. Routine refresh (a new build)
 
@@ -95,7 +105,7 @@ A rollback is a **new** catalog with a higher `sequence` whose `activeReleaseId`
 an older listed release. Releases are never unlisted (OD-7); the bundled product is the
 client-side floor (`KEEP_BUNDLED_FLOOR`).
 
-## 4. Re-sign (before expiry)
+## 4. Re-sign (before expiry — and after it)
 
 Catalogs expire (`issuedAt + 45 days`, OD-13). Re-issue at ~30 days, or with any change:
 
@@ -105,6 +115,13 @@ talent-data ota resign --store <store> --keyring <public keyring> --out artifact
 ```
 
 Schedule the reminder at half the validity window (test plan §6A.9).
+
+**If the window has already lapsed**, `resign` (and `rollback`) are still the recovery
+path: the live catalog's signature, structure, identity and integrity are verified as
+always, and only the expired window is forgiven *for the issuer of the next catalog* —
+which then ships a fresh `sequence` and validity window. Clients keep rejecting the
+lapsed catalog until it is replaced, exactly as the contract requires. `promote`
+deliberately stays strict: recover with `resign` first, then promote the new release.
 
 ## 5. Key loss
 
@@ -153,12 +170,17 @@ run).
 
   ```markdown
   - Release: 1.60.1.70450-r1
+  - Manifest SHA-256: sha256:<the exact manifest bytes this record approves>
   - Accepted gates: G5, G7
   - Live-build evidence: <client screenshot link + date + region, or a patch note>
   ```
 
   Only G5 and G7 can be accepted; a record naming a STOP gate (G1–G4, G6, G8) is itself
-  an error and the promotion refuses. G7 acceptance requires the evidence line.
+  an error and the promotion refuses. G7 acceptance requires the evidence line. When
+  the `Manifest SHA-256` line is present, `promote` refuses a record whose pin does not
+  match the release being promoted — pin it, so the record approves exact bytes, not a
+  release id. (The record is merged by PR before the promotion: being on `main` is the
+  review mechanism, and the promotion PR references it.)
 
 ## 8. Garbage collection
 
@@ -170,5 +192,7 @@ talent-data ota gc --store <store> --keyring <public keyring>            # list 
 talent-data ota gc --store <store> --keyring <public keyring> --execute --confirm
 ```
 
-Both channels' live catalogs are signature-verified first: on any verification failure
-gc aborts (fail closed — an unverifiable catalog must never drive deletions).
+Both channels' live catalogs are signature-verified first, and every release manifest
+is verified against its catalog pin (hash and length) before its file list is trusted:
+on any mismatch gc aborts without deleting anything (fail closed — an unverifiable or
+corrupted catalog must never drive deletions).

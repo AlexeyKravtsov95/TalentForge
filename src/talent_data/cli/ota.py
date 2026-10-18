@@ -18,7 +18,11 @@ delete first. Production signing is external by design: ``promote``/``rollback``
 ``resign`` write the unsigned payload and print the SHA-256 of the PAE to sign; the
 owner signs offline and ``attach-signature`` verifies the DER signature against the
 committed public keyring before the catalog object is replaced - the last write of
-the whole pipeline, after blobs are uploaded and verified.
+the whole pipeline, after blobs are uploaded and verified. ``attach-signature`` never
+trusts the earlier commands alone: it re-proves the payload against its pending-meta
+SHA-256 pin, the target channel/game, the live succession (sequence + 1, append-only)
+and every referenced object before writing. ``stage`` publishes to the staging channel
+only; a staging/test-signed catalog can never replace the production one.
 
 The imports that need the ``ota`` extra (``cryptography``, via ``talent_data.ota``)
 live inside the handlers, so importing this module - and every other command of the
@@ -29,6 +33,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -132,7 +137,9 @@ def register(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     )
     game(stage)
     repo(stage)
-    channel_arg(stage, default="staging")
+    # `stage` is the staging channel, full stop: a staging/test-signed catalog must
+    # never be able to replace the production one, so production is not even a choice.
+    stage.add_argument("--channel", choices=["staging"], default="staging")
     store_arg(stage)
     keyring(stage)
     stage.add_argument("--manifest", type=Path, required=True)
@@ -277,13 +284,23 @@ def _keyring(args: argparse.Namespace) -> dict[str, TrustedKey]:
 
 
 def _live(
-    args: argparse.Namespace, store: LocalDirectoryStore, channel: str, now: datetime
+    args: argparse.Namespace,
+    store: LocalDirectoryStore,
+    channel: str,
+    now: datetime,
+    *,
+    allow_expired: bool = False,
 ) -> OtaCatalog | None:
     from talent_data.ota.models import Channel
     from talent_data.ota.store import read_live_catalog
 
     return read_live_catalog(
-        store, Channel(channel), keyring=_keyring(args), game=args.game, now=now
+        store,
+        Channel(channel),
+        keyring=_keyring(args),
+        game=args.game,
+        now=now,
+        allow_expired=allow_expired,
     )
 
 
@@ -314,21 +331,54 @@ def _print_gates(results: list[GateResult]) -> tuple[list[GateResult], list[Gate
 
 def _pending_paths(out: Path, channel: str) -> tuple[Path, Path]:
     payload = out / f"pending-{channel}.payload.json"
-    return payload, payload.with_name(payload.name + ".base-sequence")
+    return payload, payload.with_name(payload.name + ".meta.json")
+
+
+@dataclass(frozen=True)
+class PendingMeta:
+    """What ``promote``/``rollback``/``resign`` produced, pinned for attach time."""
+
+    base_sequence: int | None
+    payload_sha256: str
 
 
 def _write_pending(out: Path, channel: str, payload: bytes, base_sequence: int | None) -> Path:
-    payload_path, sequence_path = _pending_paths(out, channel)
+    import json
+
+    from talent_data.ota.verify import sha256_ref
+
+    payload_path, meta_path = _pending_paths(out, channel)
     payload_path.parent.mkdir(parents=True, exist_ok=True)
     payload_path.write_bytes(payload)
-    sequence_path.write_text("" if base_sequence is None else str(base_sequence), encoding="ascii")
+    meta_path.write_text(
+        json.dumps(
+            {
+                "baseSequence": base_sequence,
+                "payloadSha256": sha256_ref(payload),
+                "channel": channel,
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     return payload_path
 
 
-def _base_sequence_of(payload_path: Path) -> int | None:
-    sequence_path = payload_path.with_name(payload_path.name + ".base-sequence")
-    text = sequence_path.read_text(encoding="ascii").strip()
-    return None if text == "" else int(text)
+def _pending_meta(payload_path: Path) -> PendingMeta:
+    import json
+
+    meta_path = payload_path.with_name(payload_path.name + ".meta.json")
+    try:
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise OtaPublisherError(
+            f"{payload_path} has no readable pending meta (produced by promote/rollback/"
+            f"resign); cannot attach a signature to unknown bytes: {exc}"
+        ) from exc
+    return PendingMeta(
+        base_sequence=meta.get("baseSequence"), payload_sha256=meta.get("payloadSha256", "")
+    )
 
 
 def _all_upload_blobs(under_test: ReleaseUnderTest) -> dict[str, bytes]:
@@ -412,6 +462,13 @@ def _cmd_stage(args: argparse.Namespace) -> int:
     from talent_data.ota.signing import inline_sign_envelope
     from talent_data.ota.store import ensure_catalog_references, upload_blobs, write_catalog
 
+    if args.channel != "staging":  # parser allows only staging; guarded again here
+        print(
+            "error: stage publishes to the staging channel only; production catalogs are "
+            "created by promote + attach-signature with a production key",
+            file=sys.stderr,
+        )
+        return EXIT_FAILURE
     now = _instant(args.now)
     store = _store(args)
     under_test = load_under_test(args.manifest.expanduser(), _repo_root(args))
@@ -431,8 +488,8 @@ def _cmd_stage(args: argparse.Namespace) -> int:
     if flagged:
         print("  (staging may carry flags; only promote requires an approval record)")
 
-    channel = Channel(args.channel)
-    live_staging = _live(args, store, args.channel, now)
+    channel = Channel.STAGING
+    live_staging = _live(args, store, "staging", now)
     entry = catalog_entry(under_test.rebuild.manifest_bytes, under_test.manifest, published_at=now)
     update = next_catalog(
         live_staging,
@@ -502,11 +559,24 @@ def _cmd_promote(args: argparse.Namespace) -> int:
     from talent_data.ota.models import Channel
     from talent_data.ota.signing import pae_sha256
     from talent_data.ota.store import ensure_catalog_references, upload_blobs
+    from talent_data.ota.verify import sha256_ref
 
     now = _instant(args.now)
     store = _store(args)
     under_test = load_under_test(args.manifest.expanduser(), _repo_root(args))
     approval = load_approval_record(under_test.manifest.release_id, args.releases_docs.expanduser())
+    manifest_sha = sha256_ref(under_test.manifest_bytes)
+    if (
+        approval is not None
+        and approval.manifest_sha256 is not None
+        and approval.manifest_sha256 != manifest_sha
+    ):
+        print(
+            "error: promote refused - the approval record pins "
+            f"{approval.manifest_sha256} but this release's manifest is {manifest_sha}",
+            file=sys.stderr,
+        )
+        return EXIT_FAILURE
     live = _live(args, store, "production", now)
     results = validate_release(
         under_test,
@@ -559,45 +629,95 @@ def _cmd_promote(args: argparse.Namespace) -> int:
 
 
 def _cmd_attach_signature(args: argparse.Namespace) -> int:
+    """Verify an external signature and write ``catalog.json`` - the last write.
+
+    The signature alone is not enough to write. Before the catalog object is replaced,
+    the whole publication is re-proved from the signed bytes themselves, without
+    trusting that ``promote``/``rollback``/``resign`` ran or that their checks still
+    hold:
+
+    * the DER signature verifies over the PAE with a keyring key (identity of issuer);
+    * the payload is exactly what the pending command produced - the meta sidecar pins
+      its SHA-256, so bytes edited between ``promote`` and here never get written;
+    * the payload is a catalog of the target ``--channel`` and ``--game`` (a staging
+      payload can never land on the production path, or vice versa);
+    * it is a *valid successor* of the live catalog: sequence is exactly live + 1 and
+      every live release stays listed with identical members (append-only);
+    * every object it references exists in the store and hashes to its pin
+      (:func:`talent_data.ota.store.ensure_catalog_references`);
+    * the sequence guard in :func:`write_catalog` then re-reads the live catalog one
+      final time before the single atomic put.
+    """
+    from talent_data.ota.catalog import ensure_valid_succession
     from talent_data.ota.models import Channel, OtaCatalog
     from talent_data.ota.signing import build_envelope, verify_der_signature
-    from talent_data.ota.store import write_catalog
-    from talent_data.ota.verify import parse_strict
+    from talent_data.ota.store import ensure_catalog_references, write_catalog
+    from talent_data.ota.verify import parse_strict, sha256_ref
 
     now = _instant(args.now)
+    store = _store(args)
     payload_path = args.payload.expanduser()
     payload = payload_path.read_bytes()
-    base_sequence = _base_sequence_of(payload_path)
     der = args.signature.expanduser().read_bytes()
     keyring = _keyring(args)
+    channel = Channel(args.channel)
+
+    def refuse(detail: str) -> int:
+        print(f"error: {detail}; nothing was written", file=sys.stderr)
+        return EXIT_FAILURE
+
     if args.key_id not in keyring:
-        print(f"error: key id {args.key_id!r} is not in {args.keyring}", file=sys.stderr)
-        return EXIT_FAILURE
+        return refuse(f"key id {args.key_id!r} is not in {args.keyring}")
     if not verify_der_signature(keyring[args.key_id].public_key, der, payload):
-        print(
-            f"error: signature does not verify over PAE(payloadType, payload of {payload_path});"
-            " nothing was written",
-            file=sys.stderr,
+        return refuse(f"signature does not verify over PAE(payloadType, payload of {payload_path})")
+    meta = _pending_meta(payload_path)
+    if meta.payload_sha256 != sha256_ref(payload):
+        return refuse(
+            f"{payload_path} is not the payload its pending meta pins "
+            f"({sha256_ref(payload)} != {meta.payload_sha256}); re-run the pending command"
         )
-        return EXIT_FAILURE
-    catalog = parse_strict(OtaCatalog, payload)
+    try:
+        catalog = parse_strict(OtaCatalog, payload)
+    except ValueError as exc:
+        return refuse(f"{payload_path} does not parse as a catalog: {exc}")
+    if catalog.channel is not channel:
+        return refuse(
+            f"the signed payload is a {catalog.channel.value} catalog; refusing to write it "
+            f"to the {channel.value} channel"
+        )
+    if catalog.game != args.game:
+        return refuse(f"the signed payload is for game {catalog.game!r}, not {args.game!r}")
+    if catalog.expires_at <= now:
+        return refuse(
+            f"the signed payload is already expired at {catalog.expires_at.isoformat()}; "
+            "re-issue it (promote/rollback/resign) and sign again"
+        )
+    live = _live(args, store, args.channel, now, allow_expired=True)
+    try:
+        ensure_valid_succession(live, catalog)
+        ensure_catalog_references(store, catalog)
+    except OtaPublisherError as exc:
+        return refuse(str(exc))
+
     envelope = build_envelope(payload, {args.key_id: der})
     print(
         f"signature by {args.key_id} verified: {args.channel} catalog sequence "
         f"{catalog.sequence}, active {catalog.active_release_id}, "
-        f"{len(catalog.releases)} release(s), envelope {len(envelope)} bytes"
+        f"{len(catalog.releases)} release(s), envelope {len(envelope)} bytes; "
+        "succession, channel and every referenced object re-checked"
     )
     if not args.execute:
         print("dry run: catalog.json not written (pass --execute)")
         return EXIT_OK
     write_catalog(
-        _store(args),
-        Channel(args.channel),
+        store,
+        channel,
         envelope,
-        base_sequence=base_sequence,
+        base_sequence=meta.base_sequence,
         keyring=keyring,
         game=catalog.game,
         now=now,
+        allow_expired_live=True,  # recovery: a lapsed live catalog may be re-issued
     )
     print(f"  catalog.json written to {args.store} (channel {args.channel})")
     return EXIT_OK
@@ -610,7 +730,9 @@ def _cmd_rollback(args: argparse.Namespace) -> int:
 
     now = _instant(args.now)
     store = _store(args)
-    live = _live(args, store, args.channel, now)
+    # recovery: a lapsed catalog can still be rolled back (its signature, structure
+    # and identity are verified; only the expired window is forgiven for the issuer)
+    live = _live(args, store, args.channel, now, allow_expired=True)
     if live is None:
         print(f"error: no live {args.channel} catalog to roll back", file=sys.stderr)
         return EXIT_FAILURE
@@ -655,7 +777,9 @@ def _cmd_resign(args: argparse.Namespace) -> int:
 
     now = _instant(args.now)
     store = _store(args)
-    live = _live(args, store, args.channel, now)
+    # recovery: this is the command that revives a catalog whose expiresAt lapsed -
+    # the live one is still signature-verified, only the expired window is forgiven
+    live = _live(args, store, args.channel, now, allow_expired=True)
     if live is None:
         print(f"error: no live {args.channel} catalog to re-sign", file=sys.stderr)
         return EXIT_FAILURE

@@ -188,6 +188,50 @@ def rollback_catalog(
     )
 
 
+def ensure_valid_succession(live: OtaCatalog | None, successor: OtaCatalog) -> None:
+    """``successor`` must be exactly the next catalog of ``live``'s channel.
+
+    The structural invariants a *write* must prove, re-checked at ``attach-signature``
+    time so that a payload is never written on the strength of earlier commands alone:
+    same game and channel, ``sequence`` is exactly the live one plus one (or 1 for a
+    first publication - no skipping, no replaying), every release listed by ``live``
+    stays listed with identical members (append-only), and the successor's active
+    release is one of them.
+    """
+    if live is None:
+        if successor.sequence != 1:
+            raise OtaPublisherError(
+                f"first catalog of a channel must have sequence 1, not {successor.sequence}"
+            )
+    else:
+        if (successor.game, successor.channel) != (live.game, live.channel):
+            raise OtaPublisherError(
+                f"successor is {successor.game}/{successor.channel.value}, live is "
+                f"{live.game}/{live.channel.value}"
+            )
+        if successor.sequence != live.sequence + 1:
+            raise OtaPublisherError(
+                f"successor sequence {successor.sequence} is not live sequence {live.sequence} + 1"
+            )
+        listed = {release.release_id: release for release in successor.releases}
+        for entry in live.releases:
+            kept = listed.get(entry.release_id)
+            if kept is None:
+                raise OtaPublisherError(
+                    f"append-only violation: {entry.release_id} is listed in the live "
+                    "catalog but missing from the successor"
+                )
+            if kept != entry:
+                raise OtaPublisherError(
+                    f"append-only violation: {entry.release_id} changed identity "
+                    "between the live catalog and the successor"
+                )
+    if successor.active_release_id not in {r.release_id for r in successor.releases}:
+        raise OtaPublisherError(
+            f"successor activeReleaseId {successor.active_release_id!r} is not listed"
+        )
+
+
 def find_release(catalog: OtaCatalog, release_id: str) -> CatalogRelease | None:
     return next((r for r in catalog.releases if r.release_id == release_id), None)
 

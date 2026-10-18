@@ -26,11 +26,13 @@ from talent_data.ota.release import (
 from talent_data.ota.signing import build_envelope, load_keyring_file, sign_pae_der
 from talent_data.ota.store import (
     BLOB_CACHE_CONTROL,
+    CATALOG_CACHE_CONTROL,
     blob_key,
     catalog_key,
     ensure_blob,
     ensure_catalog_references,
     garbage_blob_keys,
+    read_release_manifest,
     upload_blobs,
     write_catalog,
 )
@@ -271,3 +273,59 @@ def test_cache_control_values_follow_the_contract(store) -> None:
     store.put(catalog_key(Channel.STAGING), b"{}", cache_control="public, max-age=300")
     assert seen[blob_key(sha)] == "public, max-age=31536000, immutable"
     assert seen[catalog_key(Channel.STAGING)] == "public, max-age=300"
+
+
+def test_read_release_manifest_verifies_the_catalog_pin(store, artifact) -> None:
+    """A manifest corrupted into different (still valid) JSON must be refused by its
+    pin, not by parseability - gc and every reader depend on this."""
+    upload_blobs(store, all_blobs(artifact))
+    entry = _entry(artifact)
+    path = store.root / blob_key(entry.manifest_sha256)
+    # same length, valid JSON, different bytes: flip a digit inside the validation note
+    original = path.read_bytes()
+    tampered = original.replace(b"store test", b"storE test").ljust(len(original))
+    assert len(tampered) == len(original)
+    path.write_bytes(tampered)
+    with pytest.raises(OtaPublisherError, match="does not match its catalog pin"):
+        read_release_manifest(store, entry)
+
+
+def test_ensure_catalog_references_verifies_every_file_blob(store, artifact) -> None:
+    upload_blobs(store, all_blobs(artifact))
+    update = _published(store, artifact)
+    ensure_catalog_references(store, update.catalog)  # everything present: fine
+
+    victim = store.root / blob_key(next(iter(artifact.blobs)))
+    victim.unlink()  # one FILE blob of the release disappears
+    with pytest.raises(OtaPublisherError, match="not found"):
+        ensure_catalog_references(store, update.catalog)
+
+
+def test_put_is_atomic_and_leaves_no_temporary_objects(store) -> None:
+    import os
+
+    key = catalog_key(Channel.PRODUCTION)
+    store.put(key, b'{"first": true}', cache_control=CATALOG_CACHE_CONTROL)
+    store.put(key, b'{"second": true}', cache_control=CATALOG_CACHE_CONTROL)
+    assert store.get(key) == b'{"second": true}'
+    # no half-written or temporary objects are visible as store contents
+    files = [p.name for p in (store.root / "v1" / "channels" / "production").iterdir()]
+    assert files == ["catalog.json"]
+    assert os.sep not in "".join(files)  # sanity: plain object name
+
+
+def _entry(artifact):
+    return catalog_entry(artifact.manifest_bytes, artifact.manifest, published_at=NOW)
+
+
+def _published(store, artifact):
+    entry = _entry(artifact)
+    return next_catalog(
+        None,
+        game="forever",
+        channel=Channel.PRODUCTION,
+        active_release_id=entry.release_id,
+        append=entry,
+        issued_at=NOW,
+        validity=VALIDITY,
+    )

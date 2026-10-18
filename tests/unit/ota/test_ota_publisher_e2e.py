@@ -16,7 +16,9 @@ damage) another's state.
 
 from __future__ import annotations
 
+import argparse
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -42,6 +44,7 @@ from tests.unit.ota.publisher_testkit import (
     ROOT,
     VALIDATION_NOTE,
     derive_test_key,
+    fixture_manifest_sha256,
     sign_der,
     write_approval_record,
     write_test_keyring,
@@ -62,8 +65,8 @@ class Env:
         self.artifacts = root / "artifacts"
         self.docs = root / "approvals"
         self.keyring_path, self.pem = write_test_keyring(root / "keys")
-        write_approval_record(self.docs, A)
-        write_approval_record(self.docs, B)
+        write_approval_record(self.docs, A, manifest_sha256=fixture_manifest_sha256(A))
+        write_approval_record(self.docs, B, manifest_sha256=fixture_manifest_sha256(B))
 
     def cli(self, *args: str) -> int:
         return main(["ota", *args, "--repo", str(ROOT)])
@@ -147,7 +150,7 @@ class Env:
             NOW_ARG,
         )
 
-    def rollback(self, active: str = A) -> int:
+    def rollback(self, active: str = A, *, now: str = NOW_ARG) -> int:
         return self.cli(
             "rollback",
             "--game",
@@ -162,7 +165,7 @@ class Env:
             str(self.artifacts),
             "--execute",
             "--now",
-            NOW_ARG,
+            now,
         )
 
     def resign(self, now: str = NOW_ARG) -> int:
@@ -602,3 +605,194 @@ def test_gc_needs_execute_and_confirm_and_keeps_referenced_blobs(neg_env: Env) -
 def test_rollback_cannot_name_an_unlisted_release(neg_env: Env) -> None:
     assert neg_env.rollback(active=f"{BUILD_B}-r9") == 1
     assert neg_env.verify_live() == 0
+
+
+# --------------------------------------------------------------------------- review fixes
+# The blocks below pin the behaviours the PR #43 review demanded: stage can never
+# touch production, attach-signature re-proves the whole publication from the signed
+# bytes, gc fails closed on a manifest that does not match its pin, an expired
+# catalog can be recovered, and an approval record pins the bytes it approves.
+
+
+def _pending(env: Env, channel: str = "production") -> Path:
+    return env.artifacts / f"pending-{channel}.payload.json"
+
+
+def _rewrite_pending(payload_path: Path, mutate) -> None:
+    """Local-tamperer helper: edit the pending payload AND its meta pin, so only the
+    attach-time structural checks (not the pin) can catch what follows."""
+    import json
+
+    doc = json.loads(payload_path.read_text())
+    mutate(doc)
+    payload = json.dumps(doc, indent=2, ensure_ascii=False).encode("utf-8") + b"\n"
+    payload_path.write_bytes(payload)
+    import hashlib
+
+    meta_path = payload_path.with_name(payload_path.name + ".meta.json")
+    meta = json.loads(meta_path.read_text())
+    meta["payloadSha256"] = "sha256:" + hashlib.sha256(payload).hexdigest()
+    meta_path.write_text(json.dumps(meta, indent=2) + "\n")
+
+
+def test_stage_cannot_target_the_production_channel(tmp_path: Path) -> None:
+    env = Env(tmp_path / "stage-lock")
+    assert env.build(BUILD_A) == 0
+    with pytest.raises(SystemExit):  # argparse itself rejects --channel production
+        env.cli(
+            "stage",
+            "--game",
+            GAME,
+            "--manifest",
+            str(env.manifest(BUILD_A)),
+            "--store",
+            str(env.store),
+            "--keyring",
+            str(env.keyring_path),
+            "--key",
+            str(env.pem),
+            "--key-id",
+            PRIMARY,
+            "--channel",
+            "production",
+            "--execute",
+            "--now",
+            NOW_ARG,
+        )
+    # and the handler refuses too, whatever a future parser change allows through
+    from talent_data.cli import ota as ota_cli
+
+    namespace = argparse.Namespace(
+        game=GAME,
+        channel="production",
+        manifest=env.manifest(BUILD_A),
+        store=env.store,
+        keyring=env.keyring_path,
+        key=env.pem,
+        key_id=PRIMARY,
+        execute=True,
+        now=NOW_ARG,
+        main_ref="origin/main",
+        repo=None,
+    )
+    assert ota_cli._cmd_stage(namespace) == 1
+    assert not (env.store / "v1").exists()
+
+
+def test_attach_refuses_bytes_edited_after_promote(neg_env: Env) -> None:
+    """The pending meta pins the payload promote produced: a payload file edited
+    afterwards (even correctly re-signed) is refused - the signed bytes never reach
+    the store."""
+    assert neg_env.build(BUILD_B) == 0
+    assert neg_env.promote(BUILD_B) == 0
+    before = neg_env.catalog_bytes()
+
+    payload = _pending(neg_env)
+    doc = json.loads(payload.read_bytes())
+    doc["sequence"] = 99  # an edit; the meta sidecar still pins promote's bytes
+    payload.write_text(json.dumps(doc, indent=2) + "\n")
+    signature = neg_env.sign_pending()
+    assert neg_env.attach(signature=signature) == 1
+    assert neg_env.catalog_bytes() == before
+
+
+def test_attach_refuses_a_payload_of_the_wrong_channel(neg_env: Env) -> None:
+    assert neg_env.build(BUILD_B) == 0
+    assert neg_env.promote(BUILD_B) == 0
+    before = neg_env.catalog_bytes()
+
+    payload = _pending(neg_env)
+    _rewrite_pending(payload, lambda doc: doc.update(channel="staging"))
+    signature = neg_env.sign_pending()
+    # attaching the staging payload with --channel production (the CLI default):
+    assert neg_env.attach(signature=signature) == 1
+    assert neg_env.catalog_bytes() == before
+
+
+def test_attach_refuses_a_sequence_jump(neg_env: Env) -> None:
+    assert neg_env.build(BUILD_B) == 0
+    assert neg_env.promote(BUILD_B) == 0
+    before = neg_env.catalog_bytes()
+
+    payload = _pending(neg_env)
+    _rewrite_pending(payload, lambda doc: doc.update(sequence=doc["sequence"] + 5))
+    signature = neg_env.sign_pending()
+    assert neg_env.attach(signature=signature) == 1
+    assert neg_env.catalog_bytes() == before
+
+
+def test_attach_refuses_an_append_only_violation(neg_env: Env) -> None:
+    assert neg_env.build(BUILD_B) == 0
+    assert neg_env.promote(BUILD_B) == 0  # pending: sequence 2, releases [A, B]
+    before = neg_env.catalog_bytes()
+
+    payload = _pending(neg_env)
+    _rewrite_pending(payload, lambda doc: doc["releases"].pop(0))  # unlist A
+    signature = neg_env.sign_pending()
+    assert neg_env.attach(signature=signature) == 1
+    assert neg_env.catalog_bytes() == before
+
+
+def test_attach_refuses_when_a_referenced_blob_is_missing(neg_env: Env) -> None:
+    assert neg_env.build(BUILD_B) == 0
+    assert neg_env.promote(BUILD_B) == 0
+    before = neg_env.catalog_bytes()
+    pending = json.loads(_pending(neg_env).read_bytes())
+    entry_b = next(r for r in pending["releases"] if r["releaseId"] == B)
+    manifest_blob = neg_env.blob_dir() / entry_b["manifestSha256"].split(":")[1]
+    first_file_sha = re.search(r"sha256:[0-9a-f]{64}", manifest_blob.read_text()).group(0)
+    (neg_env.blob_dir() / first_file_sha.split(":")[1]).unlink()
+    signature = neg_env.sign_pending()
+    assert neg_env.attach(signature=signature) == 1
+    assert neg_env.catalog_bytes() == before
+
+
+def test_gc_aborts_when_a_manifest_does_not_match_its_pin(neg_env: Env) -> None:
+    """A manifest corrupted into different-but-valid JSON must stop gc: the pin check
+    (not parseability) is what may drive deletions."""
+    from talent_data.ota.verify import sha256_ref
+
+    entry = neg_env.live().releases[0]
+    manifest_blob = neg_env.blob_dir() / entry.manifest_sha256.split(":")[1]
+    doc = json.loads(manifest_blob.read_text())
+    doc["files"] = doc["files"][:1]  # valid JSON, references almost nothing
+    manifest_blob.write_text(json.dumps(doc, indent=2))
+
+    junk = neg_env.blob_dir() / sha256_ref(b"junk").split(":")[1]
+    junk.write_bytes(b"junk")
+    assert neg_env.gc("--execute", "--confirm") == 1  # aborts before any deletion
+    assert junk.exists()
+
+
+def test_an_expired_catalog_is_recovered_by_resign(neg_env: Env) -> None:
+    late = "2027-01-05T00:00:00Z"  # beyond issuedAt + 45 days
+    assert neg_env.verify_live(now=late) == 1  # clients reject the lapsed catalog
+
+    assert neg_env.resign(now=late) == 0  # recovery read tolerates the lapse
+    assert neg_env.attach() == 0  # so does the write's live read
+    recovered = neg_env.live()
+    assert recovered.sequence == 2
+    assert neg_env.verify_live(now=late) == 0  # the fresh window covers 'late'
+    assert neg_env.verify_live() == 0  # and still works at the original now
+
+
+def test_an_expired_catalog_can_be_rolled_back(neg_env: Env) -> None:
+    late = "2027-01-05T00:00:00Z"
+    assert neg_env.build(BUILD_B) == 0
+    assert neg_env.promote(BUILD_B) == 0
+    assert neg_env.attach() == 0
+    assert neg_env.verify_live() == 0
+
+    assert neg_env.verify_live(now=late) == 1  # lapsed
+    assert neg_env.rollback(A, now=late) == 0  # recovery path on the lapsed catalog
+    assert neg_env.attach() == 0
+    assert neg_env.verify_live(now=late) == 0
+    assert neg_env.live().active_release_id == A
+
+
+def test_promote_refuses_an_approval_record_pinning_other_bytes(tmp_path: Path) -> None:
+    env = Env(tmp_path / "approval-pin")
+    write_approval_record(env.docs, A, manifest_sha256="sha256:" + "0" * 64)  # wrong pin
+    assert env.build(BUILD_A) == 0
+    assert env.promote(BUILD_A) == 1
+    assert not (env.artifacts / "pending-production.payload.json").exists()

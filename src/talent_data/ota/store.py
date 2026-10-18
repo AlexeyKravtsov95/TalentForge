@@ -27,8 +27,10 @@ The write protocol (publisher design §3) is enforced in code, not by convention
 
 from __future__ import annotations
 
+import os
+import tempfile
 from collections.abc import Mapping
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Protocol
 
@@ -112,7 +114,18 @@ class LocalDirectoryStore:
             raise OtaPublisherError(f"object {key}: cache-control is required")
         path = self._path(key)
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(data)
+        # write-then-rename: a reader (or a crash) sees the old object or the new one,
+        # never a half-written one - the local twin of the single-object PUT the
+        # contract relies on for the catalog's atomic pointer update.
+        handle, tmp_name = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+        tmp = Path(tmp_name)
+        try:
+            with os.fdopen(handle, "wb") as sink:
+                sink.write(data)
+            tmp.replace(path)
+        except BaseException:
+            tmp.unlink(missing_ok=True)
+            raise
 
     def exists(self, key: str) -> bool:
         return self._path(key).is_file()
@@ -124,7 +137,9 @@ class LocalDirectoryStore:
         if base.is_file():
             return [prefix]
         return sorted(
-            path.relative_to(self.root).as_posix() for path in base.rglob("*") if path.is_file()
+            path.relative_to(self.root).as_posix()
+            for path in base.rglob("*")
+            if path.is_file() and not path.name.startswith(".")
         )
 
     def delete(self, key: str) -> None:
@@ -141,11 +156,18 @@ def read_live_catalog(
     keyring: Mapping[str, TrustedKey],
     game: str,
     now: datetime,
+    allow_expired: bool = False,
 ) -> OtaCatalog | None:
     """The live, signature-verified catalog of ``channel``; ``None`` when none exists.
 
     The publisher never builds on a catalog it cannot verify: a tampered or wrongly
     signed live catalog aborts the pipeline instead of being overwritten.
+
+    ``allow_expired`` is the publisher's recovery path (runbook §4): a catalog whose
+    ``expiresAt`` has lapsed still has a trustworthy signature, structure and identity,
+    so ``resign``/``rollback``/``attach-signature`` may rebuild on it to issue a fresh
+    one - everything except the clock check still runs. Clients keep rejecting expired
+    catalogs exactly as before.
     """
     key = catalog_key(channel)
     if not store.exists(key):
@@ -153,25 +175,61 @@ def read_live_catalog(
     envelope = store.get(key)
     from talent_data.ota.verify import (  # lazy: needs the `ota` extra (cryptography)
         OtaError,
+        OtaErrorCode,
+        VerifiedCatalog,
+        strict_b64decode,
         verify_catalog,
     )
 
-    try:
-        verified = verify_catalog(
-            envelope, keyring=keyring, game=game, channel=channel, now=now, last_seen=None
+    def verify(at: datetime) -> VerifiedCatalog:
+        return verify_catalog(
+            envelope, keyring=keyring, game=game, channel=channel, now=at, last_seen=None
         )
+
+    try:
+        verified = verify(now)
     except OtaError as exc:
-        raise OtaPublisherError(f"live {channel.value} catalog failed verification: {exc}") from exc
+        if exc.code is OtaErrorCode.CATALOG_EXPIRED and allow_expired:
+            # re-verify with the clock inside the catalog's own validity window:
+            # signature, shape, identity and consistency all still run; only the
+            # lapsed window is forgiven, for the issuer of the *next* catalog.
+            from talent_data.ota.models import SignedEnvelope
+            from talent_data.ota.verify import parse_strict
+
+            payload = strict_b64decode(parse_strict(SignedEnvelope, envelope).payload)
+            issued = parse_strict(OtaCatalog, payload).issued_at
+            try:
+                verified = verify(issued + timedelta(seconds=1))
+            except OtaError as second:
+                raise OtaPublisherError(
+                    f"live {channel.value} catalog failed verification: {second}"
+                ) from second
+        else:
+            raise OtaPublisherError(
+                f"live {channel.value} catalog failed verification: {exc}"
+            ) from exc
     return verified.catalog
 
 
 def read_release_manifest(
     store: BlobStore, entry: CatalogRelease
 ) -> tuple[bytes, OtaReleaseManifest]:
-    """Fetch and strictly parse the release manifest blob pinned by a catalog entry."""
+    """Fetch the release manifest blob pinned by a catalog entry, verifying the pin.
+
+    The bytes must hash and size exactly to what the (signed) catalog pins before
+    anything trusts their content - a manifest that was corrupted on the server into
+    different, still-parseable JSON must never silently shrink the set of blobs a
+    caller believes are referenced (gate G4/G5 diffs, ``report``, and above all
+    ``gc``, which must never delete a blob a real release needs)."""
+    data = store.get(blob_key(entry.manifest_sha256))
+    if len(data) != entry.manifest_byte_length or sha256_ref(data) != entry.manifest_sha256:
+        raise OtaPublisherError(
+            f"release manifest of {entry.release_id} does not match its catalog pin "
+            f"({len(data)} bytes {sha256_ref(data)}, pinned {entry.manifest_byte_length} "
+            f"bytes {entry.manifest_sha256})"
+        )
     from talent_data.ota.verify import parse_strict
 
-    data = store.get(blob_key(entry.manifest_sha256))
     try:
         manifest = parse_strict(OtaReleaseManifest, data)
     except ValueError as exc:
@@ -226,16 +284,28 @@ def ensure_blob(store: BlobStore, sha_ref: str) -> bytes:
 
 
 def ensure_catalog_references(store: BlobStore, catalog: OtaCatalog) -> None:
-    """Everything the catalog pins must already resolve in the store.
+    """Everything the catalog references must resolve in the store, byte for byte.
 
-    A catalog is never written while one of its manifest blobs is missing or corrupt.
-    """
+    A catalog is never written while any object it will make clients fetch is missing
+    or corrupt: every listed release's manifest must match its catalog pin (hash,
+    length, identity) and every file the manifest lists must exist and hash to its
+    own name."""
     for entry in catalog.releases:
-        data, _ = read_release_manifest(store, entry)
-        if len(data) != entry.manifest_byte_length or sha256_ref(data) != entry.manifest_sha256:
-            raise OtaPublisherError(
-                f"release manifest of {entry.release_id} does not match its catalog pin"
-            )
+        _, manifest = read_release_manifest(store, entry)  # verifies the pin
+        identity = {
+            "releaseId": (manifest.release_id, entry.release_id),
+            "clientBuild": (manifest.client_build, entry.client_build),
+            "minDataLevel": (manifest.min_data_level, entry.min_data_level),
+            "totalByteLength": (manifest.total_byte_length, entry.total_byte_length),
+        }
+        for name, (found, expected) in identity.items():
+            if found != expected:
+                raise OtaPublisherError(
+                    f"release manifest of {entry.release_id} disagrees with its catalog "
+                    f"entry on {name}: {found!r} != {expected!r}"
+                )
+        for file in manifest.files:
+            ensure_blob(store, file.sha256)
 
 
 def write_catalog(
@@ -247,6 +317,7 @@ def write_catalog(
     keyring: Mapping[str, TrustedKey],
     game: str,
     now: datetime,
+    allow_expired_live: bool = False,
 ) -> None:
     """Replace the channel's catalog - last, once, and only when it is safe.
 
@@ -255,13 +326,18 @@ def write_catalog(
     * the live ``sequence`` is re-read and must still equal ``base_sequence`` (the
       state the new catalog was built on): a concurrent publication aborts this one;
     * only then is the single object put.
+
+    ``allow_expired_live`` lets a recovery re-issue succeed over a lapsed (but still
+    signature-verified) live catalog.
     """
     if len(envelope) > MAX_CATALOG_BYTES:
         raise OtaPublisherError(
             f"catalog.json would be {len(envelope)} bytes, over the "
             f"{MAX_CATALOG_BYTES}-byte limit; refusing to write"
         )
-    live = read_live_catalog(store, channel, keyring=keyring, game=game, now=now)
+    live = read_live_catalog(
+        store, channel, keyring=keyring, game=game, now=now, allow_expired=allow_expired_live
+    )
     live_sequence = None if live is None else live.sequence
     if live_sequence != base_sequence:
         raise OtaPublisherError(
