@@ -43,6 +43,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.job
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -355,7 +357,21 @@ class OtaDevice(
 
     /** Process death and a cold start on the same directory. */
     fun restart(wrapper: (OtaFileStore) -> OtaFileStore = storeWrapper): OtaRuntime {
-        scope.cancel()
+        kill()
+        return coldStart(wrapper)
+    }
+
+    /**
+     * Process death: the runtime's coroutines are cancelled AND awaited, so their cooperative
+     * cancellation cleanup (an attempt deletes its `.part` files) has finished and nothing of
+     * the old runtime touches [directory] once this returns.
+     */
+    fun kill() {
+        runBlocking { scope.coroutineContext.job.cancelAndJoin() }
+    }
+
+    /** A cold start on the same directory after [kill]. */
+    fun coldStart(wrapper: (OtaFileStore) -> OtaFileStore = storeWrapper): OtaRuntime {
         scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         store = wrapper(baseStore)
         runtime = open()
