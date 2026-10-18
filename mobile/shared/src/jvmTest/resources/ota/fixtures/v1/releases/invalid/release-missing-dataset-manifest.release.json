@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "clientBuild": "1.60.1.70450",
+  "releaseId": "1.60.1.70450-r1",
+  "minDataLevel": 1,
+  "createdAt": "2026-10-17T23:00:00Z",
+  "provenance": {
+    "repositoryCommit": "c749ebc5fc31c43be742844cb89d012f100a2a0a",
+    "validation": "talent-data validate + manifest + visuals/tooltips/localization sync checks"
+  },
+  "files": [
+    {"path": "dataset/forever/1.60.1.70450/druid.json", "role": "TALENT_DATA", "sha256": "sha256:c7194d0613b5fd3633cd010512cae475e3b5007382b5a9e1d4d253810cb5f08f", "byteLength": 115026},
+    {"path": "localization/forever/1.60.1.70450/ruRU/druid.json", "role": "LOCALIZATION", "sha256": "sha256:8bccdca8744af3ec1a9ace7f829dcc79d583b71cb0c754384618f7b215aa583f", "byteLength": 105157},
+    {"path": "tooltips/forever/1.60.1.70450/druid.json", "role": "TOOLTIPS", "sha256": "sha256:8594b6ecea5855a2ae2b5b324438f52807924b353a5313beed8e3b76530ca37e", "byteLength": 101655},
+    {"path": "visuals/forever/1.60.1.70450/druid.json", "role": "VISUALS", "sha256": "sha256:23390715bfcfbba786d3c01204e0383eae91edd99166ec99db9a5b3d3b69a134", "byteLength": 8538},
+    {"path": "visuals/forever/1.60.1.70450/icons.json", "role": "ICON_REGISTRY", "sha256": "sha256:25ac8ab0804c64e1af7c5e3e0a2e20c9fa2fc296c5befc95cdd37d114a63ce10", "byteLength": 140068},
+    {"path": "visuals/forever/1.60.1.70450/icons/1085608.png", "role": "ICON_IMAGE", "sha256": "sha256:0429292f1acbc4fa12cab5a54f78a29872278d8ea8995c848a780ef8407041fd", "byteLength": 6221}
+  ],
+  "totalByteLength": 476665
+}

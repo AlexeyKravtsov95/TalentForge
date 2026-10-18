@@ -1,0 +1,22 @@
+{
+  "comment": "TEST keys only (derived from public seeds in scripts/generate_ota_fixtures.py). Never pin a test- key in an app.",
+  "keys": [
+    {
+      "keyId": "test-primary",
+      "algorithm": "ecdsa-p256-sha256",
+      "publicKeySpki": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEyoR1s+5SuSY90gARabTCfhLhgatG7ZL4JrhPEy5hGZ0Xp3qFf+zrbm7Eb9oaqyPUddx3luK+J60L+G0RDIRclA=="
+    },
+    {
+      "keyId": "test-backup",
+      "algorithm": "ecdsa-p256-sha256",
+      "publicKeySpki": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEfHwO0XqyTRqHcByh7N7fC44GPI7CAglrLkWxGlvNvpF+cPEcBkjItnZT3+KhLRBSoTX9HROjMBzm593CMIdwUQ=="
+    }
+  ],
+  "untrustedKeys": [
+    {
+      "keyId": "test-untrusted",
+      "algorithm": "ecdsa-p256-sha256",
+      "publicKeySpki": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAELa64VWp6na6cftH7Uz8wjC8OTd9hXeNN6Lc8ki9eIXKdFTAbT320UzLIsuaYZwzVdOBTEhz/9h5Z/5jntmGizA=="
+    }
+  ]
+}

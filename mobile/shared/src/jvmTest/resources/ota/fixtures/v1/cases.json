@@ -1,0 +1,1490 @@
+{
+  "schemaVersion": 1,
+  "kind": "talentforge-ota-fixtures",
+  "specification": "docs/ota/ota-contract-v1.md",
+  "generator": "scripts/generate_ota_fixtures.py",
+  "cases": [
+    {
+      "id": "catalog-a-first-publication",
+      "description": "First catalog: A active. A device on its bundled product A installs release A-r1 (files equal to bundled ones are copied from the bundle, not downloaded).",
+      "kind": "catalog",
+      "file": "catalogs/catalog-a-first-publication.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "ACCEPT",
+        "decision": "ACTIVATE",
+        "releaseId": "1.60.1.70374-r1"
+      }
+    },
+    {
+      "id": "catalog-b-active",
+      "description": "A -> B without an app update: B becomes active.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-b-active.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": {
+          "sequence": 1,
+          "payloadSha256": "sha256:ca5e7cca408c099b6990d438fdd0f2be10983d3f53e801394f6166ff5c18fec7"
+        },
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": "1.60.1.70374-r1"
+      },
+      "expect": {
+        "result": "ACCEPT",
+        "decision": "ACTIVATE",
+        "releaseId": "1.60.1.70450-r1"
+      }
+    },
+    {
+      "id": "catalog-b-active-refetched",
+      "description": "The same catalog fetched again while B is active: nothing is downloaded again.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-b-active-refetched.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": {
+          "sequence": 2,
+          "payloadSha256": "sha256:621cd2b04d51cab321976a7d2c4d865667459903d53e3b482cebb8482b06e3dc"
+        },
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": "1.60.1.70450-r1"
+      },
+      "expect": {
+        "result": "ACCEPT",
+        "decision": "NO_CHANGE",
+        "releaseId": "1.60.1.70450-r1"
+      }
+    },
+    {
+      "id": "catalog-b-active-backup-key",
+      "description": "Signed by the backup key only (primary key lost): accepted.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-b-active-backup-key.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": "1.60.1.70374-r1"
+      },
+      "expect": {
+        "result": "ACCEPT",
+        "decision": "ACTIVATE",
+        "releaseId": "1.60.1.70450-r1"
+      }
+    },
+    {
+      "id": "catalog-b-active-extra-unknown-signer",
+      "description": "An additional signature by a key the app does not pin is ignored.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-b-active-extra-unknown-signer.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": "1.60.1.70374-r1"
+      },
+      "expect": {
+        "result": "ACCEPT",
+        "decision": "ACTIVATE",
+        "releaseId": "1.60.1.70450-r1"
+      }
+    },
+    {
+      "id": "catalog-rollback-to-a",
+      "description": "Rollback: a newer catalog (sequence 3) makes A active again; B stays listed.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-rollback-to-a.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": {
+          "sequence": 2,
+          "payloadSha256": "sha256:621cd2b04d51cab321976a7d2c4d865667459903d53e3b482cebb8482b06e3dc"
+        },
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": "1.60.1.70450-r1"
+      },
+      "expect": {
+        "result": "ACCEPT",
+        "decision": "ACTIVATE",
+        "releaseId": "1.60.1.70374-r1"
+      }
+    },
+    {
+      "id": "catalog-rollback-below-bundled-floor",
+      "description": "The rollback to A on an app whose bundled product is B: the bundled product is the floor, the device keeps what it has.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-rollback-below-bundled-floor.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": {
+          "sequence": 2,
+          "payloadSha256": "sha256:621cd2b04d51cab321976a7d2c4d865667459903d53e3b482cebb8482b06e3dc"
+        },
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70450",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "ACCEPT",
+        "decision": "KEEP_BUNDLED_FLOOR",
+        "releaseId": "1.60.1.70374-r1"
+      }
+    },
+    {
+      "id": "catalog-active-needs-newer-app",
+      "description": "The active release needs data level 2 (a new mechanic): an app at level 1 keeps its current dataset and downloads nothing.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-active-needs-newer-app.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": {
+          "sequence": 2,
+          "payloadSha256": "sha256:621cd2b04d51cab321976a7d2c4d865667459903d53e3b482cebb8482b06e3dc"
+        },
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": "1.60.1.70450-r1"
+      },
+      "expect": {
+        "result": "ACCEPT",
+        "decision": "KEEP_CURRENT_INCOMPATIBLE",
+        "releaseId": "1.60.1.70450-r2"
+      }
+    },
+    {
+      "id": "catalog-tampered-payload",
+      "description": "Payload changed after signing.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-tampered-payload.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "SIGNATURE_INVALID"
+      }
+    },
+    {
+      "id": "catalog-signature-by-wrong-key",
+      "description": "Labelled with the primary key id but made by another key.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-signature-by-wrong-key.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "SIGNATURE_INVALID"
+      }
+    },
+    {
+      "id": "catalog-untrusted-signer",
+      "description": "Signed only by a key the app does not pin.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-untrusted-signer.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "UNTRUSTED_SIGNER"
+      }
+    },
+    {
+      "id": "catalog-wrong-payload-type",
+      "description": "A correctly signed document of another type is not a catalog.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-wrong-payload-type.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "PAYLOAD_TYPE_MISMATCH"
+      }
+    },
+    {
+      "id": "catalog-envelope-unknown-field",
+      "description": "Unknown envelope field.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-envelope-unknown-field.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "ENVELOPE_INVALID"
+      }
+    },
+    {
+      "id": "catalog-envelope-noncanonical-base64",
+      "description": "The payload base64 is line-wrapped; only canonical base64 is accepted.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-envelope-noncanonical-base64.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "ENVELOPE_INVALID"
+      }
+    },
+    {
+      "id": "catalog-envelope-duplicate-key-id",
+      "description": "Two signatures with the same key id.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-envelope-duplicate-key-id.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "ENVELOPE_INVALID"
+      }
+    },
+    {
+      "id": "catalog-truncated-download",
+      "description": "A partially downloaded catalog.json.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-truncated-download.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "ENVELOPE_INVALID"
+      }
+    },
+    {
+      "id": "catalog-over-size-limit",
+      "description": "A valid signed catalog padded with JSON whitespace to one byte over the 1 MiB limit: rejected before any parsing (a client stops reading at the limit).",
+      "kind": "catalog",
+      "file": "catalogs/catalog-over-size-limit.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "CATALOG_TOO_LARGE"
+      }
+    },
+    {
+      "id": "catalog-envelope-duplicate-key",
+      "description": "The envelope repeats payloadType with the same value.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-envelope-duplicate-key.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "ENVELOPE_INVALID"
+      }
+    },
+    {
+      "id": "catalog-envelope-nested-duplicate-key",
+      "description": "A signature object repeats keyId with the same value (duplicate in a nested object).",
+      "kind": "catalog",
+      "file": "catalogs/catalog-envelope-nested-duplicate-key.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "ENVELOPE_INVALID"
+      }
+    },
+    {
+      "id": "catalog-unknown-field",
+      "description": "Signed payload with an unknown field: rejected, never ignored.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-unknown-field.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "PAYLOAD_INVALID"
+      }
+    },
+    {
+      "id": "catalog-quoted-number",
+      "description": "sequence as a JSON string.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-quoted-number.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "PAYLOAD_INVALID"
+      }
+    },
+    {
+      "id": "catalog-duplicate-json-key",
+      "description": "A JSON object with the activeReleaseId key twice.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-duplicate-json-key.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "PAYLOAD_INVALID"
+      }
+    },
+    {
+      "id": "catalog-duplicate-key-same-value",
+      "description": "sequence twice with the same value: duplicates are rejected whatever their values.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-duplicate-key-same-value.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "PAYLOAD_INVALID"
+      }
+    },
+    {
+      "id": "catalog-duplicate-nested-key",
+      "description": "The first release entry repeats minDataLevel (duplicate in a nested object).",
+      "kind": "catalog",
+      "file": "catalogs/catalog-duplicate-nested-key.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "PAYLOAD_INVALID"
+      }
+    },
+    {
+      "id": "catalog-duplicate-escaped-key",
+      "description": "activeReleaseId and activeRelease\\u0049d are the same name once unescaped.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-duplicate-escaped-key.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "PAYLOAD_INVALID"
+      }
+    },
+    {
+      "id": "catalog-unknown-channel",
+      "description": "A channel value outside the closed set.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-unknown-channel.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "PAYLOAD_INVALID"
+      }
+    },
+    {
+      "id": "catalog-naive-timestamp",
+      "description": "A timestamp without a UTC designator.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-naive-timestamp.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "PAYLOAD_INVALID"
+      }
+    },
+    {
+      "id": "catalog-byte-order-mark",
+      "description": "Payload bytes start with a UTF-8 BOM.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-byte-order-mark.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "PAYLOAD_INVALID"
+      }
+    },
+    {
+      "id": "catalog-schema-version-2",
+      "description": "A future catalog schema.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-schema-version-2.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "UNSUPPORTED_SCHEMA_VERSION"
+      }
+    },
+    {
+      "id": "catalog-other-game",
+      "description": "A catalog of another game.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-other-game.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "GAME_MISMATCH"
+      }
+    },
+    {
+      "id": "catalog-staging-on-production",
+      "description": "A staging catalog served at the production URL.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-staging-on-production.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "CHANNEL_MISMATCH"
+      }
+    },
+    {
+      "id": "catalog-expired",
+      "description": "Read after its expiry (freeze attack, or a stale CDN copy).",
+      "kind": "catalog",
+      "file": "catalogs/catalog-expired.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-12-02T00:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "CATALOG_EXPIRED"
+      }
+    },
+    {
+      "id": "catalog-sequence-regression",
+      "description": "An older catalog (sequence 1) after sequence 2 was accepted (replay).",
+      "kind": "catalog",
+      "file": "catalogs/catalog-sequence-regression.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": {
+          "sequence": 2,
+          "payloadSha256": "sha256:621cd2b04d51cab321976a7d2c4d865667459903d53e3b482cebb8482b06e3dc"
+        },
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "SEQUENCE_REGRESSION"
+      }
+    },
+    {
+      "id": "catalog-sequence-reused",
+      "description": "Sequence 2 again, with different content.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-sequence-reused.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": {
+          "sequence": 2,
+          "payloadSha256": "sha256:621cd2b04d51cab321976a7d2c4d865667459903d53e3b482cebb8482b06e3dc"
+        },
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "SEQUENCE_REGRESSION"
+      }
+    },
+    {
+      "id": "catalog-active-not-listed",
+      "description": "activeReleaseId names a release the catalog does not list.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-active-not-listed.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "CATALOG_INCONSISTENT"
+      }
+    },
+    {
+      "id": "catalog-duplicate-release",
+      "description": "The same release listed twice.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-duplicate-release.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "CATALOG_INCONSISTENT"
+      }
+    },
+    {
+      "id": "catalog-unordered-releases",
+      "description": "Releases not ordered by (clientBuild, revision).",
+      "kind": "catalog",
+      "file": "catalogs/catalog-unordered-releases.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "CATALOG_INCONSISTENT"
+      }
+    },
+    {
+      "id": "catalog-release-id-build-mismatch",
+      "description": "A releaseId that does not name its clientBuild.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-release-id-build-mismatch.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "CATALOG_INCONSISTENT"
+      }
+    },
+    {
+      "id": "catalog-validity-too-long",
+      "description": "expiresAt more than 180 days after issuedAt.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-validity-too-long.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "CATALOG_INCONSISTENT"
+      }
+    },
+    {
+      "id": "release-a-valid",
+      "description": "Release A: every file is the committed 70374 data.",
+      "kind": "release",
+      "file": "releases/1.60.1.70374-r1.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70374-r1",
+        "clientBuild": "1.60.1.70374",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:48ccbb168ef510fda0cbab1d44d68d5f7e4a624ed8a41e0867b305a976325cdd",
+        "manifestByteLength": 75599,
+        "totalByteLength": 5000463,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": "repository"
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {}
+      },
+      "expect": {
+        "result": "ACCEPT"
+      }
+    },
+    {
+      "id": "release-b-valid",
+      "description": "Release B: every file is the committed 70450 data.",
+      "kind": "release",
+      "file": "releases/1.60.1.70450-r1.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r1",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:c00919232abe8ba15dc8394bb27d9c734d877972cdec867099327214cf20c17f",
+        "manifestByteLength": 75792,
+        "totalByteLength": 5077048,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": "repository"
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {}
+      },
+      "expect": {
+        "result": "ACCEPT"
+      }
+    },
+    {
+      "id": "release-needs-data-level-2",
+      "description": "A release for a newer app (new mechanic), offered to an app at data level 1.",
+      "kind": "release",
+      "file": "releases/1.60.1.70450-r2.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r2",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 2,
+        "manifestSha256": "sha256:6f8337d1404a79637eafc63629ee2cda9e86b33551eae3f5e9249efc2aeec1bc",
+        "manifestByteLength": 75792,
+        "totalByteLength": 5077048,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": null
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {}
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "INCOMPATIBLE_DATA_LEVEL"
+      }
+    },
+    {
+      "id": "release-manifest-hash-mismatch",
+      "description": "The catalog pins other bytes (a manifest replaced on the server).",
+      "kind": "release",
+      "file": "releases/1.60.1.70450-r1.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r1",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:48ccbb168ef510fda0cbab1d44d68d5f7e4a624ed8a41e0867b305a976325cdd",
+        "manifestByteLength": 75792,
+        "totalByteLength": 5077048,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": null
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {}
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "MANIFEST_HASH_MISMATCH"
+      }
+    },
+    {
+      "id": "release-manifest-truncated",
+      "description": "A partially downloaded release manifest.",
+      "kind": "release",
+      "file": "releases/invalid/truncated.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r1",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:c00919232abe8ba15dc8394bb27d9c734d877972cdec867099327214cf20c17f",
+        "manifestByteLength": 75792,
+        "totalByteLength": 5077048,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": null
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {}
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "MANIFEST_HASH_MISMATCH"
+      }
+    },
+    {
+      "id": "release-duplicate-nested-key",
+      "description": "A file entry repeats byteLength with the same value (duplicate in a nested object).",
+      "kind": "release",
+      "file": "releases/invalid/release-duplicate-nested-key.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r1",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:f329ed5d27e9b7790b8c2ab243b12f40ed981da6f9cf0286b00fa8e62d69bcb2",
+        "manifestByteLength": 1752,
+        "totalByteLength": 480003,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": null
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {}
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "MANIFEST_INVALID"
+      }
+    },
+    {
+      "id": "release-schema-version-2",
+      "description": "A future release manifest schema.",
+      "kind": "release",
+      "file": "releases/invalid/release-schema-version-2.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r1",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:412b3aacbc6d1ff308276e7b6359ca81ae636822d6474e46ac017279c7f1a64a",
+        "manifestByteLength": 1730,
+        "totalByteLength": 480003,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": null
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {}
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "UNSUPPORTED_SCHEMA_VERSION"
+      }
+    },
+    {
+      "id": "release-unknown-field",
+      "description": "Unknown release manifest field.",
+      "kind": "release",
+      "file": "releases/invalid/release-unknown-field.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r1",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:27b3a4b367a1e4d84c1f91ce334ed1ac6de193c4d165c7942073c5ae2f45aeee",
+        "manifestByteLength": 1752,
+        "totalByteLength": 480003,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": null
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {}
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "MANIFEST_INVALID"
+      }
+    },
+    {
+      "id": "release-unknown-role",
+      "description": "A file role outside the closed set (there is no executable role).",
+      "kind": "release",
+      "file": "releases/invalid/release-unknown-role.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r1",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:42e6df53b8c4b2b344629cd35ea4105100b4ec4009320e78987e21e4267e6fb1",
+        "manifestByteLength": 1725,
+        "totalByteLength": 480003,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": null
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {}
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "MANIFEST_INVALID"
+      }
+    },
+    {
+      "id": "release-identity-mismatch",
+      "description": "The manifest is B-r1; the catalog entry pins its bytes as B-r2.",
+      "kind": "release",
+      "file": "releases/invalid/release-identity-mismatch.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r2",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:362398a46676308c2f7794049ef5748c70ec237d5b2bdd13e45c549f98245269",
+        "manifestByteLength": 1730,
+        "totalByteLength": 480003,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": null
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {}
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "RELEASE_IDENTITY_MISMATCH"
+      }
+    },
+    {
+      "id": "release-path-traversal",
+      "description": "A talent data path that leaves the release root.",
+      "kind": "release",
+      "file": "releases/invalid/release-path-traversal.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r1",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:312389b871aeff817fa0af5b119b2839a10c235d5595061d677b975d53d8e1c4",
+        "manifestByteLength": 1741,
+        "totalByteLength": 480003,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": null
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {}
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "LAYOUT_INVALID"
+      }
+    },
+    {
+      "id": "release-path-of-other-build",
+      "description": "A file placed under another build's directory.",
+      "kind": "release",
+      "file": "releases/invalid/release-path-of-other-build.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r1",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:5b9cc42f58a680d68893f6b4db44846132218afe493d27f6b0b04d97ad17a787",
+        "manifestByteLength": 1729,
+        "totalByteLength": 480003,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": null
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {}
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "LAYOUT_INVALID"
+      }
+    },
+    {
+      "id": "release-role-path-mismatch",
+      "description": "A talent data file at an icon path.",
+      "kind": "release",
+      "file": "releases/invalid/release-role-path-mismatch.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r1",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:09590cbb10d827dee065555d1993e09dc6c396c8ef646f7d9c11dfb0b7cd46a7",
+        "manifestByteLength": 1731,
+        "totalByteLength": 480003,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": null
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {}
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "LAYOUT_INVALID"
+      }
+    },
+    {
+      "id": "release-duplicate-path",
+      "description": "The same path listed twice.",
+      "kind": "release",
+      "file": "releases/invalid/release-duplicate-path.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r1",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:c7a798be5b86e41b52926903d831934f0b8552d1696652e49e70f4a6e21a8965",
+        "manifestByteLength": 1917,
+        "totalByteLength": 595029,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": null
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {}
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "LAYOUT_INVALID"
+      }
+    },
+    {
+      "id": "release-unordered-files",
+      "description": "Files not ordered by path.",
+      "kind": "release",
+      "file": "releases/invalid/release-unordered-files.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r1",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:b8dfbab584d7a2a4259de66a3ef225345f41c180ffe5f4d8c174aee2f8a766c4",
+        "manifestByteLength": 1730,
+        "totalByteLength": 480003,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": null
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {}
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "LAYOUT_INVALID"
+      }
+    },
+    {
+      "id": "release-total-mismatch",
+      "description": "totalByteLength is not the sum of the file sizes.",
+      "kind": "release",
+      "file": "releases/invalid/release-total-mismatch.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r1",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:a1cee715b9d0d1746a28f24f0ee763d1cb4f14384d6ccc94f9684d6ee5f3428b",
+        "manifestByteLength": 1730,
+        "totalByteLength": 480004,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": null
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {}
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "LAYOUT_INVALID"
+      }
+    },
+    {
+      "id": "release-missing-dataset-manifest",
+      "description": "No DATASET_MANIFEST file.",
+      "kind": "release",
+      "file": "releases/invalid/release-missing-dataset-manifest.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r1",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:9ae749a6f5cd7332dc7f9419405a38f6af994d792068f969dd83f3c76a3086be",
+        "manifestByteLength": 1537,
+        "totalByteLength": 476665,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": null
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {}
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "LAYOUT_INVALID"
+      }
+    },
+    {
+      "id": "release-blob-hash-mismatch",
+      "description": "An icon whose bytes differ from the manifest's SHA-256.",
+      "kind": "release",
+      "file": "releases/1.60.1.70450-r1.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r1",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:c00919232abe8ba15dc8394bb27d9c734d877972cdec867099327214cf20c17f",
+        "manifestByteLength": 75792,
+        "totalByteLength": 5077048,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": null
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {
+          "visuals/forever/1.60.1.70450/icons/132089.png": "blobs/icon-132089-bitflip.png"
+        }
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "BLOB_HASH_MISMATCH"
+      }
+    },
+    {
+      "id": "release-blob-truncated",
+      "description": "A partially downloaded icon.",
+      "kind": "release",
+      "file": "releases/1.60.1.70450-r1.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r1",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:c00919232abe8ba15dc8394bb27d9c734d877972cdec867099327214cf20c17f",
+        "manifestByteLength": 75792,
+        "totalByteLength": 5077048,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": null
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {
+          "visuals/forever/1.60.1.70450/icons/132089.png": "blobs/icon-132089-truncated.png"
+        }
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "BLOB_SIZE_MISMATCH"
+      }
+    },
+    {
+      "id": "release-new-mechanic",
+      "description": "Paladin talent data with a prerequisite kind outside the closed talent-data.v1 set: the strict reader rejects it and nothing of the release is used.",
+      "kind": "release",
+      "file": "releases/invalid/release-new-mechanic.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r1",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:877ea22f6d1e5b464be96e66e2cefcf8227907bf7ecd716601c616a664d02575",
+        "manifestByteLength": 75792,
+        "totalByteLength": 5077047,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": null
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {
+          "dataset/forever/1.60.1.70450/paladin.json": "blobs/release-new-mechanic--paladin.json"
+        }
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "CONTENT_INVALID"
+      }
+    },
+    {
+      "id": "release-open-union-node-type",
+      "description": "A node type the app does not know is preserved, not rejected (open union of talent-data.v1); the engine treats the node as unsupported. Protection against new mechanics is the publisher gate plus minDataLevel, see the contract.",
+      "kind": "release",
+      "file": "releases/edge/release-open-union-node-type.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r3",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:85b5256764e88104fe6459ea1b59eb2bdb97116ce23346c64f4845d07645e7e7",
+        "manifestByteLength": 75792,
+        "totalByteLength": 5077048,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": null
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {
+          "dataset/forever/1.60.1.70450/paladin.json": "blobs/release-open-union-node-type--paladin.json"
+        }
+      },
+      "expect": {
+        "result": "ACCEPT"
+      }
+    },
+    {
+      "id": "release-mixed-builds",
+      "description": "B's Mage tooltips replaced by A's (valid JSON, wrong client build).",
+      "kind": "release",
+      "file": "releases/invalid/release-mixed-builds.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r1",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:03af9f7a5b732eff844bb2c626aee28cf73f056165d0acc0f51228efcebdc6b0",
+        "manifestByteLength": 75791,
+        "totalByteLength": 5074452,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": null
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {
+          "tooltips/forever/1.60.1.70450/mage.json": "repository:tooltips/forever/1.60.1.70374/mage.json"
+        }
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "CONTENT_IDENTITY_MISMATCH"
+      }
+    },
+    {
+      "id": "release-content-duplicate-key",
+      "description": "The dataset manifest (a content file, pinned by its hash) repeats source with the same value: content files get the same duplicate-key rejection as OTA documents.",
+      "kind": "release",
+      "file": "releases/invalid/release-content-duplicate-key.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r1",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:53692483c3000bb7e36f565537ab6d2aeea6d51771572fe974c24552f030dad9",
+        "manifestByteLength": 75792,
+        "totalByteLength": 5077074,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": null
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {
+          "dataset/forever/1.60.1.70450/manifest.json": "blobs/release-content-duplicate-key--manifest.json"
+        }
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "CONTENT_INVALID"
+      }
+    },
+    {
+      "id": "release-missing-class",
+      "description": "The Warrior talent data file is missing although the dataset manifest lists it.",
+      "kind": "release",
+      "file": "releases/invalid/release-missing-class.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r1",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:318ef76e12170b28bd0d5f9362d831a4cfac6ff7eecce9ebd82654deff21df28",
+        "manifestByteLength": 75603,
+        "totalByteLength": 4972083,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": null
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {}
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "RELEASE_INCOMPLETE"
+      }
+    },
+    {
+      "id": "release-same-build-conflict",
+      "description": "B-r2 claims different Paladin talent data for the same client build (consistent within itself): rejected against the dataset the device already trusts for B.",
+      "kind": "release",
+      "file": "releases/invalid/release-same-build-conflict.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r2",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:68be9320637702b4d3d90ca8d1df766133d1ad065ec64f763e1ab0b23a0e936e",
+        "manifestByteLength": 75792,
+        "totalByteLength": 5077048,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": "repository"
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {
+          "dataset/forever/1.60.1.70450/paladin.json": "blobs/release-same-build-conflict--paladin.json",
+          "dataset/forever/1.60.1.70450/manifest.json": "blobs/release-same-build-conflict--manifest.json"
+        }
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "BUILD_IDENTITY_CONFLICT"
+      }
+    }
+  ]
+}
