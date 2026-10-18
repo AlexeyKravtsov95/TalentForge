@@ -18,7 +18,7 @@ code does where the design leaves a choice, and every deliberate deviation from 
 | Android + desktop adapters | `composeApp/src/jvmCommonMain/…/ui/ota/JvmOtaPorts.kt` | One source set for both JVM targets (`applyDefaultHierarchyTemplate { group("jvmCommon") }`): `java.security` ECDSA, `HttpURLConnection` (byte limit while reading, no redirects, HTTPS only), `java.nio` (fsync, `ATOMIC_MOVE`). Desktop uses `HttpURLConnection` too rather than `java.net.http`: one implementation, the one Android ships, is what the L4 tests exercise. |
 | iOS adapters | `composeApp/src/iosMain/…/ui/ota/IosOtaPorts.kt` | `SecKeyCreateWithData` (X9.63 point = last 65 bytes of the SPKI) + `SecKeyVerifySignature(ECDSASignatureMessageX962SHA256)`; ephemeral `NSURLSession` with a data delegate that cancels past the limit and refuses redirects; Application Support store (`NSURLIsExcludedFromBackupKey`), `open`/`write`/`fsync`, `rename(2)`. |
 | Hosts | `OtaRuntime.android.kt`, `OtaRuntime.ios.kt`, `MainActivity`, `MainViewController` | One runtime per process; `null` unless the platform's generated settings are enabled. |
-| Configuration | `composeApp/build.gradle.kts` → `GeneratedOtaSettings.kt` | Per platform (android, ios) × channel (production for release builds, staging for debug builds) from Gradle properties / environment only; all disabled by default. Each keyring pins only its own channel's keys — `tf-prod-*` in production, `tf-staging-*` in staging ([publisher-and-security.md §5.1](publisher-and-security.md)) — checked on that keyring alone by the build (`verifyOtaSettingsRules` proves the rules) and again by `OtaConfig.resolve` (`KEY_NOT_FOR_CHANNEL`). |
+| Configuration | `composeApp/build.gradle.kts` → `GeneratedOtaSettings.kt` | Per platform (android, ios) × channel (production for release builds, staging for debug builds) from Gradle properties / environment only; all disabled by default. Each keyring pins only its own channel's keys — `tf-prod-*` in production, `tf-staging-*` in staging ([publisher-and-security.md §5.1](publisher-and-security.md)) — checked on that keyring alone by the build (`verifyOtaSettingsRules` proves the rules) and again by `OtaConfig.resolve` (`KEY_NOT_FOR_CHANNEL`). M5.OTA.4a adds `talentforge.ota.android.staging.trustAnchor` (a staging stand's CA as the debug build's only TLS root, [staging-setup.md](staging-setup.md)) and stops every Android release variant while any staging setting is set (`checkReleaseOtaSettings`). |
 
 ## Decisions and deviations from the design sketch
 
@@ -86,7 +86,12 @@ code does where the design leaves a choice, and every deliberate deviation from 
   installed, only contract paths are requested, B is activated and opens new builds, the
   rollback downloads only the catalog, a cold start recovers offline, and a staging client
   takes the staging catalog of the same store.
-* L6: [client-performance-report.md](client-performance-report.md).
+* Staging E2E (M5.OTA.4a, opt-in): `OtaStagingE2ETest` (`-Dtalentforge.ota.staging=<stand>`) runs the
+  client against the bytes the real publisher staged with an ephemeral `tf-staging-local-*` key, over
+  HTTPS with the stand's certificate, the configuration resolved by `OtaConfig.resolve`; results in
+  [M5.OTA.4a-integration-report.md](M5.OTA.4a-integration-report.md).
+* L6: [client-performance-report.md](client-performance-report.md); the follow-up decision is
+  [ADR-0002](ADR-0002-delivery-performance.md).
 
 ## Not done here (owner / later milestones)
 
