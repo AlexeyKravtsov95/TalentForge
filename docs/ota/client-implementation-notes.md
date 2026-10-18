@@ -79,6 +79,13 @@ code does where the design leaves a choice, and every deliberate deviation from 
 * L4: `OtaPlatformAdapterTest` (JVM/Android code: 39 catalogs, HTTP limits/redirects against a
   local server, atomic store), `IosOtaAdapterTest` on the iOS simulator (38 catalogs with
   Security.framework, store).
+* Publisher → client interop (opt-in, after M5.OTA.2 merged): `scripts/ota_publisher_interop.py <out>`
+  runs the real publisher CLI with TEST keys — stage A, promote A, promote B, rollback to A —
+  and `OtaPublisherInteropTest` (`-Dtalentforge.ota.interop=<out>`) installs from each store
+  copy over HTTP through `PlatformBlobFetcher`: the publisher's exact manifest bytes are
+  installed, only contract paths are requested, B is activated and opens new builds, the
+  rollback downloads only the catalog, a cold start recovers offline, and a staging client
+  takes the staging catalog of the same store.
 * L6: [client-performance-report.md](client-performance-report.md).
 
 ## Not done here (owner / later milestones)

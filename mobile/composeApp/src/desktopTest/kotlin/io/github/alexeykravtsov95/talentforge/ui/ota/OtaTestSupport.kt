@@ -322,6 +322,8 @@ class OtaDevice(
     val bundledProduct: String = bundledBuilds.maxWith(compareBy { io.github.alexeykravtsov95.talentforge.data.ota.ClientBuildVersion.parse(it) }),
     val config: OtaConfig = OtaConfig.forTesting(OtaTestRepo.keyring, baseUrl = "https://ota.test"),
     val storeWrapper: (OtaFileStore) -> OtaFileStore = { it },
+    /** Another origin than the in-memory [server] (the publisher interop check serves a real store over HTTP). */
+    private val fetcher: BlobFetcher? = null,
 ) : AutoCloseable {
     val directory: File = Files.createTempDirectory("tf-ota").toFile()
     val server = FakeBlobServer(config)
@@ -343,7 +345,7 @@ class OtaDevice(
     private fun open(): OtaRuntime = OtaRuntime.open(
         config = config,
         store = store,
-        fetcher = server,
+        fetcher = fetcher ?: server,
         signatures = PlatformSignatureVerifier(),
         clock = clock,
         bundle = bundle,

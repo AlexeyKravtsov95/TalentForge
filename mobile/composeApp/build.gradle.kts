@@ -605,6 +605,9 @@ tasks.named<Test>("desktopTest") {
     System.getProperty("talentforge.ota.benchmark")?.let {
         systemProperty("talentforge.ota.benchmark", it)
     }
+    System.getProperty("talentforge.ota.interop")?.let {
+        systemProperty("talentforge.ota.interop", it)
+    }
     System.getProperty("talentforge.m5ota3.screenshots")?.let {
         systemProperty("talentforge.m5ota3.screenshots", it)
     }
