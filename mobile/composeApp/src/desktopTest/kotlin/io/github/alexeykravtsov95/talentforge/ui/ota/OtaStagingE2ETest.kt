@@ -598,7 +598,7 @@ class OtaStagingE2ETest {
             }
             // plaintext is refused before any connection
             val plain = runBlocking { fetcher().fetch("http://127.0.0.1:${origin.base.substringAfterLast(':')}/$CATALOG_PATH", 1024) }
-            assertEquals(FetchResult.NetworkError("refusing a non-HTTPS URL"), plain)
+            assertEquals(FetchResult.NetworkError("refusing a non-HTTPS URL", retryable = false), plain)
             assertTrue(origin.requests.isEmpty())
             record("PASSED transport: 404/500/302 -> Http(status) with nothing changed, the redirect target never contacted, read timeout -> Network, untrusted certificate -> Network with no request, http:// refused")
         }
