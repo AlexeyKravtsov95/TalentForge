@@ -173,17 +173,17 @@ class OtaScenarioTest {
 
     @Test
     fun s5c_aCorruptedStagedFileIsDeletedAndRequestedAgain() = OtaDevice(
-        // one download at a time: the cut on the last file leaves exactly every other file staged
         config = OtaConfig.forTesting(OtaTestRepo.keyring, baseUrl = "https://ota.test", parallelism = 1),
     ).test { device ->
         device.server.publish(TestRelease.A, TestRelease.B)
         device.server.catalog = catalog("catalog-b-active")
         val files = TestRelease.B.manifest.files
-        val cut = files[files.size - 1]
+        // the last file whose blob no other path shares (two paths may share one blob, contract §5)
+        val cut = files.last { file -> files.count { it.sha256Hex == file.sha256Hex } == 1 }
         device.server.fault = { url, _ -> if (url.endsWith(cut.sha256Hex)) FetchResult.NetworkError("cut") else null }
         assertIs<OtaFailure.Network>(failure(device.check()))
         val staged = stagedPaths(device, B_ID)
-        assertEquals(files.size - 1, staged.size)
+        assertTrue(cut.path !in staged && staged.isNotEmpty(), "the cut file is not staged; the verified ones are")
         val victim = files.first { it.path in staged && it.sha256Hex != cut.sha256Hex }
         val victimFile = device.directory.resolve("v1/staging/$B_ID/${victim.path}")
         victimFile.writeBytes(victimFile.readBytes().also { it[0] = (it[0].toInt() xor 1).toByte() })
@@ -191,7 +191,8 @@ class OtaScenarioTest {
         device.restart()
         device.server.requests.clear()
         assertIs<CheckOutcome.Activated>(device.check())
-        assertEquals(setOf(cut.sha256Hex, victim.sha256Hex), device.server.blobRequests().toSet())
+        val expected = files.filter { it.path !in staged }.map { it.sha256Hex }.toSet() + victim.sha256Hex
+        assertEquals(expected, device.server.blobRequests().toSet(), "only the unstaged files and the corrupted one are requested")
     }
 
     // ------------------------------------------------------------------ S5b (catalog pins other bytes)
