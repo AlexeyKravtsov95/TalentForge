@@ -85,7 +85,7 @@ The stand's console logs every request (`GET /v1/...`).
 | # | Step | Expected |
 | --- | --- | --- |
 | 1 | Install, launch (stand on `1-a-staged`) | the first screen appears without waiting for the network; catalog GETs only (see step 6); About → Talent data: game build 1.60.1.70450, "Included with the app"; `state.json` with sequence 1 and no active release |
-| 2 | Create and save a build | it is listed in the library |
+| 2 | Create and save a build | it is listed in the library (opening it later from Home → Continue sets its `lastOpenedAt`; that is the only library change a run may show) |
 | 3 | `activate 2-b-staged`; About → Check for updates | the catalog GET and one blob GET (the B manifest); "Talent data updated to …"; About: "Downloaded update 1.60.1.70450-r1"; `state.json` active `1.60.1.70450-r1`; the saved build opens unchanged |
 | 4 | Check again | "Talent data is up to date"; the catalog GET only |
 | 5 | Home, reopen (background → foreground) | no crash, state unchanged; the foreground check is skipped inside the 6 h interval (OD-5), so no request |
