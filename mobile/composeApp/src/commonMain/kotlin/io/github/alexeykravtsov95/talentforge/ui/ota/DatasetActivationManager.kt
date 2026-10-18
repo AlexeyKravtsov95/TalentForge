@@ -69,6 +69,8 @@ class DatasetActivationManager(
     private val catalogs: CatalogVerifier,
     /** Where corruption reports found while reading a release are handled. */
     private val scope: CoroutineScope,
+    /** What open sessions read; retention never deletes a leased release (§4.5). */
+    val leases: SnapshotLeases = SnapshotLeases(),
 ) {
     private val mutex = Mutex()
 
@@ -95,6 +97,29 @@ class DatasetActivationManager(
     fun intactRelease(releaseId: String): IntactRelease? = intact[releaseId]
 
     fun intactReleases(): Collection<IntactRelease> = intact.values
+
+    /**
+     * Leases every release [snapshot] reads, or `null` when one of them was deleted or claimed
+     * by retention since the snapshot was published — the caller then takes a newer snapshot.
+     */
+    fun lease(snapshot: DatasetSnapshot): SnapshotLeases.Lease? {
+        val lease = leases.tryAcquire(snapshot.releaseIds) ?: return null
+        if (snapshot.releaseIds.all { it in intact }) return lease
+        lease.release()
+        return null
+    }
+
+    /**
+     * The current snapshot, leased, when it contains [bundle]; `null` when it does not. A
+     * snapshot is refused only while retention publishes its successor, so this ends at once.
+     */
+    fun leaseCurrent(bundle: DatasetBundleId): LeasedSnapshot? {
+        while (true) {
+            val current = snapshots.value
+            if (bundle !in current.bundles) return null
+            lease(current)?.let { return LeasedSnapshot(current, it) }
+        }
+    }
 
     /**
      * Startup recovery (contract §7.4, client design §4.1 and §4.7) — local only, before the
@@ -286,19 +311,33 @@ class DatasetActivationManager(
      * longer names — never a state naming a deleted release.
      */
     suspend fun collectGarbage(plan: RetentionPlan) = mutex.withLock {
-        var next = state
-        for (id in plan.deleteReleases) next = next.withoutInstalled(id)
-        if (next != state) {
-            cache.writeState(next)
-            state = next
-        }
-        for (id in plan.deleteReleases) cache.deleteViaTrash(cache.releaseDir(id))
-        for (name in plan.deleteStaging) cache.deleteViaTrash(cache.stagingFor(name))
-        cache.clearQuarantine()
-        cache.clearTrash()
-        if (plan.deleteReleases.isNotEmpty()) {
-            intact = intact - plan.deleteReleases
-            publish()
+        // the leases are decided here, not when the plan was made: a session that leased a
+        // release since then keeps it, and no session can lease one from now on
+        val deleted = leases.claimForDeletion(plan.deleteReleases.filterTo(HashSet()) { it in intact })
+        try {
+            if (deleted.isNotEmpty()) {
+                // new snapshots stop naming the claimed releases first, so a session never waits
+                // on the state write for a snapshot it can lease
+                val before = intact
+                intact = intact - deleted
+                publish()
+                var next = state
+                for (id in deleted) next = next.withoutInstalled(id)
+                try {
+                    cache.writeState(next)
+                } catch (e: Throwable) {
+                    intact = before
+                    publish()
+                    throw e
+                }
+                state = next
+            }
+            for (id in deleted) cache.deleteViaTrash(cache.releaseDir(id))
+            for (name in plan.deleteStaging) cache.deleteViaTrash(cache.stagingFor(name))
+            cache.clearQuarantine()
+            cache.clearTrash()
+        } finally {
+            leases.deletionFinished(deleted)
         }
     }
 

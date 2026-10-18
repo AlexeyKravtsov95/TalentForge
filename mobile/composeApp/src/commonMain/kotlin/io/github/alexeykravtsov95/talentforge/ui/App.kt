@@ -15,6 +15,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import io.github.alexeykravtsov95.talentforge.data.DatasetBundleId
+import io.github.alexeykravtsov95.talentforge.data.TalentDatasetRepository
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildClock
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryStorage
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildIdGenerator
@@ -32,6 +34,7 @@ import io.github.alexeykravtsov95.talentforge.ui.library.BuildAutosaveCoordinato
 import io.github.alexeykravtsov95.talentforge.ui.library.platformBuildClock
 import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
 import io.github.alexeykravtsov95.talentforge.ui.ota.DatasetResolution
+import io.github.alexeykravtsov95.talentforge.ui.ota.DatasetLeaseHolder
 import io.github.alexeykravtsov95.talentforge.ui.ota.EditorDatasetAccess
 import io.github.alexeykravtsov95.talentforge.ui.ota.OtaRuntime
 import io.github.alexeykravtsov95.talentforge.ui.ota.SessionDatasets
@@ -308,9 +311,15 @@ fun App(
                 sharing = sharing,
                 onBack = ::navigateUp,
                 resolveDataset = ota?.let { runtime ->
-                    { bundle ->
-                        (runtime.resolver.resolve(bundle) as? DatasetResolution.Available)?.let { SessionDatasets.of(it.snapshot).datasets }
+                    // a snapshot downloaded for the preview stays leased while this screen is open
+                    val leases = remember(destination, destinations.size) { DatasetLeaseHolder() }
+                    val resolve: suspend (DatasetBundleId) -> TalentDatasetRepository? = { bundle ->
+                        (runtime.resolver.resolve(bundle) as? DatasetResolution.Available)?.let {
+                            leases.hold(it.lease)
+                            SessionDatasets.of(it.snapshot).datasets
+                        }
                     }
+                    resolve
                 },
                 onImported = { localId ->
                     // storage has confirmed the record: the editor REPLACES the
@@ -325,24 +334,21 @@ fun App(
             )
 
             is AppDestination.Editor -> {
-                // an open editor leases the releases of its snapshot: retention keeps them (§4.5)
-                if (ota != null) {
-                    DisposableEffect(destination, session) {
-                        val lease = ota.leases.acquire(session.snapshot?.releaseIds.orEmpty())
-                        onDispose { lease.release() }
-                    }
-                }
+                // an open editor leases the releases of the snapshot it actually reads — the one
+                // it opened with, or the one its build is downloaded into — until it closes (§4.5)
+                val access = remember(destination, destinations.size) { ota?.let { EditorDatasetAccess.open(it, session) } }
+                val editorSession = access?.session ?: session
                 TalentTreeBuildScreen(
                     localId = destination.localId,
                     repository = environment.repository,
-                    datasets = session.datasets,
+                    datasets = editorSession.datasets,
                     autosave = autosave,
                     onBack = ::navigateUp,
-                    icons = session.icons,
-                    descriptions = session.descriptions,
-                    localization = session.localization,
+                    icons = editorSession.icons,
+                    descriptions = editorSession.descriptions,
+                    localization = editorSession.localization,
                     sharing = sharing,
-                    datasetAccess = remember(ota) { ota?.let(::EditorDatasetAccess) },
+                    datasetAccess = access,
                 )
             }
         }

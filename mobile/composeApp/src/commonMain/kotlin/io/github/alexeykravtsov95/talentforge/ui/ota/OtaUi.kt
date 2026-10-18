@@ -1,6 +1,7 @@
 package io.github.alexeykravtsov95.talentforge.ui.ota
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.RememberObserver
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_dataset_download_failed
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_dataset_insufficient_storage
@@ -17,6 +18,8 @@ import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.data.ota.OtaFailure
 import io.github.alexeykravtsov95.talentforge.ui.library.dataVersionOf
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.getAndUpdate
 import org.jetbrains.compose.resources.stringResource
 
 /** How an editor gets the dataset of a build its session does not have (client design §5.2). */
@@ -28,20 +31,76 @@ sealed interface EditorDatasetResolution {
 }
 
 /**
- * The editor's access to on-demand historical datasets — present only with OTA enabled. A
- * build opens on its own client build only; this never substitutes another one.
+ * One screen's lease on the snapshot it reads (client design §4.5): [hold] replaces it when the
+ * screen moves to another snapshot, and it is released when the screen leaves the composition.
+ * A lease handed over after that is released at once.
  */
-class EditorDatasetAccess(private val runtime: OtaRuntime) {
+class DatasetLeaseHolder : RememberObserver {
+    private class Slot(val lease: SnapshotLeases.Lease?, val closed: Boolean)
 
-    fun isAvailable(bundle: DatasetBundleId): Boolean = runtime.resolver.isAvailable(bundle)
+    private val slot = MutableStateFlow(Slot(null, closed = false))
+
+    fun hold(lease: SnapshotLeases.Lease) {
+        val previous = slot.getAndUpdate { if (it.closed) it else Slot(lease, closed = false) }
+        if (previous.closed) lease.release() else previous.lease?.release()
+    }
+
+    fun close() {
+        slot.getAndUpdate { Slot(null, closed = true) }.lease?.release()
+    }
+
+    override fun onRemembered() = Unit
+
+    override fun onForgotten() = close()
+
+    override fun onAbandoned() = close()
+}
+
+/**
+ * One editor's datasets with OTA enabled: the session it reads and the lease that keeps that
+ * session's releases on disk until the editor closes (client design §4.5) — the session it
+ * opened with, or the one [resolve] downloaded its build into, which then takes over the lease.
+ * A build opens on its own client build only; this never substitutes another one.
+ */
+class EditorDatasetAccess private constructor(
+    private val runtime: OtaRuntime,
+    /** The session the editor opened with. */
+    val session: SessionDatasets,
+    lease: SnapshotLeases.Lease,
+) : RememberObserver {
+    private val leases = DatasetLeaseHolder().also { it.hold(lease) }
+
+    /** Whether the editor's own session has [bundle] — not whether some newer snapshot does. */
+    fun isAvailable(bundle: DatasetBundleId): Boolean = bundle in session.snapshot!!.bundles
 
     suspend fun resolve(bundle: DatasetBundleId, onProgress: (InstallProgress) -> Unit): EditorDatasetResolution =
         when (val resolution = runtime.resolver.resolve(bundle, onProgress)) {
-            is DatasetResolution.Available -> EditorDatasetResolution.Ready(SessionDatasets.of(resolution.snapshot))
+            is DatasetResolution.Available -> {
+                leases.hold(resolution.lease)
+                EditorDatasetResolution.Ready(SessionDatasets.of(resolution.snapshot))
+            }
             is DatasetResolution.Unavailable -> EditorDatasetResolution.Unavailable(resolution.bundle, resolution.reason)
         }
 
+    override fun onRemembered() = Unit
+
+    override fun onForgotten() = leases.close()
+
+    override fun onAbandoned() = leases.close()
+
     companion object {
+        /**
+         * Opens an editor on [preferred] — the session current when the screen opened — leased;
+         * when retention removed one of its releases meanwhile, on the current snapshot instead.
+         */
+        fun open(runtime: OtaRuntime, preferred: SessionDatasets): EditorDatasetAccess {
+            preferred.snapshot?.let { snapshot -> runtime.activation.lease(snapshot)?.let { return EditorDatasetAccess(runtime, preferred, it) } }
+            while (true) {
+                val current = runtime.snapshot.value
+                runtime.activation.lease(current)?.let { return EditorDatasetAccess(runtime, SessionDatasets.of(current), it) }
+            }
+        }
+
         /** The client build a saved record is on — a read of the library that writes nothing (not even `lastOpenedAt`). */
         fun bundleOf(repository: LocalBuildRepository, localId: String): DatasetBundleId? =
             when (val library = repository.load()) {

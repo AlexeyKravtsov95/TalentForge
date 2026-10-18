@@ -25,8 +25,12 @@ sealed interface DatasetUnavailableReason {
 }
 
 sealed interface DatasetResolution {
-    /** The build is in [snapshot] (installed, bundled, or just downloaded); open it with this snapshot. */
-    data class Available(val snapshot: DatasetSnapshot) : DatasetResolution
+    /**
+     * The build is in [snapshot] (installed, bundled, or just downloaded); open it with this
+     * snapshot. [lease] keeps every release the snapshot reads on disk: the caller owns it and
+     * releases it when it stops reading the snapshot (client design §4.5).
+     */
+    class Available(val snapshot: DatasetSnapshot, val lease: SnapshotLeases.Lease) : DatasetResolution
 
     data class Unavailable(val bundle: DatasetBundleId, val reason: DatasetUnavailableReason) : DatasetResolution
 }
@@ -47,22 +51,36 @@ class HistoricalDatasetResolver(
 ) {
     fun isAvailable(bundle: DatasetBundleId): Boolean = bundle in activation.snapshot.value.bundles
 
+    /**
+     * The snapshot is leased before it is returned, with no suspension in between: a release
+     * downloaded here cannot be deleted by retention before its session holds it. Should
+     * retention have removed it right after the install (only when a newer revision of the
+     * same build is installed meanwhile), the build is resolved once more.
+     */
     suspend fun resolve(bundle: DatasetBundleId, onProgress: (InstallProgress) -> Unit = {}): DatasetResolution {
-        val snapshot = activation.snapshot.value
-        if (bundle in snapshot.bundles) return DatasetResolution.Available(snapshot)
-        if (bundle.game.value != config.game) return DatasetResolution.Unavailable(bundle, DatasetUnavailableReason.NotPublished)
-        val listed = activation.lastAcceptedCatalog()?.catalog?.releases.orEmpty().filter { it.clientBuild == bundle.clientBuild }
-        if (listed.isEmpty()) return DatasetResolution.Unavailable(bundle, DatasetUnavailableReason.NotPublished)
-        val usable = listed.filter { it.minDataLevel <= config.supportedDataLevel }
-            .maxByOrNull { ReleaseId.parseOrNull(it.releaseId)!! }
-            ?: return DatasetResolution.Unavailable(
-                bundle,
-                DatasetUnavailableReason.NeedsNewerApp(listed.minOf { it.minDataLevel }),
-            )
-        return when (val installed = downloads.install(usable, onProgress)) {
-            is OtaResult.Ok -> DatasetResolution.Available(activation.snapshot.value)
-            is OtaResult.Err -> DatasetResolution.Unavailable(bundle, reasonOf(installed.failure))
+        repeat(MAX_INSTALLS + 1) { installs ->
+            activation.leaseCurrent(bundle)?.let { return DatasetResolution.Available(it.snapshot, it.lease) }
+            if (installs == MAX_INSTALLS) return@repeat
+            if (bundle.game.value != config.game) return DatasetResolution.Unavailable(bundle, DatasetUnavailableReason.NotPublished)
+            val listed = activation.lastAcceptedCatalog()?.catalog?.releases.orEmpty().filter { it.clientBuild == bundle.clientBuild }
+            if (listed.isEmpty()) return DatasetResolution.Unavailable(bundle, DatasetUnavailableReason.NotPublished)
+            val usable = listed.filter { it.minDataLevel <= config.supportedDataLevel }
+                .maxByOrNull { ReleaseId.parseOrNull(it.releaseId)!! }
+                ?: return DatasetResolution.Unavailable(
+                    bundle,
+                    DatasetUnavailableReason.NeedsNewerApp(listed.minOf { it.minDataLevel }),
+                )
+            val installed = downloads.install(usable, onProgress)
+            if (installed is OtaResult.Err) return DatasetResolution.Unavailable(bundle, reasonOf(installed.failure))
         }
+        return DatasetResolution.Unavailable(
+            bundle,
+            DatasetUnavailableReason.DownloadFailed(OtaFailure.Io("removed by retention after $MAX_INSTALLS installs")),
+        )
+    }
+
+    private companion object {
+        const val MAX_INSTALLS = 2
     }
 
     private fun reasonOf(failure: OtaFailure): DatasetUnavailableReason = when (failure) {

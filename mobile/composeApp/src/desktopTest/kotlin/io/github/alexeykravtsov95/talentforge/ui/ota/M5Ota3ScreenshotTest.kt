@@ -96,7 +96,9 @@ class M5Ota3ScreenshotTest {
     }
 
     private fun editor(device: OtaDevice, localId: String): @Composable () -> Unit = {
-        val session = SessionDatasets.of(device.runtime.snapshot.value)
+        // as App opens an editor: leased on the session current when it opens
+        val access = androidx.compose.runtime.remember { EditorDatasetAccess.open(device.runtime, SessionDatasets.of(device.runtime.snapshot.value)) }
+        val session = access.session
         TalentTreeBuildScreen(
             localId = localId,
             repository = device.repository,
@@ -106,7 +108,7 @@ class M5Ota3ScreenshotTest {
             icons = session.icons,
             descriptions = session.descriptions,
             localization = session.localization,
-            datasetAccess = EditorDatasetAccess(device.runtime),
+            datasetAccess = access,
         )
     }
 

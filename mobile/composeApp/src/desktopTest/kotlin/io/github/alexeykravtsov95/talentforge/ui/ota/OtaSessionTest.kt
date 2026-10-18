@@ -175,7 +175,7 @@ class OtaSessionTest {
             assertIs<CheckOutcome.Activated>(device.check())
         }
         // an editor holds a snapshot that reads z: its lease protects z from retention
-        val lease = device.runtime.leases.acquire(setOf(z.releaseId))
+        val lease = assertNotNull(device.runtime.leases.tryAcquire(setOf(z.releaseId)))
         device.server.catalog = signedCatalog(3, B_ID, all)
         assertIs<CheckOutcome.Activated>(device.check()) // active B, previous A: z is neither
         assertNotNull(device.runtime.activation.intactRelease(z.releaseId), "z kept while leased")
@@ -183,5 +183,106 @@ class OtaSessionTest {
         device.server.catalog = signedCatalog(4, B_ID, all)
         assertIs<CheckOutcome.Current>(device.check())
         assertTrue(device.runtime.activation.intactRelease(z.releaseId) == null, "z deleted once the editor closed")
+    }
+
+    /**
+     * PR #44 review P1-1: an editor that downloaded its historical build keeps that release
+     * through the activation of a newer revision of the same build and the GC after it, and
+     * reads it until it closes; then retention deletes it.
+     */
+    @Test
+    fun anEditorKeepsTheRevisionItDownloadedWhenANewerRevisionOfTheSameBuildIsActivated() = OtaDevice().test { device ->
+        val r2 = TestRelease.B.derive(releaseId = "$B_BUILD-r2")
+        device.server.publish(TestRelease.A, TestRelease.B, r2)
+        device.server.catalog = signedCatalog(1, A_ID, listOf(TestRelease.A.entry, TestRelease.B.entry))
+        assertIs<CheckOutcome.Activated>(device.check()) // A-r1 active; B-r1 only listed
+        val record = device.saveBuild(B_BUILD, "ROGUE")
+
+        // the editor opens on the current session, which has no B, and downloads B-r1 on demand
+        val access = EditorDatasetAccess.open(device.runtime, SessionDatasets.of(device.runtime.snapshot.value))
+        assertTrue(!access.isAvailable(bundle(B_BUILD)))
+        val ready = assertIs<EditorDatasetResolution.Ready>(runBlocking { access.resolve(bundle(B_BUILD)) {} })
+        assertEquals(B_ID, ready.session.snapshot!!.source(bundle(B_BUILD))!!.releaseId)
+        val editor = assertIs<EditorLoad.Ready>(runBlocking { open(device, ready.session, record.localId) }).session
+        assertEquals(record.build, editor.record.build)
+
+        // B-r2 is published and activated; retention runs after the check: B-r1 is neither
+        // active, previous nor the newest revision of the saved build — only the lease keeps it
+        val all = listOf(TestRelease.A.entry, TestRelease.B.entry, r2.entry)
+        device.server.catalog = signedCatalog(2, r2.releaseId, all)
+        assertIs<CheckOutcome.Activated>(device.check())
+        assertEquals(r2.releaseId, device.runtime.activation.currentState().active)
+        assertNotNull(device.runtime.activation.intactRelease(B_ID), "B-r1 kept while the editor reads it")
+        assertTrue(device.directory.resolve("v1/releases/$B_ID").isDirectory)
+        runBlocking {
+            val document = (
+                ready.session.datasets.document(io.github.alexeykravtsov95.talentforge.data.DatasetId(GameId("forever"), B_BUILD, ClassToken("ROGUE")))
+                    as io.github.alexeykravtsov95.talentforge.data.DatasetOutcome.Loaded
+                ).value
+            ready.session.icons.load(document, document.trees.single())
+            ready.session.descriptions.load(document, document.trees.single())
+        }
+        assertNotNull(device.runtime.activation.intactRelease(B_ID), "every read of the open editor found its files")
+
+        // the editor closes: the next GC deletes B-r1
+        access.onForgotten()
+        device.server.catalog = signedCatalog(3, r2.releaseId, all)
+        assertIs<CheckOutcome.Current>(device.check())
+        assertTrue(device.runtime.activation.intactRelease(B_ID) == null, "B-r1 deleted once the editor closed")
+        assertTrue(!device.directory.resolve("v1/releases/$B_ID").exists())
+    }
+
+    @Test
+    fun anEditorNeverLeasesASnapshotWhoseReleaseRetentionAlreadyDeleted() = OtaDevice().test { device ->
+        val z = TestRelease.A.derive(releaseId = "1.60.1.70374-r2")
+        device.server.publish(TestRelease.A, TestRelease.B, z)
+        val all = listOf(TestRelease.A.entry, z.entry, TestRelease.B.entry)
+        device.server.catalog = signedCatalog(1, z.releaseId, all)
+        assertIs<CheckOutcome.Activated>(device.check())
+        // a session published while z was active, not yet opened by any editor
+        val stale = SessionDatasets.of(device.runtime.snapshot.value)
+        assertTrue(z.releaseId in stale.snapshot!!.releaseIds)
+        for ((sequence, active) in listOf(2L to A_ID, 3L to B_ID)) {
+            device.server.catalog = signedCatalog(sequence, active, all)
+            assertIs<CheckOutcome.Activated>(device.check())
+        }
+        assertTrue(device.runtime.activation.intactRelease(z.releaseId) == null, "z deleted: nothing leased it")
+        assertEquals(null, device.runtime.activation.lease(stale.snapshot!!))
+        // the editor opens on the current snapshot instead, leased
+        val access = EditorDatasetAccess.open(device.runtime, stale)
+        assertTrue(access.session !== stale)
+        assertTrue(z.releaseId !in access.session.snapshot!!.releaseIds)
+        assertEquals(access.session.snapshot!!.releaseIds, device.runtime.leases.leased())
+        access.onForgotten()
+        assertEquals(emptySet(), device.runtime.leases.leased())
+    }
+
+    @Test
+    fun retentionClaimsOnlyUnleasedReleasesAndAClaimedReleaseCannotBeLeased() {
+        val leases = SnapshotLeases()
+        val held = assertNotNull(leases.tryAcquire(setOf("x")))
+        assertEquals(setOf("y"), leases.claimForDeletion(setOf("x", "y")), "a leased release is never claimed")
+        assertEquals(null, leases.tryAcquire(setOf("y", "w")), "nothing is leased while being deleted")
+        assertEquals(setOf("x"), leases.leased())
+        leases.deletionFinished(setOf("y"))
+        val reinstalled = assertNotNull(leases.tryAcquire(setOf("y")))
+        held.release()
+        held.release() // idempotent
+        assertEquals(setOf("y"), leases.leased())
+        reinstalled.release()
+        assertEquals(emptySet(), leases.leased())
+    }
+
+    @Test
+    fun aLeaseHandedToAClosedHolderIsReleasedAtOnce() {
+        val leases = SnapshotLeases()
+        val holder = DatasetLeaseHolder()
+        holder.hold(assertNotNull(leases.tryAcquire(setOf("a"))))
+        holder.hold(assertNotNull(leases.tryAcquire(setOf("b"))))
+        assertEquals(setOf("b"), leases.leased(), "moving to another snapshot releases the previous lease")
+        holder.onForgotten()
+        assertEquals(emptySet(), leases.leased())
+        holder.hold(assertNotNull(leases.tryAcquire(setOf("c")))) // a download that finished after the screen closed
+        assertEquals(emptySet(), leases.leased())
     }
 }

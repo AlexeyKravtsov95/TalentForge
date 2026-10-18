@@ -55,10 +55,10 @@ class OtaRuntime private constructor(
         ): OtaRuntime {
             val cache = DatasetCache(store, config.game, config.channel)
             val verifier = CatalogVerifier(config.keyring, signatures, config.game, config.channel)
-            val activation = DatasetActivationManager(cache, bundle, verifier, scope)
+            val leases = SnapshotLeases()
+            val activation = DatasetActivationManager(cache, bundle, verifier, scope, leases)
             val recovery = activation.recover()
             val downloads = DatasetDownloadManager(config, fetcher, cache, activation, bundle, clock)
-            val leases = SnapshotLeases()
             val coordinator = OtaUpdateCoordinator(
                 config = config,
                 catalog = RemoteDatasetCatalog(config, fetcher, verifier, activation, clock),

@@ -49,39 +49,6 @@ data class OtaStatus(
 )
 
 /**
- * In-memory leases of the releases open editors read (client design §4.5): retention never
- * deletes a leased release. Acquired and released from the UI thread, read by GC — the counts
- * live in a [MutableStateFlow] whose updates are atomic.
- */
-class SnapshotLeases {
-    private val counts = MutableStateFlow<Map<String, Int>>(emptyMap())
-
-    fun leased(): Set<String> = counts.value.keys
-
-    fun acquire(releaseIds: Set<String>): Lease {
-        counts.update { current -> current + releaseIds.associateWith { (current[it] ?: 0) + 1 } }
-        return Lease(releaseIds)
-    }
-
-    inner class Lease internal constructor(private val releaseIds: Set<String>) {
-        private var released = false
-
-        fun release() {
-            if (released) return
-            released = true
-            counts.update { current ->
-                val next = current.toMutableMap()
-                for (id in releaseIds) {
-                    val count = (next[id] ?: 0) - 1
-                    if (count <= 0) next.remove(id) else next[id] = count
-                }
-                next
-            }
-        }
-    }
-}
-
-/**
  * When and how the app checks for a new release (client design §4.2): after the first frame,
  * on return to the foreground when the last successful check is older than [CHECK_INTERVAL_SECONDS],
  * and on the explicit "check now" action. One attempt at a time — a trigger while one runs joins
