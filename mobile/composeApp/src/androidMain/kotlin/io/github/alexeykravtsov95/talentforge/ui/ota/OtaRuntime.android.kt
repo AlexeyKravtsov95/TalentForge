@@ -16,7 +16,8 @@ import kotlinx.coroutines.SupervisorJob
  * The OTA client of the Android process (client design §3, §8): `null` — the app as before —
  * unless this build type's Gradle-generated settings enable a complete configuration
  * (`GeneratedOtaSettings.androidProduction` for release builds, `.androidStaging` for
- * debuggable ones). One instance per process, so an Activity recreation never starts a second
+ * debuggable ones, optionally with a staging stand's own TLS root, M5.OTA.4a). One instance
+ * per process, so an Activity recreation never starts a second
  * client over the same files; its coroutines outlive the Activity.
  */
 object AndroidOta {
@@ -36,7 +37,12 @@ object AndroidOta {
             config = config,
             // app-private, never cleared by the system, excluded from backups
             store = PlatformOtaFileStore(File(app.noBackupFilesDir, "ota")),
-            fetcher = PlatformBlobFetcher(userAgent = "TalentForge/$version"),
+            fetcher = PlatformBlobFetcher(
+                userAgent = "TalentForge/$version",
+                // a staging stand's own CA (M5.OTA.4a), debuggable builds only; release builds
+                // use the platform's roots (Gradle refuses staging settings for them)
+                sslSocketFactory = if (debuggable) GeneratedOtaSettings.androidStagingTrustAnchorPem?.let(::pinnedTrustSocketFactory) else null,
+            ),
             signatures = PlatformSignatureVerifier(),
             clock = { UtcInstant.ofEpochMillis(System.currentTimeMillis()) },
             bundle = BundleInventory(PRODUCT_BUNDLE, BUNDLED_CLIENT_BUILDS, ComposeResourceDatasetAssetSource()),

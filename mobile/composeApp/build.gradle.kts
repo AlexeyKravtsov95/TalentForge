@@ -21,15 +21,21 @@ plugins {
 //   talentforge.ota.<platform>.<channel>.enabled   true | false (default false)
 //   talentforge.ota.<platform>.<channel>.baseUrl   https://… (the channel's static origin, OD-1)
 //   talentforge.ota.<platform>.<channel>.keyring   path to {"keys":[{keyId, algorithm, publicKeySpki}]}
-//   (environment: TALENTFORGE_OTA_<PLATFORM>_<CHANNEL>_<ENABLED|BASEURL|KEYRING>)
+//   talentforge.ota.android.staging.trustAnchor    path to a PEM CA certificate (M5.OTA.4a): the only
+//       TLS root of a debug build's staging client, for a staging stand outside the public PKI
+//       (docs/ota/staging-setup.md). Certificate and hostname verification stay on.
+//   (environment: TALENTFORGE_OTA_<PLATFORM>_<CHANNEL>_<ENABLED|BASEURL|KEYRING|TRUSTANCHOR>)
 //
 // Nothing is set in the repository, so every build keeps OTA disabled until the owner supplies
 // hosting and public keys (OD-1, OD-2). An enabled channel without a valid https base URL and
 // keyring, a test- key id (reserved for fixtures, contract §8), a key not made for the channel
 // (production pins only tf-prod-* keys, staging only tf-staging-*, publisher-and-security §5.1 —
 // checked on each keyring alone, whatever the other channel's settings), a production keyring
-// without a backup key, or one public key pinned in both channels fails the build.
-// :composeApp:verifyOtaSettingsRules (run before desktopTest) proves each rule on fixed inputs.
+// without a backup key, one public key pinned in both channels, or a trust anchor anywhere but the
+// Android staging channel (or one that is not a plain certificate) fails the build. A store release
+// build never carries staging settings: release variants stop on any Android staging setting
+// (:composeApp:checkReleaseOtaSettings). :composeApp:verifyOtaSettingsRules (run before
+// desktopTest) proves each rule on fixed inputs.
 val otaPlatforms = listOf("android", "ios")
 val otaChannels = listOf("production", "staging")
 val otaKeyIdPrefixes = mapOf("production" to "tf-prod-", "staging" to "tf-staging-")
@@ -40,7 +46,8 @@ fun otaSetting(platform: String, channel: String, name: String): String? =
         ?.takeIf { it.isNotBlank() }
 
 fun otaKotlinString(value: String?): String =
-    if (value == null) "null" else "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"").replace("$", "\\$") + "\""
+    if (value == null) "null" else "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"").replace("$", "\\$")
+        .replace("\r", "").replace("\n", "\\n") + "\""
 
 /** The raw settings of one platform x channel, as read from properties and the keyring file. */
 class OtaChannelInput(
@@ -50,6 +57,8 @@ class OtaChannelInput(
     val baseUrl: String?,
     val keys: List<Map<String, String>>,
     val keyringProblem: String? = null,
+    /** The PEM text of `trustAnchor` (M5.OTA.4a), or null. */
+    val trustAnchorPem: String? = null,
 )
 
 /** Every reason these settings must fail the build (empty: valid). Pure: verifyOtaSettingsRules runs it on fixed inputs. */
@@ -72,6 +81,13 @@ fun otaSettingsProblems(inputs: List<OtaChannelInput>): List<String> {
             problems += "$where.keyring pins $it, which is not a ${input.channel} key ($prefix*)"
         }
         if (input.keys.any { it.getValue("algorithm") != "ecdsa-p256-sha256" }) problems += "$where.keyring: every key must be ecdsa-p256-sha256"
+        input.trustAnchorPem?.let { pem ->
+            if (input.platform != "android" || input.channel != "staging") problems += "$where.trustAnchor: a trust anchor is for the Android staging channel only"
+            if ("PRIVATE KEY" in pem) problems += "$where.trustAnchor contains a private key"
+            if (!pem.trimStart().startsWith("-----BEGIN CERTIFICATE-----") || Regex("-----BEGIN (?!CERTIFICATE-----)").containsMatchIn(pem)) {
+                problems += "$where.trustAnchor must be PEM certificates only"
+            }
+        }
     }
     for (platform in inputs.map { it.platform }.distinct()) {
         val production = inputs.filter { it.platform == platform && it.channel == "production" }.flatMap { it.keys }.map { it["publicKeySpki"] }.toSet()
@@ -95,7 +111,10 @@ fun readOtaChannelInput(platform: String, channel: String): OtaChannelInput {
             }
         }
     }
-    return OtaChannelInput(platform, channel, otaSetting(platform, channel, "enabled"), otaSetting(platform, channel, "baseUrl"), entries, keyringProblem)
+    val trustAnchorPath = otaSetting(platform, channel, "trustAnchor")
+    // a path that names no file reads as "" and is refused as "not PEM certificates"
+    val trustAnchorPem = trustAnchorPath?.let { path -> File(path).takeIf { it.isFile }?.readText().orEmpty() }
+    return OtaChannelInput(platform, channel, otaSetting(platform, channel, "enabled"), otaSetting(platform, channel, "baseUrl"), entries, keyringProblem, trustAnchorPem)
 }
 
 fun renderOtaSettings(): String {
@@ -115,6 +134,9 @@ fun renderOtaSettings(): String {
         }
         sections.append("        ),\n    )\n\n")
     }
+    val anchor = inputs.single { it.platform == "android" && it.channel == "staging" }.trustAnchorPem
+    sections.append("    /** The only TLS root of the Android staging client (debug builds), or null: the platform's. */\n")
+    sections.append("    val androidStagingTrustAnchorPem: String? = ${otaKotlinString(anchor)}\n")
     return "// GENERATED by :composeApp:generateOtaSettings from Gradle properties - do not edit.\n" +
         "package io.github.alexeykravtsov95.talentforge.ui.ota\n\n" +
         "import io.github.alexeykravtsov95.talentforge.data.ota.OtaChannel\n\n" +
@@ -130,6 +152,7 @@ fun otaSettingsRuleFailures(): List<String> {
     fun key(id: String, spki: String) = mapOf("keyId" to id, "algorithm" to "ecdsa-p256-sha256", "publicKeySpki" to spki)
     fun production(vararg keys: Map<String, String>) = OtaChannelInput("android", "production", "true", "https://ota.example.org", keys.toList())
     fun staging(vararg keys: Map<String, String>) = OtaChannelInput("android", "staging", "true", "https://staging.example.org", keys.toList())
+    val certificate = "-----BEGIN CERTIFICATE-----\nQ0E=\n-----END CERTIFICATE-----\n"
     val prodA = key("tf-prod-2026a", "PA")
     val prodB = key("tf-prod-2026b", "PB")
     val stagingKey = key("tf-staging-2026", "S")
@@ -145,6 +168,10 @@ fun otaSettingsRuleFailures(): List<String> {
         "a production keyring without a backup" to listOf(production(prodA)) to "must pin a primary and a backup key",
         "one public key in both channels" to listOf(production(prodA, prodB), staging(key("tf-staging-2026", "PA"))) to "a staging key is pinned in the production keyring",
         "a disabled channel with a staging key in production" to listOf(OtaChannelInput("ios", "production", null, null, listOf(prodA, stagingKey))) to "pins tf-staging-2026, which is not a production key",
+        "a trust anchor in production" to listOf(OtaChannelInput("android", "production", "true", "https://ota.example.org", listOf(prodA, prodB), trustAnchorPem = certificate)) to "for the Android staging channel only",
+        "a trust anchor on iOS" to listOf(OtaChannelInput("ios", "staging", "true", "https://staging.example.org", listOf(stagingKey), trustAnchorPem = certificate)) to "for the Android staging channel only",
+        "a private key as trust anchor" to listOf(OtaChannelInput("android", "staging", "true", "https://staging.example.org", listOf(stagingKey), trustAnchorPem = certificate + "-----BEGIN PRIVATE KEY-----\nK\n-----END PRIVATE KEY-----\n")) to "contains a private key",
+        "a trust anchor that is not a certificate" to listOf(OtaChannelInput("android", "staging", "true", "https://staging.example.org", listOf(stagingKey), trustAnchorPem = "not a certificate")) to "must be PEM certificates only",
     )
     val failures = mutableListOf<String>()
     for ((case, expected) in refused) {
@@ -154,6 +181,8 @@ fun otaSettingsRuleFailures(): List<String> {
     }
     val valid = otaSettingsProblems(listOf(production(prodA, prodB), staging(stagingKey)))
     if (valid.isNotEmpty()) failures += "a correct configuration was refused: $valid"
+    val anchored = otaSettingsProblems(listOf(production(prodA, prodB), OtaChannelInput("android", "staging", "true", "https://10.0.2.2:8443", listOf(stagingKey), trustAnchorPem = certificate)))
+    if (anchored.isNotEmpty()) failures += "a staging trust anchor was refused: $anchored"
     if (otaSettingsProblems(emptyList()).isNotEmpty()) failures += "no settings must be valid (OTA off)"
     return failures
 }
@@ -402,8 +431,25 @@ val checkPublishableSigning = tasks.register("checkPublishableSigning") {
     doLast { if (problem != null) throw GradleException(problem) }
 }
 
+// M5.OTA.4a: a store release build never carries the staging configuration of a device test
+// (staging base URL, staging keyring, the stand's trust anchor) — not even unused: the generated
+// OTA settings are compiled into every variant, so release variants stop on any of them.
+val androidStagingOtaSettings: List<String> = listOf("enabled", "baseUrl", "keyring", "trustAnchor")
+    .filter { name -> otaSetting("android", "staging", name).let { it != null && !(name == "enabled" && it == "false") } }
+val checkReleaseOtaSettings = tasks.register("checkReleaseOtaSettings") {
+    group = "release"
+    description = "Fails a release-variant build while any Android staging OTA setting is set."
+    val present = androidStagingOtaSettings
+    doLast {
+        if (present.isNotEmpty()) {
+            throw GradleException("Release builds never carry staging OTA settings; unset talentforge.ota.android.staging.{${present.joinToString(",")}} (debug/device-test builds only).")
+        }
+    }
+}
+
 tasks.matching { it.name == "preReleaseBuild" }.configureEach {
     dependsOn(checkReleaseSigning)
+    dependsOn(checkReleaseOtaSettings)
     mustRunAfter(checkPublishableSigning)
 }
 
@@ -607,6 +653,9 @@ tasks.named<Test>("desktopTest") {
     }
     System.getProperty("talentforge.ota.interop")?.let {
         systemProperty("talentforge.ota.interop", it)
+    }
+    System.getProperty("talentforge.ota.staging")?.let {
+        systemProperty("talentforge.ota.staging", it)
     }
     System.getProperty("talentforge.m5ota3.screenshots")?.let {
         systemProperty("talentforge.m5ota3.screenshots", it)
