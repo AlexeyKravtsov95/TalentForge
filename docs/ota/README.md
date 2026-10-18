@@ -11,8 +11,8 @@ production keys and no publication exist yet (OD-1, OD-2); production OTA is off
 | M5.OTA.1 | architecture, contract v1, schemas, reference verifier, G6, 64-case conformance suite | merged (PR #42) |
 | M5.OTA.2 | publisher: `talent-data ota …`, gates G1–G8, local store, offline rehearsal | merged (PR #43) |
 | M5.OTA.3 | KMP client: verifiers, install/activation/retention, Android/iOS/JVM adapters, UI; disabled | merged (PR #44) |
-| M5.OTA.4a | publisher ↔ client integration: local staging stand over HTTPS, staging E2E, Android staging debug configuration, ADR-0002 | this milestone ([report](M5.OTA.4a-integration-report.md)) |
-| M5.OTA.4b | remote staging on real hosting, device runs (API 26, current API, TECNO Spark 40), ADR-0002 measurements | not started; needs OD-1/OD-2 |
+| M5.OTA.4a | publisher ↔ client integration: local staging stand over HTTPS, staging E2E, Android staging debug configuration, ADR-0002 | merged (PR #45, [report](M5.OTA.4a-integration-report.md)) |
+| M5.OTA.4b | VK Cloud remote staging (OD-1): S3 store adapter, real publication, JVM and TECNO E2E over public HTTPS, ADR-0002 accepted (parallelism 8) | this milestone ([report](M5.OTA.4b-remote-staging-report.md)) |
 
 | Document | What it answers |
 | --- | --- |
@@ -26,7 +26,8 @@ production keys and no publication exist yet (OD-1, OD-2); production OTA is off
 | [test-plan.md](test-plan.md) | Test layers, scenarios S1–S14, performance measurements, release gates: common, Android, iOS |
 | [open-decisions.md](open-decisions.md) | OD-1…OD-17, each with a recommended default |
 | [M5.OTA.4a-integration-report.md](M5.OTA.4a-integration-report.md) | M5.OTA.4a: what was verified together (PASSED / FAILED / BLOCKED / NOT RUN), CI status, what the owner must provide |
-| [staging-setup.md](staging-setup.md) | The local staging stand: the three key classes, publishing with the real publisher, HTTPS, clients, the remote-staging runbook |
+| [M5.OTA.4b-remote-staging-report.md](M5.OTA.4b-remote-staging-report.md) | M5.OTA.4b: VK Cloud origin behaviour, publication, JVM/device scenarios, HTTPS performance (PASSED / FAILED / BLOCKED / NOT RUN) |
+| [staging-setup.md](staging-setup.md) | The local staging stand and the VK Cloud remote staging origin: key classes, publishing with the real publisher, HTTPS, clients |
 | [android-device-smoke.md](android-device-smoke.md) | The Android device test plan: emulator API 26 / current API, TECNO Spark 40, lifecycle steps |
 | [ADR-0002-delivery-performance.md](ADR-0002-delivery-performance.md) | Why parallelism 8 + origin gzip is the minimal v1-compatible fix for the §7.3 triggers; HTTP/2, reproducible PNG, archives assessed |
 | [M5.OTA.2-publisher-brief.md](M5.OTA.2-publisher-brief.md) | Implementation brief: publisher (GLM) |

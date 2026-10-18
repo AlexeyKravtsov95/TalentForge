@@ -1,4 +1,4 @@
-# OTA Android device smoke (M5.OTA.4a)
+# OTA Android device smoke (M5.OTA.4a local stand, M5.OTA.4b VK Cloud)
 
 A reproducible manual check of the OTA client on Android: a **debug** build of the staging channel
 against the local staging stand ([staging-setup.md](staging-setup.md)) over HTTPS. It covers what the
@@ -107,3 +107,42 @@ adb uninstall io.github.alexeykravtsov95.talentforge.otastaging
 unset ${!TALENTFORGE_OTA_@}
 rm -rf ~/tf-ota-stand            # the ephemeral staging key and the TLS key go with it
 ```
+
+## 5. Against the remote staging origin (M5.OTA.4b, VK Cloud)
+
+The same debug app, built for the public origin instead of the stand
+([staging-setup.md](staging-setup.md) §6): no `adb reverse`, no proxy, no trust anchor — Android's own
+roots verify VK's certificate.
+
+```bash
+source ~/.talentforge/ota-staging-vkcloud/android-staging-vkcloud.env
+cd mobile && ./gradlew :composeApp:assembleDebug -Ptalentforge.applicationIdSuffix=.otastaging
+adb install -r composeApp/build/outputs/apk/debug/composeApp-debug.apk
+```
+
+The live catalog state is changed by the publisher between steps (the M5.OTA.4b report lists the
+sequences). Networks are switched with `adb shell svc wifi enable|disable` and
+`adb shell svc data enable|disable` (restore both afterwards). Traffic of the app is read from the
+kernel's per-UID counters (`adb shell dumpsys netstats detail`, `mAppUidStatsMap`, the app's uid):
+everything the app sent or received, TLS included.
+
+| # | Live staging catalog | Network | Step | Expected |
+| --- | --- | --- | --- | --- |
+| R1 | seq 1, A active | Wi-Fi | install, launch | first screen without waiting; `state.json` sequence 1, no active release (A is below the bundled floor) |
+| R2 | seq 1 | Wi-Fi | create and name a build | listed; record the SHA-256 of `shared_prefs/talentforge_build_library.xml` |
+| R3 | seq 2, B active | Wi-Fi | About → Check for updates | "Talent data updated…"; About: "Downloaded update 1.60.1.70450-r1"; manifest fetched (gzip on the wire), every file copied from the bundle; the library file byte-identical |
+| R4 | seq 2 | Wi-Fi | check again | "up to date"; catalog only |
+| R5 | seq 2 | none | `force-stop`, both networks off, relaunch, check | B served at once; "no connection"; state unchanged |
+| R6 | seq 2 | LTE only | check | "up to date" over mobile data |
+| R7 | seq 2 | LTE only | `pm clear`, launch | the start trigger activates B over mobile data |
+| R8 | seq 3 (rollback to A) | Wi-Fi | check | B stays active (`KEEP_BUNDLED_FLOOR`); sequence 3 accepted; no blob |
+| R9 | seq 5 with a corrupted signature | Wi-Fi | check | "Couldn't check for updates (SIGNATURE_INVALID)"; nothing changes |
+| R10 | seq 5 restored | Wi-Fi | check | "up to date"; sequence 5 accepted |
+| R11 | seq 6 expired | Wi-Fi | check after expiry | "Couldn't check… (CATALOG_EXPIRED)"; nothing changes |
+| R12 | seq 7 (runbook re-sign) | Wi-Fi | check | "up to date" |
+| R13 | seq 7 | Wi-Fi | `pm clear`, launch, `force-stop` while the activation runs, relaunch | no `.part`, nothing active after the interruption; the next check activates B |
+
+**What this device cannot show:** a multi-megabyte download. The APK bundles 70374 and 70450, so the
+device downloads the catalog and the manifest and copies every file from its bundle after
+re-hashing it. A full 397-file download over VK is measured with the same client code on the JVM
+(`OtaRemoteStagingCheck`); it is not reported as a device result.

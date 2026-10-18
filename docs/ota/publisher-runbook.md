@@ -1,9 +1,9 @@
-# OTA publisher runbook (M5.OTA.2)
+# OTA publisher runbook (M5.OTA.2, remote staging M5.OTA.4b)
 
 Operator procedures for `talent-data ota …` — the commands that turn a committed build
 into a published OTA release. Design: [publisher-and-security.md](publisher-and-security.md).
 Contract: [ota-contract-v1.md](ota-contract-v1.md). Everything below assumes the `ota`
-extra installed (`pip install -e '.[ota]'`).
+extra installed (`pip install -e '.[ota]'`); the remote store (§6) also needs `s3`.
 
 Every mutating command is a **dry run by default**: nothing is written without
 `--execute`, and `gc` additionally needs `--confirm`. Nothing ever deletes a listed
@@ -143,24 +143,107 @@ The tool itself can neither load a production private key (`ota sign` refuses ev
 non-`test-`/`tf-staging-` key id) nor read one from the repository or CI: production
 signing is the external steps 5–6 of §1, always.
 
-## 6. Hosting change (OD-1)
+## 6. Remote store: VK Cloud staging (OD-1, M5.OTA.4b)
 
-The origin is object storage + CDN serving `<base>/v1/…` (contract §1). The app's
-`<base>` is compiled in per channel, on a hostname the project controls — the provider
-can change without an app update only through that hostname's DNS.
+The origin is object storage serving `<base>/v1/…` (contract §1). Staging is **VK Cloud
+Object Storage** (OD-1): bucket `talentforge-ota-staging` in `ru-msk`, S3 API
+`https://hb.ru-msk.vkcloud-storage.ru`, public origin
+`https://talentforge-ota-staging.hb.ru-msk.vkcloud-storage.ru`. Production has no remote
+store: the adapter serves the staging channel only, and `promote` / every
+`--channel production` refuse `--backend s3`.
 
-What M5.OTA.2 ships today: the `BlobStore` protocol and `LocalDirectoryStore` (a local
-directory as the bucket — tests, rehearsals, and this runbook's examples). **Not
-shipped: the S3-compatible remote adapter.** AWS SigV4 request signing is a large
-surface that cannot be honestly tested from this repository against no account, so the
-brief's fallback applies: protocol + local store, gap documented. Writing the adapter
-means implementing `BlobStore.get/put/exists/list/delete` over httpx with SigV4,
-setting the §1 cache headers (`public, max-age=31536000, immutable` for blobs,
-`public, max-age=300` for the catalog) and conditional writes (`If-Match` on the
-catalog ETag) where the store supports them; every ordering rule already lives in
-`talent_data.ota.store`, so the adapter changes one implementation and no rule. Until
-then, publishing to a real origin is out of scope (and no production upload has ever
-run).
+### 6.1 Setup (once per operator machine)
+
+```bash
+pip install -e '.[ota,s3]'                     # boto3 is the s3 extra
+aws configure --profile talentforge-staging    # the S3 access key (prefix v1/), region ru-msk
+python scripts/ota_vkcloud_staging.py keygen ~/.talentforge/ota-staging-vkcloud \
+    --key-id tf-staging-2026 \
+    --origin https://talentforge-ota-staging.hb.ru-msk.vkcloud-storage.ru
+```
+
+Two different secrets, never in git and never mixed: the **S3 access key** lives only in the
+AWS CLI credential store (`~/.aws/credentials`, profile `talentforge-staging`); the
+**staging signing key** `tf-staging-2026` is a PEM (mode 0600) outside any checkout
+(`keygen` refuses a directory inside one). Only the public keyring goes into a debug build.
+
+### 6.2 Publish to staging
+
+```bash
+S3="--backend s3 --s3-bucket talentforge-ota-staging \
+    --s3-endpoint https://hb.ru-msk.vkcloud-storage.ru --s3-region ru-msk \
+    --aws-profile talentforge-staging"
+K=~/.talentforge/ota-staging-vkcloud
+
+talent-data ota build-release --game forever --build 1.60.1.70450 --commit <sha on origin/main> \
+    --created-at <UTC instant> --out artifacts/ota
+talent-data ota validate --channel staging --manifest artifacts/ota/1.60.1.70450-r1/release.json \
+    $S3 --keyring $K/staging-keyring.json
+talent-data ota stage --manifest artifacts/ota/1.60.1.70450-r1/release.json $S3 \
+    --keyring $K/staging-keyring.json --key $K/tf-staging-2026.pem --key-id tf-staging-2026   # dry run
+talent-data ota stage … --execute
+talent-data ota verify-live --channel staging $S3 --keyring $K/staging-keyring.json
+```
+
+Rollback / re-sign of staging are the §3/§4 commands with `--channel staging $S3`, the
+`sign` convenience signer with the staging PEM, and `attach-signature --channel staging $S3
+--execute`. `gc` lists with `$S3`; it deletes only with `--execute --confirm`.
+
+What the adapter guarantees (`talent_data.ota.s3_store`):
+
+* **Dry run is read-only by construction.** The store is opened writable only by `stage` /
+  `attach-signature` under `--execute`, and able to delete only by `gc --execute --confirm`.
+* **Keys.** Writes: `v1/blobs/sha256/<64 hex>` and `v1/channels/staging/catalog.json` only. The
+  production catalog key is refused before any request (it may be read, so gates and `gc` fail
+  closed if one ever appears there). Anything else is refused.
+* **Blobs are immutable.** A blob must hash to its key; an existing blob is never rewritten;
+  every put is checked by `HEAD` (length, `ETag` = MD5, `Content-Type`, `Cache-Control`, no
+  `Content-Encoding`) and then read back and re-hashed by the publisher (`upload_blobs`).
+* **Catalog last**, after every referenced object was re-read and re-hashed; read back after
+  the put.
+* **Failure kinds.** 404 / 403 / precondition / network / credentials are distinct
+  (`S3Failure`); a 403 is never "absent".
+* **HTTP metadata.** Blobs `Cache-Control: public, max-age=31536000, immutable`, the catalog
+  `public, max-age=300`; `Content-Type: application/json` (catalog and JSON blobs) or
+  `image/png`. Uploads carry `Content-MD5` and no streaming checksum: botocore's default
+  `aws-chunked` upload makes VK Cloud serve the object with `Content-Encoding: aws-chunked`
+  (observed on the owner's first test object), which the put verification would reject.
+
+### 6.3 One publisher at a time
+
+VK Cloud **ignores conditional writes** (`If-None-Match: *` and `If-Match` both answer 200 —
+`scripts/ota_vkcloud_staging.py probe-conditional`, 2026-10-18). The adapter still sends them
+(harmless, and effective if VK adds support), but on VK the concurrency guards are: the live
+`sequence` re-read immediately before the catalog put (`write_catalog`), the read-back of the
+catalog right after it, and this procedure:
+
+1. Only one operator publishes to staging at a time; no CI job holds the S3 key.
+2. Before a publication, `verify-live --channel staging` and note the sequence.
+3. After it, `verify-live` again: the sequence must be exactly the one `stage`/`attach-signature`
+   printed. If not, stop: two publications raced. Clients never accept a lower sequence and reject
+   a re-used sequence with other content (`SEQUENCE_REGRESSION`), so a lost race leaves clients on
+   their last accepted catalog; recover by publishing the next sequence from the verified live
+   state (`resign --channel staging`).
+
+### 6.4 Origin behaviour to expect (measured, M5.OTA.4b report)
+
+* About 1.4 s per uploaded blob (five sequential requests at ~140 ms RTT): a full release
+  (≈ 397 objects) takes ≈ 8–9 minutes; the catalog re-verification another ≈ 3 minutes.
+* A minority of new TCP connections to the public endpoint are not accepted (11 of 100 from the
+  test network). The publisher's botocore retries absorb them; an interrupted `stage` is re-run
+  as is (`upload_blobs` skips present blobs; the catalog is written only at the end).
+* `Accept-Encoding: gzip` gets `application/json` compressed on the fly (ADR-0002 O2), PNG not.
+  No HTTP/2. No redirects. Plain `http://` is also served — HTTPS-only is enforced by the client.
+* Responses carry `X-Amz-Version-Id`: the bucket appears versioned, so a replaced catalog keeps
+  its previous versions and a `gc` deletion leaves a delete marker (not verified — the key may not
+  read the bucket's versioning configuration).
+
+### 6.5 Production hosting (open)
+
+The production origin, a project-owned hostname (the VK bucket host is VK's, so moving providers
+would need an app update) and a CDN are still OD-1 decisions for the public release. A
+production remote store, when it exists, gets its own adapter configuration and keeps every rule
+above; nothing here can write a production catalog.
 
 ## 7. Keyrings, TEST keys and the approval record
 
