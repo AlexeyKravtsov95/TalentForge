@@ -43,7 +43,7 @@ from talent_data.ota.errors import OtaPublisherError
 
 if TYPE_CHECKING:  # only for annotations; runtime imports stay lazy (handlers)
     from talent_data.ota.gates import GateResult, ReleaseUnderTest
-    from talent_data.ota.models import OtaCatalog
+    from talent_data.ota.models import Channel, OtaCatalog
     from talent_data.ota.store import LocalDirectoryStore
     from talent_data.ota.verify import TrustedKey
 
@@ -178,6 +178,8 @@ def register(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     store_arg(attach)
     keyring(attach)
     channel_arg(attach)
+    _releases_docs(attach)
+    attach.add_argument("--main-ref", default="origin/main", help=argparse.SUPPRESS)
     attach.add_argument("--execute", action="store_true", help="write (default: dry run)")
     now_arg(attach)
     attach.set_defaults(handler=_cmd_attach_signature)
@@ -537,15 +539,17 @@ def _require_approval(
     record = load_approval_record(release_id, releases_docs.expanduser())
     if record is None:
         print(
-            f"error: promote refused - gates {', '.join(g.gate.value for g in flagged)} flagged "
-            f"and no approval record exists at {releases_docs}/{release_id}.md",
+            f"error: publication refused - gates "
+            f"{', '.join(g.gate.value for g in flagged)} flagged and no approval "
+            f"record exists at {releases_docs}/{release_id}.md",
             file=sys.stderr,
         )
         return EXIT_FAILURE
     for result in flagged:
         if not record.accepts(result.gate):
             print(
-                f"error: promote refused - the approval record does not accept {result.gate.value}",
+                f"error: publication refused - the approval record does not accept "
+                f"{result.gate.value}",
                 file=sys.stderr,
             )
             return EXIT_FAILURE
@@ -553,18 +557,27 @@ def _require_approval(
     return None
 
 
-def _cmd_promote(args: argparse.Namespace) -> int:
-    from talent_data.ota.catalog import catalog_entry, next_catalog
-    from talent_data.ota.gates import load_approval_record, load_under_test, validate_release
-    from talent_data.ota.models import Channel
-    from talent_data.ota.signing import pae_sha256
-    from talent_data.ota.store import ensure_catalog_references, upload_blobs
+def _enforce_gates_and_approval(
+    args: argparse.Namespace,
+    under_test: ReleaseUnderTest,
+    store: LocalDirectoryStore,
+    live: OtaCatalog | None,
+    now: datetime,
+    *,
+    channel: Channel,
+) -> int | None:
+    """G1-G8 + approval records for one release about to be published.
+
+    The single enforcement path shared by ``promote`` (before the payload is even
+    produced) and ``attach-signature`` (re-proved from the store before the write, so
+    no editable local file can smuggle a release past the gates). Returns
+    ``EXIT_FAILURE`` when the release must not be published, ``None`` when it may.
+    """
+    from talent_data.ota.gates import load_approval_record, validate_release
     from talent_data.ota.verify import sha256_ref
 
-    now = _instant(args.now)
-    store = _store(args)
-    under_test = load_under_test(args.manifest.expanduser(), _repo_root(args))
-    approval = load_approval_record(under_test.manifest.release_id, args.releases_docs.expanduser())
+    release_id = under_test.manifest.release_id
+    approval = load_approval_record(release_id, args.releases_docs.expanduser())
     manifest_sha = sha256_ref(under_test.manifest_bytes)
     if (
         approval is not None
@@ -572,27 +585,42 @@ def _cmd_promote(args: argparse.Namespace) -> int:
         and approval.manifest_sha256 != manifest_sha
     ):
         print(
-            "error: promote refused - the approval record pins "
+            "error: publication refused - the approval record pins "
             f"{approval.manifest_sha256} but this release's manifest is {manifest_sha}",
             file=sys.stderr,
         )
         return EXIT_FAILURE
-    live = _live(args, store, "production", now)
     results = validate_release(
         under_test,
         repo_root=_repo_root(args),
         store=store,
         live=live,
-        channel=Channel("production"),
+        channel=channel,
         now=now,
         approval=approval,
         main_ref=args.main_ref,
     )
-    print(f"gates for {under_test.manifest.release_id} (production):")
+    print(f"gates for {release_id} ({channel.value}):")
     stopped, flagged = _print_gates(results)
     if stopped:
         return EXIT_FAILURE
-    refused = _require_approval(flagged, under_test.manifest.release_id, args.releases_docs)
+    return _require_approval(flagged, release_id, args.releases_docs)
+
+
+def _cmd_promote(args: argparse.Namespace) -> int:
+    from talent_data.ota.catalog import catalog_entry, next_catalog
+    from talent_data.ota.gates import load_under_test
+    from talent_data.ota.models import Channel
+    from talent_data.ota.signing import pae_sha256
+    from talent_data.ota.store import ensure_catalog_references, upload_blobs
+
+    now = _instant(args.now)
+    store = _store(args)
+    under_test = load_under_test(args.manifest.expanduser(), _repo_root(args))
+    live = _live(args, store, "production", now)
+    refused = _enforce_gates_and_approval(
+        args, under_test, store, live, now, channel=Channel("production")
+    )
     if refused is not None:
         return refused
 
@@ -637,22 +665,41 @@ def _cmd_attach_signature(args: argparse.Namespace) -> int:
     hold:
 
     * the DER signature verifies over the PAE with a keyring key (identity of issuer);
-    * the payload is exactly what the pending command produced - the meta sidecar pins
-      its SHA-256, so bytes edited between ``promote`` and here never get written;
     * the payload is a catalog of the target ``--channel`` and ``--game`` (a staging
-      payload can never land on the production path, or vice versa);
+      payload can never land on the production path, or vice versa) and is not already
+      expired;
     * it is a *valid successor* of the live catalog: sequence is exactly live + 1 and
       every live release stays listed with identical members (append-only);
     * every object it references exists in the store and hashes to its pin
-      (:func:`talent_data.ota.store.ensure_catalog_references`);
+      (:func:`talent_data.ota.store.ensure_catalog_references`), and each *newly
+      appended* release additionally passes the content contracts
+      (``verify_release_manifest`` + ``verify_release_files`` over the store blobs -
+      what clients will actually download);
+    * every newly appended release re-runs gates G1-G8 with its approval records,
+      rebuilt from the store manifest and the provenance commit - the pending meta is
+      a local, editable file, so a catalog whose payload and meta were both rewritten
+      around a release that never passed ``promote`` is still stopped here, G6 above
+      all. A pure rollback/re-sign adds no release and needs no gate re-run: signature,
+      integrity and succession are its whole proof;
     * the sequence guard in :func:`write_catalog` then re-reads the live catalog one
       final time before the single atomic put.
     """
     from talent_data.ota.catalog import ensure_valid_succession
-    from talent_data.ota.models import Channel, OtaCatalog
+    from talent_data.ota.gates import under_test_from_bytes
+    from talent_data.ota.models import Channel, OtaCatalog, ReleaseFile
     from talent_data.ota.signing import build_envelope, verify_der_signature
-    from talent_data.ota.store import ensure_catalog_references, write_catalog
-    from talent_data.ota.verify import parse_strict, sha256_ref
+    from talent_data.ota.store import (
+        blob_key,
+        ensure_catalog_references,
+        read_release_manifest,
+        write_catalog,
+    )
+    from talent_data.ota.verify import (
+        parse_strict,
+        sha256_ref,
+        verify_release_files,
+        verify_release_manifest,
+    )
 
     now = _instant(args.now)
     store = _store(args)
@@ -699,12 +746,48 @@ def _cmd_attach_signature(args: argparse.Namespace) -> int:
     except OtaPublisherError as exc:
         return refuse(str(exc))
 
+    # ---- releases the catalog appends: prove them again, from the store + the repo.
+    # The pending meta is editable local state; the gates are not advisory.
+    live_ids = set() if live is None else {entry.release_id for entry in live.releases}
+    appended = [entry for entry in catalog.releases if entry.release_id not in live_ids]
+    for entry in appended:
+        try:
+            manifest_bytes, manifest = read_release_manifest(store, entry)  # pin-verified
+            verify_release_manifest(
+                manifest_bytes,
+                entry,
+                game=catalog.game,
+                supported_data_level=entry.min_data_level,
+            )
+
+            def read_file(file: ReleaseFile) -> bytes:
+                return store.get(blob_key(file.sha256))
+
+            verify_release_files(manifest, read_file)
+            under_test = under_test_from_bytes(
+                manifest_bytes, _repo_root(args), origin=Path(blob_key(entry.manifest_sha256))
+            )
+        except (OtaPublisherError, ValueError) as exc:
+            return refuse(f"appended release {entry.release_id} failed verification: {exc}")
+        print(
+            f"  appended release {entry.release_id}: content re-verified from the store; "
+            "re-running gates G1-G8"
+        )
+        refused = _enforce_gates_and_approval(args, under_test, store, live, now, channel=channel)
+        if refused is not None:
+            return refused
+
     envelope = build_envelope(payload, {args.key_id: der})
     print(
         f"signature by {args.key_id} verified: {args.channel} catalog sequence "
         f"{catalog.sequence}, active {catalog.active_release_id}, "
         f"{len(catalog.releases)} release(s), envelope {len(envelope)} bytes; "
         "succession, channel and every referenced object re-checked"
+        + (
+            f"; {len(appended)} appended release(s) re-passed G1-G8"
+            if appended
+            else "; no release appended (rollback/re-sign)"
+        )
     )
     if not args.execute:
         print("dry run: catalog.json not written (pass --execute)")

@@ -72,16 +72,22 @@ talent-data ota verify-live --store <store> --keyring <public keyring>
 
 `attach-signature` never trusts the earlier steps alone: before writing it re-proves
 the whole publication from the signed bytes — the payload must hash to the pin the
-pending meta recorded at `promote` time (bytes edited in between never land), be a
-catalog of the exact `--channel`/`--game`, be a valid successor of the live catalog
-(sequence exactly live + 1, every live release still listed with identical members),
-reference only blobs that exist and hash to their pins, and the live `sequence` is
-re-read one final time inside the write. If anything was published between steps 4
-and 6, it aborts and the promotion restarts at step 4.
+pending meta recorded (a cheap tripwire against accidental edits), be a catalog of the
+exact `--channel`/`--game`, be a valid successor of the live catalog (sequence exactly
+live + 1, every live release still listed with identical members), reference only
+blobs that exist and hash to their pins, and the live `sequence` is re-read one final
+time inside the write. If anything was published between steps 4 and 6, it aborts and
+the promotion restarts at step 4.
 
-`stage` publishes to the **staging channel only** — `--channel production` is not an
-accepted argument, and the handler refuses it independently — so a staging/test-signed
-catalog can never replace the production one.
+**Every release the signed catalog appends is re-proven from the store and the
+repository before the write:** its content passes `verify_release_manifest` /
+`verify_release_files` over the actual store blobs, and gates G1–G8 run again with
+its approval records — rebuilt from the pinned manifest bytes and the provenance
+commit. The pending payload and its meta are local, editable files; the gate re-run
+is what makes them impossible to use as a bypass (a correctly signed, structurally
+valid catalog whose appended release never passed `promote` is stopped here — G6
+above all). A pure rollback/re-sign appends no release and needs no gate re-run:
+signature, integrity and succession are its whole proof.
 
 ## 2. Routine refresh (a new build)
 

@@ -220,6 +220,8 @@ class Env:
             str(self.keyring_path),
             "--store",
             str(self.store),
+            "--releases-docs",
+            str(self.docs),
             "--channel",
             channel,
             "--execute",
@@ -796,3 +798,188 @@ def test_promote_refuses_an_approval_record_pinning_other_bytes(tmp_path: Path) 
     assert env.build(BUILD_A) == 0
     assert env.promote(BUILD_A) == 1
     assert not (env.artifacts / "pending-production.payload.json").exists()
+
+
+def _git(repo: Path, *args: str) -> str:
+    import subprocess
+
+    result = subprocess.run(
+        ["git", "-C", str(repo), *args], capture_output=True, text=True, check=True
+    )
+    return result.stdout.strip()
+
+
+def test_attach_re_runs_g6_for_a_release_that_never_passed_promote(
+    neg_env: Env, capsys: pytest.CaptureFixture[str], tmp_path: Path
+) -> None:
+    """The pending meta is an editable local file: a catalog whose payload AND meta
+    were both rewritten around a release that never went through promote - correctly
+    signed by an authorized key, every blob uploaded, succession intact, provenance
+    reproducible from a commit that IS on (a fake) origin/main - must still be
+    stopped, at attach-signature, by the gate re-run. G6 above all: the engine
+    cannot be asked to support a mechanic, whatever signature covers the bytes."""
+    import subprocess
+    from datetime import timedelta
+    from hashlib import sha256 as _sha256
+
+    from talent_data.ota.catalog import catalog_entry, next_catalog
+    from talent_data.ota.models import Channel
+    from talent_data.ota.release import build_release
+    from talent_data.ota.store import LocalDirectoryStore, upload_blobs
+
+    # a repository whose origin/main carries the smuggled (wire-valid, engine-breaking)
+    # talent data: everything about it is legitimate except the mechanic itself
+    scratch = tmp_path / "smugglers-repo"
+    subprocess.run(["git", "clone", "-q", "--no-checkout", str(ROOT), str(scratch)], check=True)
+    _git(scratch, "config", "user.email", "t@e.invalid")
+    _git(scratch, "config", "user.name", "t")
+    _git(scratch, "checkout", "-q", COMMIT)
+    paladin = scratch / "data" / "normalized" / GAME / BUILD_B / "paladin.json"
+    paladin.write_bytes(
+        (FIXTURES / "blobs" / "release-open-union-node-type--paladin.json").read_bytes()
+    )
+    _git(scratch, "add", "-A")
+    _git(scratch, "commit", "-qm", "smuggled mechanic")
+    smuggled_commit = _git(scratch, "rev-parse", "HEAD")
+    _git(scratch, "update-ref", "refs/remotes/origin/main", smuggled_commit)
+
+    # the release built from that commit: reproducible (G8 passes), wire-valid (G3
+    # passes), complete (G2 passes), on origin/main (G1 passes) - except for G6
+    artifact = build_release(
+        scratch, smuggled_commit, GAME, BUILD_B, 1, CREATED_AT, VALIDATION_NOTE
+    )
+
+    # every object the catalog references is genuinely in the store...
+    store = LocalDirectoryStore(neg_env.store)
+    sha, data = artifact.manifest_blob
+    upload_blobs(store, {sha: data, **artifact.blobs})
+
+    # ...the successor catalog is structurally perfect...
+    live = neg_env.live()
+    entry = catalog_entry(artifact.manifest_bytes, artifact.manifest, published_at=NOW)
+    update = next_catalog(
+        live,
+        game=GAME,
+        channel=Channel.PRODUCTION,
+        active_release_id=artifact.release_id,
+        append=entry,
+        issued_at=NOW,
+        validity=timedelta(days=45),
+    )
+    payload_path = neg_env.artifacts / "pending-production.payload.json"
+    payload_path.write_bytes(update.payload)
+    meta_path = payload_path.with_name(payload_path.name + ".meta.json")
+    meta_path.write_text(
+        json.dumps(
+            {
+                "baseSequence": live.sequence,
+                "payloadSha256": "sha256:" + _sha256(update.payload).hexdigest(),
+                "channel": "production",
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    # ...and even an approval record for it exists (G6 cannot be accepted anyway)
+    write_approval_record(neg_env.docs, artifact.release_id)
+
+    # signed by the authorized key, attached for real: refused on G6
+    signature = neg_env.sign_pending()
+    capsys.readouterr()
+    rc = main(
+        [
+            "ota",
+            "attach-signature",
+            "--game",
+            GAME,
+            "--payload",
+            str(payload_path),
+            "--signature",
+            str(signature),
+            "--key-id",
+            PRIMARY,
+            "--keyring",
+            str(neg_env.keyring_path),
+            "--store",
+            str(neg_env.store),
+            "--releases-docs",
+            str(neg_env.docs),
+            "--channel",
+            "production",
+            "--execute",
+            "--now",
+            NOW_ARG,
+            "--repo",
+            str(scratch),
+        ]
+    )
+    assert rc == 1
+    out = capsys.readouterr().out
+    assert "G6" in out and "STOP" in out and "UNSUPPORTED_NODE_TYPE" in out
+    assert neg_env.live().sequence == live.sequence  # nothing was written
+    assert neg_env.live().active_release_id == live.active_release_id
+
+
+def test_attach_re_runs_g8_for_a_non_reproducible_manifest(neg_env: Env) -> None:
+    """A manifest that does not reproduce from its provenance commit is stopped by
+    the attach-time re-run too - the gates are not advisory, whichever one fires."""
+    from datetime import timedelta
+    from hashlib import sha256 as _sha256
+
+    from talent_data.ota.catalog import catalog_entry, next_catalog
+    from talent_data.ota.models import Channel
+    from talent_data.ota.release import (
+        build_manifest,
+        build_release,
+        release_files,
+        serialize_manifest,
+    )
+    from talent_data.ota.store import LocalDirectoryStore, upload_blobs
+
+    normal = build_release(ROOT, COMMIT, GAME, BUILD_B, 1, CREATED_AT, VALIDATION_NOTE)
+    # same tree, but the manifest claims a different createdAt: not reproducible (G8)
+    manifest = build_manifest(
+        game=GAME,
+        client_build=BUILD_B,
+        revision=1,
+        min_data_level=1,
+        created_at=CREATED_AT.replace(minute=59),
+        repository_commit=COMMIT,
+        validation_note=VALIDATION_NOTE,
+        files=release_files(normal.snapshot),
+    )
+    manifest_bytes = serialize_manifest(manifest)
+    store = LocalDirectoryStore(neg_env.store)
+    sha, data = "sha256:" + _sha256(manifest_bytes).hexdigest(), manifest_bytes
+    upload_blobs(store, {sha: data, **normal.blobs})
+
+    live = neg_env.live()
+    entry = catalog_entry(manifest_bytes, manifest, published_at=NOW)
+    update = next_catalog(
+        live,
+        game=GAME,
+        channel=Channel.PRODUCTION,
+        active_release_id=manifest.release_id,
+        append=entry,
+        issued_at=NOW,
+        validity=timedelta(days=45),
+    )
+    payload_path = neg_env.artifacts / "pending-production.payload.json"
+    payload_path.write_bytes(update.payload)
+    payload_path.with_name(payload_path.name + ".meta.json").write_text(
+        json.dumps(
+            {
+                "baseSequence": live.sequence,
+                "payloadSha256": "sha256:" + _sha256(update.payload).hexdigest(),
+                "channel": "production",
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    signature = neg_env.sign_pending()
+    assert neg_env.attach(signature=signature) == 1
+    assert neg_env.live().sequence == live.sequence  # nothing was written

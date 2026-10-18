@@ -104,29 +104,43 @@ class ReleaseUnderTest:
     rebuild: ReleaseArtifact
 
 
-def load_under_test(manifest_path: Path, repo_root: Path) -> ReleaseUnderTest:
-    data = manifest_path.read_bytes()
+def under_test_from_bytes(
+    manifest_bytes: bytes, repo_root: Path, *, origin: Path | None = None
+) -> ReleaseUnderTest:
+    """Load a release for validation from its exact bytes (a file, or a store blob).
+
+    The manifest is parsed strictly and rebuilt at its provenance commit - so the
+    caller's copy of the bytes is only trusted after G8 proved it equals what the
+    committed tree produces. ``origin`` names where the bytes came from (messages)."""
+    origin = origin or Path("<bytes>")
     try:
-        manifest = parse_strict(OtaReleaseManifest, data)
+        manifest = parse_strict(OtaReleaseManifest, manifest_bytes)
     except ValueError as exc:
-        raise OtaPublisherError(f"{manifest_path}: not a valid release manifest: {exc}") from exc
+        raise OtaPublisherError(f"{origin}: not a valid release manifest: {exc}") from exc
     revision = release_revision(manifest.release_id)
-    rebuild = build_release(
-        repo_root,
-        manifest.provenance.repository_commit,
-        manifest.game,
-        manifest.client_build,
-        revision,
-        manifest.created_at,
-        manifest.provenance.validation,
-        min_data_level=manifest.min_data_level,
-    )
+    try:
+        rebuild = build_release(
+            repo_root,
+            manifest.provenance.repository_commit,
+            manifest.game,
+            manifest.client_build,
+            revision,
+            manifest.created_at,
+            manifest.provenance.validation,
+            min_data_level=manifest.min_data_level,
+        )
+    except OtaPublisherError as exc:
+        raise OtaPublisherError(f"{origin}: {exc}") from exc
     return ReleaseUnderTest(
-        manifest_path=manifest_path,
-        manifest_bytes=data,
+        manifest_path=origin,
+        manifest_bytes=manifest_bytes,
         manifest=manifest,
         rebuild=rebuild,
     )
+
+
+def load_under_test(manifest_path: Path, repo_root: Path) -> ReleaseUnderTest:
+    return under_test_from_bytes(manifest_path.read_bytes(), repo_root, origin=manifest_path)
 
 
 def release_revision(release_id: str) -> int:
