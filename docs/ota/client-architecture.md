@@ -27,13 +27,15 @@ Audit of `main` after PR #41 (paths: `S` = `mobile/shared/src/commonMain/kotlin/
 ```
 mobile/shared (pure KMP, no platform types, no new dependency)
   data/ota/
+    JsonDuplicateNames.kt   raw-byte duplicate member-name scanner (contract §2.1), run before decoding
     OtaContract.kt          strict models: SignedEnvelope, OtaCatalog, OtaReleaseManifest, FileRole
     OtaFailure.kt           sealed failures: one per contract code + client-only conditions
-    CatalogVerifier.kt      contract §6.1 (signature math delegated to SignatureVerifier)
+    CatalogVerifier.kt      contract §6.1, size limit first (signature math delegated to SignatureVerifier)
     ActivationPolicy.kt     contract §6.2 (pure)
     ReleaseVerifier.kt      contract §6.3 and §6.4 #1–10
     ReleaseValidator.kt     §6.4 tail: runs the existing repositories over a staged release
     RetentionPolicy.kt      pure: (state, library refs, leases, bundled builds) -> releases to delete
+    StagingPolicy.kt        pure: staging listing + attempt.json + catalog entry + free space -> keep/resume/delete (§4.7)
     OtaState.kt             persisted state model + strict codec
     DatasetSnapshot.kt      immutable build -> source map for one session
   data/ota/ports (interfaces implemented in composeApp)
@@ -79,7 +81,12 @@ for HTTP, it stays confined to the `BlobFetcher` adapter ([OD-11](open-decisions
     visuals/<game>/<build>/…
     tooltips/<game>/<build>/…
     localization/<game>/<build>/…
-  staging/<releaseId>.<attempt>/ in-progress install (same structure); never read as a release
+  staging/<releaseId>/           in-progress install of one release (at most one per id); never
+                                 read as a release, never made active
+    attempt.json                 releaseId, manifestSha256, manifestByteLength, startedAt, updatedAt
+    release.json                 the release manifest, once verified (§6.3)
+    <release paths>              complete files only, each renamed into place after its check
+    <release path>.part          a download in flight; deleted on startup, never reused
   quarantine/<releaseId>.<n>/    a release that failed a read-time check (diagnostics; removed by GC)
   trash/<releaseId>.<n>/         a release being deleted (rename first, then recursive delete)
 ```
@@ -125,8 +132,15 @@ ATOMIC_MOVE)`.
 
 ### 4.1 Startup (never waits for the network)
 
-1. `DatasetActivationManager.recover()` — local only, before the first screen needs data:
-   * delete `state.json.tmp`, abandoned `staging/*` and `trash/*`;
+1. `DatasetActivationManager.recover()` — local only, before the first screen needs data
+   (contract §7.4):
+   * delete `state.json.tmp`, `trash/*`, and every `*.part` file under `staging/`;
+   * **keep** every staging directory for a later resume (§4.7), except safely identifiable
+     garbage: a name that is not a valid release id, a missing or unreadable `attempt.json`, an
+     `attempt.json` naming another release id, or a release id already installed with the same
+     manifest SHA-256. Recovery does not hash staged files (the resume does) and never reads
+     data from staging for the UI;
+   * never delete an installed release;
    * read `state.json` strictly. Unreadable → `OtaState.EMPTY` (bundled product only), and
      **no deletion** of any release directory;
    * active release: `releases/<id>/release.json` exists and its SHA-256 equals the hash the
@@ -143,10 +157,10 @@ read (§4.6), so there is no 5 MB re-hash on every start.
 Triggers: app start (after the first frame); return to the foreground when the last
 successful check is older than 6 h; a manual "check for talent data updates" action
 ([OD-5](open-decisions.md)). One attempt at a time. Leaving the app cancels the attempt
-cooperatively; only a staging directory remains.
+cooperatively; its staging directory remains for the next attempt (§4.7).
 
 ```
-fetch catalog ──(network / HTTP error)──▶ end: NETWORK  (backoff 1 h, 2 h, 4 h … max 24 h)
+fetch catalog (read at most 1 MiB + 1 byte) ──(network / HTTP error)──▶ end: NETWORK  (backoff 1 h, 2 h, 4 h … max 24 h)
       │
 verify catalog (§6.1) ──(reject)──▶ end: <code>  (nothing changes; same backoff)
       │
@@ -165,20 +179,26 @@ activate (§4.3) ──▶ publish a new DatasetSnapshot for future sessions ─
 
 `DatasetDownloadManager.install(entry)`:
 
-1. Free space ≥ `entry.totalByteLength` + 10 MiB, else `INSUFFICIENT_STORAGE`.
-2. Fetch the release manifest blob with a limit of `manifestByteLength` bytes (more is
-   `MANIFEST_HASH_MISMATCH`) and verify it (§6.3).
-3. For each file, cheapest source first: already verified in this staging dir → keep; same
-   SHA-256 in an installed release, or the bundled file at the same path of the same build →
-   copy (hash checked); otherwise download `blobs/sha256/<hex>` with a byte limit of
-   `byteLength`. Verify length and hash at once (§6.4 #1–2) and write to `staging/…/<path>`.
-   At most 4 downloads in parallel.
-4. Snapshot checks (§6.4 #3–10), including same-build identity against the bundle or an
+1. Open or create `staging/<id>/` and reconcile it with the verified catalog entry (§4.7):
+   a staging directory for other manifest bytes is deleted first.
+2. Manifest: if `staging/<id>/release.json` exists and still matches the catalog pin
+   (length + SHA-256), use it; otherwise fetch the blob with a limit of `manifestByteLength`
+   bytes (more is `MANIFEST_HASH_MISMATCH`). Verify it (§6.3).
+3. Free space ≥ (sum of `byteLength` of the files not yet validly staged) + 10 MiB, else
+   `INSUFFICIENT_STORAGE` (§4.7 for what is kept).
+4. For each file, cheapest source first, **always re-checking length and SHA-256 of the bytes
+   actually read** against this manifest: the file already in `staging/<id>/<path>` → keep;
+   the same SHA-256 in an installed release, or the bundled file at the same path of the same
+   build → copy; otherwise download `blobs/sha256/<hex>` to `<path>.part` with a byte limit of
+   `byteLength`, verify (§6.4 #1–2) and rename to `<path>`. A staged file that fails the check
+   is deleted and acquired again. At most 4 downloads in parallel (tuned by the measurements of
+   test-plan §7).
+5. Snapshot checks (§6.4 #3–10), including same-build identity against the bundle or an
    installed release of the same build.
-5. `ReleaseValidator`: a `ReleaseAssetSource` over the staging directory; for every class in
+6. `ReleaseValidator`: a `ReleaseAssetSource` over the staging directory; for every class in
    the dataset manifest load the document, visuals, tooltips and ruRU localization through the
    existing repositories. Any typed failure → `CONTENT_INVALID`.
-6. Write `release.json`, sync the files, rename `staging/<id>.<attempt>` → `releases/<id>`.
+7. Ensure `release.json` is written, sync the files, rename `staging/<id>` → `releases/<id>`.
 
 `DatasetActivationManager.activate(id)` atomically writes a new `state.json`
 (`previous = active; active = id; installed += id`). Only then do **new** snapshots see the
@@ -232,6 +252,29 @@ quarantines the release and points **new** snapshots at the previous release or 
 next check re-installs it. The open session shows the existing typed "unavailable" state for
 that asset (icons and descriptions already fail soft).
 
+### 4.7 Staging, resume and recovery (one policy)
+
+The staging directory of a release is **progress**, not a release: it is kept across process
+death so verified files are not downloaded again, and it is never read for the UI or made
+active. The rules, in the order they apply:
+
+| Moment | Rule |
+| --- | --- |
+| Startup (`recover()`) | delete `*.part`, `state.json.tmp`, `trash/`; keep staging directories except garbage (bad name, missing/unreadable/mismatched `attempt.json`, already installed with the same manifest hash); never delete an installed release; never hash or use staged files |
+| Attempt starts for release X | `staging/X/attempt.json` exists and pins the same `manifestSha256` and `manifestByteLength` as the verified catalog → resume; pins different bytes → delete `staging/X` and start fresh; absent → create `staging/X` and write `attempt.json` atomically |
+| Each needed file | reuse a staged, installed or bundled copy only after re-reading it and matching length + SHA-256 against X's manifest; a mismatching staged file is deleted; new downloads go to `.part` and are renamed only after their check |
+| Not enough space | before downloading, or `ENOSPC` while writing: end with `INSUFFICIENT_STORAGE`, delete the `.part` in flight, keep verified staged files — unless free space is below the 10 MiB margin, then delete `staging/X` |
+| Transient failure or cancellation (network, HTTP, `MANIFEST_HASH_MISMATCH`, `BLOB_SIZE_MISMATCH`, `BLOB_HASH_MISMATCH`, storage, I/O, cancelled — the bytes did not match their pin, so nothing is known about the release itself) | end the attempt; the bad blob or `.part` is discarded; `staging/X` stays; retried with backoff; the active dataset and the state are untouched |
+| Release rejected for what it is — a deterministic verdict on bytes that matched their pins (`MANIFEST_INVALID`, `UNSUPPORTED_SCHEMA_VERSION`, `RELEASE_IDENTITY_MISMATCH`, `INCOMPATIBLE_DATA_LEVEL`, `LAYOUT_INVALID`, `CONTENT_*`, `RELEASE_INCOMPLETE`, `BUILD_IDENTITY_CONFLICT`) | delete `staging/X`; record `{X, manifestSha256, code}` in the state; never retry the same manifest bytes (the publisher must publish a new revision); the active dataset is untouched |
+| Process death at any point | the next start runs `recover()`; the next attempt for X resumes from the reconciled staging |
+| Install complete | `staging/X` is renamed to `releases/X` (it no longer exists as staging); activation, if wanted, is the separate state write (§4.3) |
+| Retention after a successful check (§5.3) | delete `staging/X` when X is no longer listed in the verified catalog, when X is neither the active release, nor needed by a saved build, nor requested on demand, or when `attempt.json.updatedAt` is older than 30 days |
+
+Acceptance (test plan S5/S10): after the process is killed in the middle of a download, the
+next start keeps the verified files, the next attempt does not request them again (asserted on
+the fetch log), and the active dataset changes only after the whole release has been verified
+and installed.
+
 ## 5. Saved builds and historical datasets
 
 ### 5.1 Invariant
@@ -268,8 +311,8 @@ Keep:
   installed revision;
 * every leased release.
 
-Delete: every other installed release, every `staging/*` not owned by a running attempt, every
-`quarantine/*` and `trash/*`.
+Delete: every other installed release; every stale staging directory per §4.7 (never the one
+of a running attempt); every `quarantine/*` and `trash/*`.
 
 Rules:
 
@@ -292,11 +335,11 @@ builds). Bundled datasets cost nothing extra.
 | No internet at start or during a check | nothing (optional "offline" hint in settings) | none |
 | Catalog rejected (any §6.1 code) | nothing | none |
 | Active release needs a newer app | optional "update the app for newer talent data" | none |
-| Partial download; app killed mid-download | nothing | staging kept for resume |
-| Wrong SHA-256 / size of a blob | nothing | blob discarded, attempt ends |
+| Partial download; app killed mid-download | nothing | `.part` deleted at next start; verified staged files re-checked and reused by the next attempt (§4.7) |
+| Wrong SHA-256 / size of a blob | nothing | blob discarded, attempt ends; verified staged files kept; retried with backoff |
 | Invalid signature / untrusted signer | nothing | none |
-| Unknown schema / closed-enum value / mechanic above the data level | nothing | none |
-| Insufficient storage | optional settings hint | staging removed |
+| Unknown schema / closed-enum value / duplicate member name / mechanic above the data level | nothing | release recorded as rejected (not retried for the same bytes); staging deleted |
+| Insufficient storage | optional settings hint | verified staged files kept for resume; staging deleted only if free space is below the 10 MiB margin |
 | Crash between install and activation | nothing | release installed; activated on the next check |
 | Crash while writing the state | nothing | the old `state.json` remains (atomic replace) |
 | Corrupt file of the active release at read time | the existing "unavailable" fallback for that asset | release quarantined; new sessions use the previous release or the bundle |
@@ -326,6 +369,7 @@ areas, and no OTA code path has a write handle to the library.
 | Desktop / JVM tests | injected | fake `BlobFetcher` | `docs/ota/fixtures/v1/keyring.json` (TEST keys) | 1 |
 
 `OtaConfig` is compile-time (Gradle-generated constants), never read from a downloaded
-document. OTA can be disabled at build time (`enabled = false`), so a binary without OTA
-behaves exactly as today. The first OTA-enabled store release needs working production hosting
+document. `enabled` is set **per platform** and build type, so Android can ship OTA while iOS
+builds keep it off until the iOS release gate passes (test-plan §6, [OD-17](open-decisions.md)).
+With `enabled = false` the binary behaves exactly as today. The first OTA-enabled store release needs working production hosting
 and keys first ([OD-1](open-decisions.md), [OD-2](open-decisions.md)).

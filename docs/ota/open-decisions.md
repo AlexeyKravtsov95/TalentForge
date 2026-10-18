@@ -21,8 +21,11 @@ without breaking the contract.
 | OD-13 | **Catalog validity window and re-sign cadence** | `expiresAt = issuedAt + 45 days`; re-sign every 30 days or with any change. The contract maximum is 180 days. Shorter limits a freeze attack; longer tolerates a busy owner. | M5.OTA.2 defaults |
 | OD-14 | **May future app versions stop bundling old builds** (a smaller app) and rely on OTA for them? | Not yet: keep bundling every build saved builds may reference until OTA has run in production for at least one release cycle, then decide with data. Unbundling means those builds need the network once. | future data/release milestones |
 | OD-15 | **Which product is live Forever** (`wow_classic_beta` vs. `wowf`, see "Known gap" in `docs/dataset-freshness-watch.md`) and what counts as live-build evidence | Gate G7 requires recorded in-client evidence; the owner defines the accepted forms once (a screenshot of the client build on a live realm, or an official patch note naming it). | the first production promotion |
+| OD-16 | **Defining a new data level** when a game build brings a mechanic outside the current baseline | Gate G6 is a STOP without override (publisher design §2.1a). The owner decides, per new mechanic, between (a) engine support proven per `docs/talent-allocation-semantics.md`, or (b) shipping it as an investigated, documented fail-closed anomaly; either way an app release implementing level `L+1` ships first, its baseline file is reviewed in a PR and frozen at that release. Until then the new build stays out of production (staging only). | publishing any build with a new mechanic |
+| OD-17 | **Platform order for enabling OTA** | Enable per platform: Android (RuStore, AppGallery) as soon as the common and Android gates pass (test-plan §6A–B); iOS ships with `OtaConfig.enabled = false` until the iOS gate (§6C, physical device included) passes. | the first OTA-enabled store release |
 
 Decided by ADR-0001 (change only with a new ADR): static content-addressed delivery; a per-file
 manifest rather than an archive; ECDSA P-256 over DSSE PAE; one signed catalog per channel;
 activation of `activeReleaseId` only; saved builds open only on their own client build; strict
-fail-closed parsing; no executable roles.
+fail-closed parsing, including duplicate member names; a 1 MiB catalog limit; no executable
+roles; unsupported mechanics are never published (G6 STOP, no override).

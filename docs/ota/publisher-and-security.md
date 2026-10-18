@@ -28,10 +28,11 @@ Implementation brief: [M5.OTA.2-publisher-brief.md](M5.OTA.2-publisher-brief.md)
   2. validate        gates G1–G8 below; any "stop" ends here
           │
   3. review-report   human-readable diff vs. the active production release (classes, trees,
-          │          nodes added/removed/changed, warnings by code, allocation inventory,
+          │          nodes added/removed/changed, warnings by code, G6 engine findings,
           │          icons/tooltips/locales changed, bytes a device will download)
           │
-  4. approve         owner writes the approval record (§2.2) — required when a gate flags
+  4. approve         owner writes the approval record (§2.2) — required when G5 or G7 flags;
+          │          a STOP gate cannot be approved
           │
   5. stage           upload missing blobs (each verified by GET + SHA-256 after upload), then a
           │          new staging catalog signed with the STAGING key
@@ -58,17 +59,42 @@ expiry is steps 7–8 changing only `sequence`, `issuedAt` and `expiresAt`.
 | G2 Pipeline validation | the build's dataset manifest lists every class of the game with `validation.errors == 0`; `talent-data manifest` passes; every document parses with the public models; visuals/tooltips/localization are complete | stop |
 | G3 Contract | the produced release passes the reference verifier (`talent_data.ota.verify`): contract §6.3 and §6.4 end to end | stop |
 | G4 Same-build identity | when the build already has a published release (or is bundled in a shipped app): identical talent-data classes (token, file, treeIds, contentHash) | stop — owner decision [OD-8](open-decisions.md) |
-| G5 New warnings | `warningsByCode` has a code absent from the active production release, or a higher count | needs approval |
-| G6 New or changed mechanics | allocation inventory (`scripts/allocation_inventory.py`) vs. the active release: any new unsupported node type, entry type, prerequisite shape or gate behaviour; any node whose support status changes | needs approval **and** a recorded `minDataLevel` decision |
+| G5 New warnings | `warningsByCode` has a code absent from the active production release, or a higher count — **and G6 passes** (a warning that reflects an engine-unsupported mechanic is G6's, never G5's) | needs approval (FLAG) |
+| G6 Unsupported mechanics | the allocation engine's static fail-closed findings over every talent document of the release (`talent_data.ota.mechanics.new_unsupported_mechanics`) must all be in the frozen baseline of the release's `minDataLevel` (`docs/ota/data-levels/level-<L>.json`); a level without a baseline does not exist | **STOP — no override** |
 | G7 Live-build evidence | the client build is confirmed live by recorded evidence (§4) | production needs approval with evidence; staging allowed |
 | G8 Reproducibility | rebuilding the release from the same commit yields identical bytes; PNGs encoded in the pinned environment ([OD-6](open-decisions.md)) | stop |
+
+**STOP** gates (G1–G4, G6, G8) end the pipeline; nothing — no approval record, command-line
+flag, environment variable or configuration — lets a STOP through. Only **FLAG** gates (G5, G7)
+can pass with a recorded approval.
+
+### 2.1a Unsupported mechanics: why approval is not enough
+
+Wire validity is not functional support (contract §6.5). `talent-data.v1` deliberately keeps
+some values open, so a release with a new node type, entry type, node flag or unresolved
+condition passes every contract check, and the allocation engine then fails closed on those
+nodes — the user sees an unplannable talent, or worse, plans on data the engine cannot judge.
+An owner cannot approve that away. The only path for a new mechanic:
+
+1. Implement and prove it in the allocation engine (Python reference, conformance vectors,
+   Kotlin), following `docs/talent-allocation-semantics.md` — or, when the semantics cannot be
+   proven, investigate and document it as a known fail-closed anomaly the app handles visibly.
+2. Ship that app version; define data level `L+1`; generate and review its baseline from what that
+   app was tested with; freeze it.
+3. Publish the release with `minDataLevel = L+1`. Apps at level `L` keep their current data.
+
+Known, investigated anomalies already present in shipped data are in the baseline and do not
+count as new: for level 1 that is Rogue Venom (tree 1111, node 105712, `UNRESOLVED_CONDITION`
+50984), present in all five bundled builds. Diffing against "the active release" is not used,
+because it would let a mechanic in once and then treat it as known.
 
 ### 2.2 Approval record
 
 One file per promotion, e.g. `docs/ota/releases/<releaseId>.md` (or the promotion PR description,
-[OD-12](open-decisions.md)): release id and manifest SHA-256; source commit; flagged gates and why
+[OD-12](open-decisions.md)): release id and manifest SHA-256; source commit; flagged gates (G5, G7) and why
 they are accepted; chosen `minDataLevel` and why; live-build evidence; approver and date. The
-publisher refuses `promote` without a record when a gate flagged.
+publisher refuses `promote` without a record when a gate flagged. An approval record can only refer to
+G5 and G7; a record that names a STOP gate is itself an error.
 
 ## 3. Channels, storage and atomicity
 
@@ -76,6 +102,8 @@ publisher refuses `promote` without a record when a gate flagged.
 * **Upload order:** blobs first (skip those already present; verify new ones by reading them
   back), the catalog last. A catalog is never uploaded while one of its blobs is missing or
   unverified.
+* **Catalog size:** the publisher refuses to write a `catalog.json` over 1 MiB (contract §2
+  rule 10); a maximal valid catalog is ≈ 230 KB.
 * **Atomic pointer update:** one single-object `PUT` of `catalog.json`. S3-compatible stores give
   readers the old or the new object, never a mix; CDN caches converge within the catalog's
   `max-age` (≤ 300 s). Clients handle both: an older copy is still a valid catalog or a harmless
@@ -162,15 +190,15 @@ logged, uploaded as CI artifacts or sent to any service.
 
 | Threat | Mitigation | Residual risk |
 | --- | --- | --- |
-| Corrupt or truncated download | per-file size and SHA-256; strict envelope parsing | none (attempt fails, retried) |
+| Corrupt or truncated download | per-file size and SHA-256; strict envelope parsing incl. duplicate member names | none (attempt fails, verified files kept, retried) |
 | Compromised CDN / bucket / DNS | offline-key signature over the catalog; all else hash-pinned; base URL compiled in | denial of updates (fail-safe) |
 | Replay of an older catalog | persisted `sequence`; an equal sequence must be byte-identical | a device that never saw a newer catalog can be held on an older valid one until it expires |
 | Freeze (same old catalog forever) | `expiresAt` ≤ 180 days | up to the validity window |
 | Staging data reaching production | signed `channel`; separate keys | none |
 | Path traversal / overwriting files | closed role/path grammar; writes only under the staging root | none |
-| Size or decompression bombs | `byteLength` limits enforced while reading; 16 MiB per file, 256 MiB per release; no archives | none |
+| Size or decompression bombs | limits enforced while reading: 1 MiB catalog (`CATALOG_TOO_LARGE`), pinned `manifestByteLength`, per-file `byteLength`; 16 MiB per file, 256 MiB per release; no archives | none |
 | Executable or behaviour-changing payload | no executable role; only existing strict data contracts | none in v1; every future contract must keep this property |
-| Data the app cannot interpret | strict parsing; `minDataLevel`; gates G5/G6 | open-union values (node types) shown as unsupported if G6 is overridden |
+| Data the app cannot interpret | strict parsing; `minDataLevel`; gate G6 (STOP, no override) against the level's frozen baseline | none beyond the documented baseline anomalies (e.g. Rogue Venom, shown as unplannable) |
 | Documents of different builds mixed | cross-document identity; same-build identity | none |
 | Silent re-interpretation of saved builds | builds open on their own `clientBuild`; one talent dataset per build | none |
 | Wrong device clock | only expiry uses the clock; a wrong clock can only refuse a catalog | delayed updates |
@@ -179,5 +207,6 @@ logged, uploaded as CI artifacts or sent to any service.
 
 ## 7. Release readiness of OTA itself
 
-OTA may be enabled in a public store release only when every item of
-[test-plan.md §6](test-plan.md#6-release-readiness-criteria-ota-public-release-gate) is checked.
+OTA is enabled per platform. Android ships with OTA when the common gate and the Android gate of
+[test-plan.md §6](test-plan.md#6-release-readiness-criteria-ota-public-release-gates) pass; iOS
+needs the common gate and the iOS gate. The iOS gate never blocks an Android release.

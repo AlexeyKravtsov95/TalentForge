@@ -79,7 +79,12 @@ it ran on ([forever-dataset.md](../forever-dataset.md)). Content addressing ther
 The publisher brief requires encoding in one pinned environment ([OD-6](open-decisions.md)).
 
 The price of the choice — about 400 small requests on a first install — is bounded (HTTP/2
-multiplexing, at most 4 parallel requests) and paid once per build.
+multiplexing, at most 4 parallel requests) and paid once per build. It is **measured** before any
+public release (test-plan §7: cold and warm installs, request count, bytes, install time on good,
+mobile and poor links, parallelism 1/4/8, resume after an interruption). If a cold install on a
+poor link (300 ms RTT, 1 Mbit/s) exceeds 90 s, a warm install on a mobile link exceeds 15 s, or
+request overhead exceeds half of a cold install on a mobile link, a separate decision on batched
+delivery is required; until then, no archive format is introduced.
 
 ### D3 — Authenticity: ECDSA P-256/SHA-256 over DSSE PAE, two pinned keys
 
@@ -126,7 +131,10 @@ signed step.
 Each release carries `minDataLevel`; each app declares the level it implements. A release
 needing more is never downloaded. This is platform-neutral (no Android `versionCode` vs. iOS
 build-number mapping) and is the one switch the publisher needs to keep new mechanics away
-from old apps.
+from old apps. Each level has a frozen baseline of known fail-closed findings
+(`docs/ota/data-levels/`); gate G6 stops — without any override — every release whose
+allocation-engine findings fall outside its level's baseline, because a wire-valid dataset is not
+necessarily one the engine supports (contract §6.5).
 
 ## Alternatives considered
 
@@ -155,10 +163,11 @@ Positive:
   files, because no document names a host.
 * With no network, or when every check fails, the app behaves exactly as today, on the last
   activated or bundled data.
-* Every rejection has a typed code shared by Python and Kotlin, pinned by 56 fixture cases.
+* Every rejection has a typed code shared by Python and Kotlin, pinned by 64 fixture cases.
 
 Negative / costs:
 
+* OTA is enabled per platform; Android can ship it before iOS (test-plan §6, OD-17).
 * The app gains network access: Android `INTERNET` permission and updated privacy
   disclosures in Google Play, AppGallery and App Store forms ([OD-4](open-decisions.md)).
 * Key custody becomes a release-critical duty of the owner. Lost keys stop updates; a stolen
