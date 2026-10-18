@@ -1367,6 +1367,14 @@ descriptions of each, every one from its own client build:
 | — | `1.60.1.70245` | The product dataset of M5.DATA. Kept bundled, byte-for-byte unchanged, for the builds saved on it (desktop tests: `BUNDLE_70245`). |
 | `REFERENCE_BUNDLE` | `1.60.1.70009` | The **verified reference baseline**: the live-client evidence and the M2 conformance vectors are pinned to it, and every build saved before M5.DATA was created on it. Kept bundled, byte-for-byte unchanged. The M4/M5 tree UI fixture (`loadBaselineWarriorTreeState`) and the existing screenshot tests use it. |
 
+**Product vs. rollback floor (M5.OTA.3).** `PRODUCT_BUNDLE` is the *bundled* product. With OTA
+disabled (every build today) it is also the product New Build uses. With OTA enabled, the
+*effective* product is the session snapshot's `product`: the active OTA release when it is intact
+and not older than `PRODUCT_BUNDLE`, otherwise `PRODUCT_BUNDLE` — which is therefore the floor of
+every rollback (OD-3, `KEEP_BUNDLED_FLOOR`). `BUNDLED_CLIENT_BUILDS` (same file) lists every
+bundled build for the OTA resolver; `scripts/mobile_bundles.py --check` (and every sync script's
+`--check`) fails when it differs from `BUNDLED_BUILDS`.
+
 **Saved builds.** `loadEditorSession` and the build cards resolve each record's **own**
 `game` / `clientBuild` / `classToken` / `treeId` (unchanged since M5.1): a build saved on
 1.60.1.70009 (or 1.60.1.70245, 1.60.1.70338 or 1.60.1.70374) opens on that build's document, engine, icons and
@@ -1419,6 +1427,52 @@ checks, the Kotlin engine supports them exactly like 70009 (only Rogue Venom unr
 Mage's Arcane Wrath included), and 70374's sidecars placed under 70450 fail with a
 typed `BuildMismatch`.
 `BundledBaselineTest` loads every bundle through the real Compose resource pipeline.
+
+## Remote datasets (M5.OTA.3)
+
+Contract: [ota/ota-contract-v1.md](ota/ota-contract-v1.md) · design:
+[ota/client-architecture.md](ota/client-architecture.md) · what was built and every deviation:
+[ota/client-implementation-notes.md](ota/client-implementation-notes.md).
+
+**Off by default.** `OtaConfig` comes from Gradle-generated constants per platform (android, ios)
+and channel (production for release builds, staging for debug builds); nothing in the repository
+enables it, so `MainActivity` and `MainViewController` pass `ota = null` and the app runs exactly as
+before on its bundled datasets. A configuration is enabled only with an `https` base URL and a
+keyring without `test-` keys (production: primary + backup); anything else fails the build or
+resolves to disabled. Android and iOS are enabled independently (OD-17).
+
+**Module split.** Everything that decides is pure `shared` code (`data/ota/`): the strict readers
+(the byte-level duplicate-name/strict-JSON scanner runs before any decoding), `CatalogVerifier`,
+`ActivationPolicy`, `ReleaseVerifier`, `ReleaseValidator` (the existing repositories over a staged
+release), `StagingPolicy`, `RetentionPolicy`, `OtaState` and `DatasetSnapshot`, plus the ports
+`SignatureVerifier`, `BlobFetcher`, `OtaFileStore`, `OtaClock`. composeApp moves bytes
+(`ui/ota/`: catalog fetch, staged install, activation and recovery, coordinator, historical
+resolver) and implements the ports: `jvmCommonMain` (Android + desktop: `java.security`,
+`HttpURLConnection`, `java.nio`) and `iosMain` (Security.framework, `NSURLSession`, Application
+Support excluded from backup).
+
+**Lifecycle.** `OtaRuntime.open` runs `recover()` (local files only) before the first screen; the
+first check starts after the first frame, again on return to the foreground when the last success
+is older than 6 h, and on About's "Check for updates"; one attempt at a time; failures back off
+(1 h … 24 h). A verified release is installed with one atomic rename and activated by one atomic
+`state.json` write; only then is a new `DatasetSnapshot` published.
+
+**Sessions are pinned.** `App` gives each screen the `SessionDatasets` (repository + icon,
+description and localization loaders over a `RoutingDatasetAssetSource`) current when it opens;
+an open editor keeps its snapshot and leases its releases, so an activation never changes its
+document, icons, descriptions or ranks. New Build creates drafts on `session.product`.
+
+**Saved and imported builds** open only on their own client build: installed release, bundled
+dataset, a release the last accepted catalog lists (downloaded on demand with progress, never
+activated), or the typed "unavailable" state with its reason and Retry. Nothing is migrated and
+the library is never written by OTA code (retention reads it through the storage's `read` only).
+
+**Tests.** `shared` jvmTest: `OtaConformanceReplayTest` (64 fixture cases), `JsonDuplicateNamesTest`
+(+ differential vectors), `OtaPrimitivesTest`, `OtaPoliciesTest`. composeApp desktopTest:
+`OtaScenarioTest` (S1–S14), `OtaSessionTest`, `OtaCrashRecoveryTest`, `OtaPlatformAdapterTest`,
+`OtaConfigTest`, `OtaUiTest`; opt-in `M5Ota3ScreenshotTest` and `OtaPerformanceBenchmark`.
+composeApp iosSimulatorArm64Test: `IosOtaAdapterTest`. Fixtures are mirrored into the shared
+jvmTest resources (and the iOS catalog vectors generated) by `scripts/sync_mobile_ota_fixtures.py`.
 
 ## Runtime resource loading
 
@@ -1950,6 +2004,12 @@ python3 scripts/sync_mobile_tooltips.py
 python3 scripts/sync_mobile_localization.py --check
 python3 scripts/sync_mobile_localization.py
 # (all four mirror every build in BUNDLED_BUILDS of scripts/mobile_bundles.py)
+# BUNDLED_CLIENT_BUILDS (BundledDatasets.kt) vs BUNDLED_BUILDS — offline
+python3 scripts/mobile_bundles.py --check
+
+# OTA conformance fixtures mirror + iOS catalog vectors drift check / re-sync (M5.OTA.3)
+python3 scripts/sync_mobile_ota_fixtures.py --check
+python3 scripts/sync_mobile_ota_fixtures.py
 
 # tests (JVM)
 cd mobile
@@ -1988,6 +2048,11 @@ cd mobile
 # opt-in M5.UI.2 B+ class selection screenshot evidence (desktop-rendered)
 ./gradlew :composeApp:desktopTest --tests "*M5Ui2ScreenshotTest*" \
     -Dtalentforge.m5ui2.screenshots=<output-dir>
+
+# M5.OTA.3: OTA adapters on the iOS simulator; opt-in OTA screenshots and the §7 benchmark
+./gradlew :composeApp:iosSimulatorArm64Test
+./gradlew :composeApp:desktopTest --tests "*M5Ota3ScreenshotTest*" -Dtalentforge.m5ota3.screenshots=<output-dir>
+./gradlew :composeApp:desktopTest --tests "*OtaPerformanceBenchmark*" -Dtalentforge.ota.benchmark=<report.md>
 
 # Android
 ./gradlew :composeApp:assembleDebug    # -> composeApp/build/outputs/apk/debug/

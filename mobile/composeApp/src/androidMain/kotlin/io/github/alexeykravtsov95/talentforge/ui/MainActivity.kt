@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import io.github.alexeykravtsov95.talentforge.ui.about.installedAppVersion
 import io.github.alexeykravtsov95.talentforge.ui.library.AndroidBuildLibraryStorage
+import io.github.alexeykravtsov95.talentforge.ui.ota.AndroidOta
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,8 +24,15 @@ class MainActivity : ComponentActivity() {
             navigationBarStyle = SystemBarStyle.dark(Color.Transparent.toArgb()),
         )
         val appVersion = installedAppVersion(applicationContext)
+        // OTA recovery (local files only) runs before the first screen; no network here
+        val ota = AndroidOta.runtime(applicationContext)
         setContent {
-            App(storage = AndroidBuildLibraryStorage(applicationContext), appVersion = appVersion)
+            App(
+                storage = AndroidBuildLibraryStorage(applicationContext),
+                appVersion = appVersion,
+                // null unless this build type enables OTA (M5.OTA.3; disabled by default)
+                ota = ota,
+            )
         }
     }
 }

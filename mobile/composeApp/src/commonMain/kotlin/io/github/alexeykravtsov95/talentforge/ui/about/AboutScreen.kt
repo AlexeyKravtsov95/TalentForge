@@ -66,6 +66,14 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.abo
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_version
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_retry
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_talent_data_version
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.ota_check_now
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.ota_checking
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.ota_data_build
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.ota_data_source_bundled
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.ota_data_source_release
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.ota_section_talent_data
+import io.github.alexeykravtsov95.talentforge.ui.ota.OtaStatus
+import io.github.alexeykravtsov95.talentforge.ui.ota.text
 import io.github.alexeykravtsov95.talentforge.ui.library.InlineNotice
 import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.library.SecondaryActionButton
@@ -115,6 +123,9 @@ fun AboutScreen(
     backupStatement: BackupStatement,
     privacyPolicyUrl: String?,
     onBack: () -> Unit,
+    /** M5.OTA.3, OTA-enabled builds only: the data version in use and the "check now" action (OD-5). */
+    otaStatus: OtaStatus? = null,
+    onCheckForUpdates: (() -> Unit)? = null,
 ) {
     val policyLink = privacyPolicyLinkOf(privacyPolicyUrl)
     var attempt by remember { mutableStateOf(0) }
@@ -173,9 +184,29 @@ fun AboutScreen(
                 stringResource(
                     Res.string.common_talent_data_version,
                     gameDisplayName(PRODUCT_BUNDLE.game),
-                    dataVersionOf(PRODUCT_BUNDLE.clientBuild),
+                    dataVersionOf(otaStatus?.productBuild ?: PRODUCT_BUNDLE.clientBuild),
                 ),
             )
+            if (otaStatus != null && onCheckForUpdates != null) {
+                Section(stringResource(Res.string.ota_section_talent_data))
+                Meta(stringResource(Res.string.ota_data_build, otaStatus.productBuild))
+                Meta(
+                    otaStatus.productReleaseId?.let { stringResource(Res.string.ota_data_source_release, it) }
+                        ?: stringResource(Res.string.ota_data_source_bundled),
+                )
+                val outcome = otaStatus.lastOutcome
+                when {
+                    otaStatus.checking -> Body(stringResource(Res.string.ota_checking))
+                    outcome != null -> Body(outcome.text())
+                }
+                SecondaryActionButton(
+                    text = stringResource(Res.string.ota_check_now),
+                    onClickLabel = stringResource(Res.string.ota_check_now),
+                    onClick = onCheckForUpdates,
+                    enabled = !otaStatus.checking,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
 
             Section(stringResource(Res.string.about_section_project))
             Body(stringResource(Res.string.about_disclaimer))

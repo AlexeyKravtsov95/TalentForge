@@ -118,11 +118,13 @@ fun ImportBuildScreen(
     sharing: BuildCodeSharing,
     onBack: () -> Unit,
     onImported: (String) -> Unit,
+    /** M5.OTA.3: on-demand datasets of a code's client build (see [BuildImportController]); `null` without OTA. */
+    resolveDataset: (suspend (io.github.alexeykravtsov95.talentforge.data.DatasetBundleId) -> TalentDatasetRepository?)? = null,
 ) {
     val input = rememberSaveable { mutableStateOf("") }
     val scope = rememberCoroutineScope()
     val controller = remember(repository, datasets) {
-        BuildImportController(input, datasets, repository, scope, Dispatchers.Default)
+        BuildImportController(input, datasets, repository, scope, Dispatchers.Default, resolveDataset)
     }
     val phase = controller.phase
     val saving = phase is ImportPhase.Confirming && phase.saving || phase is ImportPhase.Imported

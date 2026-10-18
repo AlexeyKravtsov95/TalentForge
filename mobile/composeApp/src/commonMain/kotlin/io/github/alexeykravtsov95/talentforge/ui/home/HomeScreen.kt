@@ -51,6 +51,8 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.com
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_new_build_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_open_build_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_retry
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.ota_check_updated
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.ota_dismiss
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_about
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_about_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_all_builds_action
@@ -67,6 +69,7 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.imp
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_load_failed_body
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_load_failed_title
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_loading
+import io.github.alexeykravtsov95.talentforge.data.DatasetBundleId
 import io.github.alexeykravtsov95.talentforge.data.TalentDatasetRepository
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.ui.builds.BuildActionsOverlays
@@ -79,6 +82,7 @@ import io.github.alexeykravtsov95.talentforge.ui.library.ClassArtworkMark
 import io.github.alexeykravtsov95.talentforge.ui.library.ClassArtworkSlot
 import io.github.alexeykravtsov95.talentforge.ui.library.HomeModel
 import io.github.alexeykravtsov95.talentforge.ui.library.InlineNotice
+import io.github.alexeykravtsov95.talentforge.ui.library.InlineNoticeTone
 import io.github.alexeykravtsov95.talentforge.ui.library.LibraryData
 import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.library.PrimaryActionButton
@@ -145,6 +149,11 @@ fun HomeScreen(
     onAbout: () -> Unit,
     autosave: BuildAutosaveCoordinator,
     sharing: BuildCodeSharing,
+    /** The product of the session (M5.OTA.3): the data version the first-run line names. */
+    product: DatasetBundleId = PRODUCT_BUNDLE,
+    /** Set once after an OTA activation switched new builds to this client build (OD-5). */
+    dataUpdatedTo: String? = null,
+    onDismissDataUpdate: () -> Unit = {},
 ) {
     var data by remember { mutableStateOf<LibraryData<HomeModel>>(LibraryData.Loading) }
     var reloadToken by remember { mutableStateOf(0) }
@@ -195,6 +204,14 @@ fun HomeScreen(
                 ) {
                     Spacer(Modifier.height(TalentForgeSpacing.group))
                     BrandHeader(onAbout = onAbout)
+                    if (dataUpdatedTo != null) {
+                        InlineNotice(
+                            text = stringResource(Res.string.ota_check_updated, dataVersionOf(dataUpdatedTo), dataUpdatedTo),
+                            actionText = stringResource(Res.string.ota_dismiss),
+                            onAction = onDismissDataUpdate,
+                            tone = InlineNoticeTone.Positive,
+                        )
+                    }
                     actions.shareFailure?.let { failure ->
                         InlineNotice(
                             text = failure.failure.text(),
@@ -226,6 +243,7 @@ fun HomeScreen(
                             model = current.value,
                             clockMillis = clockMillis,
                             emptyCopyTopGap = emptyCopyTopGap,
+                            product = product,
                             onOpenBuild = onOpenBuild,
                             onAllBuilds = onAllBuilds,
                             onRecentActions = { localId -> actionsFor = localId },
@@ -309,13 +327,14 @@ private fun HomeContent(
     model: HomeModel,
     clockMillis: () -> Long,
     emptyCopyTopGap: Dp,
+    product: DatasetBundleId,
     onOpenBuild: (String) -> Unit,
     onAllBuilds: () -> Unit,
     onRecentActions: (String) -> Unit,
 ) {
     val continueCard = model.continueCard
     if (continueCard == null) {
-        NewUserContent(emptyCopyTopGap = emptyCopyTopGap)
+        NewUserContent(emptyCopyTopGap = emptyCopyTopGap, product = product)
         return
     }
     SectionLabel(stringResource(Res.string.home_section_continue))
@@ -365,7 +384,7 @@ private fun HomeContent(
  * below the brand header — no illustration, no decoration.
  */
 @Composable
-private fun NewUserContent(emptyCopyTopGap: Dp) {
+private fun NewUserContent(emptyCopyTopGap: Dp, product: DatasetBundleId) {
     val colors = talentForgeColors()
     Column(verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.rowGap)) {
         Spacer(Modifier.height(emptyCopyTopGap))
@@ -380,8 +399,8 @@ private fun NewUserContent(emptyCopyTopGap: Dp) {
         BasicText(
             stringResource(
                 Res.string.home_empty_data_version,
-                gameDisplayName(PRODUCT_BUNDLE.game),
-                dataVersionOf(PRODUCT_BUNDLE.clientBuild),
+                gameDisplayName(product.game),
+                dataVersionOf(product.clientBuild),
             ),
             style = TalentForgeTypography.meta.copy(color = colors.textMuted),
         )

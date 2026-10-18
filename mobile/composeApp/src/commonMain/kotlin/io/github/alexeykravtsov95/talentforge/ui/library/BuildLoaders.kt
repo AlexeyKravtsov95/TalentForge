@@ -5,6 +5,7 @@ import io.github.alexeykravtsov95.talentforge.allocation.TalentAllocationEngine
 import io.github.alexeykravtsov95.talentforge.allocation.buildFileOf
 import io.github.alexeykravtsov95.talentforge.allocation.toBuildState
 import io.github.alexeykravtsov95.talentforge.data.ClassToken
+import io.github.alexeykravtsov95.talentforge.data.DatasetBundleId
 import io.github.alexeykravtsov95.talentforge.data.DatasetId
 import io.github.alexeykravtsov95.talentforge.data.DatasetLoadError
 import io.github.alexeykravtsov95.talentforge.data.DatasetOutcome
@@ -266,15 +267,21 @@ private suspend fun <T> loadCardList(
  * document failing loads fails THAT class conservatively (disabled card, no
  * invented name) — the other classes are unaffected. Returns `null` when the
  * manifest itself cannot load (the screen's Failed state).
+ *
+ * [product] is the session's product (M5.OTA.3: `DatasetSnapshot.product`, the active OTA
+ * release or the bundled product); without OTA it is [PRODUCT_BUNDLE], as before.
  */
-suspend fun loadNewBuildChoices(datasets: TalentDatasetRepository): NewBuildChoices? {
-    val manifest = when (val outcome = datasets.manifest(PRODUCT_BUNDLE)) {
+suspend fun loadNewBuildChoices(
+    datasets: TalentDatasetRepository,
+    product: DatasetBundleId = PRODUCT_BUNDLE,
+): NewBuildChoices? {
+    val manifest = when (val outcome = datasets.manifest(product)) {
         is DatasetOutcome.Failed -> return null
         is DatasetOutcome.Loaded -> outcome.value
     }
     val resolver = DatasetClassResolver(datasets)
     val classes = manifest.classes.map { entry ->
-        val document = resolver.productDocumentOf(entry.token)
+        val document = resolver.documentOf(DatasetId(product.game, product.clientBuild, entry.token))
         NewBuildClassChoice(
             token = entry.token,
             displayName = (document as? DatasetOutcome.Loaded)?.value?.classInfo?.name,
@@ -293,15 +300,19 @@ suspend fun loadNewBuildChoices(datasets: TalentDatasetRepository): NewBuildChoi
  * its `emptyState()`, bind the exact dataset identity into a [BuildFile] and
  * PERSIST the draft — only a successfully persisted draft is "Created". The
  * editor must never open over a failed persistence looking saved.
+ *
+ * New drafts are created on [product] — the session snapshot's product with OTA
+ * (`DatasetSnapshot.product`), [PRODUCT_BUNDLE] without.
  */
 suspend fun createClassDraft(
     repository: LocalBuildRepository,
     datasets: TalentDatasetRepository,
     classToken: ClassToken,
+    product: DatasetBundleId = PRODUCT_BUNDLE,
 ): DraftCreation {
     val document = when (
         val outcome = datasets.document(
-            DatasetId(game = PRODUCT_BUNDLE.game, clientBuild = PRODUCT_BUNDLE.clientBuild, classToken = classToken),
+            DatasetId(game = product.game, clientBuild = product.clientBuild, classToken = classToken),
         )
     ) {
         is DatasetOutcome.Failed -> return DraftCreation.Failed(DraftCreation.Failure.Dataset(outcome.error))
@@ -340,10 +351,6 @@ private class DatasetClassResolver(private val datasets: TalentDatasetRepository
     /** Loads (and caches) the document of an exact dataset identity. */
     suspend fun documentOf(id: DatasetId): DatasetOutcome<TalentDataDocument> =
         documents.getOrPut(id) { datasets.document(id) }
-
-    /** The New Build screen intentionally creates from the product dataset. */
-    suspend fun productDocumentOf(token: ClassToken): DatasetOutcome<TalentDataDocument> =
-        documentOf(DatasetId(PRODUCT_BUNDLE.game, PRODUCT_BUNDLE.clientBuild, token))
 
     private suspend fun engineOf(id: DatasetId, treeId: Int): TalentAllocationEngine? =
         engines.getOrPut(id to treeId) {
