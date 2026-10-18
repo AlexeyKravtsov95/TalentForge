@@ -13,6 +13,9 @@ allocation     validate|replay   (M2 allocation engine developer tools)
 visuals        fetch|report|normalize|check   (M5.V1 talent icons, build-pinned)
 tooltips       fetch|report|normalize|check   (M5.V2 talent descriptions, build-pinned)
 localization   fetch|report|normalize|check   (M5.REL.3a localized text overlays)
+ota            build-release|validate|report|stage|promote|attach-signature|
+               rollback|resign|verify-live|sign|gc   (M5.OTA.2 publisher; needs the
+               `ota` extra)
 
 ``builds freshness`` (M5.DATA.2) compares the product build with the latest publishable
 build and prints a ``product-freshness`` v1 JSON document; its exit code is the status:
@@ -40,6 +43,7 @@ from talent_data.allocation.conformance import ConformanceSuite
 from talent_data.allocation.models import BuildFile
 from talent_data.cli import allocation as allocation_cli
 from talent_data.cli import localization as localization_cli
+from talent_data.cli import ota as ota_cli
 from talent_data.cli import tooltips as tooltips_cli
 from talent_data.cli import visuals as visuals_cli
 from talent_data.db2.tables import TRAIT_TABLES
@@ -54,6 +58,7 @@ from talent_data.models.tooltips import TalentTooltipsDocument
 from talent_data.models.visuals import TalentIconRegistry, TalentVisualsDocument
 from talent_data.normalization.class_resolution import ClassResolutionError
 from talent_data.normalization.normalizer import NormalizationError
+from talent_data.ota.errors import OtaPublisherError
 from talent_data.ota.models import OtaCatalog, OtaReleaseManifest, SignedEnvelope
 from talent_data.pipeline import (
     ALL_CLASSES,
@@ -108,6 +113,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         DownloadError,
         ClassResolutionError,
         NormalizationError,
+        OtaPublisherError,
     ) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return EXIT_FAILURE
@@ -207,6 +213,7 @@ def _build_parser() -> argparse.ArgumentParser:
     visuals_cli.register(sub)
     tooltips_cli.register(sub)
     localization_cli.register(sub)
+    ota_cli.register(sub)
     return parser
 
 
