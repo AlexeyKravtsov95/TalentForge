@@ -12,14 +12,20 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.foundation.text.modifiers.TextAutoSizeLayoutScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeRadius
@@ -33,7 +39,8 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
  * B+ Home it belonged to); the secondary stays neutral on the interactive
  * surface; both keep ≥ 48 dp targets. `enabled = false` (M5.SHARE.2 busy
  * states) keeps the target and the label but greys both and ignores taps. Amber marks PRIMARY actions only —
- * the editor keeps its neutral token set untouched.
+ * the editor keeps its neutral token set untouched. Both labels wrap only
+ * between words ([WholeWordsAutoSize]).
  */
 @Composable
 fun PrimaryActionButton(
@@ -58,6 +65,7 @@ fun PrimaryActionButton(
         BasicText(
             text = text,
             style = ActionLabelStyle.copy(color = if (enabled) colors.background else colors.disabled),
+            autoSize = ActionLabelAutoSize,
         )
     }
 }
@@ -83,6 +91,7 @@ fun SecondaryActionButton(
         BasicText(
             text = text,
             style = ActionLabelStyle.copy(color = if (enabled) colors.textPrimary else colors.disabled),
+            autoSize = ActionLabelAutoSize,
         )
     }
 }
@@ -199,6 +208,42 @@ private val ActionLabelStyle = androidx.compose.ui.text.TextStyle(
     lineHeight = 20.sp,
     fontWeight = FontWeight.SemiBold,
 )
+
+private val ActionLabelAutoSize = WholeWordsAutoSize(maxFontSize = ActionLabelStyle.fontSize)
+
+/**
+ * A label size that wraps only between words. The label keeps [maxFontSize]
+ * whenever every line break of its layout falls after a space; only when one
+ * word is wider than the space the label has — a narrow phone at a large font
+ * scale — does it take the largest smaller size at which no word is split.
+ * The check runs on the label's real layout with the platform's own font, so
+ * it holds wherever fonts are wider (Linux CI's font broke "Импортирова|ть
+ * билд" at 320 dp / 200 % where macOS's did not). [minFontSize] is the
+ * readability floor: a word that does not fit even at that size (far below
+ * the 320 dp / 200 % matrix) is laid out at the floor and may still wrap.
+ */
+internal data class WholeWordsAutoSize(
+    val maxFontSize: TextUnit,
+    val minFontSize: TextUnit = 10.sp,
+    val step: TextUnit = 0.5.sp,
+) : TextAutoSize {
+    override fun TextAutoSizeLayoutScope.getFontSize(constraints: Constraints, text: AnnotatedString): TextUnit {
+        var size = maxFontSize.value
+        while (size > minFontSize.value) {
+            if (!splitsAWord(performLayout(constraints, text, size.sp))) return size.sp
+            size -= step.value
+        }
+        return minFontSize
+    }
+
+    private fun splitsAWord(layout: TextLayoutResult): Boolean {
+        if (layout.didOverflowWidth) return true
+        val text = layout.layoutInput.text.text
+        return (0 until layout.lineCount - 1).any { line ->
+            text.getOrNull(layout.getLineEnd(line, visibleEnd = false) - 1)?.isWhitespace() == false
+        }
+    }
+}
 
 private val MonogramStyle = androidx.compose.ui.text.TextStyle(
     fontSize = 15.sp,
