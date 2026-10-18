@@ -182,8 +182,15 @@ complete** (`FetchResult.NetworkError`: no connection, TLS, timeout, reset), on 
 the attempt end with `NETWORK` (and the backoff above applies). An answer of the origin is never
 repeated inside the attempt: an HTTP status, an over-limit body, or bytes that miss their pinned
 length or SHA-256 end it at once, as before. The URL, the byte limit and every check of contract
-v1 are the same on each try. The pauses are cancellable: leaving the app ends a pausing attempt
-at once. On Android/JVM the connect timeout is 10 s (read timeout 30 s), so a connection the
+v1 are the same on each try. A transfer failure no repeat can change is not repeated either: a
+refused or malformed URL, or a rejected TLS identity (untrusted, expired or not-yet-valid
+certificate, a certificate for another host) — the platform fetcher marks it
+`retryable = false` from the failure's type (JVM/Android) or `NSURLErrorDomain` code (iOS), never
+from its message; a reset or stalled handshake stays retryable. The pauses are cancellable:
+leaving the app ends a pausing attempt at once, and so does a transfer blocked in the platform's
+socket I/O — the Android/JVM fetcher awaits its blocking transfer cancellably and closes the
+connection (a body read already blocked keeps its platform thread until the read timeout, holding
+only bytes nothing reads; iOS cancels the `NSURLSession` task). On Android/JVM the connect timeout is 10 s (read timeout 30 s), so a connection the
 origin never accepts is replaced quickly. Origin: M5.OTA.4b measured 7–11 % of new connections
 to the VK staging origin never accepted, which ended whole attempts.
 
