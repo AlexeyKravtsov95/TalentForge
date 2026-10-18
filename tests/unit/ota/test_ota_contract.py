@@ -21,7 +21,14 @@ from typing import Any
 import pytest
 
 from talent_data.models.manifest import DatasetManifest
-from talent_data.ota.models import CatalogRelease, Channel, ReleaseFile
+from talent_data.ota.models import (
+    MAX_CATALOG_BYTES,
+    MAX_CATALOG_RELEASES,
+    MAX_SIGNATURES,
+    CatalogRelease,
+    Channel,
+    ReleaseFile,
+)
 from talent_data.ota.verify import (
     ActivationDecision,
     OtaError,
@@ -169,3 +176,62 @@ def test_only_canonical_base64_decodes(text: str) -> None:
 
 def test_canonical_base64_decodes() -> None:
     assert strict_b64decode(base64.b64encode(b"hi").decode()) == b"hi"
+
+
+def _verify_production(envelope_bytes: bytes, keyring: dict[str, Any] | None = None) -> str:
+    try:
+        verify_catalog(
+            envelope_bytes,
+            keyring=keyring or KEYRING,
+            game="forever",
+            channel=Channel.PRODUCTION,
+            now=generator.NOW,
+            last_seen=None,
+        )
+    except OtaError as exc:
+        return exc.code.value
+    return "ACCEPT"
+
+
+def test_a_catalog_of_exactly_the_size_limit_is_accepted() -> None:
+    good = (FIXTURES / "catalogs" / "catalog-b-active.json").read_bytes()
+    at_limit = good + b" " * (MAX_CATALOG_BYTES - len(good))
+    assert len(at_limit) == MAX_CATALOG_BYTES
+    assert _verify_production(at_limit) == "ACCEPT"
+    assert _verify_production(at_limit + b" ") == "CATALOG_TOO_LARGE"
+
+
+def test_a_maximal_valid_catalog_fits_the_size_limit() -> None:
+    """512 releases with the longest plausible ids, indented like the publisher writes them,
+    and 4 signatures stay far below the 1 MiB limit."""
+    base = json.loads(
+        base64.b64decode(
+            json.loads((FIXTURES / "catalogs" / "catalog-b-active.json").read_bytes())["payload"]
+        )
+    )
+    template = base["releases"][1]
+    releases = []
+    for i in range(MAX_CATALOG_RELEASES):
+        build = f"1.60.99.{9_000_000 + i}"
+        releases.append(
+            {
+                **template,
+                "releaseId": f"{build}-r999999",
+                "clientBuild": build,
+                "minDataLevel": 999,
+                "manifestByteLength": 16_777_216,
+                "totalByteLength": 268_435_456,
+            }
+        )
+    payload = generator.dumps(
+        {**base, "releases": releases, "activeReleaseId": releases[-1]["releaseId"]}
+    )
+    signers = [generator.PRIMARY, generator.BACKUP, generator.UNTRUSTED, generator.PRIMARY]
+    envelope = generator.envelope(
+        payload,
+        signers,
+        key_ids=["test-primary", "test-backup", "test-untrusted", "test-fourth-key"],
+    )
+    assert len(json.loads(envelope)["signatures"]) == MAX_SIGNATURES
+    assert len(envelope) < MAX_CATALOG_BYTES // 2, len(envelope)
+    assert _verify_production(envelope) == "ACCEPT"

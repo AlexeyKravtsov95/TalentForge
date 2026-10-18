@@ -332,6 +332,63 @@
       }
     },
     {
+      "id": "catalog-over-size-limit",
+      "description": "A valid signed catalog padded with JSON whitespace to one byte over the 1 MiB limit: rejected before any parsing (a client stops reading at the limit).",
+      "kind": "catalog",
+      "file": "catalogs/catalog-over-size-limit.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "CATALOG_TOO_LARGE"
+      }
+    },
+    {
+      "id": "catalog-envelope-duplicate-key",
+      "description": "The envelope repeats payloadType with the same value.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-envelope-duplicate-key.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "ENVELOPE_INVALID"
+      }
+    },
+    {
+      "id": "catalog-envelope-nested-duplicate-key",
+      "description": "A signature object repeats keyId with the same value (duplicate in a nested object).",
+      "kind": "catalog",
+      "file": "catalogs/catalog-envelope-nested-duplicate-key.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "ENVELOPE_INVALID"
+      }
+    },
+    {
       "id": "catalog-unknown-field",
       "description": "Signed payload with an unknown field: rejected, never ignored.",
       "kind": "catalog",
@@ -374,6 +431,63 @@
       "description": "A JSON object with the activeReleaseId key twice.",
       "kind": "catalog",
       "file": "catalogs/catalog-duplicate-json-key.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "PAYLOAD_INVALID"
+      }
+    },
+    {
+      "id": "catalog-duplicate-key-same-value",
+      "description": "sequence twice with the same value: duplicates are rejected whatever their values.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-duplicate-key-same-value.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "PAYLOAD_INVALID"
+      }
+    },
+    {
+      "id": "catalog-duplicate-nested-key",
+      "description": "The first release entry repeats minDataLevel (duplicate in a nested object).",
+      "kind": "catalog",
+      "file": "catalogs/catalog-duplicate-nested-key.json",
+      "context": {
+        "game": "forever",
+        "channel": "production",
+        "now": "2026-10-18T12:00:00Z",
+        "lastSeen": null,
+        "supportedDataLevel": 1,
+        "bundledProductBuild": "1.60.1.70374",
+        "currentReleaseId": null
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "PAYLOAD_INVALID"
+      }
+    },
+    {
+      "id": "catalog-duplicate-escaped-key",
+      "description": "activeReleaseId and activeRelease\\u0049d are the same name once unescaped.",
+      "kind": "catalog",
+      "file": "catalogs/catalog-duplicate-escaped-key.json",
       "context": {
         "game": "forever",
         "channel": "production",
@@ -796,6 +910,34 @@
       "expect": {
         "result": "REJECT",
         "code": "MANIFEST_HASH_MISMATCH"
+      }
+    },
+    {
+      "id": "release-duplicate-nested-key",
+      "description": "A file entry repeats byteLength with the same value (duplicate in a nested object).",
+      "kind": "release",
+      "file": "releases/invalid/release-duplicate-nested-key.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r1",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:f329ed5d27e9b7790b8c2ab243b12f40ed981da6f9cf0286b00fa8e62d69bcb2",
+        "manifestByteLength": 1752,
+        "totalByteLength": 480003,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": null
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {}
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "MANIFEST_INVALID"
       }
     },
     {
@@ -1253,6 +1395,36 @@
       "expect": {
         "result": "REJECT",
         "code": "CONTENT_IDENTITY_MISMATCH"
+      }
+    },
+    {
+      "id": "release-content-duplicate-key",
+      "description": "The dataset manifest (a content file, pinned by its hash) repeats source with the same value: content files get the same duplicate-key rejection as OTA documents.",
+      "kind": "release",
+      "file": "releases/invalid/release-content-duplicate-key.release.json",
+      "catalogEntry": {
+        "releaseId": "1.60.1.70450-r1",
+        "clientBuild": "1.60.1.70450",
+        "minDataLevel": 1,
+        "manifestSha256": "sha256:53692483c3000bb7e36f565537ab6d2aeea6d51771572fe974c24552f030dad9",
+        "manifestByteLength": 75792,
+        "totalByteLength": 5077074,
+        "publishedAt": "2026-10-17T23:30:00Z"
+      },
+      "context": {
+        "game": "forever",
+        "supportedDataLevel": 1,
+        "knownSameBuildManifest": null
+      },
+      "files": {
+        "source": "repository",
+        "overrides": {
+          "dataset/forever/1.60.1.70450/manifest.json": "blobs/release-content-duplicate-key--manifest.json"
+        }
+      },
+      "expect": {
+        "result": "REJECT",
+        "code": "CONTENT_INVALID"
       }
     },
     {

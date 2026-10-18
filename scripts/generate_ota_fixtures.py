@@ -37,6 +37,7 @@ from cryptography.hazmat.primitives.asymmetric import ec
 
 from talent_data.ota.models import (
     CATALOG_PAYLOAD_TYPE,
+    MAX_CATALOG_BYTES,
     CatalogRelease,
     FileRole,
     OtaReleaseManifest,
@@ -502,6 +503,30 @@ def _catalog_cases(
         catalog_context(),
         reject("ENVELOPE_INVALID"),
     )
+    case(
+        "catalog-over-size-limit",
+        "A valid signed catalog padded with JSON whitespace to one byte over the 1 MiB limit: "
+        "rejected before any parsing (a client stops reading at the limit).",
+        good + b" " * (MAX_CATALOG_BYTES + 1 - len(good)),
+        catalog_context(),
+        reject("CATALOG_TOO_LARGE"),
+    )
+    payload_type_line = f'  "payloadType": "{CATALOG_PAYLOAD_TYPE}",\n'.encode()
+    case(
+        "catalog-envelope-duplicate-key",
+        "The envelope repeats payloadType with the same value.",
+        good.replace(payload_type_line, payload_type_line * 2, 1),
+        catalog_context(),
+        reject("ENVELOPE_INVALID"),
+    )
+    key_id = f'"keyId": "{PRIMARY}",'.encode()
+    case(
+        "catalog-envelope-nested-duplicate-key",
+        "A signature object repeats keyId with the same value (duplicate in a nested object).",
+        good.replace(key_id, key_id + b" " + key_id, 1),
+        catalog_context(),
+        reject("ENVELOPE_INVALID"),
+    )
 
     # ---- rejected payloads (correctly signed)
     signed(
@@ -524,6 +549,25 @@ def _catalog_cases(
             b'  "activeReleaseId": "' + id_a.encode() + b'",\n  "activeReleaseId"',
             1,
         ),
+        reject("PAYLOAD_INVALID"),
+    )
+    signed(
+        "catalog-duplicate-key-same-value",
+        "sequence twice with the same value: duplicates are rejected whatever their values.",
+        p2.replace(b'  "sequence": 2,\n', b'  "sequence": 2,\n' * 2, 1),
+        reject("PAYLOAD_INVALID"),
+    )
+    signed(
+        "catalog-duplicate-nested-key",
+        "The first release entry repeats minDataLevel (duplicate in a nested object).",
+        p2.replace(b'      "minDataLevel": 1,\n', b'      "minDataLevel": 1,\n' * 2, 1),
+        reject("PAYLOAD_INVALID"),
+    )
+    active_line = b'  "activeReleaseId": "' + id_b.encode() + b'",\n'
+    signed(
+        "catalog-duplicate-escaped-key",
+        "activeReleaseId and activeRelease\\u0049d are the same name once unescaped.",
+        p2.replace(active_line, active_line + active_line.replace(b"Id", b"\\u0049d", 1), 1),
         reject("PAYLOAD_INVALID"),
     )
     signed(
@@ -745,6 +789,25 @@ def _release_cases(
         doc["files"] = [f for f in doc["files"] if f["role"] != "DATASET_MANIFEST"]
         resort(doc)
 
+    def nested_duplicate(data: bytes) -> bytes:
+        first_row = json.loads(data)["files"][0]
+        tail = f'"byteLength": {first_row["byteLength"]}}}'.encode()
+        twice = (
+            f'"byteLength": {first_row["byteLength"]}, "byteLength": {first_row["byteLength"]}}}'
+        )
+        return data.replace(tail, twice.encode(), 1)
+
+    small = rel_b.model_dump(mode="json", by_alias=True)
+    small["files"] = small_files()
+    small["totalByteLength"] = sum(f["byteLength"] for f in small["files"])
+    duplicated = nested_duplicate(manifest_bytes(small))
+    case(
+        "release-duplicate-nested-key",
+        "A file entry repeats byteLength with the same value (duplicate in a nested object).",
+        w.file("releases/invalid/release-duplicate-nested-key.release.json", duplicated),
+        entry_for(duplicated, rel_b.release_id, BUILD_B, 1, small["totalByteLength"]),
+        reject("MANIFEST_INVALID"),
+    )
     invalid_manifest(
         "release-schema-version-2",
         "A future release manifest schema.",
@@ -906,6 +969,19 @@ def _release_cases(
                 f"tooltips/{GAME}/{BUILD_A}/mage.json"
             ]
         },
+    )
+    dataset_manifest = f"dataset/{GAME}/{BUILD_B}/manifest.json"
+    source_line = next(
+        line + b"\n"
+        for line in contents_b[dataset_manifest].split(b"\n")
+        if line.startswith(b'  "source": ')
+    )
+    full_variant(
+        "release-content-duplicate-key",
+        "The dataset manifest (a content file, pinned by its hash) repeats source with the same "
+        "value: content files get the same duplicate-key rejection as OTA documents.",
+        "CONTENT_INVALID",
+        {dataset_manifest: contents_b[dataset_manifest].replace(source_line, source_line * 2, 1)},
     )
     full_variant(
         "release-missing-class",
