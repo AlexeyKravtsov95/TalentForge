@@ -15,6 +15,7 @@ import io.github.alexeykravtsov95.talentforge.data.sha256Hex
 import io.github.alexeykravtsov95.talentforge.ui.library.DraftCreation
 import io.github.alexeykravtsov95.talentforge.ui.library.createClassDraft
 import java.io.File
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -23,6 +24,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.int
@@ -139,27 +141,35 @@ class OtaScenarioTest {
         device.server.catalog = catalog("catalog-b-active")
         val files = TestRelease.B.manifest.files
         val k = files.size / 2
-        // first attempt: let k file blobs through, then hang every further one (the app is killed)
+        // first attempt: the manifest and exactly k file blobs go through, every further one hangs (the app is killed)
+        val answered = AtomicInteger()
+        val hung = AtomicInteger()
         device.server.beforeResponse = { url ->
-            if ("/blobs/" in url && device.server.blobRequests().size > k + 1) kotlinx.coroutines.awaitCancellation()
+            if ("/blobs/" in url && answered.incrementAndGet() > k + 1) {
+                hung.incrementAndGet()
+                awaitCancellation()
+            }
         }
         device.runtime.coordinator.onAppStarted()
-        waitUntil { stagedPaths(device, B_ID).size >= k - device.config.parallelism }
-        Thread.sleep(200)
+        // quiescent: the k answered files are staged and every download slot is parked on a hung blob
+        val slots = minOf(device.config.parallelism, files.size - k)
+        waitUntil { stagedPaths(device, B_ID).size == k && hung.get() == slots }
         assertNull(device.runtime.activation.currentState().active, "nothing is activated before full verification")
         assertEquals(A_BUILD, device.runtime.snapshot.value.product.clientBuild)
-        // the process dies while a blob is being written: a .part is left behind
+        device.server.beforeResponse = null
+        val library = device.library.payload
+        // the process dies while a blob is being written: a .part is left behind. It is placed after
+        // the old runtime is gone — its cooperative cancellation cleanup deletes .part files itself
+        device.kill()
         val inFlight = device.directory.resolve("v1/staging/$B_ID/${files.last().path}.part")
         inFlight.parentFile.mkdirs()
         inFlight.writeBytes(ByteArray(10))
-        device.server.beforeResponse = null
-        val library = device.library.payload
-        device.restart()
+        device.coldStart()
         val report = device.runtime.recovery
         assertEquals(1, report.deletedPartFiles, "recover() deletes only the .part")
         assertEquals(listOf(B_ID), report.keptStaging)
         val staged = stagedPaths(device, B_ID)
-        assertTrue(staged.size >= k - device.config.parallelism && staged.size < files.size)
+        assertEquals(k, staged.size, "exactly the k answered files stay staged")
 
         device.server.requests.clear()
         val outcome = assertIs<CheckOutcome.Activated>(device.check())
