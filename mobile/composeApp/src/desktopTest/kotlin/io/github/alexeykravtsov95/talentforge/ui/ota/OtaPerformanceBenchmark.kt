@@ -227,7 +227,7 @@ class OtaPerformanceBenchmark {
         report.appendLine("| --- | --- | --- | --- |")
         report.appendLine("| cold install, poor profile (median) | > 90 s | %.1f s | ${if (coldPoor > 90) "YES" else "no"} |".format(coldPoor))
         report.appendLine("| warm install, mobile profile (median) | > 15 s | %.1f s | ${if (warmMobile > 15) "YES" else "no"} |".format(warmMobile))
-        report.appendLine("| request overhead, cold mobile | > 50 % | %.0f %% | ${if (mobileOverhead > 0.5) "YES" else "no"} |".format(mobileOverhead * 100))
+        report.appendLine("| request overhead, cold mobile | > 50 %% | %.0f %% | ${if (mobileOverhead > 0.5) "YES" else "no"} |".format(mobileOverhead * 100))
         File(System.getProperty(PROPERTY)!!).apply { parentFile?.mkdirs() }.writeText(report.toString())
         println(report)
         // the files of a release must be what the request log says: no blob outside the release was fetched
