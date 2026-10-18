@@ -40,6 +40,21 @@ val REFERENCE_BUNDLE: DatasetBundleId = DatasetBundleId(
     clientBuild = "1.60.1.70009",
 )
 
+/**
+ * Every client build the app bundles (M5.OTA.3), ascending — so the OTA dataset resolver knows
+ * what is bundled without probing resources. It must equal `BUNDLED_BUILDS` in
+ * `scripts/mobile_bundles.py` (the sync scripts' `--check` and `python3 scripts/mobile_bundles.py
+ * --check` fail on drift). [PRODUCT_BUNDLE] is the newest of them and the rollback floor of OTA
+ * activation (OD-3).
+ */
+val BUNDLED_CLIENT_BUILDS: Set<String> = linkedSetOf(
+    "1.60.1.70009",
+    "1.60.1.70245",
+    "1.60.1.70338",
+    "1.60.1.70374",
+    "1.60.1.70450",
+)
+
 /** Display form of a game id: `forever` → `Forever`. */
 fun gameDisplayName(game: GameId): String = game.value.replaceFirstChar { it.uppercase() }
 

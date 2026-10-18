@@ -11,6 +11,108 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
+// ------------------------------------------------- OTA settings (M5.OTA.3, client design §8)
+//
+// Compile-time OTA configuration per platform (android, ios) and channel (production for
+// release/store builds, staging for debug/development builds), generated into
+// GeneratedOtaSettings.kt. Android and iOS are enabled independently (OD-17). The values come
+// ONLY from Gradle properties outside the repository or the environment:
+//
+//   talentforge.ota.<platform>.<channel>.enabled   true | false (default false)
+//   talentforge.ota.<platform>.<channel>.baseUrl   https://… (the channel's static origin, OD-1)
+//   talentforge.ota.<platform>.<channel>.keyring   path to {"keys":[{keyId, algorithm, publicKeySpki}]}
+//   (environment: TALENTFORGE_OTA_<PLATFORM>_<CHANNEL>_<ENABLED|BASEURL|KEYRING>)
+//
+// Nothing is set in the repository, so every build keeps OTA disabled until the owner supplies
+// hosting and public keys (OD-1, OD-2). An enabled channel without a valid https base URL and
+// keyring, a test- key id (reserved for fixtures, contract §8), a production keyring without a
+// backup key, or a staging key in the production keyring fails the build.
+val otaPlatforms = listOf("android", "ios")
+val otaChannels = listOf("production", "staging")
+
+fun otaSetting(platform: String, channel: String, name: String): String? =
+    (providers.environmentVariable("TALENTFORGE_OTA_${platform.uppercase()}_${channel.uppercase()}_${name.uppercase()}").orNull
+        ?: providers.gradleProperty("talentforge.ota.$platform.$channel.$name").orNull)
+        ?.takeIf { it.isNotBlank() }
+
+fun otaKotlinString(value: String?): String =
+    if (value == null) "null" else "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"").replace("$", "\\$") + "\""
+
+fun renderOtaSettings(): String {
+    val baseUrlPattern = Regex("https://[A-Za-z0-9.-]+(:[0-9]{1,5})?(/[A-Za-z0-9._~-]+)*")
+    val keys = mutableMapOf<Pair<String, String>, List<Map<String, String>>>()
+    val problems = mutableListOf<String>()
+    val sections = StringBuilder()
+    for (platform in otaPlatforms) {
+        for (channel in otaChannels) {
+            val where = "talentforge.ota.$platform.$channel"
+            val enabled = when (val raw = otaSetting(platform, channel, "enabled")) {
+                null, "false" -> false
+                "true" -> true
+                else -> { problems += "$where.enabled must be true or false"; false }
+            }
+            val baseUrl = otaSetting(platform, channel, "baseUrl")
+            val keyringPath = otaSetting(platform, channel, "keyring")
+            val entries: List<Map<String, String>> = if (keyringPath == null) emptyList() else {
+                val file = File(keyringPath)
+                if (!file.isFile) { problems += "$where.keyring does not name a file"; emptyList() } else {
+                    @Suppress("UNCHECKED_CAST")
+                    val parsed = groovy.json.JsonSlurper().parse(file) as Map<String, Any?>
+                    (parsed["keys"] as? List<Map<String, Any?>>).orEmpty().map { key ->
+                        listOf("keyId", "algorithm", "publicKeySpki").associateWith { (key[it] as? String).orEmpty() }
+                    }
+                }
+            }
+            keys[platform to channel] = entries
+            if (enabled) {
+                if (baseUrl == null || !baseUrlPattern.matches(baseUrl)) problems += "$where.baseUrl must be an https origin without query or trailing slash"
+                if (entries.isEmpty()) problems += "$where.keyring must pin at least one key"
+                if (channel == "production" && entries.size < 2) problems += "$where.keyring must pin a primary and a backup key"
+            }
+            if (entries.any { it.getValue("keyId").startsWith("test-") }) problems += "$where.keyring contains a test- key (fixtures only)"
+            if (entries.any { it.getValue("algorithm") != "ecdsa-p256-sha256" }) problems += "$where.keyring: every key must be ecdsa-p256-sha256"
+            val name = platform + channel.replaceFirstChar { it.uppercase() }
+            sections.append("    val $name: OtaPlatformSettings = OtaPlatformSettings(\n")
+            sections.append("        enabled = $enabled,\n")
+            sections.append("        channel = OtaChannel.${channel.uppercase()},\n")
+            sections.append("        baseUrl = ${otaKotlinString(baseUrl)},\n")
+            sections.append("        keys = listOf(\n")
+            for (key in entries) {
+                sections.append("            OtaKeySetting(${otaKotlinString(key["keyId"])}, ${otaKotlinString(key["algorithm"])}, ${otaKotlinString(key["publicKeySpki"])}),\n")
+            }
+            sections.append("        ),\n    )\n\n")
+        }
+    }
+    for (platform in otaPlatforms) {
+        val production = keys.getValue(platform to "production").map { it["publicKeySpki"] }.toSet()
+        if (keys.getValue(platform to "staging").any { it["publicKeySpki"] in production }) {
+            problems += "talentforge.ota.$platform: a staging key is pinned in the production keyring"
+        }
+    }
+    if (problems.isNotEmpty()) throw GradleException("Invalid OTA settings:\n  " + problems.joinToString("\n  "))
+    return "// GENERATED by :composeApp:generateOtaSettings from Gradle properties - do not edit.\n" +
+        "package io.github.alexeykravtsov95.talentforge.ui.ota\n\n" +
+        "import io.github.alexeykravtsov95.talentforge.data.ota.OtaChannel\n\n" +
+        "internal object GeneratedOtaSettings {\n" + sections.toString().trimEnd() + "\n}\n"
+}
+
+val generatedOtaSettingsDir = layout.buildDirectory.dir("generated/ota/commonMain/kotlin")
+val generateOtaSettings = tasks.register("generateOtaSettings") {
+    group = "build"
+    description = "Generates the per-platform OTA settings (disabled unless the owner configures hosting and keys)."
+    val source = provider { renderOtaSettings() }
+    val outputDirectory = generatedOtaSettingsDir
+    inputs.property("source", source)
+    outputs.dir(outputDirectory)
+    doLast {
+        val root = outputDirectory.get().asFile
+        root.deleteRecursively()
+        val file = File(root, "io/github/alexeykravtsov95/talentforge/ui/ota/GeneratedOtaSettings.kt")
+        file.parentFile.mkdirs()
+        file.writeText(source.get())
+    }
+}
+
 kotlin {
     androidTarget {
         compilerOptions {
@@ -30,13 +132,34 @@ kotlin {
 
     jvm("desktop")
 
+    // M5.OTA.3: Android and the desktop host share one java.security / java.nio /
+    // HttpURLConnection implementation of the OTA platform ports (jvmCommonMain).
+    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
+    applyDefaultHierarchyTemplate {
+        common {
+            group("jvmCommon") {
+                withAndroidTarget()
+                withJvm()
+            }
+        }
+    }
+
     sourceSets {
+        commonMain {
+            kotlin.srcDir(generateOtaSettings)
+        }
+
         commonMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.ui)
             implementation(libs.compose.components.resources)
             implementation(project(":shared"))
+        }
+
+        iosTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
         }
 
         val androidMain by getting {

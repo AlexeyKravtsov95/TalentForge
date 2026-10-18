@@ -54,6 +54,24 @@ object ReleaseVerifier {
         manifest
     }
 
+    /**
+     * Re-reads the `release.json` of a release this client installed earlier (client design
+     * §4.1): trusted only because its SHA-256 equals [expectedSha256] — the pin recorded at
+     * install time or listed by the last accepted catalog — and still parsed strictly, with
+     * its layout re-checked. `null` for anything else (a broken release is quarantined).
+     */
+    fun readInstalledManifest(bytes: ByteArray, expectedSha256: String, releaseId: String, game: String): OtaReleaseManifest? {
+        if (sha256Ref(bytes) != expectedSha256) return null
+        return try {
+            OtaDocuments.releaseManifest(bytes).also {
+                if (it.releaseId != releaseId || it.game != game) return null
+                checkLayout(it)
+            }
+        } catch (_: OtaRejection) {
+            null
+        }
+    }
+
     /** The only paths a file of [role] may have in a release of ([game], [clientBuild]) (§5.1). */
     fun isValidPath(role: FileRole, path: String, game: String, clientBuild: String): Boolean {
         val g = Regex.escape(game)
