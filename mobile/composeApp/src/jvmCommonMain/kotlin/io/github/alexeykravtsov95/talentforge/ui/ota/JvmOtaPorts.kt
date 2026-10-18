@@ -58,10 +58,14 @@ class PlatformSignatureVerifier : SignatureVerifier {
  * HTTP status like any other non-200. No cookies, no cache, one fixed `User-Agent` (OD-4).
  * Android's implementation decodes `gzip` transparently, so every length and hash is over the
  * decoded body (contract §1).
+ *
+ * The connect timeout is 10 s: three SYN retransmissions on a slow link, while a connection the
+ * origin never accepts fails early enough for the caller's retry ([fetchRetrying]) to open a new
+ * one (M5.OTA.4b §3). The read timeout (TLS handshake and every read) stays 30 s.
  */
 class PlatformBlobFetcher(
     private val userAgent: String,
-    private val connectTimeoutMillis: Int = 15_000,
+    private val connectTimeoutMillis: Int = 10_000,
     private val readTimeoutMillis: Int = 30_000,
     /** Tests and the benchmark only: plain HTTP to 127.0.0.1 (app configurations are HTTPS-only). */
     private val allowLoopbackHttp: Boolean = false,
