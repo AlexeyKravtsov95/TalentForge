@@ -21,6 +21,8 @@ on:
       - "scripts/generate_oss_notices.py"
       - "scripts/release_signing_selftest.sh"
       - ".github/workflows/mobile-ci.yml"
+  # Manual re-run from the Actions tab (e.g. after a runner/infrastructure outage).
+  workflow_dispatch:
 
 concurrency:
   group: mobile-ci-${{ github.ref }}
@@ -83,6 +85,17 @@ jobs:
         with:
           name: composeApp-debug-apk
           path: mobile/composeApp/build/outputs/apk/debug/composeApp-debug.apk
+
+      - name: Upload test reports (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-linux-test-reports
+          path: |
+            mobile/*/build/reports/tests/
+            mobile/*/build/test-results/
+          if-no-files-found: ignore
+          retention-days: 14
 
   mobile-macos:
     name: Mobile (macOS) — iOS
