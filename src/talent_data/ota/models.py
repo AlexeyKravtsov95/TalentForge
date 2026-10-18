@@ -48,6 +48,9 @@ BASE64_PATTERN = r"^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=
 COMMIT_PATTERN = r"^[0-9a-f]{40}$"
 
 # Hard limits of v1. A document outside them is rejected, never truncated.
+# catalog.json as received (envelope bytes), enforced while downloading and before any
+# parsing. A maximal valid catalog (512 releases, 4 signatures) is ~0.23 MiB (contract §2).
+MAX_CATALOG_BYTES = 1024 * 1024
 MAX_SIGNATURES = 4
 MAX_CATALOG_RELEASES = 512
 MAX_RELEASE_FILES = 4096

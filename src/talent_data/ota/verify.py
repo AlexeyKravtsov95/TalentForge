@@ -11,7 +11,7 @@ an :class:`OtaError` carrying a closed code; the message is for humans only.
 Order matters and is part of the contract - the cheapest, most fundamental check runs first,
 so a corrupt or hostile object is never parsed further than needed:
 
-1. catalog: envelope shape -> payload type -> signature -> payload JSON/schema -> identity
+1. catalog: size -> envelope shape -> payload type -> signature -> payload JSON/schema -> identity
    (game, channel) -> freshness (expiry, sequence) -> internal consistency;
 2. release manifest: bytes against the catalog pin -> JSON/schema -> identity against the
    catalog entry -> data level -> layout (paths, roles, sizes);
@@ -45,6 +45,7 @@ from talent_data.models.tooltips import TalentTooltipsDocument
 from talent_data.models.visuals import TalentIconRegistry, TalentVisualsDocument
 from talent_data.ota.models import (
     CATALOG_PAYLOAD_TYPE,
+    MAX_CATALOG_BYTES,
     OTA_SCHEMA_VERSION,
     CatalogRelease,
     Channel,
@@ -66,6 +67,7 @@ PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 
 class OtaErrorCode(StrEnum):
     # catalog (signed envelope + payload)
+    CATALOG_TOO_LARGE = "CATALOG_TOO_LARGE"
     ENVELOPE_INVALID = "ENVELOPE_INVALID"
     PAYLOAD_TYPE_MISMATCH = "PAYLOAD_TYPE_MISMATCH"
     UNTRUSTED_SIGNER = "UNTRUSTED_SIGNER"
@@ -238,7 +240,15 @@ def verify_catalog(
     last_seen: SeenCatalog | None,
 ) -> VerifiedCatalog:
     """Verify one downloaded ``catalog.json``. A rejected catalog changes nothing on the
-    device: the caller keeps its current state and tries again later."""
+    device: the caller keeps its current state and tries again later.
+
+    The size limit comes first: a client stops reading after ``MAX_CATALOG_BYTES`` bytes, so
+    an oversized response is never parsed (a reader that stopped early reports the same code)."""
+    if len(envelope_bytes) > MAX_CATALOG_BYTES:
+        raise OtaError(
+            OtaErrorCode.CATALOG_TOO_LARGE,
+            f"{len(envelope_bytes)} bytes exceed the {MAX_CATALOG_BYTES}-byte catalog limit",
+        )
     try:
         envelope = parse_strict(SignedEnvelope, envelope_bytes)
         payload = strict_b64decode(envelope.payload)

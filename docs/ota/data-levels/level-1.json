@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "dataLevel": 1,
+  "knownUnsupported": [
+    {
+      "classToken": "ROGUE",
+      "treeId": 1111,
+      "nodeId": 105712,
+      "entryId": null,
+      "code": "UNRESOLVED_CONDITION",
+      "conditionId": 50984,
+      "evidence": "docs/talent-allocation-semantics.md COND-1: Rogue Venom, TraitCond 50984 unresolved; present in every bundled build 70009-70450"
+    }
+  ]
+}
