@@ -86,6 +86,17 @@ jobs:
           name: composeApp-debug-apk
           path: mobile/composeApp/build/outputs/apk/debug/composeApp-debug.apk
 
+      - name: Upload test reports (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-linux-test-reports
+          path: |
+            mobile/*/build/reports/tests/
+            mobile/*/build/test-results/
+          if-no-files-found: ignore
+          retention-days: 14
+
   mobile-macos:
     name: Mobile (macOS) — iOS
     runs-on: macos-latest
