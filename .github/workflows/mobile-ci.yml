@@ -21,6 +21,8 @@ on:
       - "scripts/generate_oss_notices.py"
       - "scripts/release_signing_selftest.sh"
       - ".github/workflows/mobile-ci.yml"
+  # Manual re-run from the Actions tab (e.g. after a runner/infrastructure outage).
+  workflow_dispatch:
 
 concurrency:
   group: mobile-ci-${{ github.ref }}

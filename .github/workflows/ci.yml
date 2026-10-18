@@ -9,7 +9,12 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     steps:
+      # Full history: the OTA publisher tests pin a historical commit (the fixtures'
+      # source, tests/unit/ota/publisher_testkit.py) and gate G1 checks it is an
+      # ancestor of origin/main. A shallow clone has neither.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -27,6 +32,12 @@ jobs:
 
       - name: Mypy
         run: mypy
+
+      - name: Git history available (OTA fixture commit, origin/main)
+        run: |
+          git cat-file -e c749ebc5fc31c43be742844cb89d012f100a2a0a^{commit}
+          git rev-parse --verify origin/main
+          git merge-base --is-ancestor c749ebc5fc31c43be742844cb89d012f100a2a0a origin/main
 
       - name: Pytest (offline)
         run: pytest
