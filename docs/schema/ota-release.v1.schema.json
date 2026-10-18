@@ -1,0 +1,141 @@
+{
+  "$defs": {
+    "FileRole": {
+      "enum": [
+        "DATASET_MANIFEST",
+        "TALENT_DATA",
+        "VISUALS",
+        "ICON_REGISTRY",
+        "ICON_IMAGE",
+        "TOOLTIPS",
+        "LOCALIZATION"
+      ],
+      "title": "FileRole",
+      "type": "string"
+    },
+    "ReleaseFile": {
+      "additionalProperties": false,
+      "properties": {
+        "byteLength": {
+          "exclusiveMinimum": 0,
+          "maximum": 16777216,
+          "title": "Bytelength",
+          "type": "integer"
+        },
+        "path": {
+          "description": "Path inside the snapshot, identical to the app's bundled resource path (e.g. dataset/forever/1.60.1.70450/mage.json); the role fixes its form",
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Path",
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/$defs/FileRole"
+        },
+        "sha256": {
+          "description": "Also the file's blob address",
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "role",
+        "sha256",
+        "byteLength"
+      ],
+      "title": "ReleaseFile",
+      "type": "object"
+    },
+    "ReleaseProvenance": {
+      "additionalProperties": false,
+      "properties": {
+        "repositoryCommit": {
+          "description": "Commit of the TalentForge repository whose committed data was published",
+          "pattern": "^[0-9a-f]{40}$",
+          "title": "Repositorycommit",
+          "type": "string"
+        },
+        "validation": {
+          "description": "Human-readable record of the validation the publisher ran",
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Validation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "repositoryCommit",
+        "validation"
+      ],
+      "title": "ReleaseProvenance",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "clientBuild": {
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "title": "Clientbuild",
+      "type": "string"
+    },
+    "createdAt": {
+      "format": "date-time",
+      "title": "Createdat",
+      "type": "string"
+    },
+    "files": {
+      "description": "Ordered by path (byte order), each path once",
+      "items": {
+        "$ref": "#/$defs/ReleaseFile"
+      },
+      "maxItems": 4096,
+      "minItems": 1,
+      "title": "Files",
+      "type": "array"
+    },
+    "game": {
+      "pattern": "^[a-z][a-z0-9-]{0,31}$",
+      "title": "Game",
+      "type": "string"
+    },
+    "minDataLevel": {
+      "minimum": 1,
+      "title": "Mindatalevel",
+      "type": "integer"
+    },
+    "provenance": {
+      "$ref": "#/$defs/ReleaseProvenance"
+    },
+    "releaseId": {
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+-r[1-9][0-9]{0,5}$",
+      "title": "Releaseid",
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": 1,
+      "title": "Schemaversion",
+      "type": "integer"
+    },
+    "totalByteLength": {
+      "exclusiveMinimum": 0,
+      "maximum": 268435456,
+      "title": "Totalbytelength",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "game",
+    "clientBuild",
+    "releaseId",
+    "minDataLevel",
+    "createdAt",
+    "provenance",
+    "files",
+    "totalByteLength"
+  ],
+  "title": "OtaReleaseManifest",
+  "type": "object"
+}

@@ -19,11 +19,18 @@ dependencies = [
 visuals = [
     "pillow==12.3.0",
 ]
+# OTA contract (M5.OTA.1): ECDSA P-256 verification in the reference verifier and the
+# deterministic (RFC 6979) signatures of the committed fixtures. The publisher (M5.OTA.2)
+# signs with it as well; the mobile app verifies with the platform's own crypto.
+ota = [
+    "cryptography>=50,<51",
+]
 dev = [
     "pytest>=8",
     "ruff>=0.6",
     "mypy>=1.11",
     "pillow==12.3.0",
+    "cryptography>=50,<51",
 ]
 
 [project.scripts]
