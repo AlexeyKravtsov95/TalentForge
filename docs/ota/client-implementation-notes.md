@@ -18,7 +18,7 @@ code does where the design leaves a choice, and every deliberate deviation from 
 | Android + desktop adapters | `composeApp/src/jvmCommonMain/…/ui/ota/JvmOtaPorts.kt` | One source set for both JVM targets (`applyDefaultHierarchyTemplate { group("jvmCommon") }`): `java.security` ECDSA, `HttpURLConnection` (byte limit while reading, no redirects, HTTPS only), `java.nio` (fsync, `ATOMIC_MOVE`). Desktop uses `HttpURLConnection` too rather than `java.net.http`: one implementation, the one Android ships, is what the L4 tests exercise. |
 | iOS adapters | `composeApp/src/iosMain/…/ui/ota/IosOtaPorts.kt` | `SecKeyCreateWithData` (X9.63 point = last 65 bytes of the SPKI) + `SecKeyVerifySignature(ECDSASignatureMessageX962SHA256)`; ephemeral `NSURLSession` with a data delegate that cancels past the limit and refuses redirects; Application Support store (`NSURLIsExcludedFromBackupKey`), `open`/`write`/`fsync`, `rename(2)`. |
 | Hosts | `OtaRuntime.android.kt`, `OtaRuntime.ios.kt`, `MainActivity`, `MainViewController` | One runtime per process; `null` unless the platform's generated settings are enabled. |
-| Configuration | `composeApp/build.gradle.kts` → `GeneratedOtaSettings.kt` | Per platform (android, ios) × channel (production for release builds, staging for debug builds) from Gradle properties / environment only; all disabled by default. |
+| Configuration | `composeApp/build.gradle.kts` → `GeneratedOtaSettings.kt` | Per platform (android, ios) × channel (production for release builds, staging for debug builds) from Gradle properties / environment only; all disabled by default. Each keyring pins only its own channel's keys — `tf-prod-*` in production, `tf-staging-*` in staging ([publisher-and-security.md §5.1](publisher-and-security.md)) — checked on that keyring alone by the build (`verifyOtaSettingsRules` proves the rules) and again by `OtaConfig.resolve` (`KEY_NOT_FOR_CHANNEL`). |
 
 ## Decisions and deviations from the design sketch
 
@@ -39,9 +39,17 @@ code does where the design leaves a choice, and every deliberate deviation from 
    the rename and the state write) is adopted by `recover()` — and by the next accepted catalog —
    when the last accepted catalog pins exactly its `release.json` bytes; the next check then
    activates it without downloading. A release directory nothing pins is left untouched.
-4. **Retention order.** The state forgets releases first (one atomic write), then their
-   directories go through `trash/`. Leases are the release ids of the snapshot each open editor
-   holds (conservative: an open editor protects every release of its snapshot).
+4. **Retention order and leases.** The state forgets releases first (one atomic write), then
+   their directories go through `trash/`. A lease covers every release id of the snapshot an
+   editor **actually reads** (conservative: it protects every release of that snapshot): the one
+   it opened with, or the one its historical build was downloaded into, which then takes the
+   lease over (`EditorDatasetAccess`); an import preview holds the lease of the snapshot it
+   downloaded into while its screen is open. Leases and retention share one atomic table
+   (`SnapshotLeases`): under the activation lock retention *claims* the releases of its plan
+   that no lease holds, and a claimed release cannot be leased; a snapshot is leased only if all
+   its releases are still intact. So the plan's view of the leases can be stale without harm,
+   and a release downloaded on demand is leased before the resolver returns, with no suspension
+   in between (PR #44 review P1-1).
 5. **Product source.** The snapshot reads the product's build from the **active** release (so a
    rollback to an older revision of the same build also rolls back presentation), every other
    build from its newest installed revision, then the bundle.
