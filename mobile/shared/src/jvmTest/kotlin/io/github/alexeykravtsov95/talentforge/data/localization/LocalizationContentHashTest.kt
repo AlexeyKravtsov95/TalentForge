@@ -1,5 +1,6 @@
 package io.github.alexeykravtsov95.talentforge.data.localization
 
+import io.github.alexeykravtsov95.talentforge.data.sha256Hex
 import io.github.alexeykravtsov95.talentforge.data.TalentDataContract
 import io.github.alexeykravtsov95.talentforge.data.TestRepoAssets
 import kotlin.test.Test

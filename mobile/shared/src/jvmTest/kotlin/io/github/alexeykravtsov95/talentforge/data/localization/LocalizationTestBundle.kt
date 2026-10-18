@@ -1,5 +1,6 @@
 package io.github.alexeykravtsov95.talentforge.data.localization
 
+import io.github.alexeykravtsov95.talentforge.data.sha256Hex
 import io.github.alexeykravtsov95.talentforge.data.AssetNotFoundException
 import io.github.alexeykravtsov95.talentforge.data.AssetReadException
 import io.github.alexeykravtsov95.talentforge.data.DatasetAssetSource
