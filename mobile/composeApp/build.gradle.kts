@@ -669,4 +669,9 @@ tasks.named<Test>("desktopTest") {
     System.getProperty("talentforge.pr19.recording")?.let {
         systemProperty("talentforge.pr19.recording", it)
     }
+    // M5.OTA.4c: OtaRetryRemoteMeasurement against the remote staging origin (opt-in; out dir,
+    // base URL, keyring, runs, parallelism)
+    System.getProperties().stringPropertyNames().filter { it.startsWith("talentforge.ota.retrymeasure") }.forEach {
+        systemProperty(it, System.getProperty(it))
+    }
 }
