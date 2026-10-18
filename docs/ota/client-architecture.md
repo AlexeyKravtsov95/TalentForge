@@ -175,6 +175,18 @@ install(release) ──(any failure)──▶ end: <code>; staging kept for resu
 activate (§4.3) ──▶ publish a new DatasetSnapshot for future sessions ──▶ GC (§5.3)
 ```
 
+**One request inside an attempt.** Every GET of an attempt — the catalog, the release manifest
+and each file blob — is repeated **twice at most, 0.5 s and 2 s after a transfer that did not
+complete** (`FetchResult.NetworkError`: no connection, TLS, timeout, reset), on a new connection
+(`fetchRetrying`, `OtaConfig.fetchRetryDelaysMillis`). Only after the third failed transfer does
+the attempt end with `NETWORK` (and the backoff above applies). An answer of the origin is never
+repeated inside the attempt: an HTTP status, an over-limit body, or bytes that miss their pinned
+length or SHA-256 end it at once, as before. The URL, the byte limit and every check of contract
+v1 are the same on each try. The pauses are cancellable: leaving the app ends a pausing attempt
+at once. On Android/JVM the connect timeout is 10 s (read timeout 30 s), so a connection the
+origin never accepts is replaced quickly. Origin: M5.OTA.4b measured 7–11 % of new connections
+to the VK staging origin never accepted, which ended whole attempts.
+
 ### 4.3 Install and activate
 
 `DatasetDownloadManager.install(entry)`:
@@ -264,7 +276,7 @@ active. The rules, in the order they apply:
 | Attempt starts for release X | `staging/X/attempt.json` exists and pins the same `manifestSha256` and `manifestByteLength` as the verified catalog → resume; pins different bytes → delete `staging/X` and start fresh; absent → create `staging/X` and write `attempt.json` atomically |
 | Each needed file | reuse a staged, installed or bundled copy only after re-reading it and matching length + SHA-256 against X's manifest; a mismatching staged file is deleted; new downloads go to `.part` and are renamed only after their check |
 | Not enough space | before downloading, or `ENOSPC` while writing: end with `INSUFFICIENT_STORAGE`, delete the `.part` in flight, keep verified staged files — unless free space is below the 10 MiB margin, then delete `staging/X` |
-| Transient failure or cancellation (network, HTTP, `MANIFEST_HASH_MISMATCH`, `BLOB_SIZE_MISMATCH`, `BLOB_HASH_MISMATCH`, storage, I/O, cancelled — the bytes did not match their pin, so nothing is known about the release itself) | end the attempt; the bad blob or `.part` is discarded; `staging/X` stays; retried with backoff; the active dataset and the state are untouched |
+| Transient failure or cancellation (network, HTTP, `MANIFEST_HASH_MISMATCH`, `BLOB_SIZE_MISMATCH`, `BLOB_HASH_MISMATCH`, storage, I/O, cancelled — the bytes did not match their pin, so nothing is known about the release itself) | end the attempt; the bad blob or `.part` is discarded; `staging/X` stays; retried with backoff (a transfer that did not complete is first repeated twice inside the attempt, §4.2); the active dataset and the state are untouched |
 | Release rejected for what it is — a deterministic verdict on bytes that matched their pins (`MANIFEST_INVALID`, `UNSUPPORTED_SCHEMA_VERSION`, `RELEASE_IDENTITY_MISMATCH`, `INCOMPATIBLE_DATA_LEVEL`, `LAYOUT_INVALID`, `CONTENT_*`, `RELEASE_INCOMPLETE`, `BUILD_IDENTITY_CONFLICT`) | delete `staging/X`; record `{X, manifestSha256, code}` in the state; never retry the same manifest bytes (the publisher must publish a new revision); the active dataset is untouched |
 | Process death at any point | the next start runs `recover()`; the next attempt for X resumes from the reconciled staging |
 | Install complete | `staging/X` is renamed to `releases/X` (it no longer exists as staging); activation, if wanted, is the separate state write (§4.3) |
