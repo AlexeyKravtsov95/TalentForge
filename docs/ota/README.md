@@ -32,6 +32,7 @@ production keys and no publication exist yet (OD-1, OD-2); production OTA is off
 | [ADR-0002-delivery-performance.md](ADR-0002-delivery-performance.md) | Why parallelism 8 + origin gzip is the minimal v1-compatible fix for the §7.3 triggers; HTTP/2, reproducible PNG, archives assessed |
 | [M5.OTA.2-publisher-brief.md](M5.OTA.2-publisher-brief.md) | Implementation brief: publisher (GLM) |
 | [M5.OTA.3-client-brief.md](M5.OTA.3-client-brief.md) | Implementation brief: KMP client (Opus) |
+| [M5.OTA.4c-retry-remeasurement.md](M5.OTA.4c-retry-remeasurement.md) | M5.OTA.4c: the per-request retry measured against VK staging (read-only), retry vs. the M5.OTA.4b client, real and injected connection loss |
 
 Integration (M5.OTA.4a): `scripts/ota_integration_check.sh` runs the Python baseline, the staging
 stand (`scripts/ota_staging_stand.py`: the real publisher, an ephemeral `tf-staging-local-*` key, a

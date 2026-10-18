@@ -44,6 +44,16 @@ import platform.Foundation.NSMutableURLRequest
 import platform.Foundation.NSNumber
 import platform.Foundation.NSOperationQueue
 import platform.Foundation.NSURL
+import platform.Foundation.NSURLErrorAppTransportSecurityRequiresSecureConnection
+import platform.Foundation.NSURLErrorBadURL
+import platform.Foundation.NSURLErrorClientCertificateRejected
+import platform.Foundation.NSURLErrorClientCertificateRequired
+import platform.Foundation.NSURLErrorDomain
+import platform.Foundation.NSURLErrorServerCertificateHasBadDate
+import platform.Foundation.NSURLErrorServerCertificateHasUnknownRoot
+import platform.Foundation.NSURLErrorServerCertificateNotYetValid
+import platform.Foundation.NSURLErrorServerCertificateUntrusted
+import platform.Foundation.NSURLErrorUnsupportedURL
 import platform.Foundation.NSURLIsExcludedFromBackupKey
 import platform.Foundation.NSURLRequest
 import platform.Foundation.NSURLRequestReloadIgnoringLocalCacheData
@@ -128,8 +138,8 @@ class PlatformSignatureVerifier : SignatureVerifier {
  */
 class PlatformBlobFetcher(private val userAgent: String) : BlobFetcher {
     override suspend fun fetch(url: String, maxBytes: Long): FetchResult {
-        if (!url.startsWith("https://")) return FetchResult.NetworkError("refusing a non-HTTPS URL")
-        val nsUrl = NSURL.URLWithString(url) ?: return FetchResult.NetworkError("bad URL")
+        if (!url.startsWith("https://")) return FetchResult.NetworkError("refusing a non-HTTPS URL", retryable = false)
+        val nsUrl = NSURL.URLWithString(url) ?: return FetchResult.NetworkError("bad URL", retryable = false)
         return suspendCancellableCoroutine { continuation ->
             val delegate = BoundedDataDelegate(maxBytes) { result -> if (continuation.isActive) continuation.resume(result) }
             val configuration = NSURLSessionConfiguration.ephemeralSessionConfiguration().apply {
@@ -205,12 +215,35 @@ private class BoundedDataDelegate(
 
     override fun URLSession(session: NSURLSession, task: NSURLSessionTask, didCompleteWithError: NSError?) {
         if (didCompleteWithError != null) {
-            finish(session, FetchResult.NetworkError(didCompleteWithError.domain ?: "NSURLError"))
+            val domain = didCompleteWithError.domain
+            finish(session, FetchResult.NetworkError(domain ?: "NSURLError", retryable = isRetryableUrlError(domain, didCompleteWithError.code.toLong())))
         } else {
             finish(session, FetchResult.Body(data.toByteArray(), exceededLimit = false))
         }
     }
 }
+
+/**
+ * Whether repeating a request that failed with [domain]/[code] can succeed. Not for the
+ * `NSURLErrorDomain` codes no repeat can change: the origin's certificate was rejected (bad date,
+ * untrusted, unknown root, not yet valid), a client certificate was required or rejected, App
+ * Transport Security refused the connection, or the URL is unusable. A handshake that failed for
+ * any other reason (`NSURLErrorSecureConnectionFailed`, resets included), a timeout or a lost
+ * connection stays retryable.
+ */
+internal fun isRetryableUrlError(domain: String?, code: Long): Boolean = !(domain == NSURLErrorDomain && code in PERMANENT_URL_ERRORS)
+
+private val PERMANENT_URL_ERRORS: Set<Long> = setOf(
+    NSURLErrorServerCertificateHasBadDate.toLong(),
+    NSURLErrorServerCertificateUntrusted.toLong(),
+    NSURLErrorServerCertificateHasUnknownRoot.toLong(),
+    NSURLErrorServerCertificateNotYetValid.toLong(),
+    NSURLErrorClientCertificateRejected.toLong(),
+    NSURLErrorClientCertificateRequired.toLong(),
+    NSURLErrorAppTransportSecurityRequiresSecureConnection.toLong(),
+    NSURLErrorBadURL.toLong(),
+    NSURLErrorUnsupportedURL.toLong(),
+)
 
 private fun NSData.toByteArray(): ByteArray {
     val size = length.toInt()

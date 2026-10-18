@@ -273,8 +273,9 @@ class DatasetDownloadManager(
         return Acquired(bytes, Origin.NETWORK)
     }
 
+    /** The blob; only a transfer that did not complete is repeated ([fetchRetrying]), any answer of the origin is final. */
     private suspend fun fetchBlob(hex: String, maxBytes: Long, overLimit: () -> OtaFailure): ByteArray =
-        when (val response = fetcher.fetch(config.blobUrl(hex), maxBytes)) {
+        when (val response = fetcher.fetchRetrying(config.blobUrl(hex), maxBytes, config.fetchRetryDelaysMillis)) {
             is FetchResult.Body -> if (response.exceededLimit) throw Abort(overLimit()) else response.bytes
             is FetchResult.HttpStatus -> throw Abort(OtaFailure.Http(response.status))
             is FetchResult.NetworkError -> throw Abort(OtaFailure.Network(response.detail))

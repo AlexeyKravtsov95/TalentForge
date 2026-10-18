@@ -26,8 +26,16 @@ sealed interface FetchResult {
     /** Any status other than 200, a redirect included. */
     data class HttpStatus(val status: Int) : FetchResult
 
-    /** The transfer did not complete (no connection, DNS, TLS, timeout, reset). */
-    data class NetworkError(val detail: String) : FetchResult
+    /**
+     * The transfer did not complete (no connection, DNS, TLS, timeout, reset).
+     *
+     * [retryable] is `false` when repeating the same request cannot succeed: the request was
+     * refused before it was sent (a non-HTTPS or malformed URL), or the origin's TLS identity
+     * was rejected (an untrusted, expired or not-yet-valid certificate, a certificate for
+     * another host). Implementations decide it from the failure's type or code, never from a
+     * message; a handshake that was reset or timed out stays retryable.
+     */
+    data class NetworkError(val detail: String, val retryable: Boolean = true) : FetchResult
 }
 
 /**

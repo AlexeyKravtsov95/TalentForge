@@ -13,6 +13,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
+import java.net.MalformedURLException
 import java.net.URL
 import java.nio.channels.FileChannel
 import java.nio.file.Files
@@ -24,16 +25,21 @@ import java.security.GeneralSecurityException
 import java.security.KeyFactory
 import java.security.KeyStore
 import java.security.Signature
+import java.security.cert.CertPathValidatorException
 import java.security.cert.CertificateException
 import java.security.cert.CertificateFactory
 import java.security.spec.X509EncodedKeySpec
+import java.util.concurrent.Executor
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLPeerUnverifiedException
 import javax.net.ssl.SSLSocketFactory
 import javax.net.ssl.TrustManagerFactory
+import kotlin.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.asExecutor
 
 /**
  * `java.security` ECDSA P-256 / SHA-256 (Android and the JVM, contract §3): the pinned key as an
@@ -58,10 +64,23 @@ class PlatformSignatureVerifier : SignatureVerifier {
  * HTTP status like any other non-200. No cookies, no cache, one fixed `User-Agent` (OD-4).
  * Android's implementation decodes `gzip` transparently, so every length and hash is over the
  * decoded body (contract §1).
+ *
+ * The connect timeout is 10 s: three SYN retransmissions on a slow link, while a connection the
+ * origin never accepts fails early enough for the caller's retry ([fetchRetrying]) to open a new
+ * one (M5.OTA.4b §3). The read timeout (TLS handshake and every read) stays 30 s.
+ *
+ * Cancellation is prompt although the platform's blocking socket I/O does not observe it: the
+ * transfer runs on its own I/O task and the calling coroutine only awaits it, so cancelling the
+ * caller ends [fetch] at once. The connection is then closed from another task, which frees a
+ * transfer stalled in the TLS handshake or before the status line at once. One stalled inside the
+ * body cannot be freed earlier — `HttpURLConnection` closes its body stream under the lock the
+ * blocked read holds — so its platform thread stays until the read timeout, holding only bytes
+ * in memory that nothing reads. A failure repeating cannot change — a refused or malformed URL, a
+ * rejected certificate or host ([isTrustFailure]) — is not `retryable`.
  */
 class PlatformBlobFetcher(
     private val userAgent: String,
-    private val connectTimeoutMillis: Int = 15_000,
+    private val connectTimeoutMillis: Int = 10_000,
     private val readTimeoutMillis: Int = 30_000,
     /** Tests and the benchmark only: plain HTTP to 127.0.0.1 (app configurations are HTTPS-only). */
     private val allowLoopbackHttp: Boolean = false,
@@ -72,45 +91,83 @@ class PlatformBlobFetcher(
      */
     private val sslSocketFactory: SSLSocketFactory? = null,
 ) : BlobFetcher {
-    override suspend fun fetch(url: String, maxBytes: Long): FetchResult = withContext(Dispatchers.IO) {
+    override suspend fun fetch(url: String, maxBytes: Long): FetchResult {
         if (!url.startsWith("https://") && !(allowLoopbackHttp && url.startsWith("http://127.0.0.1:"))) {
-            return@withContext FetchResult.NetworkError("refusing a non-HTTPS URL")
+            return FetchResult.NetworkError("refusing a non-HTTPS URL", retryable = false)
         }
         val connection = try {
             URL(url).openConnection() as HttpURLConnection
         } catch (e: IOException) {
-            return@withContext FetchResult.NetworkError(e.javaClass.simpleName)
+            return FetchResult.NetworkError(e.javaClass.simpleName, retryable = e !is MalformedURLException)
         }
-        try {
-            if (sslSocketFactory != null && connection is HttpsURLConnection) connection.sslSocketFactory = sslSocketFactory
-            connection.instanceFollowRedirects = false
-            connection.useCaches = false
-            connection.connectTimeout = connectTimeoutMillis
-            connection.readTimeout = readTimeoutMillis
-            connection.setRequestProperty("User-Agent", userAgent)
-            val status = connection.responseCode
-            if (status != HttpURLConnection.HTTP_OK) return@withContext FetchResult.HttpStatus(status)
-            connection.inputStream.use { readBounded(it, maxBytes) }
-        } catch (e: IOException) {
-            FetchResult.NetworkError(e.javaClass.simpleName)
-        } finally {
-            connection.disconnect()
+        val abandoned = AtomicBoolean(false)
+        val result = CompletableDeferred<FetchResult>()
+        IO.execute {
+            // every outcome completes the deferred: an unchecked exception of the platform stack
+            // (not an IOException) reaches the caller as it did before, and never leaves it waiting
+            try {
+                result.complete(transfer(connection, maxBytes, abandoned))
+            } catch (e: Throwable) {
+                result.completeExceptionally(e)
+            }
+        }
+        return try {
+            result.await()
+        } catch (e: CancellationException) {
+            abandoned.set(true)
+            IO.execute { connection.disconnect() }
+            throw e
         }
     }
 
-    private suspend fun readBounded(input: InputStream, maxBytes: Long): FetchResult.Body {
+    /** The blocking GET; [abandoned] is set once nobody awaits it any more. */
+    private fun transfer(connection: HttpURLConnection, maxBytes: Long, abandoned: AtomicBoolean): FetchResult = try {
+        if (sslSocketFactory != null && connection is HttpsURLConnection) connection.sslSocketFactory = sslSocketFactory
+        connection.instanceFollowRedirects = false
+        connection.useCaches = false
+        connection.connectTimeout = connectTimeoutMillis
+        connection.readTimeout = readTimeoutMillis
+        connection.setRequestProperty("User-Agent", userAgent)
+        val status = connection.responseCode
+        if (status != HttpURLConnection.HTTP_OK) {
+            FetchResult.HttpStatus(status)
+        } else {
+            connection.inputStream.use { readBounded(it, maxBytes, abandoned) }
+        }
+    } catch (e: IOException) {
+        FetchResult.NetworkError(e.javaClass.simpleName, retryable = e !is MalformedURLException && !e.isTrustFailure())
+    } finally {
+        connection.disconnect()
+    }
+
+    /**
+     * The origin's TLS identity was rejected — an untrusted, expired or not-yet-valid certificate
+     * (a `CertificateException` or `CertPathValidatorException` along the cause chain), or, on
+     * Android, a certificate for another host (`SSLPeerUnverifiedException`). Decided by type,
+     * never by message; a reset or stalled handshake is none of these.
+     */
+    private fun IOException.isTrustFailure(): Boolean =
+        this is SSLPeerUnverifiedException ||
+            generateSequence<Throwable>(this) { it.cause }.take(MAX_CAUSES).any { it is CertificateException || it is CertPathValidatorException }
+
+    private fun readBounded(input: InputStream, maxBytes: Long, abandoned: AtomicBoolean): FetchResult.Body {
         val limit = maxBytes + 1
         val out = ByteArrayOutputStream(minOf(limit, 64L * 1024).toInt())
         val buffer = ByteArray(16 * 1024)
         var total = 0L
         while (total < limit) {
-            kotlin.coroutines.coroutineContext.ensureActive()
+            if (abandoned.get()) throw IOException("abandoned")
             val read = input.read(buffer, 0, minOf(buffer.size.toLong(), limit - total).toInt())
             if (read < 0) break
             out.write(buffer, 0, read)
             total += read
         }
         return FetchResult.Body(out.toByteArray(), exceededLimit = total > maxBytes)
+    }
+
+    private companion object {
+        const val MAX_CAUSES = 16
+        val IO: Executor = Dispatchers.IO.asExecutor()
     }
 }
 

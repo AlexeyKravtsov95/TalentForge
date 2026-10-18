@@ -18,6 +18,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import platform.Foundation.NSTemporaryDirectory
+import platform.Foundation.NSURLErrorDomain
 import platform.Foundation.NSUUID
 
 /**
@@ -81,8 +82,22 @@ class IosOtaAdapterTest {
 
     @Test
     fun theFetcherRefusesAnythingButHttps() = kotlinx.coroutines.test.runTest {
-        assertIs<io.github.alexeykravtsov95.talentforge.data.ota.FetchResult.NetworkError>(
+        val refused = assertIs<io.github.alexeykravtsov95.talentforge.data.ota.FetchResult.NetworkError>(
             PlatformBlobFetcher("TalentForge/test").fetch("http://127.0.0.1:9/x", 10),
         )
+        assertFalse(refused.retryable, "a refused URL is never repeated")
+    }
+
+    @Test
+    fun aRejectedCertificateIsNotRetryableButALostConnectionIs() {
+        for (code in listOf(-1201L, -1202L, -1203L, -1204L, -1205L, -1206L, -1022L, -1000L, -1002L)) {
+            assertFalse(isRetryableUrlError(NSURLErrorDomain, code), "NSURLErrorDomain $code")
+        }
+        // timed out, cannot connect, connection lost, not connected, DNS, secure connection failed (resets included)
+        for (code in listOf(-1001L, -1004L, -1005L, -1009L, -1003L, -1200L)) {
+            assertTrue(isRetryableUrlError(NSURLErrorDomain, code), "NSURLErrorDomain $code")
+        }
+        assertTrue(isRetryableUrlError("kCFErrorDomainCFNetwork", -1202L), "only NSURLErrorDomain codes are classified")
+        assertTrue(isRetryableUrlError(null, -1202L))
     }
 }

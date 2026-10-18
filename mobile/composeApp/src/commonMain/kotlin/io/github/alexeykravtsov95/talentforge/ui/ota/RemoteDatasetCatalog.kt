@@ -11,7 +11,8 @@ import io.github.alexeykravtsov95.talentforge.data.ota.OtaResult
 import io.github.alexeykravtsov95.talentforge.data.ota.VerifiedCatalog
 
 /**
- * The channel's catalog (client design §4.2): one GET that reads at most 1 MiB + 1 byte,
+ * The channel's catalog (client design §4.2): one GET that reads at most 1 MiB + 1 byte
+ * (repeated only when the transfer did not complete, [fetchRetrying]),
  * verification per contract §6.1 against the last accepted `{sequence, payloadSha256}`, and —
  * only after acceptance — the persisted acceptance (payload, then state) before anything acts
  * on it. A rejected or unreachable catalog changes nothing.
@@ -24,7 +25,7 @@ class RemoteDatasetCatalog(
     private val clock: OtaClock,
 ) {
     suspend fun fetchAndAccept(): OtaResult<VerifiedCatalog> {
-        val bytes = when (val response = fetcher.fetch(config.catalogUrl, OtaContract.MAX_CATALOG_BYTES.toLong())) {
+        val bytes = when (val response = fetcher.fetchRetrying(config.catalogUrl, OtaContract.MAX_CATALOG_BYTES.toLong(), config.fetchRetryDelaysMillis)) {
             is FetchResult.Body -> response.bytes
             is FetchResult.HttpStatus -> return OtaResult.Err(OtaFailure.Http(response.status))
             is FetchResult.NetworkError -> return OtaResult.Err(OtaFailure.Network(response.detail))
