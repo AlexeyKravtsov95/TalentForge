@@ -331,4 +331,25 @@
     <string name="about_licenses_loading">Loading the notices…</string>
     <string name="about_licenses_failed">Couldn't load the open-source notices</string>
     <string name="about_licenses_unavailable">Open-source notices are not included in this build.</string>
+    <!-- M5.OTA.3: talent data updates (shown only in builds with OTA enabled) -->
+    <string name="ota_section_talent_data">TALENT DATA</string>
+    <string name="ota_data_build">Game build %1$s</string>
+    <string name="ota_data_source_bundled">Included with the app</string>
+    <string name="ota_data_source_release">Downloaded update %1$s</string>
+    <string name="ota_check_now">Check for updates</string>
+    <string name="ota_checking">Checking for talent data updates…</string>
+    <string name="ota_check_up_to_date">Talent data is up to date.</string>
+    <string name="ota_check_updated">Talent data updated to %1$s (%2$s). New builds use it; saved builds keep their own data.</string>
+    <string name="ota_check_needs_newer_app">Newer talent data needs an app update.</string>
+    <string name="ota_check_offline">Couldn't check for updates: no connection.</string>
+    <string name="ota_check_failed">Couldn't check for updates (%1$s).</string>
+    <string name="ota_dismiss">OK</string>
+    <string name="editor_dataset_downloading">Downloading talent data %1$s…</string>
+    <string name="editor_dataset_progress">%1$d of %2$d files</string>
+    <string name="editor_dataset_unavailable">Talent data %1$s is not available</string>
+    <string name="editor_dataset_not_published">This game build is not published for download. The build stays saved.</string>
+    <string name="editor_dataset_offline">No connection. Connect to the internet and try again. The build stays saved.</string>
+    <string name="editor_dataset_download_failed">The download failed (%1$s). The build stays saved.</string>
+    <string name="editor_dataset_needs_newer_app">Update the app to open this build. The build stays saved.</string>
+    <string name="editor_dataset_insufficient_storage">Not enough free space on this device. The build stays saved.</string>
 </resources>

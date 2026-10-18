@@ -1,6 +1,13 @@
 package io.github.alexeykravtsov95.talentforge.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.withFrameNanos
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -8,7 +15,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import io.github.alexeykravtsov95.talentforge.data.BundledTalentDatasetRepository
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildClock
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryStorage
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildIdGenerator
@@ -20,14 +26,14 @@ import io.github.alexeykravtsov95.talentforge.ui.about.LegalLinks
 import io.github.alexeykravtsov95.talentforge.ui.about.platformBackupStatement
 import io.github.alexeykravtsov95.talentforge.ui.about.platformOpenSourceNoticesPath
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
-import io.github.alexeykravtsov95.talentforge.ui.assets.TalentDescriptionsLoader
-import io.github.alexeykravtsov95.talentforge.ui.assets.TalentLocalizationLoader
-import io.github.alexeykravtsov95.talentforge.ui.assets.TalentIconsLoader
 import io.github.alexeykravtsov95.talentforge.ui.builds.AllBuildsScreen
 import io.github.alexeykravtsov95.talentforge.ui.home.HomeScreen
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildAutosaveCoordinator
 import io.github.alexeykravtsov95.talentforge.ui.library.platformBuildClock
 import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
+import io.github.alexeykravtsov95.talentforge.ui.ota.EditorDatasetAccess
+import io.github.alexeykravtsov95.talentforge.ui.ota.OtaRuntime
+import io.github.alexeykravtsov95.talentforge.ui.ota.SessionDatasets
 import io.github.alexeykravtsov95.talentforge.ui.newbuild.NewBuildScreen
 import io.github.alexeykravtsov95.talentforge.ui.share.BuildCodeSharing
 import io.github.alexeykravtsov95.talentforge.ui.share.ImportBuildScreen
@@ -151,17 +157,45 @@ fun App(
     ids: LocalBuildIdGenerator = RandomLocalBuildIdGenerator(clock),
     sharing: BuildCodeSharing = rememberPlatformBuildCodeSharing(),
     appVersion: AppVersion? = null,
+    /**
+     * M5.OTA.3: the OTA client of this process, already recovered (`OtaRuntime.open`), or `null`
+     * when the platform's OTA configuration is disabled — then the app runs exactly as before,
+     * on its bundled datasets only.
+     */
+    ota: OtaRuntime? = null,
 ) {
     val environment = remember(storage, clock, ids) {
-        val bundledAssets = ComposeResourceDatasetAssetSource()
         AppEnvironment(
             repository = LocalBuildRepository(storage, clock, ids),
-            datasets = BundledTalentDatasetRepository(bundledAssets),
-            // One loader per app run: decoded icons are cached across editor opens.
-            icons = TalentIconsLoader(bundledAssets),
-            descriptions = TalentDescriptionsLoader(bundledAssets),
-            localization = TalentLocalizationLoader(bundledAssets),
+            // One session per app run without OTA: decoded icons are cached across editor opens.
+            bundled = SessionDatasets.bundled(ComposeResourceDatasetAssetSource()),
         )
+    }
+    // With OTA every published snapshot gets its own collaborators (loaders cache per snapshot,
+    // so two releases are never mixed); each screen takes the current one when it opens.
+    val snapshot = ota?.snapshot?.collectAsState()?.value
+    val latestSession = remember(environment, snapshot) {
+        if (snapshot == null) environment.bundled else SessionDatasets.of(snapshot)
+    }
+    val otaStatus = ota?.status?.collectAsState()?.value
+    if (ota != null) {
+        // background check after the first frame, never before: the UI never waits for the network
+        LaunchedEffect(ota) {
+            withFrameNanos { }
+            ota.coordinator.onAppStarted()
+        }
+        val lifecycleOwner = LocalLifecycleOwner.current
+        DisposableEffect(lifecycleOwner, ota) {
+            val observer = LifecycleEventObserver { _, event ->
+                when (event) {
+                    Lifecycle.Event.ON_START -> ota.coordinator.onForeground()
+                    Lifecycle.Event.ON_STOP -> ota.coordinator.onBackground()
+                    else -> Unit
+                }
+            }
+            lifecycleOwner.lifecycle.addObserver(observer)
+            onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+        }
     }
     val appScope = rememberCoroutineScope()
     // The autosave pipeline lives ABOVE every destination: leaving the editor
@@ -207,10 +241,14 @@ fun App(
     PlatformBackHandler(enabled = destinations.size > 1, onBack = ::navigateUp)
 
     TalentForgeTheme {
-        when (val destination = destinations.last()) {
+        val destination = destinations.last()
+        // the screen keeps the session it opened with (client design §4.5): an activation while
+        // it is shown publishes a new snapshot only for screens opened afterwards
+        val session = remember(destination, destinations.size) { latestSession }
+        when (destination) {
             AppDestination.Home -> HomeScreen(
                 repository = environment.repository,
-                datasets = environment.datasets,
+                datasets = session.datasets,
                 clockMillis = clock::nowMillis,
                 onOpenBuild = { localId ->
                     destinations = destinations + AppDestination.Editor(localId, EditorOrigin.FromHome)
@@ -221,6 +259,9 @@ fun App(
                 onAbout = { destinations = destinations + AppDestination.About },
                 autosave = autosave,
                 sharing = sharing,
+                product = session.product,
+                dataUpdatedTo = otaStatus?.updatedTo,
+                onDismissDataUpdate = { ota?.coordinator?.acknowledgeUpdate() },
             )
 
             AppDestination.About -> AboutScreen(
@@ -229,11 +270,14 @@ fun App(
                 backupStatement = platformBackupStatement,
                 privacyPolicyUrl = LegalLinks.privacyPolicyUrl,
                 onBack = ::navigateUp,
+                otaStatus = otaStatus,
+                onCheckForUpdates = ota?.let { runtime -> { appScope.launch { runtime.coordinator.checkNow() } } },
             )
 
             AppDestination.NewBuild -> NewBuildScreen(
                 repository = environment.repository,
-                datasets = environment.datasets,
+                datasets = session.datasets,
+                product = session.product,
                 onBack = ::navigateUp,
                 onDraftCreated = { localId ->
                     // the tree REPLACES New build (spec 02 §1): pop this screen
@@ -245,7 +289,7 @@ fun App(
 
             AppDestination.AllBuilds -> AllBuildsScreen(
                 repository = environment.repository,
-                datasets = environment.datasets,
+                datasets = session.datasets,
                 clockMillis = clock::nowMillis,
                 onBack = ::navigateUp,
                 onOpenBuild = { localId ->
@@ -259,7 +303,7 @@ fun App(
 
             AppDestination.ImportBuild -> ImportBuildScreen(
                 repository = environment.repository,
-                datasets = environment.datasets,
+                datasets = session.datasets,
                 sharing = sharing,
                 onBack = ::navigateUp,
                 onImported = { localId ->
@@ -274,17 +318,27 @@ fun App(
                 },
             )
 
-            is AppDestination.Editor -> TalentTreeBuildScreen(
-                localId = destination.localId,
-                repository = environment.repository,
-                datasets = environment.datasets,
-                autosave = autosave,
-                onBack = ::navigateUp,
-                icons = environment.icons,
-                descriptions = environment.descriptions,
-                localization = environment.localization,
-                sharing = sharing,
-            )
+            is AppDestination.Editor -> {
+                // an open editor leases the releases of its snapshot: retention keeps them (§4.5)
+                if (ota != null) {
+                    DisposableEffect(destination, session) {
+                        val lease = ota.leases.acquire(session.snapshot?.releaseIds.orEmpty())
+                        onDispose { lease.release() }
+                    }
+                }
+                TalentTreeBuildScreen(
+                    localId = destination.localId,
+                    repository = environment.repository,
+                    datasets = session.datasets,
+                    autosave = autosave,
+                    onBack = ::navigateUp,
+                    icons = session.icons,
+                    descriptions = session.descriptions,
+                    localization = session.localization,
+                    sharing = sharing,
+                    datasetAccess = remember(ota) { ota?.let(::EditorDatasetAccess) },
+                )
+            }
         }
     }
 }
@@ -292,8 +346,6 @@ fun App(
 /** The app's data collaborators, built once per app run. */
 private data class AppEnvironment(
     val repository: LocalBuildRepository,
-    val datasets: BundledTalentDatasetRepository,
-    val icons: TalentIconsLoader,
-    val descriptions: TalentDescriptionsLoader,
-    val localization: TalentLocalizationLoader,
+    /** The bundled-only session (OTA disabled): today's wiring, unchanged. */
+    val bundled: SessionDatasets,
 )

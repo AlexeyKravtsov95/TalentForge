@@ -64,8 +64,10 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.new
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.new_build_loading
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.new_build_title
 import io.github.alexeykravtsov95.talentforge.data.ClassToken
+import io.github.alexeykravtsov95.talentforge.data.DatasetBundleId
 import io.github.alexeykravtsov95.talentforge.data.TalentDatasetRepository
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
+import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.library.ClassArtworkMark
 import io.github.alexeykravtsov95.talentforge.ui.library.ClassArtworkSlot
 import io.github.alexeykravtsov95.talentforge.ui.library.DraftCreation
@@ -114,13 +116,15 @@ fun NewBuildScreen(
     datasets: TalentDatasetRepository,
     onBack: () -> Unit,
     onDraftCreated: (String) -> Unit,
+    /** Where drafts are created: the session snapshot's product (M5.OTA.3), else the bundled one. */
+    product: DatasetBundleId = PRODUCT_BUNDLE,
 ) {
     var choices by remember { mutableStateOf<NewBuildChoices?>(null) }
     var failed by remember { mutableStateOf(false) }
     var reloadToken by remember { mutableStateOf(0) }
     LaunchedEffect(reloadToken) {
         failed = false
-        choices = withContext(Dispatchers.Default) { loadNewBuildChoices(datasets) }
+        choices = withContext(Dispatchers.Default) { loadNewBuildChoices(datasets, product) }
         failed = choices == null
     }
 
@@ -138,7 +142,7 @@ fun NewBuildScreen(
             creationError = null
             scope.launch {
                 val result = withContext(Dispatchers.Default) {
-                    createClassDraft(repository, datasets, token)
+                    createClassDraft(repository, datasets, token, product)
                 }
                 creatingToken = null
                 when (result) {

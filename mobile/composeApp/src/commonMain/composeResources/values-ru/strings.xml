@@ -345,4 +345,25 @@
     <string name="about_licenses_loading">Загрузка сведений…</string>
     <string name="about_licenses_failed">Не удалось загрузить сведения о лицензиях</string>
     <string name="about_licenses_unavailable">Сведения о лицензиях открытого ПО не входят в эту сборку.</string>
+    <!-- M5.OTA.3: обновления данных талантов (только в сборках с включённым OTA) -->
+    <string name="ota_section_talent_data">ДАННЫЕ ТАЛАНТОВ</string>
+    <string name="ota_data_build">Сборка игры %1$s</string>
+    <string name="ota_data_source_bundled">Встроены в приложение</string>
+    <string name="ota_data_source_release">Загруженное обновление %1$s</string>
+    <string name="ota_check_now">Проверить обновления</string>
+    <string name="ota_checking">Проверка обновлений данных талантов…</string>
+    <string name="ota_check_up_to_date">Данные талантов актуальны.</string>
+    <string name="ota_check_updated">Данные талантов обновлены до %1$s (%2$s). Новые билды используют их; сохранённые билды остаются на своих данных.</string>
+    <string name="ota_check_needs_newer_app">Для новых данных талантов нужно обновить приложение.</string>
+    <string name="ota_check_offline">Не удалось проверить обновления: нет соединения.</string>
+    <string name="ota_check_failed">Не удалось проверить обновления (%1$s).</string>
+    <string name="ota_dismiss">OK</string>
+    <string name="editor_dataset_downloading">Загрузка данных талантов %1$s…</string>
+    <string name="editor_dataset_progress">%1$d из %2$d файлов</string>
+    <string name="editor_dataset_unavailable">Данные талантов %1$s недоступны</string>
+    <string name="editor_dataset_not_published">Эта сборка игры не опубликована для загрузки. Билд остаётся сохранённым.</string>
+    <string name="editor_dataset_offline">Нет соединения. Подключитесь к интернету и повторите. Билд остаётся сохранённым.</string>
+    <string name="editor_dataset_download_failed">Загрузка не удалась (%1$s). Билд остаётся сохранённым.</string>
+    <string name="editor_dataset_needs_newer_app">Обновите приложение, чтобы открыть этот билд. Билд остаётся сохранённым.</string>
+    <string name="editor_dataset_insufficient_storage">Недостаточно свободного места на устройстве. Билд остаётся сохранённым.</string>
 </resources>

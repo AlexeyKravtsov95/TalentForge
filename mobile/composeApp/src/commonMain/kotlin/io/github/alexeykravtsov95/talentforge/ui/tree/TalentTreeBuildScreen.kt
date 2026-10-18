@@ -33,7 +33,18 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_retry
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_autosave_failed
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_draft_title
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_dataset_downloading
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_dataset_progress
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_dataset_unavailable
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_failure_dataset
+import io.github.alexeykravtsov95.talentforge.data.DatasetBundleId
+import io.github.alexeykravtsov95.talentforge.ui.library.SecondaryActionButton
+import io.github.alexeykravtsov95.talentforge.ui.ota.DatasetUnavailableReason
+import io.github.alexeykravtsov95.talentforge.ui.ota.EditorDatasetAccess
+import io.github.alexeykravtsov95.talentforge.ui.ota.EditorDatasetResolution
+import io.github.alexeykravtsov95.talentforge.ui.ota.InstallProgress
+import io.github.alexeykravtsov95.talentforge.ui.ota.SessionDatasets
+import io.github.alexeykravtsov95.talentforge.ui.ota.text
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_failure_engine
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_failure_invalid_build
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_failure_library
@@ -119,16 +130,73 @@ fun TalentTreeBuildScreen(
     descriptions: TalentDescriptionsLoader? = null,
     localization: TalentLocalizationLoader? = null,
     sharing: BuildCodeSharing? = null,
+    /**
+     * M5.OTA.3, OTA-enabled builds only: a saved build whose client build this session does not
+     * have is resolved per client design §5.2 — downloaded on demand with progress, or shown as
+     * typed unavailable with Retry. The record is never touched and no other build is used.
+     */
+    datasetAccess: EditorDatasetAccess? = null,
 ) {
     var load by remember(localId) { mutableStateOf<EditorLoad>(EditorLoad.Loading) }
-    LaunchedEffect(localId) {
+    var acquisition by remember(localId) { mutableStateOf<DatasetAcquisition?>(null) }
+    var attempt by remember(localId) { mutableStateOf(0) }
+    LaunchedEffect(localId, attempt) {
         load = EditorLoad.Loading
+        acquisition = null
+        var session: SessionDatasets? = null
+        if (datasetAccess != null) {
+            val bundle = withContext(Dispatchers.Default) { EditorDatasetAccess.bundleOf(repository, localId) }
+            if (bundle != null && !datasetAccess.isAvailable(bundle)) {
+                acquisition = DatasetAcquisition.Downloading(bundle, null)
+                val resolution = withContext(Dispatchers.Default) {
+                    datasetAccess.resolve(bundle) { progress -> acquisition = DatasetAcquisition.Downloading(bundle, progress) }
+                }
+                when (resolution) {
+                    is EditorDatasetResolution.Ready -> session = resolution.session
+                    is EditorDatasetResolution.Unavailable -> {
+                        acquisition = DatasetAcquisition.Unavailable(resolution.bundle, resolution.reason)
+                        return@LaunchedEffect
+                    }
+                }
+                acquisition = null
+            }
+        }
         load = withContext(Dispatchers.Default) {
-            loadEditorSession(repository, datasets, localId, icons, descriptions, localization)
+            val resolved = session
+            if (resolved != null) {
+                loadEditorSession(repository, resolved.datasets, localId, resolved.icons, resolved.descriptions, resolved.localization)
+            } else {
+                loadEditorSession(repository, datasets, localId, icons, descriptions, localization)
+            }
         }
     }
 
     val colors = talentForgeColors()
+    when (val pending = acquisition) {
+        is DatasetAcquisition.Downloading -> {
+            EditorPane(
+                primary = stringResource(Res.string.editor_dataset_downloading, pending.bundle.clientBuild),
+                primaryColor = colors.textSecondary,
+                detail = pending.progress?.let { stringResource(Res.string.editor_dataset_progress, it.filesDone, it.filesTotal) },
+                onBack = onBack,
+            )
+            return
+        }
+
+        is DatasetAcquisition.Unavailable -> {
+            EditorPane(
+                primary = stringResource(Res.string.editor_dataset_unavailable, pending.bundle.clientBuild),
+                primaryColor = colors.danger,
+                detail = pending.reason.text(),
+                onBack = onBack,
+                actionText = stringResource(Res.string.common_retry),
+                onAction = { attempt += 1 },
+            )
+            return
+        }
+
+        null -> Unit
+    }
     when (val current = load) {
         EditorLoad.Loading -> EditorPane(
             primary = stringResource(Res.string.editor_opening_build),
@@ -262,13 +330,24 @@ private fun ReadyBuildEditor(
     }
 }
 
-/** Loading/Failed pane of the editor (44 dp header with back, centred message). */
+/** The editor's progress or typed unavailable state while a historical dataset is acquired (M5.OTA.3). */
+private sealed interface DatasetAcquisition {
+    val bundle: DatasetBundleId
+
+    data class Downloading(override val bundle: DatasetBundleId, val progress: InstallProgress?) : DatasetAcquisition
+
+    data class Unavailable(override val bundle: DatasetBundleId, val reason: DatasetUnavailableReason) : DatasetAcquisition
+}
+
+/** Loading/Failed pane of the editor (44 dp header with back, centred message, optional action). */
 @Composable
 private fun EditorPane(
     primary: String,
     primaryColor: androidx.compose.ui.graphics.Color,
     onBack: () -> Unit,
     detail: String? = null,
+    actionText: String? = null,
+    onAction: (() -> Unit)? = null,
 ) {
     val colors = talentForgeColors()
     Column(
@@ -294,6 +373,14 @@ private fun EditorPane(
                     BasicText(
                         detail,
                         style = TalentForgeTypography.bodySmall.copy(color = colors.textSecondary),
+                    )
+                }
+                if (actionText != null && onAction != null) {
+                    SecondaryActionButton(
+                        text = actionText,
+                        onClickLabel = actionText,
+                        onClick = onAction,
+                        modifier = Modifier.padding(top = TalentForgeSpacing.rowGap),
                     )
                 }
             }

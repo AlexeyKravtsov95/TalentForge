@@ -172,7 +172,10 @@ class OtaScenarioTest {
     }
 
     @Test
-    fun s5c_aCorruptedStagedFileIsDeletedAndRequestedAgain() = OtaDevice().test { device ->
+    fun s5c_aCorruptedStagedFileIsDeletedAndRequestedAgain() = OtaDevice(
+        // one download at a time: the cut on the last file leaves exactly every other file staged
+        config = OtaConfig.forTesting(OtaTestRepo.keyring, baseUrl = "https://ota.test", parallelism = 1),
+    ).test { device ->
         device.server.publish(TestRelease.A, TestRelease.B)
         device.server.catalog = catalog("catalog-b-active")
         val files = TestRelease.B.manifest.files
