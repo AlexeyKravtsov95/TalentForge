@@ -22,8 +22,15 @@ import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
 import java.security.GeneralSecurityException
 import java.security.KeyFactory
+import java.security.KeyStore
 import java.security.Signature
+import java.security.cert.CertificateException
+import java.security.cert.CertificateFactory
 import java.security.spec.X509EncodedKeySpec
+import javax.net.ssl.HttpsURLConnection
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSocketFactory
+import javax.net.ssl.TrustManagerFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
@@ -58,6 +65,12 @@ class PlatformBlobFetcher(
     private val readTimeoutMillis: Int = 30_000,
     /** Tests and the benchmark only: plain HTTP to 127.0.0.1 (app configurations are HTTPS-only). */
     private val allowLoopbackHttp: Boolean = false,
+    /**
+     * Which TLS roots the HTTPS connections trust: `null` (every app configuration but a staging
+     * stand's) is the platform's; [pinnedTrustSocketFactory] trusts exactly a staging stand's own
+     * CA (M5.OTA.4a). Certificate and hostname verification are never turned off.
+     */
+    private val sslSocketFactory: SSLSocketFactory? = null,
 ) : BlobFetcher {
     override suspend fun fetch(url: String, maxBytes: Long): FetchResult = withContext(Dispatchers.IO) {
         if (!url.startsWith("https://") && !(allowLoopbackHttp && url.startsWith("http://127.0.0.1:"))) {
@@ -69,6 +82,7 @@ class PlatformBlobFetcher(
             return@withContext FetchResult.NetworkError(e.javaClass.simpleName)
         }
         try {
+            if (sslSocketFactory != null && connection is HttpsURLConnection) connection.sslSocketFactory = sslSocketFactory
             connection.instanceFollowRedirects = false
             connection.useCaches = false
             connection.connectTimeout = connectTimeoutMillis
@@ -98,6 +112,30 @@ class PlatformBlobFetcher(
         }
         return FetchResult.Body(out.toByteArray(), exceededLimit = total > maxBytes)
     }
+}
+
+/**
+ * TLS trust for an origin outside the public PKI — the local staging stand of M5.OTA.4a
+ * (`docs/ota/staging-setup.md`): a socket factory whose **only** trust anchors are the PEM
+ * certificates given. Certificate path validation, validity and hostname verification are the
+ * platform's, unchanged; only *which* roots are trusted differs. A PEM carrying anything but
+ * certificates is refused. Used by desktop tests and by debuggable Android builds configured with
+ * `talentforge.ota.android.staging.trustAnchor`; never by a release build (Gradle refuses one).
+ */
+fun pinnedTrustSocketFactory(pem: String): SSLSocketFactory {
+    require("PRIVATE KEY" !in pem) { "a trust anchor never contains a private key" }
+    val certificates = try {
+        CertificateFactory.getInstance("X.509").generateCertificates(pem.byteInputStream())
+    } catch (e: CertificateException) {
+        throw IllegalArgumentException("not a PEM certificate", e)
+    }
+    require(certificates.isNotEmpty()) { "no certificate in the trust anchor" }
+    val anchors = KeyStore.getInstance(KeyStore.getDefaultType()).apply {
+        load(null, null)
+        certificates.forEachIndexed { index, certificate -> setCertificateEntry("anchor-$index", certificate) }
+    }
+    val trust = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()).apply { init(anchors) }
+    return SSLContext.getInstance("TLS").apply { init(null, trust.trustManagers, null) }.socketFactory
 }
 
 /**
