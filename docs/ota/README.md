@@ -10,6 +10,7 @@ translations reach users without a new APK/AAB or iOS binary.
 | [ota-contract-v1.md](ota-contract-v1.md) | The wire contract: storage layout, envelope, catalog, release manifest, verification order, error codes, data levels |
 | [client-architecture.md](client-architecture.md) | KMP components, reuse of existing interfaces, Android/iOS storage, startup, activation, session pinning, saved builds, retention |
 | [publisher-and-security.md](publisher-and-security.md) | Publisher pipeline and gates, channels, atomic pointer, rollback, keys, threat model, why `is_bgdl=false` is not "live" |
+| [publisher-runbook.md](publisher-runbook.md) | Operator procedures (M5.OTA.2): first publication, refresh, rollback, re-sign, key loss, hosting change |
 | [test-plan.md](test-plan.md) | Test layers, scenarios S1–S14, performance measurements, release gates: common, Android, iOS |
 | [open-decisions.md](open-decisions.md) | OD-1…OD-17, each with a recommended default |
 | [M5.OTA.2-publisher-brief.md](M5.OTA.2-publisher-brief.md) | Implementation brief: publisher (GLM) |
