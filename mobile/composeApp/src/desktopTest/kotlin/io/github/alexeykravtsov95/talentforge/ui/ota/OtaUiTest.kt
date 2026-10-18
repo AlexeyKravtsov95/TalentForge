@@ -121,10 +121,10 @@ class OtaUiTest {
                     val scope = rememberCoroutineScope()
                     AboutScreen(
                         appVersion = AppVersion("0.1.0", 1),
-                        noticesPath = null,
                         backupStatement = BackupStatement.AndroidBackupDisabled,
                         privacyPolicyUrl = null,
                         onBack = {},
+                        onOpenLicenses = {},
                         otaStatus = androidx.compose.runtime.produceState(status) {
                             device.runtime.status.collect { value = it }
                         }.value,

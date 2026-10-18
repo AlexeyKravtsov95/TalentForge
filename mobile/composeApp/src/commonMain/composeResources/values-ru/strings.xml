@@ -316,6 +316,7 @@
     <string name="home_about_action">открыть сведения о TalentForge</string>
     <string name="about_title">О приложении</string>
     <string name="about_version">Версия %1$s (%2$s)</string>
+    <string name="about_tagline">Планировщик талантов: распределяйте очки по веткам талантов, храните билды на этом устройстве и делитесь ими в виде кодов.</string>
     <string name="about_section_project">НЕЗАВИСИМЫЙ ПРОЕКТ</string>
     <string name="about_disclaimer">TalentForge — независимый неофициальный проект. Он не связан с разработчиком и издателем игры, не одобрен и не поддерживается ими.</string>
     <string name="about_section_privacy">КОНФИДЕНЦИАЛЬНОСТЬ</string>
@@ -326,9 +327,13 @@
     <string name="about_privacy_sharing">Приложение помещает код в буфер обмена только после нажатия «Копировать код», читает буфер только после нажатия «Вставить» и передаёт код билда в системное меню «Поделиться» только после нажатия «Поделиться». Код не содержит названия билда и сведений о вас.</string>
     <string name="about_privacy_permissions">Приложение работает без интернета и не запрашивает доступ к местоположению, контактам, камере, микрофону, файлам или уведомлениям.</string>
     <string name="about_privacy_delete">Удалите билд в приложении либо удалите приложение или очистите его данные — тогда сохранённые билды будут удалены с устройства.</string>
+    <string name="about_privacy_show_details">Подробнее</string>
+    <string name="about_privacy_hide_details">Скрыть подробности</string>
     <string name="about_privacy_policy_link">Политика конфиденциальности</string>
     <string name="about_privacy_policy_action">открыть политику конфиденциальности в браузере</string>
-    <string name="about_section_licenses">ЛИЦЕНЗИИ ОТКРЫТОГО ПО</string>
+    <string name="about_licenses_title">Лицензии сторонних компонентов</string>
+    <string name="about_licenses_entry_detail">Уведомления об открытом ПО и полные тексты лицензий</string>
+    <string name="about_licenses_entry_action">открыть лицензии сторонних компонентов</string>
     <string name="about_licenses_intro">TalentForge создан с использованием этих компонентов с открытым исходным кодом на условиях их лицензий.</string>
     <plurals name="about_licenses_module_count">
         <item quantity="one">%1$d модуль</item>

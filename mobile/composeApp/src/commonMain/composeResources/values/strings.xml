@@ -304,6 +304,7 @@
     <string name="home_about_action">open About TalentForge</string>
     <string name="about_title">About</string>
     <string name="about_version">Version %1$s (%2$s)</string>
+    <string name="about_tagline">A talent planner: spend points across the talent trees, keep your builds on this device and share them as codes.</string>
     <string name="about_section_project">INDEPENDENT PROJECT</string>
     <string name="about_disclaimer">TalentForge is an independent, unofficial project. It is not affiliated with, endorsed by or sponsored by the game's developer or publisher.</string>
     <string name="about_section_privacy">PRIVACY</string>
@@ -314,9 +315,13 @@
     <string name="about_privacy_sharing">The app writes to the clipboard only when you tap Copy code, reads it only when you tap Paste, and hands a build code to the system share menu only when you tap Share. A code contains no build name and nothing about you.</string>
     <string name="about_privacy_permissions">The app works without the internet and does not ask for access to your location, contacts, camera, microphone, files or notifications.</string>
     <string name="about_privacy_delete">Delete a build in the app, or uninstall the app or clear its storage, to remove saved builds from this device.</string>
+    <string name="about_privacy_show_details">Show details</string>
+    <string name="about_privacy_hide_details">Hide details</string>
     <string name="about_privacy_policy_link">Privacy policy</string>
     <string name="about_privacy_policy_action">open the privacy policy in the browser</string>
-    <string name="about_section_licenses">OPEN-SOURCE LICENSES</string>
+    <string name="about_licenses_title">Third-party licenses</string>
+    <string name="about_licenses_entry_detail">Open-source notices and full license texts</string>
+    <string name="about_licenses_entry_action">open the third-party licenses</string>
     <string name="about_licenses_intro">TalentForge is built with these open-source components, used under their licenses.</string>
     <plurals name="about_licenses_module_count">
         <item quantity="one">%1$d module</item>

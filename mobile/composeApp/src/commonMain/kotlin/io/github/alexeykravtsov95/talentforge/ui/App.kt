@@ -25,6 +25,7 @@ import io.github.alexeykravtsov95.talentforge.data.builds.RandomLocalBuildIdGene
 import io.github.alexeykravtsov95.talentforge.ui.about.AboutScreen
 import io.github.alexeykravtsov95.talentforge.ui.about.AppVersion
 import io.github.alexeykravtsov95.talentforge.ui.about.LegalLinks
+import io.github.alexeykravtsov95.talentforge.ui.about.LicensesScreen
 import io.github.alexeykravtsov95.talentforge.ui.about.platformBackupStatement
 import io.github.alexeykravtsov95.talentforge.ui.about.platformOpenSourceNoticesPath
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
@@ -57,7 +58,8 @@ import kotlinx.coroutines.launch
  * - Home or Builds → Import build (push, M5.SHARE.2): Back → where it was
  *   opened; a confirmed import REPLACES the import screen with the new
  *   record's editor, so Back from it returns to Home or Builds likewise;
- * - Home → About (push, M5.RC.2b): Back → Home.
+ * - Home → About (push, M5.RC.2b): Back → Home;
+ * - About → Third-party licenses (push, M5.UI.ABOUT.1): Back → About.
  *
  * The editor opens by opaque local build id — never by passing mutable UI
  * state between screens. Navigation state is not the persistence model: the
@@ -76,6 +78,8 @@ sealed interface AppDestination {
 
     data object About : AppDestination
 
+    data object Licenses : AppDestination
+
     data class Editor(
         val localId: String,
         val openedFrom: EditorOrigin,
@@ -86,7 +90,7 @@ enum class EditorOrigin { CreatedNew, FromHome, FromAllBuilds, Imported }
 
 /**
  * Save/restore of the back stack as plain strings (`home`, `new-build`,
- * `all-builds`, `import-build`, `about`, `editor␟localId␟origin`). A decoded stack must be non-empty
+ * `all-builds`, `import-build`, `about`, `licenses`, `editor␟localId␟origin`). A decoded stack must be non-empty
  * and rooted at Home — anything else (blank, malformed entries, a stack that
  * does not start with Home) fails closed to the initial Home-only stack:
  * navigation state is not user data, and a corrupt bundle must never restore
@@ -105,6 +109,7 @@ internal fun encodeDestination(destination: AppDestination): String = when (dest
     AppDestination.AllBuilds -> "all-builds"
     AppDestination.ImportBuild -> "import-build"
     AppDestination.About -> "about"
+    AppDestination.Licenses -> "licenses"
     is AppDestination.Editor ->
         "editor$DESTINATION_SEPARATOR${destination.localId}$DESTINATION_SEPARATOR${destination.openedFrom.name}"
 }
@@ -120,6 +125,7 @@ internal fun decodeDestinations(values: List<String>): List<AppDestination>? {
             "all-builds" -> AppDestination.AllBuilds
             "import-build" -> AppDestination.ImportBuild
             "about" -> AppDestination.About
+            "licenses" -> AppDestination.Licenses
             else -> {
                 val parts = value.split(DESTINATION_SEPARATOR)
                 val localId = parts.getOrNull(1)
@@ -270,12 +276,17 @@ fun App(
 
             AppDestination.About -> AboutScreen(
                 appVersion = appVersion,
-                noticesPath = platformOpenSourceNoticesPath,
                 backupStatement = platformBackupStatement,
                 privacyPolicyUrl = LegalLinks.privacyPolicyUrl,
                 onBack = ::navigateUp,
+                onOpenLicenses = { destinations = destinations + AppDestination.Licenses },
                 otaStatus = otaStatus,
                 onCheckForUpdates = ota?.let { runtime -> { appScope.launch { runtime.coordinator.checkNow() } } },
+            )
+
+            AppDestination.Licenses -> LicensesScreen(
+                noticesPath = platformOpenSourceNoticesPath,
+                onBack = ::navigateUp,
             )
 
             AppDestination.NewBuild -> NewBuildScreen(
