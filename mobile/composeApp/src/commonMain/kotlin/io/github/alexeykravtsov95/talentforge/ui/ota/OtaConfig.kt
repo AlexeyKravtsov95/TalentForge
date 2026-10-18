@@ -63,7 +63,12 @@ class OtaConfig private constructor(
 
     companion object {
         const val GAME: String = "forever"
-        const val DEFAULT_PARALLELISM: Int = 4
+        /**
+         * Files fetched at once. 8 since M5.OTA.4b (ADR-0002): over the real HTTPS staging origin it
+         * cut a cold install of release B from 25.7 s to 17.0 s (median) with 8 kept-alive
+         * connections, one TLS handshake each.
+         */
+        const val DEFAULT_PARALLELISM: Int = 8
 
         /**
          * The key-id prefix of each channel's keys (publisher-and-security §5.1): a keyring pins

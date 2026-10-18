@@ -1,7 +1,8 @@
 # ADR-0002: OTA delivery performance within contract v1
 
-* Status: **proposed** — M5.OTA.4a (analysis and decision; no code or contract change in this PR)
-* Date: 2026-10-18
+* Status: **accepted** — proposed in M5.OTA.4a; accepted in M5.OTA.4b on HTTPS measurements against the
+  VK Cloud staging origin (see "M5.OTA.4b: measured over HTTPS" below)
+* Date: 2026-10-18 (proposed and accepted)
 * Deciders: repository owner
 * Trigger: test-plan §7.3 — all three thresholds fired at parallelism 4
   ([client-performance-report.md](client-performance-report.md))
@@ -148,6 +149,36 @@ Expected outcome (measured where stated, estimated otherwise): every §7.3 thres
 alone in the JVM benchmark (measured); with O2 the bytes on the wire fall by about half (computed)
 and the poor-link cold install drops to roughly a minute (estimate). The release gate keeps its rule:
 the thresholds are re-measured, not inferred, before OTA is enabled in a public build.
+
+## M5.OTA.4b: measured over HTTPS
+
+Origin: VK Cloud Object Storage (OD-1), the real public HTTPS host; client: the production JVM stack
+(`OtaRemoteStagingCheck`, platform TLS roots); release B; the test Mac's Wi-Fi, ≈ 140 ms RTT to
+`ru-msk`; three runs per cell ([M5.OTA.4b report](M5.OTA.4b-remote-staging-report.md) §7).
+
+| Case | p4 median | p8 median | Connections (= TLS handshakes) p4 / p8 |
+| --- | --- | --- | --- |
+| cold (399 requests, 5.15 MB identity) | 25.7 s | **17.0 s** (−34 %) | 4 / 8 |
+| warm (6 files reusable from A) | 29.6 s | **19.0 s** (−36 %) | 5–7 / 8 |
+| resume after 50 % | 15.7 s | **8.2 s** (−48 %) | 4 / 8 |
+
+* HTTPS did not make 8 worse: one TLS handshake per connection, connections kept alive for the whole
+  install, no churn at 8 (the concern of O1 above). 6 was therefore not needed.
+* Requests are latency-bound: 96 % of a kept-alive blob request is time to first byte.
+* **O2 is delivered by the origin itself**, no CDN: VK compresses `application/json` when asked
+  (`Accept-Encoding: gzip`) and serves PNG as is. Measured on release B: 5 077 048 → 2 274 035 bytes
+  on the wire (−55 %), every decoded SHA-256 matching. Android's `HttpURLConnection` asks for gzip:
+  the TECNO Spark 40 received the 75 792-byte manifest in ≈ 31 kB including TLS and the catalog.
+  The adapter stores every blob with its `Content-Type` and never a `Content-Encoding`.
+* No HTTP/2 on this origin (O3 stays a CDN/hosting item).
+* Not measured: a 5 MB download **on the device** (every published build is bundled), the JVM over a
+  mobile network, and the §7.3 synthetic profiles at parallelism 8 over HTTPS. The device decision rule
+  above still applies when a device download becomes possible.
+* New finding, outside this ADR's options: 7–11 % of new TCP connections to the VK endpoint were not
+  accepted from the test network; a stalled request fails a client attempt (completed by the next
+  check). It is a client error-handling and hosting topic (report §9), not a parallelism one.
+
+**Applied:** `OtaConfig.DEFAULT_PARALLELISM = 8` (M5.OTA.4b).
 
 ## Consequences
 
