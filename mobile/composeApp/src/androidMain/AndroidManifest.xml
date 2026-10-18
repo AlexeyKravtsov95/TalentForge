@@ -2,6 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!--
+      Talent data updates (M5.OTA.3): HTTPS GETs of the static OTA origin, and only when this
+      build type's OTA configuration is enabled (it is disabled by default; client design §8,
+      test-plan §6B). Cleartext stays refused by the default network security configuration.
+    -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!--
       Backup policy (M5.RC.2b, TF-RC1-ANDROID-CONFIG): TalentForge keeps the build
       library only on the device and has no backup of its own, so Android backup is
       off. allowBackup="false" disables Auto Backup, adb backup and (Android 11 and
