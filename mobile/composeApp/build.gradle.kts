@@ -528,6 +528,9 @@ tasks.named<Test>("desktopTest") {
     System.getProperty("talentforge.m5rc2b.screenshots")?.let {
         systemProperty("talentforge.m5rc2b.screenshots", it)
     }
+    System.getProperty("talentforge.ota.benchmark")?.let {
+        systemProperty("talentforge.ota.benchmark", it)
+    }
     System.getProperty("talentforge.m5ota3.screenshots")?.let {
         systemProperty("talentforge.m5ota3.screenshots", it)
     }

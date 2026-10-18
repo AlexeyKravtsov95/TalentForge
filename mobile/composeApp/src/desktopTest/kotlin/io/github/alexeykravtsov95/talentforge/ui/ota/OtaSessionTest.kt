@@ -114,6 +114,44 @@ class OtaSessionTest {
     }
 
     @Test
+    fun anImportedCodeOfAListedBuildIsDownloadedAndOfflineStaysTypedUnavailable() = OtaDevice(bundledBuilds = setOf(B_BUILD)).test { device ->
+        device.server.publish(TestRelease.A, TestRelease.B)
+        device.server.catalog = catalog("catalog-b-active")
+        assertIs<CheckOutcome.Activated>(device.check())
+        val code = (io.github.alexeykravtsov95.talentforge.share.BuildShareCode.encode(device.saveBuild(A_BUILD, "MAGE").build)
+            as io.github.alexeykravtsov95.talentforge.share.ShareCodeEncoding.Encoded).code
+        fun controller(scope: kotlinx.coroutines.CoroutineScope) = io.github.alexeykravtsov95.talentforge.ui.share.BuildImportController(
+            androidx.compose.runtime.mutableStateOf(code),
+            SessionDatasets.of(device.runtime.snapshot.value).datasets,
+            device.repository,
+            scope,
+            kotlinx.coroutines.Dispatchers.Default,
+        ) { bundle -> (device.runtime.resolver.resolve(bundle) as? DatasetResolution.Available)?.let { SessionDatasets.of(it.snapshot).datasets } }
+        runBlocking {
+            device.server.networkDown = true
+            val offline = controller(this)
+            offline.submit()
+            waitUntil { offline.phase !is io.github.alexeykravtsov95.talentforge.ui.share.ImportPhase.Checking }
+            val problem = assertIs<io.github.alexeykravtsov95.talentforge.ui.share.ImportPhase.Problem>(offline.phase)
+            val rejected = assertIs<io.github.alexeykravtsov95.talentforge.ui.share.ImportProblem.Rejected>(problem.problem)
+            assertIs<io.github.alexeykravtsov95.talentforge.share.BuildImportFailure.ClientBuildUnavailable>(rejected.failure)
+            device.server.networkDown = false
+            val online = controller(this)
+            online.submit()
+            waitUntil { online.phase !is io.github.alexeykravtsov95.talentforge.ui.share.ImportPhase.Checking }
+            assertIs<io.github.alexeykravtsov95.talentforge.ui.share.ImportPhase.Confirming>(online.phase, "previewed on its own build")
+        }
+    }
+
+    private suspend fun waitUntil(condition: () -> Boolean) {
+        val deadline = System.currentTimeMillis() + 60_000
+        while (!condition()) {
+            check(System.currentTimeMillis() < deadline) { "timeout" }
+            kotlinx.coroutines.delay(20)
+        }
+    }
+
+    @Test
     fun unlistedAndTooNewBuildsAreTypedUnavailable() = OtaDevice().test { device ->
         val future = CatalogRelease("1.60.1.79999-r1", "1.60.1.79999", 2, "sha256:" + "c".repeat(64), 100, 1000, "2026-10-17T23:30:00Z")
         device.server.publish(TestRelease.A)

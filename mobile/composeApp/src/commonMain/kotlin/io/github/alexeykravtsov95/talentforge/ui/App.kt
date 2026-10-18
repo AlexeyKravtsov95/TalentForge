@@ -31,6 +31,7 @@ import io.github.alexeykravtsov95.talentforge.ui.home.HomeScreen
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildAutosaveCoordinator
 import io.github.alexeykravtsov95.talentforge.ui.library.platformBuildClock
 import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
+import io.github.alexeykravtsov95.talentforge.ui.ota.DatasetResolution
 import io.github.alexeykravtsov95.talentforge.ui.ota.EditorDatasetAccess
 import io.github.alexeykravtsov95.talentforge.ui.ota.OtaRuntime
 import io.github.alexeykravtsov95.talentforge.ui.ota.SessionDatasets
@@ -306,6 +307,11 @@ fun App(
                 datasets = session.datasets,
                 sharing = sharing,
                 onBack = ::navigateUp,
+                resolveDataset = ota?.let { runtime ->
+                    { bundle ->
+                        (runtime.resolver.resolve(bundle) as? DatasetResolution.Available)?.let { SessionDatasets.of(it.snapshot).datasets }
+                    }
+                },
                 onImported = { localId ->
                     // storage has confirmed the record: the editor REPLACES the
                     // import screen, so Back from it returns to Home or Builds.

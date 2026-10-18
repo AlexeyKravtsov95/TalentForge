@@ -9,6 +9,8 @@ translations reach users without a new APK/AAB or iOS binary.
 | [ADR-0001-remote-dataset-delivery.md](ADR-0001-remote-dataset-delivery.md) | Why this design: context, decisions D1–D6, alternatives, consequences |
 | [ota-contract-v1.md](ota-contract-v1.md) | The wire contract: storage layout, envelope, catalog, release manifest, verification order, error codes, data levels |
 | [client-architecture.md](client-architecture.md) | KMP components, reuse of existing interfaces, Android/iOS storage, startup, activation, session pinning, saved builds, retention |
+| [client-implementation-notes.md](client-implementation-notes.md) | M5.OTA.3: what the client implements, its decisions and deviations from the design sketch, verification evidence |
+| [client-performance-report.md](client-performance-report.md) | M5.OTA.3: test-plan §7 measurements of the per-file design |
 | [publisher-and-security.md](publisher-and-security.md) | Publisher pipeline and gates, channels, atomic pointer, rollback, keys, threat model, why `is_bgdl=false` is not "live" |
 | [test-plan.md](test-plan.md) | Test layers, scenarios S1–S14, performance measurements, release gates: common, Android, iOS |
 | [open-decisions.md](open-decisions.md) | OD-1…OD-17, each with a recommended default |

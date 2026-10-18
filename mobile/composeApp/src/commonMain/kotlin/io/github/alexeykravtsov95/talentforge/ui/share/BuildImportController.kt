@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import io.github.alexeykravtsov95.talentforge.data.TalentDatasetRepository
+import io.github.alexeykravtsov95.talentforge.data.DatasetBundleId
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryError
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
@@ -88,6 +89,13 @@ class BuildImportController(
     private val repository: LocalBuildRepository,
     private val scope: CoroutineScope,
     private val work: CoroutineContext,
+    /**
+     * M5.OTA.3 (client design §5.2): the datasets of a client build this session lacks, after an
+     * on-demand download of a release the last accepted catalog lists — or `null` (not
+     * published, offline, …), which keeps the typed `ClientBuildUnavailable`. Without OTA there
+     * is no resolver and the check is exactly as before.
+     */
+    private val resolveDataset: (suspend (DatasetBundleId) -> TalentDatasetRepository?)? = null,
 ) {
 
     var phase: ImportPhase by mutableStateOf(ImportPhase.Editing)
@@ -140,7 +148,16 @@ class BuildImportController(
         val token = ++generation
         phase = ImportPhase.Checking(code)
         scope.launch {
-            val result = withContext(work) { prepareBuildImport(code, datasets) }
+            val result = withContext(work) {
+                val first = prepareBuildImport(code, datasets)
+                val missing = (first as? BuildImportPreparation.Rejected)?.failure as? BuildImportFailure.ClientBuildUnavailable
+                val resolver = resolveDataset
+                if (missing == null || resolver == null) {
+                    first
+                } else {
+                    resolver(DatasetBundleId(missing.game, missing.clientBuild))?.let { prepareBuildImport(code, it) } ?: first
+                }
+            }
             // a newer edit (or a cleared field) wins over this stale result
             if (token != generation || input.value != code || phase != ImportPhase.Checking(code)) return@launch
             phase = when (result) {
