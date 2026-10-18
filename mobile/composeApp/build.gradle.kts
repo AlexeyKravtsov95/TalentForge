@@ -25,10 +25,14 @@ plugins {
 //
 // Nothing is set in the repository, so every build keeps OTA disabled until the owner supplies
 // hosting and public keys (OD-1, OD-2). An enabled channel without a valid https base URL and
-// keyring, a test- key id (reserved for fixtures, contract §8), a production keyring without a
-// backup key, or a staging key in the production keyring fails the build.
+// keyring, a test- key id (reserved for fixtures, contract §8), a key not made for the channel
+// (production pins only tf-prod-* keys, staging only tf-staging-*, publisher-and-security §5.1 —
+// checked on each keyring alone, whatever the other channel's settings), a production keyring
+// without a backup key, or one public key pinned in both channels fails the build.
+// :composeApp:verifyOtaSettingsRules (run before desktopTest) proves each rule on fixed inputs.
 val otaPlatforms = listOf("android", "ios")
 val otaChannels = listOf("production", "staging")
+val otaKeyIdPrefixes = mapOf("production" to "tf-prod-", "staging" to "tf-staging-")
 
 fun otaSetting(platform: String, channel: String, name: String): String? =
     (providers.environmentVariable("TALENTFORGE_OTA_${platform.uppercase()}_${channel.uppercase()}_${name.uppercase()}").orNull
@@ -38,62 +42,131 @@ fun otaSetting(platform: String, channel: String, name: String): String? =
 fun otaKotlinString(value: String?): String =
     if (value == null) "null" else "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"").replace("$", "\\$") + "\""
 
-fun renderOtaSettings(): String {
+/** The raw settings of one platform x channel, as read from properties and the keyring file. */
+class OtaChannelInput(
+    val platform: String,
+    val channel: String,
+    val enabledRaw: String?,
+    val baseUrl: String?,
+    val keys: List<Map<String, String>>,
+    val keyringProblem: String? = null,
+)
+
+/** Every reason these settings must fail the build (empty: valid). Pure: verifyOtaSettingsRules runs it on fixed inputs. */
+fun otaSettingsProblems(inputs: List<OtaChannelInput>): List<String> {
     val baseUrlPattern = Regex("https://[A-Za-z0-9.-]+(:[0-9]{1,5})?(/[A-Za-z0-9._~-]+)*")
-    val keys = mutableMapOf<Pair<String, String>, List<Map<String, String>>>()
     val problems = mutableListOf<String>()
-    val sections = StringBuilder()
-    for (platform in otaPlatforms) {
-        for (channel in otaChannels) {
-            val where = "talentforge.ota.$platform.$channel"
-            val enabled = when (val raw = otaSetting(platform, channel, "enabled")) {
-                null, "false" -> false
-                "true" -> true
-                else -> { problems += "$where.enabled must be true or false"; false }
-            }
-            val baseUrl = otaSetting(platform, channel, "baseUrl")
-            val keyringPath = otaSetting(platform, channel, "keyring")
-            val entries: List<Map<String, String>> = if (keyringPath == null) emptyList() else {
-                val file = File(keyringPath)
-                if (!file.isFile) { problems += "$where.keyring does not name a file"; emptyList() } else {
-                    @Suppress("UNCHECKED_CAST")
-                    val parsed = groovy.json.JsonSlurper().parse(file) as Map<String, Any?>
-                    (parsed["keys"] as? List<Map<String, Any?>>).orEmpty().map { key ->
-                        listOf("keyId", "algorithm", "publicKeySpki").associateWith { (key[it] as? String).orEmpty() }
-                    }
-                }
-            }
-            keys[platform to channel] = entries
-            if (enabled) {
-                if (baseUrl == null || !baseUrlPattern.matches(baseUrl)) problems += "$where.baseUrl must be an https origin without query or trailing slash"
-                if (entries.isEmpty()) problems += "$where.keyring must pin at least one key"
-                if (channel == "production" && entries.size < 2) problems += "$where.keyring must pin a primary and a backup key"
-            }
-            if (entries.any { it.getValue("keyId").startsWith("test-") }) problems += "$where.keyring contains a test- key (fixtures only)"
-            if (entries.any { it.getValue("algorithm") != "ecdsa-p256-sha256" }) problems += "$where.keyring: every key must be ecdsa-p256-sha256"
-            val name = platform + channel.replaceFirstChar { it.uppercase() }
-            sections.append("    val $name: OtaPlatformSettings = OtaPlatformSettings(\n")
-            sections.append("        enabled = $enabled,\n")
-            sections.append("        channel = OtaChannel.${channel.uppercase()},\n")
-            sections.append("        baseUrl = ${otaKotlinString(baseUrl)},\n")
-            sections.append("        keys = listOf(\n")
-            for (key in entries) {
-                sections.append("            OtaKeySetting(${otaKotlinString(key["keyId"])}, ${otaKotlinString(key["algorithm"])}, ${otaKotlinString(key["publicKeySpki"])}),\n")
-            }
-            sections.append("        ),\n    )\n\n")
+    for (input in inputs) {
+        val where = "talentforge.ota.${input.platform}.${input.channel}"
+        input.keyringProblem?.let { problems += "$where.keyring $it" }
+        if (input.enabledRaw !in listOf(null, "true", "false")) problems += "$where.enabled must be true or false"
+        if (input.enabledRaw == "true") {
+            if (input.baseUrl == null || !baseUrlPattern.matches(input.baseUrl)) problems += "$where.baseUrl must be an https origin without query or trailing slash"
+            if (input.keys.isEmpty()) problems += "$where.keyring must pin at least one key"
+            if (input.channel == "production" && input.keys.size < 2) problems += "$where.keyring must pin a primary and a backup key"
         }
+        val ids = input.keys.map { it.getValue("keyId") }
+        if (ids.any { it.startsWith("test-") }) problems += "$where.keyring contains a test- key (fixtures only)"
+        val prefix = otaKeyIdPrefixes.getValue(input.channel)
+        ids.filterNot { it.startsWith("test-") || it.startsWith(prefix) }.forEach {
+            problems += "$where.keyring pins $it, which is not a ${input.channel} key ($prefix*)"
+        }
+        if (input.keys.any { it.getValue("algorithm") != "ecdsa-p256-sha256" }) problems += "$where.keyring: every key must be ecdsa-p256-sha256"
     }
-    for (platform in otaPlatforms) {
-        val production = keys.getValue(platform to "production").map { it["publicKeySpki"] }.toSet()
-        if (keys.getValue(platform to "staging").any { it["publicKeySpki"] in production }) {
+    for (platform in inputs.map { it.platform }.distinct()) {
+        val production = inputs.filter { it.platform == platform && it.channel == "production" }.flatMap { it.keys }.map { it["publicKeySpki"] }.toSet()
+        if (inputs.filter { it.platform == platform && it.channel == "staging" }.flatMap { it.keys }.any { it["publicKeySpki"] in production }) {
             problems += "talentforge.ota.$platform: a staging key is pinned in the production keyring"
         }
     }
+    return problems
+}
+
+fun readOtaChannelInput(platform: String, channel: String): OtaChannelInput {
+    val keyringPath = otaSetting(platform, channel, "keyring")
+    var keyringProblem: String? = null
+    val entries: List<Map<String, String>> = if (keyringPath == null) emptyList() else {
+        val file = File(keyringPath)
+        if (!file.isFile) { keyringProblem = "does not name a file"; emptyList() } else {
+            @Suppress("UNCHECKED_CAST")
+            val parsed = groovy.json.JsonSlurper().parse(file) as Map<String, Any?>
+            (parsed["keys"] as? List<Map<String, Any?>>).orEmpty().map { key ->
+                listOf("keyId", "algorithm", "publicKeySpki").associateWith { (key[it] as? String).orEmpty() }
+            }
+        }
+    }
+    return OtaChannelInput(platform, channel, otaSetting(platform, channel, "enabled"), otaSetting(platform, channel, "baseUrl"), entries, keyringProblem)
+}
+
+fun renderOtaSettings(): String {
+    val inputs = otaPlatforms.flatMap { platform -> otaChannels.map { channel -> readOtaChannelInput(platform, channel) } }
+    val problems = otaSettingsProblems(inputs)
     if (problems.isNotEmpty()) throw GradleException("Invalid OTA settings:\n  " + problems.joinToString("\n  "))
+    val sections = StringBuilder()
+    for (input in inputs) {
+        val name = input.platform + input.channel.replaceFirstChar { it.uppercase() }
+        sections.append("    val $name: OtaPlatformSettings = OtaPlatformSettings(\n")
+        sections.append("        enabled = ${input.enabledRaw == "true"},\n")
+        sections.append("        channel = OtaChannel.${input.channel.uppercase()},\n")
+        sections.append("        baseUrl = ${otaKotlinString(input.baseUrl)},\n")
+        sections.append("        keys = listOf(\n")
+        for (key in input.keys) {
+            sections.append("            OtaKeySetting(${otaKotlinString(key["keyId"])}, ${otaKotlinString(key["algorithm"])}, ${otaKotlinString(key["publicKeySpki"])}),\n")
+        }
+        sections.append("        ),\n    )\n\n")
+    }
     return "// GENERATED by :composeApp:generateOtaSettings from Gradle properties - do not edit.\n" +
         "package io.github.alexeykravtsov95.talentforge.ui.ota\n\n" +
         "import io.github.alexeykravtsov95.talentforge.data.ota.OtaChannel\n\n" +
         "internal object GeneratedOtaSettings {\n" + sections.toString().trimEnd() + "\n}\n"
+}
+
+/**
+ * The negative cases of the settings rules (PR #44 review P1-2), on fixed inputs: each must be
+ * refused with its own reason, and a correct two-channel configuration must pass. Returns what
+ * did not hold (empty: every rule holds).
+ */
+fun otaSettingsRuleFailures(): List<String> {
+    fun key(id: String, spki: String) = mapOf("keyId" to id, "algorithm" to "ecdsa-p256-sha256", "publicKeySpki" to spki)
+    fun production(vararg keys: Map<String, String>) = OtaChannelInput("android", "production", "true", "https://ota.example.org", keys.toList())
+    fun staging(vararg keys: Map<String, String>) = OtaChannelInput("android", "staging", "true", "https://staging.example.org", keys.toList())
+    val prodA = key("tf-prod-2026a", "PA")
+    val prodB = key("tf-prod-2026b", "PB")
+    val stagingKey = key("tf-staging-2026", "S")
+    val refused = listOf(
+        // a staging key in production with no staging channel configured at all
+        "staging key in production, staging absent" to listOf(production(prodA, prodB, stagingKey)) to "pins tf-staging-2026, which is not a production key",
+        // ... and with a staging channel configured with other keys
+        "staging key in production, staging uses other keys" to listOf(production(prodA, key("tf-staging-2025", "OLD")), staging(stagingKey)) to "pins tf-staging-2025, which is not a production key",
+        "only staging keys in production" to listOf(production(key("tf-staging-a", "S1"), key("tf-staging-b", "S2"))) to "which is not a production key (tf-prod-*)",
+        "a key of no known purpose in production" to listOf(production(prodA, key("release-b", "R"))) to "pins release-b, which is not a production key",
+        "a production key in staging" to listOf(staging(stagingKey, key("tf-prod-2026a", "PA2"))) to "pins tf-prod-2026a, which is not a staging key",
+        "a test key" to listOf(production(prodA, key("test-backup", "T"))) to "contains a test- key",
+        "a production keyring without a backup" to listOf(production(prodA)) to "must pin a primary and a backup key",
+        "one public key in both channels" to listOf(production(prodA, prodB), staging(key("tf-staging-2026", "PA"))) to "a staging key is pinned in the production keyring",
+        "a disabled channel with a staging key in production" to listOf(OtaChannelInput("ios", "production", null, null, listOf(prodA, stagingKey))) to "pins tf-staging-2026, which is not a production key",
+    )
+    val failures = mutableListOf<String>()
+    for ((case, expected) in refused) {
+        val (name, inputs) = case
+        val problems = otaSettingsProblems(inputs)
+        if (problems.none { expected in it }) failures += "$name: expected a problem containing \"$expected\", got $problems"
+    }
+    val valid = otaSettingsProblems(listOf(production(prodA, prodB), staging(stagingKey)))
+    if (valid.isNotEmpty()) failures += "a correct configuration was refused: $valid"
+    if (otaSettingsProblems(emptyList()).isNotEmpty()) failures += "no settings must be valid (OTA off)"
+    return failures
+}
+
+val verifyOtaSettingsRules = tasks.register("verifyOtaSettingsRules") {
+    group = "verification"
+    description = "Proves the OTA settings rules refuse staging, test and unknown keys in production (and the reverse)."
+    val failures = provider { otaSettingsRuleFailures() }
+    inputs.property("failures", failures)
+    doLast {
+        val found = failures.get()
+        if (found.isNotEmpty()) throw GradleException("OTA settings rules do not hold:\n  " + found.joinToString("\n  "))
+    }
 }
 
 val generatedOtaSettingsDir = layout.buildDirectory.dir("generated/ota/commonMain/kotlin")
@@ -477,6 +550,7 @@ androidComponents {
 // `-Dtalentforge.pr19.recording`
 // (PR #19, gesture frames) — skipped by default.
 tasks.named<Test>("desktopTest") {
+    dependsOn(verifyOtaSettingsRules)
     System.getProperty("talentforge.m41.screenshots")?.let {
         systemProperty("talentforge.m41.screenshots", it)
     }

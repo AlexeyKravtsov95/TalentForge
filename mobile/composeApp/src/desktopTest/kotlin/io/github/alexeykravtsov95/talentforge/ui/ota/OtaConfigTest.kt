@@ -53,7 +53,7 @@ class OtaConfigTest {
         assertEquals("https://ota.example.org/v1/channels/production/catalog.json", enabled.catalogUrl)
         assertEquals("https://ota.example.org/v1/blobs/sha256/" + "a".repeat(64), enabled.blobUrl("a".repeat(64)))
         // a staging channel may pin one key
-        assertIs<OtaConfig.Resolution.Enabled>(OtaConfig.resolve(settings(OtaChannel.STAGING, keys = arrayOf(key("tf-staging-a", primary)))))
+        assertIs<OtaConfig.Resolution.Enabled>(OtaConfig.resolve(settings(OtaChannel.STAGING, keys = arrayOf(key("tf-staging-2026", primary)))))
     }
 
     @Test
@@ -64,6 +64,28 @@ class OtaConfigTest {
                 reason(settings(channel, keys = arrayOf(key("test-primary", primary), key("test-backup", backup)))),
             )
         }
+    }
+
+    /** PR #44 review P1-2: a production app never trusts a staging-signed catalog, whatever the staging settings are. */
+    @Test
+    fun aKeyringPinsOnlyKeysMadeForItsOwnChannel() {
+        val prodA = key("tf-prod-2026a", primary)
+        val prodB = key("tf-prod-2026b", backup)
+        val staging = key("tf-staging-2026", primary)
+        // a staging key among production keys: refused although a primary and a backup are pinned
+        assertEquals(OtaConfig.DisabledReason.KEY_NOT_FOR_CHANNEL, reason(settings(keys = arrayOf(prodA, prodB, staging))))
+        assertEquals(OtaConfig.DisabledReason.KEY_NOT_FOR_CHANNEL, reason(settings(keys = arrayOf(prodA, staging.copy(publicKeySpki = backup)))))
+        // only staging keys, or keys of no known purpose, in production
+        assertEquals(OtaConfig.DisabledReason.KEY_NOT_FOR_CHANNEL, reason(settings(keys = arrayOf(key("tf-staging-2026a", primary), key("tf-staging-2026b", backup)))))
+        assertEquals(OtaConfig.DisabledReason.KEY_NOT_FOR_CHANNEL, reason(settings(keys = arrayOf(key("release-a", primary), key("release-b", backup)))))
+        assertEquals(OtaConfig.DisabledReason.KEY_NOT_FOR_CHANNEL, reason(settings(keys = arrayOf(prodA, key("prod-2026b", backup)))))
+        // a production key in a staging build is refused too: every key has one purpose
+        assertEquals(OtaConfig.DisabledReason.KEY_NOT_FOR_CHANNEL, reason(settings(OtaChannel.STAGING, keys = arrayOf(staging, prodB))))
+        // a test- key is reported as such before its channel
+        assertEquals(OtaConfig.DisabledReason.TEST_KEY_IN_APP_KEYRING, reason(settings(keys = arrayOf(prodA, prodB, key("test-backup", backup)))))
+        // the channel's own keys resolve
+        assertIs<OtaConfig.Resolution.Enabled>(OtaConfig.resolve(settings(keys = arrayOf(prodA, prodB))))
+        assertIs<OtaConfig.Resolution.Enabled>(OtaConfig.resolve(settings(OtaChannel.STAGING, keys = arrayOf(staging))))
     }
 
     @Test

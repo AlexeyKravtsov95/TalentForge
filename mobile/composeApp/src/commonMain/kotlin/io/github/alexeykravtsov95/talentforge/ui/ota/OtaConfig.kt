@@ -49,6 +49,9 @@ class OtaConfig private constructor(
         NO_KEYS,
         BAD_KEYRING,
         TEST_KEY_IN_APP_KEYRING,
+
+        /** A key whose id names another purpose: a staging key in production, or the reverse. */
+        KEY_NOT_FOR_CHANNEL,
         PRODUCTION_NEEDS_BACKUP_KEY,
     }
 
@@ -62,13 +65,25 @@ class OtaConfig private constructor(
         const val GAME: String = "forever"
         const val DEFAULT_PARALLELISM: Int = 4
 
+        /**
+         * The key-id prefix of each channel's keys (publisher-and-security §5.1): a keyring pins
+         * only keys made for its own channel — `tf-prod-<yyyy>a|b` in production apps,
+         * `tf-staging-<yyyy>` in staging builds.
+         */
+        fun keyIdPrefix(channel: OtaChannel): String = when (channel) {
+            OtaChannel.PRODUCTION -> "tf-prod-"
+            OtaChannel.STAGING -> "tf-staging-"
+        }
+
         /** `https://host[:port][/path]` without query, fragment, credentials or a trailing slash. */
         private val BASE_URL = Regex("https://[A-Za-z0-9.-]+(:[0-9]{1,5})?(/[A-Za-z0-9._~-]+)*")
 
         /**
          * Resolves app settings fail-closed: anything short of a complete, valid configuration
          * is [Resolution.Disabled]. An app keyring never contains a `test-` key (contract §8),
-         * and a production keyring pins a primary and a backup key.
+         * pins only keys of its own channel ([keyIdPrefix]) — checked on this keyring alone,
+         * whatever the other channel's configuration — and a production keyring pins a primary
+         * and a backup key.
          */
         fun resolve(settings: OtaPlatformSettings): Resolution {
             if (!settings.enabled) return Resolution.Disabled(DisabledReason.NOT_ENABLED)
@@ -81,6 +96,9 @@ class OtaConfig private constructor(
                 return Resolution.Disabled(DisabledReason.BAD_KEYRING)
             }
             if (keyring.containsTestKey) return Resolution.Disabled(DisabledReason.TEST_KEY_IN_APP_KEYRING)
+            if (keyring.keyIds.any { !it.startsWith(keyIdPrefix(settings.channel)) }) {
+                return Resolution.Disabled(DisabledReason.KEY_NOT_FOR_CHANNEL)
+            }
             if (settings.channel == OtaChannel.PRODUCTION && keyring.keyIds.size < 2) {
                 return Resolution.Disabled(DisabledReason.PRODUCTION_NEEDS_BACKUP_KEY)
             }
