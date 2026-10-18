@@ -25,12 +25,18 @@ visuals = [
 ota = [
     "cryptography>=50,<51",
 ]
+# OTA remote staging store (M5.OTA.4b, OD-1 = VK Cloud Object Storage): the S3-compatible
+# adapter signs requests with botocore (AWS SigV4) instead of a hand-written signer.
+s3 = [
+    "boto3>=1.43,<2",
+]
 dev = [
     "pytest>=8",
     "ruff>=0.6",
     "mypy>=1.11",
     "pillow==12.3.0",
     "cryptography>=50,<51",
+    "boto3>=1.43,<2",
 ]
 
 [project.scripts]
@@ -62,6 +68,11 @@ strict = true
 python_version = "3.12"
 plugins = ["pydantic.mypy"]
 files = ["src"]
+
+[[tool.mypy.overrides]]
+# boto3/botocore ship no type information; the adapter types its client as a Protocol.
+module = ["boto3", "boto3.*", "botocore", "botocore.*"]
+ignore_missing_imports = true
 
 [tool.pydantic-mypy]
 init_forbid_extra = true

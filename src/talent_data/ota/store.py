@@ -7,11 +7,9 @@ Contract §1 layout, served by a static HTTPS origin (object storage behind a CD
 
 :class:`BlobStore` is the port. :class:`LocalDirectoryStore` is the adapter used by
 tests, dry runs and offline rehearsals - a plain directory standing in for the bucket.
-A real S3-compatible adapter (httpx + request signing) is deliberately not shipped in
-M5.OTA.2: request signing (AWS SigV4) would add a large surface that cannot be tested
-against real hosting from this repository; the gap and its requirements are recorded in
-the publisher runbook. Every mutating path goes through the same protocol here, so
-swapping in a remote adapter changes one implementation and no ordering rule.
+:class:`talent_data.ota.s3_store.S3BlobStore` (M5.OTA.4b) is the remote adapter for the
+staging bucket (OD-1: VK Cloud Object Storage). Every mutating path goes through the same
+protocol here, so the remote adapter changes one implementation and no ordering rule.
 
 The write protocol (publisher design §3) is enforced in code, not by convention:
 
@@ -89,6 +87,9 @@ class LocalDirectoryStore:
 
     def __init__(self, root: Path) -> None:
         self.root = Path(root)
+
+    def __repr__(self) -> str:
+        return str(self.root)
 
     def _path(self, key: str) -> Path:
         parts = Path(key).parts

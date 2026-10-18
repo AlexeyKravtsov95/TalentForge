@@ -1,5 +1,9 @@
 # M5.OTA.3 — OTA download performance (test-plan §7)
 
+> **M5.OTA.4b:** the measurements over real HTTPS (VK Cloud staging) and the parallelism decision
+> (4 → 8) are in [M5.OTA.4b-remote-staging-report.md](M5.OTA.4b-remote-staging-report.md) §7 and
+> [ADR-0002](ADR-0002-delivery-performance.md). The tables below remain the M5.OTA.3 loopback benchmark.
+
 Measured 2026-10-18 on the development Mac (Apple Silicon, macOS 26.3, JDK 17) with
 `OtaPerformanceBenchmark` (composeApp desktopTest, opt-in):
 

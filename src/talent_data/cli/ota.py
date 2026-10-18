@@ -12,6 +12,13 @@ verify-live     fetch and verify the live catalog and every listed release
 sign            convenience DER signer (staging/test key ids only)
 gc              list (and with --execute --confirm, delete) unreferenced blobs
 
+The store is a local directory (``--store DIR``, the default backend) or, with
+``--backend s3``, the remote staging bucket (M5.OTA.4b: VK Cloud Object Storage) given by
+``--s3-bucket``/``--s3-endpoint``/``--s3-region`` and the credentials of ``--aws-profile``
+(or the standard AWS credential chain). The remote store serves the staging channel only:
+``promote`` and every ``--channel production`` refuse it, and it is opened read-only
+unless the command writes under ``--execute`` (``gc``: ``--execute --confirm``).
+
 Every mutating command is a dry run by default: nothing is written without
 ``--execute``, and ``gc`` additionally needs ``--confirm`` and prints what it would
 delete first. Production signing is external by design: ``promote``/``rollback``/
@@ -44,7 +51,7 @@ from talent_data.ota.errors import OtaPublisherError
 if TYPE_CHECKING:  # only for annotations; runtime imports stay lazy (handlers)
     from talent_data.ota.gates import GateResult, ReleaseUnderTest
     from talent_data.ota.models import Channel, OtaCatalog
-    from talent_data.ota.store import LocalDirectoryStore
+    from talent_data.ota.store import BlobStore
     from talent_data.ota.verify import TrustedKey
 
 EXIT_OK = 0
@@ -56,6 +63,7 @@ STANDARD_VALIDATION_NOTE = (
 )
 BLOB_KEY_PREFIX = "v1/blobs/sha256/"
 _TS_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+_TS_HELP = _TS_FORMAT.replace("%", "%%")  # argparse %-formats help strings
 
 
 def register(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
@@ -70,13 +78,27 @@ def register(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     def repo(p: argparse.ArgumentParser) -> None:
         p.add_argument("--repo", type=Path, help="repository root (default: cwd)")
 
-    def store_arg(p: argparse.ArgumentParser) -> None:
+    def store_arg(p: argparse.ArgumentParser, mutation: str | None = None) -> None:
+        p.add_argument(
+            "--backend",
+            choices=["local", "s3"],
+            default="local",
+            help="object store: a local directory (default) or the remote staging bucket",
+        )
         p.add_argument(
             "--store",
             type=Path,
-            required=True,
-            help="root of the object store (a local directory stands in for the bucket)",
+            help="local backend: root directory standing in for the bucket",
         )
+        p.add_argument("--s3-bucket", help="s3 backend: bucket name")
+        p.add_argument("--s3-endpoint", help="s3 backend: https:// S3 API endpoint")
+        p.add_argument("--s3-region", help="s3 backend: region, e.g. ru-msk")
+        p.add_argument(
+            "--aws-profile",
+            help="s3 backend: AWS CLI profile (default: the standard credential chain)",
+        )
+        # what the command may do to the store, and only under --execute (gc: + --confirm)
+        p.set_defaults(store_mutation=mutation)
 
     def keyring(p: argparse.ArgumentParser) -> None:
         p.add_argument(
@@ -87,7 +109,7 @@ def register(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
         )
 
     def now_arg(p: argparse.ArgumentParser) -> None:
-        p.add_argument("--now", help=f"override the clock, {_TS_FORMAT} (tests, rehearsals)")
+        p.add_argument("--now", help=f"override the clock, {_TS_HELP} (tests, rehearsals)")
 
     def channel_arg(p: argparse.ArgumentParser, default: str = "production") -> None:
         p.add_argument("--channel", choices=["production", "staging"], default=default)
@@ -102,7 +124,7 @@ def register(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     build.add_argument("--commit", required=True, help="40-hex commit whose data/ is published")
     build.add_argument(
         "--created-at",
-        help=f"release createdAt, {_TS_FORMAT} (default: now; explicit for reproducibility)",
+        help=f"release createdAt, {_TS_HELP} (default: now; explicit for reproducibility)",
     )
     build.add_argument("--validation-note", default=STANDARD_VALIDATION_NOTE)
     build.add_argument("--min-data-level", type=int, default=1)
@@ -140,7 +162,7 @@ def register(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     # `stage` is the staging channel, full stop: a staging/test-signed catalog must
     # never be able to replace the production one, so production is not even a choice.
     stage.add_argument("--channel", choices=["staging"], default="staging")
-    store_arg(stage)
+    store_arg(stage, mutation="write")
     keyring(stage)
     stage.add_argument("--manifest", type=Path, required=True)
     stage.add_argument(
@@ -175,7 +197,7 @@ def register(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     attach.add_argument("--payload", type=Path, required=True, help="from promote/rollback/resign")
     attach.add_argument("--signature", type=Path, required=True, help="DER signature file")
     attach.add_argument("--key-id", required=True)
-    store_arg(attach)
+    store_arg(attach, mutation="write")
     keyring(attach)
     channel_arg(attach)
     _releases_docs(attach)
@@ -238,7 +260,7 @@ def register(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     gc = ota_sub.add_parser("gc", help="list (and delete) blobs no listed release references")
     game(gc)
     repo(gc)
-    store_arg(gc)
+    store_arg(gc, mutation="delete")
     keyring(gc)
     gc.add_argument("--execute", action="store_true", help="delete (default: dry run)")
     gc.add_argument("--confirm", action="store_true", help="required together with --execute")
@@ -273,10 +295,62 @@ def _repo_root(args: argparse.Namespace) -> Path:
     return args.repo.expanduser().resolve() if args.repo else paths.project_root()
 
 
-def _store(args: argparse.Namespace) -> LocalDirectoryStore:
-    from talent_data.ota.store import LocalDirectoryStore
+def _store(args: argparse.Namespace) -> BlobStore:
+    """The store the command works on, opened no more writable than it needs.
 
-    return LocalDirectoryStore(args.store.expanduser().resolve())
+    The remote (s3) store is staging-only and read-only unless this command mutates it
+    under ``--execute`` (``write``) or ``--execute --confirm`` (``delete``, gc only).
+    """
+    if args.backend == "local":
+        if args.store is None:
+            raise OtaPublisherError("--store DIR is required with the local backend")
+        from talent_data.ota.store import LocalDirectoryStore
+
+        return LocalDirectoryStore(args.store.expanduser().resolve())
+
+    missing = [
+        flag
+        for flag, value in (
+            ("--s3-bucket", args.s3_bucket),
+            ("--s3-endpoint", args.s3_endpoint),
+            ("--s3-region", args.s3_region),
+        )
+        if not value
+    ]
+    if missing:
+        raise OtaPublisherError(f"the s3 backend needs {', '.join(missing)}")
+    if args.store is not None:
+        raise OtaPublisherError("--store is for the local backend; the s3 backend takes --s3-*")
+    if getattr(args, "channel", "staging") != "staging" or args.ota_command == "promote":
+        raise OtaPublisherError(
+            "the s3 backend is the staging bucket: it serves --channel staging only "
+            "(production OTA is not enabled and has no remote store)"
+        )
+    from talent_data.ota.s3_store import S3Location, connect
+
+    execute = bool(getattr(args, "execute", False))
+    mutation = args.store_mutation
+    return connect(
+        S3Location(
+            bucket=args.s3_bucket,
+            endpoint_url=args.s3_endpoint,
+            region=args.s3_region,
+            profile=args.aws_profile,
+        ),
+        writable=execute and mutation in ("write", "delete"),
+        allow_delete=execute and mutation == "delete" and bool(getattr(args, "confirm", False)),
+    )
+
+
+def _store_flags(args: argparse.Namespace) -> str:
+    """The store flags of this invocation, for the follow-up commands a step prints."""
+    if args.backend == "local":
+        return f"--store {args.store}"
+    profile = f" --aws-profile {args.aws_profile}" if args.aws_profile else ""
+    return (
+        f"--backend s3 --s3-bucket {args.s3_bucket} --s3-endpoint {args.s3_endpoint} "
+        f"--s3-region {args.s3_region}{profile}"
+    )
 
 
 def _keyring(args: argparse.Namespace) -> dict[str, TrustedKey]:
@@ -287,7 +361,7 @@ def _keyring(args: argparse.Namespace) -> dict[str, TrustedKey]:
 
 def _live(
     args: argparse.Namespace,
-    store: LocalDirectoryStore,
+    store: BlobStore,
     channel: str,
     now: datetime,
     *,
@@ -388,7 +462,7 @@ def _all_upload_blobs(under_test: ReleaseUnderTest) -> dict[str, bytes]:
     return {sha: data, **under_test.rebuild.blobs}
 
 
-def _missing_blob_count(store: LocalDirectoryStore, blobs: dict[str, bytes]) -> int:
+def _missing_blob_count(store: BlobStore, blobs: dict[str, bytes]) -> int:
     return sum(1 for sha in blobs if not store.exists(_blob_key(sha)))
 
 
@@ -560,7 +634,7 @@ def _require_approval(
 def _enforce_gates_and_approval(
     args: argparse.Namespace,
     under_test: ReleaseUnderTest,
-    store: LocalDirectoryStore,
+    store: BlobStore,
     live: OtaCatalog | None,
     now: datetime,
     *,
@@ -651,7 +725,7 @@ def _cmd_promote(args: argparse.Namespace) -> int:
     print(
         "  sign the PAE with the production key, then run: talent-data ota attach-signature "
         f"--payload {payload_path} --signature <der> --key-id <id> "
-        f"--store {args.store} --keyring {args.keyring} --execute"
+        f"{_store_flags(args)} --keyring {args.keyring} --execute"
     )
     return EXIT_OK
 
@@ -802,7 +876,7 @@ def _cmd_attach_signature(args: argparse.Namespace) -> int:
         now=now,
         allow_expired_live=True,  # recovery: a lapsed live catalog may be re-issued
     )
-    print(f"  catalog.json written to {args.store} (channel {args.channel})")
+    print(f"  catalog.json written to {store!r} (channel {args.channel})")
     return EXIT_OK
 
 
@@ -846,7 +920,7 @@ def _cmd_rollback(args: argparse.Namespace) -> int:
     print(
         "  sign the PAE with the production key, then run: talent-data ota attach-signature "
         f"--payload {payload_path} --signature <der> --key-id <id> "
-        f"--store {args.store} --keyring {args.keyring} --channel {args.channel} --execute"
+        f"{_store_flags(args)} --keyring {args.keyring} --channel {args.channel} --execute"
     )
     return EXIT_OK
 
@@ -887,7 +961,7 @@ def _cmd_resign(args: argparse.Namespace) -> int:
     print(
         "  sign the PAE with the production key, then run: talent-data ota attach-signature "
         f"--payload {payload_path} --signature <der> --key-id <id> "
-        f"--store {args.store} --keyring {args.keyring} --channel {args.channel} --execute"
+        f"{_store_flags(args)} --keyring {args.keyring} --channel {args.channel} --execute"
     )
     return EXIT_OK
 

@@ -593,6 +593,7 @@ androidComponents {
 // `-Dtalentforge.m5share2.screenshots` (M5.SHARE.2, build export/import) or
 // `-Dtalentforge.m5rc2b.screenshots` (M5.RC.2b, About / legal) or
 // `-Dtalentforge.m5ota3.screenshots` (M5.OTA.3, talent data updates) or
+// `-Dtalentforge.ota.remote=<dir>` (M5.OTA.4b, remote staging check) or
 // `-Dtalentforge.pr19.recording`
 // (PR #19, gesture frames) — skipped by default.
 tasks.named<Test>("desktopTest") {
@@ -656,6 +657,11 @@ tasks.named<Test>("desktopTest") {
     }
     System.getProperty("talentforge.ota.staging")?.let {
         systemProperty("talentforge.ota.staging", it)
+    }
+    // M5.OTA.4b: OtaRemoteStagingCheck against the remote staging origin (opt-in; out dir,
+    // phase, base URL, keyring, runs, parallelism)
+    System.getProperties().stringPropertyNames().filter { it.startsWith("talentforge.ota.remote") }.forEach {
+        systemProperty(it, System.getProperty(it))
     }
     System.getProperty("talentforge.m5ota3.screenshots")?.let {
         systemProperty("talentforge.m5ota3.screenshots", it)

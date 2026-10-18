@@ -1,13 +1,14 @@
-# OTA staging setup (M5.OTA.4a)
+# OTA staging setup (M5.OTA.4a local stand, M5.OTA.4b VK Cloud)
 
 How to run the OTA **staging** channel end to end without any cloud account: the real publisher
 (M5.OTA.2) publishes into a local store, a local HTTPS origin serves it, and the real client
 (M5.OTA.3) installs from it — on the JVM in tests, and on an Android debug build on an emulator
 or a device. Production stays disabled throughout; nothing here can sign or publish for production.
 
-What this is **not**: a public HTTPS origin. The local stand proves the two implementations
-against each other over real TLS; a remote staging origin needs the hosting decision (OD-1) and
-is described in §6 as a runbook to follow once the owner has decided.
+Two staging origins exist. The **local stand** (§2–§5) proves the two implementations against each
+other over real TLS without any account. The **remote staging origin** (§6, M5.OTA.4b) is the public
+one: VK Cloud Object Storage over its public HTTPS host, written by the same publisher through the S3
+adapter. Only the remote one counts as "public HTTPS verified".
 
 ## 1. The three kinds of keys
 
@@ -119,25 +120,38 @@ Android's default network security configuration refuses cleartext. The only pla
 `PlatformBlobFetcher(allowLoopbackHttp = true)`, used by tests and the benchmark only, for
 `http://127.0.0.1` — not by the staging E2E.
 
-## 6. Remote staging (needs the owner: OD-1, OD-2)
+## 6. Remote staging on VK Cloud (M5.OTA.4b)
 
-Not done here: no account, bucket or domain exists, and none is created without the owner. Once the
-owner has chosen the provider (OD-1; recommendation: an S3-compatible store with a CDN on a
-project-owned domain), remote staging is:
+| | |
+| --- | --- |
+| Provider (OD-1) | VK Cloud Object Storage, region `ru-msk` |
+| Bucket | `talentforge-ota-staging` |
+| S3 API (publisher only) | `https://hb.ru-msk.vkcloud-storage.ru`, AWS CLI profile `talentforge-staging` |
+| Public origin (clients) | `https://talentforge-ota-staging.hb.ru-msk.vkcloud-storage.ru` — certificate `*.hb.ru-msk.vkcloud-storage.ru` (HARICA DV, chained to HARICA RootCA 2015), trusted by Android 15 and the JVM without a trust anchor |
+| Anonymous access | `GET` on `v1/channels/staging/catalog.json` and `v1/blobs/sha256/*` only (bucket policy, set by the owner); the production catalog path, listings and other keys answer 403 |
+| S3 key | limited to the `v1/` prefix; lives only in `~/.aws/credentials` |
+| Signing key | `tf-staging-2026` (P-256), PEM outside git (`scripts/ota_vkcloud_staging.py keygen`); a separate secret from the S3 key |
 
-1. **Origin.** A bucket with public read on `v1/*` only, behind the CDN on `https://<staging host>`
-   with a public-PKI certificate (so no trust anchor setting in the app), HTTPS only, no redirects
-   on the two path patterns, and `Content-Type`-based compression for `application/json`
-   ([ADR-0002](ADR-0002-delivery-performance.md) O2).
-2. **Store adapter.** A remote implementation of the publisher's `BlobStore` protocol
-   (`get`, `put` with `cache_control`, `exists`, `list`, `delete` for `gc` only) for that provider,
-   credentials from the environment only, plus a per-blob `Content-Type`. Until it exists, a
-   documented export works: upload the stand's `work/store/v1/` to the bucket — blobs first, the
-   catalog last, never deleting a blob.
-3. **Key.** A durable `tf-staging-<yyyy>` key (not the ephemeral local one), kept as a CI or owner
-   secret (OD-2); only its public keyring goes into the build environment.
-4. **Build.** `talentforge.ota.android.staging.{enabled,baseUrl,keyring}` for internal debug builds;
-   no `trustAnchor`.
-5. **Proof.** `talent-data ota verify-live --channel staging` against the remote store, then
-   [android-device-smoke.md](android-device-smoke.md) on the emulator and on the TECNO Spark 40
-   against the remote URL. Only that run counts as "public HTTPS verified"; the local stand does not.
+No cloud resource, bucket policy, ACL or IAM setting is created or changed by the tooling.
+
+1. **Origin.** As above. There is no CDN and no project-owned hostname: the base URL compiled into a
+   staging build is VK's bucket host. The origin compresses `application/json` when asked
+   (`Accept-Encoding: gzip`), never redirects, and also answers plain `http://` (the client refuses
+   it before connecting).
+2. **Store adapter.** `talent-data ota … --backend s3` (`talent_data.ota.s3_store`); procedure and
+   guarantees in [publisher-runbook.md](publisher-runbook.md) §6.
+3. **Key.** `python scripts/ota_vkcloud_staging.py keygen ~/.talentforge/ota-staging-vkcloud --key-id
+   tf-staging-2026 --origin <public origin>` writes the PEM (0600), `staging-keyring.json` and
+   `android-staging-vkcloud.env`.
+4. **Build.** Internal debug builds only, no trust anchor:
+
+   ```bash
+   source ~/.talentforge/ota-staging-vkcloud/android-staging-vkcloud.env
+   cd mobile && ./gradlew :composeApp:assembleDebug -Ptalentforge.applicationIdSuffix=.otastaging
+   ```
+
+   With these variables set, every release variant still stops in `checkReleaseOtaSettings`.
+5. **Proof.** `talent-data ota verify-live --channel staging --backend s3 …`; the JVM client against
+   the live origin (`OtaRemoteStagingCheck`, opt-in, one phase per catalog state); the TECNO Spark 40
+   ([android-device-smoke.md](android-device-smoke.md) §5). Results:
+   [M5.OTA.4b-remote-staging-report.md](M5.OTA.4b-remote-staging-report.md).
