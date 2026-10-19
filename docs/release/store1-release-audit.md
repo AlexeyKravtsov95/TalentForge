@@ -335,6 +335,19 @@ AppGallery:
 | LR-4 | Third-party licences and notices | **OPEN: owner/legal sign-off** | Mechanism present: Third-party licenses screen (M5.UI.ABOUT.1), Android notices drift-checked in CI on `b242cd6`. The repository has no `LICENSE` (an owner choice, not a store requirement) |
 | LR-5 | Privacy policy, public URL, developer contacts | **OPEN: owner** | Now also depends on NET-1 (§5). Policy not hosted; `LegalLinks.privacyPolicyUrl = null`; no contact chosen; an AppGallery individual account gets no Website field |
 
+**M5.LEGAL.1 follow-up (2026-10-19).** The game-content rights and provenance audit documents the
+evidence behind LR-1…LR-3 and does **not** close any of LR-1…LR-5:
+
+- [legal1-content-inventory.md](legal1-content-inventory.md): what game-derived material exists, its
+  provenance chain (client → wago.tools → pipeline → `data/` → `composeResources` → APK/OTA) and every
+  place it is distributed today (APK, public repository and its history, public CI artifacts, the
+  OTA staging origin);
+- [legal1-rights-assessment.md](legal1-rights-assessment.md): the Blizzard and store sources re-read
+  for this audit, the risk matrix and what remains NOT ESTABLISHED;
+- [legal1-release-options.md](legal1-release-options.md): release options A (existing content),
+  B (reduced IP exposure) and C (permission first), the owner decisions they need and the
+  recommended order of work.
+
 ## 9. Issues
 
 ### 9.1 Blocking
