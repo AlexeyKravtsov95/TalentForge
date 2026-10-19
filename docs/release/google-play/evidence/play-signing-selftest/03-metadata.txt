@@ -1,0 +1,1 @@
+{'applicationId': 'io.github.alexeykravtsov95.talentforge', 'versionCode': 1, 'versionName': '0.1.0', 'minSdk': 26, 'targetSdk': 36, 'nativeCode': ['arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'], 'permissions': ['io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION']}

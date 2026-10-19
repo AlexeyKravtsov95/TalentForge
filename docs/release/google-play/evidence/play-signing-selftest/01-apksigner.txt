@@ -1,0 +1,4 @@
+V2 Signer: certificate DN: CN=TalentForge signing self-test - temporary - app signing test key
+V2 Signer: certificate SHA-256 digest: 177a17b457b63b3ef575a418ce1d3cfd66407ac1b479be356c38ae9f3653ef74
+V2 Signer: certificate SHA-1 digest: c5e5a909ce60bc737c7e8b14a893ae7580d867bb
+V2 Signer: certificate MD5 digest: ff4ccd0781d40157c296c2c6aa68efc8

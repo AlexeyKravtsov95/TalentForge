@@ -1,0 +1,22 @@
+FAIL  signature-verifies: jarsigner -verify failed
+FAIL  all-entries-signed: 2151 unsigned entries, e.g. 'BundleConfig.pb'
+FAIL  single-signer: signers=0, signature files=0, certificates=0
+FAIL  not-debug-certificate-dn: signer DN is the Android debug subject, or no single DN was read
+FAIL  not-local-debug-certificate: no local debug keystore given; the DN and fingerprint checks decide
+FAIL  upload-certificate-sha256-matches: certificate SHA-256 does not equal the expected upload-key fingerprint
+FAIL  rsa-key-size: key ? ? bits (required: RSA, at least 2048)
+FAIL  certificate-differs-from-other-role: certificate IS the other key role's (app signing vs upload key), or none was read
+FAIL  selftest-certificate: self-test run, but the signer is not a self-test key
+PASS  application-id: package='io.github.alexeykravtsov95.talentforge' (frozen: 'io.github.alexeykravtsov95.talentforge')
+PASS  version-code: versionCode=1 (expected: any > 0)
+PASS  version-name: versionName='0.1.0' (expected: non-empty)
+PASS  target-sdk: targetSdkVersion=36 (Google Play minimum: 36)
+PASS  not-debuggable: debuggable=False
+PASS  not-test-only: testOnly=False
+PASS  permissions-allowed: requested: ['io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION']; all allowed
+PASS  abi-arm64-v8a: base/lib ABIs: ['arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64']
+PASS  abi-64-bit-coverage: every 32-bit ABI has its 64-bit counterpart
+PASS  native-16kb-page-size: 2 64-bit libraries; ELF LOAD alignment and RELRO fit 16 KB pages
+PASS  bundle-native-page-alignment: BundleConfig: uncompress native libraries=True, page alignment=16K (required: uncompressed, 16K or 64K)
+AAB   composeApp-play.aab  19720109 bytes  sha256 9c0c022d26aa3638034bfee42ad3a80e4e3c8b90fd4d69b358b05897be489dd0
+RESULT FAIL

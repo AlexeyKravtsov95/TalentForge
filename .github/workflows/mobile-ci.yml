@@ -20,6 +20,8 @@ on:
       - "scripts/verify_release_apk.py"
       - "scripts/generate_oss_notices.py"
       - "scripts/release_signing_selftest.sh"
+      - "scripts/verify_play_bundle.py"
+      - "scripts/play_signing_selftest.sh"
       - ".github/workflows/mobile-ci.yml"
   # Manual re-run from the Actions tab (e.g. after a runner/infrastructure outage).
   workflow_dispatch:
@@ -79,6 +81,9 @@ jobs:
 
       - name: Release signing self-test (temporary test key, deleted on exit; not a production key)
         run: scripts/release_signing_selftest.sh
+
+      - name: Google Play two-key signing self-test (two temporary test keys, deleted on exit; not production keys)
+        run: scripts/play_signing_selftest.sh
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4

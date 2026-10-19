@@ -1,0 +1,18 @@
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): false
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v3.2 scheme (APK Signature Scheme v3.2): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+V2 Signer: certificate DN: CN=TalentForge signing self-test - temporary - not a release key
+V2 Signer: certificate SHA-256 digest: 4380234d0296b1a5731368e14835304d2429a823ca71fe6910f3d83ae5892b04
+V2 Signer: certificate SHA-1 digest: 7540d09776f36e507cda28fcf188a89bb6007aed
+V2 Signer: certificate MD5 digest: c4b10301228e65a5893ec0ca8a9e37ab
+V2 Signer: key algorithm: RSA
+V2 Signer: key size (bits): 4096
+V2 Signer: public key SHA-256 digest: 2ab20cfccea086ff3f7e57414a1eb0bdd29b038568f5bdc9d604cdc3c5fd2dc5
+V2 Signer: public key SHA-1 digest: 3347d29b52de1a036678b0a2493951d98b9b3d89
+V2 Signer: public key MD5 digest: c97ed63d0513e1bfddba268001f2f13b

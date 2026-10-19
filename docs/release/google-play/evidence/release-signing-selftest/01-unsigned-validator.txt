@@ -1,0 +1,20 @@
+FAIL  signature-verifies: apksigner verify failed: DOES NOT VERIFY; ERROR: Missing META-INF/MANIFEST.MF
+FAIL  single-signer: signers=None, certificates=0
+FAIL  not-debug-certificate-dn: signer DN is the Android debug subject, or no single DN was read
+FAIL  not-local-debug-certificate: no local debug keystore given; the DN and fingerprint checks decide
+FAIL  certificate-sha256-matches: certificate SHA-256 does not equal the expected fingerprint
+FAIL  rsa-key-size: key ? ? bits (required: RSA, at least 4096)
+FAIL  signature-scheme-v2-or-v3: schemes: ?
+PASS  application-id: applicationId='io.github.alexeykravtsov95.talentforge' (frozen: 'io.github.alexeykravtsov95.talentforge')
+PASS  version-code: versionCode=1 (expected: any > 0)
+PASS  version-name: versionName='0.1.0' (expected: non-empty)
+PASS  not-debuggable: debuggable=False
+PASS  not-test-only: testOnly=False
+PASS  universal-apk: split=None; native-code=['arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64']; lib/ ABIs=['arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64']
+PASS  abi-arm64-v8a: arm64-v8a packaged: True
+PASS  permissions-allowed: requested: ['io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION']; all allowed
+PASS  native-16kb-page-size: 2 64-bit libraries; ELF LOAD, RELRO and zip alignment fit 16 KB
+FAIL  certificate-differs-from-other-role: certificate IS the other key role's (app signing vs upload key), or none was read
+FAIL  selftest-certificate: self-test run, but the signer is not a self-test key
+APK   composeApp-release-unsigned.apk  19806542 bytes  sha256 5f6c2a3ef10e360c95d1a5ddbeecab4d5ef148bc6d0b370efffd8a778900ff56
+RESULT FAIL

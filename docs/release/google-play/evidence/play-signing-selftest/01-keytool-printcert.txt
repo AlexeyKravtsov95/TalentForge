@@ -1,0 +1,25 @@
+Signer #1:
+
+Certificate #1:
+Owner: CN=TalentForge signing self-test - temporary - upload test key
+Issuer: CN=TalentForge signing self-test - temporary - upload test key
+Serial number: 58354f56669227b0
+Valid from: Mon Oct 19 18:53:13 NOVT 2026 until: Wed Oct 21 18:53:13 NOVT 2026
+Certificate fingerprints:
+	 SHA1: C4:5A:13:14:DE:7D:0D:2B:94:7B:C0:8A:3A:E9:79:5B:95:FE:62:F7
+	 SHA256: 99:25:F6:27:2B:87:91:A2:D3:C6:DF:FB:50:34:F9:67:D8:CF:EB:42:2E:3E:17:8E:44:E0:AF:C7:DD:64:E4:AA
+Signature algorithm name: SHA384withRSA
+Subject Public Key Algorithm: 4096-bit RSA key
+Version: 3
+
+Extensions: 
+
+#1: ObjectId: 2.5.29.14 Criticality=false
+SubjectKeyIdentifier [
+KeyIdentifier [
+0000: E8 65 F8 B4 FF E6 D3 EF   1A CC 24 77 93 33 71 B5  .e........$w.3q.
+0010: BC D0 D1 99                                        ....
+]
+]
+
+

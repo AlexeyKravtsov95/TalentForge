@@ -1,0 +1,151 @@
+{
+  "schema": "talentforge.release-apk-report.v1",
+  "generatedAt": "2026-10-19T11:53:15Z",
+  "result": "SELFTEST-PASS",
+  "purpose": "signing-selftest",
+  "apk": {
+    "fileName": "TalentForge-0.1.0-1-SELFTEST-NOT-FOR-UPLOAD.apk",
+    "sizeBytes": 19814734,
+    "sha256": "e35d0930810fb9877bf47285dbf6c3f8347dd3fa4b64469d408918712af0337c"
+  },
+  "package": {
+    "applicationId": "io.github.alexeykravtsov95.talentforge",
+    "versionCode": 1,
+    "versionName": "0.1.0",
+    "minSdk": 26,
+    "targetSdk": 36,
+    "nativeCode": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "x86",
+      "x86_64"
+    ],
+    "split": null,
+    "debuggable": false,
+    "testOnly": false,
+    "permissions": [
+      "io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+    ]
+  },
+  "signature": {
+    "verifies": true,
+    "schemes": {
+      "v1": false,
+      "v2": true,
+      "v3": false,
+      "v3.1": false,
+      "v4": false
+    },
+    "signers": 1,
+    "certificateDn": [
+      "CN=TalentForge signing self-test - temporary - app signing test key"
+    ],
+    "certificateSha256": [
+      "177a17b457b63b3ef575a418ce1d3cfd66407ac1b479be356c38ae9f3653ef74"
+    ],
+    "keyAlgorithm": [
+      "RSA"
+    ],
+    "keySizeBits": [
+      4096
+    ],
+    "warnings": []
+  },
+  "checks": [
+    {
+      "id": "signature-verifies",
+      "status": "PASS",
+      "detail": "apksigner verify succeeded"
+    },
+    {
+      "id": "single-signer",
+      "status": "PASS",
+      "detail": "signers=1, certificates=1"
+    },
+    {
+      "id": "not-debug-certificate-dn",
+      "status": "PASS",
+      "detail": "signer DN is not the Android debug subject"
+    },
+    {
+      "id": "not-local-debug-certificate",
+      "status": "PASS",
+      "detail": "certificate differs from the local debug keystore's"
+    },
+    {
+      "id": "certificate-sha256-matches",
+      "status": "PASS",
+      "detail": "certificate SHA-256 equals the expected fingerprint"
+    },
+    {
+      "id": "rsa-key-size",
+      "status": "PASS",
+      "detail": "key RSA 4096 bits (required: RSA, at least 4096)"
+    },
+    {
+      "id": "signature-scheme-v2-or-v3",
+      "status": "PASS",
+      "detail": "schemes: v1=False, v2=True, v3=False, v3.1=False, v4=False"
+    },
+    {
+      "id": "application-id",
+      "status": "PASS",
+      "detail": "applicationId='io.github.alexeykravtsov95.talentforge' (frozen: 'io.github.alexeykravtsov95.talentforge')"
+    },
+    {
+      "id": "version-code",
+      "status": "PASS",
+      "detail": "versionCode=1 (expected: 1)"
+    },
+    {
+      "id": "version-name",
+      "status": "PASS",
+      "detail": "versionName='0.1.0' (expected: 0.1.0)"
+    },
+    {
+      "id": "not-debuggable",
+      "status": "PASS",
+      "detail": "debuggable=False"
+    },
+    {
+      "id": "not-test-only",
+      "status": "PASS",
+      "detail": "testOnly=False"
+    },
+    {
+      "id": "universal-apk",
+      "status": "PASS",
+      "detail": "split=None; native-code=['arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64']; lib/ ABIs=['arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64']"
+    },
+    {
+      "id": "abi-arm64-v8a",
+      "status": "PASS",
+      "detail": "arm64-v8a packaged: True"
+    },
+    {
+      "id": "permissions-allowed",
+      "status": "PASS",
+      "detail": "requested: ['io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION']; all allowed"
+    },
+    {
+      "id": "native-16kb-page-size",
+      "status": "PASS",
+      "detail": "2 64-bit libraries; ELF LOAD, RELRO and zip alignment fit 16 KB"
+    },
+    {
+      "id": "certificate-differs-from-other-role",
+      "status": "PASS",
+      "detail": "certificate is none of the 1 fingerprint(s) of the other key role"
+    },
+    {
+      "id": "selftest-certificate",
+      "status": "PASS",
+      "detail": "self-test run: the signer is a temporary self-test key"
+    }
+  ],
+  "tools": {
+    "buildTools": "35.0.0",
+    "apksigner": "0.9",
+    "aapt2": "Android Asset Packaging Tool (aapt) 2.19-11948202"
+  }
+}

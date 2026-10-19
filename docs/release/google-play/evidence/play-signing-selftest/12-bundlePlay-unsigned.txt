@@ -1,0 +1,144 @@
+> Task :shared:preBuild UP-TO-DATE
+> Task :composeApp:checkPlayUploadSigning
+> Task :composeApp:checkReleaseOtaSettings
+> Task :shared:preReleaseBuild UP-TO-DATE
+> Task :composeApp:preBuild UP-TO-DATE
+> Task :composeApp:prePlayBuild
+> Task :composeApp:generatePlayResValues UP-TO-DATE
+> Task :shared:processReleaseNavigationResources UP-TO-DATE
+> Task :shared:generateReleaseResValues UP-TO-DATE
+> Task :shared:generateReleaseResources UP-TO-DATE
+> Task :shared:packageReleaseResources UP-TO-DATE
+> Task :shared:extractDeepLinksRelease UP-TO-DATE
+> Task :shared:processReleaseManifest UP-TO-DATE
+> Task :shared:writeReleaseAarMetadata UP-TO-DATE
+> Task :shared:compileReleaseLibraryResources UP-TO-DATE
+> Task :shared:parseReleaseLocalResources UP-TO-DATE
+> Task :shared:generateReleaseRFile UP-TO-DATE
+> Task :shared:kmpPartiallyResolvedDependenciesChecker
+> Task :shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:compileReleaseKotlinAndroid UP-TO-DATE
+> Task :shared:javaPreCompileRelease UP-TO-DATE
+> Task :shared:compileReleaseJavaWithJavac NO-SOURCE
+> Task :shared:bundleLibRuntimeToDirRelease UP-TO-DATE
+> Task :shared:bundleLibCompileToJarRelease UP-TO-DATE
+> Task :shared:mergeReleaseShaders UP-TO-DATE
+> Task :shared:compileReleaseShaders NO-SOURCE
+> Task :shared:generateReleaseAssets UP-TO-DATE
+> Task :shared:releaseAssetsCopyForAGP NO-SOURCE
+> Task :shared:mergeReleaseAssets UP-TO-DATE
+> Task :shared:bundleLibRuntimeToJarRelease UP-TO-DATE
+> Task :shared:processReleaseJavaRes UP-TO-DATE
+> Task :shared:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :shared:mergeReleaseNativeLibs NO-SOURCE
+> Task :shared:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :shared:prepareReleaseArtProfile UP-TO-DATE
+> Task :shared:createFullJarRelease UP-TO-DATE
+> Task :shared:extractProguardFiles UP-TO-DATE
+> Task :shared:generateReleaseLintModel UP-TO-DATE
+> Task :shared:prepareLintJarForPublish UP-TO-DATE
+> Task :shared:checkReleaseAarMetadata UP-TO-DATE
+> Task :shared:stripReleaseDebugSymbols NO-SOURCE
+> Task :shared:copyReleaseJniLibsProjectAndLocalJars UP-TO-DATE
+> Task :shared:extractDeepLinksForAarRelease UP-TO-DATE
+> Task :composeApp:processPlayNavigationResources UP-TO-DATE
+> Task :composeApp:compilePlayNavigationResources UP-TO-DATE
+> Task :shared:extractReleaseAnnotations UP-TO-DATE
+> Task :shared:mergeReleaseGeneratedProguardFiles UP-TO-DATE
+> Task :shared:mergeReleaseConsumerProguardFiles UP-TO-DATE
+> Task :shared:mergeReleaseJavaResource UP-TO-DATE
+> Task :shared:syncReleaseLibJars UP-TO-DATE
+> Task :composeApp:mapPlaySourceSetPaths UP-TO-DATE
+> Task :composeApp:generatePlayResources UP-TO-DATE
+> Task :shared:bundleReleaseLocalLintAar UP-TO-DATE
+> Task :composeApp:mergePlayResources UP-TO-DATE
+> Task :shared:lintVitalAnalyzeRelease UP-TO-DATE
+> Task :shared:writeReleaseLintModelMetadata UP-TO-DATE
+> Task :composeApp:createPlayCompatibleScreenManifests
+> Task :composeApp:extractDeepLinksPlay UP-TO-DATE
+> Task :shared:generateReleaseLintVitalModel UP-TO-DATE
+> Task :composeApp:processPlayMainManifest UP-TO-DATE
+> Task :composeApp:processPlayManifest
+> Task :composeApp:processApplicationManifestPlayForBundle
+> Task :composeApp:checkPlayAarMetadata UP-TO-DATE
+> Task :composeApp:convertXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :composeApp:copyNonXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :composeApp:prepareComposeResourcesTaskForAndroidMain NO-SOURCE
+> Task :composeApp:convertXmlValueResourcesForAndroidPlay NO-SOURCE
+> Task :composeApp:copyNonXmlValueResourcesForAndroidPlay NO-SOURCE
+> Task :composeApp:prepareComposeResourcesTaskForAndroidPlay NO-SOURCE
+> Task :composeApp:convertXmlValueResourcesForCommonMain UP-TO-DATE
+> Task :composeApp:copyNonXmlValueResourcesForCommonMain UP-TO-DATE
+> Task :composeApp:prepareComposeResourcesTaskForCommonMain UP-TO-DATE
+> Task :composeApp:convertXmlValueResourcesForJvmCommonMain NO-SOURCE
+> Task :composeApp:copyNonXmlValueResourcesForJvmCommonMain NO-SOURCE
+> Task :composeApp:prepareComposeResourcesTaskForJvmCommonMain NO-SOURCE
+> Task :composeApp:copyPlayComposeResourcesToAndroidAssets UP-TO-DATE
+> Task :composeApp:packagePlayResources UP-TO-DATE
+> Task :composeApp:parsePlayLocalResources UP-TO-DATE
+> Task :composeApp:processPlayManifestForPackage UP-TO-DATE
+> Task :composeApp:extractPlayVersionControlInfo UP-TO-DATE
+> Task :composeApp:checkPlayDuplicateClasses UP-TO-DATE
+> Task :composeApp:buildKotlinToolingMetadata UP-TO-DATE
+> Task :composeApp:kmpPartiallyResolvedDependenciesChecker
+> Task :composeApp:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :composeApp:generateResourceAccessorsForAndroidMain NO-SOURCE
+> Task :composeApp:generateResourceAccessorsForCommonMain UP-TO-DATE
+> Task :composeApp:generateResourceAccessorsForJvmCommonMain NO-SOURCE
+> Task :composeApp:generateActualResourceCollectorsForAndroidMain UP-TO-DATE
+> Task :composeApp:generateComposeResClass UP-TO-DATE
+> Task :composeApp:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
+> Task :composeApp:generateOtaSettings UP-TO-DATE
+> Task :composeApp:generateResourceAccessorsForAndroidPlay NO-SOURCE
+> Task :composeApp:javaPreCompilePlay UP-TO-DATE
+> Task :composeApp:desugarPlayFileDependencies UP-TO-DATE
+> Task :composeApp:mergePlayStartupProfile UP-TO-DATE
+> Task :composeApp:mergeExtDexPlay UP-TO-DATE
+> Task :composeApp:mergePlayShaders UP-TO-DATE
+> Task :composeApp:compilePlayShaders NO-SOURCE
+> Task :composeApp:generatePlayAssets UP-TO-DATE
+> Task :composeApp:playAssetsCopyForAGP NO-SOURCE
+> Task :composeApp:mergePlayAssets UP-TO-DATE
+> Task :composeApp:mergePlayJniLibFolders UP-TO-DATE
+> Task :composeApp:mergePlayNativeLibs UP-TO-DATE
+> Task :composeApp:stripPlayDebugSymbols UP-TO-DATE
+> Task :composeApp:writePlayAppMetadata UP-TO-DATE
+> Task :composeApp:checkPlayInternetPermission
+> Task :composeApp:mergePlayArtProfile UP-TO-DATE
+> Task :composeApp:collectPlayDependencies UP-TO-DATE
+> Task :composeApp:configurePlayDependencies UP-TO-DATE
+> Task :composeApp:extractPlayNativeSymbolTables UP-TO-DATE
+> Task :composeApp:extractProguardFiles UP-TO-DATE
+> Task :composeApp:parsePlayIntegrityConfig UP-TO-DATE
+> Task :composeApp:processPlayResources
+> Task :composeApp:bundlePlayResources UP-TO-DATE
+> Task :composeApp:compilePlayKotlinAndroid UP-TO-DATE
+> Task :composeApp:compilePlayJavaWithJavac NO-SOURCE
+> Task :composeApp:dexBuilderPlay UP-TO-DATE
+> Task :composeApp:mergeDexPlay UP-TO-DATE
+> Task :composeApp:mergePlayGlobalSynthetics UP-TO-DATE
+> Task :composeApp:processPlayJavaRes UP-TO-DATE
+> Task :composeApp:mergePlayJavaResource UP-TO-DATE
+> Task :composeApp:buildPlayPreBundle UP-TO-DATE
+> Task :composeApp:compilePlayArtProfile UP-TO-DATE
+> Task :composeApp:generatePlayLintVitalReportModel UP-TO-DATE
+> Task :composeApp:lintVitalAnalyzePlay UP-TO-DATE
+> Task :composeApp:lintVitalReportPlay UP-TO-DATE
+> Task :composeApp:lintVitalPlay
+> Task :composeApp:packagePlayBundle UP-TO-DATE
+> Task :composeApp:signPlayBundle
+> Task :composeApp:producePlayBundleIdeListingFile
+> Task :composeApp:createPlayBundleListingFileRedirect UP-TO-DATE
+> Task :composeApp:bundlePlay
+
+[Incubating] Problems report is available at: file://~/Desktop/workspace/TalentForge-play1/mobile/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 1s
+103 actionable tasks: 12 executed, 91 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.5.1/userguide/configuration_cache_enabling.html

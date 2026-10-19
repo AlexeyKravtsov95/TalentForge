@@ -1,0 +1,29 @@
+> Task :shared:preBuild UP-TO-DATE
+> Task :shared:preReleaseBuild UP-TO-DATE
+> Task :composeApp:checkPlayPublishable FAILED
+> Task :shared:processReleaseNavigationResources UP-TO-DATE
+> Task :shared:generateReleaseResValues UP-TO-DATE
+> Task :shared:generateReleaseResources UP-TO-DATE
+
+[Incubating] Problems report is available at: file://~/Desktop/workspace/TalentForge-play1/mobile/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':composeApp:checkPlayPublishable' (registered in build file 'composeApp/build.gradle.kts').
+> The publishable Google Play bundle needs the upload signing configuration: set TALENTFORGE_PLAY_UPLOAD_STORE_FILE / talentforge.play.upload.store_file, TALENTFORGE_PLAY_UPLOAD_STORE_PASSWORD / talentforge.play.upload.store_password, TALENTFORGE_PLAY_UPLOAD_KEY_ALIAS / talentforge.play.upload.key_alias, TALENTFORGE_PLAY_UPLOAD_KEY_PASSWORD / talentforge.play.upload.key_password (docs/release/google-play/signing.md). It is never built unsigned, debug-signed or with the app signing key.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 352ms
+4 actionable tasks: 1 executed, 3 up-to-date

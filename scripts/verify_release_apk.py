@@ -17,7 +17,18 @@ cannot establish is a failure, never a pass:
   when given);
 - the package is not debuggable and not test-only;
 - it is a universal APK (not a split; the ``native-code`` list equals the ABIs packaged
-  under ``lib/``) that packages ``arm64-v8a``.
+  under ``lib/``) that packages ``arm64-v8a``;
+- it requests no permission outside the allow-list (the app's own AndroidX
+  ``DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`` plus every ``--allow-permission``; NET-1 = B);
+- every native library of a 64-bit ABI is ready for 16 KB memory pages: each ELF ``LOAD``
+  segment is aligned to at least 16 KB, the read-only range the loader derives from
+  ``GNU_RELRO`` (rounded out to 16 KB pages) covers no writable data outside RELRO, and, when
+  stored uncompressed, the library starts at a 16 KB boundary of the archive (M5.PLAY.1);
+- the certificate is none of the ``--must-differ-from-cert-sha256`` fingerprints (the Google
+  Play upload key, M5.PLAY.1);
+- the certificate is not a signing self-test certificate (its subject names
+  ``TalentForge signing self-test``); with ``--selftest`` the reverse is required and the
+  result is ``SELFTEST-PASS``, never ``PASS``, so a test artifact is never a release artifact.
 
 The report holds public facts only: file name, size and SHA-256, package metadata,
 signature schemes, signer DN and certificate digest. It never holds a keystore path,
@@ -47,12 +58,18 @@ import zipfile
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Literal
 
 FROZEN_APPLICATION_ID = "io.github.alexeykravtsov95.talentforge"
 REQUIRED_ABI = "arm64-v8a"
 MIN_RSA_KEY_BITS = 4096
 EXPECTED_CERT_ENV = "TALENTFORGE_RELEASE_CERT_SHA256"
 REPORT_SCHEMA = "talentforge.release-apk-report.v1"
+# The subject of every key made by scripts/*signing_selftest.sh; never in an owner key.
+SELFTEST_DN_MARKER = "TalentForge signing self-test"
+# 64-bit ABIs whose native libraries must be ready for 16 KB memory pages.
+SIXTY_FOUR_BIT_ABIS = frozenset({"arm64-v8a", "x86_64"})
+PAGE_16K = 16384
 
 # The subject every Android SDK debug keystore uses (any RDN order).
 DEBUG_DN_PARTS = frozenset({"C=US", "O=Android", "CN=Android Debug"})
@@ -90,6 +107,19 @@ class Badging:
     split: str | None
     debuggable: bool
     test_only: bool
+    permissions: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class NativeLibrary:
+    """One ``lib/<abi>/*.so`` entry: its ELF ``LOAD`` alignments and archive placement."""
+
+    path: str
+    abi: str
+    load_alignments: tuple[int, ...]  # empty: not a readable ELF file
+    stored: bool  # uncompressed in the archive
+    data_offset: int  # offset of the entry's data in the archive
+    relro_problem: str | None = None  # why GNU_RELRO is unsafe with 16 KB pages, or None
 
 
 @dataclass(frozen=True)
@@ -109,6 +139,12 @@ class Evaluation:
     @property
     def passed(self) -> bool:
         return bool(self.checks) and all(check.passed for check in self.checks)
+
+    def result(self, *, selftest: bool) -> str:
+        """``PASS`` or ``FAIL``; a passing self-test artifact is ``SELFTEST-PASS``, not ``PASS``."""
+        if not self.passed:
+            return "FAIL"
+        return "SELFTEST-PASS" if selftest else "PASS"
 
 
 # ----------------------------------------------------------------------------- parsing
@@ -170,6 +206,7 @@ def parse_badging(output: str) -> Badging:
     package: dict[str, str] = {}
     values: dict[str, str] = {}
     native_code: tuple[str, ...] = ()
+    permissions: list[str] = []
     debuggable = test_only = False
     for line in output.splitlines():
         if line.startswith("package:"):
@@ -183,6 +220,8 @@ def parse_badging(output: str) -> Badging:
             debuggable = True
         elif line.startswith("testOnly="):
             test_only = True
+        elif line.startswith("uses-permission:") and (name := _PACKAGE_ATTR_RE.findall(line)):
+            permissions.extend(value for key, value in name if key == "name")
     return Badging(
         application_id=package.get("name"),
         version_code=_int_or_none(package.get("versionCode")),
@@ -193,6 +232,7 @@ def parse_badging(output: str) -> Badging:
         split=package.get("split"),
         debuggable=debuggable,
         test_only=test_only,
+        permissions=tuple(dict.fromkeys(permissions)),
     )
 
 
@@ -210,6 +250,170 @@ def _int_or_none(value: str | None) -> int | None:
 
 def is_debug_dn(dn: str) -> bool:
     return {part.strip() for part in dn.split(",")} == DEBUG_DN_PARTS
+
+
+def is_selftest_dn(dn: str) -> bool:
+    return SELFTEST_DN_MARKER in dn
+
+
+PT_LOAD = 1
+PT_GNU_RELRO = 0x6474E552
+PF_W = 2
+
+
+@dataclass(frozen=True)
+class Segment:
+    type: int
+    flags: int
+    vaddr: int
+    memsz: int
+    align: int
+
+
+def elf_segments(data: bytes) -> tuple[Segment, ...]:
+    """The program headers of an ELF file; empty when ``data`` is no readable ELF file."""
+    if len(data) < 52 or data[:4] != b"\x7fELF" or data[4] not in (1, 2) or data[5] not in (1, 2):
+        return ()
+    wide = data[4] == 2
+    order: Literal["little", "big"] = "little" if data[5] == 1 else "big"
+
+    def number(offset: int, size: int) -> int:
+        return int.from_bytes(data[offset : offset + size], order)
+
+    phoff, phentsize, phnum = (
+        (number(32, 8), number(54, 2), number(56, 2))
+        if wide
+        else (number(28, 4), number(42, 2), number(44, 2))
+    )
+    if phnum == 0 or phentsize < (56 if wide else 32) or phoff + phnum * phentsize > len(data):
+        return ()
+    segments = []
+    for index in range(phnum):
+        h = phoff + index * phentsize
+        if wide:  # p_type, p_flags, p_offset, p_vaddr, p_paddr, p_filesz, p_memsz, p_align
+            fields = (number(h, 4), number(h + 4, 4), number(h + 16, 8), number(h + 40, 8))
+            align = number(h + 48, 8)
+        else:  # p_type, p_offset, p_vaddr, p_paddr, p_filesz, p_memsz, p_flags, p_align
+            fields = (number(h, 4), number(h + 24, 4), number(h + 8, 4), number(h + 20, 4))
+            align = number(h + 28, 4)
+        segments.append(Segment(fields[0], fields[1], fields[2], fields[3], align))
+    return tuple(segments)
+
+
+def elf_load_alignments(data: bytes) -> tuple[int, ...]:
+    """The ``p_align`` of every ``PT_LOAD`` segment; empty when ``data`` is no readable ELF file."""
+    return tuple(segment.align for segment in elf_segments(data) if segment.type == PT_LOAD)
+
+
+def relro_page_problem(segments: tuple[Segment, ...], page: int = PAGE_16K) -> str | None:
+    """Why the loader's RELRO protection would cover writable data with ``page``-sized pages.
+
+    The loader makes ``GNU_RELRO`` read-only rounded out to whole pages. Google's page-size
+    guide: an end that is not 16 KB aligned "crashes the app at runtime with a segmentation
+    fault" when RELRO shares a page with later writable data; a RELRO that fills its writable
+    ``LOAD`` segment, with the next writable segment on a later page, is compliant. So the rule
+    is: no writable byte outside RELRO may lie inside the rounded-out range.
+    """
+    for relro in (s for s in segments if s.type == PT_GNU_RELRO):
+        start, end = relro.vaddr, relro.vaddr + relro.memsz
+        low, high = start - start % page, -(-end // page) * page
+        for load in (s for s in segments if s.type == PT_LOAD and s.flags & PF_W):
+            load_start, load_end = load.vaddr, load.vaddr + load.memsz
+            for part_start, part_end in (
+                (load_start, min(load_end, start)),
+                (max(load_start, end), load_end),
+            ):
+                if part_start < part_end and part_start < high and part_end > low:
+                    return (
+                        f"GNU_RELRO ends at {end:#x}; writable data at {max(part_start, low):#x} "
+                        f"would become read-only with {page // 1024} KB pages"
+                    )
+    return None
+
+
+def native_libraries(archive_path: Path, prefix: str = "lib/") -> tuple[NativeLibrary, ...]:
+    """Every ``<prefix><abi>/*.so`` entry (``lib/`` in an APK, ``base/lib/`` in a bundle)."""
+    libraries = []
+    with zipfile.ZipFile(archive_path) as archive, archive_path.open("rb") as raw:
+        for info in archive.infolist():
+            rest = info.filename.removeprefix(prefix)
+            parts = rest.split("/")
+            if rest == info.filename or len(parts) != 2 or not parts[1].endswith(".so"):
+                continue
+            raw.seek(info.header_offset + 26)
+            name_length = int.from_bytes(raw.read(2), "little")
+            extra_length = int.from_bytes(raw.read(2), "little")
+            data = archive.read(info)
+            libraries.append(
+                NativeLibrary(
+                    path=info.filename,
+                    abi=parts[0],
+                    load_alignments=elf_load_alignments(data),
+                    stored=info.compress_type == zipfile.ZIP_STORED,
+                    data_offset=info.header_offset + 30 + name_length + extra_length,
+                    relro_problem=relro_page_problem(elf_segments(data)),
+                )
+            )
+    return tuple(libraries)
+
+
+def page_size_problems(libraries: tuple[NativeLibrary, ...], *, check_zip: bool) -> list[str]:
+    """Why a 64-bit native library is not ready for 16 KB pages (empty: every one is)."""
+    problems = []
+    for library in libraries:
+        if library.abi not in SIXTY_FOUR_BIT_ABIS:
+            continue
+        if not library.load_alignments:
+            problems.append(f"{library.path}: not a readable ELF file")
+        elif min(library.load_alignments) < PAGE_16K:
+            problems.append(f"{library.path}: LOAD alignment {min(library.load_alignments)}")
+        if library.relro_problem:
+            problems.append(f"{library.path}: {library.relro_problem}")
+        if check_zip and library.stored and library.data_offset % PAGE_16K:
+            problems.append(f"{library.path}: stored at offset {library.data_offset}, not 16 KB")
+    return problems
+
+
+def permission_problems(requested: tuple[str, ...], allowed: tuple[str, ...]) -> list[str]:
+    """The requested permissions outside the allow-list (NET-1 = B: no INTERNET by default)."""
+    own = f"{FROZEN_APPLICATION_ID}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+    return [name for name in requested if name != own and name not in allowed]
+
+
+def add_certificate_role_checks(
+    result: Evaluation,
+    *,
+    certificate: str | None,
+    dn: str | None,
+    must_differ_from: tuple[str, ...],
+    selftest: bool,
+) -> None:
+    """The checks shared by the APK and the bundle validator: key role and test-key marker."""
+    distinct = certificate is not None and certificate not in must_differ_from
+    result.add(
+        "certificate-differs-from-other-role",
+        distinct,
+        f"certificate is none of the {len(must_differ_from)} fingerprint(s) of the other key role"
+        if distinct
+        else "certificate IS the other key role's (app signing vs upload key), or none was read",
+    )
+    marked = dn is not None and is_selftest_dn(dn)
+    if selftest:
+        result.add(
+            "selftest-certificate",
+            marked,
+            "self-test run: the signer is a temporary self-test key"
+            if marked
+            else "self-test run, but the signer is not a self-test key",
+        )
+    else:
+        result.add(
+            "not-selftest-certificate",
+            dn is not None and not marked,
+            "signer is not a self-test key"
+            if dn is not None and not marked
+            else "signer is a temporary self-test key, or no DN was read: never a release",
+        )
 
 
 def packaged_abis(apk: Path) -> tuple[str, ...]:
@@ -243,6 +447,10 @@ def evaluate(
     debug_cert_sha256: str | None,
     expected_version_code: int | None,
     expected_version_name: str | None,
+    libraries: tuple[NativeLibrary, ...] | None = None,
+    allowed_permissions: tuple[str, ...] = (),
+    must_differ_from: tuple[str, ...] = (),
+    selftest: bool = False,
 ) -> Evaluation:
     result = Evaluation()
     result.add(
@@ -343,6 +551,27 @@ def evaluate(
         REQUIRED_ABI in abis and REQUIRED_ABI in badging.native_code,
         f"{REQUIRED_ABI} packaged: {REQUIRED_ABI in abis and REQUIRED_ABI in badging.native_code}",
     )
+    extra = permission_problems(badging.permissions, allowed_permissions)
+    result.add(
+        "permissions-allowed",
+        not extra,
+        f"requested: {list(badging.permissions)}"
+        + (f"; not allowed: {extra}" if extra else "; all allowed"),
+    )
+    if libraries is not None:
+        problems = page_size_problems(libraries, check_zip=True)
+        sixty_four = [lib for lib in libraries if lib.abi in SIXTY_FOUR_BIT_ABIS]
+        result.add(
+            "native-16kb-page-size",
+            bool(sixty_four) and not problems,
+            f"{len(sixty_four)} 64-bit libraries; "
+            + ("; ".join(problems) if problems else "ELF LOAD, RELRO and zip alignment fit 16 KB")
+            if sixty_four
+            else "no 64-bit native library found",
+        )
+    add_certificate_role_checks(
+        result, certificate=certificate, dn=dn, must_differ_from=must_differ_from, selftest=selftest
+    )
     return result
 
 
@@ -412,11 +641,13 @@ def build_report(
     badging: Badging,
     evaluation: Evaluation,
     tool_versions: dict[str, str],
+    selftest: bool = False,
 ) -> dict[str, object]:
     return {
         "schema": REPORT_SCHEMA,
         "generatedAt": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "result": "PASS" if evaluation.passed else "FAIL",
+        "result": evaluation.result(selftest=selftest),
+        "purpose": "signing-selftest" if selftest else "release",
         "apk": {"fileName": apk.name, "sizeBytes": apk.stat().st_size, "sha256": apk_sha256},
         "package": {
             "applicationId": badging.application_id,
@@ -428,6 +659,7 @@ def build_report(
             "split": badging.split,
             "debuggable": badging.debuggable,
             "testOnly": badging.test_only,
+            "permissions": list(badging.permissions),
         },
         "signature": {
             "verifies": signature.verifies,
@@ -447,10 +679,12 @@ def build_report(
     }
 
 
-def format_summary(evaluation: Evaluation, apk: Path, apk_sha256: str) -> str:
+def format_summary(
+    evaluation: Evaluation, apk: Path, apk_sha256: str, *, selftest: bool = False, kind: str = "APK"
+) -> str:
     lines = [f"{'PASS' if c.passed else 'FAIL'}  {c.id}: {c.detail}" for c in evaluation.checks]
-    lines.append(f"APK   {apk.name}  {apk.stat().st_size} bytes  sha256 {apk_sha256}")
-    lines.append(f"RESULT {'PASS' if evaluation.passed else 'FAIL'}")
+    lines.append(f"{kind:<5} {apk.name}  {apk.stat().st_size} bytes  sha256 {apk_sha256}")
+    lines.append(f"RESULT {evaluation.result(selftest=selftest)}")
     return "\n".join(lines)
 
 
@@ -473,6 +707,23 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser.add_argument(
         "--debug-keystore",
         help="the local Android debug keystore; the APK certificate must differ from its",
+    )
+    parser.add_argument(
+        "--allow-permission",
+        action="append",
+        default=[],
+        help="a permission the APK may request (repeatable; INTERNET only with production OTA)",
+    )
+    parser.add_argument(
+        "--must-differ-from-cert-sha256",
+        action="append",
+        default=[],
+        help="a fingerprint the signer must NOT have, e.g. the Google Play upload key (repeatable)",
+    )
+    parser.add_argument(
+        "--selftest",
+        action="store_true",
+        help="signing self-test: require a self-test key; the result is SELFTEST-PASS, not PASS",
     )
     parser.add_argument("--report", help="write the JSON report to this file")
     return parser.parse_args(argv)
@@ -509,6 +760,10 @@ def run_checks(
         debug_cert_sha256=debug_sha,
         expected_version_code=args.expected_version_code,
         expected_version_name=args.expected_version_name,
+        libraries=native_libraries(apk),
+        allowed_permissions=tuple(args.allow_permission),
+        must_differ_from=tuple(normalize_sha256(d) for d in args.must_differ_from_cert_sha256),
+        selftest=args.selftest,
     )
     apk_sha256 = file_sha256(apk)
     report = build_report(
@@ -522,6 +777,7 @@ def run_checks(
             "apksigner": tool_version(apksigner),
             "aapt2": tool_version(aapt2),
         },
+        selftest=args.selftest,
     )
     return evaluation, report, apk_sha256
 
@@ -542,7 +798,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ERROR: {error}", file=sys.stderr)
         return EXIT_ERROR
 
-    print(format_summary(evaluation, Path(args.apk), apk_sha256))
+    print(format_summary(evaluation, Path(args.apk), apk_sha256, selftest=args.selftest))
     if args.report:
         Path(args.report).write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     return EXIT_PASS if evaluation.passed else EXIT_FAIL

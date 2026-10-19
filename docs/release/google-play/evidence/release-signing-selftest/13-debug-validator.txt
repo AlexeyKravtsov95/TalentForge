@@ -1,0 +1,20 @@
+PASS  signature-verifies: apksigner verify succeeded
+PASS  single-signer: signers=1, certificates=1
+FAIL  not-debug-certificate-dn: signer DN is the Android debug subject, or no single DN was read
+FAIL  not-local-debug-certificate: certificate IS the local debug keystore's certificate, or none was read
+FAIL  certificate-sha256-matches: certificate SHA-256 does not equal the expected fingerprint
+FAIL  rsa-key-size: key RSA 2048 bits (required: RSA, at least 4096)
+PASS  signature-scheme-v2-or-v3: schemes: v1=False, v2=True, v3=False, v3.1=False, v3.2=False, v4=False
+PASS  application-id: applicationId='io.github.alexeykravtsov95.talentforge' (frozen: 'io.github.alexeykravtsov95.talentforge')
+PASS  version-code: versionCode=1 (expected: any > 0)
+PASS  version-name: versionName='0.1.0' (expected: non-empty)
+FAIL  not-debuggable: debuggable=True
+PASS  not-test-only: testOnly=False
+PASS  universal-apk: split=None; native-code=['arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64']; lib/ ABIs=['arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64']
+PASS  abi-arm64-v8a: arm64-v8a packaged: True
+FAIL  permissions-allowed: requested: ['android.permission.INTERNET', 'io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION']; not allowed: ['android.permission.INTERNET']
+PASS  native-16kb-page-size: 2 64-bit libraries; ELF LOAD, RELRO and zip alignment fit 16 KB
+PASS  certificate-differs-from-other-role: certificate is none of the 0 fingerprint(s) of the other key role
+FAIL  selftest-certificate: self-test run, but the signer is not a self-test key
+APK   composeApp-debug.apk  23189828 bytes  sha256 64c347781334fdcd9dd0e66e9e522623ce32c0eb813a68d6d190ecfc40fa142a
+RESULT FAIL
