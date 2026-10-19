@@ -132,7 +132,9 @@ icon, name and content must match the installed app (1.20). Asset plan: [assets-
   requests none (static evidence in [readiness §4](readiness.md#4-huawei-compatibility-audit)).
 - [Review Guidelines §7.1](https://developer.huawei.com/consumer/en/doc/app/50104-07): apps that process
   personal data must have "an easy-to-find in-app link" to the privacy policy **and** submit the link
-  in AGC. TalentForge has no in-app legal/about surface today. Whether §7.1 applies to an app that
+  in AGC. *(M5.STORE.1: since M5.RC.2b the app has an About screen with a privacy summary and an empty
+  policy-link slot, `LegalLinks.privacyPolicyUrl`; the 2026-10-19 re-read found the literal §7.1 sentence
+  unconditional, so set the in-app link once the URL exists.)* Whether §7.1 applies to an app that
   processes no personal data is an **owner/legal decision**; see [privacy §5](privacy-and-compliance.md#5-store-privacy-declarations).
 
 The privacy policy draft (RU + EN) and the facts behind it are in [privacy-and-compliance](privacy-and-compliance.md).

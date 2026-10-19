@@ -17,7 +17,8 @@ How to read this checklist:
 
 **Manifest and permissions**
 - [x] Only the launcher `MainActivity` is exported.
-- [x] No dangerous or user-visible permissions. Only the AndroidX signature permission `…DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`. No INTERNET, consistent with offline-first.
+- [x] No dangerous or user-visible permissions.
+- [ ] **(gate) `INTERNET` decided (NET-1).** M5.STORE.1 (`b242cd6`): the release manifest declares `android.permission.INTERNET` (M5.OTA.3) plus the AndroidX signature permission `…DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`. OTA is disabled and no connection was measured ([store1 audit §5](store1-release-audit.md#5-privacy-and-ota-what-the-production-build-actually-does)). The owner decides: keep, remove from release builds, or enable OTA; privacy and listing texts follow. *(M5.RC.1 at its commit: no INTERNET.)*
 - [x] `android:allowBackup` decided explicitly and reflected in the privacy text (TF-RC1-ANDROID-CONFIG). M5.RC.2b: `allowBackup="false"` + `dataExtractionRules` (Android 12+) + `fullBackupContent` (API 26–30), every domain excluded; verified in the merged release manifest ([rc2b-evidence](rc2b-evidence/README.md#backup-policy)); privacy text updated. Owner confirms the policy choice.
 - [x] **(gate)** `android:icon` set to the approved adaptive icon (TF-RC1-ICON). M5.RC.2a: `android:icon="@mipmap/ic_launcher"`; packaging and rendering checks in §4 ([rc2a-evidence](rc2a-evidence/README.md)).
 
@@ -181,7 +182,8 @@ valid unchanged: RuStore (§1, §6) and iOS (§2) requirements are not replaced.
 Google Play is deferred (#35). 🔑 = needs the owner's Huawei Developer account.
 
 **Package and signing** (shared with §1 and §5; nothing extra for AppGallery)
-- [x] No Google Mobile Services, Firebase, Play Billing or HMS dependency; no `INTERNET` permission; `arm64-v8a` packaged (64-bit requirement); `minSdk 26` (static evidence: [appgallery/evidence/mac](appgallery/evidence/mac/))
+- [x] No Google Mobile Services, Firebase, Play Billing or HMS dependency; `arm64-v8a` packaged (64-bit requirement); `minSdk 26` (static evidence: [appgallery/evidence/mac](appgallery/evidence/mac/), re-checked on `b242cd6` in [store1-evidence](store1-evidence/mac/))
+- [ ] `INTERNET` permission: see §1 (NET-1). *("No `INTERNET` permission" held at `f7494e1` only.)*
 - [ ] **(gate)** Owner approves the signing strategy: one owner-held RSA key, signed universal APK for both stores, no AGC App Signing, no RuStore AAB key upload ([multi-store-signing §1](appgallery/multi-store-signing.md#1-recommendation))
 - [ ] **(gate)** Release keystore created, backed up twice offline, recovery drill done (§5 above and [multi-store-signing §5](appgallery/multi-store-signing.md#5-keystore-creation-offline-backup-recovery-owner-procedure--not-executed-here))
 - [ ] **(gate)** The APK uploaded to AppGallery is byte-identical to the RuStore APK; `apksigner` SHA-256 equals the owner's recorded fingerprint; not the debug certificate; no `application-debuggable`
