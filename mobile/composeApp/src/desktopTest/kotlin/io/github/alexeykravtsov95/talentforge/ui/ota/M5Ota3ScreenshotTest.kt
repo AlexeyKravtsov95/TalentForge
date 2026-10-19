@@ -154,10 +154,10 @@ class M5Ota3ScreenshotTest {
                     val scope = rememberCoroutineScope()
                     AboutScreen(
                         appVersion = AppVersion("0.1.0", 1),
-                        noticesPath = null,
                         backupStatement = BackupStatement.AndroidBackupDisabled,
                         privacyPolicyUrl = null,
                         onBack = {},
+                        onOpenLicenses = {},
                         otaStatus = produceState(device.runtime.status.value) { device.runtime.status.collect { value = it } }.value,
                         onCheckForUpdates = { scope.launch(Dispatchers.Default) { device.runtime.coordinator.checkNow() } },
                     )

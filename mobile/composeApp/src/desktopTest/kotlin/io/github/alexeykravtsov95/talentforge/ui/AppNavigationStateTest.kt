@@ -35,6 +35,7 @@ class AppNavigationStateTest {
             AppDestination.Editor("local-3", EditorOrigin.CreatedNew),
             AppDestination.NewBuild,
             AppDestination.About,
+            AppDestination.Licenses,
         )
 
         assertEquals(stack, roundTrip(stack))

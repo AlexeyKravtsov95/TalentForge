@@ -1200,10 +1200,26 @@ a drawn ⓘ glyph, a 48 dp target named "About" / "О приложении". Bac
 persistent navigation is added (UX/UI spec 02 §1). The spec defines no About surface. This entry is
 the one addition the release-hardening milestone required.
 
+Since M5.UI.ABOUT.1 (store-listing cleanup) the About screen names no technology, dependency or
+module. It shows, top to bottom:
+- the app icon (`drawable/app_icon.png`, a byte-for-byte copy of the approved xxxhdpi launcher
+  raster, guarded by `AppIconResourceTest`), the name, a one-sentence description and the installed
+  version. The header wraps the name below the icon on narrow, large-text screens. The name is one
+  line: it keeps the 24 sp ScreenTitle size where it fits and otherwise shrinks to the measured
+  width (`TextAutoSize`), because platform fonts differ in width (Linux CI's is wider than macOS's);
+- **Talent data**: the data version in use; the OTA source line and "Check for updates" only in
+  OTA-enabled builds;
+- the independent-project statement;
+- **Privacy**: the first statement, with the remaining verified statements behind one 48 dp
+  "Show details" toggle. The text is unchanged; the policy link appears only when configured;
+- one row, **Third-party licenses**, that pushes `AppDestination.Licenses` (saved as `licenses`;
+  Back → About). Every open-source notice lives on that screen, unchanged.
+
 ```
 App(storage, …, appVersion)          ← host: Android PackageManager / iOS NSBundle / desktop null
-  Home ⓘ ──▶ AboutScreen(appVersion, platformOpenSourceNoticesPath, platformBackupStatement,
-                         LegalLinks.privacyPolicyUrl, onBack)
+  Home ⓘ ──▶ AboutScreen(appVersion, platformBackupStatement, LegalLinks.privacyPolicyUrl,
+                         onBack, onOpenLicenses, otaStatus?, onCheckForUpdates?)
+               └─ row ──▶ LicensesScreen(platformOpenSourceNoticesPath, onBack)
      loadOpenSourceNotices(path) → parseOpenSourceNotices (strict, typed OpenSourceNoticesException)
      licence texts → readLegalResource("files/legal/LICENSE-*.txt" …) on demand
 ```
@@ -1244,16 +1260,22 @@ App(storage, …, appVersion)          ← host: Android PackageManager / iOS NS
   [release/android-release-signing.md](release/android-release-signing.md).
 
 **Tests** (desktop):
-- `AboutScreenUiTest`: EN/RU copy, version/no version, iOS variant, notices failure + Retry, link
-  only when configured, Back, toggles ≥ 48 dp at 320 dp / 200 %, and Home → About → Back,
-  including RU at 320×568 / 200 %.
+- `AboutScreenUiTest`: EN/RU copy, no technology names on the main screen, version/no version,
+  the iOS backup statement, privacy details behind the toggle, link only when configured, the
+  licenses row, Back, every target ≥ 48 dp and the name on one line at 320 dp / 200 %, and
+  Home → About → Licenses → Back → Back, including RU at 320×568 / 200 %.
+- `LicensesScreenUiTest`: the real Android and iOS notices, module and licence-text toggles,
+  not-included and failure + Retry states, EN/RU, Back, toggles ≥ 48 dp at 320 dp / 200 %.
+- `AppIconResourceTest`: the About icon equals the approved launcher raster.
 - `OpenSourceNoticesTest`: the bundled notices, the Apache-2.0 digest, strict-parser failures, and
   the privacy-URL rule.
-- `AppNavigationStateTest`: `about` round-trips.
+- `AppNavigationStateTest`: `about` and `licenses` round-trip.
 
 Python: `tests/unit/test_verify_release_apk.py`. End to end:
-`scripts/release_signing_selftest.sh` (temporary key). Screenshots: `M5Rc2bScreenshotTest`
-(`-Dtalentforge.m5rc2b.screenshots=<dir>`), committed under `docs/release/rc2b-evidence/screenshots/`.
+`scripts/release_signing_selftest.sh` (temporary key). Screenshots: `M5UiAbout1ScreenshotTest`
+(`-Dtalentforge.m5uiabout1.screenshots=<dir>`), committed under
+`docs/screenshots/m5-ui-about-1/`. The M5.RC.2b single-page captures in
+`docs/release/rc2b-evidence/screenshots/` are historical.
 
 ## Version stack (all stable)
 

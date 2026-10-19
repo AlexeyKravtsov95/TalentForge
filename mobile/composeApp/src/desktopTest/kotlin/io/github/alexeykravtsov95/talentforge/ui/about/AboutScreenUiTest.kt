@@ -1,48 +1,43 @@
 package io.github.alexeykravtsov95.talentforge.ui.about
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.platform.UriHandler
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.semantics.SemanticsActions
-import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.getOrNull
-import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
-import androidx.compose.ui.test.runDesktopComposeUiTest
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.rememberTextMeasurer
 import io.github.alexeykravtsov95.talentforge.ui.App
 import io.github.alexeykravtsov95.talentforge.ui.FakeBuildLibraryStorage
 import io.github.alexeykravtsov95.talentforge.ui.FixedClock
 import io.github.alexeykravtsov95.talentforge.ui.SequentialIds
 import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
 import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
-import io.github.alexeykravtsov95.talentforge.ui.motion.LocalReducedMotion
-import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
+import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
+import io.github.alexeykravtsov95.talentforge.ui.library.dataVersionOf
+import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTypography
+import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.Rule
 
 /**
- * M5.RC.2b: the About / legal screen in English and Russian, driven by the
- * REAL bundled Android notices and licence text: the version from the host
- * (never invented), the independent-project statement, the platform's backup
- * statement, the privacy-policy link only when one is configured, the notices
- * and licence text behind explicit 48 dp toggles, Back, and the Home → About →
- * Back route through the real app root.
+ * M5.UI.ABOUT.1: the simplified About screen in English and Russian — the
+ * icon/name/description/installed version header (the version from the host,
+ * never invented), the talent data in use, the independent-project statement,
+ * the compact privacy block whose every statement stays one explicit toggle
+ * away, the policy link only when configured, the one row into the
+ * third-party licenses, and NO technology, dependency or module names; 48 dp
+ * targets at 320 dp / 200 %; and Home → About → Licenses → Back → Back
+ * through the real app root. The licenses themselves: `LicensesScreenUiTest`.
  */
 @OptIn(ExperimentalTestApi::class)
 class AboutScreenUiTest {
@@ -57,115 +52,97 @@ class AboutScreenUiTest {
         widthDp: Int = 393,
         heightDp: Int = 852,
         fontScale: Float = 1f,
-        uriHandler: UriHandler = RecordingUriHandler(),
+        uriHandler: RecordingUriHandler = RecordingUriHandler(),
         content: @Composable () -> Unit,
         block: ComposeUiTest.() -> Unit,
-    ) {
-        uiLanguage.language = language
-        runDesktopComposeUiTest(width = widthDp, height = heightDp) {
-            setContent {
-                TalentForgeTheme {
-                    CompositionLocalProvider(
-                        LocalDensity provides Density(1f, fontScale),
-                        LocalReducedMotion provides true,
-                        LocalUriHandler provides uriHandler,
-                    ) {
-                        Box(Modifier.size(widthDp.dp, heightDp.dp)) { content() }
-                    }
-                }
-            }
-            block()
-        }
-    }
+    ) = uiLanguage.runAboutUiTest(language, widthDp, heightDp, fontScale, uriHandler, content, block)
 
     private fun about(
         appVersion: AppVersion? = version,
-        noticesPath: String? = ANDROID_OSS_NOTICES_PATH,
         backup: BackupStatement = BackupStatement.AndroidBackupDisabled,
         privacyPolicyUrl: String? = null,
         onBack: () -> Unit = {},
+        onOpenLicenses: () -> Unit = {},
     ): @Composable () -> Unit = {
         AboutScreen(
             appVersion = appVersion,
-            noticesPath = noticesPath,
             backupStatement = backup,
             privacyPolicyUrl = privacyPolicyUrl,
             onBack = onBack,
+            onOpenLicenses = onOpenLicenses,
         )
     }
 
-    private fun ComposeUiTest.texts(): List<String> =
-        onAllNodes(SemanticsMatcher("any node") { true }, useUnmergedTree = true).fetchSemanticsNodes()
-            .flatMap { node -> node.config.getOrNull(SemanticsProperties.Text).orEmpty().map { it.text } }
-
-    private fun ComposeUiTest.awaitText(text: String, substring: Boolean = false) {
-        try {
-            waitUntil(timeoutMillis = 20_000) {
-                onAllNodesWithText(text, substring = substring).fetchSemanticsNodes().isNotEmpty()
-            }
-        } catch (timeout: ComposeTimeoutException) {
-            throw AssertionError("'$text' never appeared; on screen: ${texts()}", timeout)
-        }
-    }
-
-    private fun ComposeUiTest.clickText(text: String) {
-        awaitText(text)
-        onAllNodesWithText(text).onFirst().performScrollTo().performClick()
-        waitForIdle()
-    }
-
-    private fun ComposeUiTest.assertAbsent(text: String, substring: Boolean = false) {
-        assertTrue(
-            onAllNodesWithText(text, substring = substring).fetchSemanticsNodes().isEmpty(),
-            "'$text' must not be shown; on screen: ${texts()}",
-        )
-    }
-
-    private fun clickLabelled(label: String) = SemanticsMatcher("click label '$label'") { node ->
-        node.config.getOrNull(SemanticsActions.OnClick)?.label == label
-    }
+    private val dataVersion = dataVersionOf(PRODUCT_BUNDLE.clientBuild)
 
     // ------------------------------------------------------------------- English
 
     @Test
-    fun englishAboutShowsVersionStatementPrivacyAndTheRealNotices() = onScreen(content = about()) {
+    fun englishAboutShowsTheHeaderDataStatementAndCompactPrivacy() = onScreen(content = about()) {
         awaitText("About")
         awaitText("TalentForge")
         awaitText("Version 0.1.0 (1)")
+        awaitText(
+            "A talent planner: spend points across the talent trees, keep your builds on this device and share them as codes.",
+        )
+        awaitText("TALENT DATA")
+        awaitText("Forever · talent data $dataVersion")
         awaitText("INDEPENDENT PROJECT")
         awaitText(
             "TalentForge is an independent, unofficial project. It is not affiliated with, endorsed by or " +
                 "sponsored by the game's developer or publisher.",
         )
         awaitText("PRIVACY")
-        awaitText("The app turns off Android backup", substring = true)
-        awaitText("The app works without the internet", substring = true)
-        awaitText("OPEN-SOURCE LICENSES")
-        for (component in listOf("AndroidX (Android Jetpack)", "Compose Multiplatform", "Kotlin Standard Library", "Guava ListenableFuture")) {
-            awaitText(component)
-        }
-        awaitText("Apache License 2.0 · 1 module")
-        awaitText("Apache License 2.0 · 88 modules")
-        // M5.LEGAL.OSS.1: the stdlib card carries the ThreeTen licence next to the POM's Apache-2.0
-        awaitText("Apache License 2.0, BSD 3-Clause License (ThreeTen) · 1 module")
+        awaitText("TalentForge works offline, without an account, ads or analytics", substring = true)
+        awaitText("Show details")
+        awaitText("Third-party licenses")
+        awaitText("Open-source notices and full license texts")
+        // compact: the detailed statements wait behind the toggle
+        assertAbsent("The app turns off Android backup", substring = true)
+        // OTA is off: no data-source line and no check action
+        assertAbsent("Check for updates")
+        assertAbsent("Included with the app")
         // no approved policy URL (LR-5): no link and no placeholder
         assertAbsent("Privacy policy")
     }
 
     @Test
-    fun modulesAndTheLicenceTextOpenOnlyThroughTheirToggles() = onScreen(content = about()) {
-        awaitText("AndroidX (Android Jetpack)")
-        assertAbsent("androidx.activity:activity-compose:1.13.0", substring = true)
-        assertAbsent("TERMS AND CONDITIONS", substring = true)
+    fun theMainScreenNamesNoTechnologyDependencyOrModule() {
+        for (language in AppLanguage.entries) {
+            onScreen(language = language, content = about()) {
+                clickText(if (language == AppLanguage.RUSSIAN) "Подробнее" else "Show details")
+                val shown = texts().joinToString("\n")
+                for (term in TECHNOLOGY_TERMS) {
+                    assertTrue(term !in shown.lowercase(), "'$term' is on the main About screen ($language): $shown")
+                }
+            }
+        }
+    }
 
-        clickText("Show modules") // the first card: AndroidX
-        awaitText("androidx.activity:activity-compose:1.13.0", substring = true)
-        awaitText("Hide modules")
+    @Test
+    fun everyPrivacyStatementIsOneToggleAway() = onScreen(content = about()) {
+        clickText("Show details")
+        awaitText("Your builds — class, talents, game-data version", substring = true)
+        awaitText("The app turns off Android backup and transfer of its data to a new device", substring = true)
+        awaitText("The app writes to the clipboard only when you tap Copy code", substring = true)
+        awaitText("The app works without the internet and does not ask for access", substring = true)
+        awaitText("Delete a build in the app, or uninstall the app or clear its storage", substring = true)
+        awaitText("Hide details")
 
-        clickText("Show license text")
-        awaitText("TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION", substring = true)
-        clickText("Hide license text")
-        assertAbsent("TERMS AND CONDITIONS", substring = true)
+        clickText("Hide details")
+        assertAbsent("The app turns off Android backup", substring = true)
+        awaitText("TalentForge works offline", substring = true)
+    }
+
+    @Test
+    fun theLicensesRowOpensTheLicenses() {
+        var opened = 0
+        onScreen(content = about(onOpenLicenses = { opened += 1 })) {
+            awaitText("Third-party licenses")
+            onAllNodes(clickLabelled("open the third-party licenses")).onFirst().performScrollTo().performClick()
+            waitForIdle()
+            assertEquals(1, opened)
+        }
     }
 
     @Test
@@ -185,63 +162,41 @@ class AboutScreenUiTest {
     fun russianAboutIsFullyLocalized() = onScreen(language = AppLanguage.RUSSIAN, content = about()) {
         awaitText("О приложении")
         awaitText("Версия 0.1.0 (1)")
+        awaitText(
+            "Планировщик талантов: распределяйте очки по веткам талантов, храните билды на этом устройстве " +
+                "и делитесь ими в виде кодов.",
+        )
+        awaitText("ДАННЫЕ ТАЛАНТОВ")
+        awaitText("Forever · данные талантов $dataVersion")
         awaitText("НЕЗАВИСИМЫЙ ПРОЕКТ")
         awaitText(
             "TalentForge — независимый неофициальный проект. Он не связан с разработчиком и издателем игры, " +
                 "не одобрен и не поддерживается ими.",
         )
         awaitText("КОНФИДЕНЦИАЛЬНОСТЬ")
+        awaitText("Лицензии сторонних компонентов")
+        awaitText("Уведомления об открытом ПО и полные тексты лицензий")
+        assertAbsent("Приложение отключает резервное копирование Android", substring = true)
+        clickText("Подробнее")
         awaitText("Приложение отключает резервное копирование Android", substring = true)
-        awaitText("ЛИЦЕНЗИИ ОТКРЫТОГО ПО")
-        awaitText("Apache License 2.0 · 1 модуль")
-        awaitText("Apache License 2.0 · 3 модуля")
-        awaitText("Apache License 2.0 · 88 модулей")
-        awaitText("Apache License 2.0, BSD 3-Clause License (ThreeTen) · 1 модуль")
-        clickText("Показать модули")
-        awaitText("Скрыть модули")
-        assertAbsent("Show modules")
-        assertAbsent("About")
+        awaitText("Скрыть подробности")
+        assertEquals(1, onAllNodes(clickLabelled("открыть лицензии сторонних компонентов")).fetchSemanticsNodes().size)
+        for (english in listOf("About", "Show details", "Hide details", "Third-party licenses", "PRIVACY")) {
+            assertAbsent(english)
+        }
     }
 
     // --------------------------------------------------------- platform variants
 
     @Test
-    fun withoutCompiledNoticesOrAVersionNothingIsInvented() = onScreen(
-        content = about(appVersion = null, noticesPath = null, backup = BackupStatement.IosDeviceBackup),
+    fun withoutAVersionNothingIsInventedAndIosGetsItsBackupStatement() = onScreen(
+        content = about(appVersion = null, backup = BackupStatement.IosDeviceBackup),
     ) {
-        awaitText("Open-source notices are not included in this build.")
-        awaitText("If your device's backup (iCloud or a computer) is on", substring = true)
+        awaitText("TalentForge")
         assertAbsent("Version ", substring = true)
+        clickText("Show details")
+        awaitText("If your device's backup (iCloud or a computer) is on", substring = true)
         assertAbsent("The app turns off Android backup", substring = true)
-        assertAbsent("AndroidX (Android Jetpack)")
-    }
-
-    @Test
-    fun unreadableNoticesAreAnErrorWithRetryNotAnEmptyList() = onScreen(
-        content = about(noticesPath = "files/legal/absent.json"),
-    ) {
-        awaitText("Couldn't load the open-source notices")
-        awaitText("Retry")
-        assertAbsent("AndroidX (Android Jetpack)")
-    }
-
-    @Test
-    fun theIosNoticesListTheLinkedNativeCodeWithTheRequiredStatements() = onScreen(
-        content = about(noticesPath = IOS_OSS_NOTICES_PATH, backup = BackupStatement.IosDeviceBackup),
-    ) {
-        awaitText("Skiko")
-        awaitText("Apache License 2.0, Skiko NOTICE · 2 modules")
-        awaitText("Skia")
-        awaitText("BSD 3-Clause License (Skia) · Version m138 (JetBrains/skia 80d088a)")
-        awaitText("Statically linked into org.jetbrains.skiko:skiko-iosarm64:0.9.37.4", substring = true)
-        awaitText("This software is based in part on the work of the Independent JPEG Group.")
-        awaitText("This product includes DNG technology under license by Adobe Systems Incorporated.")
-        awaitText("Kotlin Standard Library: third-party code (ThreeTen, GWT, Guava)")
-        assertAbsent("Open-source notices are not included in this build.")
-        assertAbsent("JSpecify") // Android-only modules never appear in the iOS list
-        // linked components have no module list; every licence and notice text has its own toggle
-        assertEquals(7, onAllNodes(clickLabelled("Show modules")).fetchSemanticsNodes().size)
-        assertEquals(16, onAllNodes(clickLabelled("Show license text")).fetchSemanticsNodes().size)
     }
 
     @Test
@@ -249,33 +204,111 @@ class AboutScreenUiTest {
         val handler = RecordingUriHandler()
         val url = "https://policy.example.org/talentforge"
         onScreen(uriHandler = handler, content = about(privacyPolicyUrl = url)) {
+            // visible without opening the details
             clickText("Privacy policy")
             assertEquals(listOf(url), handler.opened)
         }
     }
 
     @Test
-    fun largeTextOnANarrowPhoneKeepsEveryToggleReachable() = onScreen(
-        widthDp = 320,
-        heightDp = 640,
-        fontScale = 2f,
-        content = about(),
-    ) {
-        awaitText("Guava ListenableFuture")
-        val toggles = onAllNodes(clickLabelled("Show modules")).fetchSemanticsNodes() +
-            onAllNodes(clickLabelled("Show license text")).fetchSemanticsNodes()
-        assertEquals(10, toggles.size, "8 component toggles and 2 licence toggles")
-        // layout size, not the scroll-clipped bounds: most toggles are below the fold (density 1 → px = dp)
-        for (toggle in toggles) {
-            assertTrue(toggle.size.height >= 48, "toggle target ${toggle.size.height} px < 48 dp")
-            assertTrue(toggle.positionInRoot.x + toggle.size.width <= 320f, "toggle overflows the 320 dp width")
+    fun largeTextOnANarrowPhoneKeepsEveryActionReachable() {
+        for (language in AppLanguage.entries) {
+            onScreen(language = language, widthDp = 320, heightDp = 640, fontScale = 2f, content = about()) {
+                awaitText(if (language == AppLanguage.RUSSIAN) "Лицензии сторонних компонентов" else "Third-party licenses")
+                val targets = onAllNodes(anyClickable).fetchSemanticsNodes()
+                val labels = targets.map { it.config.getOrNull(SemanticsActions.OnClick)?.label }
+                assertEquals(3, targets.size, "Back, the privacy toggle and the licenses row: $labels")
+                for (target in targets) {
+                    if (target.config.getOrNull(SemanticsActions.OnClick)?.label == BACK_LABEL[language]) {
+                        // the shared header Back control (TalentTreeHeaderMetrics, 44 dp)
+                        assertTrue(target.size.height >= 44 && target.size.width >= 44, "Back ${target.size} < 44 dp")
+                    } else {
+                        assertUsableTarget(target, widthDp = 320)
+                    }
+                }
+            }
         }
+    }
+
+    /**
+     * The name is one word: it never breaks, is never cut, and never runs past
+     * the screen, whatever the platform font's real width. Widths down to
+     * 260 dp at 200 % leave less room than "TalentForge" needs at full size
+     * with any font (Linux CI's font is wider than macOS's), so the fit is
+     * proven by measurement, not by one font happening to be narrow enough.
+     */
+    @Test
+    fun theAppNameStaysOneWholeWordAtAnyWidthAndFontScale() {
+        for (widthDp in listOf(320, 300, 280, 260)) {
+            onScreen(widthDp = widthDp, heightDp = 640, fontScale = 2f, content = about()) {
+                val (node, layout) = nameLayout()
+                val where = "$widthDp dp @200 %"
+                assertEquals("TalentForge", layout.layoutInput.text.text, "$where: the name is shown whole")
+                assertEquals(1, layout.lineCount, "$where: the name breaks across lines")
+                assertTrue(!layout.hasVisualOverflow, "$where: the name is clipped (${layout.size} for ${layout.multiParagraph.width})")
+                assertTrue(
+                    node.positionInRoot.x + layout.size.width <= widthDp,
+                    "$where: the name runs past the screen (x ${node.positionInRoot.x} + ${layout.size.width})",
+                )
+            }
+        }
+        // where it fits, the name keeps the frozen ScreenTitle size (24 sp): it only ever shrinks to fit.
+        // Read from the glyphs: an auto-sized layout reports its declared style whatever size it drew.
+        var fullSizeGlyph = Rect.Zero
+        val withReference: @Composable () -> Unit = {
+            fullSizeGlyph = rememberTextMeasurer().measure("TalentForge", TalentForgeTypography.title, softWrap = false).getBoundingBox(0)
+            about()()
+        }
+        onScreen(content = withReference) {
+            val glyph = nameLayout().second.getBoundingBox(0)
+            assertTrue(
+                abs(glyph.width - fullSizeGlyph.width) < 0.01f && abs(glyph.height - fullSizeGlyph.height) < 0.01f,
+                "the name shrank although it fits: $glyph vs $fullSizeGlyph at 24 sp",
+            )
+        }
+        // and where the full-size word does not fit, it is drawn smaller
+        onScreen(widthDp = 260, heightDp = 640, fontScale = 2f, content = withReference) {
+            val glyph = nameLayout().second.getBoundingBox(0)
+            assertTrue(glyph.width < fullSizeGlyph.width, "the name kept 24 sp although it does not fit 260 dp at 200 %")
+        }
+    }
+
+    private fun ComposeUiTest.nameLayout(): Pair<SemanticsNode, TextLayoutResult> {
+        awaitText("TalentForge")
+        val node = onAllNodesWithText("TalentForge").onFirst().fetchSemanticsNode()
+        val layouts = mutableListOf<TextLayoutResult>()
+        node.config.getOrNull(SemanticsActions.GetTextLayoutResult)?.action?.invoke(layouts)
+        return node to layouts.single()
     }
 
     // ------------------------------------------------------------- through App
 
     @Test
-    fun theRussianHomeEntryIsNamedAndOpensAbout() = onScreen(
+    fun homeOpensAboutThenLicensesAndBackReturnsStepByStep() = onScreen(
+        content = { App(storage = FakeBuildLibraryStorage(), clock = FixedClock(), ids = SequentialIds(), appVersion = version) },
+    ) {
+        awaitText("New build")
+        // the Home entry: a 48 dp glyph named "About", one line with the wordmark
+        val entry = onAllNodesWithContentDescription("About").fetchSemanticsNodes().single()
+        assertTrue(entry.size.width >= 48 && entry.size.height >= 48, "About entry ${entry.size} < 48 dp")
+        onAllNodes(clickLabelled("open About TalentForge")).onFirst().performClick()
+        awaitText("Version 0.1.0 (1)")
+
+        onAllNodes(clickLabelled("open the third-party licenses")).onFirst().performScrollTo().performClick()
+        awaitText("AndroidX (Android Jetpack)")
+        assertAbsent("Version 0.1.0 (1)")
+
+        onAllNodesWithContentDescription("go back").onFirst().performClick()
+        awaitText("Version 0.1.0 (1)")
+        assertAbsent("AndroidX (Android Jetpack)")
+
+        onAllNodesWithContentDescription("go back").onFirst().performClick()
+        awaitText("New build")
+        assertAbsent("Version 0.1.0 (1)")
+    }
+
+    @Test
+    fun theRussianRouteWorksOnANarrowPhoneWithLargeText() = onScreen(
         language = AppLanguage.RUSSIAN,
         widthDp = 320,
         heightDp = 568,
@@ -286,28 +319,21 @@ class AboutScreenUiTest {
         onAllNodes(clickLabelled("открыть сведения о TalentForge")).onFirst().performClick()
         awaitText("О приложении")
         awaitText("НЕЗАВИСИМЫЙ ПРОЕКТ")
+        onAllNodes(clickLabelled("открыть лицензии сторонних компонентов")).onFirst().performScrollTo().performClick()
+        awaitText("Лицензии сторонних компонентов")
+        awaitText("Apache License 2.0 · 88 модулей")
+        onAllNodesWithContentDescription("назад").onFirst().performClick()
+        awaitText("НЕЗАВИСИМЫЙ ПРОЕКТ")
     }
 
-    @Test
-    fun homeOpensAboutAndBackReturnsHome() = onScreen(
-        content = { App(storage = FakeBuildLibraryStorage(), clock = FixedClock(), ids = SequentialIds(), appVersion = version) },
-    ) {
-        awaitText("New build")
-        // the Home entry: a 48 dp glyph named "About", one line with the wordmark
-        val entry = onAllNodesWithContentDescription("About").fetchSemanticsNodes().single()
-        assertTrue(entry.size.width >= 48 && entry.size.height >= 48, "About entry ${entry.size} < 48 dp")
-        onAllNodes(clickLabelled("open About TalentForge")).onFirst().performClick()
-        awaitText("Version 0.1.0 (1)")
-        onAllNodesWithContentDescription("go back").onFirst().performClick()
-        awaitText("New build")
-        assertAbsent("Version 0.1.0 (1)")
-    }
+    private companion object {
+        /** Names the main About screen must not show (lower case); they belong to the licenses screen. */
+        val TECHNOLOGY_TERMS = listOf(
+            "kotlin", "compose", "androidx", "jetpack", "jetbrains", "multiplatform", "skia", "skiko",
+            "gradle", "guava", "kotlinx", "ktor", "apache", "bsd", "mit license", "module", "модул",
+            "library", "библиотек", "sdk", "framework",
+        )
 
-    private class RecordingUriHandler : UriHandler {
-        val opened = mutableListOf<String>()
-
-        override fun openUri(uri: String) {
-            opened += uri
-        }
+        val BACK_LABEL = mapOf(AppLanguage.ENGLISH to "go back", AppLanguage.RUSSIAN to "назад")
     }
 }

@@ -35,21 +35,23 @@ import org.junit.Assume.assumeTrue
 import org.junit.Rule
 
 /**
- * M5.RC.2b PR evidence: Home with its About link and the About screen — top,
- * privacy, open-source notices (collapsed and expanded) and the licence text —
- * desktop-rendered in English and Russian at 393 × 852, plus the narrow
- * 320 × 568 phone at 200 % font scale.
+ * M5.UI.ABOUT.1 PR evidence: Home with its About link, the simplified About
+ * screen (top, privacy details open, the licenses row) and the third-party
+ * licenses (top, modules expanded, licence text) — desktop-rendered in English
+ * and Russian at 393 × 852, plus the narrow 320 × 568 phone at 200 % font
+ * scale. Supersedes the M5.RC.2b capture, whose single-page flow no longer
+ * exists.
  *
  * Skipped unless the caller opts in (evidence, not a regression assertion —
- * the assertions live in `AboutScreenUiTest`):
+ * the assertions live in `AboutScreenUiTest` and `LicensesScreenUiTest`):
  *
  * ```
- * ./gradlew :composeApp:desktopTest --tests "*M5Rc2bScreenshotTest*" \
- *     -Dtalentforge.m5rc2b.screenshots=<output-dir>
+ * ./gradlew :composeApp:desktopTest --tests "*M5UiAbout1ScreenshotTest*" \
+ *     -Dtalentforge.m5uiabout1.screenshots=<output-dir>
  * ```
  */
 @OptIn(ExperimentalTestApi::class)
-class M5Rc2bScreenshotTest {
+class M5UiAbout1ScreenshotTest {
 
     @get:Rule
     val uiLanguage = AppLanguageRule(AppLanguage.ENGLISH)
@@ -90,11 +92,15 @@ class M5Rc2bScreenshotTest {
     private val about: @Composable () -> Unit = {
         AboutScreen(
             appVersion = AppVersion(name = "0.1.0", code = 1),
-            noticesPath = ANDROID_OSS_NOTICES_PATH,
             backupStatement = BackupStatement.AndroidBackupDisabled,
             privacyPolicyUrl = LegalLinks.privacyPolicyUrl,
             onBack = {},
+            onOpenLicenses = {},
         )
+    }
+
+    private val licenses: @Composable () -> Unit = {
+        LicensesScreen(noticesPath = ANDROID_OSS_NOTICES_PATH, onBack = {})
     }
 
     private fun ComposeUiTest.awaitText(text: String) {
@@ -113,10 +119,11 @@ class M5Rc2bScreenshotTest {
     }
 
     @Test
-    fun m5rc2bAboutScreens() {
+    fun m5uiAbout1Screens() {
         for (language in AppLanguage.entries) {
             val ru = language == AppLanguage.RUSSIAN
             val tag = if (ru) "ru" else "en"
+            val licensesTitle = if (ru) "Лицензии сторонних компонентов" else "Third-party licenses"
             onScreen(language, content = { App(storage = FakeBuildLibraryStorage(), clock = FixedClock(), ids = SequentialIds()) }) {
                 waitUntil(timeoutMillis = 20_000) {
                     onAllNodesWithContentDescription(if (ru) "О приложении" else "About").fetchSemanticsNodes().isNotEmpty()
@@ -125,33 +132,42 @@ class M5Rc2bScreenshotTest {
             }
             onScreen(language, content = about) {
                 awaitText(if (ru) "НЕЗАВИСИМЫЙ ПРОЕКТ" else "INDEPENDENT PROJECT")
-                shoot("$tag-02-about-top.png")
-                scrollTo(if (ru) "ЛИЦЕНЗИИ ОТКРЫТОГО ПО" else "OPEN-SOURCE LICENSES")
-                shoot("$tag-03-about-privacy.png")
-                scrollTo("Guava ListenableFuture")
-                shoot("$tag-04-about-licenses.png")
+                shoot("$tag-02-about.png")
+                val details = if (ru) "Подробнее" else "Show details"
+                scrollTo(details)
+                onAllNodesWithText(details).onFirst().performClick()
+                scrollTo(licensesTitle)
+                shoot("$tag-03-about-privacy-details.png")
+            }
+            onScreen(language, content = licenses) {
+                awaitText("Guava ListenableFuture")
+                shoot("$tag-04-licenses.png")
                 scrollTo("AndroidX (Android Jetpack)")
                 onAllNodesWithText(if (ru) "Показать модули" else "Show modules").onFirst().performClick()
-                shoot("$tag-05-about-modules-expanded.png")
+                shoot("$tag-05-licenses-modules-expanded.png")
                 val showText = if (ru) "Показать текст лицензии" else "Show license text"
                 scrollTo(showText)
                 onAllNodesWithText(showText).onFirst().performClick()
                 waitUntil(timeoutMillis = 20_000) {
                     onAllNodesWithText("TERMS AND CONDITIONS", substring = true).fetchSemanticsNodes().isNotEmpty()
                 }
-                shoot("$tag-06-about-license-text.png")
+                shoot("$tag-06-licenses-license-text.png")
             }
             onScreen(language, widthDp = 320, heightDp = 568, fontScale = 2f, content = about) {
                 awaitText(if (ru) "НЕЗАВИСИМЫЙ ПРОЕКТ" else "INDEPENDENT PROJECT")
                 shoot("$tag-07-about-320x568-font200.png")
-                scrollTo("Kotlin Standard Library")
-                shoot("$tag-08-about-320x568-font200-licenses.png")
+                scrollTo(licensesTitle)
+                shoot("$tag-08-about-320x568-font200-bottom.png")
+            }
+            onScreen(language, widthDp = 320, heightDp = 568, fontScale = 2f, content = licenses) {
+                awaitText("Kotlin Standard Library")
+                shoot("$tag-09-licenses-320x568-font200.png")
             }
         }
     }
 
     private companion object {
-        const val PROPERTY = "talentforge.m5rc2b.screenshots"
+        const val PROPERTY = "talentforge.m5uiabout1.screenshots"
         const val DENSITY = 2f
     }
 }
