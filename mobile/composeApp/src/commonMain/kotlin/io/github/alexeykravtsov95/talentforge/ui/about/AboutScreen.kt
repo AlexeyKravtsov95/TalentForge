@@ -93,7 +93,8 @@ import org.jetbrains.compose.resources.stringResource
  *   verified statements (with the backup paragraph true for this platform,
  *   [backupStatement]) behind one explicit 48 dp toggle, and the link to the
  *   published privacy policy of the UI language ([privacyPolicyUrl],
- *   M5.LEGAL.LINK), opened in the system browser;
+ *   M5.LEGAL.LINK), opened in the system browser, ONLY when one is published
+ *   for this platform (Android; none for iOS yet, so `null` there);
  * - one row that opens the third-party licenses ([onOpenLicenses],
  *   [LicensesScreen]), where every open-source notice lives.
  */
@@ -101,7 +102,7 @@ import org.jetbrains.compose.resources.stringResource
 fun AboutScreen(
     appVersion: AppVersion?,
     backupStatement: BackupStatement,
-    privacyPolicyUrl: String,
+    privacyPolicyUrl: String?,
     onBack: () -> Unit,
     onOpenLicenses: () -> Unit,
     /** M5.OTA.3, OTA-enabled builds only: the data version in use and the "check now" action (OD-5). */
@@ -168,13 +169,15 @@ fun AboutScreen(
             hide = stringResource(Res.string.about_privacy_hide_details),
             onToggle = { privacyDetails = !privacyDetails },
         )
-        val uriHandler = LocalUriHandler.current
-        SecondaryActionButton(
-            text = stringResource(Res.string.about_privacy_policy_link),
-            onClickLabel = stringResource(Res.string.about_privacy_policy_action),
-            onClick = { uriHandler.openUri(policyLink) },
-            modifier = Modifier.fillMaxWidth(),
-        )
+        if (policyLink != null) {
+            val uriHandler = LocalUriHandler.current
+            SecondaryActionButton(
+                text = stringResource(Res.string.about_privacy_policy_link),
+                onClickLabel = stringResource(Res.string.about_privacy_policy_action),
+                onClick = { uriHandler.openUri(policyLink) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
 
         Spacer(Modifier.height(TalentForgeSpacing.hairline))
         LicensesEntry(onClick = onOpenLicenses)

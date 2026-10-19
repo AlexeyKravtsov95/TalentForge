@@ -221,21 +221,37 @@ class OpenSourceNoticesTest {
     }
 
     @Test
-    fun thePublishedPrivacyPolicyAddressesAreTheOwnersPages() {
-        assertEquals("https://legal.mythweld.com/privacy.html", LegalLinks.privacyPolicyUrlRu)
-        assertEquals("https://legal.mythweld.com/privacy-en.html", LegalLinks.privacyPolicyUrlEn)
+    fun thePublishedPrivacyPolicyAddressesAreTheOwnersAndroidPages() {
+        assertEquals("https://legal.mythweld.com/privacy.html", LegalLinks.androidPrivacyPolicyUrlRu)
+        assertEquals("https://legal.mythweld.com/privacy-en.html", LegalLinks.androidPrivacyPolicyUrlEn)
     }
 
     @Test
-    fun thePrivacyPolicyUrlFollowsTheUiLanguage() {
-        assertEquals(LegalLinks.privacyPolicyUrlRu, privacyPolicyUrlOf(AppLanguage.RUSSIAN))
-        assertEquals(LegalLinks.privacyPolicyUrlEn, privacyPolicyUrlOf(AppLanguage.ENGLISH))
+    fun theAndroidPrivacyPolicyUrlFollowsTheUiLanguage() {
+        assertEquals(LegalLinks.androidPrivacyPolicyUrlRu, privacyPolicyUrlOf(PublishedPrivacyPolicy.Android, AppLanguage.RUSSIAN))
+        assertEquals(LegalLinks.androidPrivacyPolicyUrlEn, privacyPolicyUrlOf(PublishedPrivacyPolicy.Android, AppLanguage.ENGLISH))
+    }
+
+    @Test
+    fun aPlatformWithoutAPublishedPolicyGetsNoLinkInAnyLanguage() {
+        // iOS (M5.LEGAL.LINK): the Android policy must never be offered as the iOS one
+        for (language in AppLanguage.entries) {
+            assertNull(privacyPolicyUrlOf(PublishedPrivacyPolicy.NotPublished, language))
+            assertNull(privacyPolicyLinkOf(privacyPolicyUrlOf(PublishedPrivacyPolicy.NotPublished, language)))
+        }
+    }
+
+    @Test
+    fun theDesktopHostPresentsTheAndroidPolicy() {
+        // the desktop target is the Android UI's development host, like its notices and backup statement
+        assertEquals(PublishedPrivacyPolicy.Android, platformPrivacyPolicy)
+        assertEquals(BackupStatement.AndroidBackupDisabled, platformBackupStatement)
     }
 
     @Test
     fun everyPublishedPrivacyPolicyUrlIsALegalHttpsLink() {
         for (language in AppLanguage.entries) {
-            val url = privacyPolicyUrlOf(language)
+            val url = privacyPolicyUrlOf(PublishedPrivacyPolicy.Android, language)
             assertEquals(url, privacyPolicyLinkOf(url))
         }
     }

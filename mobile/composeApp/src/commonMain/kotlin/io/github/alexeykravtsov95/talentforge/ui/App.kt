@@ -27,6 +27,7 @@ import io.github.alexeykravtsov95.talentforge.ui.about.AppVersion
 import io.github.alexeykravtsov95.talentforge.ui.about.LicensesScreen
 import io.github.alexeykravtsov95.talentforge.ui.about.platformBackupStatement
 import io.github.alexeykravtsov95.talentforge.ui.about.platformOpenSourceNoticesPath
+import io.github.alexeykravtsov95.talentforge.ui.about.platformPrivacyPolicy
 import io.github.alexeykravtsov95.talentforge.ui.about.privacyPolicyUrlOf
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
 import io.github.alexeykravtsov95.talentforge.ui.builds.AllBuildsScreen
@@ -278,7 +279,7 @@ fun App(
             AppDestination.About -> AboutScreen(
                 appVersion = appVersion,
                 backupStatement = platformBackupStatement,
-                privacyPolicyUrl = privacyPolicyUrlOf(appLanguage()),
+                privacyPolicyUrl = privacyPolicyUrlOf(platformPrivacyPolicy, appLanguage()),
                 onBack = ::navigateUp,
                 onOpenLicenses = { destinations = destinations + AppDestination.Licenses },
                 otaStatus = otaStatus,

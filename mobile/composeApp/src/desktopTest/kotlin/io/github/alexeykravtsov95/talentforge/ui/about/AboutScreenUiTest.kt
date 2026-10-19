@@ -34,8 +34,8 @@ import org.junit.Rule
  * icon/name/description/installed version header (the version from the host,
  * never invented), the talent data in use, the independent-project statement,
  * the compact privacy block whose every statement stays one explicit toggle
- * away, the published policy link of the UI language (M5.LEGAL.LINK), the
- * one row into the third-party licenses, and NO technology, dependency or
+ * away, the published policy link of the UI language where a policy is
+ * published for the platform and none on iOS (M5.LEGAL.LINK), the one row into the third-party licenses, and NO technology, dependency or
  * module names; 48 dp targets at 320 dp / 200 %; and Home → About → Licenses
  * → Back → Back through the real app root. The licenses themselves:
  * `LicensesScreenUiTest`.
@@ -62,7 +62,8 @@ class AboutScreenUiTest {
         language: AppLanguage = AppLanguage.ENGLISH,
         appVersion: AppVersion? = version,
         backup: BackupStatement = BackupStatement.AndroidBackupDisabled,
-        privacyPolicyUrl: String = privacyPolicyUrlOf(language),
+        policy: PublishedPrivacyPolicy = PublishedPrivacyPolicy.Android,
+        privacyPolicyUrl: String? = privacyPolicyUrlOf(policy, language),
         onBack: () -> Unit = {},
         onOpenLicenses: () -> Unit = {},
     ): @Composable () -> Unit = {
@@ -220,7 +221,28 @@ class AboutScreenUiTest {
             onScreen(language = language, uriHandler = handler, content = about(language)) {
                 // visible without opening the details, labelled in the UI language
                 clickText(if (language == AppLanguage.RUSSIAN) "Политика конфиденциальности" else "Privacy policy")
-                assertEquals(listOf(privacyPolicyUrlOf(language)), handler.opened)
+                assertEquals(listOf(privacyPolicyUrlOf(PublishedPrivacyPolicy.Android, language)), handler.opened)
+            }
+        }
+    }
+
+    @Test
+    fun iosShowsThePrivacySummaryWithoutTheAndroidPolicyLink() {
+        for (language in AppLanguage.entries) {
+            val ru = language == AppLanguage.RUSSIAN
+            onScreen(
+                language = language,
+                content = about(language, backup = BackupStatement.IosDeviceBackup, policy = PublishedPrivacyPolicy.NotPublished),
+            ) {
+                // the local summary stays: its first statement and every detail behind the toggle
+                awaitText(if (ru) "КОНФИДЕНЦИАЛЬНОСТЬ" else "PRIVACY")
+                awaitText(if (ru) "TalentForge работает без интернета" else "TalentForge works offline", substring = true)
+                clickText(if (ru) "Подробнее" else "Show details")
+                awaitText(if (ru) "Если на устройстве включено резервное копирование" else "If your device's backup (iCloud or a computer) is on", substring = true)
+                // but no link: the published policy is the Android app's
+                assertAbsent("Privacy policy")
+                assertAbsent("Политика конфиденциальности")
+                assertEquals(0, onAllNodes(clickLabelled(if (ru) "открыть политику конфиденциальности в браузере" else "open the privacy policy in the browser")).fetchSemanticsNodes().size)
             }
         }
     }
@@ -239,7 +261,8 @@ class AboutScreenUiTest {
                 onAllNodes(clickLabelled(if (ru) "открыть сведения о TalentForge" else "open About TalentForge")).onFirst().performClick()
                 awaitText(if (ru) "О приложении" else "Version 0.1.0 (1)")
                 clickText(if (ru) "Политика конфиденциальности" else "Privacy policy")
-                assertEquals(listOf(privacyPolicyUrlOf(language)), handler.opened)
+                // the desktop host is the Android UI's: the app root passes the Android policy
+                assertEquals(listOf(privacyPolicyUrlOf(PublishedPrivacyPolicy.Android, language)), handler.opened)
             }
         }
     }

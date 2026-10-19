@@ -94,7 +94,7 @@ class M5UiAbout1ScreenshotTest {
         AboutScreen(
             appVersion = AppVersion(name = "0.1.0", code = 1),
             backupStatement = BackupStatement.AndroidBackupDisabled,
-            privacyPolicyUrl = privacyPolicyUrlOf(appLanguage()),
+            privacyPolicyUrl = privacyPolicyUrlOf(PublishedPrivacyPolicy.Android, appLanguage()),
             onBack = {},
             onOpenLicenses = {},
         )

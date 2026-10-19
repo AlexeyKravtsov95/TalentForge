@@ -8,6 +8,10 @@ actual val platformOpenSourceNoticesPath: String? = IOS_OSS_NOTICES_PATH
 
 actual val platformBackupStatement: BackupStatement = BackupStatement.IosDeviceBackup
 
+// The published privacy policy is the Android app's; none is published for iOS yet, so the
+// iOS About screen keeps the in-app summary without a link (M5.LEGAL.LINK).
+actual val platformPrivacyPolicy: PublishedPrivacyPolicy = PublishedPrivacyPolicy.NotPublished
+
 /** The bundle's marketing version and build number, or `null` when either is missing. */
 fun bundleAppVersion(): AppVersion? {
     val bundle = NSBundle.mainBundle
