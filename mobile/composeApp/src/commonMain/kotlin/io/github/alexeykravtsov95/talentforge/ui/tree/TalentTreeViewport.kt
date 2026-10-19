@@ -80,27 +80,38 @@ data class TalentTreeViewport(
         ): TalentTreeViewport = initialFor(bounds, canvasSize,
             if (landscape) TalentTreeLayoutClass.LANDSCAPE else TalentTreeLayoutClass.PORTRAIT)
 
-        /** Layout-class-aware variant of [initialFor] (M4.2). */
+        /**
+         * Layout-class-aware variant of [initialFor] (M4.2). M5.UI.TABLET.1:
+         * [topReserveDp] (screen dp, ≥ 0) is kept free above the content — the
+         * tablet specialization headers — so the content and that room are
+         * centred together when they fit, and the content starts below the
+         * room otherwise. 0 is exactly the M4.2 camera.
+         */
         fun initialFor(
             bounds: TalentTreeBounds,
             canvasSize: Size,
             layoutClass: TalentTreeLayoutClass,
+            topReserveDp: Float = 0f,
         ): TalentTreeViewport {
             val scale = when (layoutClass) {
                 TalentTreeLayoutClass.PORTRAIT -> TalentTreeCanvasMetrics.INITIAL_SCALE_PORTRAIT
                 TalentTreeLayoutClass.LANDSCAPE -> TalentTreeCanvasMetrics.INITIAL_SCALE_LANDSCAPE
                 TalentTreeLayoutClass.TABLET -> TalentInspectorMetrics.INITIAL_SCALE_TABLET
             }
+            val reserve = topReserveOf(topReserveDp)
             val margin = TalentTreeCanvasMetrics.CANVAS_START_MARGIN_DP
             val offsetX = margin - bounds.minX * scale
             val contentHeight = bounds.height * scale
-            val offsetY = if (contentHeight <= canvasSize.height) {
-                canvasSize.height / 2f - bounds.centerY * scale
+            val offsetY = if (contentHeight + reserve <= canvasSize.height) {
+                canvasSize.height / 2f - bounds.centerY * scale + reserve / 2f
             } else {
-                margin - bounds.minY * scale
+                margin + reserve - bounds.minY * scale
             }
             return TalentTreeViewport(scale, Offset(offsetX, offsetY))
         }
+
+        /** A usable top reserve: finite and non-negative, otherwise none. */
+        internal fun topReserveOf(value: Float): Float = if (value.isFinite()) value.coerceAtLeast(0f) else 0f
 
         /**
          * M5.UX.1 (1A v2 S3 "first open"): the camera of ONE section
@@ -190,6 +201,12 @@ data class TalentTreeViewport(
      * back towards them. Works across scale changes because the comparison is
      * made on screen-space edge gaps, not offsets.
      *
+     * M5.UI.TABLET.1: [contentTopReserveDp] (screen dp) extends the content
+     * upwards by a constant screen height at every zoom — the room of the
+     * tablet specialization headers above the trees — so the camera can
+     * always bring those headers into view, and a fitting tree keeps them
+     * inside the canvas. 0 is exactly the bounds above.
+     *
      * Only the offset changes; the scale is never touched and the result is
      * always finite. Degenerate canvases return `this`.
      */
@@ -200,6 +217,7 @@ data class TalentTreeViewport(
         reference: TalentTreeViewport? = null,
         coveredLeftDp: Float = 0f,
         coveredRightDp: Float = 0f,
+        contentTopReserveDp: Float = 0f,
     ): TalentTreeViewport {
         fun cover(value: Float) = if (value.isFinite()) value.coerceAtLeast(0f) else 0f
         val covered = cover(coveredBottomDp)
@@ -223,6 +241,7 @@ data class TalentTreeViewport(
             extent = extentY,
             referenceScale = reference?.scale,
             referenceOffset = reference?.offset?.y,
+            leadReserve = topReserveOf(contentTopReserveDp),
         )
         if (x == offset.x && y == offset.y) return this
         return TalentTreeViewport(scale, Offset(x, y))
@@ -235,12 +254,14 @@ data class TalentTreeViewport(
         extent: Float,
         referenceScale: Float?,
         referenceOffset: Float?,
+        /** Screen dp the content extends before [min] at any scale (M5.UI.TABLET.1 header room). */
+        leadReserve: Float = 0f,
     ): Float {
         val field = TalentTreeCanvasMetrics.CAMERA_FIELD_DP
         // screen-space gaps of the reference camera (leading = content start
         // to the visible start, trailing = content end to the visible end)
         val referenceLead = if (referenceScale != null && referenceOffset != null) {
-            min * referenceScale + referenceOffset
+            min * referenceScale + referenceOffset - leadReserve
         } else {
             null
         }
@@ -249,21 +270,23 @@ data class TalentTreeViewport(
         } else {
             null
         }
-        val size = (max - min) * scale
+        // the content's leading edge on screen is `start + offset`
+        val start = min * scale - leadReserve
+        val size = (max - min) * scale + leadReserve
         val low: Float
         val high: Float
         if (size + 2f * field <= extent) {
             // fits: both gaps at least the field (or as small as they already were)
             val leadMin = minOf(field, referenceLead ?: field)
             val trailMin = minOf(field, referenceTrail ?: field)
-            low = leadMin - min * scale
+            low = leadMin - start
             high = extent - trailMin - max * scale
         } else {
             // larger: neither gap wider than the field (or than it already was)
             val leadMax = maxOf(field, referenceLead ?: field)
             val trailMax = maxOf(field, referenceTrail ?: field)
             low = extent - trailMax - max * scale
-            high = leadMax - min * scale
+            high = leadMax - start
         }
         if (!low.isFinite() || !high.isFinite()) return offset
         if (low > high) return (low + high) / 2f

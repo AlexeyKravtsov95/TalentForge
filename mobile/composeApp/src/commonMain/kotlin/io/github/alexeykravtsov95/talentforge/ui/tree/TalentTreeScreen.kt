@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -442,6 +443,11 @@ private fun ReadyTalentTreeScreen(
     // per-section spent points from the live build (tabs)
     val sectionPoints = remember(sectioned, editing.current) {
         sectioned?.let { sectionSpentPoints(it, editing.current) } ?: emptyMap()
+    }
+    // M5.UI.TABLET.1: the tablet's whole-tree canvas names each specialization
+    // tree above its top row (same labels and live counts as the phone tabs)
+    val sectionHeaders = remember(sectioned, sectionPoints, current.classToken, language) {
+        sectioned?.let { talentTabletSectionHeaders(it, sectionPoints, current.classToken, language) }.orEmpty()
     }
     // 1A v2 04: the way back after a cross-section Show (UI state only)
     var sectionReturn by rememberSaveable(stateSaver = TalentSectionReturnSaver) {
@@ -1032,6 +1038,7 @@ private fun ReadyTalentTreeScreen(
                     pageOffsetPx: (() -> Float)? = null,
                     pageTag: String? = null,
                     composedNodeCount: () -> Int = { Int.MAX_VALUE },
+                    contentTopReserveDp: Float = 0f,
                 ) {
                     TalentTreeCanvas(
                         model = model,
@@ -1054,6 +1061,7 @@ private fun ReadyTalentTreeScreen(
                         pageOffsetPx = pageOffsetPx,
                         pageTag = pageTag,
                         composedNodeCount = composedNodeCount,
+                        contentTopReserveDp = contentTopReserveDp,
                     )
                 }
 
@@ -1088,7 +1096,29 @@ private fun ReadyTalentTreeScreen(
                 Box(Modifier.fillMaxSize()) {
                     when (layoutClass) {
                         TalentTreeLayoutClass.TABLET -> Row(Modifier.fillMaxSize()) {
-                            TreeCanvas(current.model, viewportState, Modifier.weight(1f))
+                            // M5.UI.TABLET.1: the specialization headers overlay the canvas
+                            // only (the persistent inspector is beside it, never over them),
+                            // placed from the canvas's own camera, which keeps room for them
+                            Box(Modifier.weight(1f).fillMaxHeight()) {
+                                TreeCanvas(
+                                    model = current.model,
+                                    camera = viewportState,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentTopReserveDp = if (sectionHeaders.isEmpty()) {
+                                        0f
+                                    } else {
+                                        talentTabletHeaderReserveDp(LocalDensity.current)
+                                    },
+                                )
+                                if (sectionHeaders.isNotEmpty()) {
+                                    TalentTabletSectionHeaders(
+                                        headers = sectionHeaders,
+                                        viewportState = viewportState,
+                                        accent = current.classAccent,
+                                        modifier = Modifier.matchParentSize(),
+                                    )
+                                }
+                            }
                             TalentInspectorPersistentPanel(
                                 accent = current.classAccent,
                                 content = inspectorContent,
