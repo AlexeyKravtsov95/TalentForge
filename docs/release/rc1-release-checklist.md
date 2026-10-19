@@ -240,7 +240,7 @@ key, uploaded or published.
 - [ ] 🔑 Configure the four signing settings and `cert_sha256` on the release machine ([guide §3](android-release-signing.md#3-configure-the-build-)).
 - [ ] 🔑 Decide the first public `versionCode` / `versionName` (applied in a reviewed change).
 - [ ] 🔑 Build `assemblePublishableRelease` from the release commit; record the report's APK SHA-256; the same file goes to both stores.
-- [ ] Legal/owner: LR-1…LR-5 sign-off, including the in-app draft disclaimer (LR-2), the OSS-notice mechanism (LR-4) and the privacy policy text, hosting and URL (LR-5). M5.LEGAL.LINK wired the owner-published RU/EN policy URLs into the About screen (`privacyPolicyUrlOf`, `legal.mythweld.com`); the sign-off of the policy text and the developer contacts remains.
+- [ ] Legal/owner: LR-1…LR-5 sign-off, including the in-app draft disclaimer (LR-2), the OSS-notice mechanism (LR-4) and the privacy policy text, hosting and URL (LR-5). M5.LEGAL.LINK wired the owner-published RU/EN Android policy URLs into the Android About screen (`privacyPolicyUrlOf`, `legal.mythweld.com`); iOS shows no link until an iOS policy is published; the sign-off of the policy text and the developer contacts remains.
 - [ ] Owner: the remaining TF-RC1-ANDROID-CONFIG decisions (R8, ABI filtering, `localeConfig`, `targetSdk`).
 - [ ] Device runs of the signed APK (M5.RC.3): install/update, About screen, backup behaviour (`adb shell bmgr` / a vendor transfer on a Huawei and a TECNO device). **Not run in M5.RC.2b.**
 
