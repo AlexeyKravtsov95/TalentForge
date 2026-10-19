@@ -207,6 +207,27 @@ class TalentTabletSectionHeadersTest {
     }
 
     @Test
+    fun theProgrammaticClampKeepsTheHeaderRoomLikeTheGestureClamp() {
+        val reserve = 46f
+        val canvas = Size(900f, 748f)
+        val state = TalentTreeViewportState(initial = null)
+        state.onCanvasSizeChanged(canvas, density = 1f)
+        state.layoutClass = TalentTreeLayoutClass.TABLET
+        state.contentTopReserveDp = reserve
+        state.initializeOnce(bounds)
+        val fit = state.viewport!!
+        // a Show-style centring target that pulls the trees up against the canvas top
+        val target = fit.panBy(Offset(0f, -300f))
+        val clamped = state.clampTarget(target)
+        assertEquals(
+            target.clampedTo(bounds, canvas, reference = fit, contentTopReserveDp = reserve),
+            clamped,
+            "Show's clamp is the gesture clamp, header room included",
+        )
+        assertTrue(bounds.minY * clamped.scale + clamped.offset.y - reserve >= TalentTreeCanvasMetrics.CAMERA_FIELD_DP - 0.01f)
+    }
+
+    @Test
     fun theWholeTreeCameraFitsWithTheReserveItWasGiven() {
         val state = TalentTreeViewportState(initial = null)
         state.onCanvasSizeChanged(Size(900f, 748f), density = 1f)

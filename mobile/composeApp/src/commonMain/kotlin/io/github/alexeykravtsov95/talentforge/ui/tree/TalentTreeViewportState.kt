@@ -239,6 +239,7 @@ class TalentTreeViewportState(
             reference = viewport,
             coveredLeftDp = coveredLeftDp,
             coveredRightDp = coveredRightDp,
+            contentTopReserveDp = contentTopReserveDp,
         )
     }
 

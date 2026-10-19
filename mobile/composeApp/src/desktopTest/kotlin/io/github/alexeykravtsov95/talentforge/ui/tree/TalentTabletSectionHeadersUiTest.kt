@@ -330,6 +330,37 @@ class TalentTabletSectionHeadersUiTest {
         }
     }
 
+    /**
+     * Regression (PR #56 review): Show centres its target through the camera's
+     * programmatic clamp (`clampTarget`), which must keep the header room as the
+     * gesture clamp does. Protection is off screen at the 1280 dp fit; Show from
+     * Shield Slam (tier 7) centres Concussion Blow (tier 5), which pulls the tree
+     * up against the canvas top — its header must stay whole.
+     */
+    @Test
+    fun showKeepsTheHeaderOfTheTargetTreeWhole() {
+        val protection = sections(warrior).sections[2].index
+        onEditor(warrior, 1280, 800) { camera ->
+            val fit = camera.viewport!!
+            onNodeWithContentDescription("Shield Slam").performSemanticsAction(SemanticsActions.OnClick)
+            settle()
+            onNode(hasText(EditorCopy.English.show)).performClick()
+            settle()
+            onNodeWithContentDescription("Concussion Blow").assertIsSelected()
+            assertNotEquals(fit, camera.viewport, "Show moved the camera to the off-screen target")
+            val canvas = canvasRect(camera, 800)
+            val header = headerBounds(protection)
+            assertTrue(header != null, "the target tree is named")
+            assertTrue(header.top >= canvas.top - 0.5f, "Show never pushes the target tree's header off the canvas: $header in $canvas")
+            assertTrue(protection in assertHeadersAnchored(warrior, camera, 800))
+            // the target itself is brought on screen, as before
+            val node = warrior.model.nodes.first { it.name == "Concussion Blow" }
+            val viewport = camera.viewport!!
+            val x = node.centerX * viewport.scale + viewport.offset.x
+            assertTrue(x in 0f..camera.canvasSize.width, "the Show target is on screen")
+        }
+    }
+
     @Test
     fun theHeadersNeverTakeATouch() {
         val state = withSectionPoints(warrior, 13, 5, 0)
