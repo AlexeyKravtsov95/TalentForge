@@ -1,0 +1,15 @@
+PASS  unsigned       unsigned APK built; the validator rejects it (signature-verifies FAIL)
+PASS  publish-none   fails before building; nothing staged
+PASS  partial        fails naming the missing settings, without values
+PASS  debug-key      the debug keystore is refused
+PASS  in-repo-key    a keystore inside the checkout is refused
+PASS  signed         apksigner verifies; certificate = the test key; validator PASS
+PASS  publish-nocert fails; nothing staged
+PASS  publish-wrong  validation fails on the fingerprint; nothing staged
+PASS  publish-ok     staged TalentForge-0.1.0-1.apk with a PASS report (APK SHA-256 recorded)
+PASS  stale-wrong    attempt failed; the previous APK is gone from outputs/publishable
+PASS  stale-none     attempt failed before building; the previous APK is gone
+PASS  stale-partial  attempt failed in the signing checks; the previous APK is gone
+PASS  debug-apk      the validator rejects the debug certificate
+PASS  no-secrets     no password or keystore path in the logs, reports or build/
+test certificate SHA-256 (temporary key, deleted after the run): 9c13f93eed893f1c307a556a92412c86fcb3e3fb14a91860b8454cfc05cd5451

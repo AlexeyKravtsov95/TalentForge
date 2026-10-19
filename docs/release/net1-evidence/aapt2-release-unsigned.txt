@@ -1,0 +1,11 @@
+$ aapt2 dump permissions composeApp-release-unsigned.apk
+package: io.github.alexeykravtsov95.talentforge
+permission: io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+uses-permission: name='io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'
+
+$ aapt2 dump xmltree --file AndroidManifest.xml composeApp-release-unsigned.apk | grep -A2 uses-permission
+      E: uses-permission (line=15)
+        A: http://schemas.android.com/apk/res/android:name(0x01010003)="io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" (Raw: "io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION")
+      E: application (line=26)
+
+android.permission.INTERNET occurrences in the binary manifest: 0

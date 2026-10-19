@@ -9,6 +9,14 @@
 | Evidence | [`store1-evidence/`](store1-evidence/) (curated; scratch logs are not committed) |
 | Safety | No production key was created, read or used. Nothing was uploaded, submitted or published. The two signed APKs used here were signed with **temporary self-test keys** that were deleted after each run |
 
+> **Update 2026-10-19: NET-1 = B.** The owner chose option B ([§5.4](#54-options-for-the-first-release-owner-decision-net-1)).
+> The NET-1 engineering change (branch `fix/m5-net-1-release-no-internet`) removes `INTERNET` from release builds while
+> the production OTA channel is off, keeps it in debug builds, and adds a build guard with a self-test. It re-verifies
+> the release and temporary-key publishable APKs with `aapt2` ([NET-1 evidence](net1-evidence/README.md)) and restores the
+> "does not request internet access" wording in the texts listed in §5.3. Once that change is merged, STORE1-NET is
+> resolved. The decision stays **NO-GO** for the other blockers below. Statuses changed by the update are marked
+> *NET-1 = B*; the rest of the audit is the record for `b242cd6`.
+
 ## 1. Decision
 
 **NO-GO for publication.**
@@ -21,7 +29,7 @@ The engineering build is in good shape. On `b242cd6`:
 
 Publication is still blocked by:
 
-1. **A new P0 discrepancy (STORE1-NET).** Since M5.OTA.3 (commit `ea77dec`, PR #44, 2026-10-18), the
+1. **A new P0 discrepancy (STORE1-NET).** *NET-1 = B: resolved by the NET-1 change (update above).* Since M5.OTA.3 (commit `ea77dec`, PR #44, 2026-10-18), the
    Android manifest declares `android.permission.INTERNET`. The privacy-policy drafts, both store
    listings, the release checklist and the AppGallery readiness documents still say that the app
    requests no internet access. As written, they would turn into false store declarations. The
@@ -213,6 +221,12 @@ is one small manifest-plus-guard change. Choose A only if the owner accepts the 
 and uses the variant-A texts everywhere. Defer C until the OTA gate (OD-1, OD-2, OD-4, OD-5, test-plan §6)
 is passed. This audit does **not** implement any option.
 
+**Decision (owner, 2026-10-19): B.** Implemented by the NET-1 change: `src/androidRelease/AndroidManifest.xml`
+removes `INTERNET`, and `:composeApp:checkReleaseInternetPermission` stops packaging of any release variant whose merged
+manifest requests `INTERNET` while `talentforge.ota.android.production.enabled` is not `true`, or lacks it while it
+is. The change that enables production OTA (option C) deletes the removal and changes the texts in the same
+release ([NET-1 evidence](net1-evidence/README.md)).
+
 ### 5.5 Replacement texts (drafts for owner/legal review)
 
 **Variant A** (keep the permission, OTA off) — privacy policy item 6:
@@ -303,8 +317,8 @@ AppGallery:
 | 64-bit, Android 8.0+ | PASS | `arm64-v8a`; `minSdk 26` |
 | Icon | PASS (file), NOT VERIFIED (consoles, Huawei launcher) | 512×512 opaque PNG, 185 254 bytes, identical to the RC.2a package; launcher icon present in the APK |
 | Screenshots | **BLOCKED** | none exist from the signed release build (§7) |
-| Metadata (name, short/full description) | **NEEDS UPDATE** | ⟨NET-1⟩ placeholders (§5.3); otherwise accurate for `b242cd6` |
-| Permissions | **FAIL until NET-1 is decided** | §5 |
+| Metadata (name, short/full description) | *NET-1 = B:* accurate | the ⟨NET-1⟩ placeholders are replaced by the original sentences; otherwise accurate for `b242cd6` |
+| Permissions | *NET-1 = B:* **PASS** (temporary-key APK) | release requests only the AndroidX signature permission ([NET-1 evidence](net1-evidence/README.md)); re-check on the owner-signed APK |
 | Privacy policy, public URL, in-app link | **BLOCKED** (owner/legal) | draft only; `LegalLinks.privacyPolicyUrl = null` |
 | Age rating | **BLOCKED** (consoles) | facts in [privacy §6](appgallery/privacy-and-compliance.md#6-content-facts-for-age-rating-questionnaires) unchanged |
 | Third-party content | **BLOCKED** (legal) | LR-1…LR-3 (§8) |
@@ -314,13 +328,13 @@ AppGallery:
 | Artifact | Status | Why |
 |---|---|---|
 | Store icon `rc2a-evidence/source/TalentForge-RuStore-512.png` | **READY** (after owner approval) | meets both stores' specifications; the artwork is unchanged since RC.2a |
-| Listing EN [store-listing-en](appgallery/store-listing-en.md) | **NEEDS UPDATE** | the permission sentence is replaced by ⟨NET-1⟩. The "Scope rule" names `f7494e1`; the described features were re-checked against `b242cd6` (Undo/Redo/Reset, Max, Show, share/import, RU/EN all present). Variant B stays gated on LR-2 |
-| Listing RU [store-listing-ru](appgallery/store-listing-ru.md) | **NEEDS UPDATE** | as EN; the Russian app-name question (O-10) is open |
+| Listing EN [store-listing-en](appgallery/store-listing-en.md) | *NET-1 = B:* **READY** (after owner approval) | the permission sentence is restored (it was ⟨NET-1⟩). The "Scope rule" names `f7494e1`; the described features were re-checked against `b242cd6` (Undo/Redo/Reset, Max, Show, share/import, RU/EN all present). Variant B stays gated on LR-2 |
+| Listing RU [store-listing-ru](appgallery/store-listing-ru.md) | *NET-1 = B:* **READY** (after owner approval) | as EN; the Russian app-name question (O-10) is open |
 | Release notes (EN/RU §5) | **READY** (after owner approval) | true for options A/B. Under C, "fully offline" / «без интернета» must change |
 | Reviewer notes ("Offline app … All features work without network access") | **READY** for A/B | verified in airplane mode (§4). Under A, add one line explaining `INTERNET` (RuStore 5.3) |
-| Privacy policy RU/EN (privacy §8) | **NEEDS UPDATE** + **BLOCKED** | ⟨NET-1⟩ and the existing owner fields; hosting, URL, contact |
+| Privacy policy RU/EN (privacy §8) | **BLOCKED** | *NET-1 = B:* item 6 restored to "does not request access to the internet"; still open: the owner fields, hosting, URL, contact |
 | Phone screenshots EN/RU | **BLOCKED** | must come from the **owner-signed release build**, with no system UI, gated by LR-1/LR-3. Everything in `docs/screenshots/*`, `docs/release/*/screenshots/*` and `store1-evidence/emulator/*.png` is debug, desktop-rendered or test evidence (the store1 captures include the status bar and were taken with a temporary key) and **must not** be uploaded |
-| Data-safety / privacy-tag answers | **BLOCKED** | NET-1 plus consoles 🔑 |
+| Data-safety / privacy-tag answers | **BLOCKED** | consoles 🔑 (*NET-1 = B:* §5.6 column A/B; no permission to justify under RuStore 5.3) |
 | Age rating, AI declaration | **BLOCKED** | consoles 🔑 |
 | Developer contact | **BLOCKED** | owner |
 | Signed APK | **BLOCKED** | owner key |
@@ -333,7 +347,7 @@ AppGallery:
 | LR-2 | Trademarks and positioning ("World of Warcraft", "Forever", class names; disclaimer) | **OPEN: legal review + owner decision** | The in-app About shows the trademark-free draft disclaimer (checked on the emulator); the listings default to the trademark-free variant A. RuStore 6.4 and AppGallery 1.2/1.15/9.5 unchanged |
 | LR-3 | Provenance and licence of the 9 class artwork files (`composeResources/drawable/class_*.png`) | **OPEN: owner** | Still not recorded anywhere in the repository (the only trace is commit `2a2ada2` "approved TalentForge class paintings") |
 | LR-4 | Third-party licences and notices | **OPEN: owner/legal sign-off** | Mechanism present: Third-party licenses screen (M5.UI.ABOUT.1), Android notices drift-checked in CI on `b242cd6`. The repository has no `LICENSE` (an owner choice, not a store requirement) |
-| LR-5 | Privacy policy, public URL, developer contacts | **OPEN: owner** | Now also depends on NET-1 (§5). Policy not hosted; `LegalLinks.privacyPolicyUrl = null`; no contact chosen; an AppGallery individual account gets no Website field |
+| LR-5 | Privacy policy, public URL, developer contacts | **OPEN: owner** | Depended on NET-1 (§5); *NET-1 = B* settles the network wording. Policy not hosted; `LegalLinks.privacyPolicyUrl = null`; no contact chosen; an AppGallery individual account gets no Website field |
 
 ## 9. Issues
 
@@ -341,7 +355,7 @@ AppGallery:
 
 | # | Issue | Severity | Owner/next step |
 |---|---|---|---|
-| STORE1-NET | `INTERNET` declared, texts say otherwise (§5) | **P0** for listings and privacy | owner NET-1 decision, then texts (and, for B, an engineering PR) |
+| STORE1-NET | `INTERNET` declared, texts say otherwise (§5) | **P0** for listings and privacy | *NET-1 = B:* resolved by the NET-1 change once merged (manifest removal, build guard, re-verification, texts) |
 | TF-RC1-SIGNING | no owner key, no production-signed APK | P0 | owner (O-1, O-2) |
 | LR-1…LR-5 | legal review | P0 | owner/legal |
 | STORE1-SHOTS | no store screenshots from a signed release build | P0 for submission | after signing and LR-1/LR-3 |
@@ -364,12 +378,12 @@ AppGallery:
 
 | # | Action | Blocks | Needs |
 |---|---|---|---|
-| OA-1 | **Decide NET-1** (§5.4: A, B or C) | listings, policy, declarations | — |
-| OA-2 | For B: request the engineering change (manifest removal + guard + re-verification) | NET-1 = B | — |
+| OA-1 | ~~Decide NET-1~~ **Done 2026-10-19: B** | listings, policy, declarations | — |
+| OA-2 | ~~For B: request the engineering change~~ **Done:** the NET-1 change (branch `fix/m5-net-1-release-no-internet`); review and merge it | NET-1 = B | — |
 | OA-3 | Approve the signing strategy (S-1); create the RSA 4096 key outside every checkout; two offline backups and a restore drill; record the SHA-256 ([guide](android-release-signing.md)) | signed APK | owner machine |
 | OA-4 | Decide the first public `versionCode`/`versionName` (reviewed change) | signed APK | — |
 | OA-5 | Legal review LR-1, LR-2 (incl. the in-app disclaimer and listing variant), LR-3 (record class-art provenance), LR-4 (notice mechanism) | publication | legal |
-| OA-6 | Finalise the privacy policy (RU + EN, ⟨NET-1⟩ and owner fields), host it at a public URL, then set `LegalLinks.privacyPolicyUrl` in a reviewed change (AppGallery 7.1 in-app link) | both stores | hosting |
+| OA-6 | Finalise the privacy policy (RU + EN, owner fields), host it at a public URL, then set `LegalLinks.privacyPolicyUrl` in a reviewed change (AppGallery 7.1 in-app link) | both stores | hosting |
 | OA-7 | Choose the developer contact (RuStore 6.7; AppGallery service info) and the Russian-name question (O-10) | listings | — |
 | OA-8 | Build `assemblePublishableRelease` with the owner key on the release commit; keep the report | upload | key |
 | OA-9 | Capture EN/RU screenshot sets from that APK per [assets §3](appgallery/assets-checklist.md#3-screenshots) | listings | device/emulator |
@@ -379,7 +393,7 @@ AppGallery:
 
 ## 11. Recommended order
 
-1. **NET-1** (OA-1). If B, do the small engineering PR first, so that every text and screenshot is made once, against the final manifest.
+1. **NET-1** (OA-1; *done: B*). If B, do the small engineering PR first, so that every text and screenshot is made once, against the final manifest.
 2. **Legal**: LR-1…LR-3 first (they can stop publication outright), then LR-2 copy and the LR-4 sign-off.
 3. **Privacy policy** and contact (OA-6, OA-7), then the in-app link change.
 4. **Version numbers and the owner key** (OA-3, OA-4), then the first publishable APK (OA-8).

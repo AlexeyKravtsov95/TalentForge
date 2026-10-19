@@ -1,0 +1,16 @@
+$ aapt2 dump permissions composeApp-debug.apk
+package: io.github.alexeykravtsov95.talentforge
+uses-permission: name='android.permission.INTERNET'
+permission: io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+uses-permission: name='io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'
+
+$ aapt2 dump xmltree --file AndroidManifest.xml composeApp-debug.apk | grep -A2 uses-permission
+      E: uses-permission (line=18)
+        A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.permission.INTERNET" (Raw: "android.permission.INTERNET")
+      E: permission (line=20)
+--
+      E: uses-permission (line=24)
+        A: http://schemas.android.com/apk/res/android:name(0x01010003)="io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" (Raw: "io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION")
+      E: application (line=35)
+
+android.permission.INTERNET occurrences in the binary manifest: 1
