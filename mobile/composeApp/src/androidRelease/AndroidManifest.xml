@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+      Owner decision NET-1 = B (M5.STORE.1 audit §5.4): while the production OTA channel is off,
+      a release build requests no network access. The androidMain manifest declares INTERNET for
+      the staging channel of debug builds; release builds remove it here. The change that enables
+      production OTA deletes this removal: :composeApp:checkReleaseInternetPermission fails every
+      release build whose merged manifest disagrees with talentforge.ota.android.production.enabled.
+    -->
+    <uses-permission
+        android:name="android.permission.INTERNET"
+        tools:node="remove" />
+
+</manifest>

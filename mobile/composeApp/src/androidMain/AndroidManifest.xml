@@ -5,6 +5,8 @@
       Talent data updates (M5.OTA.3): HTTPS GETs of the static OTA origin, and only when this
       build type's OTA configuration is enabled (it is disabled by default; client design §8,
       test-plan §6B). Cleartext stays refused by the default network security configuration.
+      Release builds remove it while the production channel is off (NET-1 = B,
+      src/androidRelease/AndroidManifest.xml); debug builds keep it for the staging channel.
     -->
     <uses-permission android:name="android.permission.INTERNET" />
 
