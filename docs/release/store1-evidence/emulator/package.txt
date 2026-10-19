@@ -1,0 +1,8 @@
+    versionCode=1 minSdk=26 targetSdk=36
+    versionName=0.1.0
+    flags=[ HAS_CODE ALLOW_CLEAR_USER_DATA ]
+    pkgFlags=[ HAS_CODE ALLOW_CLEAR_USER_DATA ]
+    requested permissions:
+      android.permission.INTERNET
+    install permissions:
+      android.permission.INTERNET: granted=true

@@ -4,7 +4,8 @@
 |---|---|
 | Status | **DRAFT** — owner approval and legal review (LR-1, LR-2) required before use |
 | Stores | Huawei AppGallery (EN localization) · RuStore (EN is secondary; the RuStore card description must be Russian, see the [RU draft](store-listing-ru.md)) |
-| Scope rule | Describes only what `main` @ `f7494e1` does. No Legacy, gear, auction prices, quests, cloud sync or web share links. |
+| Scope rule | Describes only what `main` @ `f7494e1` does. No Legacy, gear, auction prices, quests, cloud sync or web share links. Feature claims re-checked against `b242cd6` by M5.STORE.1. |
+| ⚠ M5.STORE.1 | Since M5.OTA.3 the APK **declares `INTERNET`** (OTA disabled; no connection measured). The sentence "The app does not request internet access." was therefore removed from §4.1 and replaced by ⟨NET-1⟩. Choose the wording from [store1 audit §5.5](../store1-release-audit.md#55-replacement-texts-drafts-for-ownerlegal-review) after the owner's NET-1 decision; it is true again only if `INTERNET` is removed from the release build and re-verified (option B). |
 | Related | [assets-checklist](assets-checklist.md) · [privacy-and-compliance §7](privacy-and-compliance.md#7-intellectual-property-and-trademarks) · [testing-and-publication §2.4](testing-and-publication.md#24-store-listing-fields) |
 
 ## 1. Limits this copy is written against
@@ -57,7 +58,7 @@ SHARE
 
 PRIVATE AND OFFLINE
 • No account, no ads, no analytics.
-• The app does not request internet access. Your builds stay on your device.
+• ⟨NET-1: network sentence per the owner's decision, see the M5.STORE.1 note at the top⟩ Your builds stay on your device.
 
 LANGUAGES
 • English and Russian interface and talent texts.

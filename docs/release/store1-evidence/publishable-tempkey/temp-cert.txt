@@ -1,0 +1,3 @@
+temporary certificate SHA-256: 9b22db2dd565a18524cf35e3d5375f744327e55e24816a9a6eddb7de3ca291b9
+assemblePublishableRelease exit=0
+secret scan: clean

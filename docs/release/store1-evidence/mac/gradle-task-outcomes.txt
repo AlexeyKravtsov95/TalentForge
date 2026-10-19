@@ -1,0 +1,6 @@
+20-shared-jvmTest: executed=8 from-cache=0 up-to-date=0 | BUILD SUCCESSFUL in 20s
+21-desktopTest: executed=21 from-cache=0 up-to-date=3 | BUILD SUCCESSFUL in 5m 55s
+30-assembleDebug: executed=33 from-cache=29 up-to-date=13 | BUILD SUCCESSFUL in 12s
+31-assembleRelease: executed=69 from-cache=24 up-to-date=13 | BUILD SUCCESSFUL in 15s
+32-bundleRelease: executed=15 from-cache=1 up-to-date=93 | BUILD SUCCESSFUL in 2s
+33-lintRelease: executed=15 from-cache=0 up-to-date=67 | BUILD SUCCESSFUL in 14s

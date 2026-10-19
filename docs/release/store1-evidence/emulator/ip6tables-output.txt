@@ -1,0 +1,3 @@
+Chain OUTPUT (policy ACCEPT 236 packets, 35957 bytes)
+    pkts      bytes target     prot opt in     out     source               destination         
+       0        0 RETURN     all  --  *      *       ::/0                 ::/0                 owner UID match 10227

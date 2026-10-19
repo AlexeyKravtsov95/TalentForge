@@ -1,0 +1,4 @@
+requested: origin/main
+sha: b242cd61f1e9ca400e5c652cc6db61c48c7178f5
+commit-date: 2026-10-19T14:10:10+07:00
+subject: Merge pull request #51 from AlexeyKravtsov95/fix/m5-ci-linux-action-label-wrap
