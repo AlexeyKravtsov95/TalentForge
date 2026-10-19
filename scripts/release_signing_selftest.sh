@@ -27,6 +27,11 @@
 #  13. debug-apk      the debug APK: the validator rejects the debug certificate
 #  14. no-secrets     no log, report or build file contains the password or the key path
 #
+# The whole run is a signing self-test (TALENTFORGE_SIGNING_SELFTEST=true, M5.PLAY.1): the validator
+# accepts the test certificate only in that mode, reports SELFTEST-PASS instead of PASS, and the staged
+# APK is named *-SELFTEST-NOT-FOR-UPLOAD. scripts/play_signing_selftest.sh shows that a test key is
+# refused without the switch.
+#
 # The test key is created in a fresh directory OUTSIDE the repository, with a random
 # password that exists only in this process's environment (keytool reads it through
 # -storepass:env). It is NOT a production key. On exit (success, failure or interrupt) the
@@ -63,12 +68,13 @@ fi
 BUILD_TOOLS="$(ls -d "$SDK"/build-tools/*/ | sort -V | tail -1)"
 BUILD_TOOLS="${BUILD_TOOLS%/}"
 APKSIGNER="$BUILD_TOOLS/apksigner"
-if grep -qs '^talentforge\.release\.' "${GRADLE_USER_HOME:-$HOME/.gradle}/gradle.properties"; then
-  die "talentforge.release.* is set in the Gradle user properties; run this self-test where no release key is configured"
+if grep -qsE '^talentforge\.(release|play)\.' "${GRADLE_USER_HOME:-$HOME/.gradle}/gradle.properties"; then
+  die "talentforge.release.* or talentforge.play.* is set in the Gradle user properties; run this self-test where no release key is configured"
 fi
 for name in STORE_FILE STORE_PASSWORD KEY_ALIAS KEY_PASSWORD CERT_SHA256; do
-  unset "TALENTFORGE_RELEASE_$name"
+  unset "TALENTFORGE_RELEASE_$name" "TALENTFORGE_PLAY_UPLOAD_$name"
 done
+export TALENTFORGE_SIGNING_SELFTEST=true
 
 TMP="$(mktemp -d "${TMPDIR:-/tmp}/tf-signing-selftest.XXXXXX")" || die "mktemp failed"
 case "$TMP/" in "$REPO"/*) rm -rf "$TMP"; die "the temporary directory is inside the repository" ;; esac
@@ -116,7 +122,7 @@ with_signing() { # runs "$@" with the complete test signing settings
 validate() { # log-name apk expected-sha [extra validator arguments]
   local log="$LOGS/$1.log" apk="$2" sha="$3"
   shift 3
-  python3 "$VALIDATOR" --apk "$apk" --expected-cert-sha256 "$sha" --build-tools "$BUILD_TOOLS" "$@" >"$log" 2>&1
+  python3 "$VALIDATOR" --apk "$apk" --expected-cert-sha256 "$sha" --build-tools "$BUILD_TOOLS" --selftest "$@" >"$log" 2>&1
 }
 DEBUG_KS="${ANDROID_USER_HOME:-$HOME/.android}/debug.keystore"
 
@@ -234,7 +240,9 @@ from pathlib import Path
 
 apk, report, cert = sys.argv[1:]
 data = json.loads(Path(report).read_text())
-assert data["result"] == "PASS", data["result"]
+assert data["result"] == "SELFTEST-PASS", data["result"]
+assert data["purpose"] == "signing-selftest", data["purpose"]
+assert apk.endswith("-SELFTEST-NOT-FOR-UPLOAD.apk"), apk
 assert data["apk"]["sha256"] == hashlib.sha256(Path(apk).read_bytes()).hexdigest()
 assert data["signature"]["certificateSha256"] == [cert]
 assert data["package"]["applicationId"] == "io.github.alexeykravtsov95.talentforge"
