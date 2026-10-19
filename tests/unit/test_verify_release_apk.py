@@ -22,6 +22,8 @@ from typing import Any
 
 import pytest
 
+from tests.android_artifacts import PF_R, PF_W, PF_X, PT_GNU_RELRO, PT_LOAD, elf, elf_with_segments
+
 ROOT = Path(__file__).resolve().parents[2]
 EVIDENCE = ROOT / "docs/release/appgallery/evidence/mac"
 
@@ -299,6 +301,138 @@ def test_no_checks_is_not_a_pass() -> None:
     assert not v.Evaluation().passed
 
 
+# ---------------------------------------------------- permissions, key role, self-test
+
+
+def test_internet_is_refused_unless_allowed() -> None:
+    internet = "android.permission.INTERNET"
+    release = v.parse_badging(RELEASE_BADGING)
+    badging = dataclasses.replace(release, permissions=(*release.permissions, internet))
+    assert failed(evaluate(badging=badging)) == {"permissions-allowed"}
+    assert failed(evaluate(badging=badging, allowed_permissions=(internet,))) == set()
+
+
+def test_release_badging_requests_only_the_own_receiver_permission() -> None:
+    assert v.parse_badging(RELEASE_BADGING).permissions == (
+        "io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+    )
+
+
+def test_the_upload_key_certificate_is_refused_for_the_apk() -> None:
+    assert failed(evaluate(must_differ_from=(OTHER,))) == set()
+    assert failed(evaluate(must_differ_from=(CERT,))) == {"certificate-differs-from-other-role"}
+
+
+SELFTEST_DN = "CN=TalentForge signing self-test - temporary - not a release key"
+
+
+def test_a_selftest_certificate_is_never_a_release() -> None:
+    signature = v.parse_apksigner(apksigner_output(dn=SELFTEST_DN), 0)
+    evaluation = evaluate(signature=signature)
+    assert failed(evaluation) == {"not-selftest-certificate"}
+    assert evaluation.result(selftest=False) == "FAIL"
+
+
+def test_selftest_mode_needs_a_selftest_key_and_never_reports_pass() -> None:
+    signature = v.parse_apksigner(apksigner_output(dn=SELFTEST_DN), 0)
+    evaluation = evaluate(signature=signature, selftest=True)
+    assert failed(evaluation) == set()
+    assert evaluation.result(selftest=True) == "SELFTEST-PASS"
+    assert failed(evaluate(selftest=True)) == {"selftest-certificate"}
+
+
+# ------------------------------------------------------------------ 16 KB page size
+
+
+def library(abi: str, alignments: tuple[int, ...], *, stored: bool = False, offset: int = 0) -> Any:
+    return v.NativeLibrary(f"lib/{abi}/libx.so", abi, alignments, stored, offset)
+
+
+def test_elf_load_alignments_read_both_widths() -> None:
+    assert v.elf_load_alignments(elf(wide=True, alignments=(16384, 4096))) == (16384, 4096)
+    assert v.elf_load_alignments(elf(wide=False, alignments=(4096,))) == (4096,)
+    assert v.elf_load_alignments(b"\x7fELF") == ()
+    assert v.elf_load_alignments(b"not an elf file at all, " * 4) == ()
+
+
+# libandroidx.graphics.path.so (androidx.graphics:graphics-path 1.0.1, arm64-v8a), program
+# headers as printed by `llvm-readelf -Wl` for the bundle of M5.PLAY.1
+GRAPHICS_PATH_ARM64 = [
+    (PT_LOAD, PF_R | PF_X, 0x0, 0x1C40, 0x4000),
+    (PT_LOAD, PF_R | PF_W, 0x5C40, 0x390, 0x4000),
+    (PT_LOAD, PF_R | PF_W, 0x9FD0, 0x10, 0x4000),
+    (PT_GNU_RELRO, PF_R, 0x5C40, 0x3C0, 0x1),
+]
+
+
+def test_relro_alone_in_its_load_segment_is_16kb_compliant() -> None:
+    segments = v.elf_segments(elf_with_segments(GRAPHICS_PATH_ARM64))
+    assert [s.align for s in segments if s.type == v.PT_LOAD] == [0x4000] * 3
+    assert v.relro_page_problem(segments) is None
+    # the same library would not be safe with 64 KB pages: the check discriminates
+    assert v.relro_page_problem(segments, page=0x10000) is not None
+
+
+def test_relro_sharing_a_page_with_writable_data_fails() -> None:
+    # Google's non-compliant example: (0xdfaf0 + 0x1510) % 0x4000 == 0x1000, data follows RELRO
+    segments = v.elf_segments(
+        elf_with_segments(
+            [
+                (PT_LOAD, PF_R | PF_X, 0x0, 0xD0000, 0x4000),
+                (PT_LOAD, PF_R | PF_W, 0xDFAF0, 0x3000, 0x4000),
+                (PT_GNU_RELRO, PF_R, 0xDFAF0, 0x1510, 0x1),
+            ]
+        )
+    )
+    problem = v.relro_page_problem(segments)
+    assert problem is not None and "0xe1000" in problem
+    libraries = (
+        v.NativeLibrary("lib/arm64-v8a/liba.so", "arm64-v8a", (16384,), False, 0, problem),
+    )
+    assert failed(evaluate(libraries=libraries)) == {"native-16kb-page-size"}
+
+
+def test_relro_segments_of_32_bit_elf_files_are_read() -> None:
+    segments = v.elf_segments(elf_with_segments(GRAPHICS_PATH_ARM64, wide=False))
+    relro = next(s for s in segments if s.type == v.PT_GNU_RELRO)
+    assert (relro.vaddr, relro.memsz, relro.flags) == (0x5C40, 0x3C0, PF_R)
+
+
+def test_16kb_aligned_64_bit_libraries_pass() -> None:
+    libraries = (library("arm64-v8a", (16384, 16384)), library("armeabi-v7a", (4096,)))
+    assert failed(evaluate(libraries=libraries)) == set()
+
+
+@pytest.mark.parametrize(
+    "libraries",
+    [
+        (library("arm64-v8a", (16384, 4096)),),
+        (library("x86_64", ()),),
+        (library("arm64-v8a", (16384,), stored=True, offset=4096),),
+        (library("armeabi-v7a", (16384,)),),  # no 64-bit library at all
+    ],
+)
+def test_4kb_or_unreadable_or_misplaced_64_bit_libraries_fail(libraries: tuple[Any, ...]) -> None:
+    assert failed(evaluate(libraries=libraries)) == {"native-16kb-page-size"}
+
+
+def test_native_libraries_reads_placement(tmp_path: Path) -> None:
+    archive_path = tmp_path / "a.apk"
+    with zipfile.ZipFile(archive_path, "w") as archive:
+        archive.writestr("lib/arm64-v8a/liba.so", elf(), compress_type=zipfile.ZIP_STORED)
+        archive.writestr("lib/x86/libb.so", elf(wide=False), compress_type=zipfile.ZIP_DEFLATED)
+        archive.writestr("assets/lib/arm64-v8a/not-native.so", b"")
+    found = {lib.path: lib for lib in v.native_libraries(archive_path)}
+    assert set(found) == {"lib/arm64-v8a/liba.so", "lib/x86/libb.so"}
+    stored = found["lib/arm64-v8a/liba.so"]
+    assert stored.stored
+    assert stored.load_alignments == (16384, 16384)
+    with archive_path.open("rb") as raw:
+        raw.seek(stored.data_offset)
+        assert raw.read(4) == b"\x7fELF"
+    assert not found["lib/x86/libb.so"].stored
+
+
 # ------------------------------------------------------------------------------- CLI
 
 
@@ -322,10 +456,11 @@ def fake_build_tools(tmp_path: Path, apksigner: str, apksigner_exit: int = 0) ->
 
 def fake_apk(tmp_path: Path) -> Path:
     apk = tmp_path / "TalentForge-0.1.0-1.apk"
-    with zipfile.ZipFile(apk, "w") as archive:
+    with zipfile.ZipFile(apk, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         archive.writestr("AndroidManifest.xml", b"\x03\x00")
         for abi in ALL_ABIS:
-            archive.writestr(f"lib/{abi}/libandroidx.graphics.path.so", b"\x7fELF")
+            wide = abi in ("arm64-v8a", "x86_64")
+            archive.writestr(f"lib/{abi}/libandroidx.graphics.path.so", elf(wide=wide))
     return apk
 
 
@@ -367,6 +502,7 @@ def test_cli_pass_writes_a_report_without_secrets(
     apk = tmp_path / "TalentForge-0.1.0-1.apk"
     assert data["schema"] == "talentforge.release-apk-report.v1"
     assert data["result"] == "PASS"
+    assert data["purpose"] == "release"
     assert data["apk"] == {
         "fileName": apk.name,
         "sizeBytes": apk.stat().st_size,
