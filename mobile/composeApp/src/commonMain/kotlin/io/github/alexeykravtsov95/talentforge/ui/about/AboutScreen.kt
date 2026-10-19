@@ -91,9 +91,9 @@ import org.jetbrains.compose.resources.stringResource
  * - the independent-project statement (the trademark-free draft, LR-2);
  * - the privacy summary: its first statement always visible, the remaining
  *   verified statements (with the backup paragraph true for this platform,
- *   [backupStatement]) behind one explicit 48 dp toggle, and a link to the
- *   public policy ONLY when an approved `https://` URL is configured
- *   ([privacyPolicyUrl]; none is yet, LR-5);
+ *   [backupStatement]) behind one explicit 48 dp toggle, and the link to the
+ *   published privacy policy of the UI language ([privacyPolicyUrl],
+ *   M5.LEGAL.LINK), opened in the system browser;
  * - one row that opens the third-party licenses ([onOpenLicenses],
  *   [LicensesScreen]), where every open-source notice lives.
  */
@@ -101,7 +101,7 @@ import org.jetbrains.compose.resources.stringResource
 fun AboutScreen(
     appVersion: AppVersion?,
     backupStatement: BackupStatement,
-    privacyPolicyUrl: String?,
+    privacyPolicyUrl: String,
     onBack: () -> Unit,
     onOpenLicenses: () -> Unit,
     /** M5.OTA.3, OTA-enabled builds only: the data version in use and the "check now" action (OD-5). */
@@ -168,15 +168,13 @@ fun AboutScreen(
             hide = stringResource(Res.string.about_privacy_hide_details),
             onToggle = { privacyDetails = !privacyDetails },
         )
-        if (policyLink != null) {
-            val uriHandler = LocalUriHandler.current
-            SecondaryActionButton(
-                text = stringResource(Res.string.about_privacy_policy_link),
-                onClickLabel = stringResource(Res.string.about_privacy_policy_action),
-                onClick = { uriHandler.openUri(policyLink) },
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
+        val uriHandler = LocalUriHandler.current
+        SecondaryActionButton(
+            text = stringResource(Res.string.about_privacy_policy_link),
+            onClickLabel = stringResource(Res.string.about_privacy_policy_action),
+            onClick = { uriHandler.openUri(policyLink) },
+            modifier = Modifier.fillMaxWidth(),
+        )
 
         Spacer(Modifier.height(TalentForgeSpacing.hairline))
         LicensesEntry(onClick = onOpenLicenses)

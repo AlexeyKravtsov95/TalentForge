@@ -24,13 +24,14 @@ import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.data.builds.RandomLocalBuildIdGenerator
 import io.github.alexeykravtsov95.talentforge.ui.about.AboutScreen
 import io.github.alexeykravtsov95.talentforge.ui.about.AppVersion
-import io.github.alexeykravtsov95.talentforge.ui.about.LegalLinks
 import io.github.alexeykravtsov95.talentforge.ui.about.LicensesScreen
 import io.github.alexeykravtsov95.talentforge.ui.about.platformBackupStatement
 import io.github.alexeykravtsov95.talentforge.ui.about.platformOpenSourceNoticesPath
+import io.github.alexeykravtsov95.talentforge.ui.about.privacyPolicyUrlOf
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
 import io.github.alexeykravtsov95.talentforge.ui.builds.AllBuildsScreen
 import io.github.alexeykravtsov95.talentforge.ui.home.HomeScreen
+import io.github.alexeykravtsov95.talentforge.ui.lang.appLanguage
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildAutosaveCoordinator
 import io.github.alexeykravtsov95.talentforge.ui.library.platformBuildClock
 import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
@@ -277,7 +278,7 @@ fun App(
             AppDestination.About -> AboutScreen(
                 appVersion = appVersion,
                 backupStatement = platformBackupStatement,
-                privacyPolicyUrl = LegalLinks.privacyPolicyUrl,
+                privacyPolicyUrl = privacyPolicyUrlOf(appLanguage()),
                 onBack = ::navigateUp,
                 onOpenLicenses = { destinations = destinations + AppDestination.Licenses },
                 otaStatus = otaStatus,

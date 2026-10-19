@@ -1,5 +1,7 @@
 package io.github.alexeykravtsov95.talentforge.ui.about
 
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+
 /** The installed app's version, as the platform package reports it (Android `versionName`/`versionCode`, iOS `CFBundleShortVersionString`/`CFBundleVersion`). */
 data class AppVersion(val name: String, val code: Long)
 
@@ -28,23 +30,35 @@ const val ANDROID_OSS_NOTICES_PATH = "files/legal/oss-notices-android.json"
 const val IOS_OSS_NOTICES_PATH = "files/legal/oss-notices-ios.json"
 
 /**
- * Public legal links (M5.RC.2b). The privacy-policy URL is an OWNER decision
- * (LR-5: identity, contact, hosting, legal review) and is not approved yet, so
- * it is deliberately `null`: the About screen then shows the in-app privacy
- * summary without any link. Never put a placeholder here — set the approved
- * `https://` address in a reviewed change (validated by [privacyPolicyLinkOf]).
+ * Public legal links (M5.RC.2b). Since M5.LEGAL.LINK the owner-published
+ * privacy-policy addresses are wired in (the hosting decision of LR-5): the
+ * Russian and the English page on `legal.mythweld.com`.
+ * [privacyPolicyUrlOf] picks the page for the UI language; every configured
+ * address stays validated by [privacyPolicyLinkOf].
  */
 object LegalLinks {
-    val privacyPolicyUrl: String? = null
+    /** The published Russian privacy policy — the page a Russian interface opens. */
+    const val privacyPolicyUrlRu: String = "https://legal.mythweld.com/privacy.html"
+
+    /** The published English privacy policy — the page every other interface opens. */
+    const val privacyPolicyUrlEn: String = "https://legal.mythweld.com/privacy-en.html"
 }
 
 /**
- * The privacy-policy link to show for a configured [url]: `null` when none is
- * configured; an `https://` URL with a host otherwise. Anything else is a
- * configuration error and throws instead of showing a broken link.
+ * The privacy-policy page to show for the UI [language] (M5.LEGAL.LINK): the
+ * Russian page for a Russian interface, the English page for every other.
  */
-fun privacyPolicyLinkOf(url: String?): String? {
-    if (url == null) return null
+fun privacyPolicyUrlOf(language: AppLanguage): String = when (language) {
+    AppLanguage.RUSSIAN -> LegalLinks.privacyPolicyUrlRu
+    AppLanguage.ENGLISH -> LegalLinks.privacyPolicyUrlEn
+}
+
+/**
+ * The configured [url] as the privacy-policy link to open: an `https://` URL
+ * with a host. Anything else is a configuration error and throws instead of
+ * showing a broken link.
+ */
+fun privacyPolicyLinkOf(url: String): String {
     val host = url.removePrefix("https://").substringBefore('/')
     require(url.startsWith("https://") && host.contains('.') && url.none(Char::isWhitespace)) {
         "the privacy-policy URL must be an https:// address"
