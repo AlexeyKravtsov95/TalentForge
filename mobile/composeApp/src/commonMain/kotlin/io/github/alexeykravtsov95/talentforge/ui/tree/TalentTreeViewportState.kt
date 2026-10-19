@@ -77,6 +77,15 @@ class TalentTreeViewportState(
     var coveredRightDp: Float by mutableStateOf(0f)
 
     /**
+     * M5.UI.TABLET.1: screen dp kept free above the content at every zoom —
+     * the room of the tablet specialization headers. The whole-tree fit
+     * leaves it above the tree and the clamp treats it as part of the content
+     * (see [TalentTreeViewport.clampedTo]). Set by the canvas before its first
+     * fit, never saved; 0 (phones) changes nothing.
+     */
+    var contentTopReserveDp: Float by mutableStateOf(0f)
+
+    /**
      * PR #19: the horizontal overscroll (dp, signed like the finger) of the
      * single-finger gesture in progress, past the content's horizontal bound —
      * the rubber-band feedback of the section swipe; 0 outside such a gesture.
@@ -128,7 +137,7 @@ class TalentTreeViewportState(
         val current = viewport
         when (fitPolicy) {
             TalentTreeFitPolicy.WHOLE_TREE -> if (current == null) {
-                viewport = TalentTreeViewport.initialFor(bounds, canvasSize, layoutClass)
+                viewport = TalentTreeViewport.initialFor(bounds, canvasSize, layoutClass, contentTopReserveDp)
                 fittedCanvasSize = canvasSize
             }
 
@@ -159,7 +168,8 @@ class TalentTreeViewportState(
         val bounds = contentBounds ?: return null
         if (canvasSize == Size.Zero) return null
         return when (fitPolicy) {
-            TalentTreeFitPolicy.WHOLE_TREE -> TalentTreeViewport.initialFor(bounds, canvasSize, layoutClass)
+            TalentTreeFitPolicy.WHOLE_TREE ->
+                TalentTreeViewport.initialFor(bounds, canvasSize, layoutClass, contentTopReserveDp)
             TalentTreeFitPolicy.SECTION -> TalentTreeViewport.sectionFitFor(bounds, canvasSize, layoutClass)
         }
     }
@@ -204,6 +214,7 @@ class TalentTreeViewportState(
                 reference = viewport,
                 coveredLeftDp = coveredLeftDp,
                 coveredRightDp = coveredRightDp,
+                contentTopReserveDp = contentTopReserveDp,
             )
         } else {
             transform

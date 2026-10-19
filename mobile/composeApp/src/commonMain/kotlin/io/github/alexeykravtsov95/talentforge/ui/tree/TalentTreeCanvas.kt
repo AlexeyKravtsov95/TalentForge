@@ -149,6 +149,12 @@ fun TalentTreeCanvas(
      * ([TalentTreeNodeLayer]), so a warm-up step recomposes that layer and nothing else.
      */
     composedNodeCount: () -> Int = { Int.MAX_VALUE },
+    /**
+     * M5.UI.TABLET.1: screen dp the camera keeps free above the content (the
+     * tablet specialization headers, [talentTabletHeaderReserveDp]); applied
+     * before the first fit. 0 — every phone canvas — changes nothing.
+     */
+    contentTopReserveDp: Float = 0f,
 ) {
     val localDensity = LocalDensity.current
     val sectionSwipe by rememberUpdatedState(onSectionSwipe)
@@ -165,8 +171,9 @@ fun TalentTreeCanvas(
     }
     val colors = talentForgeColors()
 
-    LaunchedEffect(model, viewportState.canvasSize, layoutClass) {
+    LaunchedEffect(model, viewportState.canvasSize, layoutClass, contentTopReserveDp) {
         viewportState.layoutClass = layoutClass
+        viewportState.contentTopReserveDp = contentTopReserveDp
         viewportState.initializeOnce(model.bounds)
     }
 
