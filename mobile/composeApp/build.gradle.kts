@@ -329,14 +329,14 @@ val androidDebugKeystore: File = File(
 )
 val releaseSigning: Map<String, String?> = releaseSigningSettings.associateWith(::releaseSetting)
 
-// Signing values never belong in a committed file: a talentforge.release.* key in the
-// repository's gradle.properties fails the build whatever its value.
+// Signing values never belong in a committed file: a talentforge.release.* or talentforge.play.*
+// key in the repository's gradle.properties fails the build whatever its value.
 val committedReleaseKeys: List<String> = listOf(rootProject.file("gradle.properties"), file("gradle.properties"))
     .filter { it.isFile }
     .flatMap { properties ->
         properties.readLines()
             .map { it.substringBefore('=').trim() }
-            .filter { it.startsWith("talentforge.release.") }
+            .filter { it.startsWith("talentforge.release.") || it.startsWith("talentforge.play.") }
     }
 
 val releaseSigningProblem: String? = run {
@@ -379,6 +379,94 @@ val publishableProblem: String? = when {
     else -> null
 }
 
+// ------------------------------------------------- Google Play upload signing (M5.PLAY.1)
+//
+// Google Play takes an app bundle signed with a separate UPLOAD key. Play App Signing then signs
+// the APKs it delivers with the app signing key: the owner's release key above, which the owner
+// gives to Play once, so that installs from all three stores carry one certificate
+// (docs/release/google-play/signing.md). The `play` build type is `release` signed with the upload
+// key, and exists only to produce that bundle. Its four settings come, like the release ones, ONLY
+// from the environment (`TALENTFORGE_PLAY_UPLOAD_STORE_FILE`, `_STORE_PASSWORD`, `_KEY_ALIAS`,
+// `_KEY_PASSWORD`) or from `talentforge.play.upload.*` in ~/.gradle/gradle.properties:
+//
+// - none set: `bundlePlay` builds an UNSIGNED technical bundle; it is never uploadable;
+// - all four set and valid: `bundlePlay` signs the bundle with the upload key;
+// - anything else (some set, keystore missing or inside the checkout, the Android debug keystore,
+//   or the release keystore's own key): every `play` build fails, naming settings, never values.
+//
+// The `play` build type never packages an APK (packagePlay fails): an upload-key APK distributed
+// through RuStore or AppGallery would leave those users unable to install any later update. The
+// ONLY bundle meant for upload is the output of `:composeApp:bundlePublishablePlay`, which also
+// needs the expected upload certificate fingerprint (`TALENTFORGE_PLAY_UPLOAD_CERT_SHA256`) and
+// the app signing fingerprint (`TALENTFORGE_RELEASE_CERT_SHA256`, which the bundle must NOT
+// carry), and verifies the bundle with scripts/verify_play_bundle.py before writing it to
+// build/outputs/publishable-google-play/. The release keystore itself is not needed for it.
+fun playUploadSettingNames(name: String) = "TALENTFORGE_PLAY_UPLOAD_${name.uppercase()} / talentforge.play.upload.$name"
+
+fun playUploadSetting(name: String): String? =
+    (providers.environmentVariable("TALENTFORGE_PLAY_UPLOAD_${name.uppercase()}").orNull
+        ?: providers.gradleProperty("talentforge.play.upload.$name").orNull)
+        ?.takeIf { it.isNotBlank() }
+
+val playUploadSigning: Map<String, String?> = releaseSigningSettings.associateWith(::playUploadSetting)
+
+val playUploadProblem: String? = run {
+    val missing = playUploadSigning.filterValues { it == null }.keys
+    val storeFile = playUploadSigning["store_file"]?.let { File(it).canonicalFile }
+    val releaseStoreFile = releaseSigning["store_file"]?.let { File(it).canonicalFile }
+    when {
+        committedReleaseKeys.isNotEmpty() ->
+            "Release signing settings must not be committed: remove ${committedReleaseKeys.distinct().joinToString()} " +
+                "from the repository's gradle.properties and set them in the environment or ~/.gradle/gradle.properties."
+        missing.size == releaseSigningSettings.size -> null
+        missing.isNotEmpty() ->
+            "Incomplete Google Play upload signing configuration. Missing: ${missing.joinToString { playUploadSettingNames(it) }}. " +
+                "Set: ${(releaseSigningSettings - missing).joinToString { playUploadSettingNames(it) }}. " +
+                "Set all four or none (none = unsigned technical bundle). Values are not printed."
+        storeFile == null || !storeFile.isFile ->
+            "${playUploadSettingNames("store_file")} does not point to an existing keystore file."
+        storeFile.path.startsWith(repositoryRoot.path + File.separator) ->
+            "The upload keystore must be stored outside the repository checkout."
+        storeFile == androidDebugKeystore.canonicalFile || playUploadSigning["key_alias"] == "androiddebugkey" ->
+            "Upload signing must not use the Android debug keystore or its androiddebugkey alias."
+        storeFile == releaseStoreFile && playUploadSigning["key_alias"] == releaseSigning["key_alias"] ->
+            "The Google Play upload key must not be the app signing key: ${playUploadSettingNames("store_file")} and " +
+                "${playUploadSettingNames("key_alias")} name the release key. Use the separate upload key (docs/release/google-play/signing.md)."
+        else -> null
+    }
+}
+val playUploadComplete = playUploadProblem == null && playUploadSigning.values.all { it != null }
+
+val expectedPlayUploadCertSha256: String? = playUploadSetting("cert_sha256")
+    ?.replace(":", "")
+    ?.lowercase()
+
+val playPublishableProblem: String? = when {
+    playUploadProblem != null -> playUploadProblem
+    !playUploadComplete ->
+        "The publishable Google Play bundle needs the upload signing configuration: set " +
+            releaseSigningSettings.joinToString { playUploadSettingNames(it) } +
+            " (docs/release/google-play/signing.md). It is never built unsigned, debug-signed or with the app signing key."
+    expectedPlayUploadCertSha256 == null ->
+        "The publishable Google Play bundle needs the expected upload certificate fingerprint: set ${playUploadSettingNames("cert_sha256")}."
+    !Regex("[0-9a-f]{64}").matches(expectedPlayUploadCertSha256) ->
+        "${playUploadSettingNames("cert_sha256")} must be a SHA-256 fingerprint (64 hexadecimal characters)."
+    expectedReleaseCertSha256 == null ->
+        "The publishable Google Play bundle needs the app signing certificate fingerprint, to prove the bundle is not " +
+            "signed with it: set ${releaseSettingNames("cert_sha256")}."
+    !Regex("[0-9a-f]{64}").matches(expectedReleaseCertSha256) ->
+        "${releaseSettingNames("cert_sha256")} must be a SHA-256 fingerprint (64 hexadecimal characters)."
+    expectedPlayUploadCertSha256 == expectedReleaseCertSha256 ->
+        "${playUploadSettingNames("cert_sha256")} equals ${releaseSettingNames("cert_sha256")}: Google Play needs a " +
+            "separate upload key, never the app signing key (docs/release/google-play/signing.md)."
+    else -> null
+}
+
+// Signing self-test runs only (scripts/*signing_selftest.sh): the validators then require a
+// self-test certificate, report SELFTEST-PASS instead of PASS, and the staged files are named
+// *-SELFTEST-NOT-FOR-UPLOAD. Without it, a self-test certificate fails validation. Environment only.
+val signingSelftest: Boolean = providers.environmentVariable("TALENTFORGE_SIGNING_SELFTEST").orNull == "true"
+
 android {
     namespace = "io.github.alexeykravtsov95.talentforge"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -405,6 +493,14 @@ android {
                 keyPassword = releaseSigning.getValue("key_password")
             }
         }
+        if (playUploadComplete) {
+            create("playUpload") {
+                storeFile = File(playUploadSigning.getValue("store_file")!!)
+                storePassword = playUploadSigning.getValue("store_password")
+                keyAlias = playUploadSigning.getValue("key_alias")
+                keyPassword = playUploadSigning.getValue("key_password")
+            }
+        }
     }
 
     // NET-1 = B: the release manifest overlay that removes INTERNET. `:composeApp:sourceSets` reports
@@ -424,7 +520,16 @@ android {
             // the owner's key, or none (unsigned) — never signingConfigs.debug
             signingConfig = signingConfigs.findByName("release")
         }
+        // M5.PLAY.1: release, signed with the Google Play upload key (or none: unsigned) — never
+        // the release key it would otherwise inherit, never signingConfigs.debug. Bundle only.
+        create("play") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.findByName("playUpload")
+            matchingFallbacks += "release"
+        }
     }
+    // the same NET-1 = B overlay as release: the Play bundle requests no network access either
+    sourceSets.getByName("play").manifest.srcFile("src/androidRelease/AndroidManifest.xml")
 }
 
 // Every release-variant build stops here on an incomplete or invalid signing setup.
@@ -463,6 +568,41 @@ tasks.matching { it.name == "preReleaseBuild" }.configureEach {
     dependsOn(checkReleaseOtaSettings)
     mustRunAfter(checkPublishableSigning)
 }
+
+// M5.PLAY.1: the same gates for the Google Play bundle, with the upload key's settings.
+val checkPlayUploadSigning = tasks.register("checkPlayUploadSigning") {
+    group = "release"
+    description = "Fails on an incomplete or invalid Google Play upload signing configuration (never prints values)."
+    val problem = playUploadProblem
+    doLast { if (problem != null) throw GradleException(problem) }
+}
+
+val checkPlayPublishable = tasks.register("checkPlayPublishable") {
+    group = "release"
+    description = "Fails unless the upload signing configuration and both distinct fingerprints are set."
+    val problem = playPublishableProblem
+    doLast { if (problem != null) throw GradleException(problem) }
+}
+
+tasks.matching { it.name == "prePlayBuild" }.configureEach {
+    dependsOn(checkPlayUploadSigning)
+    dependsOn(checkReleaseOtaSettings)
+    mustRunAfter(checkPlayPublishable)
+}
+
+// The play build type is for the Google Play bundle only. Its APK would carry the upload key's
+// certificate; distributed through RuStore or AppGallery it would leave users unable to update.
+val refusePlayApk = tasks.register("refusePlayApk") {
+    group = "release"
+    description = "Fails every attempt to package an APK of the play build type (bundle only)."
+    doLast {
+        throw GradleException(
+            "The play build type builds only the Google Play bundle (:composeApp:bundlePublishablePlay). " +
+                "APKs for RuStore and AppGallery come from :composeApp:assemblePublishableRelease (the app signing key).",
+        )
+    }
+}
+tasks.matching { it.name == "packagePlay" }.configureEach { dependsOn(refusePlayApk) }
 
 // ------------------------------------------------- INTERNET in release builds (NET-1 = B)
 //
@@ -593,6 +733,16 @@ abstract class AssemblePublishableApk @Inject constructor(private val execOps: E
     @get:Input
     abstract val expectedCertificateSha256: Property<String>
 
+    /** The Google Play upload certificate (M5.PLAY.1), when configured: the APK must not carry it. */
+    @get:Input
+    abstract val uploadCertificateSha256: Property<String>
+
+    @get:Input
+    abstract val allowInternet: Property<Boolean>
+
+    @get:Input
+    abstract val selftest: Property<Boolean>
+
     @get:Input
     abstract val versionCode: Property<Int>
 
@@ -620,21 +770,28 @@ abstract class AssemblePublishableApk @Inject constructor(private val execOps: E
 
     private fun stage(apk: File, out: File) {
         out.mkdirs()
-        val name = "TalentForge-${versionName.get()}-${versionCode.get()}.apk"
+        val suffix = if (selftest.get()) "-SELFTEST-NOT-FOR-UPLOAD" else ""
+        val name = "TalentForge-${versionName.get()}-${versionCode.get()}$suffix.apk"
         val staged = File(out, name)
         apk.copyTo(staged, overwrite = true)
         val log = ByteArrayOutputStream()
         val result = execOps.exec {
             commandLine(
-                "python3", validator.get().asFile.path,
-                "--apk", staged.path,
-                "--expected-cert-sha256", expectedCertificateSha256.get(),
-                "--expected-version-code", versionCode.get().toString(),
-                "--expected-version-name", versionName.get(),
-                "--build-tools", buildToolsDirectory.get(),
-                "--keytool", keytool.get(),
-                "--debug-keystore", debugKeystore.get(),
-                "--report", File(out, "$name.report.json").path,
+                listOf(
+                    "python3", validator.get().asFile.path,
+                    "--apk", staged.path,
+                    "--expected-cert-sha256", expectedCertificateSha256.get(),
+                    "--expected-version-code", versionCode.get().toString(),
+                    "--expected-version-name", versionName.get(),
+                    "--build-tools", buildToolsDirectory.get(),
+                    "--keytool", keytool.get(),
+                    "--debug-keystore", debugKeystore.get(),
+                    "--report", File(out, "$name.report.json").path,
+                ) + listOfNotNull(
+                    uploadCertificateSha256.get().takeIf { it.isNotEmpty() }?.let { "--must-differ-from-cert-sha256=$it" },
+                    "--allow-permission=android.permission.INTERNET".takeIf { allowInternet.get() },
+                    "--selftest".takeIf { selftest.get() },
+                ),
             )
             standardOutput = log
             errorOutput = log
@@ -659,7 +816,118 @@ val assemblePublishableRelease = tasks.register<AssemblePublishableApk>("assembl
     keytool.set(File(System.getProperty("java.home"), "bin/keytool").path)
     debugKeystore.set(androidDebugKeystore.path)
     expectedCertificateSha256.set(expectedReleaseCertSha256.orEmpty())
+    uploadCertificateSha256.set(expectedPlayUploadCertSha256?.takeIf { Regex("[0-9a-f]{64}").matches(it) }.orEmpty())
+    allowInternet.set(androidProductionOtaEnabled)
+    selftest.set(signingSelftest)
     outputDirectory.set(layout.buildDirectory.dir("outputs/publishable"))
+    outputs.upToDateWhen { false }
+}
+
+/**
+ * M5.PLAY.1: copies the upload-key-signed `play` bundle to
+ * `build/outputs/publishable-google-play/TalentForge-<versionName>-<versionCode>.aab` and keeps it
+ * only if scripts/verify_play_bundle.py passes (report next to it). On any failure the directory is
+ * deleted; a failure before this task runs is covered by the task-graph hook below.
+ */
+abstract class BundlePublishablePlay @Inject constructor(private val execOps: ExecOperations) : DefaultTask() {
+    @get:InputFile
+    abstract val bundle: RegularFileProperty
+
+    @get:InputFile
+    abstract val validator: RegularFileProperty
+
+    @get:Input
+    abstract val keytool: Property<String>
+
+    @get:Input
+    abstract val jarsigner: Property<String>
+
+    @get:Internal
+    abstract val debugKeystore: Property<String>
+
+    @get:Input
+    abstract val expectedUploadCertificateSha256: Property<String>
+
+    @get:Input
+    abstract val appSigningCertificateSha256: Property<String>
+
+    @get:Input
+    abstract val allowInternet: Property<Boolean>
+
+    @get:Input
+    abstract val selftest: Property<Boolean>
+
+    @get:Input
+    abstract val versionCode: Property<Int>
+
+    @get:Input
+    abstract val versionName: Property<String>
+
+    @get:OutputDirectory
+    abstract val outputDirectory: DirectoryProperty
+
+    @TaskAction
+    fun stage() {
+        val out = outputDirectory.get().asFile
+        out.deleteRecursively()
+        try {
+            stage(bundle.get().asFile, out)
+        } catch (failure: Throwable) {
+            out.deleteRecursively()
+            throw failure
+        }
+    }
+
+    private fun stage(aab: File, out: File) {
+        out.mkdirs()
+        val suffix = if (selftest.get()) "-SELFTEST-NOT-FOR-UPLOAD" else ""
+        val name = "TalentForge-${versionName.get()}-${versionCode.get()}$suffix.aab"
+        val staged = File(out, name)
+        aab.copyTo(staged, overwrite = true)
+        val log = ByteArrayOutputStream()
+        val result = execOps.exec {
+            commandLine(
+                listOf(
+                    "python3", validator.get().asFile.path,
+                    "--aab", staged.path,
+                    "--expected-upload-cert-sha256", expectedUploadCertificateSha256.get(),
+                    "--app-signing-cert-sha256", appSigningCertificateSha256.get(),
+                    "--expected-version-code", versionCode.get().toString(),
+                    "--expected-version-name", versionName.get(),
+                    "--keytool", keytool.get(),
+                    "--jarsigner", jarsigner.get(),
+                    "--debug-keystore", debugKeystore.get(),
+                    "--report", File(out, "$name.report.json").path,
+                ) + listOfNotNull(
+                    "--allow-permission=android.permission.INTERNET".takeIf { allowInternet.get() },
+                    "--selftest".takeIf { selftest.get() },
+                ),
+            )
+            standardOutput = log
+            errorOutput = log
+            isIgnoreExitValue = true
+        }
+        logger.lifecycle(log.toString())
+        if (result.exitValue != 0) {
+            throw GradleException("The Google Play bundle failed validation (exit ${result.exitValue}); nothing is publishable.")
+        }
+        logger.lifecycle("Publishable Google Play bundle: ${staged.path}")
+    }
+}
+
+val bundlePublishablePlay = tasks.register<BundlePublishablePlay>("bundlePublishablePlay") {
+    group = "release"
+    description = "Builds, verifies and stages the upload-key-signed app bundle for Google Play."
+    dependsOn(checkPlayPublishable)
+    validator.set(rootProject.layout.projectDirectory.file("../scripts/verify_play_bundle.py"))
+    keytool.set(File(System.getProperty("java.home"), "bin/keytool").path)
+    jarsigner.set(File(System.getProperty("java.home"), "bin/jarsigner").path)
+    debugKeystore.set(androidDebugKeystore.path)
+    expectedUploadCertificateSha256.set(expectedPlayUploadCertSha256.orEmpty())
+    appSigningCertificateSha256.set(expectedReleaseCertSha256.orEmpty())
+    allowInternet.set(androidProductionOtaEnabled)
+    selftest.set(signingSelftest)
+    outputDirectory.set(layout.buildDirectory.dir("outputs/publishable-google-play"))
     outputs.upToDateWhen { false }
 }
 
@@ -670,14 +938,21 @@ val assemblePublishableRelease = tasks.register<AssemblePublishableApk>("assembl
 // as the task graph containing assemblePublishableRelease is ready, before any task executes.
 // It is refilled only by a fully successful assemblePublishableRelease.
 val publishableOutput = layout.buildDirectory.dir("outputs/publishable")
+val publishablePlayOutput = layout.buildDirectory.dir("outputs/publishable-google-play")
 gradle.taskGraph.whenReady {
     if (hasTask("${project.path}:assemblePublishableRelease")) {
         publishableOutput.get().asFile.deleteRecursively()
     }
+    // M5.PLAY.1: the same for the Google Play bundle
+    if (hasTask("${project.path}:bundlePublishablePlay")) {
+        publishablePlayOutput.get().asFile.deleteRecursively()
+    }
 }
 
 androidComponents {
-    onVariants(selector().withBuildType("release")) { variant ->
+    // release (RuStore/AppGallery APK) and play (Google Play bundle, M5.PLAY.1)
+    onVariants(selector().all()) onVariant@{ variant ->
+        if (variant.buildType !in setOf("release", "play")) return@onVariant
         val output = variant.outputs.single()
         val variantName = variant.name.replaceFirstChar { it.uppercase() }
         val checkInternet = tasks.register<CheckReleaseInternetPermission>("check${variantName}InternetPermission") {
@@ -689,6 +964,14 @@ androidComponents {
         // every APK or bundle of the variant, including the publishable APK, is packaged only after the check
         tasks.matching { it.name == "package$variantName" || it.name == "package${variantName}Bundle" }.configureEach {
             dependsOn(checkInternet)
+        }
+        if (variant.buildType == "play") {
+            bundlePublishablePlay.configure {
+                bundle.set(variant.artifacts.get(SingleArtifact.BUNDLE))
+                versionCode.set(output.versionCode.map { it ?: 0 })
+                versionName.set(output.versionName.map { it.orEmpty() })
+            }
+            return@onVariant
         }
         assemblePublishableRelease.configure {
             apkDirectory.set(variant.artifacts.get(SingleArtifact.APK))
