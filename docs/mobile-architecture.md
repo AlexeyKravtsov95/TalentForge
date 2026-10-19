@@ -638,6 +638,43 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
     Desktop semantics never showed this; `scripts/android_section_check.py`
     checks it on a device.
 
+- **M5.UI.TABLET.1 tablet specialization headers** (UX/UI spec 13 "Tablet ·
+  840+ dp": the tree runs full-screen beside the persistent 380 dp
+  inspector). The tablet keeps its whole-tree canvas — all three trees on
+  the one camera, no tabs — so each tree is named by a header centred above
+  its top row: the display label and the points spent in it
+  (`TalentTabletSectionHeaders.kt`):
+
+  - data. `talentTabletSectionHeaders` reads the same chain as the tabs —
+    `talentSectionDisplayLabel` (dataset name, else
+    `TalentSpecializationNames`, else "Tree N" / "Ветка N") in the device
+    language, and the live `sectionSpentPoints` — so RU/EN, undo/redo and
+    autosave need nothing new; no second name table;
+  - anchor. `talentTabletHeaderAnchor` stands on a section's core talents
+    (the largest cluster of positions on each axis, 2 grid steps apart at
+    most): the dataset's documented `OFF_GRID_NODE` talents (Hunter
+    Survival's Lightning Reflexes, Priest Holy's Holy Specialization) are
+    still drawn and reachable but never pull the header off its tree;
+  - placement. An overlay of the canvas only (the inspector is beside it,
+    never over a header), placed at LAYOUT time from the canvas's own
+    `TalentTreeViewportState` — no second camera, no recomposition per pan
+    frame. `talentTabletHeaderSlots` (pure) gives each tree its column up to
+    the midpoint of the gap to its neighbours, clipped to the canvas, so two
+    headers never overlap and none leaves the canvas; a tree off screen has
+    no header. The text keeps its size at every zoom (readable); the label
+    ellipsizes only in a column too narrow for it, the full label stays the
+    heading's accessible text with the points as its state description;
+  - camera room. `TalentTreeViewportState.contentTopReserveDp` (screen dp,
+    set by the canvas before its first fit, `talentTabletHeaderReserveDp`:
+    header height at the current font scale + gap + ring room at the largest
+    zoom) is kept above the trees by the whole-tree fit (tree and room
+    centred together, or the tree below the room) and by the pan clamp
+    (the room counts as content), so FIT and the clamp always show the
+    headers whole. 0 — every phone camera — is exactly the previous camera;
+  - touch. The headers have no pointer input: taps and drags that start on
+    one reach the canvas (deselect, pan, pinch). Phone layouts (portrait,
+    landscape, the tablet in a portrait window under 840 dp) are unchanged.
+
 ### `iosApp`
 
 Thin native iOS host. A SwiftUI `App`/`UIViewControllerRepresentable` pair that
@@ -2062,6 +2099,10 @@ cd mobile
 # opt-in M5.UX.2b.1 landscape screenshot evidence (desktop-rendered; cutouts emulated)
 ./gradlew :composeApp:desktopTest --tests "*TalentTreeM5Ux2b1ScreenshotTest*" \
     -Dtalentforge.m5ux2b1.screenshots=<output-dir>
+
+# opt-in M5.UI.TABLET.1 tablet specialization header screenshot evidence (desktop-rendered)
+./gradlew :composeApp:desktopTest --tests "*TalentTabletSectionHeadersScreenshotTest*" \
+    -Dtalentforge.m5tablet1.screenshots=<output-dir>
 
 # opt-in M5.UI.1 B+ Home / All Builds screenshot evidence (desktop-rendered)
 ./gradlew :composeApp:desktopTest --tests "*M5Ui1ScreenshotTest*" \
