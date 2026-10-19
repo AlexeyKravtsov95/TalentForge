@@ -14,6 +14,14 @@
 > The privacy-policy wording about internet access now depends on owner decision **NET-1**
 > (keep the permission, remove it from release builds, or enable OTA); see
 > [§5.4–§5.6 of the audit](../store1-release-audit.md#54-options-for-the-first-release-owner-decision-net-1).
+>
+> **NET-1 = B (owner, 2026-10-19).** Release builds remove `INTERNET` again while the production
+> OTA channel is off (`src/androidRelease/AndroidManifest.xml`); debug builds keep it for the staging
+> channel. A build guard (`:composeApp:checkReleaseInternetPermission`) stops packaging of any release
+> build whose merged manifest disagrees with the production OTA setting. Re-verified with `aapt2` on
+> the release and the temporary-key publishable APK ([NET-1 evidence](../net1-evidence/README.md)). The policy
+> keeps the "does not request access to the internet" wording (§8, item 6). The disabled OTA
+> fetcher's code (`HttpURLConnection`) is still in the package.
 
 > **The legal gate is NOT passed.** This document separates what the repository and the built
 > package **prove** from what needs an **owner or legal decision**. It is not legal advice and
@@ -24,7 +32,7 @@
 
 | Question | Answer | Basis |
 |---|---|---|
-| Does the app use the network? | **No network connection with OTA off** (every build today). *M5.STORE.1:* since M5.OTA.3 the package **declares `INTERNET`** for the disabled OTA feature; a release APK opened no connection on an emulator ([audit §5.2](../store1-release-audit.md#52-measured-network-activity-release-apk-ota-off)). No third-party HTTP client library is a dependency; the OTA fetcher uses the platform `HttpURLConnection`. *(At `f7494e1`: no `INTERNET` permission.)* | Verified (static + emulator), §2, audit §5 |
+| Does the app use the network? | **No.** *NET-1 = B:* the release package requests no `INTERNET` permission while production OTA is off (build-guarded), so Android does not let it open network sockets. No third-party HTTP client library is a dependency; the disabled OTA fetcher's code uses the platform `HttpURLConnection`. *(At `b242cd6` the package declared `INTERNET` and a release APK opened no connection on an emulator, [audit §5.2](../store1-release-audit.md#52-measured-network-activity-release-apk-ota-off); at `f7494e1`: no `INTERNET`.)* | Verified (aapt2 on the release and publishable APKs, [NET-1 evidence](../net1-evidence/README.md)), §2, audit §5 |
 | Analytics, ads, crash reporting, tracking? | **None found.** No analytics/ads/crash SDK among the release runtime modules; no Google Play services, Firebase, Play Billing, Play Core or Huawei HMS/AGConnect code or configuration files. | Verified (static), §2 |
 | What is stored, and where? | The build library (talent builds, optional user-typed names, timestamps) in app-private `SharedPreferences` on the device. | Verified (source), §3 |
 | What leaves the device? | Only what the user sends: Share (system share sheet) or Copy (clipboard). Since M5.RC.2b Android backup and device-to-device transfer are **off** for the app (`allowBackup="false"` + rules that exclude every data domain). | Verified (merged release manifest, packaged rules); vendor migration tools outside the Android backup framework (e.g. Huawei Phone Clone) UNVERIFIED |
@@ -40,7 +48,7 @@ raw files: [`evidence/mac/`](evidence/mac/)):
 
 | Check | Result |
 |---|---|
-| `uses-permission` in the release manifest | at `f7494e1`: only `io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, the app's own signature-level permission added by AndroidX. **M5.STORE.1 (`b242cd6`): plus `android.permission.INTERNET`** (M5.OTA.3). No location, contacts, storage, camera, microphone, phone or notification permission |
+| `uses-permission` in the release manifest | at `f7494e1`: only `io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, the app's own signature-level permission added by AndroidX. **M5.STORE.1 (`b242cd6`): plus `android.permission.INTERNET`** (M5.OTA.3). **NET-1 = B: release builds again request only the AndroidX permission**; `INTERNET` stays in debug builds ([NET-1 evidence](../net1-evidence/README.md)). No location, contacts, storage, camera, microphone, phone or notification permission |
 | `usesCleartextTraffic` / `networkSecurityConfig` | unset / none: cleartext is refused by the platform default for `targetSdk` ≥ 28; the OTA client also accepts only `https://` base URLs |
 | Release runtime dependencies (`releaseRuntimeClasspath`) | AndroidX (activity, compose, core, emoji2, lifecycle, profileinstaller, savedstate, startup, window, …), JetBrains Compose Multiplatform, Kotlin stdlib, kotlinx-coroutines, kotlinx-serialization, `com.google.guava:listenablefuture` (a compatibility artifact, not Google Play services), annotations. **No** `com.google.android.gms`, `com.google.firebase`, `com.android.billingclient`, `com.google.android.play`, `com.huawei.*`, OkHttp, Ktor or Retrofit |
 | Class-name references in the dex files | none for `com/google/android/gms`, `com/google/firebase`, `com/android/billingclient`, `com/google/android/play/core`, `com/huawei/hms`, `com/huawei/agconnect`, OkHttp or Ktor. `HttpURLConnection`: none at `f7494e1`; **referenced at `b242cd6`** by the disabled OTA fetcher (M5.STORE.1). `java.net.Socket` and `android.webkit.WebView` are **referenced by library code** (AndroidX/Compose); a reference is not a use (at `f7494e1` the OS also refused sockets for lack of `INTERNET`; at `b242cd6` the absence of traffic was measured instead, audit §5.2) |
@@ -164,7 +172,7 @@ iOS app, when released, needs its own backup paragraph (iOS device backups inclu
 >
 > **5. Отправка кода билда.** Когда вы нажимаете «Поделиться», приложение передаёт текст кода билда в системное меню «Поделиться». Получателя выбираете вы, а дальнейшая обработка зависит от выбранного приложения и его правил. Код содержит только билд (класс, версию данных и таланты) — без названия билда и без сведений о вас.
 >
-> **6. Разрешения.** Приложение не запрашивает доступ к местоположению, контактам, камере, микрофону, файлам или уведомлениям. ⟨NET-1: формулировка о доступе к сети — по решению владельца, варианты A/B/C в [аудите M5.STORE.1 §5.5](../store1-release-audit.md#55-replacement-texts-drafts-for-ownerlegal-review)⟩
+> **6. Разрешения.** Приложение не запрашивает доступ к интернету, местоположению, контактам, камере, микрофону, файлам или уведомлениям.
 >
 > **7. Магазины приложений.** Магазин, из которого вы установили приложение, может обрабатывать данные о загрузке и установке по своим правилам. Мы не получаем от магазинов персональные данные пользователей ⟨уточнить по консолям магазинов⟩.
 >
@@ -192,7 +200,7 @@ iOS app, when released, needs its own backup paragraph (iOS device backups inclu
 >
 > **5. Sharing a build code.** When you tap "Share", the app hands the build code text to the system share menu. You choose the recipient; what happens next depends on the app you pick and its terms. A code contains only the build (class, data version and talents) — no build name and no information about you.
 >
-> **6. Permissions.** The app does not request access to your location, contacts, camera, microphone, files or notifications. ⟨NET-1: the network sentence depends on the owner's decision; variants A/B/C in [M5.STORE.1 audit §5.5](../store1-release-audit.md#55-replacement-texts-drafts-for-ownerlegal-review)⟩
+> **6. Permissions.** The app does not request access to the internet, location, contacts, camera, microphone, files or notifications.
 >
 > **7. App stores.** The store you installed the app from may process download and installation data under its own policy. We do not receive users' personal data from the stores ⟨confirm against both consoles⟩.
 >

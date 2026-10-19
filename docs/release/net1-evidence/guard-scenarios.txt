@@ -1,0 +1,26 @@
+# checkReleaseInternetPermission on real builds (NET-1 = B)
+# The synthetic keyring pins two made-up tf-prod-* ids with non-key SPKI strings; it is not a key.
+# The manifest file was restored after scenarios 2 and 3 (git status clean apart from this change).
+
+## 1. production OTA enabled (synthetic tf-prod-* keyring, https://ota.example.org), INTERNET removal in place
+$ ./gradlew :composeApp:checkReleaseInternetPermission -Ptalentforge.ota.android.production.enabled=true -Ptalentforge.ota.android.production.baseUrl=https://ota.example.org -Ptalentforge.ota.android.production.keyring=<scratch>/fake-prod-keyring.json
+(expected: FAIL)
+> Task :composeApp:processReleaseMainManifest UP-TO-DATE
+> Task :composeApp:checkReleaseInternetPermission FAILED
+> talentforge.ota.android.production.enabled is true, but the release manifest does not request android.permission.INTERNET, so the production OTA client could not connect. The change that enables production OTA deletes the removal in src/androidRelease/AndroidManifest.xml and updates the privacy and store texts (NET-1, store1 audit §5.4).
+BUILD FAILED in 678ms
+
+## 2. production OTA off, src/androidRelease/AndroidManifest.xml temporarily moved away (INTERNET would be re-added)
+$ ./gradlew :composeApp:assembleRelease
+(expected: FAIL before packageRelease)
+> Task :composeApp:processReleaseMainManifest FROM-CACHE
+> Task :composeApp:checkReleaseInternetPermission FAILED
+> The release manifest requests android.permission.INTERNET while production OTA is off. NET-1 = B: release builds request no network access (store and privacy texts rely on it). Keep the tools:node="remove" in src/androidRelease/AndroidManifest.xml, or change the NET-1 decision and its texts deliberately.
+BUILD FAILED in 452ms
+
+## 3. production OTA enabled, removal moved away (the option-C shape)
+$ ./gradlew :composeApp:checkReleaseInternetPermission -Ptalentforge.ota.android.production.enabled=true -Ptalentforge.ota.android.production.baseUrl=https://ota.example.org -Ptalentforge.ota.android.production.keyring=<scratch>/fake-prod-keyring.json
+(expected: PASS)
+> Task :composeApp:processReleaseMainManifest UP-TO-DATE
+> Task :composeApp:checkReleaseInternetPermission
+BUILD SUCCESSFUL in 1s

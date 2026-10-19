@@ -1,0 +1,7 @@
+uses-permission#android.permission.INTERNET
+ADDED from <worktree>/mobile/composeApp/src/androidMain/AndroidManifest.xml:11:5-67
+REJECTED from <worktree>/mobile/composeApp/src/androidMain/AndroidManifest.xml:11:5-67
+	tools:node
+		ADDED from <worktree>/mobile/composeApp/src/androidRelease/AndroidManifest.xml:14:9-28
+	android:name
+		ADDED from <worktree>/mobile/composeApp/src/androidMain/AndroidManifest.xml:11:22-64

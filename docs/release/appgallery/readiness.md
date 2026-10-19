@@ -24,10 +24,11 @@
 > **M5.STORE.1 audit (2026-10-19, `main` @ `b242cd6`): read [store1-release-audit.md](../store1-release-audit.md)
 > before using this document.** The sections below are the historical record for `f7494e1`.
 > Since then:
-> - the release manifest **declares `android.permission.INTERNET`** (M5.OTA.3, `ea77dec`).
->   "No `INTERNET` permission" in §1, §4 and §9 no longer holds. OTA is disabled, and the
->   release APK opened no network connection on an emulator (audit §5). The privacy and listing
->   wording waits for owner decision NET-1;
+> - the release manifest **declared `android.permission.INTERNET`** (M5.OTA.3, `ea77dec`).
+>   OTA is disabled, and the release APK opened no network connection on an emulator (audit §5).
+>   Owner decision NET-1 = B (2026-10-19) removes it from release builds again while production
+>   OTA is off, with a build guard, re-verified with `aapt2` ([NET-1 evidence](../net1-evidence/README.md)),
+>   so "No `INTERNET` permission" in §1, §4 and §9 holds again for the release APK (not for debug builds);
 > - TF-RC1-DATA is resolved by M5.DATA.4: the freshness check is CURRENT at `1.60.1.70450`;
 > - tests are 371 shared / 785 desktop; the release APK is 19.8 MB.
 >
