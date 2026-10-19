@@ -61,9 +61,10 @@ to the hosting origin.
   describe this exact behaviour (no internet access, local storage, Share/Copy only on a tap, no
   backup). They need a Google Play mention where they list stores, the owner's identity and contact,
   and legal review (LR-5).
-- **In the app:** Home → About shows the privacy summary. The policy link appears as soon as the
-  approved `https://` URL is set in `LegalLinks.privacyPolicyUrl`, which is `null` today. That needs a
-  small reviewed code change once the URL exists (owner action P-6).
+- **In the app:** Home → About shows the privacy summary and, since M5.LEGAL.LINK, the link that
+  opens the published policy of the UI language (`privacyPolicyUrlOf`: `legal.mythweld.com/privacy.html`
+  for Russian, `…/privacy-en.html` otherwise) in the system browser. The owner action that remains
+  is the policy text's legal review (LR-5, P-6).
 
 ## 4. Other App content declarations (proposed)
 

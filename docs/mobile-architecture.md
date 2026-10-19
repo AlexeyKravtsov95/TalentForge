@@ -1248,13 +1248,14 @@ module. It shows, top to bottom:
   OTA-enabled builds;
 - the independent-project statement;
 - **Privacy**: the first statement, with the remaining verified statements behind one 48 dp
-  "Show details" toggle. The text is unchanged; the policy link appears only when configured;
+  "Show details" toggle. The text is unchanged; the link opens the published privacy policy of
+  the UI language (M5.LEGAL.LINK) in the system browser;
 - one row, **Third-party licenses**, that pushes `AppDestination.Licenses` (saved as `licenses`;
   Back → About). Every open-source notice lives on that screen, unchanged.
 
 ```
 App(storage, …, appVersion)          ← host: Android PackageManager / iOS NSBundle / desktop null
-  Home ⓘ ──▶ AboutScreen(appVersion, platformBackupStatement, LegalLinks.privacyPolicyUrl,
+  Home ⓘ ──▶ AboutScreen(appVersion, platformBackupStatement, privacyPolicyUrlOf(appLanguage()),
                          onBack, onOpenLicenses, otaStatus?, onCheckForUpdates?)
                └─ row ──▶ LicensesScreen(platformOpenSourceNoticesPath, onBack)
      loadOpenSourceNotices(path) → parseOpenSourceNotices (strict, typed OpenSourceNoticesException)
@@ -1284,8 +1285,12 @@ App(storage, …, appVersion)          ← host: Android PackageManager / iOS NS
     is the Android UI's dev host and is not distributed) and the iOS file on iOS
     (TF-RC2B-IOS-NOTICES, [evidence](release/rc2b-evidence/ios-oss-notices.md)).
 - **Privacy:** factual summary of the draft policy. `BackupStatement` picks the paragraph that is
-  true per platform. The policy link renders only for an approved `https://` URL in
-  `LegalLinks.privacyPolicyUrl`, which is deliberately `null` (LR-5).
+  true per platform. The policy link opens the page published for the UI language
+  (M5.LEGAL.LINK, the hosting decision of LR-5): `privacyPolicyUrlOf(appLanguage())` picks
+  `LegalLinks.privacyPolicyUrlRu` (`legal.mythweld.com/privacy.html`) for a Russian interface
+  and `LegalLinks.privacyPolicyUrlEn` (`…/privacy-en.html`) for every other; `LocalUriHandler`
+  hands the URL to the system browser (no WebView, no `INTERNET` permission — the browser, not
+  the app, loads the page; the release/play manifests keep removing INTERNET, NET-1 = B).
 - **Backup (manifest):** `allowBackup="false"`, `dataExtractionRules`
   (`res/xml/data_extraction_rules.xml`) and `fullBackupContent` (`res/xml/backup_rules.xml`). Every
   domain is excluded from cloud backup and device transfer.
@@ -1298,9 +1303,10 @@ App(storage, …, appVersion)          ← host: Android PackageManager / iOS NS
 
 **Tests** (desktop):
 - `AboutScreenUiTest`: EN/RU copy, no technology names on the main screen, version/no version,
-  the iOS backup statement, privacy details behind the toggle, link only when configured, the
-  licenses row, Back, every target ≥ 48 dp and the name on one line at 320 dp / 200 %, and
-  Home → About → Licenses → Back → Back, including RU at 320×568 / 200 %.
+  the iOS backup statement, privacy details behind the toggle, the published policy link per
+  UI language (screen and through the app root), the licenses row, Back, every target ≥ 48 dp
+  and the name on one line at 320 dp / 200 %, and Home → About → Licenses → Back → Back,
+  including RU at 320×568 / 200 %.
 - `LicensesScreenUiTest`: the real Android and iOS notices, module and licence-text toggles,
   not-included and failure + Retry states, EN/RU, Back, toggles ≥ 48 dp at 320 dp / 200 %.
 - `AppIconResourceTest`: the About icon equals the approved launcher raster.
