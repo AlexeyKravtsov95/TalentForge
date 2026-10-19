@@ -2,7 +2,13 @@ import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.variant.BuiltArtifactsLoader
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.io.ByteArrayOutputStream
+import java.io.StringReader
 import javax.inject.Inject
+import javax.xml.parsers.DocumentBuilderFactory
+import org.w3c.dom.Element
+import org.xml.sax.ErrorHandler
+import org.xml.sax.InputSource
+import org.xml.sax.SAXParseException
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -401,6 +407,11 @@ android {
         }
     }
 
+    // NET-1 = B: the release manifest overlay that removes INTERNET. `:composeApp:sourceSets` reports
+    // this path for `release`, but with this KMP/AGP pair the manifest merger ignored the file until
+    // it was set here; checkReleaseInternetPermission fails the release build if it is not merged.
+    sourceSets.getByName("release").manifest.srcFile("src/androidRelease/AndroidManifest.xml")
+
     // Opt-in isolated debug install for device checks (M5.UX.2b.1):
     // `-Ptalentforge.applicationIdSuffix=.devcheck` installs next to the real
     // app with its own data, so a scripted check never sees or changes the
@@ -452,6 +463,107 @@ tasks.matching { it.name == "preReleaseBuild" }.configureEach {
     dependsOn(checkReleaseOtaSettings)
     mustRunAfter(checkPublishableSigning)
 }
+
+// ------------------------------------------------- INTERNET in release builds (NET-1 = B)
+//
+// Owner decision NET-1 = B (docs/release/store1-release-audit.md §5.4): while the production OTA
+// channel is off, a release build requests no network access; src/androidRelease/AndroidManifest.xml
+// removes the INTERNET permission that androidMain declares for the staging channel of debug builds.
+// Each release variant's MERGED manifest must declare INTERNET exactly when
+// talentforge.ota.android.production.enabled is true (the channel a release build reads), so the
+// variant cannot be packaged when production OTA is enabled without the permission (the client could
+// not connect), nor when the permission is back while OTA is off (the store and privacy texts say
+// the app does not request internet access). :composeApp:verifyReleaseInternetRules (run before
+// desktopTest) proves the rule on fixed manifests.
+object ReleaseInternetRule {
+    const val INTERNET = "android.permission.INTERNET"
+    private const val ANDROID_NS = "http://schemas.android.com/apk/res/android"
+
+    /** The permissions a manifest requests (`uses-permission` and `uses-permission-sdk-23`); malformed XML throws. */
+    fun requestedPermissions(manifestXml: String): List<String> {
+        val factory = DocumentBuilderFactory.newInstance()
+        factory.isNamespaceAware = true
+        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
+        val builder = factory.newDocumentBuilder()
+        // throw instead of also printing "[Fatal Error]" to stderr
+        builder.setErrorHandler(object : ErrorHandler {
+            override fun warning(exception: SAXParseException) = Unit
+            override fun error(exception: SAXParseException) = throw exception
+            override fun fatalError(exception: SAXParseException) = throw exception
+        })
+        val manifest = builder.parse(InputSource(StringReader(manifestXml))).documentElement
+        return listOf("uses-permission", "uses-permission-sdk-23").flatMap { tag ->
+            val elements = manifest.getElementsByTagNameNS("*", tag)
+            (0 until elements.length).map { (elements.item(it) as Element).getAttributeNS(ANDROID_NS, "name") }
+        }
+    }
+
+    /** Why this release manifest must not be packaged with this production OTA setting, or null. */
+    fun problem(productionOtaEnabled: Boolean, mergedManifestXml: String): String? {
+        val requested = INTERNET in requestedPermissions(mergedManifestXml)
+        return when {
+            productionOtaEnabled && !requested ->
+                "talentforge.ota.android.production.enabled is true, but the release manifest does not request $INTERNET, " +
+                    "so the production OTA client could not connect. The change that enables production OTA deletes the removal " +
+                    "in src/androidRelease/AndroidManifest.xml and updates the privacy and store texts (NET-1, store1 audit §5.4)."
+            !productionOtaEnabled && requested ->
+                "The release manifest requests $INTERNET while production OTA is off. NET-1 = B: release builds request no " +
+                    "network access (store and privacy texts rely on it). Keep the tools:node=\"remove\" in " +
+                    "src/androidRelease/AndroidManifest.xml, or change the NET-1 decision and its texts deliberately."
+            else -> null
+        }
+    }
+
+    /** The rule on fixed manifests; returns what did not hold (empty: the rule holds). */
+    fun failures(): List<String> {
+        fun manifest(vararg body: String) =
+            "<manifest xmlns:android=\"$ANDROID_NS\" package=\"t\">" + body.joinToString("") + "<application/></manifest>"
+        val internet = "<uses-permission android:name=\"$INTERNET\"/>"
+        val other = "<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>"
+        val cases = listOf(
+            Triple("OTA off, no INTERNET", false to manifest(other), null),
+            Triple("OTA off, no permissions at all", false to manifest(), null),
+            Triple("OTA on, INTERNET", true to manifest(other, internet), null),
+            Triple("OTA off, INTERNET", false to manifest(internet), "while production OTA is off"),
+            Triple("OTA off, INTERNET as uses-permission-sdk-23", false to manifest("<uses-permission-sdk-23 android:name=\"$INTERNET\"/>"), "while production OTA is off"),
+            Triple("OTA on, no INTERNET", true to manifest(other), "could not connect"),
+            Triple("OTA on, INTERNET only in a comment", true to manifest("<!-- $internet -->"), "could not connect"),
+            Triple("OTA on, INTERNET without the android namespace", true to manifest("<uses-permission name=\"$INTERNET\"/>"), "could not connect"),
+        )
+        val failures = mutableListOf<String>()
+        for ((name, input, expected) in cases) {
+            val found = problem(input.first, input.second)
+            if (expected == null && found != null) failures += "$name: expected no problem, got \"$found\""
+            if (expected != null && (found == null || expected !in found)) failures += "$name: expected a problem containing \"$expected\", got $found"
+        }
+        if (runCatching { problem(false, "<manifest") }.isSuccess) failures += "a malformed manifest must fail the check, not pass it"
+        return failures
+    }
+}
+
+val verifyReleaseInternetRules = tasks.register("verifyReleaseInternetRules") {
+    group = "verification"
+    description = "Proves the release INTERNET rule (NET-1 = B) on fixed manifests."
+    doLast {
+        val found = ReleaseInternetRule.failures()
+        if (found.isNotEmpty()) throw GradleException("Release INTERNET rule does not hold:\n  " + found.joinToString("\n  "))
+    }
+}
+
+abstract class CheckReleaseInternetPermission : DefaultTask() {
+    @get:InputFile
+    abstract val mergedManifest: RegularFileProperty
+
+    @get:Input
+    abstract val productionOtaEnabled: Property<Boolean>
+
+    @TaskAction
+    fun check() {
+        ReleaseInternetRule.problem(productionOtaEnabled.get(), mergedManifest.get().asFile.readText())?.let { throw GradleException(it) }
+    }
+}
+
+val androidProductionOtaEnabled: Boolean = otaSetting("android", "production", "enabled") == "true"
 
 /**
  * Copies the signed release APK to `build/outputs/publishable/TalentForge-<versionName>-<versionCode>.apk`
@@ -567,6 +679,17 @@ gradle.taskGraph.whenReady {
 androidComponents {
     onVariants(selector().withBuildType("release")) { variant ->
         val output = variant.outputs.single()
+        val variantName = variant.name.replaceFirstChar { it.uppercase() }
+        val checkInternet = tasks.register<CheckReleaseInternetPermission>("check${variantName}InternetPermission") {
+            group = "release"
+            description = "Fails unless the merged ${variant.name} manifest requests INTERNET exactly when production OTA is enabled (NET-1)."
+            mergedManifest.set(variant.artifacts.get(SingleArtifact.MERGED_MANIFEST))
+            productionOtaEnabled.set(androidProductionOtaEnabled)
+        }
+        // every APK or bundle of the variant, including the publishable APK, is packaged only after the check
+        tasks.matching { it.name == "package$variantName" || it.name == "package${variantName}Bundle" }.configureEach {
+            dependsOn(checkInternet)
+        }
         assemblePublishableRelease.configure {
             apkDirectory.set(variant.artifacts.get(SingleArtifact.APK))
             artifactsLoader.set(variant.artifacts.getBuiltArtifactsLoader())
@@ -598,6 +721,7 @@ androidComponents {
 // (PR #19, gesture frames) — skipped by default.
 tasks.named<Test>("desktopTest") {
     dependsOn(verifyOtaSettingsRules)
+    dependsOn(verifyReleaseInternetRules)
     System.getProperty("talentforge.m41.screenshots")?.let {
         systemProperty("talentforge.m41.screenshots", it)
     }
