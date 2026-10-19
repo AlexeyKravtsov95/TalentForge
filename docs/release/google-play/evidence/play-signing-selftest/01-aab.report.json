@@ -1,0 +1,150 @@
+{
+  "schema": "talentforge.play-bundle-report.v1",
+  "generatedAt": "2026-10-19T11:53:16Z",
+  "result": "SELFTEST-PASS",
+  "purpose": "signing-selftest",
+  "bundle": {
+    "fileName": "TalentForge-0.1.0-1-SELFTEST-NOT-FOR-UPLOAD.aab",
+    "sizeBytes": 19823740,
+    "sha256": "055fdb99aa9dc5d5d15959464aa0fb87b28cbccbbc789b446a02f25ee7e7b8ff"
+  },
+  "package": {
+    "applicationId": "io.github.alexeykravtsov95.talentforge",
+    "versionCode": 1,
+    "versionName": "0.1.0",
+    "minSdk": 26,
+    "targetSdk": 36,
+    "nativeCode": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "x86",
+      "x86_64"
+    ],
+    "debuggable": false,
+    "testOnly": false,
+    "permissions": [
+      "io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+    ],
+    "nativeLibrariesUncompressed": true,
+    "nativePageAlignment": "16K"
+  },
+  "signature": {
+    "role": "google-play-upload-key",
+    "verifies": true,
+    "signers": 1,
+    "certificateDn": [
+      "CN=TalentForge signing self-test - temporary - upload test key"
+    ],
+    "certificateSha256": [
+      "9925f6272b8791a2d3c6dffb5034f967d8cfeb422e3e178e44e0afc7dd64e4aa"
+    ],
+    "keyAlgorithm": [
+      "RSA"
+    ],
+    "keySizeBits": [
+      4096
+    ]
+  },
+  "checks": [
+    {
+      "id": "signature-verifies",
+      "status": "PASS",
+      "detail": "jarsigner -verify: jar verified"
+    },
+    {
+      "id": "all-entries-signed",
+      "status": "PASS",
+      "detail": "every entry is in the signed JAR manifest"
+    },
+    {
+      "id": "single-signer",
+      "status": "PASS",
+      "detail": "signers=1, signature files=1, certificates=1"
+    },
+    {
+      "id": "not-debug-certificate-dn",
+      "status": "PASS",
+      "detail": "signer DN is not the Android debug subject"
+    },
+    {
+      "id": "not-local-debug-certificate",
+      "status": "PASS",
+      "detail": "certificate differs from the local debug keystore's"
+    },
+    {
+      "id": "upload-certificate-sha256-matches",
+      "status": "PASS",
+      "detail": "certificate SHA-256 equals the expected upload-key fingerprint"
+    },
+    {
+      "id": "rsa-key-size",
+      "status": "PASS",
+      "detail": "key RSA 4096 bits (required: RSA, at least 2048)"
+    },
+    {
+      "id": "certificate-differs-from-other-role",
+      "status": "PASS",
+      "detail": "certificate is none of the 1 fingerprint(s) of the other key role"
+    },
+    {
+      "id": "selftest-certificate",
+      "status": "PASS",
+      "detail": "self-test run: the signer is a temporary self-test key"
+    },
+    {
+      "id": "application-id",
+      "status": "PASS",
+      "detail": "package='io.github.alexeykravtsov95.talentforge' (frozen: 'io.github.alexeykravtsov95.talentforge')"
+    },
+    {
+      "id": "version-code",
+      "status": "PASS",
+      "detail": "versionCode=1 (expected: 1)"
+    },
+    {
+      "id": "version-name",
+      "status": "PASS",
+      "detail": "versionName='0.1.0' (expected: 0.1.0)"
+    },
+    {
+      "id": "target-sdk",
+      "status": "PASS",
+      "detail": "targetSdkVersion=36 (Google Play minimum: 36)"
+    },
+    {
+      "id": "not-debuggable",
+      "status": "PASS",
+      "detail": "debuggable=False"
+    },
+    {
+      "id": "not-test-only",
+      "status": "PASS",
+      "detail": "testOnly=False"
+    },
+    {
+      "id": "permissions-allowed",
+      "status": "PASS",
+      "detail": "requested: ['io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION']; all allowed"
+    },
+    {
+      "id": "abi-arm64-v8a",
+      "status": "PASS",
+      "detail": "base/lib ABIs: ['arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64']"
+    },
+    {
+      "id": "abi-64-bit-coverage",
+      "status": "PASS",
+      "detail": "every 32-bit ABI has its 64-bit counterpart"
+    },
+    {
+      "id": "native-16kb-page-size",
+      "status": "PASS",
+      "detail": "2 64-bit libraries; ELF LOAD alignment and RELRO fit 16 KB pages"
+    },
+    {
+      "id": "bundle-native-page-alignment",
+      "status": "PASS",
+      "detail": "BundleConfig: uncompress native libraries=True, page alignment=16K (required: uncompressed, 16K or 64K)"
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+test certificate SHA-256 (temporary key, deleted after the run): 4380234d0296b1a5731368e14835304d2429a823ca71fe6910f3d83ae5892b04

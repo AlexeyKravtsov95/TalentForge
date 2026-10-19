@@ -1,0 +1,29 @@
+> Task :shared:preBuild UP-TO-DATE
+> Task :shared:preReleaseBuild UP-TO-DATE
+> Task :composeApp:checkPublishableSigning FAILED
+> Task :shared:generateReleaseResValues UP-TO-DATE
+> Task :shared:extractDeepLinksRelease UP-TO-DATE
+> Task :shared:processReleaseManifest UP-TO-DATE
+
+[Incubating] Problems report is available at: file://~/Desktop/workspace/TalentForge-play1/mobile/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':composeApp:checkPublishableSigning' (registered in build file 'composeApp/build.gradle.kts').
+> Incomplete release signing configuration. Missing: TALENTFORGE_RELEASE_STORE_PASSWORD / talentforge.release.store_password, TALENTFORGE_RELEASE_KEY_PASSWORD / talentforge.release.key_password. Set: TALENTFORGE_RELEASE_STORE_FILE / talentforge.release.store_file, TALENTFORGE_RELEASE_KEY_ALIAS / talentforge.release.key_alias. Set all four or none (none = unsigned technical release build). Values are not printed.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 421ms
+4 actionable tasks: 1 executed, 3 up-to-date

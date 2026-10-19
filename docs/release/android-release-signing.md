@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Applies to | The one signed universal APK uploaded **byte-identical** to RuStore and Huawei AppGallery |
-| Strategy | [multi-store-signing.md](appgallery/multi-store-signing.md): one owner-held RSA 4096 key, no Huawei App Signing, no RuStore AAB signing, no Google Play App Signing |
+| Strategy | [multi-store-signing.md](appgallery/multi-store-signing.md): one owner-held RSA 4096 key, no Huawei App Signing, no RuStore AAB signing. **Google Play (M5.PLAY.1):** a copy of this same key goes to Play App Signing, and a separate upload key signs the Play bundle ([google-play/signing.md](google-play/signing.md)) |
 | Implemented by | `mobile/composeApp/build.gradle.kts` (signing settings, `checkReleaseSigning`, `assemblePublishableRelease`), `scripts/verify_release_apk.py`, `scripts/release_signing_selftest.sh` |
 | Status | Engineering is done. **No production key exists yet**. Every step below marked 🔑 is an owner action; none was run with a real key. |
 
@@ -138,6 +138,12 @@ test key. It covers:
 - the debug APK;
 - a secret-leak scan of the logs, reports and `build/`.
 
+The run is a declared self-test (`TALENTFORGE_SIGNING_SELFTEST=true`, M5.PLAY.1). Only then does the
+validator accept a self-test certificate, and it reports `SELFTEST-PASS` (never `PASS`) for an
+APK staged as `*-SELFTEST-NOT-FOR-UPLOAD.apk`. Without the switch, a test key is refused. The
+two-key Google Play self-test is `scripts/play_signing_selftest.sh`
+([google-play/signing.md §8](google-play/signing.md#8-self-test-without-production-keys)).
+
 The test key lives in a fresh temporary directory with a random password. On exit it is deleted
 together with every test-signed output. The self-test runs in `mobile-ci`, and it refuses to run
 on a machine where `talentforge.release.*` is set in the Gradle user properties. **A test-key APK
@@ -153,3 +159,5 @@ is never a release artifact.**
   `assemblePublishableRelease` from the release commit.
 - Use a store-generated key (AGC-generated or Google-generated): it breaks cross-store updates
   ([multi-store-signing §2.3](appgallery/multi-store-signing.md#23-what-would-change-if-managed-signing-were-enabled)).
+- Sign anything for RuStore or AppGallery with the Google Play upload key, or upload this APK to
+  Google Play. Play gets the bundle from `bundlePublishablePlay` ([google-play/signing.md](google-play/signing.md)).

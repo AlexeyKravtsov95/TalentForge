@@ -1,0 +1,16 @@
+== splits/base-arm64_v8a.apk
+Verifying alignment of <tmp>/apks/splits/base-arm64_v8a.apk (4)...
+      49 AndroidManifest.xml (OK - compressed)
+   16384 lib/arm64-v8a/libandroidx.graphics.path.so (OK)
+   26530 META-INF/BNDLTOOL.SF (OK - compressed)
+   26814 META-INF/BNDLTOOL.RSA (OK - compressed)
+   28737 META-INF/MANIFEST.MF (OK - compressed)
+Verification successful
+== splits/base-x86_64.apk
+Verifying alignment of <tmp>/apks/splits/base-x86_64.apk (4)...
+      49 AndroidManifest.xml (OK - compressed)
+   16384 lib/x86_64/libandroidx.graphics.path.so (OK)
+   27194 META-INF/BNDLTOOL.SF (OK - compressed)
+   27475 META-INF/BNDLTOOL.RSA (OK - compressed)
+   29400 META-INF/MANIFEST.MF (OK - compressed)
+Verification successful

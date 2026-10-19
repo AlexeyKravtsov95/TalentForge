@@ -117,7 +117,13 @@ uploaded key for released apps).
 
 ## 4. Preserving compatibility with Google Play App Signing (deferred, issue #35)
 
-Nothing is implemented for Google Play in this milestone. To keep the option open:
+> **M5.PLAY.1 (2026-10-19):** implemented as described below: the same key for Play App Signing, a
+> separate upload key, and a verified bundle path (`bundlePublishablePlay`). Since this section was
+> written, Google enrols new apps in **hybrid** signing with Google-generated keys by default. The
+> owner must provide their own key before the first bundle upload. See
+> [google-play/signing.md](../google-play/signing.md).
+
+Nothing is implemented for Google Play in this milestone (M5.GALLERY.1). To keep the option open:
 
 1. **Never** let Play generate the app-signing key. Google's [Play App Signing help](https://support.google.com/googleplay/android-developer/answer/9842756)
    states that new apps are enrolled with Google-generated keys by default, that developers who

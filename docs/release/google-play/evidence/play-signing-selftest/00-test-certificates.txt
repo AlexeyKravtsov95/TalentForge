@@ -1,0 +1,2 @@
+app signing test certificate SHA-256 (temporary key, deleted after the run): 177a17b457b63b3ef575a418ce1d3cfd66407ac1b479be356c38ae9f3653ef74
+upload test certificate SHA-256 (temporary key, deleted after the run):      9925f6272b8791a2d3c6dffb5034f967d8cfeb422e3e178e44e0afc7dd64e4aa

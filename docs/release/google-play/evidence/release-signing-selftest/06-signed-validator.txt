@@ -1,0 +1,20 @@
+PASS  signature-verifies: apksigner verify succeeded
+PASS  single-signer: signers=1, certificates=1
+PASS  not-debug-certificate-dn: signer DN is not the Android debug subject
+PASS  not-local-debug-certificate: certificate differs from the local debug keystore's
+PASS  certificate-sha256-matches: certificate SHA-256 equals the expected fingerprint
+PASS  rsa-key-size: key RSA 4096 bits (required: RSA, at least 4096)
+PASS  signature-scheme-v2-or-v3: schemes: v1=False, v2=True, v3=False, v3.1=False, v3.2=False, v4=False
+PASS  application-id: applicationId='io.github.alexeykravtsov95.talentforge' (frozen: 'io.github.alexeykravtsov95.talentforge')
+PASS  version-code: versionCode=1 (expected: any > 0)
+PASS  version-name: versionName='0.1.0' (expected: non-empty)
+PASS  not-debuggable: debuggable=False
+PASS  not-test-only: testOnly=False
+PASS  universal-apk: split=None; native-code=['arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64']; lib/ ABIs=['arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64']
+PASS  abi-arm64-v8a: arm64-v8a packaged: True
+PASS  permissions-allowed: requested: ['io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION']; all allowed
+PASS  native-16kb-page-size: 2 64-bit libraries; ELF LOAD, RELRO and zip alignment fit 16 KB
+PASS  certificate-differs-from-other-role: certificate is none of the 0 fingerprint(s) of the other key role
+PASS  selftest-certificate: self-test run: the signer is a temporary self-test key
+APK   composeApp-release.apk  19814734 bytes  sha256 e569898823f718ab8b1ea358c5c2e93f577e5ad01ca79cc287e649b865a8ee2c
+RESULT SELFTEST-PASS
