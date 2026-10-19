@@ -1,0 +1,25 @@
+id	status	exit	seconds	commit	command
+01-env	PASS	0	0	b242cd61f1e9ca400e5c652cc6db61c48c7178f5	uname -srm; (sw_vers 2>/dev/null || true); java -version 2>&1; "python3" --version; echo build-tools=$(basename "~/Library/Android/sdk/build-tools/37.0.0"); "~/Library/Android/sdk/build-tools/37.0.0/aapt2" version; "~/Library/Android/sdk/build-tools/37.0.0/apksigner" --version; git log -1 --format='%H %cI %s'
+1d-sync-datasets	PASS	0	0	b242cd61f1e9ca400e5c652cc6db61c48c7178f5	"python3" scripts/sync_mobile_datasets.py --check
+1v-sync-visuals	PASS	0	0	b242cd61f1e9ca400e5c652cc6db61c48c7178f5	"python3" scripts/sync_mobile_visuals.py --check
+1t-sync-tooltips	PASS	0	0	b242cd61f1e9ca400e5c652cc6db61c48c7178f5	"python3" scripts/sync_mobile_tooltips.py --check
+1l-sync-localization	PASS	0	0	b242cd61f1e9ca400e5c652cc6db61c48c7178f5	"python3" scripts/sync_mobile_localization.py --check
+15-freshness	INFO	1	0	b242cd61f1e9ca400e5c652cc6db61c48c7178f5	"python3" scripts/check_product_freshness.py
+20-shared-jvmTest	PASS	0	22	b242cd61f1e9ca400e5c652cc6db61c48c7178f5	./gradlew --console=plain --no-configuration-cache :shared:jvmTest --rerun --no-build-cache
+21-desktopTest	PASS	0	355	b242cd61f1e9ca400e5c652cc6db61c48c7178f5	./gradlew --console=plain --no-configuration-cache :composeApp:desktopTest --rerun --no-build-cache
+30-assembleDebug	PASS	0	12	b242cd61f1e9ca400e5c652cc6db61c48c7178f5	./gradlew --console=plain --no-configuration-cache :composeApp:assembleDebug
+31-assembleRelease	PASS	0	16	b242cd61f1e9ca400e5c652cc6db61c48c7178f5	./gradlew --console=plain --no-configuration-cache :composeApp:assembleRelease
+32-bundleRelease	PASS	0	2	b242cd61f1e9ca400e5c652cc6db61c48c7178f5	./gradlew --console=plain --no-configuration-cache :composeApp:bundleRelease
+33-lintRelease	PASS	0	15	b242cd61f1e9ca400e5c652cc6db61c48c7178f5	./gradlew --console=plain --no-configuration-cache :composeApp:lintRelease
+34-deps-release	PASS	0	0	b242cd61f1e9ca400e5c652cc6db61c48c7178f5	./gradlew --console=plain --no-configuration-cache :composeApp:dependencies --configuration releaseRuntimeClasspath
+40-badging-debug	PASS	0	0	b242cd61f1e9ca400e5c652cc6db61c48c7178f5	"~/Library/Android/sdk/build-tools/37.0.0/aapt2" dump badging "<worktree>/mobile/composeApp/build/outputs/apk/debug/composeApp-debug.apk"
+41-manifest-debug	PASS	0	0	b242cd61f1e9ca400e5c652cc6db61c48c7178f5	"~/Library/Android/sdk/build-tools/37.0.0/aapt2" dump xmltree --file AndroidManifest.xml "<worktree>/mobile/composeApp/build/outputs/apk/debug/composeApp-debug.apk"
+42-apksigner-debug	PASS	0	1	b242cd61f1e9ca400e5c652cc6db61c48c7178f5	"~/Library/Android/sdk/build-tools/37.0.0/apksigner" verify --print-certs --verbose "<worktree>/mobile/composeApp/build/outputs/apk/debug/composeApp-debug.apk"
+40-badging-release	PASS	0	0	b242cd61f1e9ca400e5c652cc6db61c48c7178f5	"~/Library/Android/sdk/build-tools/37.0.0/aapt2" dump badging "<worktree>/mobile/composeApp/build/outputs/apk/release/composeApp-release-unsigned.apk"
+41-manifest-release	PASS	0	0	b242cd61f1e9ca400e5c652cc6db61c48c7178f5	"~/Library/Android/sdk/build-tools/37.0.0/aapt2" dump xmltree --file AndroidManifest.xml "<worktree>/mobile/composeApp/build/outputs/apk/release/composeApp-release-unsigned.apk"
+42-apksigner-release	FAIL-EXPECTED	1	0	b242cd61f1e9ca400e5c652cc6db61c48c7178f5	"~/Library/Android/sdk/build-tools/37.0.0/apksigner" verify --print-certs --verbose "<worktree>/mobile/composeApp/build/outputs/apk/release/composeApp-release-unsigned.apk"
+50-bundletool-manifest	PASS	0	1	b242cd61f1e9ca400e5c652cc6db61c48c7178f5	"/opt/homebrew/bin/bundletool" dump manifest --bundle="<worktree>/mobile/composeApp/build/outputs/bundle/release/composeApp-release.aab"
+51-bundletool-splits	PASS	0	2	b242cd61f1e9ca400e5c652cc6db61c48c7178f5	"/opt/homebrew/bin/bundletool" build-apks --bundle="<worktree>/mobile/composeApp/build/outputs/bundle/release/composeApp-release.aab" --output="<logs>/release-splits.apks"
+52-bundletool-size	PASS	0	2	b242cd61f1e9ca400e5c652cc6db61c48c7178f5	"/opt/homebrew/bin/bundletool" get-size total --apks="<logs>/release-splits.apks" --dimensions=ABI,SCREEN_DENSITY,LANGUAGE
+53-bundletool-universal	PASS	0	1	b242cd61f1e9ca400e5c652cc6db61c48c7178f5	"/opt/homebrew/bin/bundletool" build-apks --bundle="<worktree>/mobile/composeApp/build/outputs/bundle/release/composeApp-release.aab" --mode=universal --output="<logs>/release-universal.apks"
+60-inspect	PASS	0	0	b242cd61f1e9ca400e5c652cc6db61c48c7178f5	"python3" "~/Desktop/workspace/TalentForge-store1/docs/release/appgallery/evidence/gallery1_inspect.py" --wt "<worktree>" --out "<logs>" --curated "<curated>" --sha "b242cd61f1e9ca400e5c652cc6db61c48c7178f5"

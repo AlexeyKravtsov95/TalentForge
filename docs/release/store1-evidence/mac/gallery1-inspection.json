@@ -1,0 +1,756 @@
+{
+  "commit": "b242cd61f1e9ca400e5c652cc6db61c48c7178f5",
+  "artifacts": {
+    "debug_apk": {
+      "present": true,
+      "bytes": 23189832,
+      "entries": 2162,
+      "abis": [
+        "arm64-v8a",
+        "armeabi-v7a",
+        "x86",
+        "x86_64"
+      ],
+      "native_libraries": [
+        "libandroidx.graphics.path.so"
+      ],
+      "dex_class_name_hits": {
+        "google_play_services": false,
+        "firebase": false,
+        "play_billing": false,
+        "play_core": false,
+        "huawei_hms": false,
+        "huawei_agconnect": false,
+        "okhttp": false,
+        "ktor": false,
+        "java_net_HttpURLConnection": true,
+        "java_net_Socket": true,
+        "android_webkit_WebView": true
+      },
+      "service_config_files": [],
+      "largest_compressed_prefixes": [
+        {
+          "prefix": "assets/composeResources",
+          "compressed_bytes": 11976359
+        },
+        {
+          "prefix": "classes.dex",
+          "compressed_bytes": 6046894
+        },
+        {
+          "prefix": "classes23.dex",
+          "compressed_bytes": 2442595
+        },
+        {
+          "prefix": "classes20.dex",
+          "compressed_bytes": 530498
+        },
+        {
+          "prefix": "res",
+          "compressed_bytes": 231229
+        },
+        {
+          "prefix": "resources.arsc",
+          "compressed_bytes": 151184
+        },
+        {
+          "prefix": "classes4.dex",
+          "compressed_bytes": 134776
+        },
+        {
+          "prefix": "classes3.dex",
+          "compressed_bytes": 98277
+        }
+      ]
+    },
+    "release_apk_unsigned": {
+      "present": true,
+      "bytes": 19806566,
+      "entries": 2145,
+      "abis": [
+        "arm64-v8a",
+        "armeabi-v7a",
+        "x86",
+        "x86_64"
+      ],
+      "native_libraries": [
+        "libandroidx.graphics.path.so"
+      ],
+      "dex_class_name_hits": {
+        "google_play_services": false,
+        "firebase": false,
+        "play_billing": false,
+        "play_core": false,
+        "huawei_hms": false,
+        "huawei_agconnect": false,
+        "okhttp": false,
+        "ktor": false,
+        "java_net_HttpURLConnection": true,
+        "java_net_Socket": true,
+        "android_webkit_WebView": true
+      },
+      "service_config_files": [],
+      "largest_compressed_prefixes": [
+        {
+          "prefix": "assets/composeResources",
+          "compressed_bytes": 11563523
+        },
+        {
+          "prefix": "classes.dex",
+          "compressed_bytes": 4264745
+        },
+        {
+          "prefix": "classes2.dex",
+          "compressed_bytes": 2742621
+        },
+        {
+          "prefix": "res",
+          "compressed_bytes": 219274
+        },
+        {
+          "prefix": "resources.arsc",
+          "compressed_bytes": 149584
+        },
+        {
+          "prefix": "lib",
+          "compressed_bytes": 37392
+        },
+        {
+          "prefix": "META-INF",
+          "compressed_bytes": 15014
+        },
+        {
+          "prefix": "kotlin",
+          "compressed_bytes": 12425
+        }
+      ]
+    },
+    "release_aab": {
+      "present": true,
+      "bytes": 19720150,
+      "entries": 2151,
+      "abis": [
+        "arm64-v8a",
+        "armeabi-v7a",
+        "x86",
+        "x86_64"
+      ],
+      "native_libraries": [
+        "libandroidx.graphics.path.so"
+      ],
+      "dex_class_name_hits": {
+        "google_play_services": false,
+        "firebase": false,
+        "play_billing": false,
+        "play_core": false,
+        "huawei_hms": false,
+        "huawei_agconnect": false,
+        "okhttp": false,
+        "ktor": false,
+        "java_net_HttpURLConnection": true,
+        "java_net_Socket": true,
+        "android_webkit_WebView": true
+      },
+      "service_config_files": [],
+      "largest_compressed_prefixes": [
+        {
+          "prefix": "base/assets",
+          "compressed_bytes": 11535236
+        },
+        {
+          "prefix": "base/dex",
+          "compressed_bytes": 7007366
+        },
+        {
+          "prefix": "base/res",
+          "compressed_bytes": 217336
+        },
+        {
+          "prefix": "base",
+          "compressed_bytes": 45755
+        },
+        {
+          "prefix": "base/root",
+          "compressed_bytes": 28755
+        },
+        {
+          "prefix": "base/lib",
+          "compressed_bytes": 17846
+        },
+        {
+          "prefix": "BUNDLE-METADATA",
+          "compressed_bytes": 13180
+        },
+        {
+          "prefix": "base/manifest",
+          "compressed_bytes": 1753
+        }
+      ]
+    }
+  },
+  "badging": {
+    "debug": {
+      "package": "io.github.alexeykravtsov95.talentforge",
+      "versionCode": "1",
+      "versionName": "0.1.0",
+      "minSdkVersion": "26",
+      "targetSdkVersion": "36",
+      "debuggable": true,
+      "densities": [
+        "160",
+        "240",
+        "320",
+        "480",
+        "640",
+        "65534",
+        "65535"
+      ],
+      "uses_permission": [
+        "android.permission.INTERNET",
+        "io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+      ],
+      "application_label_locales": 85,
+      "locales": [
+        "--_--",
+        "af",
+        "am",
+        "ar",
+        "as",
+        "az",
+        "be",
+        "bg",
+        "bn",
+        "bs",
+        "ca",
+        "cs",
+        "da",
+        "de",
+        "el",
+        "en-AU",
+        "en-CA",
+        "en-GB",
+        "en-IN",
+        "en-XC",
+        "es",
+        "es-US",
+        "et",
+        "eu",
+        "fa",
+        "fi",
+        "fr",
+        "fr-CA",
+        "gl",
+        "gu",
+        "hi",
+        "hr",
+        "hu",
+        "hy",
+        "in",
+        "is",
+        "it",
+        "iw",
+        "ja",
+        "ka",
+        "kk",
+        "km",
+        "kn",
+        "ko",
+        "ky",
+        "lo",
+        "lt",
+        "lv",
+        "mk",
+        "ml",
+        "mn",
+        "mr",
+        "ms",
+        "my",
+        "nb",
+        "ne",
+        "nl",
+        "or",
+        "pa",
+        "pl",
+        "pt",
+        "pt-BR",
+        "pt-PT",
+        "ro",
+        "ru",
+        "si",
+        "sk",
+        "sl",
+        "sq",
+        "sr",
+        "sr-Latn",
+        "sv",
+        "sw",
+        "ta",
+        "te",
+        "th",
+        "tl",
+        "tr",
+        "uk",
+        "ur",
+        "uz",
+        "vi",
+        "zh-CN",
+        "zh-HK",
+        "zh-TW",
+        "zu"
+      ],
+      "application_label": "TalentForge",
+      "application_icon": "res/mipmap-anydpi-v26/ic_launcher.xml",
+      "native_code": [
+        "arm64-v8a",
+        "armeabi-v7a",
+        "x86",
+        "x86_64"
+      ],
+      "uses_feature": []
+    },
+    "release": {
+      "package": "io.github.alexeykravtsov95.talentforge",
+      "versionCode": "1",
+      "versionName": "0.1.0",
+      "minSdkVersion": "26",
+      "targetSdkVersion": "36",
+      "debuggable": false,
+      "densities": [
+        "160",
+        "240",
+        "320",
+        "480",
+        "640",
+        "65534",
+        "65535"
+      ],
+      "uses_permission": [
+        "android.permission.INTERNET",
+        "io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+      ],
+      "application_label_locales": 85,
+      "locales": [
+        "--_--",
+        "af",
+        "am",
+        "ar",
+        "as",
+        "az",
+        "be",
+        "bg",
+        "bn",
+        "bs",
+        "ca",
+        "cs",
+        "da",
+        "de",
+        "el",
+        "en-AU",
+        "en-CA",
+        "en-GB",
+        "en-IN",
+        "en-XC",
+        "es",
+        "es-US",
+        "et",
+        "eu",
+        "fa",
+        "fi",
+        "fr",
+        "fr-CA",
+        "gl",
+        "gu",
+        "hi",
+        "hr",
+        "hu",
+        "hy",
+        "in",
+        "is",
+        "it",
+        "iw",
+        "ja",
+        "ka",
+        "kk",
+        "km",
+        "kn",
+        "ko",
+        "ky",
+        "lo",
+        "lt",
+        "lv",
+        "mk",
+        "ml",
+        "mn",
+        "mr",
+        "ms",
+        "my",
+        "nb",
+        "ne",
+        "nl",
+        "or",
+        "pa",
+        "pl",
+        "pt",
+        "pt-BR",
+        "pt-PT",
+        "ro",
+        "ru",
+        "si",
+        "sk",
+        "sl",
+        "sq",
+        "sr",
+        "sr-Latn",
+        "sv",
+        "sw",
+        "ta",
+        "te",
+        "th",
+        "tl",
+        "tr",
+        "uk",
+        "ur",
+        "uz",
+        "vi",
+        "zh-CN",
+        "zh-HK",
+        "zh-TW",
+        "zu"
+      ],
+      "application_label": "TalentForge",
+      "application_icon": "res/BW.xml",
+      "native_code": [
+        "arm64-v8a",
+        "armeabi-v7a",
+        "x86",
+        "x86_64"
+      ],
+      "uses_feature": []
+    }
+  },
+  "manifest": {
+    "debug": {
+      "allowBackup": "false",
+      "fullBackupContent": "@0x7f0c0000",
+      "dataExtractionRules": "@0x7f0c0001",
+      "debuggable": "true",
+      "usesCleartextTraffic": "(unset)",
+      "networkSecurityConfig": null,
+      "localeConfig": null,
+      "extractNativeLibs": "false",
+      "uses_permission": [
+        "android.permission.INTERNET",
+        "io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+      ],
+      "permission_declared": [
+        "io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+      ],
+      "activities": [
+        "io.github.alexeykravtsov95.talentforge.ui.MainActivity"
+      ],
+      "services": [],
+      "receivers": [
+        "androidx.profileinstaller.ProfileInstallReceiver"
+      ],
+      "providers": [
+        "org.jetbrains.compose.resources.AndroidContextProvider",
+        "androidx.startup.InitializationProvider"
+      ],
+      "meta_data": [
+        "androidx.emoji2.text.EmojiCompatInitializer",
+        "androidx.lifecycle.ProcessLifecycleInitializer",
+        "androidx.profileinstaller.ProfileInstallerInitializer"
+      ],
+      "uses_library": [
+        "androidx.window.extensions",
+        "androidx.window.sidecar"
+      ],
+      "uses_feature": [],
+      "exported_components": [
+        "activity:io.github.alexeykravtsov95.talentforge.ui.MainActivity",
+        "receiver:androidx.profileinstaller.ProfileInstallReceiver"
+      ],
+      "queries_entries": []
+    },
+    "release": {
+      "allowBackup": "false",
+      "fullBackupContent": "@0x7f0c0000",
+      "dataExtractionRules": "@0x7f0c0001",
+      "debuggable": "(unset)",
+      "usesCleartextTraffic": "(unset)",
+      "networkSecurityConfig": null,
+      "localeConfig": null,
+      "extractNativeLibs": "false",
+      "uses_permission": [
+        "android.permission.INTERNET",
+        "io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+      ],
+      "permission_declared": [
+        "io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+      ],
+      "activities": [
+        "io.github.alexeykravtsov95.talentforge.ui.MainActivity"
+      ],
+      "services": [],
+      "receivers": [
+        "androidx.profileinstaller.ProfileInstallReceiver"
+      ],
+      "providers": [
+        "org.jetbrains.compose.resources.AndroidContextProvider",
+        "androidx.startup.InitializationProvider"
+      ],
+      "meta_data": [
+        "androidx.emoji2.text.EmojiCompatInitializer",
+        "androidx.lifecycle.ProcessLifecycleInitializer",
+        "androidx.profileinstaller.ProfileInstallerInitializer"
+      ],
+      "uses_library": [
+        "androidx.window.extensions",
+        "androidx.window.sidecar"
+      ],
+      "uses_feature": [],
+      "exported_components": [
+        "activity:io.github.alexeykravtsov95.talentforge.ui.MainActivity",
+        "receiver:androidx.profileinstaller.ProfileInstallReceiver"
+      ],
+      "queries_entries": []
+    }
+  },
+  "apksigner": {
+    "debug": {
+      "log_present": true,
+      "verifies": true,
+      "does_not_verify": false,
+      "signer_dns": [
+        "C=US, O=Android, CN=Android Debug"
+      ],
+      "schemes": {
+        "v1 scheme (JAR signing)": "false",
+        "v2 scheme (APK Signature Scheme v2)": "true",
+        "v3 scheme (APK Signature Scheme v3)": "false",
+        "v3.1 scheme (APK Signature Scheme v3.1)": "false",
+        "v3.2 scheme (APK Signature Scheme v3.2)": "false",
+        "v4 scheme (APK Signature Scheme v4)": "false"
+      },
+      "errors": [],
+      "debug_certificate": true
+    },
+    "release": {
+      "log_present": true,
+      "verifies": false,
+      "does_not_verify": true,
+      "signer_dns": [],
+      "schemes": {},
+      "errors": [
+        "Missing META-INF/MANIFEST.MF"
+      ],
+      "debug_certificate": false
+    }
+  },
+  "dependencies_releaseRuntimeClasspath": {
+    "report_present": true,
+    "pattern_hits": {
+      "google_play_services": [],
+      "firebase": [],
+      "play_billing": [],
+      "play_core": [],
+      "huawei": [],
+      "okhttp": [],
+      "ktor": [],
+      "retrofit": []
+    },
+    "distinct_modules": 124,
+    "modules": [
+      "androidx.activity:activity",
+      "androidx.activity:activity-compose",
+      "androidx.activity:activity-ktx",
+      "androidx.annotation:annotation",
+      "androidx.annotation:annotation-experimental",
+      "androidx.annotation:annotation-jvm",
+      "androidx.arch.core:core-common",
+      "androidx.arch.core:core-runtime",
+      "androidx.autofill:autofill",
+      "androidx.collection:collection",
+      "androidx.collection:collection-jvm",
+      "androidx.collection:collection-ktx",
+      "androidx.compose.animation:animation",
+      "androidx.compose.animation:animation-android",
+      "androidx.compose.animation:animation-core",
+      "androidx.compose.animation:animation-core-android",
+      "androidx.compose.foundation:foundation",
+      "androidx.compose.foundation:foundation-android",
+      "androidx.compose.foundation:foundation-layout",
+      "androidx.compose.foundation:foundation-layout-android",
+      "androidx.compose.runtime:runtime",
+      "androidx.compose.runtime:runtime-android",
+      "androidx.compose.runtime:runtime-annotation",
+      "androidx.compose.runtime:runtime-annotation-android",
+      "androidx.compose.runtime:runtime-retain",
+      "androidx.compose.runtime:runtime-retain-android",
+      "androidx.compose.runtime:runtime-saveable",
+      "androidx.compose.runtime:runtime-saveable-android",
+      "androidx.compose.ui:ui",
+      "androidx.compose.ui:ui-android",
+      "androidx.compose.ui:ui-geometry",
+      "androidx.compose.ui:ui-geometry-android",
+      "androidx.compose.ui:ui-graphics",
+      "androidx.compose.ui:ui-graphics-android",
+      "androidx.compose.ui:ui-text",
+      "androidx.compose.ui:ui-text-android",
+      "androidx.compose.ui:ui-unit",
+      "androidx.compose.ui:ui-unit-android",
+      "androidx.compose.ui:ui-util",
+      "androidx.compose.ui:ui-util-android",
+      "androidx.concurrent:concurrent-futures",
+      "androidx.core:core",
+      "androidx.core:core-ktx",
+      "androidx.core:core-viewtree",
+      "androidx.customview:customview-poolingcontainer",
+      "androidx.documentfile:documentfile",
+      "androidx.dynamicanimation:dynamicanimation",
+      "androidx.emoji2:emoji2",
+      "androidx.graphics:graphics-path",
+      "androidx.interpolator:interpolator",
+      "androidx.legacy:legacy-support-core-utils",
+      "androidx.lifecycle:lifecycle-common",
+      "androidx.lifecycle:lifecycle-common-jvm",
+      "androidx.lifecycle:lifecycle-livedata",
+      "androidx.lifecycle:lifecycle-livedata-core",
+      "androidx.lifecycle:lifecycle-livedata-core-ktx",
+      "androidx.lifecycle:lifecycle-process",
+      "androidx.lifecycle:lifecycle-runtime",
+      "androidx.lifecycle:lifecycle-runtime-android",
+      "androidx.lifecycle:lifecycle-runtime-compose",
+      "androidx.lifecycle:lifecycle-runtime-compose-android",
+      "androidx.lifecycle:lifecycle-runtime-ktx",
+      "androidx.lifecycle:lifecycle-runtime-ktx-android",
+      "androidx.lifecycle:lifecycle-viewmodel",
+      "androidx.lifecycle:lifecycle-viewmodel-android",
+      "androidx.lifecycle:lifecycle-viewmodel-ktx",
+      "androidx.lifecycle:lifecycle-viewmodel-savedstate",
+      "androidx.lifecycle:lifecycle-viewmodel-savedstate-android",
+      "androidx.loader:loader",
+      "androidx.localbroadcastmanager:localbroadcastmanager",
+      "androidx.navigationevent:navigationevent",
+      "androidx.navigationevent:navigationevent-android",
+      "androidx.navigationevent:navigationevent-compose",
+      "androidx.navigationevent:navigationevent-compose-android",
+      "androidx.print:print",
+      "androidx.profileinstaller:profileinstaller",
+      "androidx.savedstate:savedstate",
+      "androidx.savedstate:savedstate-android",
+      "androidx.savedstate:savedstate-compose",
+      "androidx.savedstate:savedstate-compose-android",
+      "androidx.savedstate:savedstate-ktx",
+      "androidx.startup:startup-runtime",
+      "androidx.tracing:tracing",
+      "androidx.transition:transition",
+      "androidx.versionedparcelable:versionedparcelable",
+      "androidx.window:window",
+      "androidx.window:window-core",
+      "androidx.window:window-core-android",
+      "com.google.guava:listenablefuture",
+      "org.jetbrains.androidx.lifecycle:lifecycle-common",
+      "org.jetbrains.androidx.lifecycle:lifecycle-runtime",
+      "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose",
+      "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel",
+      "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-savedstate",
+      "org.jetbrains.androidx.savedstate:savedstate",
+      "org.jetbrains.androidx.savedstate:savedstate-compose",
+      "org.jetbrains.compose.animation:animation",
+      "org.jetbrains.compose.animation:animation-core",
+      "org.jetbrains.compose.annotation-internal:annotation",
+      "org.jetbrains.compose.collection-internal:collection",
+      "org.jetbrains.compose.components:components-resources",
+      "org.jetbrains.compose.components:components-resources-android",
+      "org.jetbrains.compose.foundation:foundation",
+      "org.jetbrains.compose.foundation:foundation-layout",
+      "org.jetbrains.compose.runtime:runtime",
+      "org.jetbrains.compose.runtime:runtime-saveable",
+      "org.jetbrains.compose.ui:ui",
+      "org.jetbrains.compose.ui:ui-geometry",
+      "org.jetbrains.compose.ui:ui-graphics",
+      "org.jetbrains.compose.ui:ui-text",
+      "org.jetbrains.compose.ui:ui-unit",
+      "org.jetbrains.compose.ui:ui-util",
+      "org.jetbrains.kotlin:kotlin-stdlib",
+      "org.jetbrains.kotlinx:kotlinx-coroutines-android",
+      "org.jetbrains.kotlinx:kotlinx-coroutines-bom",
+      "org.jetbrains.kotlinx:kotlinx-coroutines-core",
+      "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm",
+      "org.jetbrains.kotlinx:kotlinx-serialization-bom",
+      "org.jetbrains.kotlinx:kotlinx-serialization-core",
+      "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
+      "org.jetbrains.kotlinx:kotlinx-serialization-json",
+      "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm",
+      "org.jetbrains:annotations",
+      "org.jspecify:jspecify"
+    ]
+  },
+  "tests": {
+    "shared_jvmTest": {
+      "results_dir_present": true,
+      "suites": 32,
+      "tests": 371,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "composeApp_desktopTest": {
+      "results_dir_present": true,
+      "suites": 106,
+      "tests": 785,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 53
+    }
+  },
+  "lintRelease": {
+    "present": true,
+    "by_severity": {
+      "Warning": 9
+    },
+    "issues": {
+      "ApplySharedPref": {
+        "severity": "Warning",
+        "count": 1,
+        "files": [
+          "mobile/composeApp/src/androidMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/library/AndroidBuildLibraryStorage.kt"
+        ]
+      },
+      "IconLauncherShape": {
+        "severity": "Warning",
+        "count": 5,
+        "files": [
+          "mobile/composeApp/src/androidMain/res/mipmap-hdpi/ic_launcher.png",
+          "mobile/composeApp/src/androidMain/res/mipmap-mdpi/ic_launcher.png",
+          "mobile/composeApp/src/androidMain/res/mipmap-xhdpi/ic_launcher.png",
+          "mobile/composeApp/src/androidMain/res/mipmap-xxhdpi/ic_launcher.png",
+          "mobile/composeApp/src/androidMain/res/mipmap-xxxhdpi/ic_launcher.png"
+        ]
+      },
+      "ObsoleteSdkInt": {
+        "severity": "Warning",
+        "count": 1,
+        "files": [
+          "mobile/composeApp/src/androidMain/res/mipmap-anydpi-v26"
+        ]
+      },
+      "OldTargetApi": {
+        "severity": "Warning",
+        "count": 1,
+        "files": [
+          "mobile/composeApp/build.gradle.kts"
+        ]
+      },
+      "UseKtx": {
+        "severity": "Warning",
+        "count": 1,
+        "files": [
+          "mobile/composeApp/src/androidMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/library/AndroidBuildLibraryStorage.kt"
+        ]
+      }
+    }
+  },
+  "bundletool_get_size": "WARNING: A terminally deprecated method in sun.misc.Unsafe has been called\nWARNING: sun.misc.Unsafe::arrayBaseOffset has been called by com.google.protobuf.UnsafeUtil$MemoryAccessor (file:/opt/homebrew/Cellar/bundletool/1.18.3/libexec/bundletool-all.jar)\nWARNING: Please consider reporting this to the maintainers of class com.google.protobuf.UnsafeUtil$MemoryAccessor\nWARNING: sun.misc.Unsafe::arrayBaseOffset will be removed in a future release\nABI,SCREEN_DENSITY,LANGUAGE,MIN,MAX\nx86,XXHDPI,af,18786311,18830827\nx86,HDPI,te,18786381,18830897\narm64-v8a,TVDPI,or,18786699,18831215\narmeabi-v7a,XXXHDPI,ne,18785761,18830277\narmeabi-v7a,LDPI,ml,18785719,18830235\narm64-v8a,XXHDPI,bg,18786082,18830598\nx86_64,HDPI,am,18786173,18830689\nx86,HDPI,uz,18786231,18830747\nx86_64,HDPI,hi,18786310,18830826\narmeabi-v7a,TVDPI,gl,18786257,18830773\nx86_64,XXHDPI,lo,18786381,18830897\narmeabi-v7a,XXHDPI,or,18785769,18830285\narmeabi-v7a,XHDPI,da,18785586,18830102\nx86,LDPI,tl,18786188,18830704\narmeabi-v7a,XXXHDPI,lo,18785799,18830315\narmeabi-v7a,MDPI,gu,18785652,18830168\nx86_64,TVDPI,ur,18786887,18831403\nx86,XXXHDPI,bg,18786455,18830971\nx86_64,XXXHDPI,as,18786402,18830918\narmeabi-v7a,XXXHDPI,uk,18785758,18830274\nx86,XHDPI,ro,18786344,18830860\nx86,XHDPI,uz,18786343,18830859\narm64-v8a,XHDPI,km,18786112,18830628\nx86,XXHDPI,es,18786496,18831012\narmeabi-v7a,XXHDPI,mr,18785762,18830278\narm64-v8a,XXXHDPI,lv,18786008,18830524\narmeabi-v7a,XXXHDPI,ky,18785784,18830300\nx86,XXXHDPI,ur,18786397,18830913\narmeabi-v7a,XXXHDPI,da,18785588,18830104\nx86_64,MDPI,ne,18786214,18830730\narm64-v8a,MDPI,th,18785988,18830504\narmeabi-v7a,HDPI,zh,18786114,18830630\narmeabi-v7a,XXXHDPI,hy,18785722,18830238\nx86,XXHDPI,am,18786405,18830921\narm64-v8a,XXXHDPI,ms,18785947,18830463\nx86_64,XXHDPI,af,18786194,18830710\narmeabi-v7a,XHDPI,pa,18785743,18830259\nx86_64,MDPI,ru,18786212,18830728\nx86_64,TVDPI,hi,18787031,18831547\narmeabi-v7a,XHDPI,ta,18785813,18830329\nx86_64,XHDPI,zh,18786807,18831323\nx86,XXXHDPI,th,18786490,18831006\narmeabi-v7a,XXHDPI,gu,18785781,18830297\narm64-v8a,HDPI,sv,18785816,18830332\nx86_64,MDPI,ka,18786218,18830734\narm64-v8a,XXHDPI,ja,18786027,18830543\nx86_64,XHDPI,kk,18786329,18830845\nx86_64,MDPI,it,18786083,18830599\nx86_64,LDPI,or,18786221,18830737\nx86_64,XHDPI,af,18786191,18830707\narm64-v8a,XHDPI,lv,18786006,18830522\nx86_64,XXHDPI,is,18786223,18830739\nx86,XXXHDPI,tl,18786316,18830832\nx86,XXXHDPI,my,18786494,18831010\narmeabi-v7a,XXHDPI,pt,18785850,18830366\nx86_64,XXXHDPI,hr,18786239,18830755\nx86_64,MDPI,my,18786249,18830765\nx86,MDPI,sl,18786199,18830715\narm64-v8a,XXHDPI,hi,18786168,18830684\nx86,LDPI,sl,18786199,18830715\narm64-v8a,TVDPI,es,18786728,18831244\narmeabi-v7a,HDPI,ru,18785645,18830161\narmeabi-v7a,LDPI,da,18785460,18829976\narmeabi-v7a,MDPI,fi,18785524,18830040\nx86_64,MDPI,ur,18786152,18830668\nx86_64,XXXHDPI,am,18786287,18830803\narmeabi-v7a,XXXHDPI,hu,18785678,18830194\nx86_64,XHDPI,ro,18786227,18830743\narmeabi-v7a,XXXHDPI,zu,18785653,18830169\narmeabi-v7a,XHDPI,sr,18786272,18830788\narmeabi-v7a,XXHDPI,lt,18785677,18830193\nx86_64,XXHDPI,tl,18786200,18830716\nx86,TVDPI,nl,18786899,18831415\narm64-v8a,XXHDPI,zh,18786553,18831069\nx86_64,MDPI,hu,18786131,18830647\narmeabi-v7a,TVDPI,mk,18786364,18830880\nx86,TVDPI,zu,18786958,18831474\nx86,MDPI,et,18786184,18830700\nx86_64,HDPI,pl,18786115,18830631\narmeabi-v7a,XXXHDPI,uz,18785647,18830163\narm64-v8a,TVDPI,in,18786542,18831058\narm64-v8a,LDPI,ru,18785955,18830471\nx86_64,TVDPI,or,18786956,18831472\narm64-v8a,LDPI,hu,18785874,18830390\nx86_64,XXXHDPI,in,18786192,18830708\nx86,LDPI,sw,18786209,18830725\narm64-v8a,LDPI,pt,18786045,18830561\narm64-v8a,MDPI,sr,18786470,18830986\nx86_64,LDPI,eu,18786070,18830586\nx86_64,XXHDPI,mk,18786339,18830855\narm64-v8a,TVDPI,hr,18786589,18831105\narmeabi-v7a,XHDPI,km,18785788,18830304\nx86,MDPI,in,18786181,18830697\narm64-v8a,LDPI,hy,18785918,18830434\nx86,XXXHDPI,hy,18786420,18830936\nx86_64,MDPI,es,18786250,18830766\nx86,XHDPI,my,18786492,18831008\nx86,MDPI,eu,18786187,18830703\narm64-v8a,XXHDPI,ms,18785948,18830464\nx86_64,TVDPI,gl,18786838,18831354\nx86,XHDPI,ta,18786511,18831027\nx86_64,XXXHDPI,hi,18786424,18830940\narm64-v8a,XXXHDPI,as,18786145,18830661\narmeabi-v7a,XHDPI,it,18785628,18830144\narmeabi-v7a,XXXHDPI,af,18785612,18830128\narm64-v8a,LDPI,mk,18785953,18830469\nx86_64,LDPI,sw,18786092,18830608\nx86_64,XXHDPI,vi,18786290,18830806\nx86,XXXHDPI,hr,18786356,18830872\nx86,TVDPI,vi,18787013,18831529\narmeabi-v7a,XXHDPI,fa,18785679,18830195\nx86,LDPI,zh,18786798,18831314\narm64-v8a,LDPI,pa,18785941,18830457\nx86,LDPI,lv,18786254,18830770\nx86_64,TVDPI,et,18786802,18831318\nx86_64,XXXHDPI,ta,18786396,18830912\narmeabi-v7a,XHDPI,el,18785803,18830319\narm64-v8a,XHDPI,ml,18786169,18830685\nx86_64,HDPI,iw,18786115,18830631\nx86,XXXHDPI,nb,18786290,18830806\nx86_64,MDPI,eu,18786070,18830586\nx86,XXHDPI,zh,18786927,18831443\narm64-v8a,XXXHDPI,is,18785965,18830481\nx86,TVDPI,sr,18787579,18832095\narmeabi-v7a,HDPI,ur,18785585,18830101\narmeabi-v7a,XXXHDPI,te,18785797,18830313\nx86_64,XXHDPI,or,18786350,18830866\nx86_64,XHDPI,fi,18786231,18830747\narm64-v8a,XHDPI,ko,18785952,18830468\nx86_64,TVDPI,zu,18786841,18831357\narm64-v8a,TVDPI,zh,18787159,18831675\nx86,TVDPI,el,18787110,18831626\narmeabi-v7a,XXXHDPI,sq,18785667,18830183\narmeabi-v7a,XXHDPI,sl,18785630,18830146\nx86_64,XHDPI,az,18786247,18830763\nx86,MDPI,hi,18786413,18830929\narm64-v8a,LDPI,lv,18785880,18830396\nx86_64,HDPI,sl,18786096,18830612\narmeabi-v7a,XXHDPI,ms,18785624,18830140\nx86,XXXHDPI,lv,18786382,18830898\narm64-v8a,LDPI,bn,18785943,18830459\nx86_64,MDPI,km,18786243,18830759\narm64-v8a,LDPI,te,18785993,18830509\narm64-v8a,XXHDPI,my,18786121,18830637\nx86,XXXHDPI,it,18786328,18830844\nx86_64,XHDPI,lo,18786378,18830894\nx86_64,XXXHDPI,de,18786213,18830729\narmeabi-v7a,LDPI,pt,18785721,18830237\narm64-v8a,TVDPI,mn,18786678,18831194\nx86,HDPI,sq,18786251,18830767\nx86,LDPI,or,18786338,18830854\narm64-v8a,LDPI,ro,18785844,18830360\narm64-v8a,LDPI,et,18785810,18830326\nx86_64,XHDPI,fa,18786257,18830773\nx86_64,XHDPI,sw,18786218,18830734\narm64-v8a,TVDPI,lt,18786607,18831123\narmeabi-v7a,HDPI,eu,18785503,18830019\narmeabi-v7a,XXXHDPI,nb,18785592,18830108\narm64-v8a,TVDPI,th,18786723,18831239\nx86,HDPI,sr,18786858,18831374\narmeabi-v7a,TVDPI,el,18786412,18830928\narmeabi-v7a,TVDPI,or,18786375,18830891\narmeabi-v7a,XHDPI,or,18785766,18830282\nx86,HDPI,ko,18786214,18830730\nx86_64,TVDPI,eu,18786805,18831321\nx86,XHDPI,it,18786326,18830842\nx86_64,XHDPI,ky,18786363,18830879\narmeabi-v7a,HDPI,my,18785682,18830198\nx86,XXHDPI,pt,18786548,18831064\narmeabi-v7a,XXXHDPI,nl,18785594,18830110\narm64-v8a,LDPI,da,18785784,18830300\nx86_64,MDPI,vi,18786161,18830677\nx86_64,MDPI,ca,18786098,18830614\nx86,XXHDPI,lo,18786498,18831014\nx86_64,MDPI,cs,18786123,18830639\narmeabi-v7a,HDPI,iw,18785534,18830050\narm64-v8a,XXHDPI,am,18786031,18830547\nx86_64,TVDPI,nb,18786780,18831296\nx86,MDPI,lt,18786246,18830762\nx86_64,MDPI,ms,18786076,18830592\nx86,HDPI,gl,18786234,18830750\narmeabi-v7a,TVDPI,ur,18786306,18830822\nx86,HDPI,cs,18786254,18830770\narmeabi-v7a,TVDPI,da,18786195,18830711\narmeabi-v7a,LDPI,km,18785662,18830178\narm64-v8a,XXHDPI,bn,18786072,18830588\nx86_64,TVDPI,fi,18786840,18831356\narmeabi-v7a,XHDPI,en,18786825,18831341\narmeabi-v7a,XHDPI,be,18785756,18830272\nx86_64,XXXHDPI,ro,18786229,18830745\narmeabi-v7a,HDPI,hi,18785729,18830245\nx86,TVDPI,ko,18786935,18831451\nx86,TVDPI,ka,18787070,18831586\nx86,MDPI,gl,18786220,18830736\narmeabi-v7a,TVDPI,ne,18786368,18830884\nx86,LDPI,my,18786366,18830882\nx86,XXXHDPI,zu,18786351,18830867\nx86_64,XXHDPI,be,18786340,18830856\nx86_64,HDPI,et,18786081,18830597\narmeabi-v7a,LDPI,zh,18786100,18830616\nx86,HDPI,tr,18786228,18830744\nx86_64,HDPI,is,18786108,18830624\nx86,XXXHDPI,az,18786366,18830882\narmeabi-v7a,XXHDPI,nl,18785595,18830111\nx86,MDPI,ky,18786354,18830870\nx86_64,XHDPI,or,18786347,18830863\nx86,XHDPI,ru,18786455,18830971\narmeabi-v7a,XHDPI,mk,18785755,18830271\nx86,XHDPI,sv,18786302,18830818\narm64-v8a,LDPI,kn,18786003,18830519\nx86_64,XHDPI,iw,18786227,18830743\narmeabi-v7a,XHDPI,et,18785612,18830128\nx86,XXXHDPI,ja,18786400,18830916\narm64-v8a,XHDPI,ur,18786021,18830537\nx86,LDPI,af,18786182,18830698\nx86_64,XHDPI,pt,18786428,18830944\nx86,MDPI,ml,18786417,18830933\narmeabi-v7a,XXHDPI,gl,18785651,18830167\narm64-v8a,TVDPI,it,18786561,18831077\narm64-v8a,LDPI,it,18785826,18830342\nx86_64,HDPI,ja,18786169,18830685\narm64-v8a,XHDPI,si,18786110,18830626\narm64-v8a,XHDPI,ne,18786083,18830599\nx86_64,XXXHDPI,lo,18786380,18830896\narmeabi-v7a,TVDPI,az,18786275,18830791\nx86_64,LDPI,lv,18786137,18830653\narmeabi-v7a,XHDPI,uk,18785756,18830272\narm64-v8a,TVDPI,kn,18786738,18831254\narm64-v8a,XHDPI,fi,18785974,18830490\narm64-v8a,XXHDPI,fi,18785977,18830493\nx86,TVDPI,ro,18786953,18831469\narm64-v8a,HDPI,sl,18785839,18830355\narmeabi-v7a,XHDPI,cs,18785668,18830184\narm64-v8a,XXHDPI,ur,18786024,18830540\narmeabi-v7a,MDPI,sv,18785478,18829994\narmeabi-v7a,XXHDPI,es,18785798,18830314\narmeabi-v7a,HDPI,hu,18785564,18830080\narm64-v8a,HDPI,te,18786007,18830523\narmeabi-v7a,LDPI,bs,18785526,18830042\narmeabi-v7a,LDPI,az,18785540,18830056\narm64-v8a,XXXHDPI,ko,18785954,18830470\narm64-v8a,XHDPI,ta,18786137,18830653\nx86_64,MDPI,ko,18786083,18830599\narm64-v8a,XXXHDPI,pt,18786173,18830689\narmeabi-v7a,HDPI,sl,18785515,18830031\narmeabi-v7a,HDPI,in,18785497,18830013\narm64-v8a,HDPI,fa,18785888,18830404\narm64-v8a,XXXHDPI,pl,18785972,18830488\narm64-v8a,TVDPI,my,18786727,18831243\narm64-v8a,XXHDPI,lv,18786009,18830525\nx86,TVDPI,pa,18787050,18831566\narm64-v8a,XXHDPI,be,18786083,18830599\nx86_64,MDPI,be,18786211,18830727\nx86_64,LDPI,tr,18786097,18830613\narmeabi-v7a,HDPI,is,18785527,18830043\nx86,HDPI,bs,18786238,18830754\nx86_64,XXHDPI,uz,18786229,18830745\narm64-v8a,TVDPI,as,18786752,18831268\narm64-v8a,HDPI,vi,18785918,18830434\nx86,MDPI,vi,18786278,18830794\nx86,XHDPI,fr,18786527,18831043\nx86,XHDPI,th,18786488,18831004\nx86,XHDPI,tl,18786314,18830830\narmeabi-v7a,XXHDPI,tr,18785645,18830161\nx86_64,XHDPI,sv,18786185,18830701\narm64-v8a,LDPI,uk,18785954,18830470\narmeabi-v7a,XHDPI,sq,18785665,18830181\nx86_64,XHDPI,ar,18786270,18830786\narmeabi-v7a,TVDPI,ta,18786422,18830938\narm64-v8a,XXXHDPI,ja,18786026,18830542\nx86,XHDPI,sl,18786325,18830841\narm64-v8a,XXHDPI,uz,18785972,18830488\nx86,LDPI,bs,18786224,18830740\narm64-v8a,HDPI,gu,18785990,18830506\narmeabi-v7a,XXHDPI,am,18785707,18830223\nx86,HDPI,pt,18786433,18830949\nx86_64,HDPI,nl,18786061,18830577\nx86_64,HDPI,mr,18786228,18830744\narm64-v8a,XXXHDPI,lo,18786123,18830639\narm64-v8a,XHDPI,de,18785954,18830470\nx86_64,TVDPI,ko,18786818,18831334\narmeabi-v7a,MDPI,kk,18785622,18830138\narmeabi-v7a,HDPI,ml,18785733,18830249\narm64-v8a,TVDPI,bs,18786585,18831101\nx86_64,HDPI,pa,18786212,18830728\narm64-v8a,XHDPI,sr,18786596,18831112\nx86_64,HDPI,kk,18786217,18830733\narmeabi-v7a,XXXHDPI,mk,18785757,18830273\narmeabi-v7a,TVDPI,ko,18786237,18830753\nx86,XXXHDPI,bn,18786445,18830961\nx86_64,XXHDPI,cs,18786252,18830768\nx86_64,MDPI,zu,18786106,18830622\narm64-v8a,XHDPI,nl,18785916,18830432\nx86,MDPI,my,18786366,18830882\narmeabi-v7a,TVDPI,th,18786399,18830915\narmeabi-v7a,XXHDPI,kk,18785751,18830267\nx86_64,MDPI,si,18786241,18830757\nx86,XXXHDPI,or,18786466,18830982\narmeabi-v7a,LDPI,sk,18785533,18830049\nx86_64,MDPI,uz,18786100,18830616\nx86_64,XHDPI,vi,18786287,18830803\nx86,XXXHDPI,pl,18786346,18830862\nx86_64,TVDPI,pa,18786933,18831449\nx86_64,XHDPI,de,18786211,18830727\nx86,XHDPI,sw,18786335,18830851\narmeabi-v7a,LDPI,lt,18785548,18830064\narm64-v8a,XXXHDPI,az,18785992,18830508\nx86,TVDPI,gl,18786955,18831471\narmeabi-v7a,XXHDPI,ja,18785703,18830219\narm64-v8a,MDPI,zu,18785849,18830365\nx86_64,LDPI,tl,18786071,18830587\nx86,HDPI,nl,18786178,18830694\nx86_64,XHDPI,uk,18786337,18830853\narm64-v8a,TVDPI,sv,18786537,18831053\narmeabi-v7a,XXHDPI,tl,18785619,18830135\narm64-v8a,XXHDPI,da,18785913,18830429\narm64-v8a,HDPI,gl,18785860,18830376\nx86,LDPI,pa,18786315,18830831\narm64-v8a,XXHDPI,tl,18785943,18830459\nx86,XXHDPI,mk,18786456,18830972\nx86_64,MDPI,hy,18786175,18830691\nx86,XXXHDPI,si,18786486,18831002\nx86_64,XHDPI,ca,18786224,18830740\nx86_64,XHDPI,el,18786384,18830900\nx86,XXXHDPI,sq,18786365,18830881\narm64-v8a,HDPI,my,18786006,18830522\narmeabi-v7a,HDPI,vi,18785594,18830110\nx86_64,XXHDPI,sr,18786856,18831372\narm64-v8a,XXHDPI,si,18786113,18830629\narm64-v8a,XHDPI,fa,18786000,18830516\narm64-v8a,MDPI,gu,18785976,18830492\nx86_64,XXXHDPI,hy,18786303,18830819\narm64-v8a,LDPI,zu,18785849,18830365\narmeabi-v7a,XHDPI,sw,18785637,18830153\nx86,TVDPI,is,18786946,18831462\narm64-v8a,XXHDPI,it,18785955,18830471\narmeabi-v7a,TVDPI,hi,18786450,18830966\nx86_64,HDPI,lv,18786151,18830667\narm64-v8a,XHDPI,in,18785933,18830449\narmeabi-v7a,XXXHDPI,as,18785821,18830337\nx86,LDPI,hu,18786248,18830764\narm64-v8a,TVDPI,fa,18786609,18831125\narm64-v8a,XXXHDPI,et,18785938,18830454\nx86,XXXHDPI,fi,18786350,18830866\nx86_64,LDPI,be,18786211,18830727\nx86_64,XXHDPI,zu,18786235,18830751\nx86,XXHDPI,km,18786489,18831005\narmeabi-v7a,MDPI,es,18785669,18830185\narmeabi-v7a,LDPI,bn,18785619,18830135\nx86_64,XXHDPI,ca,18786227,18830743\nx86_64,XHDPI,mk,18786336,18830852\nx86_64,XHDPI,es,18786376,18830892\narm64-v8a,XHDPI,uk,18786080,18830596\narm64-v8a,XXHDPI,sr,18786599,18831115\narmeabi-v7a,LDPI,tr,18785516,18830032\narm64-v8a,XXXHDPI,iw,18785972,18830488\narm64-v8a,XHDPI,pa,18786067,18830583\nx86,LDPI,sk,18786231,18830747\nx86_64,XXXHDPI,ur,18786280,18830796\nx86,MDPI,bg,18786327,18830843\nx86_64,XHDPI,kn,18786386,18830902\narmeabi-v7a,MDPI,zu,18785525,18830041\nx86,HDPI,ja,18786286,18830802\narmeabi-v7a,TVDPI,ar,18786298,18830814\narmeabi-v7a,HDPI,ro,18785534,18830050\narmeabi-v7a,LDPI,sr,18786146,18830662\nx86_64,XHDPI,nl,18786173,18830689\narmeabi-v7a,LDPI,cs,18785542,18830058\narmeabi-v7a,HDPI,km,18785676,18830192\narmeabi-v7a,HDPI,uk,18785644,18830160\nx86_64,TVDPI,fr,18787019,18831535\narm64-v8a,LDPI,ms,18785819,18830335\narmeabi-v7a,HDPI,sq,18785553,18830069\nx86,MDPI,zu,18786223,18830739\narm64-v8a,XXXHDPI,uk,18786082,18830598\narm64-v8a,HDPI,it,18785840,18830356\nx86_64,MDPI,sq,18786120,18830636\narmeabi-v7a,TVDPI,zh,18786835,18831351\narmeabi-v7a,XXXHDPI,zh,18786228,18830744\narm64-v8a,XXXHDPI,zh,18786552,18831068\nx86,LDPI,hr,18786228,18830744\narmeabi-v7a,XXXHDPI,es,18785797,18830313\narm64-v8a,TVDPI,km,18786721,18831237\nx86_64,XXHDPI,bn,18786329,18830845\nx86_64,XXXHDPI,et,18786195,18830711\narm64-v8a,XXXHDPI,gl,18785974,18830490\nx86,XHDPI,hu,18786374,18830890\nx86,XXHDPI,sq,18786366,18830882\nx86,MDPI,ka,18786335,18830851\narm64-v8a,LDPI,nb,18785788,18830304\nx86_64,MDPI,nb,18786045,18830561\nx86,LDPI,ro,18786218,18830734\narm64-v8a,MDPI,my,18785992,18830508\nx86,HDPI,pl,18786232,18830748\nx86_64,TVDPI,lo,18786987,18831503\nx86,XXHDPI,ms,18786322,18830838\narmeabi-v7a,HDPI,de,18785518,18830034\nx86,HDPI,mk,18786341,18830857\narm64-v8a,XXHDPI,sw,18785964,18830480\narm64-v8a,MDPI,uk,18785954,18830470\nx86_64,MDPI,el,18786258,18830774\nx86,LDPI,fi,18786222,18830738\narmeabi-v7a,TVDPI,cs,18786277,18830793\narmeabi-v7a,TVDPI,af,18786219,18830735\narm64-v8a,XXXHDPI,am,18786030,18830546\narm64-v8a,MDPI,bs,18785850,18830366\narmeabi-v7a,HDPI,da,18785474,18829990\nx86_64,XXXHDPI,tr,18786225,18830741\nx86,TVDPI,ar,18786996,18831512\nx86,XXXHDPI,el,18786503,18831019\nx86,XXHDPI,sr,18786973,18831489\nx86_64,XXXHDPI,sk,18786242,18830758\nx86_64,TVDPI,sk,18786849,18831365\narmeabi-v7a,TVDPI,as,18786428,18830944\narm64-v8a,LDPI,my,18785992,18830508\nx86_64,XXHDPI,ko,18786212,18830728\nx86_64,TVDPI,zh,18787416,18831932\narmeabi-v7a,MDPI,ta,18785687,18830203\nx86_64,HDPI,ne,18786228,18830744\narm64-v8a,XXXHDPI,bn,18786071,18830587\narm64-v8a,HDPI,ta,18786025,18830541\narmeabi-v7a,XXHDPI,be,18785759,18830275\narm64-v8a,XXHDPI,is,18785966,18830482\narmeabi-v7a,HDPI,az,18785554,18830070\narmeabi-v7a,XXHDPI,af,18785613,18830129\nx86,LDPI,mk,18786327,18830843\narmeabi-v7a,HDPI,bg,18785643,18830159\narmeabi-v7a,LDPI,sv,18785478,18829994\narmeabi-v7a,XHDPI,pt,18785847,18830363\narmeabi-v7a,LDPI,pa,18785617,18830133\narmeabi-v7a,XXHDPI,te,18785798,18830314\narmeabi-v7a,XXHDPI,da,18785589,18830105\narm64-v8a,XXXHDPI,ky,18786108,18830624\nx86,XXHDPI,th,18786491,18831007\narmeabi-v7a,XHDPI,ne,18785759,18830275\nx86_64,XXHDPI,hi,18786425,18830941\nx86_64,HDPI,az,18786135,18830651\nx86_64,XXXHDPI,mk,18786338,18830854\narmeabi-v7a,TVDPI,hy,18786329,18830845\nx86_64,LDPI,ko,18786083,18830599\nx86_64,TVDPI,mn,18786935,18831451\nx86_64,XXHDPI,gl,18786232,18830748\narm64-v8a,MDPI,af,18785808,18830324\nx86_64,TVDPI,ne,18786949,18831465\narmeabi-v7a,XHDPI,vi,18785706,18830222\narmeabi-v7a,LDPI,gu,18785652,18830168\narm64-v8a,HDPI,pa,18785955,18830471\narm64-v8a,LDPI,ur,18785895,18830411\narm64-v8a,LDPI,vi,18785904,18830420\narm64-v8a,XXHDPI,hy,18786047,18830563\nx86,TVDPI,uz,18786952,18831468\narmeabi-v7a,HDPI,zu,18785539,18830055\narm64-v8a,XXHDPI,sl,18785954,18830470\nx86,XXXHDPI,sr,18786972,18831488\nx86,MDPI,pa,18786315,18830831\nx86_64,TVDPI,ms,18786811,18831327\narm64-v8a,XXXHDPI,es,18786121,18830637\nx86_64,XXHDPI,uk,18786340,18830856\nx86,XHDPI,af,18786308,18830824\nx86,TVDPI,am,18787011,18831527\nx86,HDPI,fr,18786415,18830931\narmeabi-v7a,TVDPI,fa,18786285,18830801\narm64-v8a,XXHDPI,ky,18786109,18830625\nx86_64,XXHDPI,ro,18786230,18830746\nx86_64,XXXHDPI,ms,18786204,18830720\narm64-v8a,MDPI,cs,18785866,18830382\narm64-v8a,HDPI,tl,18785828,18830344\nx86,LDPI,ne,18786331,18830847\narm64-v8a,HDPI,af,18785822,18830338\narmeabi-v7a,XXHDPI,ml,18785848,18830364\nx86_64,HDPI,hu,18786145,18830661\nx86_64,LDPI,et,18786067,18830583\nx86_64,XHDPI,be,18786337,18830853\narm64-v8a,LDPI,ka,18785961,18830477\nx86_64,MDPI,lo,18786252,18830768\narm64-v8a,HDPI,kk,18785960,18830476\narmeabi-v7a,HDPI,el,18785691,18830207\narmeabi-v7a,XHDPI,am,18785704,18830220\nx86_64,XHDPI,eu,18786196,18830712\nx86_64,HDPI,ta,18786282,18830798\nx86,XXXHDPI,uz,18786345,18830861\nx86,MDPI,th,18786362,18830878\narmeabi-v7a,XHDPI,hi,18785841,18830357\narm64-v8a,MDPI,bg,18785953,18830469\narmeabi-v7a,TVDPI,sl,18786236,18830752\narm64-v8a,XXXHDPI,bs,18785978,18830494\nx86_64,MDPI,th,18786245,18830761\nx86_64,HDPI,gu,18786247,18830763\nx86,XXXHDPI,fr,18786529,18831045\nx86,XXHDPI,az,18786367,18830883\nx86,HDPI,sv,18786190,18830706\nx86_64,LDPI,mr,18786214,18830730\nx86_64,MDPI,ta,18786268,18830784\nx86_64,LDPI,pl,18786101,18830617\narm64-v8a,TVDPI,hi,18786774,18831290\nx86_64,XXXHDPI,ar,18786272,18830788\nx86,XXXHDPI,hu,18786376,18830892\nx86_64,TVDPI,is,18786829,18831345\narm64-v8a,TVDPI,is,18786572,18831088\nx86,XXHDPI,nl,18786293,18830809\narmeabi-v7a,XHDPI,zu,18785651,18830167\nx86_64,TVDPI,sq,18786855,18831371\narm64-v8a,TVDPI,ms,18786554,18831070\nx86_64,MDPI,zh,18786681,18831197\narmeabi-v7a,LDPI,hu,18785550,18830066\nx86,XXHDPI,is,18786340,18830856\nx86,MDPI,hr,18786228,18830744\nx86_64,XXHDPI,mr,18786343,18830859\nx86,LDPI,ca,18786215,18830731\narmeabi-v7a,MDPI,vi,18785580,18830096\narm64-v8a,XHDPI,gl,18785972,18830488\nx86_64,XXHDPI,kk,18786332,18830848\nx86_64,XXXHDPI,kk,18786331,18830847\nx86_64,XHDPI,uz,18786226,18830742\nx86_64,LDPI,ro,18786101,18830617\narmeabi-v7a,XXHDPI,de,18785633,18830149\narmeabi-v7a,XHDPI,ml,18785845,18830361\narmeabi-v7a,XXXHDPI,ko,18785630,18830146\narm64-v8a,MDPI,lo,18785995,18830511\narmeabi-v7a,MDPI,nl,18785466,18829982\narm64-v8a,LDPI,mr,18785957,18830473\nx86_64,TVDPI,ar,18786879,18831395\narm64-v8a,XHDPI,ar,18786013,18830529\nx86,XXHDPI,ru,18786458,18830974\narm64-v8a,XHDPI,hr,18785980,18830496\narm64-v8a,XXXHDPI,it,18785954,18830470\narmeabi-v7a,HDPI,it,18785516,18830032\nx86_64,TVDPI,ro,18786836,18831352\nx86,XHDPI,iw,18786344,18830860\nx86,XHDPI,fi,18786348,18830864\nx86_64,XXHDPI,si,18786370,18830886\nx86,MDPI,te,18786367,18830883\narm64-v8a,LDPI,ky,18785980,18830496\nx86,XXHDPI,zu,18786352,18830868\narm64-v8a,XHDPI,kn,18786129,18830645\nx86,XXHDPI,fi,18786351,18830867\narm64-v8a,HDPI,in,18785821,18830337\nx86_64,LDPI,ca,18786098,18830614\nx86,TVDPI,hu,18786983,18831499\nx86,HDPI,si,18786372,18830888\narmeabi-v7a,XXHDPI,hy,18785723,18830239\nx86,XXXHDPI,eu,18786315,18830831\nx86,XHDPI,es,18786493,18831009\narm64-v8a,XHDPI,lo,18786121,18830637\nx86_64,XXXHDPI,lv,18786265,18830781\narm64-v8a,XXXHDPI,pa,18786069,18830585\narm64-v8a,XHDPI,af,18785934,18830450\narm64-v8a,XXXHDPI,fi,18785976,18830492\nx86,MDPI,gu,18786350,18830866\nx86_64,MDPI,uk,18786211,18830727\narm64-v8a,XXXHDPI,af,18785936,18830452\narmeabi-v7a,TVDPI,tr,18786251,18830767\narmeabi-v7a,MDPI,ko,18785502,18830018\narm64-v8a,XHDPI,hy,18786044,18830560\narm64-v8a,LDPI,zh,18786424,18830940\nx86,HDPI,th,18786376,18830892\nx86,XXXHDPI,kn,18786505,18831021\nx86_64,HDPI,sk,18786128,18830644\narmeabi-v7a,MDPI,fa,18785550,18830066\nx86,MDPI,af,18786182,18830698\nx86,HDPI,my,18786380,18830896\narmeabi-v7a,XXXHDPI,ja,18785702,18830218\nx86,LDPI,ko,18786200,18830716\narmeabi-v7a,LDPI,lv,18785556,18830072\nx86_64,XHDPI,hu,18786257,18830773\narmeabi-v7a,TVDPI,ro,18786255,18830771\narmeabi-v7a,XXXHDPI,fa,18785678,18830194\nx86,MDPI,km,18786360,18830876\nx86,HDPI,da,18786172,18830688\nx86_64,MDPI,sk,18786114,18830630\nx86_64,TVDPI,bs,18786842,18831358\nx86_64,XXHDPI,as,18786403,18830919\nx86_64,LDPI,hr,18786111,18830627\nx86,XXHDPI,or,18786467,18830983\nx86,HDPI,az,18786252,18830768\nx86,TVDPI,mk,18787062,18831578\nx86,LDPI,si,18786358,18830874\narmeabi-v7a,LDPI,ka,18785637,18830153\nx86,TVDPI,ms,18786928,18831444\nx86,XXXHDPI,mn,18786445,18830961\nx86,HDPI,lv,18786268,18830784\nx86,MDPI,az,18786238,18830754\nx86,XXHDPI,pa,18786444,18830960\nx86_64,TVDPI,af,18786800,18831316\narmeabi-v7a,LDPI,nl,18785466,18829982\narm64-v8a,XXHDPI,kk,18786075,18830591\narm64-v8a,HDPI,ka,18785975,18830491\nx86,LDPI,vi,18786278,18830794\narm64-v8a,XXHDPI,pl,18785973,18830489\narm64-v8a,HDPI,hy,18785932,18830448\nx86_64,LDPI,zh,18786681,18831197\nx86,LDPI,uz,18786217,18830733\narm64-v8a,LDPI,mn,18785943,18830459\nx86_64,XXHDPI,hu,18786260,18830776\narm64-v8a,MDPI,nb,18785788,18830304\nx86,MDPI,en,18787397,18831913\narmeabi-v7a,XXXHDPI,it,18785630,18830146\nx86_64,MDPI,bg,18786210,18830726\narmeabi-v7a,MDPI,tr,18785516,18830032\narm64-v8a,XXXHDPI,tr,18785968,18830484\nx86,TVDPI,it,18786935,18831451\narm64-v8a,MDPI,ar,18785887,18830403\nx86,XXXHDPI,te,18786495,18831011\narmeabi-v7a,MDPI,ml,18785719,18830235\narm64-v8a,MDPI,ka,18785961,18830477\narmeabi-v7a,XXXHDPI,bg,18785757,18830273\nx86_64,XHDPI,gu,18786359,18830875\nx86,XXHDPI,fa,18786377,18830893\narm64-v8a,MDPI,zh,18786424,18830940\nx86,XHDPI,si,18786484,18831000\narmeabi-v7a,XXXHDPI,tr,18785644,18830160\narmeabi-v7a,XHDPI,lt,18785674,18830190\nx86_64,TVDPI,sl,18786817,18831333\narm64-v8a,XXXHDPI,mr,18786085,18830601\nx86,MDPI,be,18786328,18830844\nx86_64,LDPI,mn,18786200,18830716\nx86_64,LDPI,uz,18786100,18830616\nx86_64,LDPI,da,18786041,18830557\narm64-v8a,HDPI,bs,18785864,18830380\nx86,XHDPI,ca,18786341,18830857\narmeabi-v7a,MDPI,ca,18785517,18830033\nx86_64,TVDPI,pt,18787037,18831553\narm64-v8a,TVDPI,sk,18786592,18831108\narm64-v8a,XXXHDPI,th,18786116,18830632\narm64-v8a,XXHDPI,ar,18786016,18830532\nx86,HDPI,sk,18786245,18830761\narmeabi-v7a,XXXHDPI,is,18785641,18830157\nx86,HDPI,is,18786225,18830741\nx86_64,XXHDPI,tr,18786226,18830742\nx86,XHDPI,vi,18786404,18830920\nx86_64,XXXHDPI,en,18787408,18831924\narm64-v8a,XXXHDPI,de,18785956,18830472\nx86_64,XXXHDPI,ja,18786283,18830799\nx86_64,TVDPI,fa,18786866,18831382\nx86_64,XXHDPI,pt,18786431,18830947\nx86,XXHDPI,hr,18786357,18830873\narm64-v8a,XXXHDPI,or,18786092,18830608\nx86_64,XXHDPI,in,18786193,18830709\nx86_64,LDPI,it,18786083,18830599\nx86,XXHDPI,mr,18786460,18830976\narm64-v8a,LDPI,ml,18786043,18830559\nx86_64,XXXHDPI,eu,18786198,18830714\nx86,MDPI,nl,18786164,18830680\nx86,XXXHDPI,kk,18786448,18830964\narm64-v8a,XHDPI,be,18786080,18830596\nx86,XXXHDPI,nl,18786292,18830808\narm64-v8a,HDPI,uk,18785968,18830484\nx86,MDPI,mn,18786317,18830833\narmeabi-v7a,XXXHDPI,ml,18785847,18830363\narm64-v8a,XXXHDPI,hr,18785982,18830498\nx86_64,HDPI,vi,18786175,18830691\narmeabi-v7a,LDPI,ur,18785571,18830087\narmeabi-v7a,LDPI,my,18785668,18830184\narmeabi-v7a,LDPI,lo,18785671,18830187\narm64-v8a,TVDPI,si,18786719,18831235\narm64-v8a,LDPI,sr,18786470,18830986\narm64-v8a,LDPI,km,18785986,18830502\narmeabi-v7a,LDPI,ms,18785495,18830011\narm64-v8a,XXHDPI,cs,18785995,18830511\narm64-v8a,TVDPI,lv,18786615,18831131\narm64-v8a,LDPI,or,18785964,18830480\nx86,LDPI,ja,18786272,18830788\narmeabi-v7a,TVDPI,ja,18786309,18830825\narm64-v8a,LDPI,fa,18785874,18830390\nx86_64,XXXHDPI,lt,18786257,18830773\nx86_64,MDPI,et,18786067,18830583\nx86_64,XXHDPI,sv,18786188,18830704\nx86,HDPI,zu,18786237,18830753\narmeabi-v7a,XHDPI,hy,18785720,18830236\nx86,MDPI,da,18786158,18830674\narm64-v8a,MDPI,hu,18785874,18830390\nx86,MDPI,el,18786375,18830891\narm64-v8a,XHDPI,el,18786127,18830643\nx86_64,XXHDPI,pa,18786327,18830843\nx86,XXXHDPI,tr,18786342,18830858\nx86,HDPI,mr,18786345,18830861\narmeabi-v7a,TVDPI,ru,18786366,18830882\nx86_64,XHDPI,et,18786193,18830709\narmeabi-v7a,XXHDPI,lo,18785800,18830316\nx86_64,XXHDPI,fa,18786260,18830776\nx86_64,XHDPI,tl,18786197,18830713\nx86,TVDPI,kk,18787055,18831571\nx86_64,HDPI,sq,18786134,18830650\narmeabi-v7a,LDPI,fa,18785550,18830066\nx86_64,LDPI,ka,18786218,18830734\nx86_64,HDPI,en,18787294,18831810\narm64-v8a,TVDPI,eu,18786548,18831064\narmeabi-v7a,XHDPI,si,18785786,18830302\nx86,LDPI,te,18786367,18830883\narmeabi-v7a,LDPI,sw,18785511,18830027\nx86,XHDPI,uk,18786454,18830970\narmeabi-v7a,TVDPI,ky,18786391,18830907\narmeabi-v7a,TVDPI,iw,18786255,18830771\narm64-v8a,XHDPI,as,18786143,18830659\narmeabi-v7a,MDPI,km,18785662,18830178\nx86_64,XXXHDPI,fr,18786412,18830928\narm64-v8a,TVDPI,fr,18786762,18831278\nx86,XXHDPI,hu,18786377,18830893\narmeabi-v7a,TVDPI,uz,18786254,18830770\narm64-v8a,MDPI,ky,18785980,18830496\narmeabi-v7a,XXXHDPI,pa,18785745,18830261\narmeabi-v7a,MDPI,en,18786699,18831215\narm64-v8a,XHDPI,eu,18785939,18830455\nx86_64,MDPI,bn,18786200,18830716\nx86,LDPI,it,18786200,18830716\nx86,LDPI,ar,18786261,18830777\narmeabi-v7a,MDPI,my,18785668,18830184\nx86_64,LDPI,ur,18786152,18830668\narm64-v8a,XHDPI,bn,18786069,18830585\narm64-v8a,LDPI,as,18786017,18830533\nx86,XXHDPI,ml,18786546,18831062\narmeabi-v7a,HDPI,ne,18785647,18830163\narm64-v8a,XHDPI,ky,18786106,18830622\nx86_64,MDPI,ml,18786300,18830816\narmeabi-v7a,LDPI,th,18785664,18830180\nx86,HDPI,hr,18786242,18830758\narm64-v8a,HDPI,ml,18786057,18830573\narm64-v8a,LDPI,ja,18785898,18830414\nx86,LDPI,as,18786391,18830907\nx86_64,TVDPI,lv,18786872,18831388\narm64-v8a,XXHDPI,nl,18785919,18830435\narmeabi-v7a,XXHDPI,pa,18785746,18830262\narm64-v8a,XHDPI,uz,18785969,18830485\narm64-v8a,HDPI,uz,18785857,18830373\nx86,TVDPI,af,18786917,18831433\nx86,MDPI,nb,18786162,18830678\narmeabi-v7a,XHDPI,ca,18785643,18830159\narm64-v8a,MDPI,mn,18785943,18830459\narmeabi-v7a,LDPI,iw,18785520,18830036\nx86,HDPI,in,18786195,18830711\narmeabi-v7a,XHDPI,fa,18785676,18830192\nx86,XXHDPI,kk,18786449,18830965\nx86_64,XHDPI,hi,18786422,18830938\nx86_64,XXHDPI,ka,18786347,18830863\narm64-v8a,XXHDPI,en,18787152,18831668\nx86_64,XXXHDPI,sw,18786220,18830736\nx86,HDPI,km,18786374,18830890\nx86,LDPI,sv,18786176,18830692\narmeabi-v7a,XHDPI,nl,18785592,18830108\nx86,XXHDPI,hy,18786421,18830937\nx86,MDPI,ms,18786193,18830709\nx86_64,XHDPI,ms,18786202,18830718\nx86_64,HDPI,zu,18786120,18830636\narm64-v8a,XHDPI,pl,18785970,18830486\nx86,XXHDPI,ja,18786401,18830917\narmeabi-v7a,HDPI,lo,18785685,18830201\narm64-v8a,XXHDPI,ru,18786084,18830600\narmeabi-v7a,HDPI,gu,18785666,18830182\narm64-v8a,TVDPI,ta,18786746,18831262\nx86_64,MDPI,ja,18786155,18830671\nx86_64,MDPI,de,18786085,18830601\narm64-v8a,XXXHDPI,hi,18786167,18830683\narm64-v8a,XHDPI,sq,18785989,18830505\narm64-v8a,XHDPI,sv,18785928,18830444\narm64-v8a,HDPI,or,18785978,18830494\narm64-v8a,XHDPI,ro,18785970,18830486\narm64-v8a,LDPI,sk,18785857,18830373\narmeabi-v7a,XXHDPI,cs,18785671,18830187\narm64-v8a,MDPI,ne,18785957,18830473\nx86_64,XHDPI,ta,18786394,18830910\narm64-v8a,XXHDPI,eu,18785942,18830458\narm64-v8a,XXHDPI,vi,18786033,18830549\narmeabi-v7a,MDPI,ro,18785520,18830036\nx86_64,TVDPI,in,18786799,18831315\nx86,XXXHDPI,ru,18786457,18830973\narmeabi-v7a,HDPI,hy,18785608,18830124\nx86_64,HDPI,uk,18786225,18830741\narmeabi-v7a,TVDPI,bg,18786364,18830880\nx86,XXXHDPI,sl,18786327,18830843\narm64-v8a,XXXHDPI,my,18786120,18830636\nx86,XXXHDPI,sw,18786337,18830853\narmeabi-v7a,TVDPI,es,18786404,18830920\nx86,XHDPI,ky,18786480,18830996\nx86_64,TVDPI,az,18786856,18831372\nx86,LDPI,en,18787397,18831913\nx86,XXHDPI,lv,18786383,18830899\nx86_64,XXXHDPI,ca,18786226,18830742\nx86_64,XXHDPI,mn,18786329,18830845\narmeabi-v7a,LDPI,kn,18785679,18830195\narm64-v8a,TVDPI,af,18786543,18831059\nx86_64,XXXHDPI,vi,18786289,18830805\narm64-v8a,LDPI,sv,18785802,18830318\nx86_64,XHDPI,sr,18786853,18831369\nx86_64,TVDPI,hu,18786866,18831382\nx86_64,TVDPI,bn,18786935,18831451\narmeabi-v7a,MDPI,hu,18785550,18830066\nx86,MDPI,de,18786202,18830718\narmeabi-v7a,XHDPI,te,18785795,18830311\nx86_64,XHDPI,pa,18786324,18830840\nx86,HDPI,mn,18786331,18830847\narmeabi-v7a,XXXHDPI,sv,18785606,18830122\narmeabi-v7a,XXHDPI,bg,18785758,18830274\narmeabi-v7a,XXHDPI,ne,18785762,18830278\nx86_64,LDPI,hu,18786131,18830647\nx86_64,XXHDPI,da,18786170,18830686\nx86,XHDPI,ml,18786543,18831059\narmeabi-v7a,HDPI,sv,18785492,18830008\narm64-v8a,HDPI,hi,18786053,18830569\nx86,XXXHDPI,ta,18786513,18831029\nx86,MDPI,as,18786391,18830907\narmeabi-v7a,XXXHDPI,hi,18785843,18830359\narmeabi-v7a,LDPI,mr,18785633,18830149\narmeabi-v7a,LDPI,is,18785513,18830029\narm64-v8a,HDPI,ca,18785855,18830371\nx86,XXHDPI,en,18787526,18832042\narm64-v8a,LDPI,ca,18785841,18830357\nx86,MDPI,ur,18786269,18830785\nx86_64,XXXHDPI,si,18786369,18830885\narm64-v8a,LDPI,si,18785984,18830500\nx86,HDPI,kk,18786334,18830850\narm64-v8a,HDPI,as,18786031,18830547\nx86,HDPI,ca,18786229,18830745\narmeabi-v7a,MDPI,ka,18785637,18830153\nx86,XXHDPI,ca,18786344,18830860\nx86_64,XXXHDPI,ky,18786365,18830881\narmeabi-v7a,XXHDPI,ur,18785700,18830216\narmeabi-v7a,TVDPI,fr,18786438,18830954\nx86,XHDPI,mr,18786457,18830973\narmeabi-v7a,XXXHDPI,gu,18785780,18830296\narm64-v8a,XXXHDPI,hy,18786046,18830562\narmeabi-v7a,LDPI,el,18785677,18830193\narmeabi-v7a,XHDPI,ur,18785697,18830213\nx86_64,LDPI,mk,18786210,18830726\nx86_64,TVDPI,ky,18786972,18831488\nx86_64,LDPI,iw,18786101,18830617\narmeabi-v7a,MDPI,uz,18785519,18830035\nx86_64,HDPI,lt,18786143,18830659\narm64-v8a,MDPI,ml,18786043,18830559\nx86_64,MDPI,nl,18786047,18830563\narm64-v8a,XHDPI,am,18786028,18830544\narm64-v8a,MDPI,sk,18785857,18830373\narm64-v8a,TVDPI,pt,18786780,18831296\narm64-v8a,LDPI,hi,18786039,18830555\nx86_64,TVDPI,lt,18786864,18831380\narmeabi-v7a,XXHDPI,hr,18785659,18830175\narm64-v8a,XXHDPI,th,18786117,18830633\nx86_64,XXXHDPI,nl,18786175,18830691\narm64-v8a,LDPI,ar,18785887,18830403\nx86,XXHDPI,lt,18786375,18830891\nx86,XHDPI,km,18786486,18831002\narm64-v8a,MDPI,ko,18785826,18830342\narm64-v8a,HDPI,es,18786007,18830523\nx86_64,XXHDPI,it,18786212,18830728\narmeabi-v7a,LDPI,uz,18785519,18830035\nx86_64,HDPI,ms,18786090,18830606\narm64-v8a,XHDPI,tr,18785966,18830482\narm64-v8a,MDPI,km,18785986,18830502\narmeabi-v7a,XXHDPI,it,18785631,18830147\nx86,HDPI,gu,18786364,18830880\narm64-v8a,XXXHDPI,be,18786082,18830598\narmeabi-v7a,MDPI,hy,18785594,18830110\nx86,XHDPI,sk,18786357,18830873\narmeabi-v7a,MDPI,is,18785513,18830029\narmeabi-v7a,HDPI,pa,18785631,18830147\narm64-v8a,XHDPI,az,18785990,18830506\nx86,LDPI,ky,18786354,18830870\narmeabi-v7a,MDPI,kn,18785679,18830195\nx86_64,LDPI,ky,18786237,18830753\narm64-v8a,MDPI,el,18786001,18830517\nx86,XHDPI,ne,18786457,18830973\narmeabi-v7a,XHDPI,ar,18785689,18830205\narm64-v8a,TVDPI,ar,18786622,18831138\nx86,TVDPI,sk,18786966,18831482\narmeabi-v7a,HDPI,ky,18785670,18830186\narmeabi-v7a,LDPI,ru,18785631,18830147\narm64-v8a,XXHDPI,lo,18786124,18830640\nx86,TVDPI,si,18787093,18831609\narm64-v8a,TVDPI,ne,18786692,18831208\narm64-v8a,XXXHDPI,ar,18786015,18830531\narm64-v8a,XHDPI,ka,18786087,18830603\narmeabi-v7a,XXXHDPI,iw,18785648,18830164\nx86_64,XXHDPI,lt,18786258,18830774\narmeabi-v7a,XXXHDPI,ka,18785765,18830281\narmeabi-v7a,XHDPI,lo,18785797,18830313\nx86,XHDPI,nl,18786290,18830806\nx86_64,XXXHDPI,ml,18786428,18830944\narmeabi-v7a,MDPI,pt,18785721,18830237\narmeabi-v7a,TVDPI,my,18786403,18830919\narmeabi-v7a,XXXHDPI,hr,18785658,18830174\narmeabi-v7a,XXXHDPI,bn,18785747,18830263\narmeabi-v7a,XHDPI,mr,18785759,18830275\narm64-v8a,XHDPI,or,18786090,18830606\narmeabi-v7a,LDPI,eu,18785489,18830005\narm64-v8a,MDPI,fa,18785874,18830390\narmeabi-v7a,XHDPI,es,18785795,18830311\nx86_64,TVDPI,el,18786993,18831509\nx86_64,LDPI,fa,18786131,18830647\narm64-v8a,HDPI,hu,18785888,18830404\narmeabi-v7a,XXHDPI,sk,18785662,18830178\narm64-v8a,HDPI,zu,18785863,18830379\nx86_64,TVDPI,en,18788015,18832531\narm64-v8a,XXHDPI,lt,18786001,18830517\narm64-v8a,MDPI,eu,18785813,18830329\narm64-v8a,XXXHDPI,sv,18785930,18830446\narmeabi-v7a,HDPI,nb,18785478,18829994\narmeabi-v7a,XXHDPI,bs,18785655,18830171\narmeabi-v7a,HDPI,tl,18785504,18830020\narmeabi-v7a,TVDPI,nb,18786199,18830715\nx86_64,LDPI,as,18786274,18830790\narmeabi-v7a,XXHDPI,km,18785791,18830307\nx86_64,LDPI,hy,18786175,18830691\nx86,TVDPI,en,18788132,18832648\nx86,XHDPI,ar,18786387,18830903\nx86,XHDPI,sr,18786970,18831486\narmeabi-v7a,XXHDPI,my,18785797,18830313\narm64-v8a,TVDPI,et,18786545,18831061\narmeabi-v7a,MDPI,mn,18785619,18830135\nx86_64,MDPI,sv,18786059,18830575\narmeabi-v7a,HDPI,lv,18785570,18830086\nx86,TVDPI,th,18787097,18831613\nx86_64,XHDPI,te,18786376,18830892\narm64-v8a,XXHDPI,pa,18786070,18830586\narmeabi-v7a,MDPI,am,18785578,18830094\nx86_64,LDPI,ja,18786155,18830671\nx86,TVDPI,lv,18786989,18831505\narmeabi-v7a,MDPI,in,18785483,18829999\nx86,MDPI,pt,18786419,18830935\narm64-v8a,XXHDPI,tr,18785969,18830485\nx86,HDPI,nb,18786176,18830692\narmeabi-v7a,TVDPI,ka,18786372,18830888\narm64-v8a,MDPI,hy,18785918,18830434\nx86_64,TVDPI,kk,18786938,18831454\nx86,XHDPI,zu,18786349,18830865\narm64-v8a,XXXHDPI,da,18785912,18830428\nx86,TVDPI,pt,18787154,18831670\nx86_64,HDPI,af,18786079,18830595\nx86,MDPI,ru,18786329,18830845\narmeabi-v7a,XXHDPI,ta,18785816,18830332\narm64-v8a,TVDPI,am,18786637,18831153\nx86,XXHDPI,nb,18786291,18830807\nx86,MDPI,pl,18786218,18830734\nx86_64,TVDPI,cs,18786858,18831374\nx86,MDPI,is,18786211,18830727\nx86,HDPI,hi,18786427,18830943\nx86,XXXHDPI,fa,18786376,18830892\narm64-v8a,TVDPI,en,18787758,18832274\narm64-v8a,TVDPI,da,18786519,18831035\nx86_64,TVDPI,as,18787009,18831525\nx86_64,HDPI,sv,18786073,18830589\nx86,XHDPI,gl,18786346,18830862\narm64-v8a,XXHDPI,hr,18785983,18830499\nx86_64,TVDPI,vi,18786896,18831412\nx86_64,MDPI,lv,18786137,18830653\nx86,TVDPI,ur,18787004,18831520\nx86_64,XXXHDPI,tl,18786199,18830715\narm64-v8a,XHDPI,lt,18785998,18830514\nx86_64,XXXHDPI,km,18786371,18830887\narmeabi-v7a,TVDPI,hr,18786265,18830781\narmeabi-v7a,XXHDPI,ka,18785766,18830282\narmeabi-v7a,XXHDPI,mn,18785748,18830264\nx86,LDPI,fr,18786401,18830917\narm64-v8a,LDPI,af,18785808,18830324\nx86_64,HDPI,ar,18786158,18830674\narm64-v8a,MDPI,am,18785902,18830418\nx86,XXHDPI,sv,18786305,18830821\nx86_64,HDPI,km,18786257,18830773\narmeabi-v7a,HDPI,ms,18785509,18830025\narmeabi-v7a,LDPI,ne,18785633,18830149\nx86,MDPI,uz,18786217,18830733\narm64-v8a,XXHDPI,nb,18785917,18830433\narm64-v8a,LDPI,az,18785864,18830380\narmeabi-v7a,LDPI,af,18785484,18830000\narmeabi-v7a,TVDPI,et,18786221,18830737\narm64-v8a,XXHDPI,fa,18786003,18830519\narm64-v8a,XHDPI,mn,18786069,18830585\nx86_64,HDPI,sr,18786741,18831257\nx86_64,LDPI,pa,18786198,18830714\narmeabi-v7a,MDPI,de,18785504,18830020\narm64-v8a,TVDPI,bg,18786688,18831204\nx86_64,HDPI,fr,18786298,18830814\nx86,HDPI,am,18786290,18830806\nx86_64,HDPI,be,18786225,18830741\nx86_64,HDPI,fi,18786119,18830635\narmeabi-v7a,TVDPI,be,18786365,18830881\narmeabi-v7a,LDPI,nb,18785464,18829980\narmeabi-v7a,TVDPI,lt,18786283,18830799\narm64-v8a,HDPI,am,18785916,18830432\nx86_64,XXXHDPI,fa,18786259,18830775\nx86_64,XHDPI,bs,18786233,18830749\narmeabi-v7a,XHDPI,ka,18785763,18830279\nx86,XXXHDPI,km,18786488,18831004\nx86,LDPI,ur,18786269,18830785\narm64-v8a,LDPI,bs,18785850,18830366\nx86,XHDPI,cs,18786366,18830882\narmeabi-v7a,HDPI,mr,18785647,18830163\nx86,LDPI,gl,18786220,18830736\nx86,HDPI,ar,18786275,18830791\narm64-v8a,XXXHDPI,kn,18786131,18830647\nx86,XHDPI,te,18786493,18831009\narmeabi-v7a,TVDPI,vi,18786315,18830831\nx86_64,LDPI,sk,18786114,18830630\nx86,MDPI,bn,18786317,18830833\narmeabi-v7a,XXXHDPI,kn,18785807,18830323\nx86_64,LDPI,th,18786245,18830761\narm64-v8a,TVDPI,el,18786736,18831252\nx86,XHDPI,hy,18786418,18830934\nx86_64,XXXHDPI,mr,18786342,18830858\nx86_64,XXHDPI,my,18786378,18830894\narm64-v8a,XHDPI,sw,18785961,18830477\nx86,TVDPI,bg,18787062,18831578\narmeabi-v7a,HDPI,lt,18785562,18830078\narmeabi-v7a,HDPI,fr,18785717,18830233\nx86,TVDPI,az,18786973,18831489\nx86_64,HDPI,bs,18786121,18830637\nx86,TVDPI,gu,18787085,18831601\narm64-v8a,LDPI,de,18785828,18830344\nx86,TVDPI,cs,18786975,18831491\narmeabi-v7a,HDPI,as,18785707,18830223\narm64-v8a,XXHDPI,et,18785939,18830455\nx86,MDPI,bs,18786224,18830740\nx86,MDPI,zh,18786798,18831314\narmeabi-v7a,TVDPI,ml,18786454,18830970\narmeabi-v7a,XXXHDPI,or,18785768,18830284\nx86,HDPI,et,18786198,18830714\narmeabi-v7a,XHDPI,mn,18785745,18830261\narmeabi-v7a,LDPI,hy,18785594,18830110\narmeabi-v7a,LDPI,sq,18785539,18830055\nx86,XHDPI,et,18786310,18830826\nx86_64,XHDPI,is,18786220,18830736\narm64-v8a,TVDPI,uk,18786689,18831205\narmeabi-v7a,MDPI,ru,18785631,18830147\narm64-v8a,MDPI,in,18785807,18830323\narm64-v8a,XXXHDPI,fa,18786002,18830518\nx86,XHDPI,kk,18786446,18830962\narm64-v8a,HDPI,mk,18785967,18830483\narmeabi-v7a,XXHDPI,pl,18785649,18830165\narmeabi-v7a,XHDPI,is,18785639,18830155\nx86_64,XXXHDPI,ru,18786340,18830856\nx86_64,TVDPI,bg,18786945,18831461\nx86_64,XXHDPI,fr,18786413,18830929\nx86,HDPI,eu,18786201,18830717\narm64-v8a,XXXHDPI,zu,18785977,18830493\narm64-v8a,XHDPI,mr,18786083,18830599\narm64-v8a,LDPI,fi,18785848,18830364\narmeabi-v7a,TVDPI,sk,18786268,18830784\nx86_64,XXXHDPI,pt,18786430,18830946\narm64-v8a,MDPI,fi,18785848,18830364\narmeabi-v7a,XXHDPI,mk,18785758,18830274\narmeabi-v7a,XXHDPI,ko,18785631,18830147\nx86_64,XXHDPI,bg,18786339,18830855\nx86,HDPI,ml,18786431,18830947\nx86,XXXHDPI,pt,18786547,18831063\narm64-v8a,XXHDPI,sk,18785986,18830502\narmeabi-v7a,HDPI,te,18785683,18830199\nx86,HDPI,sl,18786213,18830729\narmeabi-v7a,MDPI,sr,18786146,18830662\nx86,MDPI,it,18786200,18830716\narmeabi-v7a,XXHDPI,fr,18785832,18830348\nx86_64,HDPI,nb,18786059,18830575\nx86_64,XHDPI,tr,18786223,18830739\nx86_64,XHDPI,sk,18786240,18830756\narmeabi-v7a,HDPI,fi,18785538,18830054\narm64-v8a,LDPI,in,18785807,18830323\nx86_64,XXXHDPI,ne,18786342,18830858\nx86_64,MDPI,ar,18786144,18830660\narmeabi-v7a,XXXHDPI,mr,18785761,18830277\narmeabi-v7a,TVDPI,kk,18786357,18830873\narmeabi-v7a,LDPI,de,18785504,18830020\nx86,XHDPI,pt,18786545,18831061\narm64-v8a,LDPI,kk,18785946,18830462\nx86,TVDPI,nb,18786897,18831413\narmeabi-v7a,MDPI,lo,18785671,18830187\narm64-v8a,XXHDPI,bs,18785979,18830495\narmeabi-v7a,LDPI,zu,18785525,18830041\narm64-v8a,HDPI,pt,18786059,18830575\nx86_64,XXHDPI,ky,18786366,18830882\nx86,HDPI,ne,18786345,18830861\nx86,TVDPI,es,18787102,18831618\narm64-v8a,XXXHDPI,ro,18785972,18830488\nx86,HDPI,it,18786214,18830730\narmeabi-v7a,LDPI,si,18785660,18830176\nx86,TVDPI,be,18787063,18831579\narm64-v8a,LDPI,lo,18785995,18830511\nx86,HDPI,iw,18786232,18830748\narmeabi-v7a,TVDPI,km,18786397,18830913\nx86_64,MDPI,pt,18786302,18830818\nx86,XHDPI,tr,18786340,18830856\narmeabi-v7a,LDPI,te,18785669,18830185\nx86_64,LDPI,ar,18786144,18830660\narm64-v8a,HDPI,nl,18785804,18830320\nx86_64,XHDPI,as,18786400,18830916\narm64-v8a,LDPI,ko,18785826,18830342\narm64-v8a,XXHDPI,as,18786146,18830662\narm64-v8a,MDPI,ms,18785819,18830335\narmeabi-v7a,XXHDPI,ro,18785649,18830165\nx86,TVDPI,mn,18787052,18831568\nx86,HDPI,hy,18786306,18830822\nx86_64,XXXHDPI,zh,18786809,18831325\nx86,MDPI,or,18786338,18830854\narm64-v8a,LDPI,th,18785988,18830504\nx86_64,XXHDPI,et,18786196,18830712\nx86,HDPI,or,18786352,18830868\narmeabi-v7a,XXHDPI,ky,18785785,18830301\nx86,LDPI,lo,18786369,18830885\nx86,LDPI,cs,18786240,18830756\nx86_64,HDPI,ru,18786226,18830742\nx86,XXXHDPI,mr,18786459,18830975\nx86_64,HDPI,cs,18786137,18830653\nx86,MDPI,ro,18786218,18830734\nx86,TVDPI,sl,18786934,18831450\narmeabi-v7a,XXXHDPI,lt,18785676,18830192\narmeabi-v7a,XXXHDPI,km,18785790,18830306\narmeabi-v7a,LDPI,gl,18785522,18830038\narm64-v8a,HDPI,zh,18786438,18830954\narm64-v8a,MDPI,hr,18785854,18830370\nx86_64,MDPI,ky,18786237,18830753\nx86,LDPI,uk,18786328,18830844\nx86,LDPI,th,18786362,18830878\narm64-v8a,XHDPI,tl,18785940,18830456\narmeabi-v7a,HDPI,nl,18785480,18829996\nx86,XXXHDPI,ka,18786463,18830979\nx86,XHDPI,bg,18786453,18830969\nx86,TVDPI,pl,18786953,18831469\nx86,XXHDPI,ta,18786514,18831030\nx86_64,HDPI,my,18786263,18830779\nx86,TVDPI,ja,18787007,18831523\nx86,XXHDPI,cs,18786369,18830885\nx86_64,LDPI,kk,18786203,18830719\narmeabi-v7a,XXXHDPI,tl,18785618,18830134\narmeabi-v7a,XHDPI,sl,18785627,18830143\narmeabi-v7a,HDPI,ar,18785577,18830093\nx86_64,LDPI,sq,18786120,18830636\narm64-v8a,XHDPI,zu,18785975,18830491\nx86,TVDPI,tl,18786923,18831439\narm64-v8a,HDPI,ur,18785909,18830425\nx86,XXHDPI,as,18786520,18831036\narmeabi-v7a,HDPI,am,18785592,18830108\nx86_64,MDPI,as,18786274,18830790\narm64-v8a,TVDPI,pl,18786579,18831095\nx86_64,XHDPI,gl,18786229,18830745\nx86_64,XXHDPI,az,18786250,18830766\narmeabi-v7a,XXXHDPI,ru,18785759,18830275\nx86,XHDPI,mn,18786443,18830959\narm64-v8a,XHDPI,nb,18785914,18830430\nx86_64,MDPI,az,18786121,18830637\nx86,MDPI,sv,18786176,18830692\nx86_64,HDPI,kn,18786274,18830790\nx86,XHDPI,be,18786454,18830970\nx86_64,TVDPI,uk,18786946,18831462\nx86,XXXHDPI,ms,18786321,18830837\nx86,TVDPI,ru,18787064,18831580\nx86_64,HDPI,el,18786272,18830788\nx86_64,XXXHDPI,or,18786349,18830865\narmeabi-v7a,XXHDPI,ar,18785692,18830208\nx86_64,TVDPI,my,18786984,18831500\narm64-v8a,LDPI,tr,18785840,18830356\nx86,XXHDPI,be,18786457,18830973\nx86_64,MDPI,tr,18786097,18830613\narmeabi-v7a,HDPI,mk,18785643,18830159\nx86,MDPI,uk,18786328,18830844\narmeabi-v7a,XHDPI,az,18785666,18830182\narm64-v8a,LDPI,sq,18785863,18830379\nx86,LDPI,hi,18786413,18830929\nx86,LDPI,pt,18786419,18830935\nx86_64,LDPI,bs,18786107,18830623\nx86_64,XXXHDPI,es,18786378,18830894\narmeabi-v7a,LDPI,it,18785502,18830018\narmeabi-v7a,TVDPI,sr,18786881,18831397\narmeabi-v7a,MDPI,lt,18785548,18830064\nx86,XXXHDPI,lt,18786374,18830890\narmeabi-v7a,HDPI,fa,18785564,18830080\narm64-v8a,MDPI,vi,18785904,18830420\nx86_64,XXXHDPI,sl,18786210,18830726\nx86_64,XXXHDPI,kn,18786388,18830904\nx86_64,XHDPI,hr,18786237,18830753\narmeabi-v7a,XXXHDPI,be,18785758,18830274\nx86,XXXHDPI,sv,18786304,18830820\nx86_64,HDPI,ky,18786251,18830767\nx86,XXXHDPI,lo,18786497,18831013\narm64-v8a,XHDPI,et,18785936,18830452\nx86,XXHDPI,tl,18786317,18830833\narmeabi-v7a,MDPI,iw,18785520,18830036\narmeabi-v7a,TVDPI,mr,18786368,18830884\nx86,MDPI,fr,18786401,18830917\nx86,LDPI,da,18786158,18830674\nx86_64,TVDPI,ca,18786833,18831349\narm64-v8a,XHDPI,mk,18786079,18830595\nx86_64,XXXHDPI,az,18786249,18830765\narm64-v8a,HDPI,sw,18785849,18830365\narm64-v8a,MDPI,mr,18785957,18830473\narm64-v8a,MDPI,pt,18786045,18830561\narm64-v8a,TVDPI,ka,18786696,18831212\narmeabi-v7a,TVDPI,ca,18786252,18830768\nx86,MDPI,iw,18786218,18830734\nx86,MDPI,ja,18786272,18830788\nx86_64,TVDPI,tl,18786806,18831322\narmeabi-v7a,XXHDPI,si,18785789,18830305\narm64-v8a,XXXHDPI,sl,18785953,18830469\nx86_64,XHDPI,cs,18786249,18830765\narm64-v8a,HDPI,sk,18785871,18830387\nx86,LDPI,ml,18786417,18830933\narm64-v8a,XHDPI,vi,18786030,18830546\narm64-v8a,HDPI,ko,18785840,18830356\narmeabi-v7a,XXXHDPI,th,18785792,18830308\nx86,HDPI,ta,18786399,18830915\narm64-v8a,XXHDPI,ml,18786172,18830688\narm64-v8a,XXHDPI,sv,18785931,18830447\nx86,TVDPI,ta,18787120,18831636\nx86_64,HDPI,mk,18786224,18830740\narmeabi-v7a,MDPI,hi,18785715,18830231\narm64-v8a,LDPI,en,18787023,18831539\narm64-v8a,XXHDPI,af,18785937,18830453\narm64-v8a,HDPI,eu,18785827,18830343\narmeabi-v7a,XXXHDPI,am,18785706,18830222\nx86_64,XXHDPI,kn,18786389,18830905\nx86_64,XXHDPI,sw,18786221,18830737\nx86,XXXHDPI,sk,18786359,18830875\nx86,LDPI,bn,18786317,18830833\nx86,TVDPI,eu,18786922,18831438\narmeabi-v7a,LDPI,uk,18785630,18830146\narm64-v8a,HDPI,ne,18785971,18830487\nx86_64,TVDPI,mr,18786949,18831465\narmeabi-v7a,MDPI,cs,18785542,18830058\nx86,XXHDPI,gu,18786479,18830995\narm64-v8a,LDPI,hr,18785854,18830370\narm64-v8a,XXHDPI,gu,18786105,18830621\nx86_64,XHDPI,ne,18786340,18830856\narmeabi-v7a,XHDPI,ko,18785628,18830144\nx86,HDPI,ur,18786283,18830799\nx86_64,XXHDPI,en,18787409,18831925\narm64-v8a,LDPI,gl,18785846,18830362\nx86,XXHDPI,it,18786329,18830845\narm64-v8a,XXHDPI,or,18786093,18830609\narm64-v8a,MDPI,pl,18785844,18830360\nx86,XHDPI,en,18787523,18832039\nx86,MDPI,sw,18786209,18830725\narm64-v8a,TVDPI,ml,18786778,18831294\narm64-v8a,MDPI,be,18785954,18830470\nx86,XXHDPI,el,18786504,18831020\nx86_64,TVDPI,tr,18786832,18831348\narmeabi-v7a,MDPI,et,18785486,18830002\narmeabi-v7a,HDPI,tr,18785530,18830046\narmeabi-v7a,XXXHDPI,et,18785614,18830130\narmeabi-v7a,XXHDPI,as,18785822,18830338\nx86_64,XXHDPI,ta,18786397,18830913\nx86,XHDPI,zh,18786924,18831440\nx86,HDPI,ka,18786349,18830865\narmeabi-v7a,XXHDPI,en,18786828,18831344\narmeabi-v7a,HDPI,bs,18785540,18830056\narmeabi-v7a,MDPI,bs,18785526,18830042\narm64-v8a,TVDPI,ru,18786690,18831206\narm64-v8a,MDPI,ca,18785841,18830357\narm64-v8a,XXHDPI,te,18786122,18830638\narmeabi-v7a,XXXHDPI,ta,18785815,18830331\narm64-v8a,MDPI,bn,18785943,18830459\nx86_64,TVDPI,ru,18786947,18831463\nx86,HDPI,sw,18786223,18830739\narm64-v8a,MDPI,fr,18786027,18830543\narmeabi-v7a,HDPI,sr,18786160,18830676\nx86_64,XXXHDPI,pl,18786229,18830745\nx86_64,XHDPI,lt,18786255,18830771\nx86_64,XHDPI,ml,18786426,18830942\nx86,XXXHDPI,gl,18786348,18830864\narm64-v8a,MDPI,es,18785993,18830509\nx86_64,XXXHDPI,gl,18786231,18830747\narm64-v8a,XHDPI,zh,18786550,18831066\nx86_64,HDPI,es,18786264,18830780\narmeabi-v7a,TVDPI,sw,18786246,18830762\narm64-v8a,LDPI,cs,18785866,18830382\nx86_64,XXHDPI,gu,18786362,18830878\nx86,TVDPI,or,18787073,18831589\nx86_64,MDPI,tl,18786071,18830587\narm64-v8a,XXXHDPI,ne,18786085,18830601\nx86_64,XHDPI,lv,18786263,18830779\nx86_64,XHDPI,th,18786371,18830887\narmeabi-v7a,TVDPI,am,18786313,18830829\narm64-v8a,LDPI,ne,18785957,18830473\narm64-v8a,XHDPI,ru,18786081,18830597\narmeabi-v7a,MDPI,tl,18785490,18830006\narmeabi-v7a,LDPI,pl,18785520,18830036\nx86_64,LDPI,de,18786085,18830601\nx86,XXXHDPI,as,18786519,18831035\narmeabi-v7a,MDPI,da,18785460,18829976\nx86,LDPI,et,18786184,18830700\narmeabi-v7a,TVDPI,pa,18786352,18830868\narm64-v8a,TVDPI,hu,18786609,18831125\narm64-v8a,XXHDPI,ko,18785955,18830471\narm64-v8a,HDPI,lo,18786009,18830525\nx86,XXHDPI,si,18786487,18831003\nx86_64,XXXHDPI,hu,18786259,18830775\nx86,TVDPI,bs,18786959,18831475\nx86_64,LDPI,es,18786250,18830766\narmeabi-v7a,TVDPI,is,18786248,18830764\narm64-v8a,MDPI,or,18785964,18830480\nx86,HDPI,pa,18786329,18830845\narmeabi-v7a,XXHDPI,sw,18785640,18830156\narm64-v8a,XXXHDPI,sq,18785991,18830507\nx86_64,MDPI,hi,18786296,18830812\narmeabi-v7a,TVDPI,sv,18786213,18830729\nx86_64,LDPI,nl,18786047,18830563\nx86_64,HDPI,pt,18786316,18830832\nx86_64,LDPI,bn,18786200,18830716\nx86_64,MDPI,iw,18786101,18830617\nx86_64,XHDPI,bg,18786336,18830852\nx86,MDPI,kn,18786377,18830893\narm64-v8a,HDPI,sr,18786484,18831000\nx86,XXXHDPI,da,18786286,18830802\narm64-v8a,XXHDPI,in,18785936,18830452\narm64-v8a,XHDPI,ca,18785967,18830483\nx86,MDPI,sr,18786844,18831360\nx86,XXXHDPI,pa,18786443,18830959\narmeabi-v7a,XHDPI,as,18785819,18830335\narm64-v8a,XHDPI,is,18785963,18830479\narm64-v8a,XXXHDPI,gu,18786104,18830620\nx86_64,HDPI,si,18786255,18830771\nx86,XHDPI,ms,18786319,18830835\nx86,TVDPI,hi,18787148,18831664\nx86,TVDPI,lo,18787104,18831620\nx86_64,XXXHDPI,iw,18786229,18830745\narm64-v8a,XHDPI,ms,18785945,18830461\nx86,LDPI,pl,18786218,18830734\nx86_64,XXHDPI,zh,18786810,18831326\nx86,HDPI,en,18787411,18831927\narmeabi-v7a,TVDPI,nl,18786201,18830717\narmeabi-v7a,XXHDPI,nb,18785593,18830109\nx86,LDPI,zu,18786223,18830739\nx86_64,XXXHDPI,sr,18786855,18831371\nx86_64,MDPI,bs,18786107,18830623\narm64-v8a,XXXHDPI,kk,18786074,18830590\nx86,XHDPI,ja,18786398,18830914\narmeabi-v7a,HDPI,sk,18785547,18830063\nx86,XXHDPI,ro,18786347,18830863\narmeabi-v7a,LDPI,ja,18785574,18830090\narm64-v8a,XXHDPI,mn,18786072,18830588\nx86_64,TVDPI,es,18786985,18831501\nx86,XXXHDPI,de,18786330,18830846\narm64-v8a,MDPI,ja,18785898,18830414\narm64-v8a,MDPI,az,18785864,18830380\narmeabi-v7a,HDPI,pt,18785735,18830251\narmeabi-v7a,XHDPI,de,18785630,18830146\nx86,HDPI,zh,18786812,18831328\nx86,TVDPI,tr,18786949,18831465\nx86_64,LDPI,ru,18786212,18830728\narmeabi-v7a,XHDPI,af,18785610,18830126\nx86,LDPI,is,18786211,18830727\nx86_64,XXHDPI,km,18786372,18830888\nx86,XXXHDPI,es,18786495,18831011\narmeabi-v7a,XHDPI,ru,18785757,18830273\narm64-v8a,HDPI,el,18786015,18830531\narm64-v8a,LDPI,gu,18785976,18830492\narmeabi-v7a,XHDPI,th,18785790,18830306\narmeabi-v7a,XXHDPI,vi,18785709,18830225\narm64-v8a,HDPI,iw,18785858,18830374\nx86,LDPI,es,18786367,18830883\narmeabi-v7a,LDPI,vi,18785580,18830096\narm64-v8a,TVDPI,ca,18786576,18831092\nx86_64,TVDPI,ka,18786953,18831469\nx86,XHDPI,mk,18786453,18830969\nx86,LDPI,fa,18786248,18830764\nx86,XHDPI,am,18786402,18830918\narm64-v8a,TVDPI,hy,18786653,18831169\narmeabi-v7a,MDPI,te,18785669,18830185\narm64-v8a,XXHDPI,ca,18785970,18830486\narmeabi-v7a,MDPI,nb,18785464,18829980\narmeabi-v7a,MDPI,mr,18785633,18830149\nx86_64,TVDPI,th,18786980,18831496\nx86_64,TVDPI,te,18786985,18831501\nx86,XHDPI,ka,18786461,18830977\nx86,LDPI,tr,18786214,18830730\nx86,LDPI,iw,18786218,18830734\nx86,XHDPI,el,18786501,18831017\nx86_64,XHDPI,km,18786369,18830885\narmeabi-v7a,TVDPI,fi,18786259,18830775\narmeabi-v7a,MDPI,pl,18785520,18830036\narm64-v8a,MDPI,de,18785828,18830344\nx86_64,XXHDPI,bs,18786236,18830752\nx86_64,LDPI,af,18786065,18830581\nx86,TVDPI,ky,18787089,18831605\narmeabi-v7a,MDPI,ar,18785563,18830079\nx86_64,MDPI,te,18786250,18830766\narmeabi-v7a,MDPI,bn,18785619,18830135\nx86_64,MDPI,mk,18786210,18830726\narm64-v8a,XXXHDPI,ru,18786083,18830599\nx86,TVDPI,my,18787101,18831617\narm64-v8a,HDPI,kn,18786017,18830533\narm64-v8a,TVDPI,bn,18786678,18831194\narmeabi-v7a,XHDPI,iw,18785646,18830162\nx86_64,HDPI,tl,18786085,18830601\nx86_64,XXXHDPI,bs,18786235,18830751\nx86_64,XXHDPI,am,18786288,18830804\narmeabi-v7a,LDPI,be,18785630,18830146\nx86_64,XXHDPI,nb,18786174,18830690\nx86_64,MDPI,pa,18786198,18830714\narmeabi-v7a,TVDPI,si,18786395,18830911\nx86_64,TVDPI,ja,18786890,18831406\nx86,XXHDPI,pl,18786347,18830863\nx86,TVDPI,fa,18786983,18831499\nx86_64,TVDPI,hr,18786846,18831362\nx86_64,MDPI,mr,18786214,18830730\nx86_64,XXHDPI,ur,18786281,18830797\nx86_64,LDPI,vi,18786161,18830677\nx86,LDPI,sr,18786844,18831360\narm64-v8a,XXXHDPI,si,18786112,18830628\narmeabi-v7a,MDPI,ky,18785656,18830172\nx86,XXXHDPI,ml,18786545,18831061\nx86_64,XXHDPI,es,18786379,18830895\narmeabi-v7a,TVDPI,en,18787434,18831950\narmeabi-v7a,XXHDPI,sv,18785607,18830123\nx86_64,XHDPI,en,18787406,18831922\nx86_64,TVDPI,pl,18786836,18831352\nx86_64,XXHDPI,ne,18786343,18830859\narm64-v8a,MDPI,hi,18786039,18830555\nx86_64,MDPI,or,18786221,18830737\nx86,XHDPI,sq,18786363,18830879\narmeabi-v7a,LDPI,mn,18785619,18830135\nx86,XXHDPI,te,18786496,18831012\narm64-v8a,XXXHDPI,ka,18786089,18830605\nx86,XXHDPI,hi,18786542,18831058\nx86,HDPI,as,18786405,18830921\narm64-v8a,HDPI,si,18785998,18830514\nx86,XXXHDPI,vi,18786406,18830922\narmeabi-v7a,XXHDPI,uz,18785648,18830164\narm64-v8a,HDPI,be,18785968,18830484\nx86_64,MDPI,lt,18786129,18830645\nx86_64,XHDPI,da,18786167,18830683\narmeabi-v7a,MDPI,el,18785677,18830193\nx86_64,XXHDPI,lv,18786266,18830782\nx86_64,XXHDPI,iw,18786230,18830746\narm64-v8a,HDPI,fr,18786041,18830557\nx86,XXXHDPI,ko,18786328,18830844\nx86_64,MDPI,pl,18786101,18830617\nx86,LDPI,az,18786238,18830754\narmeabi-v7a,HDPI,si,18785674,18830190\narm64-v8a,HDPI,fi,18785862,18830378\nx86_64,LDPI,te,18786250,18830766\narmeabi-v7a,MDPI,gl,18785522,18830038\narmeabi-v7a,HDPI,th,18785678,18830194\nx86_64,XHDPI,fr,18786410,18830926\narmeabi-v7a,XHDPI,uz,18785645,18830161\nx86,TVDPI,ca,18786950,18831466\nx86,XHDPI,gu,18786476,18830992\nx86_64,HDPI,bg,18786224,18830740\narmeabi-v7a,TVDPI,te,18786404,18830920\nx86,XXXHDPI,am,18786404,18830920\narmeabi-v7a,XXXHDPI,kk,18785750,18830266\nx86_64,HDPI,da,18786055,18830571\narmeabi-v7a,XXXHDPI,en,18786827,18831343\narmeabi-v7a,XHDPI,gl,18785648,18830164\nx86_64,XXXHDPI,bn,18786328,18830844\narm64-v8a,HDPI,en,18787037,18831553\nx86,TVDPI,hr,18786963,18831479\nx86_64,MDPI,af,18786065,18830581\narm64-v8a,TVDPI,az,18786599,18831115\nx86_64,TVDPI,uz,18786835,18831351\nx86,XXHDPI,ka,18786464,18830980\nx86_64,XXXHDPI,it,18786211,18830727\narmeabi-v7a,HDPI,en,18786713,18831229\narm64-v8a,XHDPI,hu,18786000,18830516\nx86,MDPI,lv,18786254,18830770\narmeabi-v7a,XXHDPI,is,18785642,18830158\nx86_64,TVDPI,sr,18787462,18831978\nx86_64,XXHDPI,th,18786374,18830890\nx86,XXXHDPI,cs,18786368,18830884\nx86,TVDPI,ne,18787066,18831582\nx86_64,MDPI,da,18786041,18830557\narmeabi-v7a,MDPI,ne,18785633,18830149\narm64-v8a,LDPI,el,18786001,18830517\narmeabi-v7a,XHDPI,sv,18785604,18830120\narmeabi-v7a,XHDPI,hr,18785656,18830172\narmeabi-v7a,XXXHDPI,ar,18785691,18830207\narmeabi-v7a,XXXHDPI,pt,18785849,18830365\nx86,TVDPI,fr,18787136,18831652\narmeabi-v7a,HDPI,mn,18785633,18830149\narmeabi-v7a,XHDPI,ms,18785621,18830137\narm64-v8a,XXXHDPI,hu,18786002,18830518\nx86,LDPI,hy,18786292,18830808\nx86_64,HDPI,hr,18786125,18830641\nx86,XHDPI,nb,18786288,18830804\narm64-v8a,XXXHDPI,mk,18786081,18830597\nx86,XXXHDPI,ar,18786389,18830905\nx86_64,XHDPI,ur,18786278,18830794\narmeabi-v7a,HDPI,et,18785500,18830016\narm64-v8a,XXHDPI,az,18785993,18830509\narmeabi-v7a,HDPI,gl,18785536,18830052\narm64-v8a,XXHDPI,iw,18785973,18830489\narm64-v8a,XXXHDPI,sk,18785985,18830501\nx86,LDPI,kn,18786377,18830893\narmeabi-v7a,XXXHDPI,az,18785668,18830184\narm64-v8a,TVDPI,ja,18786633,18831149\narm64-v8a,XXHDPI,mk,18786082,18830598\nx86,XHDPI,hi,18786539,18831055\narm64-v8a,HDPI,da,18785798,18830314\nx86_64,XXXHDPI,el,18786386,18830902\narm64-v8a,TVDPI,sr,18787205,18831721\narm64-v8a,XHDPI,ja,18786024,18830540\nx86,HDPI,ru,18786343,18830859\nx86_64,XXXHDPI,uk,18786339,18830855\nx86_64,XXHDPI,ms,18786205,18830721\nx86,XXHDPI,ar,18786390,18830906\narm64-v8a,HDPI,ky,18785994,18830510\nx86_64,XHDPI,sq,18786246,18830762\nx86,MDPI,mr,18786331,18830847\nx86,TVDPI,ml,18787152,18831668\narm64-v8a,LDPI,is,18785837,18830353\nx86_64,TVDPI,gu,18786968,18831484\nx86,HDPI,tl,18786202,18830718\narmeabi-v7a,MDPI,pa,18785617,18830133\nx86_64,XXHDPI,te,18786379,18830895\nx86_64,XHDPI,hy,18786301,18830817\nx86_64,XXHDPI,fi,18786234,18830750\nx86,MDPI,lo,18786369,18830885\nx86_64,XXXHDPI,th,18786373,18830889\nx86_64,XHDPI,in,18786190,18830706\nx86_64,LDPI,is,18786094,18830610\narmeabi-v7a,LDPI,hi,18785715,18830231\narm64-v8a,LDPI,am,18785902,18830418\narm64-v8a,TVDPI,ky,18786715,18831231\narmeabi-v7a,HDPI,ca,18785531,18830047\nx86_64,LDPI,nb,18786045,18830561\nx86,MDPI,fa,18786248,18830764\nx86_64,MDPI,mn,18786200,18830716\narmeabi-v7a,XXXHDPI,fr,18785831,18830347\nx86,TVDPI,kn,18787112,18831628\nx86,XXHDPI,et,18786313,18830829\nx86_64,MDPI,fi,18786105,18830621\nx86,TVDPI,bn,18787052,18831568\narmeabi-v7a,MDPI,lv,18785556,18830072\nx86_64,TVDPI,kn,18786995,18831511\narm64-v8a,XHDPI,my,18786118,18830634\nx86_64,HDPI,de,18786099,18830615\narm64-v8a,XXHDPI,ne,18786086,18830602\nx86,MDPI,ko,18786200,18830716\narmeabi-v7a,HDPI,pl,18785534,18830050\narmeabi-v7a,XHDPI,ro,18785646,18830162\narmeabi-v7a,LDPI,ca,18785517,18830033\nx86_64,LDPI,el,18786258,18830774\narmeabi-v7a,XXXHDPI,ca,18785645,18830161\narmeabi-v7a,HDPI,sw,18785525,18830041\nx86_64,XHDPI,pl,18786227,18830743\narm64-v8a,XXHDPI,sq,18785992,18830508\nx86_64,LDPI,fi,18786105,18830621\narmeabi-v7a,XHDPI,tl,18785616,18830132\narmeabi-v7a,XHDPI,bg,18785755,18830271\nx86,XHDPI,da,18786284,18830800\narm64-v8a,LDPI,bg,18785953,18830469\narmeabi-v7a,TVDPI,uk,18786365,18830881\narm64-v8a,XXXHDPI,en,18787151,18831667\narm64-v8a,XHDPI,bg,18786079,18830595\narm64-v8a,TVDPI,uz,18786578,18831094\narm64-v8a,TVDPI,cs,18786601,18831117\narmeabi-v7a,HDPI,hr,18785544,18830060\nx86,XHDPI,bs,18786350,18830866\narmeabi-v7a,TVDPI,mn,18786354,18830870\narm64-v8a,XXXHDPI,ta,18786139,18830655\narm64-v8a,LDPI,sw,18785835,18830351\narm64-v8a,XXHDPI,km,18786115,18830631\narm64-v8a,MDPI,gl,18785846,18830362\nx86_64,XXXHDPI,be,18786339,18830855\narmeabi-v7a,XXXHDPI,sr,18786274,18830790\narmeabi-v7a,HDPI,or,18785654,18830170\nx86_64,LDPI,am,18786159,18830675\nx86,XXHDPI,tr,18786343,18830859\nx86_64,XXHDPI,sq,18786249,18830765\nx86_64,LDPI,gu,18786233,18830749\narm64-v8a,XXHDPI,el,18786130,18830646\narm64-v8a,MDPI,ru,18785955,18830471\narm64-v8a,XXXHDPI,cs,18785994,18830510\narm64-v8a,XXXHDPI,uz,18785971,18830487\narm64-v8a,MDPI,sv,18785802,18830318\nx86,MDPI,ne,18786331,18830847\narm64-v8a,HDPI,ja,18785912,18830428\nx86_64,XXXHDPI,sq,18786248,18830764\narmeabi-v7a,XHDPI,kn,18785805,18830321\narm64-v8a,XXHDPI,de,18785957,18830473\narm64-v8a,XXHDPI,pt,18786174,18830690\nx86_64,XHDPI,sl,18786208,18830724\nx86,LDPI,bg,18786327,18830843\nx86,XXXHDPI,bs,18786352,18830868\nx86,XHDPI,de,18786328,18830844\nx86,LDPI,nl,18786164,18830680\narmeabi-v7a,MDPI,af,18785484,18830000\narm64-v8a,XXHDPI,hu,18786003,18830519\nx86,TVDPI,sw,18786944,18831460\narmeabi-v7a,XXXHDPI,lv,18785684,18830200\narm64-v8a,XHDPI,th,18786114,18830630\nx86,XXXHDPI,iw,18786346,18830862\nx86,XXHDPI,ur,18786398,18830914\narmeabi-v7a,XXHDPI,th,18785793,18830309\narmeabi-v7a,LDPI,am,18785578,18830094\narm64-v8a,MDPI,da,18785784,18830300\nx86_64,XXXHDPI,ko,18786211,18830727\nx86_64,HDPI,sw,18786106,18830622\nx86,XXXHDPI,gu,18786478,18830994\nx86_64,TVDPI,ml,18787035,18831551\nx86,MDPI,kk,18786320,18830836\narmeabi-v7a,XHDPI,eu,18785615,18830131\nx86,XXHDPI,sk,18786360,18830876\narmeabi-v7a,XXXHDPI,my,18785796,18830312\nx86_64,HDPI,th,18786259,18830775\nx86,XXXHDPI,ky,18786482,18830998\nx86,TVDPI,de,18786937,18831453\nx86,TVDPI,te,18787102,18831618\nx86,HDPI,be,18786342,18830858\narmeabi-v7a,MDPI,hr,18785530,18830046\narmeabi-v7a,LDPI,ar,18785563,18830079\nx86,MDPI,ta,18786385,18830901\nx86_64,HDPI,ca,18786112,18830628\narm64-v8a,HDPI,tr,18785854,18830370\nx86_64,XHDPI,am,18786285,18830801\narm64-v8a,MDPI,iw,18785844,18830360\narmeabi-v7a,LDPI,et,18785486,18830002\narmeabi-v7a,MDPI,ms,18785495,18830011\nx86,HDPI,bg,18786341,18830857\narm64-v8a,HDPI,bg,18785967,18830483\narm64-v8a,MDPI,nl,18785790,18830306\narmeabi-v7a,XXHDPI,eu,18785618,18830134\narm64-v8a,TVDPI,gu,18786711,18831227\narmeabi-v7a,LDPI,tl,18785490,18830006\narmeabi-v7a,XXHDPI,sr,18786275,18830791\nx86,XXHDPI,kn,18786506,18831022\nx86,XXHDPI,sl,18786328,18830844\narmeabi-v7a,XHDPI,nb,18785590,18830106\nx86,HDPI,bn,18786331,18830847\narmeabi-v7a,HDPI,ja,18785588,18830104\narmeabi-v7a,MDPI,or,18785640,18830156\nx86,HDPI,lt,18786260,18830776\narm64-v8a,TVDPI,mr,18786692,18831208\nx86_64,HDPI,ml,18786314,18830830\nx86_64,LDPI,en,18787280,18831796\narmeabi-v7a,XHDPI,fi,18785650,18830166\nx86,LDPI,gu,18786350,18830866\narm64-v8a,MDPI,ur,18785895,18830411\narmeabi-v7a,XHDPI,sk,18785659,18830175\nx86,HDPI,vi,18786292,18830808\narm64-v8a,HDPI,cs,18785880,18830396\narm64-v8a,LDPI,eu,18785813,18830329\nx86,XHDPI,lt,18786372,18830888\narmeabi-v7a,XHDPI,kk,18785748,18830264\narm64-v8a,LDPI,nl,18785790,18830306\nx86,LDPI,nb,18786162,18830678\nx86,MDPI,hy,18786292,18830808\narmeabi-v7a,HDPI,ka,18785651,18830167\narm64-v8a,MDPI,mk,18785953,18830469\nx86,LDPI,am,18786276,18830792\narmeabi-v7a,LDPI,bg,18785629,18830145\nx86_64,LDPI,ta,18786268,18830784\narm64-v8a,XHDPI,te,18786119,18830635\nx86,XXXHDPI,be,18786456,18830972\nx86,XHDPI,eu,18786313,18830829\narmeabi-v7a,XHDPI,bn,18785745,18830261\narm64-v8a,LDPI,iw,18785844,18830360\narmeabi-v7a,XXXHDPI,ms,18785623,18830139\nx86,TVDPI,iw,18786953,18831469\nx86_64,XXHDPI,ja,18786284,18830800\nx86,XXHDPI,mn,18786446,18830962\nx86,LDPI,ru,18786329,18830845\nx86,HDPI,kn,18786391,18830907\narmeabi-v7a,LDPI,in,18785483,18829999\narmeabi-v7a,TVDPI,pl,18786255,18830771\nx86_64,LDPI,lo,18786252,18830768\nx86,LDPI,km,18786360,18830876\narm64-v8a,MDPI,sl,18785825,18830341\nx86_64,LDPI,cs,18786123,18830639\narm64-v8a,XXXHDPI,sw,18785963,18830479\nx86_64,MDPI,en,18787280,18831796\narmeabi-v7a,XXXHDPI,si,18785788,18830304\narm64-v8a,HDPI,az,18785878,18830394\narm64-v8a,XXXHDPI,ml,18786171,18830687\narmeabi-v7a,HDPI,kn,18785693,18830209\narmeabi-v7a,TVDPI,tl,18786225,18830741\narm64-v8a,XXXHDPI,in,18785935,18830451\narm64-v8a,XHDPI,en,18787149,18831665\narm64-v8a,LDPI,pl,18785844,18830360\nx86,XXHDPI,de,18786331,18830847\nx86_64,XHDPI,my,18786375,18830891\nx86_64,XXHDPI,eu,18786199,18830715\nx86_64,XXHDPI,nl,18786176,18830692\nx86,MDPI,sk,18786231,18830747\narm64-v8a,HDPI,lt,18785886,18830402\nx86,XXHDPI,da,18786287,18830803\narm64-v8a,LDPI,tl,18785814,18830330\narm64-v8a,HDPI,bn,18785957,18830473\narmeabi-v7a,LDPI,ky,18785656,18830172\narmeabi-v7a,MDPI,fr,18785703,18830219\nx86,XXXHDPI,ca,18786343,18830859\nx86_64,XXXHDPI,nb,18786173,18830689\nx86,HDPI,es,18786381,18830897\narm64-v8a,XXXHDPI,sr,18786598,18831114\narmeabi-v7a,TVDPI,eu,18786224,18830740\narmeabi-v7a,XXXHDPI,de,18785632,18830148\nx86,HDPI,ky,18786368,18830884\narmeabi-v7a,MDPI,uk,18785630,18830146\nx86,XXHDPI,my,18786495,18831011\nx86_64,XXXHDPI,fi,18786233,18830749\narm64-v8a,XXXHDPI,ur,18786023,18830539\nx86_64,HDPI,lo,18786266,18830782\nx86,LDPI,be,18786328,18830844\nx86_64,MDPI,am,18786159,18830675\nx86,MDPI,si,18786358,18830874\narmeabi-v7a,XHDPI,lv,18785682,18830198\nx86_64,TVDPI,nl,18786782,18831298\narm64-v8a,MDPI,tl,18785814,18830330\nx86,HDPI,de,18786216,18830732\nx86,XXHDPI,in,18786310,18830826\nx86_64,XXXHDPI,ka,18786346,18830862\nx86_64,LDPI,sl,18786082,18830598\narm64-v8a,HDPI,de,18785842,18830358\narmeabi-v7a,XXHDPI,zh,18786229,18830745\narm64-v8a,XHDPI,sk,18785983,18830499\nx86,TVDPI,zh,18787533,18832049\nx86_64,LDPI,pt,18786302,18830818\narmeabi-v7a,HDPI,cs,18785556,18830072\narm64-v8a,TVDPI,mk,18786688,18831204\nx86,HDPI,uk,18786342,18830858\narm64-v8a,MDPI,lt,18785872,18830388\nx86_64,XHDPI,mr,18786340,18830856\nx86,MDPI,am,18786276,18830792\narm64-v8a,MDPI,ro,18785844,18830360\narm64-v8a,HDPI,ms,18785833,18830349\narm64-v8a,HDPI,lv,18785894,18830410\nx86_64,XHDPI,zu,18786232,18830748\nx86_64,TVDPI,am,18786894,18831410\nx86,TVDPI,km,18787095,18831611\narm64-v8a,XXHDPI,mr,18786086,18830602\nx86,XXHDPI,bs,18786353,18830869\nx86,XHDPI,az,18786364,18830880\narmeabi-v7a,XXHDPI,kn,18785808,18830324\narmeabi-v7a,MDPI,sk,18785533,18830049\nx86_64,HDPI,or,18786235,18830751\narm64-v8a,HDPI,ar,18785901,18830417\nx86_64,XXHDPI,sk,18786243,18830759\nx86,TVDPI,uk,18787063,18831579\narm64-v8a,TVDPI,sw,18786570,18831086\nx86,MDPI,mk,18786327,18830843\narmeabi-v7a,TVDPI,ms,18786230,18830746\narmeabi-v7a,MDPI,zh,18786100,18830616\narmeabi-v7a,XXXHDPI,fi,18785652,18830168\nx86_64,HDPI,ur,18786166,18830682\nx86_64,MDPI,sw,18786092,18830608\nx86_64,XXXHDPI,zu,18786234,18830750\narmeabi-v7a,XXHDPI,iw,18785649,18830165\nx86_64,XHDPI,ru,18786338,18830854\narm64-v8a,HDPI,ru,18785969,18830485\nx86,MDPI,ca,18786215,18830731\nx86_64,MDPI,sl,18786082,18830598\nx86_64,LDPI,ml,18786300,18830816\nx86_64,XXXHDPI,cs,18786251,18830767\nx86_64,MDPI,sr,18786727,18831243\nx86_64,HDPI,mn,18786214,18830730\narmeabi-v7a,XXHDPI,sq,18785668,18830184\narm64-v8a,XHDPI,sl,18785951,18830467\narmeabi-v7a,XXHDPI,hu,18785679,18830195\narm64-v8a,XHDPI,cs,18785992,18830508\narmeabi-v7a,XXXHDPI,eu,18785617,18830133\narm64-v8a,TVDPI,kk,18786681,18831197\narm64-v8a,HDPI,th,18786002,18830518\nx86,MDPI,sq,18786237,18830753\narm64-v8a,XXHDPI,gl,18785975,18830491\narm64-v8a,LDPI,lt,18785872,18830388\narmeabi-v7a,XHDPI,tr,18785642,18830158\narmeabi-v7a,MDPI,si,18785660,18830176\nx86,XHDPI,hr,18786354,18830870\narm64-v8a,MDPI,is,18785837,18830353\narm64-v8a,XXXHDPI,tl,18785942,18830458\nx86,HDPI,af,18786196,18830712\narmeabi-v7a,MDPI,sl,18785501,18830017\nx86_64,XXXHDPI,mn,18786328,18830844\nx86,XHDPI,kn,18786503,18831019\narm64-v8a,TVDPI,pa,18786676,18831192\narmeabi-v7a,XHDPI,ja,18785700,18830216\narm64-v8a,LDPI,fr,18786027,18830543\nx86_64,LDPI,bg,18786210,18830726\narm64-v8a,TVDPI,vi,18786639,18831155\narmeabi-v7a,XHDPI,bs,18785652,18830168\nx86_64,XXXHDPI,bg,18786338,18830854\nx86,XXHDPI,bn,18786446,18830962\narmeabi-v7a,MDPI,ur,18785571,18830087\narmeabi-v7a,TVDPI,lv,18786291,18830807\narmeabi-v7a,XXHDPI,et,18785615,18830131\narmeabi-v7a,XHDPI,pl,18785646,18830162\nx86,XXXHDPI,ro,18786346,18830862\narmeabi-v7a,XXHDPI,zu,18785654,18830170\narmeabi-v7a,TVDPI,in,18786218,18830734\nx86_64,TVDPI,sv,18786794,18831310\nx86_64,LDPI,si,18786241,18830757\narm64-v8a,HDPI,pl,18785858,18830374\narmeabi-v7a,HDPI,bn,18785633,18830149\nx86,XXXHDPI,ne,18786459,18830975\narm64-v8a,TVDPI,gl,18786581,18831097\narm64-v8a,XXHDPI,ka,18786090,18830606\nx86_64,XXHDPI,el,18786387,18830903\narmeabi-v7a,TVDPI,sq,18786274,18830790\narm64-v8a,MDPI,en,18787023,18831539\narmeabi-v7a,MDPI,bg,18785629,18830145\nx86_64,XHDPI,ka,18786344,18830860\nx86,TVDPI,as,18787126,18831642\narmeabi-v7a,HDPI,es,18785683,18830199\nx86_64,LDPI,in,18786064,18830580\narm64-v8a,TVDPI,de,18786563,18831079\narm64-v8a,HDPI,mn,18785957,18830473\narm64-v8a,XXHDPI,uk,18786083,18830599\nx86,HDPI,ro,18786232,18830748\narmeabi-v7a,XXXHDPI,cs,18785670,18830186\nx86_64,XXXHDPI,pa,18786326,18830842\nx86,XXHDPI,eu,18786316,18830832\narm64-v8a,MDPI,as,18786017,18830533\narmeabi-v7a,XXXHDPI,in,18785611,18830127\narm64-v8a,XHDPI,gu,18786102,18830618\nx86,XHDPI,is,18786337,18830853\narm64-v8a,HDPI,hr,18785868,18830384\nx86_64,LDPI,uk,18786211,18830727\nx86,XXHDPI,gl,18786349,18830865\narm64-v8a,TVDPI,te,18786728,18831244\narm64-v8a,TVDPI,ur,18786630,18831146\narm64-v8a,MDPI,tr,18785840,18830356\nx86_64,XHDPI,ja,18786281,18830797\narmeabi-v7a,LDPI,ro,18785520,18830036\nx86,XXXHDPI,et,18786312,18830828\narmeabi-v7a,XXHDPI,ca,18785646,18830162\narmeabi-v7a,MDPI,be,18785630,18830146\nx86_64,HDPI,zh,18786695,18831211\nx86,LDPI,sq,18786237,18830753\nx86_64,XHDPI,bn,18786326,18830842\narmeabi-v7a,XHDPI,zh,18786226,18830742\narm64-v8a,MDPI,pa,18785941,18830457\nx86_64,XXXHDPI,da,18786169,18830685\narmeabi-v7a,XXHDPI,lv,18785685,18830201\nx86_64,XXXHDPI,my,18786377,18830893\nx86,HDPI,fa,18786262,18830778\narmeabi-v7a,MDPI,ja,18785574,18830090\nx86_64,XXHDPI,ml,18786429,18830945\nx86_64,LDPI,ms,18786076,18830592\nx86,HDPI,lo,18786383,18830899\nx86_64,HDPI,uz,18786114,18830630\nx86,XXXHDPI,af,18786310,18830826\narm64-v8a,XHDPI,da,18785910,18830426\narm64-v8a,MDPI,et,18785810,18830326\narm64-v8a,XXXHDPI,lt,18786000,18830516\narmeabi-v7a,LDPI,sl,18785501,18830017\narm64-v8a,XXXHDPI,fr,18786155,18830671\nx86_64,MDPI,gl,18786103,18830619\nx86,XXXHDPI,mk,18786455,18830971\narmeabi-v7a,XXHDPI,fi,18785653,18830169\narmeabi-v7a,XXXHDPI,vi,18785708,18830224\narmeabi-v7a,LDPI,ta,18785687,18830203\nx86,LDPI,ms,18786193,18830709\nx86_64,LDPI,sr,18786727,18831243\nx86,LDPI,mr,18786331,18830847\narmeabi-v7a,XXXHDPI,pl,18785648,18830164\nx86_64,HDPI,tr,18786111,18830627\nx86_64,TVDPI,sw,18786827,18831343\narmeabi-v7a,HDPI,ko,18785516,18830032\narmeabi-v7a,LDPI,as,18785693,18830209\narmeabi-v7a,XXXHDPI,el,18785805,18830321\nx86,LDPI,el,18786375,18830891\narmeabi-v7a,HDPI,ta,18785701,18830217\nx86,XXHDPI,ky,18786483,18830999\nx86,MDPI,ar,18786261,18830777\narmeabi-v7a,LDPI,en,18786699,18831215\narmeabi-v7a,LDPI,ko,18785502,18830018\narm64-v8a,MDPI,sw,18785835,18830351\narm64-v8a,MDPI,ta,18786011,18830527\narm64-v8a,XXHDPI,kn,18786132,18830648\narmeabi-v7a,MDPI,eu,18785489,18830005\nx86,MDPI,hu,18786248,18830764\narm64-v8a,XHDPI,it,18785952,18830468\narmeabi-v7a,XXHDPI,uk,18785759,18830275\narmeabi-v7a,LDPI,hr,18785530,18830046\narmeabi-v7a,LDPI,es,18785669,18830185\narmeabi-v7a,XHDPI,fr,18785829,18830345\nx86,XHDPI,pl,18786344,18830860\nx86_64,HDPI,fa,18786145,18830661\narmeabi-v7a,TVDPI,gu,18786387,18830903\narmeabi-v7a,LDPI,mk,18785629,18830145\nx86,MDPI,tr,18786214,18830730\nx86_64,HDPI,ko,18786097,18830613\nx86_64,LDPI,ne,18786214,18830730\narmeabi-v7a,XHDPI,in,18785609,18830125\nx86_64,HDPI,ro,18786115,18830631\narmeabi-v7a,TVDPI,de,18786239,18830755\narm64-v8a,TVDPI,be,18786689,18831205\narmeabi-v7a,LDPI,fi,18785524,18830040\nx86_64,TVDPI,si,18786976,18831492\nx86,HDPI,el,18786389,18830905\nx86_64,TVDPI,ta,18787003,18831519\narmeabi-v7a,TVDPI,it,18786237,18830753\narm64-v8a,MDPI,it,18785826,18830342\nx86_64,TVDPI,iw,18786836,18831352\nx86,MDPI,fi,18786222,18830738\nx86,XXHDPI,fr,18786530,18831046\narmeabi-v7a,TVDPI,pt,18786456,18830972\narmeabi-v7a,MDPI,sw,18785511,18830027\nx86_64,LDPI,kn,18786260,18830776\nx86_64,XXHDPI,hr,18786240,18830756\nx86,XHDPI,lv,18786380,18830896\narm64-v8a,MDPI,te,18785993,18830509\narm64-v8a,HDPI,mr,18785971,18830487\nx86,XXHDPI,sw,18786338,18830854\nx86,XXHDPI,ne,18786460,18830976\nx86,MDPI,tl,18786188,18830704\nx86,LDPI,mn,18786317,18830833\narmeabi-v7a,TVDPI,zu,18786260,18830776\nx86_64,LDPI,sv,18786059,18830575\nx86,TVDPI,da,18786893,18831409\narm64-v8a,XXHDPI,ro,18785973,18830489\nx86,LDPI,de,18786202,18830718\nx86_64,TVDPI,km,18786978,18831494\nx86_64,TVDPI,be,18786946,18831462\nx86,MDPI,es,18786367,18830883\nx86,TVDPI,et,18786919,18831435\nx86_64,LDPI,km,18786243,18830759\nx86,HDPI,hu,18786262,18830778\narmeabi-v7a,XXXHDPI,sl,18785629,18830145\nx86_64,MDPI,is,18786094,18830610\nx86,LDPI,kk,18786320,18830836\narm64-v8a,XXXHDPI,nl,18785918,18830434\nx86_64,XHDPI,nb,18786171,18830687\narmeabi-v7a,XXHDPI,ru,18785760,18830276\nx86,TVDPI,in,18786916,18831432\nx86_64,MDPI,ro,18786101,18830617\narm64-v8a,TVDPI,lo,18786730,18831246\nx86_64,XXXHDPI,is,18786222,18830738\nx86_64,XXHDPI,sl,18786211,18830727\narm64-v8a,HDPI,is,18785851,18830367\narm64-v8a,LDPI,sl,18785825,18830341\narm64-v8a,TVDPI,sl,18786560,18831076\narmeabi-v7a,TVDPI,kn,18786414,18830930\narmeabi-v7a,XXHDPI,el,18785806,18830322\nx86,MDPI,cs,18786240,18830756\nx86_64,HDPI,ka,18786232,18830748\nx86,XHDPI,bn,18786443,18830959\narm64-v8a,XHDPI,es,18786119,18830635\nx86_64,TVDPI,hy,18786910,18831426\nx86_64,HDPI,hy,18786189,18830705\nx86_64,XXXHDPI,sv,18786187,18830703\nx86_64,HDPI,in,18786078,18830594\nx86,LDPI,in,18786181,18830697\narmeabi-v7a,TVDPI,bs,18786261,18830777\narmeabi-v7a,XHDPI,gu,18785778,18830294\nx86,XXHDPI,ko,18786329,18830845\nx86_64,HDPI,te,18786264,18830780\nx86_64,LDPI,az,18786121,18830637\narm64-v8a,TVDPI,tr,18786575,18831091\narm64-v8a,HDPI,et,18785824,18830340\narmeabi-v7a,XXXHDPI,mn,18785747,18830263\narmeabi-v7a,XXHDPI,in,18785612,18830128\nx86_64,XXHDPI,hy,18786304,18830820\narm64-v8a,LDPI,ta,18786011,18830527\nx86,TVDPI,fi,18786957,18831473\narmeabi-v7a,MDPI,as,18785693,18830209\narm64-v8a,XXXHDPI,bg,18786081,18830597\narm64-v8a,XXHDPI,es,18786122,18830638\nx86_64,HDPI,it,18786097,18830613\narm64-v8a,XXXHDPI,eu,18785941,18830457\narmeabi-v7a,MDPI,az,18785540,18830056\narm64-v8a,XXHDPI,ta,18786140,18830656\nx86_64,XXXHDPI,te,18786378,18830894\nx86_64,HDPI,gl,18786117,18830633\nx86,XXXHDPI,en,18787525,18832041\nx86_64,MDPI,kk,18786203,18830719\nx86_64,MDPI,in,18786064,18830580\nx86,XXHDPI,iw,18786347,18830863\narmeabi-v7a,MDPI,mk,18785629,18830145\narm64-v8a,MDPI,kk,18785946,18830462\narm64-v8a,TVDPI,nb,18786523,18831039\nx86,TVDPI,sv,18786911,18831427\nx86_64,TVDPI,it,18786818,18831334\narmeabi-v7a,HDPI,uz,18785533,18830049\narm64-v8a,LDPI,be,18785954,18830470\nx86_64,MDPI,fr,18786284,18830800\nx86_64,LDPI,lt,18786129,18830645\narm64-v8a,XHDPI,pt,18786171,18830687\narm64-v8a,XHDPI,fr,18786153,18830669\narmeabi-v7a,LDPI,fr,18785703,18830219\narm64-v8a,XHDPI,kk,18786072,18830588\narm64-v8a,XXXHDPI,vi,18786032,18830548\nx86_64,HDPI,bn,18786214,18830730\narmeabi-v7a,MDPI,th,18785664,18830180\narm64-v8a,XHDPI,iw,18785970,18830486\nx86,XXHDPI,uz,18786346,18830862\narmeabi-v7a,LDPI,or,18785640,18830156\nx86_64,TVDPI,da,18786776,18831292\nx86,XHDPI,as,18786517,18831033\narmeabi-v7a,XXXHDPI,gl,18785650,18830166\narm64-v8a,XXXHDPI,km,18786114,18830630\narm64-v8a,MDPI,si,18785984,18830500\nx86,TVDPI,mr,18787066,18831582\nx86,XXXHDPI,hi,18786541,18831057\narm64-v8a,XXHDPI,zu,18785978,18830494\nx86,XHDPI,or,18786464,18830980\narm64-v8a,TVDPI,ko,18786561,18831077\narm64-v8a,TVDPI,sq,18786598,18831114\nx86,LDPI,ta,18786385,18830901\narmeabi-v7a,HDPI,af,18785498,18830014\narm64-v8a,XHDPI,hi,18786165,18830681\narm64-v8a,MDPI,lv,18785880,18830396\nx86,XXHDPI,bg,18786456,18830972\nx86,LDPI,ka,18786335,18830851\narm64-v8a,LDPI,es,18785993,18830509\nx86_64,MDPI,kn,18786260,18830776\narmeabi-v7a,XXXHDPI,bs,18785654,18830170\nx86_64,XXXHDPI,af,18786193,18830709\narmeabi-v7a,XXHDPI,az,18785669,18830185\narm64-v8a,XHDPI,bs,18785976,18830492\nx86_64,XXXHDPI,uz,18786228,18830744\nx86_64,LDPI,gl,18786103,18830619\nx86,XHDPI,lo,18786495,18831011\narmeabi-v7a,TVDPI,hu,18786285,18830801\nx86_64,XHDPI,si,18786367,18830883\narmeabi-v7a,XXXHDPI,sw,18785639,18830155\narm64-v8a,HDPI,km,18786000,18830516\nx86,XHDPI,ko,18786326,18830842\nx86_64,XXHDPI,pl,18786230,18830746\nx86,LDPI,eu,18786187,18830703\nx86,HDPI,ms,18786207,18830723\narmeabi-v7a,TVDPI,bn,18786354,18830870\narmeabi-v7a,XHDPI,ky,18785782,18830298\narm64-v8a,XXXHDPI,mn,18786071,18830587\nx86_64,MDPI,hr,18786111,18830627\nx86,XHDPI,ur,18786395,18830911\nx86,XHDPI,pa,18786441,18830957\narmeabi-v7a,XXXHDPI,ur,18785699,18830215\narm64-v8a,XXXHDPI,te,18786121,18830637\narmeabi-v7a,LDPI,kk,18785622,18830138\narmeabi-v7a,MDPI,sq,18785539,18830055\narm64-v8a,XXXHDPI,ca,18785969,18830485\nx86_64,XHDPI,mn,18786326,18830842\narm64-v8a,HDPI,ro,18785858,18830374\nx86,XXXHDPI,is,18786339,18830855\narm64-v8a,XXXHDPI,nb,18785916,18830432\nx86,XXXHDPI,uk,18786456,18830972\nx86_64,TVDPI,mk,18786945,18831461\nx86,XXXHDPI,in,18786309,18830825\narmeabi-v7a,XXXHDPI,ro,18785648,18830164\narm64-v8a,MDPI,uz,18785843,18830359\narmeabi-v7a,TVDPI,lo,18786406,18830922\nx86_64,HDPI,as,18786288,18830804\nx86_64,XXHDPI,ar,18786273,18830789\narmeabi-v7a,XXXHDPI,sk,18785661,18830177\narmeabi-v7a,MDPI,it,18785502,18830018\narm64-v8a,MDPI,kn,18786003,18830519\nx86_64,XHDPI,it,18786209,18830725\narm64-v8a,TVDPI,ro,18786579,18831095\narm64-v8a,TVDPI,iw,18786579,18831095\narm64-v8a,MDPI,sq,18785863,18830379\nx86_64,XHDPI,ko,18786209,18830725\narmeabi-v7a,XXHDPI,bn,18785748,18830264\narm64-v8a,HDPI,nb,18785802,18830318\nx86_64,LDPI,zu,18786106,18830622\nx86,HDPI,fi,18786236,18830752\narmeabi-v7a,HDPI,be,18785644,18830160\nx86,TVDPI,hy,18787027,18831543\nx86,LDPI,lt,18786246,18830762\nx86,XHDPI,fa,18786374,18830890\narm64-v8a,HDPI,sq,18785877,18830393\narmeabi-v7a,HDPI,kk,18785636,18830152\narm64-v8a,TVDPI,zu,18786584,18831100\narm64-v8a,LDPI,uz,18785843,18830359\narmeabi-v7a,XHDPI,hu,18785676,18830192\nx86,XHDPI,in,18786307,18830823\nx86,TVDPI,lt,18786981,18831497\nx86,XXXHDPI,zh,18786926,18831442\nx86_64,XXXHDPI,gu,18786361,18830877\nx86_64,TVDPI,de,18786820,18831336\narm64-v8a,XXXHDPI,el,18786129,18830645\nx86,XXHDPI,vi,18786407,18830923\nx86_64,HDPI,eu,18786084,18830600\nx86_64,XXHDPI,de,18786214,18830730\narmeabi-v7a,XXHDPI,hi,18785844,18830360\nx86_64,MDPI,fa,18786131,18830647\nx86,XXHDPI,uk,18786457,18830973\narm64-v8a,TVDPI,tl,18786549,18831065\narm64-v8a,XXHDPI,fr,18786156,18830672\nx86,TVDPI,sq,18786972,18831488\narmeabi-v7a,XHDPI,my,18785794,18830310\nx86_64,XXHDPI,ru,18786341,18830857\narm64-v8a,TVDPI,fi,18786583,18831099\nx86_64,LDPI,fr,18786284,18830800\nx86_64,LDPI,hi,18786296,18830812\nx86_64,MDPI,gu,18786233,18830749\narm64-v8a,TVDPI,nl,18786525,18831041\nx86_64,LDPI,my,18786249,18830765"
+}

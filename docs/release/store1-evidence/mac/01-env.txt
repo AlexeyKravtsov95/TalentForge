@@ -1,0 +1,13 @@
+Darwin 25.3.0 arm64
+ProductName:		macOS
+ProductVersion:		26.3.1
+ProductVersionExtra:	(a)
+BuildVersion:		25D771280a
+openjdk version "17.0.19" 2026-04-21
+OpenJDK Runtime Environment Homebrew (build 17.0.19+0)
+OpenJDK 64-Bit Server VM Homebrew (build 17.0.19+0, mixed mode, sharing)
+Python 3.12.13
+build-tools=37.0.0
+Android Asset Packaging Tool (aapt) 2.20-15087165
+0.9
+b242cd61f1e9ca400e5c652cc6db61c48c7178f5 2026-10-19T14:10:10+07:00 Merge pull request #51 from AlexeyKravtsov95/fix/m5-ci-linux-action-label-wrap

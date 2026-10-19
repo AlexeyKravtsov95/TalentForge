@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "<worktree>/scripts/check_product_freshness.py", line 33, in <module>
+    from talent_data.cli.main import main as talent_data_main
+ModuleNotFoundError: No module named 'talent_data'

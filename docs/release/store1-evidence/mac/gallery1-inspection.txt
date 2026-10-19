@@ -1,0 +1,21 @@
+commit b242cd61f1e9ca400e5c652cc6db61c48c7178f5
+package io.github.alexeykravtsov95.talentforge versionCode 1 versionName 0.1.0
+minSdk 26 targetSdk 36 application-debuggable False
+label 'TalentForge' icon 'res/BW.xml' label-locales 85
+uses-permission ['android.permission.INTERNET', 'io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION']
+allowBackup false | debuggable (unset) | cleartext (unset) | localeConfig None
+providers ['org.jetbrains.compose.resources.AndroidContextProvider', 'androidx.startup.InitializationProvider']
+meta-data ['androidx.emoji2.text.EmojiCompatInitializer', 'androidx.lifecycle.ProcessLifecycleInitializer', 'androidx.profileinstaller.ProfileInstallerInitializer']
+queries []
+exported ['activity:io.github.alexeykravtsov95.talentforge.ui.MainActivity', 'receiver:androidx.profileinstaller.ProfileInstallReceiver']
+uses-feature [] uses-library ['androidx.window.extensions', 'androidx.window.sidecar']
+ABIs ['arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'] native libs ['libandroidx.graphics.path.so']
+dex class-name hits ['java_net_HttpURLConnection', 'java_net_Socket', 'android_webkit_WebView']
+dependency pattern hits [] (124 modules)
+service config files []
+bytes debug 23189832 release-unsigned 19806566 aab 19720150
+apksigner debug: verifies=True debug-cert=True
+apksigner release: verifies=False errors=['Missing META-INF/MANIFEST.MF']
+tests shared {'results_dir_present': True, 'suites': 32, 'tests': 371, 'failures': 0, 'errors': 0, 'skipped': 0}
+tests desktop {'results_dir_present': True, 'suites': 106, 'tests': 785, 'failures': 0, 'errors': 0, 'skipped': 53}
+lint {'Warning': 9} ids ['ApplySharedPref', 'IconLauncherShape', 'ObsoleteSdkInt', 'OldTargetApi', 'UseKtx']

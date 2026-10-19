@@ -1,0 +1,2 @@
+monkey2.txt:Events injected: 1500
+monkey1.txt:Events injected: 1500
