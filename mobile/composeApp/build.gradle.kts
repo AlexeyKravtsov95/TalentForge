@@ -999,6 +999,7 @@ androidComponents {
 // `-Dtalentforge.m5share2.screenshots` (M5.SHARE.2, build export/import) or
 // `-Dtalentforge.m5uiabout1.screenshots` (M5.UI.ABOUT.1, About and licenses) or
 // `-Dtalentforge.m5ota3.screenshots` (M5.OTA.3, talent data updates) or
+// `-Dtalentforge.m5tablet1.screenshots` (M5.UI.TABLET.1, tablet specialization headers) or
 // `-Dtalentforge.ota.remote=<dir>` (M5.OTA.4b, remote staging check) or
 // `-Dtalentforge.pr19.recording`
 // (PR #19, gesture frames) — skipped by default.
@@ -1072,6 +1073,9 @@ tasks.named<Test>("desktopTest") {
     }
     System.getProperty("talentforge.m5ota3.screenshots")?.let {
         systemProperty("talentforge.m5ota3.screenshots", it)
+    }
+    System.getProperty("talentforge.m5tablet1.screenshots")?.let {
+        systemProperty("talentforge.m5tablet1.screenshots", it)
     }
     System.getProperty("talentforge.pr19.recording")?.let {
         systemProperty("talentforge.pr19.recording", it)
