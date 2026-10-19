@@ -1,5 +1,6 @@
 package io.github.alexeykravtsov95.talentforge.ui.about
 
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
 import java.security.MessageDigest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -220,10 +221,23 @@ class OpenSourceNoticesTest {
     }
 
     @Test
-    fun noPrivacyPolicyLinkIsConfiguredUntilTheOwnerApprovesOne() {
-        // LR-5: the URL is an owner decision; the shipped configuration is "none" until then
-        assertNull(LegalLinks.privacyPolicyUrl)
-        assertNull(privacyPolicyLinkOf(LegalLinks.privacyPolicyUrl))
+    fun thePublishedPrivacyPolicyAddressesAreTheOwnersPages() {
+        assertEquals("https://legal.mythweld.com/privacy.html", LegalLinks.privacyPolicyUrlRu)
+        assertEquals("https://legal.mythweld.com/privacy-en.html", LegalLinks.privacyPolicyUrlEn)
+    }
+
+    @Test
+    fun thePrivacyPolicyUrlFollowsTheUiLanguage() {
+        assertEquals(LegalLinks.privacyPolicyUrlRu, privacyPolicyUrlOf(AppLanguage.RUSSIAN))
+        assertEquals(LegalLinks.privacyPolicyUrlEn, privacyPolicyUrlOf(AppLanguage.ENGLISH))
+    }
+
+    @Test
+    fun everyPublishedPrivacyPolicyUrlIsALegalHttpsLink() {
+        for (language in AppLanguage.entries) {
+            val url = privacyPolicyUrlOf(language)
+            assertEquals(url, privacyPolicyLinkOf(url))
+        }
     }
 
     @Test

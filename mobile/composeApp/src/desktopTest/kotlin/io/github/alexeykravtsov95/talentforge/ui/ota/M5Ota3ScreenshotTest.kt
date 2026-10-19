@@ -25,6 +25,7 @@ import io.github.alexeykravtsov95.talentforge.ui.SequentialIds
 import io.github.alexeykravtsov95.talentforge.ui.about.AboutScreen
 import io.github.alexeykravtsov95.talentforge.ui.about.AppVersion
 import io.github.alexeykravtsov95.talentforge.ui.about.BackupStatement
+import io.github.alexeykravtsov95.talentforge.ui.about.privacyPolicyUrlOf
 import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
 import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildAutosaveCoordinator
@@ -155,7 +156,7 @@ class M5Ota3ScreenshotTest {
                     AboutScreen(
                         appVersion = AppVersion("0.1.0", 1),
                         backupStatement = BackupStatement.AndroidBackupDisabled,
-                        privacyPolicyUrl = null,
+                        privacyPolicyUrl = privacyPolicyUrlOf(language),
                         onBack = {},
                         onOpenLicenses = {},
                         otaStatus = produceState(device.runtime.status.value) { device.runtime.status.collect { value = it } }.value,

@@ -25,6 +25,7 @@ import io.github.alexeykravtsov95.talentforge.ui.FixedClock
 import io.github.alexeykravtsov95.talentforge.ui.SequentialIds
 import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
 import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
+import io.github.alexeykravtsov95.talentforge.ui.lang.appLanguage
 import io.github.alexeykravtsov95.talentforge.ui.motion.LocalReducedMotion
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
 import java.io.File
@@ -93,7 +94,7 @@ class M5UiAbout1ScreenshotTest {
         AboutScreen(
             appVersion = AppVersion(name = "0.1.0", code = 1),
             backupStatement = BackupStatement.AndroidBackupDisabled,
-            privacyPolicyUrl = LegalLinks.privacyPolicyUrl,
+            privacyPolicyUrl = privacyPolicyUrlOf(appLanguage()),
             onBack = {},
             onOpenLicenses = {},
         )
