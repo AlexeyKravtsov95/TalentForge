@@ -132,6 +132,19 @@ object TalentInspectorMetrics {
     /** B3 06 RANK CHIP (see [RANK_CHIP_HEIGHT_DP]). */
     val RANK_CHIP_OVERLAP_DP = 8.dp
 
+    /** B3 06 RANK CHIP text size: "10.5 sp mono". */
+    const val RANK_CHIP_FONT_SP: Float = 10.5f
+
+    /**
+     * TF-RC1-BADGE-200: the font scale at which the chip text stops growing,
+     * so its line stays inside the fixed 15 dp chip. The line is the em box
+     * where the platform honours it (Android), but at least the font's own
+     * height (≈ 1.16 em on desktop/Skia): 10.5 sp × 1.2 × 1.16 ≈ 14.6 dp.
+     * Above it the text is held instead of being cut; the B3 geometry (chip
+     * height, connections starting below it) stays fixed.
+     */
+    const val RANK_CHIP_MAX_FONT_SCALE: Float = 1.2f
+
     /** B3 08: "Minimum text: … 12.5 sp for state lines." */
     const val STATE_LINE_SP: Float = 12.5f
 
@@ -237,4 +250,16 @@ fun talentInspectorCompactLayout(stripWidth: Dp, fontScale: Float): TalentInspec
     } else {
         TalentInspectorCompactLayout.SINGLE_ROW
     }
+}
+
+/**
+ * The font scale the rank chip text uses for a system [fontScale]: the system
+ * scale up to [TalentInspectorMetrics.RANK_CHIP_MAX_FONT_SCALE], so the text
+ * grows with large text but never past the chip it sits on (TF-RC1-BADGE-200).
+ * The full rank stays readable at any text size in the inspector, and the
+ * canvas itself zooms.
+ */
+fun rankChipFontScale(fontScale: Float): Float {
+    val scale = if (fontScale.isFinite() && fontScale > 0f) fontScale else 1f
+    return minOf(scale, TalentInspectorMetrics.RANK_CHIP_MAX_FONT_SCALE)
 }

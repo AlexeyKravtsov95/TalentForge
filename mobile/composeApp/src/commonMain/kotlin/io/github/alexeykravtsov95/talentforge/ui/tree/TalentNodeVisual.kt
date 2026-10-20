@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -39,11 +40,15 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeMotion
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeRadius
@@ -54,6 +59,9 @@ const val TALENT_NODE_ICON_TAG: String = "talent-node-icon"
 
 /** Test tag of a node body that shows the monogram fallback. */
 const val TALENT_NODE_MONOGRAM_TAG: String = "talent-node-monogram"
+
+/** Test tag of a node's rank / lock chip (B3 06). */
+const val TALENT_RANK_CHIP_TAG: String = "talent-rank-chip"
 
 /**
  * One talent node: the B3 implementation-safe 48 dp rounded square with its
@@ -459,6 +467,7 @@ private fun BoxScope.RankChip(
                 transformOrigin = TransformOrigin.Center
             }
             .height(TalentInspectorMetrics.RANK_CHIP_HEIGHT_DP)
+            .testTag(TALENT_RANK_CHIP_TAG)
             .then(
                 if (chipBackground == Color.Transparent) {
                     // Outline chips are see-through over the plain monogram
@@ -480,26 +489,40 @@ private fun BoxScope.RankChip(
             .padding(horizontal = 4.dp),
         contentAlignment = Alignment.Center,
     ) {
-        when (state) {
-            TalentNodeState.TIER_LOCKED -> PadlockGlyph(color = colors.textSecondary)
-            TalentNodeState.PREREQUISITE_LOCKED ->
-                BasicText(
-                    text = "↑",
-                    style = TalentRankChipStyle.copy(color = colors.textSecondary),
-                )
-
-            else ->
-                BasicText(
-                    text = rankText,
-                    style = TalentRankChipStyle.copy(
-                        color = if (state == TalentNodeState.NO_POINTS) {
-                            colors.textMuted
-                        } else {
-                            chipTextColor
-                        },
-                    ),
-                )
+        // TF-RC1-BADGE-200: the chip is 15 dp at every text size (B3 06), so
+        // its text follows the system font scale only while it still fits
+        val density = LocalDensity.current
+        CompositionLocalProvider(
+            LocalDensity provides Density(density.density, rankChipFontScale(density.fontScale)),
+        ) {
+            RankChipContent(state = state, rankText = rankText, chipTextColor = chipTextColor)
         }
+    }
+}
+
+/** The rank text, or the lock glyph that replaces it while locked. */
+@Composable
+private fun RankChipContent(state: TalentNodeState, rankText: String, chipTextColor: Color) {
+    val colors = talentForgeColors()
+    when (state) {
+        TalentNodeState.TIER_LOCKED -> PadlockGlyph(color = colors.textSecondary)
+        TalentNodeState.PREREQUISITE_LOCKED ->
+            BasicText(
+                text = "↑",
+                style = TalentRankChipStyle.copy(color = colors.textSecondary),
+            )
+
+        else ->
+            BasicText(
+                text = rankText,
+                style = TalentRankChipStyle.copy(
+                    color = if (state == TalentNodeState.NO_POINTS) {
+                        colors.textMuted
+                    } else {
+                        chipTextColor
+                    },
+                ),
+            )
     }
 }
 
@@ -618,10 +641,15 @@ private val TalentNodeMonogramStyle = TextStyle(
     fontWeight = FontWeight.SemiBold,
 )
 
-/** B3 06: "RANK CHIP 15 dp tall, 10.5 sp mono". */
+/**
+ * B3 06: "RANK CHIP 15 dp tall, 10.5 sp mono". The line height is the em box
+ * (1 em), not the chip height: the chip centres the line, and at the capped
+ * font scale ([rankChipFontScale]) the line still fits the 15 dp chip.
+ */
 private val TalentRankChipStyle = TextStyle(
     fontFamily = FontFamily.Monospace,
-    fontSize = 10.5.sp,
-    lineHeight = 15.sp,
+    fontSize = TalentInspectorMetrics.RANK_CHIP_FONT_SP.sp,
+    lineHeight = 1.em,
+    lineHeightStyle = LineHeightStyle(alignment = LineHeightStyle.Alignment.Center, trim = LineHeightStyle.Trim.Both),
     fontWeight = FontWeight.SemiBold,
 )
