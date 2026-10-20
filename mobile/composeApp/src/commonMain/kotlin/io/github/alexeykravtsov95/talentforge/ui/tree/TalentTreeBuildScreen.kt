@@ -32,7 +32,6 @@ import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_retry
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_autosave_failed
-import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_draft_title
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_dataset_downloading
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_dataset_progress
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_dataset_unavailable
@@ -69,6 +68,7 @@ import io.github.alexeykravtsov95.talentforge.ui.library.BuildAutosaveCoordinato
 import io.github.alexeykravtsov95.talentforge.ui.library.EditorFailure
 import io.github.alexeykravtsov95.talentforge.ui.library.EditorLoad
 import io.github.alexeykravtsov95.talentforge.ui.library.InlineNotice
+import io.github.alexeykravtsov95.talentforge.ui.library.buildDisplayTitle
 import io.github.alexeykravtsov95.talentforge.ui.library.loadEditorSession
 import io.github.alexeykravtsov95.talentforge.ui.share.BuildCodeSharing
 import io.github.alexeykravtsov95.talentforge.ui.share.BuildExport
@@ -244,9 +244,10 @@ private fun ReadyBuildEditor(
         repository = repository,
         onRenamed = { renamed -> persistedName = renamed.name },
     )
-    // a user name verbatim; an unnamed build shows the localized "Draft",
+    // TF-RC1-DRAFT-TITLE: the same title as Home / All Builds — a user name
+    // verbatim, an unnamed build the localized `<Class> build` fallback,
     // resolved here at display time — `record.name` stays null in storage
-    val buildTitle = persistedName ?: stringResource(Res.string.editor_draft_title)
+    val buildTitle = buildDisplayTitle(persistedName, record.build.classToken, session.classDisplayName)
     val lastOutcome by autosave.lastOutcome.collectAsState()
     val saveFailed = lastOutcome?.let { it.localId == record.localId && it.failed } == true
 

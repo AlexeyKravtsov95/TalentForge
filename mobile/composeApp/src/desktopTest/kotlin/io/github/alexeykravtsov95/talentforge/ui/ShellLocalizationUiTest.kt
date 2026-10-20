@@ -50,6 +50,7 @@ import io.github.alexeykravtsov95.talentforge.ui.library.relativeBuildTime
 import io.github.alexeykravtsov95.talentforge.ui.motion.LocalReducedMotion
 import io.github.alexeykravtsov95.talentforge.ui.newbuild.NewBuildScreen
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
+import io.github.alexeykravtsov95.talentforge.ui.tree.EditorCopy
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -338,6 +339,94 @@ class ShellLocalizationUiTest {
                 awaitText(copy.duplicated)
                 awaitText(copy.buildsTitle(5))
             }
+        }
+    }
+
+    /**
+     * TF-RC1-COPY-NAME: Duplicate never persists English copy. The copy of an
+     * unnamed build stays unnamed (its title is the localized `<Class> build`,
+     * derived at display time); the copy of a named build gets the suffix of
+     * the app language.
+     */
+    @Test
+    fun duplicateNamesFollowTheAppLanguageAndAnUnnamedCopyStaysUnnamed() {
+        for (language in AppLanguage.entries) {
+            val copy = ShellCopy.of(language)
+            storage = FakeBuildLibraryStorage()
+            ShellLibraryFixtures.persist(storage, clock, listOf(Build("MAGE"), Build("WARRIOR", name = "Raid")))
+            val mage = copy.unnamedTitle("MAGE")
+            onScreen(language) {
+                click(copy.allBuildsLink(2))
+                awaitText(copy.buildsTitle(2))
+
+                openRowActions(mage, copy)
+                click(copy.duplicate)
+                awaitText(copy.duplicated)
+                awaitText(copy.buildsTitle(3))
+                assertEquals(
+                    2,
+                    onAllNodesWithContentDescription(copy.rowActions(mage)).fetchSemanticsNodes().size,
+                    "$language: the unnamed copy shows the same localized title as its source",
+                )
+
+                openRowActions("Raid", copy)
+                click(copy.duplicate)
+                awaitText(copy.buildsTitle(4))
+                awaitText("Raid${copy.copySuffix}")
+                val shown = texts()
+                assertTrue(shown.none { "Draft" in it || "Черновик" in it }, "$language: no Draft title: $shown")
+                if (language == AppLanguage.RUSSIAN) {
+                    assertTrue(shown.none { "(copy)" in it }, "no English copy suffix on a Russian screen: $shown")
+                    assertNoEnglishShellCopy()
+                }
+            }
+            val names = assertIs<BuildLibraryOutcome.Loaded<List<LocalBuildRecord>>>(
+                LocalBuildRepository(storage, clock, SequentialIds()).load(),
+            ).value.map { it.name }
+            assertEquals(2, names.count { it == null }, "$language: the unnamed copy is persisted unnamed")
+            assertEquals(
+                listOf("Raid", "Raid${copy.copySuffix}"),
+                names.filterNotNull().sorted(),
+                "$language: only the named copy carries a (localized) suffix",
+            )
+        }
+    }
+
+    /**
+     * TF-RC1-DRAFT-TITLE: one unnamed build has ONE title — the localized
+     * `<Class> build` — on Home, All Builds and the editor header.
+     */
+    @Test
+    fun anUnnamedBuildHasTheSameTitleOnHomeAllBuildsAndTheEditor() {
+        for (language in AppLanguage.entries) {
+            val copy = ShellCopy.of(language)
+            storage = FakeBuildLibraryStorage()
+            ShellLibraryFixtures.persist(storage, clock, listOf(Build("WARRIOR")))
+            val warrior = copy.unnamedTitle("WARRIOR")
+            onScreen(language) {
+                awaitText(copy.continueEditing)
+                assertShows(warrior) // Home's Continue card
+
+                click(copy.allBuildsLink(1))
+                awaitText(copy.buildsTitle(1))
+                assertShows(warrior)
+                assertA11y(copy.openAction(warrior))
+                onAllNodes(SemanticsMatcher("open $warrior") { node ->
+                    node.config.getOrNull(SemanticsActions.OnClick)?.label == copy.openAction(warrior)
+                }).onFirst().performClick()
+
+                val editorReady = EditorCopy.of(language).buildActionsOpen
+                waitUntil(timeoutMillis = 20_000) {
+                    onAllNodesWithContentDescription(editorReady).fetchSemanticsNodes().isNotEmpty()
+                }
+                awaitText(warrior) // the editor header
+                val shown = texts()
+                assertTrue(shown.none { it == "Draft" || it == "Черновик" }, "$language: no separate Draft title: $shown")
+            }
+            val stored = assertIs<BuildLibraryOutcome.Loaded<List<LocalBuildRecord>>>(
+                LocalBuildRepository(storage, clock, SequentialIds()).load(),
+            ).value.single()
+            assertEquals(null, stored.name, "$language: the display title is never persisted")
         }
     }
 

@@ -267,7 +267,7 @@ class EditorLocalizationUiTest {
                 awaitText(copy.openingBuild)
                 if (language == AppLanguage.RUSSIAN) assertNoEnglishEditorCopy("opening")
                 gate.release()
-                awaitText(copy.draft)
+                awaitText(copy.unnamedWarriorTitle)
             }
         }
     }
@@ -526,7 +526,7 @@ class EditorLocalizationUiTest {
             val repository = repositoryOver(storage)
             val draft = warriorDraft(repository)
             onEditor(language, content = buildScreen(draft.localId, repository)) {
-                awaitText(copy.draft)
+                awaitText(copy.unnamedWarriorTitle)
                 // writes fail from now on — opening the build already wrote successfully
                 storage.failWrites = true
                 select("Improved Rend")
@@ -660,7 +660,7 @@ class EditorLocalizationUiTest {
                     }
                 }
             }
-            awaitText(EditorCopy.English.draft)
+            awaitText(EditorCopy.English.unnamedWarriorTitle)
             waitForIdle()
             val opened = storage.writeCount
             select("Improved Rend")
@@ -675,13 +675,13 @@ class EditorLocalizationUiTest {
                 uiLanguage.language = AppLanguage.RUSSIAN
                 language = AppLanguage.RUSSIAN
             }
-            awaitText(EditorCopy.Russian.draft)
+            awaitText(EditorCopy.Russian.unnamedWarriorTitle)
             assertNoEnglishEditorCopy("build screen after the switch")
             waitForIdle()
             assertEquals(writes, storage.writeCount, "a language change never autosaves")
             assertEquals(payload, storage.payload, "the stored build is byte-identical")
         }
-        assertNull(storedRecords(storage).single().name, "the localized Draft title is never persisted")
+        assertNull(storedRecords(storage).single().name, "the localized unnamed-build title is never persisted")
     }
 
     // ------------------------------------------------------------------ 14. nameless and unavailable talents
@@ -736,7 +736,7 @@ class EditorLocalizationUiTest {
     // ------------------------------------------------------------------ 15. user build titles
 
     @Test
-    fun userBuildTitlesStayVerbatimAndTheDraftTitleIsLocalized() {
+    fun userBuildTitlesStayVerbatimAndTheUnnamedTitleIsTheLocalizedClassBuild() {
         for (language in AppLanguage.entries) {
             val copy = EditorCopy.of(language)
             val storage = FakeBuildLibraryStorage()
@@ -745,11 +745,14 @@ class EditorLocalizationUiTest {
             val named = warriorDraft(repository)
             assertIs<BuildLibraryOutcome.Loaded<LocalBuildRecord>>(repository.renameBuild(named.localId, "Arms — PvP Draft"))
             onEditor(language, content = buildScreen(unnamed.localId, repository)) {
-                awaitText(copy.draft)
+                // TF-RC1-DRAFT-TITLE: the same `<Class> build` title Home and
+                // All Builds show — never the former "Draft" / "Черновик"
+                awaitText(copy.unnamedWarriorTitle)
+                assertTrue("Draft" !in texts() && "Черновик" !in texts(), "no separate Draft title in the editor")
             }
             onEditor(language, content = buildScreen(named.localId, repository)) {
                 awaitText("Arms — PvP Draft")
-                assertTrue(copy.draft !in texts(), "a user name is never replaced by the Draft title")
+                assertTrue(copy.unnamedWarriorTitle !in texts(), "a user name is never replaced by the unnamed-build title")
             }
             assertEquals(
                 setOf(null, "Arms — PvP Draft"),

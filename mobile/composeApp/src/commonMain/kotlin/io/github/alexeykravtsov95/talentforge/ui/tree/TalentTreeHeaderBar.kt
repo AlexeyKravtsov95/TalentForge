@@ -52,7 +52,7 @@ import org.jetbrains.compose.resources.stringResource
  * meta 12 sp / counter mono 16 sp, the title column takes all the free width,
  * and on narrow screens or large text the counter leads the meta line
  * ([talentTreeHeaderLayout]). Since M5.1 the title is the two-line ADAPT 1 form —
- * line 1 the build name (or "Draft"), line 2 `class · game` — and the back
+ * line 1 the build name (or `<Class> build`), line 2 `class · game` — and the back
  * control appears when the screen is not the root (M4 kept the single-line
  * class title because no navigation existed). There is still no spec row of
  * the header's own: the specialization names live in the section tabs

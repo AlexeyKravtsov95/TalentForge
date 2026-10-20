@@ -6,6 +6,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.click
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -31,6 +32,7 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
@@ -276,10 +278,13 @@ class BuildManagementUiTest {
 
         awaitText("Build duplicated")
         awaitText("Builds 3")
-        awaitText("Draft (copy)")
+        // TF-RC1-COPY-NAME: the copy of the unnamed target stays unnamed — a
+        // second "Mage build" row, nothing English persisted for it
+        composeRule.onAllNodesWithContentDescription("build actions for Mage build").assertCountEquals(2)
         // the copy is NOT opened: still on All Builds, no editor behind
         composeRule.onNodeWithContentDescription("open build actions").assertDoesNotExist()
-        assertTrue(storage.payload!!.contains("Draft (copy)"))
+        assertFalse(storage.payload!!.contains("(copy)"))
+        assertFalse(storage.payload!!.contains("Draft"))
     }
 
     @Test

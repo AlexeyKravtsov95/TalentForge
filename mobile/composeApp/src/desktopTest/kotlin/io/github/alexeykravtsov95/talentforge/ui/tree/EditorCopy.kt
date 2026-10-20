@@ -11,7 +11,8 @@ import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
 internal sealed class EditorCopy(val language: AppLanguage) {
 
     // header and navigation
-    abstract val draft: String
+    /** The editor title of an unnamed Warrior build — the same `<Class> build` fallback Home shows (TF-RC1-DRAFT-TITLE). */
+    abstract val unnamedWarriorTitle: String
     abstract val undoAction: String
     abstract val redoAction: String
     abstract val buildActionsOpen: String
@@ -116,7 +117,7 @@ internal sealed class EditorCopy(val language: AppLanguage) {
     /** Every fixed (parameter-free) phrase — the set no other language may show. */
     val fixedPhrases: Set<String>
         get() = setOf(
-            draft, undoAction, redoAction, buildActionsOpen, openingBuild, openFailed, loadingTalentData,
+            unnamedWarriorTitle, undoAction, redoAction, buildActionsOpen, openingBuild, openFailed, loadingTalentData,
             talentDataFailed, autosaveFailed, retry, buildActionsTitle, buildActionsClose, resetTalents, undo,
             fitTree, fitTreeAction, returnAction, selectTalent, clearSelection, selectPrompt, expand, collapse,
             expandAction, collapseAction, rankCaption, max, maxRankReached, show, available, inProgress, maxed,
@@ -126,7 +127,7 @@ internal sealed class EditorCopy(val language: AppLanguage) {
         ) + TalentNodeState.entries.map { nodeState(it) }
 
     object English : EditorCopy(AppLanguage.ENGLISH) {
-        override val draft = "Draft"
+        override val unnamedWarriorTitle = "Warrior build"
         override val undoAction = "Undo talent change"
         override val redoAction = "Redo talent change"
         override val buildActionsOpen = "open build actions"
@@ -208,7 +209,7 @@ internal sealed class EditorCopy(val language: AppLanguage) {
     }
 
     object Russian : EditorCopy(AppLanguage.RUSSIAN) {
-        override val draft = "Черновик"
+        override val unnamedWarriorTitle = "Билд воина"
         override val undoAction = "Отменить изменение талантов"
         override val redoAction = "Повторить изменение талантов"
         override val buildActionsOpen = "открыть действия с билдом"

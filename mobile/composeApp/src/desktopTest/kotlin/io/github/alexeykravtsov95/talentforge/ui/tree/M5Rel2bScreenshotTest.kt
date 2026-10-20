@@ -157,7 +157,7 @@ class M5Rel2bScreenshotTest {
             val tag = if (language == AppLanguage.RUSSIAN) "ru" else "en"
             val protection = if (language == AppLanguage.RUSSIAN) "Защита" else "Protection"
             // an unnamed build, as the app shows it: the localized Draft title
-            fun state(scenario: InspectorScenario) = warrior.copy(buildState = scenario.build, buildTitle = copy.draft)
+            fun state(scenario: InspectorScenario) = warrior.copy(buildState = scenario.build, buildTitle = copy.unnamedWarriorTitle)
 
             // 393 × 852: compact, expanded, both locks, actions sheet, reset notice, Back chip
             onScreen(language, content = editor(state(available))) {
@@ -183,7 +183,7 @@ class M5Rel2bScreenshotTest {
                 onNodeWithText(copy.resetTalents).performClick()
                 shoot("m5rel2b-$tag-393x852-reset-feedback.png")
             }
-            onScreen(language, content = editor(crossSection.first.copy(buildTitle = copy.draft))) {
+            onScreen(language, content = editor(crossSection.first.copy(buildTitle = copy.unnamedWarriorTitle))) {
                 onNodeWithText(protection).performClick()
                 waitForIdle()
                 select(crossSection.second)
@@ -249,7 +249,7 @@ class M5Rel2bScreenshotTest {
                 runBlocking { createClassDraft(repository, datasets, ClassToken("WARRIOR")) },
             ).record
             onScreen(language, content = buildScreen(draft.localId, repository)) {
-                awaitText(copy.draft)
+                awaitText(copy.unnamedWarriorTitle)
                 storage.failWrites = true // opening the build already wrote successfully
                 select("Improved Rend")
                 onNodeWithContentDescription(copy.addRank("Improved Rend")).performClick()

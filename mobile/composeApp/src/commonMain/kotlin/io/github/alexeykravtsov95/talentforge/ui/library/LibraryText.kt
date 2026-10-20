@@ -62,20 +62,26 @@ fun localizedClassName(classToken: ClassToken, datasetName: String?): String? {
     return stringResource(resource)
 }
 
+/** A build card's DISPLAY title: [buildDisplayTitle] of the card's record. */
+@Composable
+fun buildCardTitle(card: BuildCardModel): String =
+    buildDisplayTitle(card.record.name, card.record.build.classToken, card.classDisplayName)
+
 /**
- * A build card's DISPLAY title: a user-provided name always wins, verbatim
- * (an explicitly named `Draft` included); an unnamed build shows the
- * localized `<Class> build` fallback (`Mage build` / `Билд мага`). Derived,
- * never persisted — `record.name` stays `null` in storage, and the rename
- * dialog still opens with an empty field. A token outside the shipped
- * table uses the generic form with the dataset name or, unresolved, the
- * token capitalized.
+ * The ONE display title of a build — Home, All Builds, the management
+ * overlays and the editor header all use it (TF-RC1-DRAFT-TITLE): a
+ * user-provided [name] always wins, verbatim (an explicitly named `Draft`
+ * included); an unnamed build (`name == null`) shows the localized
+ * `<Class> build` fallback (`Mage build` / `Билд мага`). Derived, never
+ * persisted — `record.name` stays `null` in storage, and the rename dialog
+ * still opens with an empty field. A token outside the shipped table uses
+ * the generic form with [classDisplayName] (the dataset's class name) or,
+ * unresolved, the token capitalized.
  */
 @Composable
-fun buildCardTitle(card: BuildCardModel): String {
-    card.record.name?.let { return it }
-    val token = card.record.build.classToken
-    classCopy[token.value]?.let { return stringResource(it.unnamedBuildTitle) }
-    val className = card.classDisplayName ?: token.value.lowercase().replaceFirstChar { it.uppercase() }
+fun buildDisplayTitle(name: String?, classToken: ClassToken, classDisplayName: String?): String {
+    name?.let { return it }
+    classCopy[classToken.value]?.let { return stringResource(it.unnamedBuildTitle) }
+    val className = classDisplayName ?: classToken.value.lowercase().replaceFirstChar { it.uppercase() }
     return stringResource(Res.string.build_title_other_class, className)
 }

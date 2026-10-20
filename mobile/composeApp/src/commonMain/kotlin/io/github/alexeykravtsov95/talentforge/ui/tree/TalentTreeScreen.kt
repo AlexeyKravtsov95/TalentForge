@@ -134,8 +134,8 @@ sealed interface TalentTreeUiState {
         val buildState: BuildState,
         /**
          * Header line 1: the build's user-given name verbatim, or the
-         * localized "Draft" while unnamed (resolved by the host at display
-         * time, never persisted).
+         * localized `<Class> build` while unnamed (`buildDisplayTitle`,
+         * resolved by the host at display time, never persisted).
          */
         val buildTitle: String,
         /**

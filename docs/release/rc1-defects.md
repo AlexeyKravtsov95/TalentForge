@@ -30,6 +30,10 @@ branch: the product dataset is `1.60.1.70450`, and the freshness check reports `
 (2026-10-17T19:10:13Z). It takes effect when the M5.DATA.4 PR is merged; the RC.3
 re-check within 24 h stays mandatory. Evidence: [data4-evidence](data4-evidence/README.md).
 
+**M5.RC.3 naming fix status (2026-10-20).** TF-RC1-COPY-NAME and TF-RC1-DRAFT-TITLE are
+**RESOLVED** in code (branch `fix/m5-rc3-build-naming`); both still need the RU device check on the
+owner-signed release build. One naming rule now applies everywhere; details under each defect.
+
 No P0 was found. The audit found no evidence of saved-build corruption or silent loss.
 The device-level checks behind that statement ran on an Android emulator only (see the matrix); the physical-device run is UNVERIFIED.
 
@@ -257,6 +261,12 @@ The device-level checks behind that statement ran on an Android emulator only (s
 - **Repro:** set the device to Russian, then All Builds → ⋯ → Duplicate. The new row is named `… (copy)`.
 - **Resolution:** a localized copy-name policy. This is a persistence change and needs its own decision.
 - **Verification:** a unit test plus a RU device check.
+- **M5.RC.3: RESOLVED in code.** Decision taken from the existing storage model (`name == null` is a Draft):
+  - **A copy of an unnamed build stays unnamed** (`name == null`). Its title is the localized `<Class> build` (`Mage build` / `Билд мага`), derived at display time like its source. No display string is persisted, so a later language switch re-localizes it.
+  - **A copy of a named build** gets the suffix of the app language at the moment of duplication: `builds_copy_name_suffix` = ` (copy)` / ` (копия)`. `LocalBuildRepository.duplicateBuild(localId, copyNameSuffix)` takes the suffix from the UI and holds no UI copy itself. The suffix is part of a user-visible name and is persisted, exactly like the former English suffix. It is not rewritten on a later language switch.
+  - **Storage contract unchanged:** the private library envelope (`storageVersion`, record fields) is the same. Only the value a duplicate writes into `name` changed. Existing `Draft (copy)` / `… (copy)` names already on a device stay as they are: they are user data now, and nothing rewrites them.
+  - **Tests:** `LocalBuildRepositoryManagementTest` (an unnamed copy stays unnamed; a Russian suffix is persisted verbatim; a blank or overlong suffix is rejected before storage is touched), `ShellLocalizationUiTest.duplicateNamesFollowTheAppLanguageAndAnUnnamedCopyStaysUnnamed` (EN and RU, UI plus stored names), `BuildManagementUiTest.duplicatingAddsAnIndependentRowAndShowsTheSuccessNotice`.
+  - **Still open:** the RU check on a device with the owner-signed build.
 
 ### TF-RC1-DRAFT-TITLE — The same unnamed build is titled differently on Home/All Builds and in the editor
 
@@ -268,6 +278,12 @@ The device-level checks behind that statement ran on an Android emulator only (s
 - **Expected:** one consistent naming rule. **Actual:** three names for one record.
 - **Resolution:** a product/design decision. Then align `TalentTreeBuildScreen` with `BuildCardModel.title`, or document the rule.
 - **Verification:** UI tests for an unnamed build's title on Home, All Builds and the editor.
+- **M5.RC.3: RESOLVED in code.** The rule is the existing display-only `<Class> build` fallback, applied in every place:
+  - `buildDisplayTitle(name, classToken, classDisplayName)` (`ui/library/LibraryText.kt`) is the one title function. Home, All Builds and the management overlays use it through `buildCardTitle`. The editor header, its rename dialog and its share sheet now use it too.
+  - The editor no longer shows "Draft" / "Черновик". The unused `editor_draft_title` string is removed.
+  - Duplication no longer creates a third name (see TF-RC1-COPY-NAME).
+  - **Tests:** `ShellLocalizationUiTest.anUnnamedBuildHasTheSameTitleOnHomeAllBuildsAndTheEditor` (EN and RU; Home → All Builds → editor; nothing persisted) and `EditorLocalizationUiTest` (the editor's unnamed title is `Warrior build` / `Билд воина`, never `Draft` / `Черновик`).
+  - **Still open:** the RU check on a device with the owner-signed build.
 
 ### TF-RC1-BADGE-200 — Rank badge text clipped at 200 % font scale
 
