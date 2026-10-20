@@ -1,0 +1,14 @@
+{
+  "keys": [
+    {
+      "keyId": "tf-prod-2026a",
+      "algorithm": "ecdsa-p256-sha256",
+      "publicKeySpki": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEode8Lk5MV8iMB3qMIPeJWO9Yd1t3j9FdXZfSRZ4m3G9VFgIRAc9pMhYnylTVeonyvRaJL2pW3CuAgYN0xetQqQ=="
+    },
+    {
+      "keyId": "tf-prod-2026b",
+      "algorithm": "ecdsa-p256-sha256",
+      "publicKeySpki": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEv/PyI3N9mNWbFSKeo8AJ1ddv577hRG4gG5vA5N8TdWhCa3WdQEL41THeCX9Z9UoxZ4LvADTebVNb8nKIzeq/CA=="
+    }
+  ]
+}
