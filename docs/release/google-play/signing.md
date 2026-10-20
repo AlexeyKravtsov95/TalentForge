@@ -7,7 +7,7 @@
 | Builds on | [Android release signing guide](../android-release-signing.md) (M5.RC.2b) · [multi-store signing strategy](../appgallery/multi-store-signing.md) (M5.GALLERY.1) |
 | Implemented by | `mobile/composeApp/build.gradle.kts` (the `play` build type, upload settings, `checkPlayUploadSigning`, `checkPlayPublishable`, `refusePlayApk`, `bundlePublishablePlay`), `scripts/verify_play_bundle.py`, `scripts/play_signing_selftest.sh` |
 | Sources checked | 2026-10-19, official Google pages listed in [§10](#10-sources) |
-| Status | Engineering done and verified with **two temporary test keys** only. **No production key exists.** Nothing was uploaded to Play Console. Every step marked 🔑 is an owner action. |
+| Status | Engineering done and verified with **two temporary test keys** only. **App signing keystore created locally by the owner (2026-10-20, unverified); the separate upload key is not confirmed** ([RC.3 §2.1](../rc3-readiness.md#21-production-signing-status-release-gate-open)). Nothing was uploaded to Play Console. Every step marked 🔑 is an owner action. |
 
 ## 1. The scheme in one table
 

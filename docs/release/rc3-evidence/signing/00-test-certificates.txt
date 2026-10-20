@@ -1,0 +1,6 @@
+app-test-cert-sha256 b149e7c6a1bff192f39b3d3305a53c0cf02955ca8883ad1ec6f76893ea5735d7
+upload-test-cert-sha256 ba7d20027fd789c726d52741725c898880ddb0fbb60e37099507e441a2ce1e0c
+build-v1 exit=0
+build-apks exit=0
+build-v2 exit=0
+secret scan: clean
