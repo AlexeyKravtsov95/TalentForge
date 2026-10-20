@@ -13,7 +13,7 @@
 
 | Store | Verdict | Engineering | What blocks publication |
 |---|---|---|---|
-| **RuStore** | **NOT READY** | GO | production signing gate (§2.1): app signing keystore created by the owner, but backups, restore, certificate fingerprint and the first signed APK are not verified (TF-RC1-SIGNING); first public `versionCode`/`versionName` (S-5); store screenshots from the release build; LR-1…LR-5 sign-off; console declarations (age rating, data safety); written decision on the open P2 defects (§5) |
+| **RuStore** | **NOT READY** | GO | production signing gate (§2.1): app signing keystore created by the owner, but backups, restore, certificate fingerprint and the first signed APK are not verified (TF-RC1-SIGNING); the public `versionCode` raise (S-5 decided in M5.RELEASE.VERSION: test `1`, public `2`, [android-versioning](android-versioning.md)); store screenshots from the release build; LR-1…LR-5 sign-off; console declarations (age rating, data safety); written decision on the open P2 defects (§5) |
 | **Huawei AppGallery** | **NOT READY** | GO | everything RuStore needs, plus the Huawei device pass H-1…H-14 (§4.3), which needs a physical Huawei device |
 | **Google Play** | **NOT READY** | GO | production signing gate (§2.1), plus the separate upload key (not confirmed); Play App Signing set to the owner's key **before** the first upload (U-1…U-3); App content (Data safety and the other declarations); feature graphic and phone screenshots; closed test (12+ testers, 14 days); production access; P-12 written risk acceptance |
 
@@ -26,7 +26,7 @@ emulator found no crash and no P0/P1 defect. It does not replace the owner and l
 | Area | Result | Evidence |
 |---|---|---|
 | Open blockers carried over | TF-RC1-SIGNING (P1, production signing; OPEN, see §2.1), LR-1…LR-5 (legal), STORE1-SHOTS, VERSION, CONSOLE, M5.RC.3 Huawei/physical-device runs. TF-RC1-ICON stays OPEN until the owner-signed APK and a physical device are checked. P2: TF-RC1-COPY-NAME, TF-RC1-DRAFT-TITLE, TF-RC1-BADGE-200 reproduced (§5); TF-RC1-ANDROID-CONFIG unchanged | [rc1-defects](rc1-defects.md), [store1 audit §9](store1-release-audit.md) |
-| Versioning | `versionCode 1` / `versionName 0.1.0` (placeholders, owner decision S-5). The APK and the AAB of one commit carry the same values; the code sequence is shared by all three stores ([google-play/signing §6.4](google-play/signing.md#64-versions-across-the-three-stores)) | validator reports |
+| Versioning | At the audited commit: `versionCode 1` / `versionName 0.1.0` (placeholders). Since M5.RELEASE.VERSION: `1` / `1.0.0` for the test build; the public build gets `2` / `1.0.0` (or the next unused code) in a separate reviewed change ([android-versioning](android-versioning.md)). The APK and the AAB of one commit carry the same values; the code sequence is shared by all three stores ([google-play/signing §6.4](google-play/signing.md#64-versions-across-the-three-stores)) | validator reports |
 | Localization | RU/EN UI and talent texts switch with the app locale; Compose string resources (`values-ru`) are in the **base** APK assets, so Play language splits cannot drop them. The launcher label stays `TalentForge`. No `localeConfig`: the APK advertises AndroidX locales (TF-RC1-ANDROID-CONFIG, cosmetic) | emulator run (§4.3); `unzip -l` of the Play-like `base-master.apk` |
 | Legal documents | Published privacy policy RU/EN checked (§3). Store listings: Variant A of all four drafts contains none of *World of Warcraft*, *Warcraft*, *Blizzard*, *WoW*, *Forever*; Play short/full text 67/1465 (EN) and 72/1626 (RU) characters, within 80/4000 | listing drafts |
 | Rights to assets | **Not cleared.** LR-1…LR-3 (game data, icons, texts, class artwork, trademarks) remain OPEN. The owner's 2026-10-19 decision to proceed covers Google Play preparation only and does not establish any right ([legal1-release-options](legal1-release-options.md)) | [rights assessment](legal1-rights-assessment.md) |
@@ -157,7 +157,7 @@ separate change, not part of this audit).
 ## 6. Owner actions, in order
 
 1. 🔑 Finish production signing (§2.1): the app signing keystore exists; make and verify two offline backups with a restore drill, record its SHA-256 and check it is RSA 4096; create the **separate upload key** and record its SHA-256 (the two must differ) — [signing guide §1–§2](android-release-signing.md), [Play signing §4](google-play/signing.md#4-creating-the-keys-).
-2. Decide the first public `versionCode`/`versionName` (S-5) in a reviewed change; tag the release commit after the checklist.
+2. Versions (S-5) decided and the test values applied in M5.RELEASE.VERSION (test `1` / `1.0.0`, public `2` / `1.0.0`). Before the public build, raise `versionCode` in a reviewed change ([procedure](android-versioning.md#5-raising-versioncode-before-the-public-release)); tag the release commit after the checklist.
 3. Decide the open P2 defects (§5): fix, or accept in writing.
 4. Legal: LR-1…LR-5 sign-off for RuStore/AppGallery; P-12 for Google Play.
 5. Build and verify the artifacts (§7); capture the store screenshots from the owner-signed APK; make the Play feature graphic.

@@ -56,7 +56,7 @@ Release facts (unchanged by this milestone; the owner decides the first public v
 | Fact | Value |
 |---|---|
 | `applicationId` | `io.github.alexeykravtsov95.talentforge` (frozen; the same in all three stores) |
-| `versionCode` / `versionName` | `1` / `0.1.0` (placeholders; **not changed**, owner decision S-5) |
+| `versionCode` / `versionName` | `1` / `0.1.0` at M5.PLAY.1 (placeholders). Since M5.RELEASE.VERSION: `1` / `1.0.0` for the closed-test bundle; the production bundle gets `2` / `1.0.0` or the next unused code ([android-versioning](../android-versioning.md)) |
 | `minSdk` / `targetSdk` / `compileSdk` | 26 / 36 / 36 |
 | ABIs | `arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64` |
 | Native libraries | only `libandroidx.graphics.path.so` (`androidx.graphics:graphics-path` 1.0.1, pulled in by Compose) |
@@ -81,7 +81,7 @@ analyser, and the same lines appear on `release` without any M5.PLAY.1 change.
 | P-6 | Publish the privacy policy at a public URL (legal review LR-5) — the owner-published `legal.mythweld.com` pages (RU/EN) are wired into the app since M5.LEGAL.LINK; the owner confirms the hosting and the sign-off | closed testing | [data safety §3](data-safety.md#3-privacy-policy) |
 | P-7 | Fill *App content* (Data safety, ads, app access, target audience, IARC, financial features, health, government) | closed testing | [data safety §2–§4](data-safety.md#2-proposed-data-safety-answers) |
 | P-8 | Store listing EN/RU; feature graphic; phone screenshots from the release build; icon rights record (L-6) | closed testing | [listing](store-listing-en.md), [assets](assets-checklist.md) |
-| P-9 | Decide the first public `versionCode`/`versionName` (S-5); configure the upload settings; run `bundlePublishablePlay` from the tagged release commit | first upload | [signing §6](signing.md#6-building-the-google-play-bundle) |
+| P-9 | Configure the upload settings; run `bundlePublishablePlay` from the tagged release commit. Versions decided (M5.RELEASE.VERSION): closed test `1` / `1.0.0`; the production bundle needs a raised `versionCode` | first upload | [signing §6](signing.md#6-building-the-google-play-bundle), [android-versioning](../android-versioning.md) |
 | P-10 | Closed test: Google Group, 18–20 testers, 14 days, test plan, log | production access | [closed testing §3–§6](closed-testing.md#3-closed-testing-track-) |
 | P-11 | Apply for production access | production | [closed testing §7](closed-testing.md#7-applying-for-production-access-) |
 | P-12 | Accept or reduce the legal risk in writing for Google Play (§6) | production | [LEGAL.1 options](../legal1-release-options.md) |

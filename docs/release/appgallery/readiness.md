@@ -133,7 +133,7 @@ Huawei device.
 |---|---|---|
 | O-1 | Approve the signing strategy and the APK format | [signing §11](multi-store-signing.md#11-owner-actions) S-1 |
 | O-2 | Create, back up and drill-restore the release key; record the fingerprints | S-2, S-3 |
-| O-3 | Decide the first public `versionCode` / `versionName` | S-5 |
+| O-3 | Decide the first public `versionCode` / `versionName`. **Decided** (M5.RELEASE.VERSION): Open Testing APK `1` / `1.0.0`; the formal-version APK (also the RuStore release) is a new build with `2` / `1.0.0` or the next unused code | S-5, [android-versioning](../android-versioning.md) |
 | O-4 | Huawei developer account identity verification: **owner reports COMPLETE** (2026-10-17; not independently verified). No new registration is needed | [testing §2.1](testing-and-publication.md#21-developer-account-and-identity-verification-) |
 | O-5 | 🔑 **VERIFY IN CONSOLE** that the account can create the Android app in AppGallery Connect and submit it for release (not independently verified); then create the app record (category **App** is irreversible) and choose the release countries | testing §2.2, §2.9, §6 step 1 |
 | O-6 | Legal review LR-1…LR-3, including store screenshots | [privacy §9](privacy-and-compliance.md#9-owner-and-legal-actions) P-1, P-3 |
