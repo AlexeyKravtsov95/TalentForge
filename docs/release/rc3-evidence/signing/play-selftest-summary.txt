@@ -1,0 +1,21 @@
+PASS  two-keys        APK = app signing test key, AAB = upload test key (apksigner, keytool)
+PASS  distinct        the two certificates differ
+PASS  metadata        release metadata, ABIs and permissions equal; no INTERNET; both SELFTEST-PASS
+PASS  wrong-cert      validation fails on the fingerprint; nothing staged
+PASS  same-cert       refused before building; nothing staged
+PASS  same-key        refused, naming the settings without values
+PASS  aab-app-key     rejected: the certificate is the app signing key's; nothing staged
+PASS  apk-upload-key  rejected: the certificate is the upload key's; nothing staged
+PASS  play-none       fails before building; nothing staged
+PASS  play-partial    fails naming the missing settings, without values
+PASS  no-app-cert     fails before building; nothing staged
+PASS  unsigned-aab    unsigned bundle built; the validator rejects it
+PASS  release-aab     bundleRelease carries the app signing key; rejected for Google Play
+PASS  debug-aab       rejected: debuggable, debug certificate
+PASS  play-apk        refused; no play APK exists
+PASS  stale           attempt failed in the signing checks; the previous bundle is gone
+PASS  not-selftest    both validators refuse the test keys; nothing staged
+PASS  play-apks-16kb  zipalign -c -P 16 verifies 2 generated APKs; 64-bit libraries stored uncompressed
+PASS  no-secrets      no password or keystore path in the logs, reports or build/
+PASS  cleanup         test keys, test-signed outputs and staged files deleted
+play-selftest: PASS — the test keys and test-signed outputs are deleted
