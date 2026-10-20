@@ -307,7 +307,7 @@ The backup procedure in §5 is the only practical protection.
 | S-3 | Make backups A and B and run the recovery drill (§5.2, §5.3) | owner |
 | S-4 | M5.RC.2b: review and merge the signing configuration (§6, implemented); TF-RC1-SIGNING closes once the owner's key signs an APK that passes `assemblePublishableRelease` | owner + engineering |
 | S-4a | Configure the signing settings and the expected fingerprint on the release machine ([owner guide §3](../android-release-signing.md#3-configure-the-build-)) | owner |
-| S-5 | Decide the first public `versionCode` / `versionName` (existing checklist gate) | owner |
+| S-5 | Decide the first public `versionCode` / `versionName` (existing checklist gate). **Decided** 2026-10-20: test `1` / `1.0.0`, public `2` / `1.0.0` ([android-versioning](../android-versioning.md)) | owner |
 | S-6 | In both consoles: do not enable AGC App Signing for the APK and do not upload a key to RuStore | owner's store accounts |
 | S-7 | For #35 later: provide the same key to Play before the first open/production release | owner (deferred) |
 

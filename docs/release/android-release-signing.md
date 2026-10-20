@@ -91,6 +91,8 @@ On success, `composeApp/build/outputs/publishable/` holds exactly:
 - `TalentForge-<versionName>-<versionCode>.apk`: **the only file to upload, to both stores**;
 - `TalentForge-<versionName>-<versionCode>.apk.report.json`: its verification report.
 
+Which `versionCode` to build, and when to raise it, is in [android-versioning.md](android-versioning.md).
+
 The task runs `scripts/verify_release_apk.py` on the staged file and keeps it only when every
 check passes:
 

@@ -252,7 +252,9 @@ The `versionCode` sequence is shared: one number per built artifact, strictly in
 reused. The publishable APK and the Play bundle of one release are built from **one commit**
 with **one `versionCode`/`versionName`**, and the self-test checks that the two reports agree
 (scenario `metadata`). Closed-test builds on Play consume numbers too: the production bundle needs
-a higher `versionCode` than every bundle uploaded to any Play track.
+a higher `versionCode` than every bundle uploaded to any Play track. First release (M5.RELEASE.VERSION):
+test `1` / `1.0.0`, public `2` / `1.0.0`; the procedure and the ledger are in
+[android-versioning.md](../android-versioning.md).
 
 ## 7. Losing or leaking a key
 

@@ -301,7 +301,9 @@ Procedure (owner 🔑 = console step):
 - The production APK is **byte-identical** in AppGallery and RuStore (one file, one `versionCode`).
 - If a store rejects the build and a fix is needed, the fixed APK gets a new, higher `versionCode` and
   replaces the pending submission in **both** stores.
-- The first public `versionCode` / `versionName` are still an owner decision (release checklist §5).
+- First release (owner decision 2026-10-20, M5.RELEASE.VERSION): Open Testing APK `1` / `1.0.0`; the
+  formal-version APK, which is also the RuStore release, is a new build with `2` / `1.0.0`, or the
+  next unused code if testing consumed more ([android-versioning](../android-versioning.md)).
 
 Is a new APK needed? **Yes**, by this policy: the formal release uses a newly built APK with a higher
 `versionCode`, even if the code is unchanged since the open-testing build. This avoids the documented
