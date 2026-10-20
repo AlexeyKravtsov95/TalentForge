@@ -453,6 +453,15 @@ def test_the_staging_store_also_checks_the_live_state_before_its_put() -> None:
     assert s3.objects[STAGING]["data"] == b'{"rival": 1}'
 
 
+def test_a_head_without_an_etag_fails_closed(vk: InMemoryS3) -> None:
+    store = prod_store(vk)
+    vk.raw_put(PRODUCTION, b"{}")
+    vk.objects[PRODUCTION]["ETag"] = None
+    with pytest.raises(S3StoreError) as raised:
+        store.exists(PRODUCTION)
+    assert raised.value.kind is S3Failure.VERIFY_FAILED
+
+
 def test_production_blobs_stay_immutable_without_conditional_writes(vk: InMemoryS3) -> None:
     store = prod_store(vk)
     data = b'{"blob": true}'
@@ -631,8 +640,10 @@ def test_cli_production_refusals(
     assert cli.run(*promote, "--execute") == 1
     assert "production writes run on the wall clock only" in capsys.readouterr().err
 
-    # gc lists only: production blobs are never deleted
+    # gc lists only: production blobs are never deleted, and gc never opens it writable
     assert cli.run("gc", *PROD_FLAGS, *keys) == 0
+    assert cli.run("gc", *PROD_FLAGS, *keys, "--execute") == 0
+    assert cli_vk[-1]["writable"] is False and cli_vk[-1]["guard"] is None
     assert cli.run("gc", *PROD_FLAGS, *keys, "--execute", "--confirm") == 1
     assert "production blobs are never deleted" in capsys.readouterr().err
 

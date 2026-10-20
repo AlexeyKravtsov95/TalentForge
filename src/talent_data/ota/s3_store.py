@@ -503,7 +503,10 @@ class S3BlobStore:
             if exc.kind is S3Failure.NOT_FOUND:
                 return None
             raise
-        return str(head.get("ETag"))
+        etag = head.get("ETag")
+        if not etag:  # fail closed: the state checks compare ETags
+            raise S3StoreError(S3Failure.VERIFY_FAILED, key, "HEAD answered without an ETag")
+        return str(etag)
 
     def _fetch(self, key: str) -> tuple[bytes, str | None]:
         response = self._call("get_object", key)

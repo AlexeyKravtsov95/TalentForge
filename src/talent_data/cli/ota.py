@@ -349,6 +349,7 @@ def _store(args: argparse.Namespace) -> BlobStore:
             raise OtaPublisherError(
                 "production blobs are never deleted by this tool: gc lists them only"
             )
+        writable = execute and mutation == "write"  # gc never gets a writable production store
         if writable and args.now is not None:
             raise OtaPublisherError(
                 "--now is a rehearsal clock; production writes run on the wall clock only"

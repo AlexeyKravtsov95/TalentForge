@@ -195,7 +195,8 @@ Rollback / re-sign of staging are the §3/§4 commands with `--channel staging $
 What the adapter guarantees (`talent_data.ota.s3_store`):
 
 * **Dry run is read-only by construction.** The store is opened writable only by `stage` /
-  `attach-signature` under `--execute`, and able to delete only by `gc --execute --confirm`.
+  `promote` (blobs) / `attach-signature` under `--execute`, and able to delete only by
+  `gc --execute --confirm` - on staging; a production store never deletes.
 * **Keys.** Writes: `v1/blobs/sha256/<64 hex>` and the store's own channel catalog only. The
   other channel's catalog key is refused before any request (it may be read, so gates and `gc` fail
   closed if one ever appears there). Anything else is refused.
