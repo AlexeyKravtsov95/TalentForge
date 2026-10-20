@@ -13,11 +13,16 @@ sign            convenience DER signer (staging/test key ids only)
 gc              list (and with --execute --confirm, delete) unreferenced blobs
 
 The store is a local directory (``--store DIR``, the default backend) or, with
-``--backend s3``, the remote staging bucket (M5.OTA.4b: VK Cloud Object Storage) given by
+``--backend s3``, a channel's remote bucket (VK Cloud Object Storage) given by
 ``--s3-bucket``/``--s3-endpoint``/``--s3-region`` and the credentials of ``--aws-profile``
-(or the standard AWS credential chain). The remote store serves the staging channel only:
-``promote`` and every ``--channel production`` refuse it, and it is opened read-only
-unless the command writes under ``--execute`` (``gc``: ``--execute --confirm``).
+(or the standard AWS credential chain). The bucket names the channel - the committed
+profiles of :mod:`talent_data.ota.s3_channels` (M5.OTA.4b staging, M5.OTA.PROD.1
+production): a command aimed at the other channel is refused before connecting, so the
+staging bucket is never used as production and neither channel's publisher writes the
+other's catalog. The store is opened read-only unless the command writes under
+``--execute`` (``gc``: ``--execute --confirm``, and never on production). Production
+writes also refuse the ``--now`` rehearsal clock, and the production store re-proves every
+catalog itself before the put (``ProductionCatalogGuard``).
 
 Every mutating command is a dry run by default: nothing is written without
 ``--execute``, and ``gc`` additionally needs ``--confirm`` and prints what it would
@@ -83,7 +88,7 @@ def register(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
             "--backend",
             choices=["local", "s3"],
             default="local",
-            help="object store: a local directory (default) or the remote staging bucket",
+            help="object store: a local directory (default) or a channel's remote bucket",
         )
         p.add_argument(
             "--store",
@@ -179,7 +184,7 @@ def register(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     )
     game(promote)
     repo(promote)
-    store_arg(promote)
+    store_arg(promote, mutation="write")  # uploads the blobs (the catalog comes later)
     keyring(promote)
     _releases_docs(promote)
     promote.add_argument("--manifest", type=Path, required=True)
@@ -321,25 +326,72 @@ def _store(args: argparse.Namespace) -> BlobStore:
         raise OtaPublisherError(f"the s3 backend needs {', '.join(missing)}")
     if args.store is not None:
         raise OtaPublisherError("--store is for the local backend; the s3 backend takes --s3-*")
-    if getattr(args, "channel", "staging") != "staging" or args.ota_command == "promote":
-        raise OtaPublisherError(
-            "the s3 backend is the staging bucket: it serves --channel staging only "
-            "(production OTA is not enabled and has no remote store)"
-        )
-    from talent_data.ota.s3_store import S3Location, connect
+    from talent_data.ota.models import Channel
+    from talent_data.ota.s3_channels import profile_of_bucket
 
+    # the bucket names the channel (committed profiles): a command aimed at the other
+    # channel is refused before any connection - the production publisher never writes
+    # the staging catalog, and the staging bucket is never used as production
+    profile = profile_of_bucket(args.s3_bucket)
+    target = _target_channel(args)
+    if target is not None and target != profile.channel.value:
+        raise OtaPublisherError(
+            f"--s3-bucket {args.s3_bucket} is the {profile.channel.value} bucket; refusing it "
+            f"for the {target} channel"
+        )
     execute = bool(getattr(args, "execute", False))
     mutation = args.store_mutation
-    return connect(
-        S3Location(
-            bucket=args.s3_bucket,
-            endpoint_url=args.s3_endpoint,
-            region=args.s3_region,
-            profile=args.aws_profile,
-        ),
-        writable=execute and mutation in ("write", "delete"),
-        allow_delete=execute and mutation == "delete" and bool(getattr(args, "confirm", False)),
+    writable = execute and mutation in ("write", "delete")
+    allow_delete = execute and mutation == "delete" and bool(getattr(args, "confirm", False))
+    if profile.channel is Channel.PRODUCTION:
+        if allow_delete:
+            raise OtaPublisherError(
+                "production blobs are never deleted by this tool: gc lists them only"
+            )
+        writable = execute and mutation == "write"  # gc never gets a writable production store
+        if writable and args.now is not None:
+            raise OtaPublisherError(
+                "--now is a rehearsal clock; production writes run on the wall clock only"
+            )
+    from talent_data.ota.s3_store import (
+        ProductionCatalogGuard,
+        S3Location,
+        check_credentials,
+        connect,
     )
+
+    location = S3Location(
+        bucket=args.s3_bucket,
+        endpoint_url=args.s3_endpoint,
+        region=args.s3_region,
+        profile=args.aws_profile,
+        channel=profile.channel,
+    )
+    # the channel's own AWS CLI profile, and only it, before anything else happens
+    check_credentials(location, writable=writable)
+    guard = None
+    if writable and profile.channel is Channel.PRODUCTION:
+        guard = ProductionCatalogGuard(_keyring(args), game=args.game)
+    return connect(
+        location,
+        writable=writable,
+        allow_delete=allow_delete,
+        catalog_guard=guard,
+    )
+
+
+def _target_channel(args: argparse.Namespace) -> str | None:
+    """The channel a command reads or writes; ``None`` for the channel-neutral ones.
+
+    ``report`` (a review diff, read-only) and ``gc`` (both catalogs; never deletes on
+    production) run against either bucket.
+    """
+    if args.ota_command == "stage":
+        return "staging"
+    if args.ota_command == "promote":
+        return "production"
+    channel: str | None = getattr(args, "channel", None)
+    return channel
 
 
 def _store_flags(args: argparse.Namespace) -> str:
@@ -410,6 +462,11 @@ def _pending_paths(out: Path, channel: str) -> tuple[Path, Path]:
     return payload, payload.with_name(payload.name + ".meta.json")
 
 
+def _pae_path(payload_path: Path) -> Path:
+    """The exact PAE bytes an offline signer signs (``openssl dgst -sha256 -sign``)."""
+    return payload_path.with_name(payload_path.name.removesuffix(".payload.json") + ".pae.bin")
+
+
 @dataclass(frozen=True)
 class PendingMeta:
     """What ``promote``/``rollback``/``resign`` produced, pinned for attach time."""
@@ -421,11 +478,14 @@ class PendingMeta:
 def _write_pending(out: Path, channel: str, payload: bytes, base_sequence: int | None) -> Path:
     import json
 
-    from talent_data.ota.verify import sha256_ref
+    from talent_data.ota.models import CATALOG_PAYLOAD_TYPE
+    from talent_data.ota.verify import pae, sha256_ref
 
     payload_path, meta_path = _pending_paths(out, channel)
     payload_path.parent.mkdir(parents=True, exist_ok=True)
     payload_path.write_bytes(payload)
+    # what the offline signer signs; its SHA-256 is the printed "PAE SHA-256"
+    _pae_path(payload_path).write_bytes(pae(CATALOG_PAYLOAD_TYPE, payload))
     meta_path.write_text(
         json.dumps(
             {
@@ -723,7 +783,8 @@ def _cmd_promote(args: argparse.Namespace) -> int:
     payload_path = _write_pending(args.out, "production", update.payload, update.base_sequence)
     print(f"  uploaded {len(written)} blob(s); unsigned payload: {payload_path}")
     print(
-        "  sign the PAE with the production key, then run: talent-data ota attach-signature "
+        f"  sign {_pae_path(payload_path)} offline with the production key, then run: "
+        "talent-data ota attach-signature "
         f"--payload {payload_path} --signature <der> --key-id <id> "
         f"{_store_flags(args)} --keyring {args.keyring} --execute"
     )
@@ -918,7 +979,8 @@ def _cmd_rollback(args: argparse.Namespace) -> int:
     payload_path = _write_pending(args.out, args.channel, update.payload, update.base_sequence)
     print(f"  unsigned payload: {payload_path}")
     print(
-        "  sign the PAE with the production key, then run: talent-data ota attach-signature "
+        f"  sign {_pae_path(payload_path)} offline with the {args.channel} key, then run: "
+        "talent-data ota attach-signature "
         f"--payload {payload_path} --signature <der> --key-id <id> "
         f"{_store_flags(args)} --keyring {args.keyring} --channel {args.channel} --execute"
     )
@@ -959,7 +1021,8 @@ def _cmd_resign(args: argparse.Namespace) -> int:
     payload_path = _write_pending(args.out, args.channel, update.payload, update.base_sequence)
     print(f"  unsigned payload: {payload_path}")
     print(
-        "  sign the PAE with the production key, then run: talent-data ota attach-signature "
+        f"  sign {_pae_path(payload_path)} offline with the {args.channel} key, then run: "
+        "talent-data ota attach-signature "
         f"--payload {payload_path} --signature <der> --key-id <id> "
         f"{_store_flags(args)} --keyring {args.keyring} --channel {args.channel} --execute"
     )

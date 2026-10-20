@@ -37,6 +37,8 @@ from talent_data.ota.verify import TrustedKey, load_keyring, pae
 
 #: key ids the inline (private-key) signer accepts: fixtures and the staging channel.
 INLINE_SIGNING_PREFIXES = ("test-", "tf-staging-")
+#: the only key ids a production catalog may be signed by (publisher-and-security §5.1)
+PRODUCTION_KEY_PREFIX = "tf-prod-"
 
 
 def load_private_key(pem_path: Path) -> ec.EllipticCurvePrivateKey:

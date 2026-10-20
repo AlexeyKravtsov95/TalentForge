@@ -3,8 +3,10 @@
 Goal: after one app update, new Forever talent trees, icons, descriptions and translations reach
 users without a new APK/AAB or iOS binary.
 
-**Status (M5.OTA.4a): implemented and integrated, disabled in every app build.** No hosting, no
-production keys and no publication exist yet (OD-1, OD-2); production OTA is off on every platform.
+**Status (M5.OTA.PROD.1): implemented, staging live on VK Cloud, production prepared - disabled in
+every app build.** The production bucket, hostname and keys do not exist yet (the owner creates
+them: [production-deployment.md](production-deployment.md)); nothing was published to production;
+production OTA is off on every platform.
 
 | Milestone | What | State |
 | --- | --- | --- |
@@ -12,7 +14,8 @@ production keys and no publication exist yet (OD-1, OD-2); production OTA is off
 | M5.OTA.2 | publisher: `talent-data ota …`, gates G1–G8, local store, offline rehearsal | merged (PR #43) |
 | M5.OTA.3 | KMP client: verifiers, install/activation/retention, Android/iOS/JVM adapters, UI; disabled | merged (PR #44) |
 | M5.OTA.4a | publisher ↔ client integration: local staging stand over HTTPS, staging E2E, Android staging debug configuration, ADR-0002 | merged (PR #45, [report](M5.OTA.4a-integration-report.md)) |
-| M5.OTA.4b | VK Cloud remote staging (OD-1): S3 store adapter, real publication, JVM and TECNO E2E over public HTTPS, ADR-0002 accepted (parallelism 8) | this milestone ([report](M5.OTA.4b-remote-staging-report.md)) |
+| M5.OTA.4b | VK Cloud remote staging (OD-1): S3 store adapter, real publication, JVM and TECNO E2E over public HTTPS, ADR-0002 accepted (parallelism 8) | merged ([report](M5.OTA.4b-remote-staging-report.md)) |
+| M5.OTA.PROD.1 | production S3 publisher (channel isolation, catalog guard), read-only production preflight, key ceremony helper, VK Cloud templates and owner runbook; no cloud resource created, OTA still disabled | this milestone ([runbook](production-deployment.md)) |
 
 | Document | What it answers |
 | --- | --- |
@@ -27,6 +30,7 @@ production keys and no publication exist yet (OD-1, OD-2); production OTA is off
 | [open-decisions.md](open-decisions.md) | OD-1…OD-17, each with a recommended default |
 | [M5.OTA.4a-integration-report.md](M5.OTA.4a-integration-report.md) | M5.OTA.4a: what was verified together (PASSED / FAILED / BLOCKED / NOT RUN), CI status, what the owner must provide |
 | [M5.OTA.4b-remote-staging-report.md](M5.OTA.4b-remote-staging-report.md) | M5.OTA.4b: VK Cloud origin behaviour, publication, JVM/device scenarios, HTTPS performance (PASSED / FAILED / BLOCKED / NOT RUN) |
+| [production-deployment.md](production-deployment.md) | M5.OTA.PROD.1 (Russian, for the owner): VK Cloud bucket/CDN/domain/HTTPS setup, production keys, first publication, refresh, rollback, re-sign, recovery, checks before enabling OTA in an Android release |
 | [staging-setup.md](staging-setup.md) | The local staging stand and the VK Cloud remote staging origin: key classes, publishing with the real publisher, HTTPS, clients |
 | [android-device-smoke.md](android-device-smoke.md) | The Android device test plan: emulator API 26 / current API, TECNO Spark 40, lifecycle steps |
 | [ADR-0002-delivery-performance.md](ADR-0002-delivery-performance.md) | Why parallelism 8 + origin gzip is the minimal v1-compatible fix for the §7.3 triggers; HTTP/2, reproducible PNG, archives assessed |

@@ -1,0 +1,15 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "TalentForgeOtaProductionAnonymousRead",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": ["s3:GetObject"],
+      "Resource": [
+        "arn:aws:s3:::talentforge-ota-production/v1/channels/production/catalog.json",
+        "arn:aws:s3:::talentforge-ota-production/v1/blobs/sha256/*"
+      ]
+    }
+  ]
+}

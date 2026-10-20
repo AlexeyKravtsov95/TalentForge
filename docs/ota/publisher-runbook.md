@@ -1,4 +1,4 @@
-# OTA publisher runbook (M5.OTA.2, remote staging M5.OTA.4b)
+# OTA publisher runbook (M5.OTA.2, remote staging M5.OTA.4b, production store M5.OTA.PROD.1)
 
 Operator procedures for `talent-data ota …` — the commands that turn a committed build
 into a published OTA release. Design: [publisher-and-security.md](publisher-and-security.md).
@@ -148,9 +148,12 @@ signing is the external steps 5–6 of §1, always.
 The origin is object storage serving `<base>/v1/…` (contract §1). Staging is **VK Cloud
 Object Storage** (OD-1): bucket `talentforge-ota-staging` in `ru-msk`, S3 API
 `https://hb.ru-msk.vkcloud-storage.ru`, public origin
-`https://talentforge-ota-staging.hb.ru-msk.vkcloud-storage.ru`. Production has no remote
-store: the adapter serves the staging channel only, and `promote` / every
-`--channel production` refuse `--backend s3`.
+`https://talentforge-ota-staging.hb.ru-msk.vkcloud-storage.ru`. Production has its own bucket
+(`talentforge-ota-production`, M5.OTA.PROD.1 - prepared, created by the owner): its setup,
+publication, rollback, re-sign and recovery are
+[production-deployment.md](production-deployment.md). The bucket names the channel (committed
+profiles, `talent_data.ota.s3_channels`): a staging command against the production bucket, or a
+production command against the staging bucket, is refused before connecting.
 
 ### 6.1 Setup (once per operator machine)
 
@@ -191,10 +194,16 @@ Rollback / re-sign of staging are the §3/§4 commands with `--channel staging $
 
 What the adapter guarantees (`talent_data.ota.s3_store`):
 
+* **Credentials per channel.** A write needs exactly the channel's AWS CLI profile
+  (`--aws-profile talentforge-staging` / `talentforge-production`) and no `AWS_ACCESS_KEY_ID` /
+  `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN` in the environment; the other channel's profile is
+  refused even for reads. Checked before any request (`check_credentials`); reads may use the
+  standard credential chain.
 * **Dry run is read-only by construction.** The store is opened writable only by `stage` /
-  `attach-signature` under `--execute`, and able to delete only by `gc --execute --confirm`.
-* **Keys.** Writes: `v1/blobs/sha256/<64 hex>` and `v1/channels/staging/catalog.json` only. The
-  production catalog key is refused before any request (it may be read, so gates and `gc` fail
+  `promote` (blobs) / `attach-signature` under `--execute`, and able to delete only by
+  `gc --execute --confirm` - on staging; a production store never deletes.
+* **Keys.** Writes: `v1/blobs/sha256/<64 hex>` and the store's own channel catalog only. The
+  other channel's catalog key is refused before any request (it may be read, so gates and `gc` fail
   closed if one ever appears there). Anything else is refused.
 * **Blobs are immutable.** A blob must hash to its key; an existing blob is never rewritten;
   every put is checked by `HEAD` (length, `ETag` = MD5, `Content-Type`, `Cache-Control`, no
@@ -238,12 +247,25 @@ catalog right after it, and this procedure:
   its previous versions and a `gc` deletion leaves a delete marker (not verified — the key may not
   read the bucket's versioning configuration).
 
-### 6.5 Production hosting (open)
+### 6.5 Production store (M5.OTA.PROD.1)
 
-The production origin, a project-owned hostname (the VK bucket host is VK's, so moving providers
-would need an app update) and a CDN are still OD-1 decisions for the public release. A
-production remote store, when it exists, gets its own adapter configuration and keeps every rule
-above; nothing here can write a production catalog.
+The production remote store keeps every rule above and adds, for the production channel only:
+
+* **Its own committed profile**: bucket `talentforge-ota-production`, AWS CLI profile
+  `talentforge-production` (a separate prefix key), public origin `https://ota.mythweld.com`.
+* **A catalog guard in the adapter** (`ProductionCatalogGuard`): a writable production store
+  needs the production keyring (`tf-prod-*` keys only), and every catalog put must verify on the
+  wall clock, be signed by `tf-prod-*` keys only, keep at least 7 days of validity, not be
+  future-dated and be the exact successor of the live catalog. No fault injection, test key or
+  replay can reach the production path, whoever calls the store.
+* **No rehearsal clock, no deletion**: production writes refuse `--now`; `gc` lists only.
+* **Offline signing input**: `promote` / `rollback` / `resign` also write
+  `pending-<channel>.pae.bin`, the exact bytes `openssl dgst -sha256 -sign` signs offline.
+
+Both channels re-read the live catalog's `ETag` immediately before the catalog put (VK ignores
+`If-Match`) and read the catalog back after it. The hostname, CDN and certificate are the
+owner's setup: [production-deployment.md](production-deployment.md) §1–§3; the read-only
+`scripts/ota_production_preflight.py` checks them.
 
 ## 7. Keyrings, TEST keys and the approval record
 

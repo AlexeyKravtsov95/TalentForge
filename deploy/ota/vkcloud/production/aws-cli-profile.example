@@ -1,0 +1,8 @@
+# ~/.aws/config - the production publisher's profile (M5.OTA.PROD.1).
+# No secret belongs here or in git: `aws configure --profile talentforge-production`
+# writes the access key pair to ~/.aws/credentials, on the publisher's machine only.
+# The publisher passes --s3-endpoint / --s3-region explicitly; the values below only make
+# plain `aws s3api ... --profile talentforge-production` commands target the same place.
+[profile talentforge-production]
+region = ru-msk
+endpoint_url = https://hb.ru-msk.vkcloud-storage.ru

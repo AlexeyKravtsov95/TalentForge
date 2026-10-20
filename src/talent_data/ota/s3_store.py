@@ -1,18 +1,31 @@
-"""S3-compatible remote adapter of :class:`talent_data.ota.store.BlobStore` (M5.OTA.4b).
+"""S3-compatible remote adapter of the OTA ``BlobStore`` port (M5.OTA.4b, M5.OTA.PROD.1).
 
-OD-1 is decided: the staging origin is VK Cloud Object Storage (``ru-msk``), bucket
-``talentforge-ota-staging``, served anonymously over the bucket's public HTTPS host. This
-module is the publisher's view of that bucket; every ordering rule (blobs first, read-back
-verification, catalog last behind the sequence guard) stays in :mod:`talent_data.ota.store`
-and is not repeated here. What the adapter adds is what only a remote store can get wrong:
+OD-1 is decided: the origin is VK Cloud Object Storage (``ru-msk``). Each channel has its
+own bucket, fixed by the committed profiles of :mod:`talent_data.ota.s3_channels`
+(``talentforge-ota-staging``, ``talentforge-ota-production``). This module is the
+publisher's view of one of them; every ordering rule (blobs first, read-back verification,
+catalog last behind the sequence guard) stays in :mod:`talent_data.ota.store` and is not
+repeated here. What the adapter adds is what only a remote store can get wrong:
 
-* **Scope.** It serves exactly one channel, ``staging``. Writes go to
-  ``v1/blobs/sha256/<64 hex>`` and ``v1/channels/staging/catalog.json`` only; the production
+* **Channel isolation.** A store serves exactly one channel, on exactly that channel's
+  bucket: the staging bucket can never be opened as production, nor the reverse, and no
+  other bucket, endpoint or region is accepted. Writes go to ``v1/blobs/sha256/<64 hex>``
+  and the store's own ``v1/channels/<channel>/catalog.json`` only; the *other* channel's
   catalog key is refused before any request is made (it may be *read*, so gates and ``gc``
-  fail closed if one ever appears in this bucket). Every other key is refused.
+  fail closed if one ever appears in the wrong bucket). Every other key is refused.
 * **Mode.** A store is read-only unless constructed ``writable`` (the CLI does that only
   under ``--execute``), and cannot delete unless constructed ``allow_delete`` (``gc``
-  under ``--execute --confirm`` only). A dry run physically cannot mutate the bucket.
+  under ``--execute --confirm`` only, and never on production). A dry run physically
+  cannot mutate the bucket.
+* **Production proves every catalog to the adapter itself.** A writable production store
+  needs a :class:`ProductionCatalogGuard` (the production keyring - ``tf-prod-*`` keys
+  only - and the game). Right before the put, the envelope must verify against that
+  keyring on the wall clock, be signed by ``tf-prod-*`` keys only, keep at least
+  :data:`PRODUCTION_MIN_VALIDITY` of validity, not be issued in the future, and be the
+  exact successor of the live catalog (sequence + 1, append-only). So no raw put - a bad
+  signature, a short-lived "expired" catalog, a test-signed or replayed one - can land on
+  the production path, whatever called it: production has no fault injection and no
+  rehearsal clock. Production blobs are never deleted by this tool.
 * **Immutability.** A blob must hash to its key, is never overwritten (``HEAD`` first,
   then a conditional ``If-None-Match: *`` put - which VK Cloud ignores, so the ``HEAD``
   is the guard there; a racing writer can only write the same bytes under a content
@@ -21,12 +34,12 @@ and is not repeated here. What the adapter adds is what only a remote store can 
   ``Content-Encoding``).
 * **Concurrency.** The catalog put is conditional on the ``ETag`` this process observed
   when it last read the live catalog (``If-Match``), or ``If-None-Match: *`` when it
-  observed none: on a store that honours conditional writes a publication that raced this
-  one fails with :attr:`S3Failure.PRECONDITION_FAILED` and nothing is overwritten. A catalog
-  put without a prior observation is refused. **VK Cloud ignores both conditions**
-  (measured 2026-10-18, ``scripts/ota_vkcloud_staging.py probe-conditional``), so there the
-  guards are the publisher's sequence re-read right before the put, the read-back
-  comparison right after it, and the single-publisher procedure of the runbook (§6).
+  observed none; a catalog put without a prior observation is refused. **VK Cloud ignores
+  both conditions** (measured 2026-10-18, ``scripts/ota_vkcloud_staging.py
+  probe-conditional``), so the adapter also re-reads the live catalog's ``ETag``
+  immediately before the put and aborts when it moved (state check before the write),
+  and reads the catalog back after it (state check after the write). Between those two
+  requests only the single-publisher procedure of the runbook protects the catalog.
 * **Failure kinds.** 404, 403, 412, network and credential failures are distinct
   :class:`S3Failure` values; a 403 is never read as "absent".
 * **HTTP metadata.** ``Cache-Control`` as contract §1 recommends, ``Content-Type``
@@ -43,20 +56,24 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import os
 import re
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from typing import Any, Protocol
 
 from talent_data.ota.errors import OtaPublisherError
-from talent_data.ota.models import Channel
+from talent_data.ota.models import MAX_CATALOG_BYTES, Channel, OtaCatalog
+from talent_data.ota.s3_channels import PROFILES, require_profile
 from talent_data.ota.store import (
     BLOB_CACHE_CONTROL,
     BLOB_PREFIX,
     CATALOG_CACHE_CONTROL,
     catalog_key,
 )
+from talent_data.ota.verify import TrustedKey
 
 BLOB_KEY = re.compile(r"v1/blobs/sha256/[0-9a-f]{64}")
 JSON_CONTENT_TYPE = "application/json"
@@ -64,6 +81,16 @@ PNG_CONTENT_TYPE = "image/png"
 OCTET_CONTENT_TYPE = "application/octet-stream"
 _PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
 _LIST_PAGE = 1000
+#: a production catalog must stay valid at least this long after it is written: a
+#: short-lived catalog is the "expired" fault of staging, never a production publication
+PRODUCTION_MIN_VALIDITY = timedelta(days=7)
+#: how far a production catalog's ``issuedAt`` may lie ahead of the publisher's clock
+PRODUCTION_CLOCK_SKEW = timedelta(minutes=5)
+
+
+def _wall_clock() -> datetime:
+    """The production guard's clock - the real one; the CLI's ``--now`` never reaches it."""
+    return datetime.now(UTC)
 
 
 class S3Failure(StrEnum):
@@ -79,6 +106,7 @@ class S3Failure(StrEnum):
     READ_ONLY = "READ_ONLY"  # a mutation without --execute (or delete without --confirm)
     IMMUTABLE = "IMMUTABLE"  # overwriting a blob, or a blob that does not hash to its key
     VERIFY_FAILED = "VERIFY_FAILED"  # the object read back differs from what was written
+    CATALOG_REFUSED = "CATALOG_REFUSED"  # a production catalog that does not prove itself
 
 
 class S3StoreError(OtaPublisherError):
@@ -121,11 +149,10 @@ class S3Location:
             )
         if not self.bucket or "/" in self.bucket:
             raise OtaPublisherError(f"invalid bucket name {self.bucket!r}")
-        if self.channel is not Channel.STAGING:
-            raise OtaPublisherError(
-                "the remote store serves the staging channel only: production OTA is not "
-                "enabled and no production bucket exists"
-            )
+        # the channel's committed profile, exactly: a staging bucket is never production
+        require_profile(
+            self.channel, bucket=self.bucket, endpoint_url=self.endpoint_url, region=self.region
+        )
 
 
 def content_type_of(key: str, data: bytes) -> str:
@@ -143,14 +170,66 @@ def content_type_of(key: str, data: bytes) -> str:
     return OCTET_CONTENT_TYPE
 
 
-def connect(location: S3Location, *, writable: bool, allow_delete: bool) -> S3BlobStore:
+#: credentials in the environment would take the place of a channel's own profile
+ENV_CREDENTIALS = ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN")
+
+
+def check_credentials(
+    location: S3Location, *, writable: bool, environ: Mapping[str, str] | None = None
+) -> None:
+    """The S3 credentials a store may use: its own channel's AWS CLI profile, only.
+
+    * another channel's profile is refused always - a production command never runs on
+      the staging key, nor the reverse;
+    * a write needs exactly the channel's profile (``talentforge-production`` /
+      ``talentforge-staging``), and no credentials in the environment that could stand in
+      for it (``AWS_ACCESS_KEY_ID`` & co.);
+    * a read may also use the standard credential chain (no profile).
+
+    Checked before any request (and before boto3 is even imported).
+    """
+    expected = PROFILES[location.channel].aws_profile
+    foreign = {p.aws_profile: p for p in PROFILES.values() if p.channel is not location.channel}
+    if location.profile in foreign:
+        raise OtaPublisherError(
+            f"--aws-profile {location.profile} holds the "
+            f"{foreign[location.profile].channel.value} key; the {location.channel.value} "
+            f"bucket is used with --aws-profile {expected} only"
+        )
+    if not writable:
+        return
+    if location.profile != expected:
+        raise OtaPublisherError(
+            f"{location.channel.value} writes need --aws-profile {expected} "
+            f"(got {location.profile or 'none'}): the key is never taken from elsewhere"
+        )
+    env = os.environ if environ is None else environ
+    present = [name for name in ENV_CREDENTIALS if env.get(name)]
+    if present:
+        raise OtaPublisherError(
+            f"{location.channel.value} writes use the {expected} profile only; unset "
+            f"{', '.join(present)} in the environment"
+        )
+
+
+def connect(
+    location: S3Location,
+    *,
+    writable: bool,
+    allow_delete: bool,
+    catalog_guard: ProductionCatalogGuard | None = None,
+) -> S3BlobStore:
     """A boto3-backed store for ``location`` (needs the ``s3`` extra).
+
+    A writable production store needs ``catalog_guard``; one is refused for staging.
+    The credentials are checked first (:func:`check_credentials`).
 
     Checksums are computed only when the operation requires them: botocore's default
     streaming checksum (``aws-chunked`` uploads) makes VK Cloud store and serve
     ``Content-Encoding: aws-chunked`` on the object, which is not a valid HTTP content
     coding for clients; instead every put carries ``Content-MD5`` and is verified by ETag.
     """
+    check_credentials(location, writable=writable)
     try:
         import boto3
         from botocore.config import Config
@@ -179,6 +258,7 @@ def connect(location: S3Location, *, writable: bool, allow_delete: bool) -> S3Bl
         channel=location.channel,
         writable=writable,
         allow_delete=allow_delete,
+        catalog_guard=catalog_guard,
     )
 
 
@@ -212,8 +292,91 @@ def _classify(exc: Exception) -> tuple[S3Failure, str]:
     return S3Failure.SERVICE, type(exc).__name__
 
 
+class ProductionCatalogGuard:
+    """What a production catalog must prove to the adapter before it is put.
+
+    The CLI's ``attach-signature`` already re-proves a publication; this is the same
+    proof one layer lower, so that *no* caller of a writable production store - a script,
+    a test helper, a future command - can put a catalog the production clients would not
+    accept as the next one. It needs only public material: the production keyring.
+    """
+
+    def __init__(self, keyring: Mapping[str, TrustedKey], *, game: str) -> None:
+        from talent_data.ota.signing import PRODUCTION_KEY_PREFIX
+
+        foreign = sorted(
+            key_id for key_id in keyring if not key_id.startswith(PRODUCTION_KEY_PREFIX)
+        )
+        if not keyring or foreign:
+            raise OtaPublisherError(
+                f"a production store needs a production keyring ({PRODUCTION_KEY_PREFIX}* keys "
+                f"only); refusing keyring with {foreign or 'no keys'}"
+            )
+        self.keyring = dict(keyring)
+        self.game = game
+
+    def check(self, envelope: bytes, live_envelope: bytes | None) -> OtaCatalog:
+        """The verified catalog ``envelope`` carries, if it may replace ``live_envelope``."""
+        from talent_data.ota.catalog import ensure_valid_succession
+        from talent_data.ota.models import SignedEnvelope
+        from talent_data.ota.signing import PRODUCTION_KEY_PREFIX
+        from talent_data.ota.store import verify_live_envelope
+        from talent_data.ota.verify import OtaError, parse_strict, verify_catalog
+
+        key = catalog_key(Channel.PRODUCTION)
+
+        def refuse(detail: str) -> S3StoreError:
+            return S3StoreError(S3Failure.CATALOG_REFUSED, key, detail)
+
+        now = _wall_clock()
+        if len(envelope) > MAX_CATALOG_BYTES:
+            raise refuse(f"{len(envelope)} bytes exceed the {MAX_CATALOG_BYTES}-byte limit")
+        try:
+            signers = [s.key_id for s in parse_strict(SignedEnvelope, envelope).signatures]
+        except ValueError as exc:
+            raise refuse(f"not a signed envelope: {exc}") from exc
+        foreign = [key_id for key_id in signers if not key_id.startswith(PRODUCTION_KEY_PREFIX)]
+        if foreign:
+            raise refuse(f"signed by non-production key ids {foreign}")
+        try:
+            catalog = verify_catalog(
+                envelope,
+                keyring=self.keyring,
+                game=self.game,
+                channel=Channel.PRODUCTION,
+                now=now,
+                last_seen=None,
+            ).catalog
+        except OtaError as exc:
+            raise refuse(f"does not verify: {exc.code.value}: {exc.detail}") from exc
+        if catalog.issued_at > now + PRODUCTION_CLOCK_SKEW:
+            raise refuse(f"issued in the future ({catalog.issued_at.isoformat()}, now {now})")
+        if catalog.expires_at - now < PRODUCTION_MIN_VALIDITY:
+            raise refuse(
+                f"valid only until {catalog.expires_at.isoformat()}; a production catalog keeps "
+                f"at least {PRODUCTION_MIN_VALIDITY.days} days of validity"
+            )
+        try:
+            live = (
+                None
+                if live_envelope is None
+                else verify_live_envelope(
+                    live_envelope,
+                    Channel.PRODUCTION,
+                    keyring=self.keyring,
+                    game=self.game,
+                    now=now,
+                    allow_expired=True,  # recovery: a lapsed live catalog may be succeeded
+                )
+            )
+            ensure_valid_succession(live, catalog)
+        except OtaPublisherError as exc:
+            raise refuse(f"not the successor of the live catalog: {exc}") from exc
+        return catalog
+
+
 class S3BlobStore:
-    """The staging bucket as a :class:`~talent_data.ota.store.BlobStore`."""
+    """One channel's bucket as a :class:`~talent_data.ota.store.BlobStore`."""
 
     def __init__(
         self,
@@ -223,16 +386,31 @@ class S3BlobStore:
         channel: Channel = Channel.STAGING,
         writable: bool = False,
         allow_delete: bool = False,
+        catalog_guard: ProductionCatalogGuard | None = None,
     ) -> None:
-        if channel is not Channel.STAGING:
-            raise OtaPublisherError("the remote store serves the staging channel only")
+        if bucket != PROFILES[channel].bucket:
+            raise OtaPublisherError(
+                f"bucket {bucket!r} is not the {channel.value} bucket {PROFILES[channel].bucket!r}"
+            )
+        if channel is Channel.PRODUCTION:
+            if allow_delete:
+                raise OtaPublisherError("production blobs are never deleted by this tool")
+            if writable and catalog_guard is None:
+                raise OtaPublisherError(
+                    "a writable production store needs the production catalog guard"
+                )
+        elif catalog_guard is not None:
+            raise OtaPublisherError("the production catalog guard is for the production store")
         self._client = client
         self.bucket = bucket
         self.channel = channel
         self.writable = writable
         self.allow_delete = allow_delete
+        self._guard = catalog_guard
         self._catalog = catalog_key(channel)
-        self._readonly_catalog = catalog_key(Channel.PRODUCTION)
+        other = Channel.STAGING if channel is Channel.PRODUCTION else Channel.PRODUCTION
+        self._other = other
+        self._readonly_catalog = catalog_key(other)
         #: catalog key -> ETag last observed (``None``: observed absent)
         self._observed: dict[str, str | None] = {}
 
@@ -251,7 +429,7 @@ class S3BlobStore:
             raise S3StoreError(
                 S3Failure.OUT_OF_SCOPE,
                 key,
-                "the staging store never writes the production catalog",
+                f"the {self.channel.value} store never writes the {self._other.value} catalog",
             )
         if not (BLOB_KEY.fullmatch(key) or key == self._catalog):
             raise S3StoreError(S3Failure.OUT_OF_SCOPE, key, "not an OTA object key of this store")
@@ -273,33 +451,14 @@ class S3BlobStore:
 
     def exists(self, key: str) -> bool:
         self._readable(key)
-        try:
-            head = self._call("head_object", key)
-        except S3StoreError as exc:
-            if exc.kind is S3Failure.NOT_FOUND:
-                self._observe(key, None)
-                return False
-            raise
-        self._observe(key, head.get("ETag"))
-        return True
+        etag = self._head_etag(key)
+        self._observe(key, etag)
+        return etag is not None
 
     def get(self, key: str) -> bytes:
         self._readable(key)
-        response = self._call("get_object", key)
-        body = response["Body"]
-        try:
-            data: bytes = body.read()
-        except Exception as exc:
-            kind, detail = _classify(exc)
-            raise S3StoreError(kind, key, f"get_object body: {detail}") from exc
-        finally:
-            body.close()
-        expected = response.get("ContentLength")
-        if expected is not None and expected != len(data):
-            raise S3StoreError(
-                S3Failure.NETWORK, key, f"short read: {len(data)} of {expected} bytes"
-            )
-        self._observe(key, response.get("ETag"))
+        data, etag = self._fetch(key)
+        self._observe(key, etag)
         return data
 
     def put(self, key: str, data: bytes, *, cache_control: str) -> None:
@@ -335,6 +494,9 @@ class S3BlobStore:
                     "refusing an unconditional catalog write: read the live catalog first",
                 )
             etag = self._observed[key]
+            live = self._live_before_put(key, etag)
+            if self._guard is not None:
+                self._guard.check(data, live)
             if etag is None:
                 args["IfNoneMatch"] = "*"
             else:
@@ -364,6 +526,10 @@ class S3BlobStore:
     def delete(self, key: str) -> None:
         if not BLOB_KEY.fullmatch(key):
             raise S3StoreError(S3Failure.OUT_OF_SCOPE, key, "only unreferenced blobs are deleted")
+        if self.channel is Channel.PRODUCTION:
+            raise S3StoreError(
+                S3Failure.READ_ONLY, key, "production blobs are never deleted by this tool"
+            )
         if not (self.writable and self.allow_delete):
             raise S3StoreError(S3Failure.READ_ONLY, key, "deletion needs gc --execute --confirm")
         self._call("delete_object", key)
@@ -373,6 +539,62 @@ class S3BlobStore:
     def _observe(self, key: str, etag: str | None) -> None:
         if key == self._catalog:
             self._observed[key] = etag
+
+    def _head_etag(self, key: str) -> str | None:
+        """The object's ``ETag``; ``None`` when it is absent (404 only - a 403 raises)."""
+        try:
+            head = self._call("head_object", key)
+        except S3StoreError as exc:
+            if exc.kind is S3Failure.NOT_FOUND:
+                return None
+            raise
+        etag = head.get("ETag")
+        if not etag:  # fail closed: the state checks compare ETags
+            raise S3StoreError(S3Failure.VERIFY_FAILED, key, "HEAD answered without an ETag")
+        return str(etag)
+
+    def _fetch(self, key: str) -> tuple[bytes, str | None]:
+        response = self._call("get_object", key)
+        body = response["Body"]
+        try:
+            data: bytes = body.read()
+        except Exception as exc:
+            kind, detail = _classify(exc)
+            raise S3StoreError(kind, key, f"get_object body: {detail}") from exc
+        finally:
+            body.close()
+        expected = response.get("ContentLength")
+        if expected is not None and expected != len(data):
+            raise S3StoreError(
+                S3Failure.NETWORK, key, f"short read: {len(data)} of {expected} bytes"
+            )
+        etag = response.get("ETag")
+        return data, None if etag is None else str(etag)
+
+    def _live_before_put(self, key: str, observed: str | None) -> bytes | None:
+        """The state check right before a catalog put - the ``If-Match`` VK ignores.
+
+        The live catalog must still be the object this publisher observed; a production
+        store also gets its bytes, which the guard verifies the new catalog against.
+        """
+
+        def moved(now: str | None) -> S3StoreError:
+            return S3StoreError(
+                S3Failure.PRECONDITION_FAILED,
+                key,
+                f"the live catalog changed since it was read (ETag {observed} -> {now}): a "
+                "concurrent publication - aborting, nothing was overwritten",
+            )
+
+        current = self._head_etag(key)
+        if current != observed:
+            raise moved(current)
+        if current is None or self._guard is None:
+            return None
+        data, etag = self._fetch(key)
+        if etag != observed:
+            raise moved(etag)
+        return data
 
     def _list_keys(self, prefix: str) -> Iterator[str]:
         token: str | None = None

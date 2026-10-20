@@ -173,7 +173,26 @@ def read_live_catalog(
     key = catalog_key(channel)
     if not store.exists(key):
         return None
-    envelope = store.get(key)
+    return verify_live_envelope(
+        store.get(key),
+        channel,
+        keyring=keyring,
+        game=game,
+        now=now,
+        allow_expired=allow_expired,
+    )
+
+
+def verify_live_envelope(
+    envelope: bytes,
+    channel: Channel,
+    *,
+    keyring: Mapping[str, TrustedKey],
+    game: str,
+    now: datetime,
+    allow_expired: bool = False,
+) -> OtaCatalog:
+    """The verified catalog of a live ``catalog.json`` (see :func:`read_live_catalog`)."""
     from talent_data.ota.verify import (  # lazy: needs the `ota` extra (cryptography)
         OtaError,
         OtaErrorCode,
