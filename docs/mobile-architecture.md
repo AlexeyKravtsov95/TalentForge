@@ -264,7 +264,8 @@ arrows and header counter all re-derive from the real engine state on every
 change, so locked→available transitions are live.
 
 M5.1 **genericizes the editor and persists it**. `TalentTreeUiState.Ready`
-now carries the build's title line (name, or "Draft" while unnamed — ADAPT 1)
+now carries the build's title line (name, or the localized `<Class> build`
+while unnamed since M5.RC.3 — ADAPT 1)
 and its **class accent as an explicit input**; the header renders the
 two-line title plus the back control; every mutation lands in one
 `commitEditing` path that reports actual `BuildState` changes through a
@@ -731,11 +732,13 @@ read–modify–write with the same fail-closed guarantees:
 - `duplicateBuild` creates an independent record: a fresh id under the same
   bounded collision policy as create-draft, the source's exact `BuildFile`
   payload, fresh `createdAt`/`updatedAt`, `lastOpenedAt = null`, and the
-  initial name derived from the source's CURRENT name with ` (copy)`
-  appended (`Draft (copy)` for a Draft). A duplicate of a duplicate
-  therefore appends once per copy (`Build (copy)` → `Build (copy) (copy)`) —
-  the documented policy — always shortened to the 60-character limit while
-  keeping the suffix. Duplicate names are allowed — identity is the
+  initial name derived from the source's CURRENT name. Since M5.RC.3 a copy
+  of a Draft stays a Draft (`name == null`), and a named source gets the
+  caller's localized `copyNameSuffix` appended (` (copy)` / ` (копия)`, from
+  `builds_copy_name_suffix`; the repository holds no UI copy). A duplicate of
+  a duplicate therefore appends once per copy (`Build (copy)` →
+  `Build (copy) (copy)`) — the documented policy — always shortened to the
+  60-character limit while keeping the suffix. Duplicate names are allowed — identity is the
   `localId`, never the name — and the source record is untouched.
 - `deleteBuild` removes exactly one record; a missing id is
   `UnknownRecord`, and a failed read or write leaves the stored payload
@@ -864,9 +867,9 @@ the real class display name (or the capitalized token when the class document
 failed to load). The rule is display-only and consistent across Home, All
 Builds and the management overlays: nothing is written back, the rename
 dialog still opens empty for an unnamed build, and a user-provided name — an
-explicitly entered `Draft` included — always wins. The M5.2a copy naming
-(`Draft (copy)`, persisted by the repository when duplicating an unnamed
-build) is unchanged repository semantics.
+explicitly entered `Draft` included — always wins. Since M5.RC.3 the editor
+header uses the same rule (`buildDisplayTitle`), and duplicating an unnamed
+build creates another unnamed build instead of the former `Draft (copy)`.
 
 **All Builds (B+).** Same list, count, order and management as M5.2a; the row
 mark is the 36 dp artwork tile and the empty-state action label matches
@@ -1121,11 +1124,8 @@ and Home stayed on "Loading your builds…" until the `waitUntil` timeout
 Mac run, also on main). On devices the effect resumes on the UI thread, so
 behaviour there is unchanged.
 
-**Known limitations.** A duplicate's initial name is generated and
-persisted by the shared repository in English (`Draft (copy)`,
-`<name> (copy)`); it is stored data shown verbatim, so it stays English in a
-Russian UI until the copy-name policy itself is localized (a persistence
-change outside this milestone). At 200 % font scale All Builds still
+**Known limitations.** (M5.RC.3 resolved the English duplicate names, see
+the build-management section.) At 200 % font scale All Builds still
 ellipsizes long titles by design; unnamed Russian titles share the `Билд`
 prefix, so the class there is carried by the artwork and the meta line.
 
@@ -1227,8 +1227,8 @@ in the unit suite instead of on a device.
 stay English (M5.REL.3). The section tabs' fallback labels keep their
 M5.REL.1 table (`Tree N` / `Ветка N`). Technical details inside the failure
 panes (dataset diagnostic, engine reason, reason codes) are not translated.
-`Draft (copy)` names produced by duplication are persisted by the shared
-repository in English (unchanged, see M5.REL.2a).
+(M5.RC.3 removed the editor's separate "Draft" title and the English
+duplicate names.)
 
 ## About / legal screen and release signing (M5.RC.2b)
 
