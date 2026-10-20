@@ -7,15 +7,15 @@
 | Stores | RuStore and Huawei AppGallery (one signed universal APK); Google Play (AAB + Play App Signing). iOS is not in scope |
 | Environment | owner's Mac (Apple silicon), JDK 17, Python 3.12 (fresh venv, `pip install -e ".[dev]"`), Android build-tools 37.0.0, bundletool 1.18.3, Xcode; Android emulator `Pixel_9a` (API 35, `google_apis_playstore`, arm64) |
 | Evidence | [`rc3-evidence/`](rc3-evidence/) |
-| Safety | No production key was created, requested or used. Every signed artifact here was signed with **temporary self-test keys** (subject `TalentForge signing self-test …`, deleted after the run) and is named `*-SELFTEST-NOT-FOR-UPLOAD*`. Nothing was uploaded, submitted or published |
+| Safety | The agent created, requested, read and used no production key. The owner reports a locally created production app signing keystore (§2.1); the agent had no access to it. Every signed artifact here was signed with **temporary self-test keys** (subject `TalentForge signing self-test …`, deleted after the run) and is named `*-SELFTEST-NOT-FOR-UPLOAD*`. Nothing was uploaded, submitted or published |
 
 ## 1. Decision
 
 | Store | Verdict | Engineering | What blocks publication |
 |---|---|---|---|
-| **RuStore** | **NOT READY** | GO | owner key and the first signed APK (TF-RC1-SIGNING); first public `versionCode`/`versionName` (S-5); store screenshots from the release build; LR-1…LR-5 sign-off; console declarations (age rating, data safety); written decision on the open P2 defects (§5) |
+| **RuStore** | **NOT READY** | GO | production signing gate (§2.1): app signing keystore created by the owner, but backups, restore, certificate fingerprint and the first signed APK are not verified (TF-RC1-SIGNING); first public `versionCode`/`versionName` (S-5); store screenshots from the release build; LR-1…LR-5 sign-off; console declarations (age rating, data safety); written decision on the open P2 defects (§5) |
 | **Huawei AppGallery** | **NOT READY** | GO | everything RuStore needs, plus the Huawei device pass H-1…H-14 (§4.3), which needs a physical Huawei device |
-| **Google Play** | **NOT READY** | GO | app signing key + separate upload key; Play App Signing set to the owner's key **before** the first upload (U-1…U-3); App content (Data safety and the other declarations); feature graphic and phone screenshots; closed test (12+ testers, 14 days); production access; P-12 written risk acceptance |
+| **Google Play** | **NOT READY** | GO | production signing gate (§2.1), plus the separate upload key (not confirmed); Play App Signing set to the owner's key **before** the first upload (U-1…U-3); App content (Data safety and the other declarations); feature graphic and phone screenshots; closed test (12+ testers, 14 days); production access; P-12 written risk acceptance |
 
 "Engineering GO" means: the build, both signing paths and both validators pass on `7efc93d`, the
 release build behaves as the store texts and the privacy policy say, and the manual run on the
@@ -25,7 +25,7 @@ emulator found no crash and no P0/P1 defect. It does not replace the owner and l
 
 | Area | Result | Evidence |
 |---|---|---|
-| Open blockers carried over | TF-RC1-SIGNING (P1, owner key), LR-1…LR-5 (legal), STORE1-SHOTS, VERSION, CONSOLE, M5.RC.3 Huawei/physical-device runs. TF-RC1-ICON stays OPEN until the owner-signed APK and a physical device are checked. P2: TF-RC1-COPY-NAME, TF-RC1-DRAFT-TITLE, TF-RC1-BADGE-200 reproduced (§5); TF-RC1-ANDROID-CONFIG unchanged | [rc1-defects](rc1-defects.md), [store1 audit §9](store1-release-audit.md) |
+| Open blockers carried over | TF-RC1-SIGNING (P1, production signing; OPEN, see §2.1), LR-1…LR-5 (legal), STORE1-SHOTS, VERSION, CONSOLE, M5.RC.3 Huawei/physical-device runs. TF-RC1-ICON stays OPEN until the owner-signed APK and a physical device are checked. P2: TF-RC1-COPY-NAME, TF-RC1-DRAFT-TITLE, TF-RC1-BADGE-200 reproduced (§5); TF-RC1-ANDROID-CONFIG unchanged | [rc1-defects](rc1-defects.md), [store1 audit §9](store1-release-audit.md) |
 | Versioning | `versionCode 1` / `versionName 0.1.0` (placeholders, owner decision S-5). The APK and the AAB of one commit carry the same values; the code sequence is shared by all three stores ([google-play/signing §6.4](google-play/signing.md#64-versions-across-the-three-stores)) | validator reports |
 | Localization | RU/EN UI and talent texts switch with the app locale; Compose string resources (`values-ru`) are in the **base** APK assets, so Play language splits cannot drop them. The launcher label stays `TalentForge`. No `localeConfig`: the APK advertises AndroidX locales (TF-RC1-ANDROID-CONFIG, cosmetic) | emulator run (§4.3); `unzip -l` of the Play-like `base-master.apk` |
 | Legal documents | Published privacy policy RU/EN checked (§3). Store listings: Variant A of all four drafts contains none of *World of Warcraft*, *Warcraft*, *Blizzard*, *WoW*, *Forever*; Play short/full text 67/1465 (EN) and 72/1626 (RU) characters, within 80/4000 | listing drafts |
@@ -34,6 +34,25 @@ emulator found no crash and no P0/P1 defect. It does not replace the owner and l
 | Compatibility | `minSdk 26`, `targetSdk 36`, `compileSdk 36` (Play requires 36 since 2026-08-31); ABIs `arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64`; the only native library is 16 KB aligned (validators `native-16kb-page-size`, `bundle-native-page-alignment`; `zipalign -c -P 16` on the generated arm64 split) | reports in [`rc3-evidence/signing/`](rc3-evidence/signing/) |
 | Dataset freshness | **CURRENT**: product `1.60.1.70450` is the latest publishable build, checked 2026-10-20T06:25:17Z (gate 3 of [rc1 checklist §8](rc1-release-checklist.md#8-release-candidate-acceptance-gates-m5rc3); re-run within 24 h of the tag) | [`freshness.json`](rc3-evidence/freshness.json) |
 | CI | green on `7efc93d`: [CI](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/39349091718) and [mobile-ci](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/39349091706) | `gh run list --branch main` |
+
+### 2.1 Production signing status (release gate: OPEN)
+
+State as reported by the owner on 2026-10-20. The agent did not receive, read or use the keystore,
+its password or its certificate; nothing below was checked by the agent unless it says so.
+
+| Item | Status |
+|---|---|
+| Production app signing keystore `talentforge-release.p12` | **Created locally by the owner** (owner's report). Not seen by the agent; no part of it is in the repository or in CI |
+| Two offline backups and the restore drill ([signing guide §2](android-release-signing.md#2-back-it-up-before-the-first-upload-)) | **Not confirmed** |
+| Production certificate SHA-256 (`APP_SIGNING_SHA256`) recorded and checked against the keystore | **Not verified** |
+| Key type and size (RSA 4096) and the public DN | **Not verified** |
+| First `assemblePublishableRelease` with the production key, report `"result": "PASS"` | **Not run** |
+| Separate Google Play upload key (`talentforge-upload.p12`), its SHA-256 different from the app signing certificate | **Not confirmed** |
+| Play App Signing set to the owner's key | **Not done** (owner, before the first upload) |
+
+**Gate:** TF-RC1-SIGNING and the production-signing items of every store stay **OPEN** until the
+owner confirms the backups and restore drill, records both fingerprints, and a production-signed
+APK (and, for Google Play, an upload-key-signed AAB) passes the validators in §7.
 
 ## 3. Privacy policy and the three stores
 
@@ -137,7 +156,7 @@ separate change, not part of this audit).
 
 ## 6. Owner actions, in order
 
-1. 🔑 Create the **app signing key** (RSA 4096) and, separately, the **upload key**; two offline backups each; record both SHA-256 (they must differ) — [signing guide §1–§2](android-release-signing.md), [Play signing §4](google-play/signing.md#4-creating-the-keys-).
+1. 🔑 Finish production signing (§2.1): the app signing keystore exists; make and verify two offline backups with a restore drill, record its SHA-256 and check it is RSA 4096; create the **separate upload key** and record its SHA-256 (the two must differ) — [signing guide §1–§2](android-release-signing.md), [Play signing §4](google-play/signing.md#4-creating-the-keys-).
 2. Decide the first public `versionCode`/`versionName` (S-5) in a reviewed change; tag the release commit after the checklist.
 3. Decide the open P2 defects (§5): fix, or accept in writing.
 4. Legal: LR-1…LR-5 sign-off for RuStore/AppGallery; P-12 for Google Play.

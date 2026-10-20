@@ -17,7 +17,8 @@
 > - Android backup off;
 > - an in-app About / legal screen with the Android open-source notices.
 >
-> **The decision is still NO-GO for publication.** No production key exists, nothing was
+> **The decision is still NO-GO for publication.** The production keystore was created by the
+> owner (2026-10-20) but is not yet verified ([RC.3 §2.1](../rc3-readiness.md#21-production-signing-status-release-gate-open)), nothing was
 > signed for release or uploaded, and LR-1…LR-5, TF-RC1-DATA and the device runs remain open
 > (§8).
 

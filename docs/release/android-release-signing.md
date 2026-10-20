@@ -5,7 +5,7 @@
 | Applies to | The one signed universal APK uploaded **byte-identical** to RuStore and Huawei AppGallery |
 | Strategy | [multi-store-signing.md](appgallery/multi-store-signing.md): one owner-held RSA 4096 key, no Huawei App Signing, no RuStore AAB signing. **Google Play (M5.PLAY.1):** a copy of this same key goes to Play App Signing, and a separate upload key signs the Play bundle ([google-play/signing.md](google-play/signing.md)) |
 | Implemented by | `mobile/composeApp/build.gradle.kts` (signing settings, `checkReleaseSigning`, `assemblePublishableRelease`), `scripts/verify_release_apk.py`, `scripts/release_signing_selftest.sh` |
-| Status | Engineering is done. **No production key exists yet**. Every step below marked 🔑 is an owner action; none was run with a real key. |
+| Status | Engineering is done. **The owner reports a locally created production keystore `talentforge-release.p12` (2026-10-20); its backups, restore drill, fingerprint and the first signed APK are not yet verified, so the gate stays open** ([RC.3 §2.1](rc3-readiness.md#21-production-signing-status-release-gate-open)). Every step below marked 🔑 is an owner action; none was run by the agent with a real key. |
 
 Steps marked 🔑 are done only by the owner, on the owner's machine. Nothing in this guide
 uploads anything.

@@ -13,7 +13,7 @@
 | Gate | Verdict | Why |
 |---|---|---|
 | **Engineering** (pipeline, signing separation, Play technical requirements) | **GO** | Every check in §2 passes. The Google Play bundle path is reproducible and fail-closed, and the RuStore/AppGallery APK path is unchanged and re-verified |
-| **Closed testing on Google Play** | **NO-GO** until the owner actions P-1…P-9 (§3) are done | no keys exist; Play App Signing must be set to the owner's key before the first upload; privacy policy hosted since M5.LEGAL.LINK but its legal review (LR-5) is open ([RC.3 §3](../rc3-readiness.md#3-privacy-policy-and-the-three-stores)); App content not filled; feature graphic and screenshots missing; device verification |
+| **Closed testing on Google Play** | **NO-GO** until the owner actions P-1…P-9 (§3) are done | app signing keystore created by the owner but unverified, upload key not confirmed ([RC.3 §2.1](../rc3-readiness.md#21-production-signing-status-release-gate-open)); Play App Signing must be set to the owner's key before the first upload; privacy policy hosted since M5.LEGAL.LINK but its legal review (LR-5) is open ([RC.3 §3](../rc3-readiness.md#3-privacy-policy-and-the-three-stores)); App content not filled; feature graphic and screenshots missing; device verification |
 | **Production on Google Play** | **NO-GO** | needs the closed test (12+ testers for 14 days), production access, and the owner's explicit acceptance of the open legal risk (§6). LR-1…LR-5 stay **OPEN** |
 
 ## 2. Engineering PASS/FAIL
