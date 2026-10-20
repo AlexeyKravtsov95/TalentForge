@@ -6,6 +6,8 @@ import io.github.alexeykravtsov95.talentforge.data.allocation.BuildFile
 import io.github.alexeykravtsov95.talentforge.data.allocation.NodeAllocation
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -208,7 +210,7 @@ class LocalBuildRepositoryManagementTest {
         loaded(harness.repo.renameBuild(original.localId, "Raid build"))
         harness.clock.advanceBy(99)
 
-        val copy = loaded(harness.repo.duplicateBuild(original.localId))
+        val copy = loaded(harness.repo.duplicateBuild(original.localId, COPY))
 
         val storedCopy = records(harness).first { it.localId == copy.localId }
         assertEquals("Raid build (copy)", copy.name)
@@ -217,13 +219,42 @@ class LocalBuildRepositoryManagementTest {
     }
 
     @Test
-    fun duplicateOfADraftIsNamedDraftCopy() {
+    fun duplicateOfADraftStaysAnUnnamedDraft() {
         val harness = repository()
         val draft = loaded(harness.repo.createDraft(buildFile()))
 
-        val copy = loaded(harness.repo.duplicateBuild(draft.localId))
+        val copy = loaded(harness.repo.duplicateBuild(draft.localId, COPY))
 
-        assertEquals("Draft (copy)", copy.name)
+        // M5.RC.3 (TF-RC1-COPY-NAME): no display string is persisted for an
+        // unnamed copy — the UI derives its localized title at display time
+        assertNull(copy.name)
+        assertNull(records(harness).first { it.localId == copy.localId }.name)
+        assertFalse(harness.storage.payload!!.contains("(copy)"))
+        assertFalse(harness.storage.payload!!.contains("Draft"))
+    }
+
+    @Test
+    fun duplicateAppendsTheCallersLocalizedSuffixVerbatim() {
+        val harness = repository()
+        val original = namedDraft(harness, "Билд мага")
+
+        val copy = loaded(harness.repo.duplicateBuild(original.localId, " (копия)"))
+
+        assertEquals("Билд мага (копия)", copy.name)
+        assertEquals("Билд мага (копия)", records(harness).first { it.localId == copy.localId }.name)
+    }
+
+    @Test
+    fun duplicateRejectsABlankOrOverlongSuffixBeforeTouchingStorage() {
+        val harness = repository()
+        val original = namedDraft(harness, "Build")
+        val payloadBefore = harness.storage.payload
+
+        assertFailsWith<IllegalArgumentException> { harness.repo.duplicateBuild(original.localId, " ") }
+        assertFailsWith<IllegalArgumentException> {
+            harness.repo.duplicateBuild(original.localId, "x".repeat(LocalBuildRepository.MAX_BUILD_NAME_LENGTH))
+        }
+        assertEquals(payloadBefore, harness.storage.payload)
     }
 
     @Test
@@ -233,7 +264,7 @@ class LocalBuildRepositoryManagementTest {
         loaded(harness.repo.open(original.localId))
         harness.clock.advanceBy(500)
 
-        val copy = loaded(harness.repo.duplicateBuild(original.localId))
+        val copy = loaded(harness.repo.duplicateBuild(original.localId, COPY))
 
         assertEquals(1_500L, copy.createdAt)
         assertEquals(1_500L, copy.updatedAt)
@@ -248,7 +279,7 @@ class LocalBuildRepositoryManagementTest {
         val second = loaded(harness.repo.createDraft(buildFile("MAGE")))
         harness.clock.advanceBy(10)
 
-        val copy = loaded(harness.repo.duplicateBuild(first.localId))
+        val copy = loaded(harness.repo.duplicateBuild(first.localId, COPY))
 
         assertEquals(
             listOf(copy.localId, second.localId, first.localId),
@@ -263,7 +294,7 @@ class LocalBuildRepositoryManagementTest {
         val original = loaded(repo.createDraft(buildFile())) // "id-1"
         val scripted = LocalBuildRepository(storage, FixedBuildClock(), ScriptedBuildIds("id-1", "", "fresh"))
 
-        val copy = loaded(scripted.duplicateBuild(original.localId))
+        val copy = loaded(scripted.duplicateBuild(original.localId, COPY))
 
         assertEquals("fresh", copy.localId, "a colliding and a blank candidate are skipped, not normalized")
         assertEquals(setOf(original.localId, "fresh"), loaded(scripted.load()).map { it.localId }.toSet())
@@ -276,7 +307,7 @@ class LocalBuildRepositoryManagementTest {
         val payloadBefore = harness.storage.payload
         val stuck = LocalBuildRepository(harness.storage, FixedBuildClock(), ScriptedBuildIds(original.localId))
 
-        val error = failure(stuck.duplicateBuild(original.localId))
+        val error = failure(stuck.duplicateBuild(original.localId, COPY))
 
         val collision = assertIs<BuildLibraryError.IdCollision>(error)
         assertEquals(8, collision.attempts)
@@ -287,7 +318,7 @@ class LocalBuildRepositoryManagementTest {
     fun duplicatesAreIndependentRecordsAfterFurtherEdits() {
         val harness = repository()
         val original = loaded(harness.repo.createDraft(buildFile("WARRIOR")))
-        val copy = loaded(harness.repo.duplicateBuild(original.localId))
+        val copy = loaded(harness.repo.duplicateBuild(original.localId, COPY))
 
         // editing the original never reaches the copy…
         harness.clock.advanceBy(10)
@@ -308,7 +339,7 @@ class LocalBuildRepositoryManagementTest {
         val maxName = "y".repeat(LocalBuildRepository.MAX_BUILD_NAME_LENGTH)
         val original = namedDraft(harness, maxName)
 
-        val copy = loaded(harness.repo.duplicateBuild(original.localId))
+        val copy = loaded(harness.repo.duplicateBuild(original.localId, COPY))
 
         assertNotNull(copy.name)
         assertEquals(LocalBuildRepository.MAX_BUILD_NAME_LENGTH, copy.name.length)
@@ -320,8 +351,8 @@ class LocalBuildRepositoryManagementTest {
         val harness = repository()
         val original = namedDraft(harness, "Build")
 
-        val firstCopy = loaded(harness.repo.duplicateBuild(original.localId))
-        val secondCopy = loaded(harness.repo.duplicateBuild(firstCopy.localId))
+        val firstCopy = loaded(harness.repo.duplicateBuild(original.localId, COPY))
+        val secondCopy = loaded(harness.repo.duplicateBuild(firstCopy.localId, COPY))
 
         // the copy's name derives from the source's CURRENT name: a copy of a
         // copy accumulates one suffix per copy (documented policy, not a bug)
@@ -335,7 +366,7 @@ class LocalBuildRepositoryManagementTest {
         var current = namedDraft(harness, "y".repeat(LocalBuildRepository.MAX_BUILD_NAME_LENGTH))
 
         repeat(5) {
-            current = loaded(harness.repo.duplicateBuild(current.localId))
+            current = loaded(harness.repo.duplicateBuild(current.localId, COPY))
             assertNotNull(current.name)
             assertEquals(LocalBuildRepository.MAX_BUILD_NAME_LENGTH, current.name.length)
             assertTrue(current.name.endsWith(" (copy)"))
@@ -345,10 +376,10 @@ class LocalBuildRepositoryManagementTest {
     @Test
     fun duplicateNamesAreAllowedBecauseIdentityIsTheLocalId() {
         val harness = repository()
-        val original = loaded(harness.repo.createDraft(buildFile()))
+        val original = namedDraft(harness, "Build")
 
-        val firstCopy = loaded(harness.repo.duplicateBuild(original.localId))
-        val secondCopy = loaded(harness.repo.duplicateBuild(original.localId))
+        val firstCopy = loaded(harness.repo.duplicateBuild(original.localId, COPY))
+        val secondCopy = loaded(harness.repo.duplicateBuild(original.localId, COPY))
 
         assertEquals(firstCopy.name, secondCopy.name)
         val ids = records(harness).map { it.localId }
@@ -362,21 +393,21 @@ class LocalBuildRepositoryManagementTest {
 
         assertEquals(
             "missing",
-            assertIs<BuildLibraryError.UnknownRecord>(failure(harness.repo.duplicateBuild("missing"))).localId,
+            assertIs<BuildLibraryError.UnknownRecord>(failure(harness.repo.duplicateBuild("missing", COPY))).localId,
         )
     }
 
     @Test
     fun duplicateReadAndWriteFailuresAreTypedAndLeaveTheLibraryIntact() {
         val readHarness = repository(storage = InMemoryBuildLibraryStorage(failReads = true))
-        assertIs<BuildLibraryError.StorageRead>(failure(readHarness.repo.duplicateBuild("any")))
+        assertIs<BuildLibraryError.StorageRead>(failure(readHarness.repo.duplicateBuild("any", COPY)))
 
         val harness = repository()
         val original = loaded(harness.repo.createDraft(buildFile()))
         val payloadBefore = harness.storage.payload
         harness.storage.failWrites = true
 
-        assertIs<BuildLibraryError.StorageWrite>(failure(harness.repo.duplicateBuild(original.localId)))
+        assertIs<BuildLibraryError.StorageWrite>(failure(harness.repo.duplicateBuild(original.localId, COPY)))
         assertEquals(payloadBefore, harness.storage.payload)
         assertEquals(listOf(original.localId), records(harness).map { it.localId })
     }
@@ -404,7 +435,7 @@ class LocalBuildRepositoryManagementTest {
 
         assertTrue(records(harness).isEmpty())
         // a later management action on the deleted id fails typed instead of resurrecting
-        assertIs<BuildLibraryError.UnknownRecord>(failure(harness.repo.duplicateBuild(only.localId)))
+        assertIs<BuildLibraryError.UnknownRecord>(failure(harness.repo.duplicateBuild(only.localId, COPY)))
     }
 
     @Test
@@ -440,7 +471,7 @@ class LocalBuildRepositoryManagementTest {
         val first = LocalBuildRepository(storage, FixedBuildClock(100L), SequentialBuildIds())
         val created = loaded(first.createDraft(buildFile()))
         loaded(first.renameBuild(created.localId, "Renamed"))
-        val copy = loaded(first.duplicateBuild(created.localId))
+        val copy = loaded(first.duplicateBuild(created.localId, COPY))
 
         // "relaunch": a second instance over the SAME serialized storage
         val relaunched = LocalBuildRepository(storage, FixedBuildClock(900L), SequentialBuildIds())
@@ -449,5 +480,10 @@ class LocalBuildRepositoryManagementTest {
         val afterRestart = loaded(relaunched.load())
         assertEquals(listOf("Renamed (copy)"), afterRestart.map { it.name })
         assertEquals(listOf(copy.localId), afterRestart.map { it.localId })
+    }
+
+    private companion object {
+        /** The English copy suffix the UI passes (`builds_copy_name_suffix`). */
+        const val COPY = " (copy)"
     }
 }

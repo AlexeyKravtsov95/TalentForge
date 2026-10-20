@@ -82,6 +82,7 @@
     <string name="builds_empty_body">Создайте билд, чтобы начать планировать таланты.</string>
     <string name="builds_duplicated">Копия билда создана</string>
     <string name="builds_duplicate_failed">Не удалось создать копию билда</string>
+    <string name="builds_copy_name_suffix">\u0020(копия)</string>
     <string name="builds_row_actions_description">действия: %1$s</string>
     <string name="builds_row_actions_action">управление: %1$s</string>
 
@@ -116,7 +117,6 @@
     <!-- ================================================================ -->
 
     <!-- editor header -->
-    <string name="editor_draft_title">Черновик</string>
     <string name="editor_undo_action">Отменить изменение талантов</string>
     <string name="editor_redo_action">Повторить изменение талантов</string>
     <string name="editor_build_actions_open">открыть действия с билдом</string>

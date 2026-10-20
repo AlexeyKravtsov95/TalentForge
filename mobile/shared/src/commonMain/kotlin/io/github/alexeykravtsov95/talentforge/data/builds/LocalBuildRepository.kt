@@ -129,15 +129,6 @@ class LocalBuildRepository(
          * broken/fixed generator fails typed instead of looping forever.
          */
         private const val MAX_ID_ATTEMPTS = 8
-
-        /** Suffix of a duplicated build's initial name. */
-        private const val COPY_NAME_SUFFIX = " (copy)"
-
-        /**
-         * The fallback title of an unnamed record — the same "Draft" the card
-         * model shows; the duplicate's initial name is derived from it.
-         */
-        private const val DRAFT_TITLE = "Draft"
     }
 
     /** The whole library in canonical domain order; empty when nothing was stored. */
@@ -258,16 +249,28 @@ class LocalBuildRepository(
      * unique `localId` (the same bounded collision policy as
      * [createDraft]), the source's exact [BuildFile] payload,
      * `createdAt`/`updatedAt` = now, `lastOpenedAt = null`, and the initial
-     * name derived from the source's CURRENT name with ` (copy)` appended —
-     * `Draft (copy)` for a Draft, and a copy of a copy appends once more
-     * (`Build (copy)` → `Build (copy) (copy)`), always shortened to
-     * [MAX_BUILD_NAME_LENGTH] while keeping the suffix. Duplicate names are
-     * allowed: identity is `localId`, never the name. The source record and
-     * its neighbours are untouched; later edits of either build never reach
-     * the other.
+     * name derived from the source's CURRENT name (M5.RC.3 naming fix):
+     *
+     * - a **Draft stays a Draft** — the copy of an unnamed build is unnamed
+     *   too (`name == null`), so the UI keeps deriving its localized display
+     *   title at display time and no display string is ever persisted;
+     * - a **named** build gets [copyNameSuffix] appended — the caller's
+     *   localized suffix (` (copy)` / ` (копия)`); the repository holds no UI
+     *   copy — and a copy of a copy appends once more
+     *   (`Build (copy)` → `Build (copy) (copy)`), always shortened to
+     *   [MAX_BUILD_NAME_LENGTH] while keeping the suffix.
+     *
+     * [copyNameSuffix] must be non-blank and shorter than
+     * [MAX_BUILD_NAME_LENGTH] (a caller contract, checked before any read).
+     * Duplicate names are allowed: identity is `localId`, never the name. The
+     * source record and its neighbours are untouched; later edits of either
+     * build never reach the other.
      */
-    fun duplicateBuild(localId: String): BuildLibraryOutcome<LocalBuildRecord> =
-        when (val outcome = readAll()) {
+    fun duplicateBuild(localId: String, copyNameSuffix: String): BuildLibraryOutcome<LocalBuildRecord> {
+        require(copyNameSuffix.isNotBlank() && copyNameSuffix.length < MAX_BUILD_NAME_LENGTH) {
+            "copyNameSuffix must be non-blank and shorter than $MAX_BUILD_NAME_LENGTH characters"
+        }
+        return when (val outcome = readAll()) {
             is ReadOutcome.Failed -> BuildLibraryOutcome.Failed(outcome.error)
             is ReadOutcome.Records -> {
                 val source = outcome.records.firstOrNull { it.localId == localId }
@@ -279,7 +282,7 @@ class LocalBuildRepository(
                 val now = clock.nowMillis()
                 val copy = LocalBuildRecord(
                     localId = copyId,
-                    name = copyNameOf(source.name),
+                    name = source.name?.let { copyNameOf(it, copyNameSuffix) },
                     createdAt = now,
                     updatedAt = now,
                     lastOpenedAt = null,
@@ -291,15 +294,16 @@ class LocalBuildRepository(
                 }
             }
         }
+    }
 
     /**
-     * The copy's initial name: the source's CURRENT name with ` (copy)`
+     * A named copy's initial name: the source's CURRENT name with [suffix]
      * appended — so a duplicate of a duplicate accumulates one suffix per
      * copy (`Build (copy)` → `Build (copy) (copy)`) — shortened to the
      * name-length limit while always keeping the suffix.
      */
-    private fun copyNameOf(name: String?): String =
-        (name ?: DRAFT_TITLE).take(MAX_BUILD_NAME_LENGTH - COPY_NAME_SUFFIX.length) + COPY_NAME_SUFFIX
+    private fun copyNameOf(name: String, suffix: String): String =
+        name.take(MAX_BUILD_NAME_LENGTH - suffix.length) + suffix
 
     /**
      * Deletes exactly one record (M5.2a). Every other record is untouched; a

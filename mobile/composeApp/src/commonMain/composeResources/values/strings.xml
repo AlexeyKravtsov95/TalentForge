@@ -82,6 +82,8 @@
     <string name="builds_empty_body">Create a build to start planning talents.</string>
     <string name="builds_duplicated">Build duplicated</string>
     <string name="builds_duplicate_failed">Couldn't duplicate the build</string>
+    <!-- appended to a NAMED build's name by Duplicate and persisted with it (an unnamed copy stays unnamed); \u0020 keeps the leading space -->
+    <string name="builds_copy_name_suffix">\u0020(copy)</string>
     <string name="builds_row_actions_description">build actions for %1$s</string>
     <string name="builds_row_actions_action">manage %1$s</string>
 
@@ -116,7 +118,6 @@
     <!-- ================================================================ -->
 
     <!-- editor header -->
-    <string name="editor_draft_title">Draft</string>
     <string name="editor_undo_action">Undo talent change</string>
     <string name="editor_redo_action">Redo talent change</string>
     <string name="editor_build_actions_open">open build actions</string>

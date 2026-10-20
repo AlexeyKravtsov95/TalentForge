@@ -38,6 +38,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_copy_name_suffix
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_duplicate_failed
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_duplicated
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_empty_body
@@ -189,9 +190,13 @@ fun AllBuildsScreen(
         },
     )
 
+    // TF-RC1-COPY-NAME: a named copy gets the suffix of the CURRENT app
+    // language; an unnamed copy stays unnamed (the repository persists none)
+    val copyNameSuffix = stringResource(Res.string.builds_copy_name_suffix)
+
     fun duplicate(localId: String) {
         launchManagement {
-            when (withContext(Dispatchers.Default) { repository.duplicateBuild(localId) }) {
+            when (withContext(Dispatchers.Default) { repository.duplicateBuild(localId, copyNameSuffix) }) {
                 is BuildLibraryOutcome.Loaded -> {
                     overlay = ManagementOverlay.Hidden
                     noticeEvent += 1
