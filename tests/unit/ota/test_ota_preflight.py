@@ -119,6 +119,8 @@ class FakeOrigin:
         self.header_edits: dict[str, dict[str, str]] = {}
         self.gzip_bodies: dict[str, bytes] = {}  # what a gzip request gets instead
         self.plain_http: Callable[[], httpx.Response] | None = None
+        self.bucket_down = False  # the bucket host accepts no connection at all
+        self.failures: dict[str, Exception] = {}  # path -> transport failure, on the edge
         self.methods: list[str] = []
 
     def handler(self, request: httpx.Request) -> httpx.Response:
@@ -128,6 +130,10 @@ class FakeOrigin:
             if self.plain_http is None:
                 raise httpx.ConnectError("connection refused", request=request)
             return self.plain_http()
+        if request.url.host != EDGE_HOST and self.bucket_down:
+            raise httpx.ConnectError("connection refused", request=request)
+        if request.url.host == EDGE_HOST and path in self.failures:
+            raise self.failures[path]
         overrides = self.edge_overrides if request.url.host == EDGE_HOST else self.bucket_overrides
         if path in overrides:
             return respond(*overrides[path])
@@ -202,14 +208,18 @@ def test_a_correct_publication_passes_every_check() -> None:
     assert found["catalog.signature"] is Status.PASS
     assert found["catalog.gzip"] is Status.PASS
     assert found["catalog.bucket"] is Status.PASS
+    assert found["releases"] is Status.PASS
     doc = json.loads(report.to_json())
     assert doc["result"] == "OK" and doc["origin"] == ORIGIN
 
 
-def test_only_the_active_release_can_be_checked() -> None:
-    found = statuses(run(FakeOrigin(publication()), releases="active"))
-    assert found[RELEASE] is Status.PASS
-    assert found["release.others"] is Status.SKIP
+def test_a_release_check_that_did_not_run_is_never_ok(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Content verification is mandatory: a listed release left unchecked fails the run."""
+    monkeypatch.setattr(preflight, "_check_release", lambda *args: None)
+    report = run(FakeOrigin(publication()))
+    assert report.failed
+    assert statuses(report)["releases"] is Status.FAIL
+    assert RELEASE not in statuses(report)
 
 
 def test_a_published_catalog_fails_when_none_is_expected() -> None:
@@ -217,10 +227,35 @@ def test_a_published_catalog_fails_when_none_is_expected() -> None:
     assert report.failed and statuses(report)["catalog"] is Status.FAIL
 
 
-def test_without_a_keyring_signatures_are_skipped_not_passed() -> None:
-    found = statuses(run(FakeOrigin(publication()), keyring=None))
-    assert found["catalog.signature"] is Status.SKIP
-    assert found["releases"] is Status.SKIP
+def test_a_published_catalog_without_a_keyring_fails() -> None:
+    report = run(FakeOrigin(publication()), keyring=None)
+    found = statuses(report)
+    assert report.failed
+    assert found["catalog.signature"] is Status.FAIL
+    assert found["releases"] is Status.FAIL  # content not verified: never OK
+    assert json.loads(report.to_json())["result"] == "FAIL"
+
+
+def test_expect_published_requires_a_keyring() -> None:
+    with pytest.raises(ValueError, match="--expect published needs --keyring"):
+        run(FakeOrigin(publication()), keyring=None, expect="published")
+
+
+def test_an_unverifiable_served_catalog_fails_its_releases_too() -> None:
+    origin = FakeOrigin(publication())
+    origin.objects[CATALOG] = publication(signer="someone-else")[CATALOG]
+    found = statuses(run(origin))
+    assert found["catalog.signature"] is Status.FAIL
+    assert found["releases"] is Status.FAIL
+
+
+def test_a_catalog_that_cannot_be_fetched_fails() -> None:
+    origin = FakeOrigin(publication())
+    origin.edge_overrides[CATALOG] = (503, {}, b"")
+    report = run(origin)
+    assert report.failed
+    assert statuses(report)["catalog.http"] is Status.FAIL
+    assert statuses(report)["releases"] is Status.FAIL
 
 
 # --------------------------------------------------------------------------- faults
@@ -358,6 +393,63 @@ def test_plain_http_is_reported() -> None:
     assert statuses(run(origin))["http.plain"] is Status.WARN
 
 
+# --------------------------------------------------------------------------- private paths
+
+
+def test_an_unreachable_bucket_origin_is_not_a_pass() -> None:
+    origin = FakeOrigin()
+    origin.bucket_down = True
+    report = run(origin)
+    assert report.failed
+    assert statuses(report)["private.bucket"] is Status.FAIL
+    assert "could not confirm" in next(c.detail for c in report.checks if c.id == "private.bucket")
+    assert statuses(report)["private.origin"] is Status.PASS
+
+
+@pytest.mark.parametrize(
+    "answer",
+    [
+        (429, {"Retry-After": "5"}, b""),
+        (500, {}, b""),
+        (502, {}, b""),
+        (503, {}, b""),
+        (400, {}, b""),
+        (204, {}, b""),
+    ],
+    ids=lambda a: str(a[0]),
+)
+def test_an_unconfirmed_answer_on_one_private_path_fails(answer: Answer) -> None:
+    origin = FakeOrigin()
+    origin.edge_overrides["?acl"] = answer
+    report = run(origin)
+    assert report.failed
+    assert statuses(report)["private.origin"] is Status.FAIL
+
+
+@pytest.mark.parametrize(
+    "failure",
+    [
+        httpx.ReadTimeout("read timed out"),
+        httpx.ConnectTimeout("connect timed out"),
+        httpx.RemoteProtocolError("peer closed connection"),
+    ],
+    ids=lambda f: type(f).__name__,
+)
+def test_a_transport_failure_on_one_private_path_fails(failure: Exception) -> None:
+    origin = FakeOrigin()
+    origin.failures["v1/"] = failure
+    report = run(origin)
+    assert report.failed
+    assert statuses(report)["private.origin"] is Status.FAIL
+
+
+def test_404_confirms_a_private_path_as_well_as_403() -> None:
+    origin = FakeOrigin()
+    for path in preflight.PRIVATE_PATHS:
+        origin.edge_overrides[path] = (404, {}, b"")
+    assert statuses(run(origin))["private.origin"] is Status.PASS
+
+
 # --------------------------------------------------------------------------- DNS and TLS
 
 
@@ -450,6 +542,19 @@ def test_main_prints_and_writes_the_report(
     assert "PENDING" in capsys.readouterr().out
     assert json.loads(out.read_text())["result"] == "OK"
 
-    assert preflight.main(["--json", str(out), "--expect", "published"]) == 1
+    # --expect published without --keyring is a usage error, before any request
+    requests = len(origin.methods)
+    assert preflight.main(["--expect", "published"]) == 2
+    assert "--expect published needs --keyring" in capsys.readouterr().err
+    assert len(origin.methods) == requests
+
+    ring = tmp_path / "production-keyring.json"
+    ring.write_text(json.dumps({"keys": [entry(PROD_A), entry("tf-prod-2026b")]}))
+    published = ["--json", str(out), "--expect", "published", "--keyring", str(ring)]
+    assert preflight.main(published) == 1  # nothing published
     assert "result: FAIL" in capsys.readouterr().out
+    assert json.loads(out.read_text())["result"] == "FAIL"
+
+    origin.objects.update(publication())  # published, but checked without a keyring
+    assert preflight.main(["--json", str(out)]) == 1
     assert json.loads(out.read_text())["result"] == "FAIL"

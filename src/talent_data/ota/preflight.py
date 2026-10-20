@@ -21,8 +21,11 @@ It sends ``GET`` and ``HEAD`` only, without credentials, follows no redirect and
 nothing anywhere. Whether anonymous *writes* are closed cannot be proven without trying
 one, so that line is ``MANUAL`` (the bucket policy review in the deployment runbook).
 
-Before the first publication the catalog is simply absent (``PENDING``); ``--expect
-published`` turns that into a failure. The exit status is 1 when any check FAILs.
+Fail closed: only 403/404 confirm a private path is denied (network errors, timeouts, 429
+and 5xx fail the check); a served catalog is never ``OK`` unless its signature verified
+against the keyring and every listed release's content was re-hashed. Before the first
+publication the catalog is simply absent (``PENDING``); ``--expect published`` turns that
+into a failure and requires ``--keyring``. The exit status is 1 when any check FAILs.
 """
 
 from __future__ import annotations
@@ -295,19 +298,40 @@ def object_problems(
     return problems
 
 
+#: the only answers that *confirm* a path is not public (anonymous S3 denies with 403)
+_DENIED = (403, 404)
+
+
 def check_private(report: Report, client: httpx.Client, origin: str, label: str) -> None:
-    served = []
+    """Every private path must be *confirmed* denied (403/404) - fail closed otherwise.
+
+    A network error, a timeout, 429, a 5xx or any other unexpected answer proves nothing
+    about public access, so it fails the check instead of passing it.
+    """
+    served: list[str] = []
+    unconfirmed: list[str] = []
     for path in PRIVATE_PATHS:
         response = fetch(client, f"{origin}/{path}")
+        if response.status in _DENIED:
+            continue
         if response.status == 200 or 300 <= response.status < 400:
             served.append(f"/{path} -> {response.status}")
+        else:
+            unconfirmed.append(f"/{path} -> {response.status or response.error}")
     if served:
-        report.add(f"private.{label}", Status.FAIL, f"served: {served}")
+        report.add(f"private.{label}", Status.FAIL, f"served: {served}; {unconfirmed or ''}")
+    elif unconfirmed:
+        report.add(
+            f"private.{label}",
+            Status.FAIL,
+            f"could not confirm that {len(unconfirmed)} private path(s) are denied "
+            f"(only 403/404 confirm it): {unconfirmed[:5]}",
+        )
     else:
         report.add(
             f"private.{label}",
             Status.PASS,
-            f"{len(PRIVATE_PATHS)} private paths not served (staging catalog, listings, "
+            f"{len(PRIVATE_PATHS)} private paths answered 403/404 (staging catalog, listings, "
             "acl/policy/versioning, keys outside the contract)",
         )
 
@@ -384,8 +408,12 @@ def check_catalog(
         report.add(
             "catalog.gzip", Status.PASS, f"same bytes with Accept-Encoding: gzip ({encoding})"
         )
-    if keyring is None:
-        report.add("catalog.signature", Status.SKIP, "no --keyring: signatures not checked")
+    if keyring is None:  # a published catalog is never "OK" without its signature checked
+        report.add(
+            "catalog.signature",
+            Status.FAIL,
+            "a production catalog is published but was not verified: pass --keyring",
+        )
         return None
     try:
         verified = verify_catalog(
@@ -422,15 +450,21 @@ def check_catalog(
     return catalog, identity.body
 
 
-def check_releases(
-    report: Report, client: httpx.Client, origin: str, catalog: OtaCatalog, which: str
-) -> None:
-    """Every object of the listed (or only the active) releases, as a client fetches it."""
+def check_releases(report: Report, client: httpx.Client, origin: str, catalog: OtaCatalog) -> None:
+    """Every object of every listed release, as a client fetches it - always all of them."""
     for entry in catalog.releases:
-        if which == "all" or entry.release_id == catalog.active_release_id:
-            _check_release(report, client, origin, entry)
-    if which != "all":
-        report.add("release.others", Status.SKIP, "only the active release checked (--releases)")
+        _check_release(report, client, origin, entry)
+    ids = [f"release.{entry.release_id}" for entry in catalog.releases]
+    verified = [check_id for check_id in ids if report.status_of(check_id) is Status.PASS]
+    if len(verified) == len(ids):
+        report.add("releases", Status.PASS, f"{len(ids)}/{len(ids)} listed release(s) verified")
+    else:
+        report.add(
+            "releases",
+            Status.FAIL,
+            f"{len(verified)}/{len(ids)} listed release(s) verified; the rest failed or "
+            "were not checked",
+        )
 
 
 def _check_release(
@@ -499,7 +533,6 @@ def run(
     keyring: Mapping[str, TrustedKey] | None = None,
     bucket_origin: str | None = None,
     expect: str = "any",
-    releases: str = "all",
     expect_cname_suffix: str | None = None,
 ) -> Report:
     parts = urlsplit(origin)
@@ -508,6 +541,8 @@ def run(
     origin = origin.rstrip("/")
     if STAGING_PROFILE.public_origin in (origin, bucket_origin):
         raise ValueError("this is the production preflight; the staging origin is not production")
+    if expect == "published" and keyring is None:
+        raise ValueError("--expect published needs --keyring: a publication is verified, not seen")
     host = parts.hostname
     report = Report(origin=origin, at=now.strftime("%Y-%m-%dT%H:%M:%SZ"))
 
@@ -517,10 +552,17 @@ def run(
         check_plain_http(report, client, origin)
         found = check_catalog(report, client, origin, keyring=keyring, expect=expect, now=now)
         if found is None:
-            report.add("releases", Status.SKIP, "no verified production catalog to follow")
+            if report.status_of("catalog") is Status.PENDING:  # nothing published (403/404)
+                report.add("releases", Status.SKIP, "no production catalog to follow")
+            else:  # something is served, but it could not be verified: never OK
+                report.add(
+                    "releases",
+                    Status.FAIL,
+                    "the served catalog was not verified, so no release content was checked",
+                )
         else:
             catalog, catalog_bytes = found
-            check_releases(report, client, origin, catalog, releases)
+            check_releases(report, client, origin, catalog)
             if bucket_origin is not None:
                 behind = fetch(client, f"{bucket_origin}/{CATALOG}")
                 if behind.body == catalog_bytes:
@@ -557,7 +599,6 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--keyring", type=Path, help="the production public keyring (tf-prod-*)")
     parser.add_argument("--expect", choices=["any", "empty", "published"], default="any")
-    parser.add_argument("--releases", choices=["all", "active"], default="all")
     parser.add_argument("--expect-cname-suffix", help="e.g. the CDN host VK Cloud shows")
     parser.add_argument("--json", type=Path, help="also write the report as JSON here")
     args = parser.parse_args(argv)
@@ -574,7 +615,6 @@ def main(argv: list[str] | None = None) -> int:
                 keyring=keyring,
                 bucket_origin=args.bucket_origin or None,
                 expect=args.expect,
-                releases=args.releases,
                 expect_cname_suffix=args.expect_cname_suffix,
             )
     except (ValueError, OSError) as exc:
