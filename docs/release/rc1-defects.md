@@ -292,6 +292,14 @@ The device-level checks behind that statement ran on an Android emulator only (s
 - **Cosmetic:** the counter, inspector and actions stay usable.
 - **Resolution:** a minimum badge height that scales with font, or a cap on the badge font scale.
 - **Verification:** compare screenshots at 1.0, 1.5 and 2.0 scale.
+- **M5.RC.3: RESOLVED in code with the font-scale cap** (branch `fix/m5-rc3-rank-chip-font-scale`):
+  - **Why the cap:** B3 06 fixes the chip at 15 dp, with connections starting below it, and rows leave only 28 dp between nodes. A chip that grows with the text would cover the connections and nearly touch the next row.
+  - **Cause:** the chip text's 15 sp line height grew with the system font scale (30 dp at 200 %) inside the 15 dp chip, so the text was clipped.
+  - **Fix:** the chip text now follows the system font scale only up to `RANK_CHIP_MAX_FONT_SCALE` = 1.2 (`rankChipFontScale`). Its line height is the em box. At the cap, the line fits the chip even where the platform keeps the font's own height (≈ 1.16 em on desktop/Skia).
+  - **Trade-off:** above 120 % the chip text stays at 1.2×. The rank is still shown at full text size in the inspector, and the canvas zooms.
+  - **Tests:** `TalentRankChipFontScaleUiTest`, on the real Warrior tree at 100 / 150 / 200 %: every chip is 15 dp, no rank text overflows vertically or leaves its chip, the text grows from 100 % to 150 %, and it stops growing above the cap.
+  - **Screenshots** (desktop render, density 2): [`docs/screenshots/m5-rc3-badge/`](../screenshots/m5-rc3-badge/), `editor-font-100.png`, `editor-font-150.png`, `editor-font-200.png`.
+  - **Still open:** the same check on an Android device at 200 %, and on iOS.
 
 ### TF-RC1-TABLET-WIDTH — Tablet Home stretches content and primary actions to full width
 
