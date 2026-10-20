@@ -34,10 +34,11 @@ import org.junit.Rule
  * icon/name/description/installed version header (the version from the host,
  * never invented), the talent data in use, the independent-project statement,
  * the compact privacy block whose every statement stays one explicit toggle
- * away, the policy link only when configured, the one row into the
- * third-party licenses, and NO technology, dependency or module names; 48 dp
- * targets at 320 dp / 200 %; and Home → About → Licenses → Back → Back
- * through the real app root. The licenses themselves: `LicensesScreenUiTest`.
+ * away, the published policy link of the UI language where a policy is
+ * published for the platform and none on iOS (M5.LEGAL.LINK), the one row into the third-party licenses, and NO technology, dependency or
+ * module names; 48 dp targets at 320 dp / 200 %; and Home → About → Licenses
+ * → Back → Back through the real app root. The licenses themselves:
+ * `LicensesScreenUiTest`.
  */
 @OptIn(ExperimentalTestApi::class)
 class AboutScreenUiTest {
@@ -58,9 +59,11 @@ class AboutScreenUiTest {
     ) = uiLanguage.runAboutUiTest(language, widthDp, heightDp, fontScale, uriHandler, content, block)
 
     private fun about(
+        language: AppLanguage = AppLanguage.ENGLISH,
         appVersion: AppVersion? = version,
         backup: BackupStatement = BackupStatement.AndroidBackupDisabled,
-        privacyPolicyUrl: String? = null,
+        policy: PublishedPrivacyPolicy = PublishedPrivacyPolicy.Android,
+        privacyPolicyUrl: String? = privacyPolicyUrlOf(policy, language),
         onBack: () -> Unit = {},
         onOpenLicenses: () -> Unit = {},
     ): @Composable () -> Unit = {
@@ -102,14 +105,14 @@ class AboutScreenUiTest {
         // OTA is off: no data-source line and no check action
         assertAbsent("Check for updates")
         assertAbsent("Included with the app")
-        // no approved policy URL (LR-5): no link and no placeholder
-        assertAbsent("Privacy policy")
+        // the published policy link of the UI language (M5.LEGAL.LINK)
+        awaitText("Privacy policy")
     }
 
     @Test
     fun theMainScreenNamesNoTechnologyDependencyOrModule() {
         for (language in AppLanguage.entries) {
-            onScreen(language = language, content = about()) {
+            onScreen(language = language, content = about(language)) {
                 clickText(if (language == AppLanguage.RUSSIAN) "Подробнее" else "Show details")
                 val shown = texts().joinToString("\n")
                 for (term in TECHNOLOGY_TERMS) {
@@ -159,7 +162,7 @@ class AboutScreenUiTest {
     // ------------------------------------------------------------------- Russian
 
     @Test
-    fun russianAboutIsFullyLocalized() = onScreen(language = AppLanguage.RUSSIAN, content = about()) {
+    fun russianAboutIsFullyLocalized() = onScreen(language = AppLanguage.RUSSIAN, content = about(AppLanguage.RUSSIAN)) {
         awaitText("О приложении")
         awaitText("Версия 0.1.0 (1)")
         awaitText(
@@ -174,6 +177,7 @@ class AboutScreenUiTest {
                 "не одобрен и не поддерживается ими.",
         )
         awaitText("КОНФИДЕНЦИАЛЬНОСТЬ")
+        awaitText("Политика конфиденциальности")
         awaitText("Лицензии сторонних компонентов")
         awaitText("Уведомления об открытом ПО и полные тексты лицензий")
         assertAbsent("Приложение отключает резервное копирование Android", substring = true)
@@ -181,7 +185,7 @@ class AboutScreenUiTest {
         awaitText("Приложение отключает резервное копирование Android", substring = true)
         awaitText("Скрыть подробности")
         assertEquals(1, onAllNodes(clickLabelled("открыть лицензии сторонних компонентов")).fetchSemanticsNodes().size)
-        for (english in listOf("About", "Show details", "Hide details", "Third-party licenses", "PRIVACY")) {
+        for (english in listOf("About", "Show details", "Hide details", "Third-party licenses", "PRIVACY", "Privacy policy")) {
             assertAbsent(english)
         }
     }
@@ -211,13 +215,66 @@ class AboutScreenUiTest {
     }
 
     @Test
+    fun thePublishedPolicyPageFollowsTheUiLanguage() {
+        for (language in AppLanguage.entries) {
+            val handler = RecordingUriHandler()
+            onScreen(language = language, uriHandler = handler, content = about(language)) {
+                // visible without opening the details, labelled in the UI language
+                clickText(if (language == AppLanguage.RUSSIAN) "Политика конфиденциальности" else "Privacy policy")
+                assertEquals(listOf(privacyPolicyUrlOf(PublishedPrivacyPolicy.Android, language)), handler.opened)
+            }
+        }
+    }
+
+    @Test
+    fun iosShowsThePrivacySummaryWithoutTheAndroidPolicyLink() {
+        for (language in AppLanguage.entries) {
+            val ru = language == AppLanguage.RUSSIAN
+            onScreen(
+                language = language,
+                content = about(language, backup = BackupStatement.IosDeviceBackup, policy = PublishedPrivacyPolicy.NotPublished),
+            ) {
+                // the local summary stays: its first statement and every detail behind the toggle
+                awaitText(if (ru) "КОНФИДЕНЦИАЛЬНОСТЬ" else "PRIVACY")
+                awaitText(if (ru) "TalentForge работает без интернета" else "TalentForge works offline", substring = true)
+                clickText(if (ru) "Подробнее" else "Show details")
+                awaitText(if (ru) "Если на устройстве включено резервное копирование" else "If your device's backup (iCloud or a computer) is on", substring = true)
+                // but no link: the published policy is the Android app's
+                assertAbsent("Privacy policy")
+                assertAbsent("Политика конфиденциальности")
+                assertEquals(0, onAllNodes(clickLabelled(if (ru) "открыть политику конфиденциальности в браузере" else "open the privacy policy in the browser")).fetchSemanticsNodes().size)
+            }
+        }
+    }
+
+    @Test
+    fun theAppOpensThePublishedPolicyPageOfItsUiLanguage() {
+        for (language in AppLanguage.entries) {
+            val handler = RecordingUriHandler()
+            val ru = language == AppLanguage.RUSSIAN
+            onScreen(
+                language = language,
+                uriHandler = handler,
+                content = { App(storage = FakeBuildLibraryStorage(), clock = FixedClock(), ids = SequentialIds(), appVersion = version) },
+            ) {
+                awaitText(if (ru) "Новый билд" else "New build")
+                onAllNodes(clickLabelled(if (ru) "открыть сведения о TalentForge" else "open About TalentForge")).onFirst().performClick()
+                awaitText(if (ru) "О приложении" else "Version 0.1.0 (1)")
+                clickText(if (ru) "Политика конфиденциальности" else "Privacy policy")
+                // the desktop host is the Android UI's: the app root passes the Android policy
+                assertEquals(listOf(privacyPolicyUrlOf(PublishedPrivacyPolicy.Android, language)), handler.opened)
+            }
+        }
+    }
+
+    @Test
     fun largeTextOnANarrowPhoneKeepsEveryActionReachable() {
         for (language in AppLanguage.entries) {
-            onScreen(language = language, widthDp = 320, heightDp = 640, fontScale = 2f, content = about()) {
+            onScreen(language = language, widthDp = 320, heightDp = 640, fontScale = 2f, content = about(language)) {
                 awaitText(if (language == AppLanguage.RUSSIAN) "Лицензии сторонних компонентов" else "Third-party licenses")
                 val targets = onAllNodes(anyClickable).fetchSemanticsNodes()
                 val labels = targets.map { it.config.getOrNull(SemanticsActions.OnClick)?.label }
-                assertEquals(3, targets.size, "Back, the privacy toggle and the licenses row: $labels")
+                assertEquals(4, targets.size, "Back, the privacy toggle, the policy link and the licenses row: $labels")
                 for (target in targets) {
                     if (target.config.getOrNull(SemanticsActions.OnClick)?.label == BACK_LABEL[language]) {
                         // the shared header Back control (TalentTreeHeaderMetrics, 44 dp)

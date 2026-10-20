@@ -78,7 +78,7 @@ analyser, and the same lines appear on `release` without any M5.PLAY.1 change.
 | P-3 | Create the **separate** upload key; record both fingerprints (they must differ) | closed testing | [signing §4](signing.md#4-creating-the-keys-) |
 | P-4 | Verify the physical device in the Play Console app; check account identity details | making the app available | [closed testing §1](closed-testing.md#1-account-checks-) |
 | P-5 | Create the app; set Play App Signing with PEPK; check U-1…U-3 on screen; verify both fingerprints on *App signing* | first upload | [signing §5.2](signing.md#52-steps-owner-in-play-console-nothing-here-was-executed) |
-| P-6 | Publish the privacy policy at a public URL (legal review LR-5); later set `LegalLinks.privacyPolicyUrl` in a reviewed change | closed testing | [data safety §3](data-safety.md#3-privacy-policy) |
+| P-6 | Publish the privacy policy at a public URL (legal review LR-5) — the owner-published `legal.mythweld.com` pages (RU/EN) are wired into the app since M5.LEGAL.LINK; the owner confirms the hosting and the sign-off | closed testing | [data safety §3](data-safety.md#3-privacy-policy) |
 | P-7 | Fill *App content* (Data safety, ads, app access, target audience, IARC, financial features, health, government) | closed testing | [data safety §2–§4](data-safety.md#2-proposed-data-safety-answers) |
 | P-8 | Store listing EN/RU; feature graphic; phone screenshots from the release build; icon rights record (L-6) | closed testing | [listing](store-listing-en.md), [assets](assets-checklist.md) |
 | P-9 | Decide the first public `versionCode`/`versionName` (S-5); configure the upload settings; run `bundlePublishablePlay` from the tagged release commit | first upload | [signing §6](signing.md#6-building-the-google-play-bundle) |

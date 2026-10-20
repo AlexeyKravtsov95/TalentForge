@@ -1,5 +1,7 @@
 package io.github.alexeykravtsov95.talentforge.ui.about
 
+import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
+
 /** The installed app's version, as the platform package reports it (Android `versionName`/`versionCode`, iOS `CFBundleShortVersionString`/`CFBundleVersion`). */
 data class AppVersion(val name: String, val code: Long)
 
@@ -28,14 +30,50 @@ const val ANDROID_OSS_NOTICES_PATH = "files/legal/oss-notices-android.json"
 const val IOS_OSS_NOTICES_PATH = "files/legal/oss-notices-ios.json"
 
 /**
- * Public legal links (M5.RC.2b). The privacy-policy URL is an OWNER decision
- * (LR-5: identity, contact, hosting, legal review) and is not approved yet, so
- * it is deliberately `null`: the About screen then shows the in-app privacy
- * summary without any link. Never put a placeholder here — set the approved
- * `https://` address in a reviewed change (validated by [privacyPolicyLinkOf]).
+ * Which owner-published privacy policy covers THIS platform's distributed
+ * build (M5.LEGAL.LINK). The published policy is the Android app's; no policy
+ * is published for iOS yet, so the iOS About screen shows the in-app privacy
+ * summary without any link rather than the Android policy.
+ */
+enum class PublishedPrivacyPolicy {
+    /** The Android app's policy: [LegalLinks.androidPrivacyPolicyUrlRu] / [LegalLinks.androidPrivacyPolicyUrlEn]. */
+    Android,
+
+    /** No policy is published for this platform: no link, only the in-app summary. */
+    NotPublished,
+}
+
+/** The published privacy policy that covers this platform's build. */
+expect val platformPrivacyPolicy: PublishedPrivacyPolicy
+
+/**
+ * Public legal links (M5.RC.2b). Since M5.LEGAL.LINK the owner-published
+ * Android privacy-policy addresses are wired in (the hosting decision of
+ * LR-5): the Russian and the English page on `legal.mythweld.com`. They cover
+ * the Android app only. [privacyPolicyUrlOf] picks the page for the platform
+ * and the UI language; every configured address stays validated by
+ * [privacyPolicyLinkOf].
  */
 object LegalLinks {
-    val privacyPolicyUrl: String? = null
+    /** The published Russian Android privacy policy — the page a Russian interface opens. */
+    const val androidPrivacyPolicyUrlRu: String = "https://legal.mythweld.com/privacy.html"
+
+    /** The published English Android privacy policy — the page every other interface opens. */
+    const val androidPrivacyPolicyUrlEn: String = "https://legal.mythweld.com/privacy-en.html"
+}
+
+/**
+ * The privacy-policy page to show for [policy] in the UI [language]
+ * (M5.LEGAL.LINK): for the Android policy, the Russian page for a Russian
+ * interface and the English page for every other; `null` when no policy is
+ * published for the platform.
+ */
+fun privacyPolicyUrlOf(policy: PublishedPrivacyPolicy, language: AppLanguage): String? = when (policy) {
+    PublishedPrivacyPolicy.Android -> when (language) {
+        AppLanguage.RUSSIAN -> LegalLinks.androidPrivacyPolicyUrlRu
+        AppLanguage.ENGLISH -> LegalLinks.androidPrivacyPolicyUrlEn
+    }
+    PublishedPrivacyPolicy.NotPublished -> null
 }
 
 /**

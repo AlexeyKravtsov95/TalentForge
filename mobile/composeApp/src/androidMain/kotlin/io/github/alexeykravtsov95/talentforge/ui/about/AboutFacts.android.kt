@@ -8,6 +8,8 @@ actual val platformOpenSourceNoticesPath: String? = ANDROID_OSS_NOTICES_PATH
 
 actual val platformBackupStatement: BackupStatement = BackupStatement.AndroidBackupDisabled
 
+actual val platformPrivacyPolicy: PublishedPrivacyPolicy = PublishedPrivacyPolicy.Android
+
 /** The installed package's version, or `null` when the package manager cannot report it. */
 fun installedAppVersion(context: Context): AppVersion? = try {
     val info = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

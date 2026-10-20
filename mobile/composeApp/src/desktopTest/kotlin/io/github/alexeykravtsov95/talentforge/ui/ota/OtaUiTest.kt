@@ -16,6 +16,8 @@ import io.github.alexeykravtsov95.talentforge.ui.SequentialIds
 import io.github.alexeykravtsov95.talentforge.ui.about.AboutScreen
 import io.github.alexeykravtsov95.talentforge.ui.about.AppVersion
 import io.github.alexeykravtsov95.talentforge.ui.about.BackupStatement
+import io.github.alexeykravtsov95.talentforge.ui.about.PublishedPrivacyPolicy
+import io.github.alexeykravtsov95.talentforge.ui.about.privacyPolicyUrlOf
 import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
 import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildAutosaveCoordinator
@@ -122,7 +124,7 @@ class OtaUiTest {
                     AboutScreen(
                         appVersion = AppVersion("0.1.0", 1),
                         backupStatement = BackupStatement.AndroidBackupDisabled,
-                        privacyPolicyUrl = null,
+                        privacyPolicyUrl = privacyPolicyUrlOf(PublishedPrivacyPolicy.Android, AppLanguage.ENGLISH),
                         onBack = {},
                         onOpenLicenses = {},
                         otaStatus = androidx.compose.runtime.produceState(status) {

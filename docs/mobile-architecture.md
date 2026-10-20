@@ -1248,13 +1248,16 @@ module. It shows, top to bottom:
   OTA-enabled builds;
 - the independent-project statement;
 - **Privacy**: the first statement, with the remaining verified statements behind one 48 dp
-  "Show details" toggle. The text is unchanged; the policy link appears only when configured;
+  "Show details" toggle. The text is unchanged; on Android the link opens the published privacy
+  policy of the UI language (M5.LEGAL.LINK) in the system browser; iOS shows no link (that
+  policy is the Android app's, none is published for iOS yet);
 - one row, **Third-party licenses**, that pushes `AppDestination.Licenses` (saved as `licenses`;
   Back → About). Every open-source notice lives on that screen, unchanged.
 
 ```
 App(storage, …, appVersion)          ← host: Android PackageManager / iOS NSBundle / desktop null
-  Home ⓘ ──▶ AboutScreen(appVersion, platformBackupStatement, LegalLinks.privacyPolicyUrl,
+  Home ⓘ ──▶ AboutScreen(appVersion, platformBackupStatement,
+                         privacyPolicyUrlOf(platformPrivacyPolicy, appLanguage()),
                          onBack, onOpenLicenses, otaStatus?, onCheckForUpdates?)
                └─ row ──▶ LicensesScreen(platformOpenSourceNoticesPath, onBack)
      loadOpenSourceNotices(path) → parseOpenSourceNotices (strict, typed OpenSourceNoticesException)
@@ -1284,8 +1287,17 @@ App(storage, …, appVersion)          ← host: Android PackageManager / iOS NS
     is the Android UI's dev host and is not distributed) and the iOS file on iOS
     (TF-RC2B-IOS-NOTICES, [evidence](release/rc2b-evidence/ios-oss-notices.md)).
 - **Privacy:** factual summary of the draft policy. `BackupStatement` picks the paragraph that is
-  true per platform. The policy link renders only for an approved `https://` URL in
-  `LegalLinks.privacyPolicyUrl`, which is deliberately `null` (LR-5).
+  true per platform. The policy link opens the page published for the platform and the UI
+  language (M5.LEGAL.LINK, the hosting decision of LR-5). The published policy covers the
+  Android app only, so `platformPrivacyPolicy` is `PublishedPrivacyPolicy.Android` on Android
+  (and on the desktop host of the Android UI) and `NotPublished` on iOS.
+  `privacyPolicyUrlOf(platformPrivacyPolicy, appLanguage())` picks
+  `LegalLinks.androidPrivacyPolicyUrlRu` (`legal.mythweld.com/privacy.html`) for a Russian
+  interface and `LegalLinks.androidPrivacyPolicyUrlEn` (`…/privacy-en.html`) for every other,
+  and `null` on iOS: the iOS About screen keeps the in-app summary and shows no link until an
+  iOS policy is published. `LocalUriHandler` hands the URL to the system browser (no WebView, no
+  `INTERNET` permission — the browser, not the app, loads the page; the release/play manifests
+  keep removing INTERNET, NET-1 = B).
 - **Backup (manifest):** `allowBackup="false"`, `dataExtractionRules`
   (`res/xml/data_extraction_rules.xml`) and `fullBackupContent` (`res/xml/backup_rules.xml`). Every
   domain is excluded from cloud backup and device transfer.
@@ -1298,14 +1310,17 @@ App(storage, …, appVersion)          ← host: Android PackageManager / iOS NS
 
 **Tests** (desktop):
 - `AboutScreenUiTest`: EN/RU copy, no technology names on the main screen, version/no version,
-  the iOS backup statement, privacy details behind the toggle, link only when configured, the
+  the iOS backup statement, privacy details behind the toggle, the published Android policy link
+  per UI language (screen and through the app root), no link on iOS with the summary kept, the
   licenses row, Back, every target ≥ 48 dp and the name on one line at 320 dp / 200 %, and
   Home → About → Licenses → Back → Back, including RU at 320×568 / 200 %.
 - `LicensesScreenUiTest`: the real Android and iOS notices, module and licence-text toggles,
   not-included and failure + Retry states, EN/RU, Back, toggles ≥ 48 dp at 320 dp / 200 %.
 - `AppIconResourceTest`: the About icon equals the approved launcher raster.
-- `OpenSourceNoticesTest`: the bundled notices, the Apache-2.0 digest, strict-parser failures, and
-  the privacy-URL rule.
+- `OpenSourceNoticesTest`: the bundled notices, the Apache-2.0 digest, strict-parser failures, the
+  privacy-URL rule and the per-platform policy choice (Android RU/EN, none on iOS, desktop = Android).
+- iOS (`iosTest`, `:composeApp:iosSimulatorArm64Test`): `IosAboutFactsTest` — the iOS actuals: no
+  published policy and no link in any language, the iOS backup statement and notices.
 - `AppNavigationStateTest`: `about` and `licenses` round-trip.
 
 Python: `tests/unit/test_verify_release_apk.py`. End to end:

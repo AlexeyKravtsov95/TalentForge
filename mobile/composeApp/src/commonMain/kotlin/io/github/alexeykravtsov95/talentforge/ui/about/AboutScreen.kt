@@ -91,9 +91,10 @@ import org.jetbrains.compose.resources.stringResource
  * - the independent-project statement (the trademark-free draft, LR-2);
  * - the privacy summary: its first statement always visible, the remaining
  *   verified statements (with the backup paragraph true for this platform,
- *   [backupStatement]) behind one explicit 48 dp toggle, and a link to the
- *   public policy ONLY when an approved `https://` URL is configured
- *   ([privacyPolicyUrl]; none is yet, LR-5);
+ *   [backupStatement]) behind one explicit 48 dp toggle, and the link to the
+ *   published privacy policy of the UI language ([privacyPolicyUrl],
+ *   M5.LEGAL.LINK), opened in the system browser, ONLY when one is published
+ *   for this platform (Android; none for iOS yet, so `null` there);
  * - one row that opens the third-party licenses ([onOpenLicenses],
  *   [LicensesScreen]), where every open-source notice lives.
  */
