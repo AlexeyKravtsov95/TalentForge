@@ -222,6 +222,13 @@ class InMemoryS3:
         return [call for call in self.calls if call[0] in ("put_object", "delete_object")]
 
 
+@pytest.fixture(autouse=True)
+def no_environment_credentials(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Writes refuse AWS_* credentials in the environment; a test machine may have some."""
+    for name in s3_store.ENV_CREDENTIALS:
+        monkeypatch.delenv(name, raising=False)
+
+
 @pytest.fixture()
 def s3() -> InMemoryS3:
     return InMemoryS3()

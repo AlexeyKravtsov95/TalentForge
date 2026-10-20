@@ -56,11 +56,13 @@ from talent_data.ota.s3_channels import (
     require_profile,
 )
 from talent_data.ota.s3_store import (
+    ENV_CREDENTIALS,
     ProductionCatalogGuard,
     S3BlobStore,
     S3Failure,
     S3Location,
     S3StoreError,
+    check_credentials,
 )
 from talent_data.ota.signing import build_envelope, pae_sha256, sign_pae_der
 from talent_data.ota.store import (
@@ -142,6 +144,13 @@ def release() -> ReleaseArtifact:
         snapshot=CONTENTS,
         blobs={f.sha256: CONTENTS[f.path] for f in files},
     )
+
+
+@pytest.fixture(autouse=True)
+def no_environment_credentials(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Writes refuse AWS_* credentials in the environment; a test machine may have some."""
+    for name in ENV_CREDENTIALS:
+        monkeypatch.delenv(name, raising=False)
 
 
 @pytest.fixture()
@@ -691,3 +700,136 @@ def test_the_staging_fault_helper_refuses_the_production_bucket(
     err = capsys.readouterr().err
     assert "is the production bucket; refusing it for the staging channel" in err
     assert connections == []
+
+
+# --------------------------------------------------------------------------- credentials
+
+STAGING_FLAGS = [
+    "--backend",
+    "s3",
+    "--s3-bucket",
+    STAGING_BUCKET,
+    "--s3-endpoint",
+    ENDPOINT,
+    "--s3-region",
+    "ru-msk",
+]
+
+
+def _location(channel: Channel, profile: str | None) -> S3Location:
+    bucket = PROFILES[channel].bucket
+    return S3Location(bucket, ENDPOINT, "ru-msk", profile=profile, channel=channel)
+
+
+@pytest.mark.parametrize(
+    ("channel", "profile", "message"),
+    [
+        (Channel.PRODUCTION, None, "production writes need --aws-profile talentforge-production"),
+        (Channel.PRODUCTION, "default", "production writes need --aws-profile"),
+        (Channel.PRODUCTION, "talentforge-staging", "holds the staging key"),
+        (Channel.STAGING, None, "staging writes need --aws-profile talentforge-staging"),
+        (Channel.STAGING, "admin", "staging writes need --aws-profile"),
+        (Channel.STAGING, "talentforge-production", "holds the production key"),
+    ],
+)
+def test_a_write_needs_exactly_its_channels_profile(
+    channel: Channel, profile: str | None, message: str
+) -> None:
+    with pytest.raises(OtaPublisherError, match=message):
+        check_credentials(_location(channel, profile), writable=True, environ={})
+    # connect() checks too, before boto3 is involved: no client, no request
+    with pytest.raises(OtaPublisherError, match=message):
+        s3_store.connect(_location(channel, profile), writable=True, allow_delete=False)
+
+
+@pytest.mark.parametrize("name", ENV_CREDENTIALS)
+def test_a_write_refuses_credentials_in_the_environment(name: str) -> None:
+    location = _location(Channel.PRODUCTION, PRODUCTION_PROFILE.aws_profile)
+    with pytest.raises(OtaPublisherError, match=f"unset {name}"):
+        check_credentials(location, writable=True, environ={name: "x"})
+    check_credentials(location, writable=True, environ={})  # the profile alone is fine
+
+
+def test_reads_may_use_the_standard_chain_but_never_the_other_channels_profile() -> None:
+    for channel in (Channel.PRODUCTION, Channel.STAGING):
+        check_credentials(_location(channel, None), writable=False, environ={"AWS_PROFILE": "x"})
+        own = PROFILES[channel].aws_profile
+        check_credentials(_location(channel, own), writable=False, environ={})
+    with pytest.raises(OtaPublisherError, match="holds the staging key"):
+        check_credentials(
+            _location(Channel.PRODUCTION, "talentforge-staging"), writable=False, environ={}
+        )
+
+
+def _without_profile(flags: list[str]) -> list[str]:
+    at = flags.index("--aws-profile")
+    return flags[:at] + flags[at + 2 :]
+
+
+def test_cli_production_writes_refuse_a_missing_or_wrong_profile_before_s3(
+    vk: InMemoryS3, cli_vk: list[dict[str, Any]], tmp_path: Path, capsys, monkeypatch
+) -> None:
+    cli = ProdCli(tmp_path)
+    manifest = cli.build()
+    keys = ["--keyring", str(cli.keyring)]
+    promote = ["promote", "--manifest", str(manifest), "--releases-docs", str(cli.docs)]
+    promote += [*keys, "--out", str(cli.out), "--execute"]
+    bare = _without_profile(PROD_FLAGS)
+    for flags, message in (
+        (bare, "production writes need --aws-profile talentforge-production (got none)"),
+        ([*bare, "--aws-profile", "default"], "(got default)"),
+        ([*bare, "--aws-profile", "talentforge-staging"], "holds the staging key"),
+    ):
+        assert cli.run(*promote, *flags) == 1
+        assert message in capsys.readouterr().err
+    monkeypatch.setenv("AWS_ACCESS_KEY_ID", "AKIDEXAMPLE")
+    assert cli.run(*promote, *PROD_FLAGS) == 1
+    assert "unset AWS_ACCESS_KEY_ID" in capsys.readouterr().err
+    assert cli_vk == []  # every refusal came before any connection
+    assert vk.calls == []
+
+    # read-only commands keep working without a profile (the standard chain)
+    monkeypatch.delenv("AWS_ACCESS_KEY_ID")
+    assert cli.run("gc", *bare, *keys) == 0
+    assert cli_vk[-1]["writable"] is False
+    assert (
+        cli.run(
+            "promote",
+            "--manifest",
+            str(manifest),
+            "--releases-docs",
+            str(cli.docs),
+            *bare,
+            *keys,
+            "--out",
+            str(cli.out),
+        )
+        == 0
+    )  # dry run
+
+
+def test_cli_staging_writes_need_the_staging_profile(
+    cli_vk: list[dict[str, Any]], tmp_path: Path, capsys
+) -> None:
+    keyring, pem = write_test_keyring(tmp_path / "keys")
+    cli = ProdCli(tmp_path)
+    manifest = cli.build()
+    stage = ["stage", "--manifest", str(manifest), "--keyring", str(keyring)]
+    stage += ["--key", str(pem), "--key-id", "test-primary", "--execute"]
+    for extra, message in (
+        ([], "staging writes need --aws-profile talentforge-staging (got none)"),
+        (["--aws-profile", "talentforge-production"], "holds the production key"),
+    ):
+        assert cli.run(*stage, *STAGING_FLAGS, *extra) == 1
+        assert message in capsys.readouterr().err
+    assert cli_vk == []
+
+
+def test_the_staging_helper_needs_the_staging_profile_to_write(capsys) -> None:
+    helper = _staging_helper()  # its real connect(): the check runs before boto3 is used
+    flags = ["--s3-bucket", STAGING_BUCKET, "--s3-endpoint", ENDPOINT, "--s3-region", "ru-msk"]
+    assert helper.main(["probe-conditional", *flags, "--execute"]) == 1
+    assert "staging writes need --aws-profile talentforge-staging" in capsys.readouterr().err
+    wrong = [*flags, "--aws-profile", "talentforge-production", "--execute"]
+    assert helper.main(["probe-conditional", *wrong]) == 1
+    assert "holds the production key" in capsys.readouterr().err

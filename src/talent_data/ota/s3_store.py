@@ -56,6 +56,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import os
 import re
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
@@ -169,6 +170,48 @@ def content_type_of(key: str, data: bytes) -> str:
     return OCTET_CONTENT_TYPE
 
 
+#: credentials in the environment would take the place of a channel's own profile
+ENV_CREDENTIALS = ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN")
+
+
+def check_credentials(
+    location: S3Location, *, writable: bool, environ: Mapping[str, str] | None = None
+) -> None:
+    """The S3 credentials a store may use: its own channel's AWS CLI profile, only.
+
+    * another channel's profile is refused always - a production command never runs on
+      the staging key, nor the reverse;
+    * a write needs exactly the channel's profile (``talentforge-production`` /
+      ``talentforge-staging``), and no credentials in the environment that could stand in
+      for it (``AWS_ACCESS_KEY_ID`` & co.);
+    * a read may also use the standard credential chain (no profile).
+
+    Checked before any request (and before boto3 is even imported).
+    """
+    expected = PROFILES[location.channel].aws_profile
+    foreign = {p.aws_profile: p for p in PROFILES.values() if p.channel is not location.channel}
+    if location.profile in foreign:
+        raise OtaPublisherError(
+            f"--aws-profile {location.profile} holds the "
+            f"{foreign[location.profile].channel.value} key; the {location.channel.value} "
+            f"bucket is used with --aws-profile {expected} only"
+        )
+    if not writable:
+        return
+    if location.profile != expected:
+        raise OtaPublisherError(
+            f"{location.channel.value} writes need --aws-profile {expected} "
+            f"(got {location.profile or 'none'}): the key is never taken from elsewhere"
+        )
+    env = os.environ if environ is None else environ
+    present = [name for name in ENV_CREDENTIALS if env.get(name)]
+    if present:
+        raise OtaPublisherError(
+            f"{location.channel.value} writes use the {expected} profile only; unset "
+            f"{', '.join(present)} in the environment"
+        )
+
+
 def connect(
     location: S3Location,
     *,
@@ -179,12 +222,14 @@ def connect(
     """A boto3-backed store for ``location`` (needs the ``s3`` extra).
 
     A writable production store needs ``catalog_guard``; one is refused for staging.
+    The credentials are checked first (:func:`check_credentials`).
 
     Checksums are computed only when the operation requires them: botocore's default
     streaming checksum (``aws-chunked`` uploads) makes VK Cloud store and serve
     ``Content-Encoding: aws-chunked`` on the object, which is not a valid HTTP content
     coding for clients; instead every put carries ``Content-MD5`` and is verified by ETag.
     """
+    check_credentials(location, writable=writable)
     try:
         import boto3
         from botocore.config import Config

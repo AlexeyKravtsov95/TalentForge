@@ -343,7 +343,6 @@ def _store(args: argparse.Namespace) -> BlobStore:
     mutation = args.store_mutation
     writable = execute and mutation in ("write", "delete")
     allow_delete = execute and mutation == "delete" and bool(getattr(args, "confirm", False))
-    guard = None
     if profile.channel is Channel.PRODUCTION:
         if allow_delete:
             raise OtaPublisherError(
@@ -354,20 +353,27 @@ def _store(args: argparse.Namespace) -> BlobStore:
             raise OtaPublisherError(
                 "--now is a rehearsal clock; production writes run on the wall clock only"
             )
-        if writable:
-            from talent_data.ota.s3_store import ProductionCatalogGuard
+    from talent_data.ota.s3_store import (
+        ProductionCatalogGuard,
+        S3Location,
+        check_credentials,
+        connect,
+    )
 
-            guard = ProductionCatalogGuard(_keyring(args), game=args.game)
-    from talent_data.ota.s3_store import S3Location, connect
-
+    location = S3Location(
+        bucket=args.s3_bucket,
+        endpoint_url=args.s3_endpoint,
+        region=args.s3_region,
+        profile=args.aws_profile,
+        channel=profile.channel,
+    )
+    # the channel's own AWS CLI profile, and only it, before anything else happens
+    check_credentials(location, writable=writable)
+    guard = None
+    if writable and profile.channel is Channel.PRODUCTION:
+        guard = ProductionCatalogGuard(_keyring(args), game=args.game)
     return connect(
-        S3Location(
-            bucket=args.s3_bucket,
-            endpoint_url=args.s3_endpoint,
-            region=args.s3_region,
-            profile=args.aws_profile,
-            channel=profile.channel,
-        ),
+        location,
         writable=writable,
         allow_delete=allow_delete,
         catalog_guard=guard,

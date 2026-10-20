@@ -194,6 +194,11 @@ Rollback / re-sign of staging are the §3/§4 commands with `--channel staging $
 
 What the adapter guarantees (`talent_data.ota.s3_store`):
 
+* **Credentials per channel.** A write needs exactly the channel's AWS CLI profile
+  (`--aws-profile talentforge-staging` / `talentforge-production`) and no `AWS_ACCESS_KEY_ID` /
+  `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN` in the environment; the other channel's profile is
+  refused even for reads. Checked before any request (`check_credentials`); reads may use the
+  standard credential chain.
 * **Dry run is read-only by construction.** The store is opened writable only by `stage` /
   `promote` (blobs) / `attach-signature` under `--execute`, and able to delete only by
   `gc --execute --confirm` - on staging; a production store never deletes.
