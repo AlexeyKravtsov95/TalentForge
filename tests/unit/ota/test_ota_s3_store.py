@@ -4,7 +4,8 @@
 MD5 ETags, `Content-MD5` checks, conditional `If-None-Match`/`If-Match` puts) so the
 adapter's contract is proven without the network:
 
-* scope: blobs and the staging catalog only; the production catalog is never written;
+* scope: blobs and the staging catalog only; the production catalog is never written
+  (the production store and channel isolation: ``test_ota_s3_production.py``);
 * mode: read-only unless writable, delete only with allow_delete;
 * 404 / 403 / network are distinct failures, and 403 is never "absent";
 * immutable blobs: hash-checked, never overwritten, verified after the put;
@@ -99,7 +100,16 @@ def _error(status: int, code: str, operation: str) -> ClientError:
 class InMemoryS3:
     """An S3 endpoint in a dict, with the status codes and conditional semantics of S3."""
 
-    def __init__(self, *, stored_encoding: str | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        stored_encoding: str | None = None,
+        bucket: str = BUCKET,
+        honour_conditions: bool = True,
+    ) -> None:
+        self.bucket = bucket
+        #: ``False`` answers like VK Cloud: If-None-Match / If-Match are ignored (200)
+        self.honour_conditions = honour_conditions
         self.objects: dict[str, dict[str, Any]] = {}
         self.calls: list[tuple[str, str]] = []
         self.denied: set[str] = set()
@@ -107,9 +117,11 @@ class InMemoryS3:
         self.stored_encoding = stored_encoding
         #: runs inside put_object before the write: simulates a concurrent publisher
         self.before_put: Callable[[str], None] | None = None
+        #: runs inside put_object after the write: a rival landing right after this one
+        self.after_put: Callable[[str], None] | None = None
 
     def _enter(self, operation: str, key: str, bucket: str) -> None:
-        assert bucket == BUCKET
+        assert bucket == self.bucket
         self.calls.append((operation, key))
         if self.offline:
             raise EndpointConnectionError(endpoint_url=ENDPOINT)
@@ -169,10 +181,11 @@ class InMemoryS3:
             hook, self.before_put = self.before_put, None
             hook(Key)
         current = self.objects.get(Key)
-        if IfNoneMatch == "*" and current is not None:
-            raise _error(412, "PreconditionFailed", "PutObject")
-        if IfMatch is not None and (current is None or current["ETag"] != IfMatch):
-            raise _error(412, "PreconditionFailed", "PutObject")
+        if self.honour_conditions:
+            if IfNoneMatch == "*" and current is not None:
+                raise _error(412, "PreconditionFailed", "PutObject")
+            if IfMatch is not None and (current is None or current["ETag"] != IfMatch):
+                raise _error(412, "PreconditionFailed", "PutObject")
         self.raw_put(
             Key,
             Body,
@@ -180,7 +193,11 @@ class InMemoryS3:
             CacheControl=CacheControl,
             ContentEncoding=self.stored_encoding,
         )
-        return {"ETag": self.objects[Key]["ETag"]}
+        etag = self.objects[Key]["ETag"]
+        if self.after_put is not None:
+            hook, self.after_put = self.after_put, None
+            hook(Key)
+        return {"ETag": etag}
 
     def delete_object(self, *, Bucket: str, Key: str) -> dict[str, Any]:
         self._enter("delete_object", Key, Bucket)
@@ -324,13 +341,14 @@ def test_a_read_only_store_cannot_write_and_only_gc_mode_can_delete(s3) -> None:
     assert s3.mutations() == []
 
 
-def test_only_the_staging_channel_has_a_remote_store(s3) -> None:
-    with pytest.raises(OtaPublisherError, match="staging channel only"):
+def test_the_staging_bucket_is_never_the_production_store(s3) -> None:
+    with pytest.raises(OtaPublisherError, match="not the production bucket"):
         S3BlobStore(s3, BUCKET, channel=Channel.PRODUCTION)
-    with pytest.raises(OtaPublisherError, match="staging channel only"):
+    with pytest.raises(OtaPublisherError, match="is the staging bucket; refusing it"):
         S3Location(BUCKET, ENDPOINT, "ru-msk", channel=Channel.PRODUCTION)
     with pytest.raises(OtaPublisherError, match="https://"):
         S3Location(BUCKET, "http://hb.ru-msk.vkcloud-storage.ru", "ru-msk")
+    assert s3.calls == []
 
 
 # --------------------------------------------------------------------------- failure kinds
@@ -553,9 +571,29 @@ def cli_s3(s3, monkeypatch) -> list[dict[str, Any]]:
     """`connect` over the in-memory S3; records how each command opened the store."""
     opened: list[dict[str, Any]] = []
 
-    def fake_connect(location: S3Location, *, writable: bool, allow_delete: bool) -> S3BlobStore:
-        opened.append({"location": location, "writable": writable, "allow_delete": allow_delete})
-        return S3BlobStore(s3, location.bucket, writable=writable, allow_delete=allow_delete)
+    def fake_connect(
+        location: S3Location,
+        *,
+        writable: bool,
+        allow_delete: bool,
+        catalog_guard: s3_store.ProductionCatalogGuard | None = None,
+    ) -> S3BlobStore:
+        opened.append(
+            {
+                "location": location,
+                "writable": writable,
+                "allow_delete": allow_delete,
+                "guard": catalog_guard,
+            }
+        )
+        return S3BlobStore(
+            s3,
+            location.bucket,
+            channel=location.channel,
+            writable=writable,
+            allow_delete=allow_delete,
+            catalog_guard=catalog_guard,
+        )
 
     monkeypatch.setattr(s3_store, "connect", fake_connect)
     return opened
@@ -607,10 +645,13 @@ def test_cli_stage_over_s3_is_a_read_only_dry_run_until_execute(
         ["promote", "--manifest", "release.json"],
     ],
 )
-def test_cli_refuses_the_s3_store_for_production(cli_s3, tmp_path: Path, argv, capsys) -> None:
+def test_cli_refuses_the_staging_bucket_for_production(
+    cli_s3, tmp_path: Path, argv, capsys
+) -> None:
     keyring_path, _ = write_test_keyring(tmp_path / "keys")
     assert main(["ota", *argv, *S3_FLAGS, "--keyring", str(keyring_path)]) == 1
-    assert "staging only" in capsys.readouterr().err
+    err = capsys.readouterr().err
+    assert "is the staging bucket; refusing it for the production channel" in err
     assert cli_s3 == []  # refused before any connection
 
 

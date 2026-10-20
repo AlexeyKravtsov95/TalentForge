@@ -36,8 +36,9 @@ command for, each reproducible:
       all ``--channel staging``) replaces it.
 
 Every mutating subcommand is a dry run without ``--execute``. Nothing here touches the
-production catalog (the adapter refuses that key) or loads a production key (inline signing
-accepts ``tf-staging-*`` / ``test-*`` only).
+production catalog (the adapter refuses that key), the production bucket (the store is opened
+on the staging profile only) or loads a production key (inline signing accepts
+``tf-staging-*`` / ``test-*`` only). Production has no fault injection.
 """
 
 from __future__ import annotations
@@ -229,11 +230,14 @@ def probe_http(origin: str, json_blob: str | None, png_blob: str | None) -> dict
 
 
 def open_store(args: argparse.Namespace, *, writable: bool) -> S3BlobStore:
+    # staging, explicitly: S3Location refuses any bucket but the committed staging one, so
+    # no fault and no probe here can ever reach the production bucket (M5.OTA.PROD.1)
     location = S3Location(
         bucket=args.s3_bucket,
         endpoint_url=args.s3_endpoint,
         region=args.s3_region,
         profile=args.aws_profile,
+        channel=Channel.STAGING,
     )
     return connect(location, writable=writable, allow_delete=False)
 
