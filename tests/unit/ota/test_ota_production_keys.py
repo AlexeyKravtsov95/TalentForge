@@ -151,22 +151,58 @@ def test_the_ceremony_pae_is_signed_and_checked(tmp_path: Path, capsys) -> None:
 
 @pytest.mark.skipif(shutil.which("openssl") is None, reason="openssl not on PATH")
 def test_the_runbook_openssl_ceremony_works_as_written(tmp_path: Path) -> None:
-    """docs/ota/production-deployment.md §4 - the same OpenSSL commands, on temp keys."""
+    """docs/ota/production-deployment.md §4 - the same OpenSSL commands, on temp keys.
+
+    The runbook lets OpenSSL prompt for the passphrase; here ``-pass``/``-passin`` give it
+    non-interactively. The private key is encrypted (AES-256) from the moment it exists.
+    """
 
     def openssl(*args: str) -> None:
         subprocess.run(["openssl", *args], check=True, capture_output=True, cwd=tmp_path)
 
     names = ("tf-prod-2026a", "tf-prod-2026b")
+    secret = "pass:pytest-only"
     for name in names:
-        openssl("ecparam", "-name", "prime256v1", "-genkey", "-noout", "-out", f"{name}.pem")
-        openssl("ec", "-in", f"{name}.pem", "-pubout", "-out", f"{name}.pub.pem")
+        openssl(
+            "genpkey",
+            "-algorithm",
+            "EC",
+            "-pkeyopt",
+            "ec_paramgen_curve:P-256",
+            "-aes-256-cbc",
+            "-pass",
+            secret,
+            "-out",
+            f"{name}.key.pem",
+        )
+        assert b"ENCRYPTED PRIVATE KEY" in (tmp_path / f"{name}.key.pem").read_bytes()
+        openssl(
+            "pkey",
+            "-in",
+            f"{name}.key.pem",
+            "-passin",
+            secret,
+            "-pubout",
+            "-out",
+            f"{name}.pub.pem",
+        )
     ring = tmp_path / "production-keyring.json"
     argv = ["keyring", "--out", str(ring)]
     for name in names:
         argv += ["--key", f"{name}={tmp_path / f'{name}.pub.pem'}"]
     assert keys.main(argv) == 0
     assert keys.main(["ceremony-pae", "--out", str(tmp_path)]) == 0
-    openssl("dgst", "-sha256", "-sign", f"{names[0]}.pem", "-out", "sig.der", "ceremony.pae.bin")
+    openssl(
+        "dgst",
+        "-sha256",
+        "-sign",
+        f"{names[0]}.key.pem",
+        "-passin",
+        secret,
+        "-out",
+        "sig.der",
+        "ceremony.pae.bin",
+    )
     check = ["check-signature", "--keyring", str(ring), "--key-id", names[0]]
     check += ["--pae", str(tmp_path / "ceremony.pae.bin")]
     assert keys.main([*check, "--signature", str(tmp_path / "sig.der")]) == 0
