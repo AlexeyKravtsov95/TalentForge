@@ -22,6 +22,7 @@ import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
 import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.library.dataVersionOf
+import io.github.alexeykravtsov95.talentforge.ui.ota.OtaStatus
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTypography
 import kotlin.math.abs
 import kotlin.test.Test
@@ -66,6 +67,8 @@ class AboutScreenUiTest {
         privacyPolicyUrl: String? = privacyPolicyUrlOf(policy, language),
         onBack: () -> Unit = {},
         onOpenLicenses: () -> Unit = {},
+        /** M5.OTA.PROD.3: an OTA-enabled build (the data in use and "check now" are shown). */
+        ota: Boolean = false,
     ): @Composable () -> Unit = {
         AboutScreen(
             appVersion = appVersion,
@@ -73,6 +76,8 @@ class AboutScreenUiTest {
             privacyPolicyUrl = privacyPolicyUrl,
             onBack = onBack,
             onOpenLicenses = onOpenLicenses,
+            otaStatus = if (ota) OtaStatus(productBuild = PRODUCT_BUNDLE.clientBuild, productReleaseId = null) else null,
+            onCheckForUpdates = if (ota) ({}) else null,
         )
     }
 
@@ -135,6 +140,48 @@ class AboutScreenUiTest {
         clickText("Hide details")
         assertAbsent("The app turns off Android backup", substring = true)
         awaitText("TalentForge works offline", substring = true)
+    }
+
+    // M5.OTA.PROD.3: an OTA-enabled build never claims to work without the internet
+
+    @Test
+    fun anOtaEnabledBuildSaysWhatItDownloads() = onScreen(content = about(ota = true)) {
+        awaitText("Check for updates")
+        awaitText("Your builds stay on this device; only talent data updates are downloaded from the internet.", substring = true)
+        assertAbsent("works offline", substring = true)
+
+        clickText("Show details")
+        awaitText("from ota.mythweld.com", substring = true)
+        awaitText("may process your device's IP address and the time of the request", substring = true)
+        awaitText("no account, device identifier or anything about your builds", substring = true)
+        awaitText("The app uses the internet only to download talent data updates", substring = true)
+        awaitText("Your builds — class, talents, game-data version", substring = true)
+        assertAbsent("without the internet", substring = true)
+    }
+
+    @Test
+    fun aRussianOtaEnabledBuildSaysWhatItDownloads() = onScreen(language = AppLanguage.RUSSIAN, content = about(AppLanguage.RUSSIAN, ota = true)) {
+        awaitText("из интернета загружаются только обновления данных талантов", substring = true)
+        assertAbsent("работает без интернета", substring = true)
+
+        clickText("Подробнее")
+        awaitText("с ota.mythweld.com", substring = true)
+        awaitText("могут обрабатывать IP-адрес устройства и время запроса", substring = true)
+        awaitText("Приложение использует интернет только для загрузки обновлений данных талантов", substring = true)
+        assertAbsent("Приложение работает без интернета", substring = true)
+    }
+
+    @Test
+    fun theOtaEnabledScreenNamesNoTechnologyDependencyOrModule() {
+        for (language in AppLanguage.entries) {
+            onScreen(language = language, content = about(language, ota = true)) {
+                clickText(if (language == AppLanguage.RUSSIAN) "Подробнее" else "Show details")
+                val shown = texts().joinToString("\n")
+                for (term in TECHNOLOGY_TERMS) {
+                    assertTrue(term !in shown.lowercase(), "'$term' is on the OTA-enabled About screen ($language): $shown")
+                }
+            }
+        }
     }
 
     @Test

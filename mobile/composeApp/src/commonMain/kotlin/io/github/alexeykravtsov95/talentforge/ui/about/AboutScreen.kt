@@ -46,12 +46,15 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.abo
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_delete
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_hide_details
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_offline
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_online
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_permissions
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_permissions_online
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_policy_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_policy_link
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_sharing
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_show_details
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_storage
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_updates
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_section_privacy
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_section_project
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_tagline
@@ -91,7 +94,10 @@ import org.jetbrains.compose.resources.stringResource
  * - the independent-project statement (the trademark-free draft, LR-2);
  * - the privacy summary: its first statement always visible, the remaining
  *   verified statements (with the backup paragraph true for this platform,
- *   [backupStatement]) behind one explicit 48 dp toggle, and the link to the
+ *   [backupStatement]) behind one explicit 48 dp toggle — in OTA-enabled builds
+ *   the "online" first statement, the talent data updates paragraph and the
+ *   internet-use permissions statement instead of the offline ones
+ *   (M5.OTA.PROD.3) — and the link to the
  *   published privacy policy of the UI language ([privacyPolicyUrl],
  *   M5.LEGAL.LINK), opened in the system browser, ONLY when one is published
  *   for this platform (Android; none for iOS yet, so `null` there);
@@ -111,6 +117,8 @@ fun AboutScreen(
 ) {
     val policyLink = privacyPolicyLinkOf(privacyPolicyUrl)
     var privacyDetails by rememberSaveable { mutableStateOf(false) }
+    // M5.OTA.PROD.3: an OTA-enabled build downloads talent data, so its privacy statements say so
+    val otaEnabled = otaStatus != null && onCheckForUpdates != null
 
     AboutScaffold(title = stringResource(Res.string.about_title), onBack = onBack) {
         AppIdentity(appVersion)
@@ -148,9 +156,10 @@ fun AboutScreen(
         AboutBody(stringResource(Res.string.about_disclaimer))
 
         AboutSection(stringResource(Res.string.about_section_privacy))
-        AboutBody(stringResource(Res.string.about_privacy_offline))
+        AboutBody(stringResource(if (otaEnabled) Res.string.about_privacy_online else Res.string.about_privacy_offline))
         if (privacyDetails) {
             AboutBody(stringResource(Res.string.about_privacy_storage))
+            if (otaEnabled) AboutBody(stringResource(Res.string.about_privacy_updates))
             AboutBody(
                 stringResource(
                     when (backupStatement) {
@@ -160,7 +169,7 @@ fun AboutScreen(
                 ),
             )
             AboutBody(stringResource(Res.string.about_privacy_sharing))
-            AboutBody(stringResource(Res.string.about_privacy_permissions))
+            AboutBody(stringResource(if (otaEnabled) Res.string.about_privacy_permissions_online else Res.string.about_privacy_permissions))
             AboutBody(stringResource(Res.string.about_privacy_delete))
         }
         AboutToggle(
