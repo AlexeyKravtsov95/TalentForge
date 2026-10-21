@@ -1,0 +1,56 @@
+# M5.LEGAL.OTA.1 — предложения по декларациям магазинов (OTA ON)
+
+**Статус: предложения.** Ответы выбирает владелец в каждой консоли 🔑, при необходимости — с юристом.
+Агент ничего не подавал и ответов не выбирал. Основа — [ota-prod3-privacy-and-stores §5–§7](../../release/ota-prod3-privacy-and-stores.md#5-google-play-data-safety-ota-on);
+этот файл уточняет её по итогам подготовки политики и **не** перечитывал правила магазинов заново
+(Google Play — 2026-10-21, RuStore и AppGallery — 2026-10-19, как указано там).
+
+## 1. Факты, на которые опираются все декларации
+
+| Факт | Источник |
+|---|---|
+| Сеть используется только для `GET https://ota.mythweld.com/v1/channels/production/catalog.json` и `GET https://ota.mythweld.com/v1/blobs/sha256/<hex>` | `OtaConfig.catalogUrl` / `blobUrl` |
+| Заголовки: только `User-Agent: TalentForge/<versionName>`; без cookies и HTTP-кэша | `JvmOtaPorts.kt` (`PlatformBlobFetcher`), `OtaRuntime.android.kt` |
+| Набор запрашиваемых файлов **не одинаков** для всех: при открытии сохранённого или импортированного билда, данных которого нет на устройстве, загружаются файлы этой версии игры | `HistoricalDatasetResolver` |
+| Билды, названия, распределения талантов, буфер обмена, идентификаторы на сервер не передаются | `OtaUpdateCoordinator` (библиотека билдов читается локально), `PlatformBlobFetcher` |
+| Сервер/CDN технически получают IP-адрес, время, URL, User-Agent, параметры TLS | транспорт HTTPS |
+| Хранятся ли журналы, сколько, кто имеет доступ, анализируются ли IP | **неизвестно** — [OA-1…OA-4](OWNER_ACTION_REQUIRED.md) |
+| Транспорт только HTTPS, редиректы не выполняются | `PlatformBlobFetcher`, `build.gradle.kts` |
+
+Поправка к [ota-prod3 §4](../../release/ota-prod3-privacy-and-stores.md#4-политика-конфиденциальности-редакция-для-ota-on-черновик-не-опубликован):
+фраза «Запросы одинаковы для всех пользователей» неверна для загрузки данных по требованию. В черновиках
+политики и в предложениях ниже её нет.
+
+## 2. Google Play — Data safety
+
+| Вопрос | Вариант A | Вариант B | От чего зависит |
+|---|---|---|---|
+| Does your app collect or share any of the required user data types? | **No** | **Yes** — с типом, который выберет юрист (например, *Device or other IDs* или *Approximate location*) | Справка Google: IP-адрес не отдельный тип, его относят по назначению. A уместен, если журналы не ведутся или используются только для доставки/защиты и не анализируются (OA-1, OA-4). Справка противоречива для «эфемерной» обработки — решает owner/legal |
+| Is all user data encrypted in transit? | — | **Yes** (только HTTPS) | появляется только при B |
+| Can users request deletion? | — | данные билдов не покидают устройство; журналы — по сроку хранения (OA-2) | только при B |
+| App access (комментарий) | «No account or sign-in. All features work without network access; the network is used only to download talent data updates.» | то же | факт |
+| Privacy policy URL | `https://legal.mythweld.com/privacy-en.html` с новой редакцией | то же | публикация (OA-6, OA-8) |
+
+При любом варианте форму нужно **пересмотреть и сохранить заново** при выпуске OTA ON версии.
+
+## 3. RuStore
+
+| Пункт | Предложение | Решает |
+|---|---|---|
+| Блок Data Safety | Отметить передачу технических данных подключения (IP-адрес) на сервер разработчика для загрузки обновлений данных; билды и их названия не передаются. Конкретные категории — те, что предложит консоль, по ответам OA-1…OA-5 | owner 🔑 |
+| Обоснование `INTERNET` (правило 5.3) | «Загрузка обновлений игровых данных (данные талантов) с сервера разработчика по HTTPS. Без сети приложение работает на уже имеющихся данных.» | owner |
+| Политика на русском (правило 5.1) | `https://legal.mythweld.com/privacy.html` с новой редакцией; ссылка в приложении уже есть (About) | owner |
+| Комментарий модератору | «Учётная запись и вход не нужны. Все функции работают без сети; интернет используется только для загрузки обновлений данных талантов.» | owner |
+
+## 4. Huawei AppGallery
+
+| Пункт | Предложение | Решает |
+|---|---|---|
+| Privacy tags: «Collect personal data» | **Не выбрано.** «No» — если обработка IP хостингом не считается сбором по определениям AGC; «Yes» — если журналы с IP хранятся и анализируются. Зависит от OA-1…OA-5 | owner/legal 🔑 |
+| Privacy policy URL | `https://legal.mythweld.com/privacy-en.html` (новая редакция) | owner |
+| Permission descriptions | `INTERNET` — normal permission, описание не требуется; если консоль спросит — текст обоснования из §3 | owner |
+| Reviewer notes | EN-вариант из §2 (App access) | owner |
+
+## 5. Тексты карточек
+
+Без изменений относительно [ota-prod3 §8](../../release/ota-prod3-privacy-and-stores.md#8-тексты-карточек-rustore-appgallery-google-play-замены-для-ota-on): там уже убраны «без интернета» и «does not request internet access» для OTA ON.
