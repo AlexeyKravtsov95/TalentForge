@@ -8,6 +8,8 @@
 | Positioning | TalentForge is independent. The text claims no affiliation with, endorsement by or licence from the game's developer or publisher |
 | Related | [Russian draft](store-listing-ru.md) · [assets checklist](assets-checklist.md) · [data safety](data-safety.md) · [readiness](readiness.md) |
 
+> **M5.OTA.PROD.3 (2026-10-21).** Тексты ниже верны только для сборки **OTA OFF** (по умолчанию, без `INTERNET`). Для OTA ON замените строки по §8 документа ниже. Сборка с production OTA (`talentforge.ota.android.production.enabled=true`) запрашивает `INTERNET` и загружает данные талантов с `https://ota.mythweld.com`: для неё действуют [ota-prod3-privacy-and-stores](../ota-prod3-privacy-and-stores.md) (тексты, политика, декларации, действия владельца) и [android-production-enablement](../../ota/android-production-enablement.md). Ничего не подано и не опубликовано; LR-1…LR-5 без изменений.
+
 ## 1. Google Play limits and rules this copy is written against
 
 | Field | Google Play | This draft |

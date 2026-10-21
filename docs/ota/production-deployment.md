@@ -4,6 +4,13 @@
 владелец выполняет сам, вручную, через веб-консоль. Инструменты репозитория облачные ресурсы не
 создают, не меняют и не удаляют. Production signing keys не генерируют и не читают.
 
+> **M5.OTA.PROD.3 (2026-10-21).** Android-клиент подготовлен к production OTA: origin
+> `https://ota.mythweld.com` и keyring `docs/ota/keys/production-keyring.json` закреплены в Gradle,
+> канал включается только настройкой владельца `talentforge.ota.android.production.enabled=true`,
+> `INTERNET` в release/play — ровно при включённом канале. По умолчанию OTA выключен, iOS — выключен.
+> Процедура, ручные проверки и откат: [android-production-enablement.md](android-production-enablement.md).
+> Абзац «Состояние» ниже описывает M5.OTA.PROD.1 (исторически).
+
 Состояние на момент M5.OTA.PROD.1:
 
 * Production OTA **выключен** во всех сборках Android и iOS. `AndroidManifest`, `INTERNET` и
@@ -421,6 +428,11 @@ talent-data ota resign --channel production $P --keyring $K --out artifacts/ota 
 | 9.8 CDN отдаёт старый каталог | Подождите `max-age` (5 минут) или очистите кэш пути каталога (§7). `catalog.bucket WARN` в preflight показывает такое расхождение |
 
 ## 10. Проверки перед включением OTA в Android-релизе (вход в M5.OTA.PROD.2 и далее)
+
+**M5.OTA.PROD.3:** Gradle-конфигурация, `INTERNET` и тексты для OTA ON подготовлены
+([android-production-enablement.md](android-production-enablement.md),
+[ota-prod3-privacy-and-stores.md](../release/ota-prod3-privacy-and-stores.md)); условия ниже по-прежнему
+выполняет владелец перед выпуском OTA ON сборки.
 
 Включение OTA — **отдельная задача** (M5.OTA.PROD.2 или позже): `INTERNET`, privacy policy,
 data-safety, production keyring и base URL в Gradle-конфигурации. В M5.OTA.PROD.1 ничего из этого

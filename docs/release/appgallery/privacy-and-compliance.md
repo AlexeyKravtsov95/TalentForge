@@ -6,6 +6,8 @@
 | Evidence base | `main` @ `f7494e1`, static inspection by [`evidence/run-gallery1-checks.sh`](evidence/README.md) |
 | Related | [rc1-defects — owner/legal items LR-1…LR-5](../rc1-defects.md#owner--legal-review-items-not-defects-must-be-decided-before-publication) · [testing-and-publication](testing-and-publication.md) · [listing EN](store-listing-en.md) / [RU](store-listing-ru.md) |
 
+> **M5.OTA.PROD.3 (2026-10-21).** Утверждения этого документа об отсутствии `INTERNET` и сетевых соединений относятся к сборке **OTA OFF** (по умолчанию) и остаются для неё верными. Для OTA ON политика меняется по §4, декларации — по §6–§7. Сборка с production OTA (`talentforge.ota.android.production.enabled=true`) запрашивает `INTERNET` и загружает данные талантов с `https://ota.mythweld.com`: для неё действуют [ota-prod3-privacy-and-stores](../ota-prod3-privacy-and-stores.md) (тексты, политика, декларации, действия владельца) и [android-production-enablement](../../ota/android-production-enablement.md). Ничего не подано и не опубликовано; LR-1…LR-5 без изменений.
+
 > **M5.STORE.1 correction (2026-10-19, `main` @ `b242cd6`).** §1–§2 below describe `f7494e1`.
 > Since M5.OTA.3 (`ea77dec`, PR #44) the release manifest **declares `android.permission.INTERNET`**
 > and the dex references `java.net.HttpURLConnection` (the OTA fetcher). OTA is disabled in every

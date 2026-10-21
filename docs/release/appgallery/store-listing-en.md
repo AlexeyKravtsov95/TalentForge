@@ -8,6 +8,8 @@
 | NET-1 = B | M5.STORE.1 found that since M5.OTA.3 the APK declared `INTERNET`. The owner chose option B (2026-10-19): release builds remove `INTERNET` while production OTA is off, a build guard keeps it that way, and the release and publishable APKs were re-verified with `aapt2` ([NET-1 evidence](../net1-evidence/README.md)). The sentence "The app does not request internet access." in §4.1 is true again and restored. It must change in the release that enables production OTA. |
 | Related | [assets-checklist](assets-checklist.md) · [privacy-and-compliance §7](privacy-and-compliance.md#7-intellectual-property-and-trademarks) · [testing-and-publication §2.4](testing-and-publication.md#24-store-listing-fields) |
 
+> **M5.OTA.PROD.3 (2026-10-21).** Тексты ниже верны только для сборки **OTA OFF** (по умолчанию, без `INTERNET`). Для OTA ON замените строки по §8 документа ниже. Сборка с production OTA (`talentforge.ota.android.production.enabled=true`) запрашивает `INTERNET` и загружает данные талантов с `https://ota.mythweld.com`: для неё действуют [ota-prod3-privacy-and-stores](../ota-prod3-privacy-and-stores.md) (тексты, политика, декларации, действия владельца) и [android-production-enablement](../../ota/android-production-enablement.md). Ничего не подано и не опубликовано; LR-1…LR-5 без изменений.
+
 ## 1. Limits this copy is written against
 
 | Field | AppGallery | RuStore | This draft |
