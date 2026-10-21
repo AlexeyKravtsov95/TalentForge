@@ -1240,26 +1240,50 @@ the one addition the release-hardening milestone required.
 Since M5.UI.ABOUT.1 (store-listing cleanup) the About screen names no technology, dependency or
 module. It shows, top to bottom:
 - the app icon (`drawable/app_icon.png`, a byte-for-byte copy of the approved xxxhdpi launcher
-  raster, guarded by `AppIconResourceTest`), the name, a one-sentence description and the installed
-  version. The header wraps the name below the icon on narrow, large-text screens. The name is one
+  raster, guarded by `AppIconResourceTest`), the name and the installed version name
+  ("Version 1.0.0"; since M5.UI.ABOUT.2 the internal `versionCode` / `CFBundleVersion` is not
+  shown — `AppVersion.code` stays in the model, the Gradle values are unchanged). The header wraps the name below the icon on narrow, large-text screens. The name is one
   line: it keeps the 24 sp ScreenTitle size where it fits and otherwise shrinks to the measured
   width (`TextAutoSize`), because platform fonts differ in width (Linux CI's is wider than macOS's);
-- **Talent data**: the data version in use; the OTA source line and "Check for updates" only in
+- **Talent data**: the data version in use and its source ("Included with the app", or the
+  downloaded update in an OTA build); the game build line and "Check for updates" only in
   OTA-enabled builds;
-- the independent-project statement;
+- **About the project** (M5.UI.ABOUT.2): the one-sentence description, then the
+  independent-project statement;
 - **Privacy**: the first statement, with the remaining verified statements behind one 48 dp
   "Show details" toggle. The text is unchanged; on Android the link opens the published privacy
   policy of the UI language (M5.LEGAL.LINK) in the system browser; iOS shows no link (that
   policy is the Android app's, none is published for iOS yet);
-- one row, **Third-party licenses**, that pushes `AppDestination.Licenses` (saved as `licenses`;
-  Back → About). Every open-source notice lives on that screen, unchanged.
+- at the bottom, a quiet 48 dp text link with a forward chevron, **Open-source licenses**, that
+  pushes `AppDestination.Licenses` (saved as `licenses`; Back → About). Every open-source notice
+  lives on that screen.
+
+**Open-source licenses** (grouped in M5.UI.ABOUT.2) has three levels inside the one destination;
+each Back — the chevron or the system Back (`PlatformBackHandler`, registered after the app's own
+handler while a group is open) — closes the innermost one:
+1. the list: **Required notices** — the statements a licence requires in the product
+   documentation, verbatim, with their component (iOS: the IJG statement of libjpeg-turbo and the
+   Adobe DNG SDK statement, which its patent licence requires "in a prominent manner"; none on
+   Android) — then one row per `NoticeGroup`: its name, its licence names (a count beyond two) and
+   "Includes: …" naming every linked component;
+2. a group: the project URL and licences of the packaged component, each linked component with its
+   licences, version, URL and required statement, and one row per licence text;
+3. a licence: "Applies to: …" naming every component of the platform's notices under it, and the
+   full original text (never translated). A text shared by many components is shown once there.
+
+`OpenSourceNotices.groups` derives the groups from the data alone: one per packaged component, each
+linked component in the group of the module it is linked into (Skia and the other native code
+under Skiko; the stdlib's third-party code under the Kotlin Standard Library). Module coordinates
+(`group:artifact:version`) are no longer shown; they stay in the generated notices and in the drift
+check. The LR-4 legal sign-off remains open.
 
 ```
 App(storage, …, appVersion)          ← host: Android PackageManager / iOS NSBundle / desktop null
   Home ⓘ ──▶ AboutScreen(appVersion, platformBackupStatement,
                          privacyPolicyUrlOf(platformPrivacyPolicy, appLanguage()),
                          onBack, onOpenLicenses, otaStatus?, onCheckForUpdates?)
-               └─ row ──▶ LicensesScreen(platformOpenSourceNoticesPath, onBack)
+               └─ link ──▶ LicensesScreen(platformOpenSourceNoticesPath, onBack)
+                             list ─▶ group ─▶ licence text   (Back closes one level)
      loadOpenSourceNotices(path) → parseOpenSourceNotices (strict, typed OpenSourceNoticesException)
      licence texts → readLegalResource("files/legal/LICENSE-*.txt" …) on demand
 ```
@@ -1310,15 +1334,21 @@ App(storage, …, appVersion)          ← host: Android PackageManager / iOS NS
   [release/android-release-signing.md](release/android-release-signing.md).
 
 **Tests** (desktop):
-- `AboutScreenUiTest`: EN/RU copy, no technology names on the main screen, version/no version,
+- `AboutScreenUiTest`: EN/RU copy, no technology names on the main screen, version/no version, the
+  version name without the build number, the section order with the licenses link last,
   the iOS backup statement, privacy details behind the toggle, the published Android policy link
   per UI language (screen and through the app root), no link on iOS with the summary kept, the
-  licenses row, Back, every target ≥ 48 dp and the name on one line at 320 dp / 200 %, and
-  Home → About → Licenses → Back → Back, including RU at 320×568 / 200 %.
-- `LicensesScreenUiTest`: the real Android and iOS notices, module and licence-text toggles,
-  not-included and failure + Retry states, EN/RU, Back, toggles ≥ 48 dp at 320 dp / 200 %.
+  licenses link, Back, every target ≥ 48 dp and the name on one line at 320 dp / 200 %, and
+  Home → About → Licenses → group → licence → Back ×4, including RU at 320×568 / 200 %.
+- `LicensesScreenUiTest`: the real Android and iOS notices — one row per group, no module
+  coordinates, the iOS required statements above the groups, every Skiko-linked component with its
+  licences, version and statement, every licence (patent grants and the Skiko NOTICE included) one
+  row away with "Applies to", the full text to its last line, chevron and system Back one level at a
+  time, not-included and failure + Retry states, EN/RU, rows ≥ 48 dp at 320×568 / 200 %.
 - `AppIconResourceTest`: the About icon equals the approved launcher raster.
-- `OpenSourceNoticesTest`: the bundled notices, the Apache-2.0 digest, strict-parser failures, the
+- `OpenSourceNoticesTest`: the bundled notices, the grouping (every component in exactly one group,
+  every licence reachable, the iOS groups and required statements), the Apache-2.0 digest,
+  strict-parser failures, the
   privacy-URL rule and the per-platform policy choice (Android RU/EN, none on iOS, desktop = Android).
 - iOS (`iosTest`, `:composeApp:iosSimulatorArm64Test`): `IosAboutFactsTest` — the iOS actuals: no
   published policy and no link in any language, the iOS backup statement and notices.
@@ -1327,7 +1357,7 @@ App(storage, …, appVersion)          ← host: Android PackageManager / iOS NS
 Python: `tests/unit/test_verify_release_apk.py`. End to end:
 `scripts/release_signing_selftest.sh` (temporary key). Screenshots: `M5UiAbout1ScreenshotTest`
 (`-Dtalentforge.m5uiabout1.screenshots=<dir>`), committed under
-`docs/screenshots/m5-ui-about-1/`. The M5.RC.2b single-page captures in
+`docs/screenshots/m5-ui-about-2/` (M5.UI.ABOUT.2; `m5-ui-about-1/` keeps the earlier layout). The M5.RC.2b single-page captures in
 `docs/release/rc2b-evidence/screenshots/` are historical.
 
 ## Version stack (all stable)
