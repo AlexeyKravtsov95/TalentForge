@@ -5,16 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="TalentForge — Privacy Policy">
   <meta name="theme-color" content="#f7f7f5">
-  <!-- DRAFT: remove this line, the <style> block below and the "Draft" banner before publication (README.md, step 4). -->
-  <meta name="robots" content="noindex">
   <title>TalentForge — Privacy Policy</title>
   <link rel="stylesheet" href="style.css">
   <link rel="alternate" hreflang="ru" href="privacy.html">
   <link rel="alternate" hreflang="en" href="privacy-en.html">
-  <style>
-    .draft-banner { margin: 0 0 32px; padding: 14px 16px; border: 1px solid #c9a227; background: #fff8e1; color: #4e504d; font-size: 14px; line-height: 1.6; }
-    .owner-todo { background: #fff3c4; color: #5c4a00; padding: 0 3px; }
-  </style>
 </head>
 <body>
   <div class="page">
@@ -29,10 +23,9 @@
     <main class="legal-main">
       <a class="back-link" href="index.html">← Back to home</a>
       <article class="legal-content">
-        <p class="draft-banner"><strong>DRAFT.</strong> Version for the Android build that downloads talent data updates. Do not publish until the owner has filled in the marked places (OWNER_ACTION_REQUIRED.md) and the legal review (LR-5) is complete.</p>
         <p class="section-label">Documents</p>
         <h1>Privacy Policy</h1>
-        <p class="effective">Updated: <mark class="owner-todo">⟨publication date — OA-6⟩</mark></p>
+        <p class="effective">Updated: {{PUBLICATION_DATE}}</p>
       <section>
         <h2>About this policy</h2>
         <p>This policy describes data handling in the TalentForge Android app and on the TalentForge Legal information website. App and site operator: Alexey Kravtsov. Contact: <a href="mailto:alexey.kravtsov95@gmail.com">alexey.kravtsov95@gmail.com</a>.</p>
@@ -54,8 +47,8 @@
           <li>when you open a saved or imported build whose game-version data is not on the device yet.</li>
         </ul>
         <p>The app performs automatic update checks by itself. There is currently no separate switch in the app to turn them off. You can block the app’s network access through your system or device settings.</p>
-        <p>The set of requested files may differ between users. For example, when you open a build for a different game version, the app downloads the files for that version. The requested addresses can show which game version’s data the app needed. The builds themselves, their names, and their talent allocations are not transmitted.</p>
-        <p>With each request, the server and the content delivery network (CDN) of the hosting provider <mark class="owner-todo">⟨name of the provider and of the CDN operator — OA-3⟩</mark> technically receive your device’s IP address, the time of the request, the requested address (URL), and the User-Agent header with the app name and version, as well as technical parameters of the secure connection. <mark class="owner-todo">⟨Whether request logs are kept, how long they are kept, who has access to them, and whether IP addresses are used for anything other than delivering the files — OA-1, OA-2, OA-3, OA-4⟩</mark></p>
+        <p>The set of requested files may differ between users. For example, when you open a build for a different game version, the app downloads the files for that version. The requested files can indicate which game-data version the app needs. The builds themselves, their names, and their talent allocations are not transmitted.</p>
+        <p>With each HTTPS request, the delivery infrastructure (the server and the content delivery network, CDN) technically receives your device’s IP address, the time of the request, the requested address (URL), and the User-Agent header with the app name and version, as well as technical parameters of the secure connection. The provider of this infrastructure may process technical information about requests to provide the service and keep it secure, under its own policies.</p>
         <p>The app does not send advertising identifiers, device or account identifiers, cookies, build contents, or clipboard contents to the update server.</p>
         <p>Downloaded data is verified on the device against the developer’s cryptographic signature and stored in app-private storage. If verification fails, the downloaded data is not used and the app keeps working with its previous data. Without an internet connection, the app keeps working with the data already available on the device.</p>
       </section>
