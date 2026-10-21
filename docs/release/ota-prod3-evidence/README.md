@@ -9,31 +9,56 @@
 
 Локальные пути заменены на `~`, `<worktree>`, `<scratch>`. APK и AAB не коммитятся.
 
-## 1. Матрица сборок и guards (`run-matrix.sh`, HEAD `ad251a8`)
+## 1. Матрица сборок и guards (`run-matrix.sh`, HEAD `300da91`)
 
-Скрипт собирает **неподписанные** release APK и Play AAB с OTA OFF и OTA ON. Permissions читаются из итоговых артефактов: `aapt2 dump permissions` для APK и разбор proto-манифеста `scripts/verify_play_bundle.py` для AAB. В dex проверяются закреплённые ключи и origin. Затем скрипт пытается собрать запрещённые конфигурации. Итог: [matrix.txt](matrix.txt), хвосты логов Gradle: [logs/](logs/).
+**Как выполняется.**
 
-| Артефакт | `INTERNET` | Ключи и origin в dex | Результат |
+- Матрица собирается во **временном `git worktree` HEAD**, который удаляется по `trap`.
+- Отрицательные кейсы меняют файлы только в этой копии; рабочее дерево, из которого запущен скрипт, не изменяется. Меняются только `matrix.txt` и `logs/`.
+- Скрипт отказывается работать (exit 2), если в `mobile/`, `scripts/`, `docs/ota/keys/` или в самих `run-matrix.sh` / `check_ota_artifact.py` есть локальные изменения. Так результат всегда относится к названному коммиту.
+- Итог: [matrix.txt](matrix.txt), хвосты логов Gradle и результаты по каждому артефакту: [logs/](logs/). Любой `FAIL` даёт exit 1.
+
+**Каждый артефакт** (неподписанные release APK и Play AAB) проверяется дважды:
+
+- `INTERNET` в итоговом манифесте: `aapt2` для APK, разбор proto-манифеста `scripts/verify_play_bundle.py` для AAB;
+- [`check_ota_artifact.py`](check_ota_artifact.py): точная таблица строк **всех dex** (`string_ids`, без `strings`), `GeneratedOtaSettings`, из которого собран артефакт, и закоммиченный keyring против закреплённых **SHA-256 SPKI** (`tf-prod-2026a` `1fac1b0d…`, `tf-prod-2026b` `6997b3d4…`, [production-deployment §4.4](../../ota/production-deployment.md)).
+
+| Артефакт | `INTERNET` | Утверждения `check_ota_artifact.py` | Результат |
 |---|---|---|---|
-| release APK, OTA OFF (не задано) | нет | нет `tf-*`, нет `ota.mythweld.com` | PASS |
-| release APK, OTA OFF (`=false`) | нет | то же | PASS |
-| Play AAB, OTA OFF | нет | то же | PASS |
-| release APK, OTA ON | **есть** | `https://ota.mythweld.com`, `tf-prod-2026a`, `tf-prod-2026b`; **нет** `tf-staging-*` и `test-*` | PASS |
-| Play AAB, OTA ON | **есть** | то же | PASS |
+| release APK, OTA OFF (не задано) | нет | все 4 канала выключены, без URL и ключей, без trust anchor; в dex нет `ota.mythweld.com`, ни одного key id и ни одного P-256 SPKI; keyring = отпечатки (10) | PASS |
+| release APK, OTA OFF (`=false`) | нет | то же (10) | PASS |
+| Play AAB, OTA OFF | нет | то же (10) | PASS |
+| release APK, OTA ON | **есть** | `androidProduction`: enabled, baseUrl ровно `https://ota.mythweld.com`, ключи ровно `tf-prod-2026a/b` с SPKI из keyring и закреплёнными SHA-256; остальные каналы выключены; в dex ровно один origin, ровно два key id, ровно два SPKI с закреплёнными SHA-256, нет `tf-staging-*` и `test-*` (14) | PASS |
+| Play AAB, OTA ON | **есть** | то же (14) | PASS |
 
-Во всех артефактах есть `https://ota.invalid`: это значение по умолчанию тестовой фабрики `OtaConfig.forTesting`, приложение её не вызывает.
+**Самопроверка checker.** Он обязан отклонить подменённые входы, и все кейсы дают PASS:
 
-Отклонённые конфигурации, каждая со своей ошибкой (все PASS):
+- OFF-артефакт с ожиданиями ON;
+- ON-артефакт с ожиданиями OFF;
+- staging-ключ в середине и в конце списка ключей `GeneratedOtaSettings`;
+- удалённый резервный ключ;
 - другой origin;
-- `http://` origin;
+- keyring с подменённым SPKI.
+
+**Отклонённые конфигурации.** Каждая останавливается своей ошибкой, все PASS:
+
+- другой origin и `http://` origin;
 - fixture-keyring с `test-` ключами;
 - Android staging в release и в play;
-- iOS staging в release (новый guard);
+- iOS staging в release;
 - `enabled=yes`;
 - сломанный OTA overlay без `INTERNET` в release и в play (проверка **merged manifest**);
-- `talentforge.ota.*` в закоммиченном `gradle.properties`.
+- `talentforge.ota.*` в закоммиченном `gradle.properties`;
+- **изменённый закоммиченный keyring** (резервный ключ подменён SPKI основного): сборка останавливается и с OTA OFF, и с OTA ON;
+- **изменённый закреплённый отпечаток** в `build.gradle.kts`: падает `verifyOtaSettingsRules`.
 
-Повтор: `docs/release/ota-prod3-evidence/run-matrix.sh` из корня репозитория.
+Итого 31 PASS, 0 FAIL.
+
+**Первый прогон новой матрицы (`663b254`)** закончился `RESULT: FAIL`, exit 1. Причина — ошибка в самом checker: из `GeneratedOtaSettings` читался только первый ключ канала. Ошибка исправлена в `300da91`, туда же добавлены два кейса самопроверки, которые её ловят. Проверка dex того же прогона уже видела оба ключа.
+
+Во всех артефактах есть строка `https://ota.invalid`: это значение по умолчанию тестовой фабрики `OtaConfig.forTesting`, приложение её не вызывает. Checker её не учитывает, потому что ищет только `ota.mythweld.com`.
+
+Повтор: `docs/release/ota-prod3-evidence/run-matrix.sh` из корня репозитория (нужен `ANDROID_HOME`).
 
 ## 2. Эмуляторы (`emulator-check.sh`)
 

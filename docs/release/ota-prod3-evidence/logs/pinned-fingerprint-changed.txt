@@ -1,0 +1,27 @@
+> Task :composeApp:verifyOtaSettingsRules FAILED
+
+[Incubating] Problems report is available at: file:///private<worktree>/mobile/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':composeApp:verifyOtaSettingsRules' (registered in build file 'composeApp/build.gradle.kts').
+> OTA settings rules do not hold:
+    the committed production keyring was refused: [talentforge.ota.android.production: the committed production keyring changed: tf-prod-2026a has SPKI SHA-256 1fac1b0d15f2a09fc3769099623fe1038e846f0033ec6e233f5111ff71239278, expected 0000000000000000000000000000000000000000000000000000000000000000 (update the pinned fingerprints only after the key ceremony record)]
+    tampered keyring (the backup key replaced by the primary's SPKI, enabled=true): expected "tf-prod-2026b has SPKI SHA-256 0000000000000000000000000000000000000000000000000000000000000000", got [talentforge.ota.android.production.baseUrl must be an https origin without query or trailing slash, talentforge.ota.android.production.keyring must pin at least one key, talentforge.ota.android.production.keyring must pin a primary and a backup key, talentforge.ota.android.production: the committed production keyring changed: tf-prod-2026a has SPKI SHA-256 1fac1b0d15f2a09fc3769099623fe1038e846f0033ec6e233f5111ff71239278, expected 0000000000000000000000000000000000000000000000000000000000000000 (update the pinned fingerprints only after the key ceremony record), talentforge.ota.android.production: the committed production keyring changed: tf-prod-2026b has SPKI SHA-256 1fac1b0d15f2a09fc3769099623fe1038e846f0033ec6e233f5111ff71239278, expected 6997b3d47d74ceeb6daec62b1d94f3f3e3bc476534eefe8cd140f67578532b26 (update the pinned fingerprints only after the key ceremony record)]
+    tampered keyring (the backup key replaced by the primary's SPKI, enabled=null): expected "tf-prod-2026b has SPKI SHA-256 0000000000000000000000000000000000000000000000000000000000000000", got [talentforge.ota.android.production: the committed production keyring changed: tf-prod-2026a has SPKI SHA-256 1fac1b0d15f2a09fc3769099623fe1038e846f0033ec6e233f5111ff71239278, expected 0000000000000000000000000000000000000000000000000000000000000000 (update the pinned fingerprints only after the key ceremony record), talentforge.ota.android.production: the committed production keyring changed: tf-prod-2026b has SPKI SHA-256 1fac1b0d15f2a09fc3769099623fe1038e846f0033ec6e233f5111ff71239278, expected 6997b3d47d74ceeb6daec62b1d94f3f3e3bc476534eefe8cd140f67578532b26 (update the pinned fingerprints only after the key ceremony record)]
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 393ms
+1 actionable task: 1 executed

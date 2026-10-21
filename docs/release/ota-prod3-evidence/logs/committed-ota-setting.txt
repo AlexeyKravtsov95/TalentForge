@@ -14,7 +14,7 @@
 > Task :composeApp:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
 > Task :composeApp:generateOtaSettings FAILED
 
-[Incubating] Problems report is available at: file://<worktree>/mobile/build/reports/problems/problems-report.html
+[Incubating] Problems report is available at: file:///private<worktree>/mobile/build/reports/problems/problems-report.html
 
 FAILURE: Build failed with an exception.
 
@@ -36,5 +36,5 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD FAILED in 589ms
+BUILD FAILED in 536ms
 59 actionable tasks: 6 executed, 1 from cache, 52 up-to-date

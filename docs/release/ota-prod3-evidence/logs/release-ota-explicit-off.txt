@@ -27,7 +27,7 @@
 > Task :composeApp:createReleaseApkListingFileRedirect UP-TO-DATE
 > Task :composeApp:assembleRelease
 
-[Incubating] Problems report is available at: file://<worktree>/mobile/build/reports/problems/problems-report.html
+[Incubating] Problems report is available at: file:///private<worktree>/mobile/build/reports/problems/problems-report.html
 
 Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
 

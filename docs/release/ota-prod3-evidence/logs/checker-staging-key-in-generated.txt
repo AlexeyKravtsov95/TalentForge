@@ -1,0 +1,6 @@
+PASS keyring SPKI SHA-256 {'tf-prod-2026a': '1fac1b0d15f2a09fc3769099623fe1038e846f0033ec6e233f5111ff71239278', 'tf-prod-2026b': '6997b3d47d74ceeb6daec62b1d94f3f3e3bc476534eefe8cd140f67578532b26'} == pinned {'tf-prod-2026a': '1fac1b0d15f2a09fc3769099623fe1038e846f0033ec6e233f5111ff71239278', 'tf-prod-2026b': '6997b3d47d74ceeb6daec62b1d94f3f3e3bc476534eefe8cd140f67578532b26'}
+PASS generated channels ['androidProduction', 'androidStaging', 'iosProduction', 'iosStaging']
+PASS generated: no staging trust anchor
+PASS generated androidProduction: enabled
+PASS generated androidProduction: baseUrl "https://ota.mythweld.com"
+FAIL generated androidProduction: keys ['tf-prod-2026a', 'tf-staging-x', 'tf-prod-2026b'] == the keyring's, SPKIs equal
