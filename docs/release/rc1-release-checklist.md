@@ -14,8 +14,8 @@ How to read this checklist:
 **Identity and versioning**
 - [x] `applicationId` = `io.github.alexeykravtsov95.talentforge` (aapt2 badging, E1-60)
 - [x] `minSdk 26`, `targetSdk 36`, `compileSdk 36` (`libs.versions.toml`, badging)
-- [x] **(gate)** `versionCode` / `versionName` decided for the first public release. Owner decision (2026-10-20, M5.RELEASE.VERSION): test build `1` / `1.0.0` (applied), public build `2` / `1.0.0`, unless testing consumes more codes. One code sequence for all three stores ([android-versioning.md](android-versioning.md)).
-- [ ] **(gate)** `versionCode` raised to the public value (highest consumed code + 1, planned `2`) in a dedicated, reviewed change before the public build; test uploads consume codes, and the AppGallery/RuStore public APK is a new build with a higher code ([procedure](android-versioning.md#5-raising-versioncode-before-the-public-release)).
+- [ ] **(gate)** `versionCode` / `versionName` decided for the first public release. Owner decision (2026-10-20, M5.RELEASE.VERSION): test build `1` / `1.0.0`. Revised 2026-10-21: `2` / `1.0.0` (applied) is the local production OTA smoke build, never uploaded; the public code is decided after testing. One code sequence for all three stores ([android-versioning.md](android-versioning.md)).
+- [ ] **(gate)** `versionCode` raised to the public value (decided after testing) in a dedicated, reviewed change before the public build; test uploads consume codes, and the AppGallery/RuStore public APK is a new build with a higher code ([procedure](android-versioning.md#5-raising-versioncode-before-the-public-release)).
 - [x] Display name `TalentForge` (`android:label`)
 
 **Manifest and permissions**
@@ -242,7 +242,7 @@ key, uploaded or published.
 - [ ] 🔑 Create the RSA 4096 release key outside every checkout; record the SHA-256 ([guide §1](android-release-signing.md#1-create-the-key-once-)).
 - [ ] 🔑 Two offline encrypted backups + recovery drill ([guide §2](android-release-signing.md#2-back-it-up-before-the-first-upload-)).
 - [ ] 🔑 Configure the four signing settings and `cert_sha256` on the release machine ([guide §3](android-release-signing.md#3-configure-the-build-)).
-- [x] 🔑 Decide the first public `versionCode` / `versionName` (applied in a reviewed change). Decided 2026-10-20: test `1` / `1.0.0` (applied in M5.RELEASE.VERSION), public `2` / `1.0.0` ([android-versioning.md](android-versioning.md)).
+- [ ] 🔑 Decide the first public `versionCode` / `versionName` (applied in a reviewed change). Decided 2026-10-20: test `1` / `1.0.0` (applied in M5.RELEASE.VERSION). Revised 2026-10-21: `2` / `1.0.0` is the local production OTA smoke build (no store upload); the public code is decided after testing ([android-versioning.md](android-versioning.md)).
 - [ ] Raise `versionCode` for the public build in a reviewed change and record every consumed code in the ledger ([procedure](android-versioning.md#5-raising-versioncode-before-the-public-release)).
 - [ ] 🔑 Build `assemblePublishableRelease` from the release commit; record the report's APK SHA-256; the same file goes to both stores.
 - [ ] Legal/owner: LR-1…LR-5 sign-off, including the in-app draft disclaimer (LR-2), the OSS-notice mechanism (LR-4) and the privacy policy text, hosting and URL (LR-5). M5.LEGAL.LINK wired the owner-published RU/EN Android policy URLs into the Android About screen (`privacyPolicyUrlOf`, `legal.mythweld.com`); iOS shows no link until an iOS policy is published; the sign-off of the policy text and the developer contacts remains.

@@ -304,8 +304,9 @@ Procedure (owner 🔑 = console step):
 - If a store rejects the build and a fix is needed, the fixed APK gets a new, higher `versionCode` and
   replaces the pending submission in **both** stores.
 - First release (owner decision 2026-10-20, M5.RELEASE.VERSION): Open Testing APK `1` / `1.0.0`; the
-  formal-version APK, which is also the RuStore release, is a new build with `2` / `1.0.0`, or the
-  next unused code if testing consumed more ([android-versioning](../android-versioning.md)).
+  formal-version APK, which is also the RuStore release, is a new build with a higher code. Revised
+  2026-10-21: `2` / `1.0.0` is the local production OTA smoke build (no store upload); the public
+  code is decided after testing ([android-versioning](../android-versioning.md)).
 
 Is a new APK needed? **Yes**, by this policy: the formal release uses a newly built APK with a higher
 `versionCode`, even if the code is unchanged since the open-testing build. This avoids the documented

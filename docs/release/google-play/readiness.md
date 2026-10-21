@@ -58,7 +58,7 @@ Release facts (unchanged by this milestone; the owner decides the first public v
 | Fact | Value |
 |---|---|
 | `applicationId` | `io.github.alexeykravtsov95.talentforge` (frozen; the same in all three stores) |
-| `versionCode` / `versionName` | `1` / `0.1.0` at M5.PLAY.1 (placeholders). Since M5.RELEASE.VERSION: `1` / `1.0.0` for the closed-test bundle; the production bundle gets `2` / `1.0.0` or the next unused code ([android-versioning](../android-versioning.md)) |
+| `versionCode` / `versionName` | `1` / `0.1.0` at M5.PLAY.1 (placeholders). Since M5.RELEASE.VERSION: `1` / `1.0.0` for the closed-test bundle; the production bundle gets a higher, not yet decided code (`2` is the local OTA smoke build, revised 2026-10-21) ([android-versioning](../android-versioning.md)) |
 | `minSdk` / `targetSdk` / `compileSdk` | 26 / 36 / 36 |
 | ABIs | `arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64` |
 | Native libraries | only `libandroidx.graphics.path.so` (`androidx.graphics:graphics-path` 1.0.1, pulled in by Compose) |

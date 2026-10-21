@@ -332,7 +332,7 @@ These are owner decisions. None of them blocks RuStore by itself.
 - Vendor migration tools that bypass the Android backup framework are outside the app's control (UNVERIFIED on Huawei, H-12).
 - **Still open (owner decisions, not changed here):** R8/minify, ABI filtering (all four ABIs ship), `localeFilters`/`localeConfig`, `targetSdk` (`OldTargetApi`), first public `versionCode`/`versionName`.
 
-**M5.RELEASE.VERSION:** the version item is decided: test build `1` / `1.0.0` (applied), public build `2` / `1.0.0` ([android-versioning](android-versioning.md)). The other items above are unchanged.
+**M5.RELEASE.VERSION:** the version item is decided: test build `1` / `1.0.0` (applied), public build `2` / `1.0.0` ([android-versioning](android-versioning.md)). Revised 2026-10-21 (M5.OTA.SMOKE.VERSION): `2` is the local production OTA smoke build; the public code is not decided yet. The other items above are unchanged.
 
 ### TF-RC2B-IOS-NOTICES — iOS open-source notices not compiled (added in M5.RC.2b) — **RESOLVED**
 

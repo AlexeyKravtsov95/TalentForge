@@ -57,7 +57,7 @@ Guards на каждой release/play сборке:
 
 Перед сборкой:
 
-- [ ] `versionCode` / `versionName` подняты отдельным PR. Этот PR их **не меняет**. Обновление поверх 1.0.0 (`versionCode = 1`) требует большего `versionCode`.
+- [ ] `versionCode` / `versionName` подняты отдельным PR. Этот PR их **не меняет**. Обновление поверх 1.0.0 (`versionCode = 1`) требует большего `versionCode`. Для локального production OTA smoke (§4) `main` собирает `versionCode = 2`, `versionName = 1.0.0` (M5.OTA.SMOKE.VERSION); такую сборку в магазины не загружают. Публичный `versionCode` определяется после тестирования ([android-versioning](../release/android-versioning.md)).
 - [ ] `ota_production_preflight.py --expect published --keyring docs/ota/keys/production-keyring.json` → OK, `verify-live` → PASS ([production-deployment §10](production-deployment.md)).
 - [ ] До `expiresAt` каталога остаётся не меньше 30 дней.
 - [ ] Privacy policy (RU/EN) обновлена и опубликована по тексту из [privacy и магазины §4](../release/ota-prod3-privacy-and-stores.md), декларации магазинов подготовлены (там же, §5–§7).

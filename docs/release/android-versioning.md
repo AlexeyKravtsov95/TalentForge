@@ -7,11 +7,16 @@
 | Source of truth | `mobile/composeApp/build.gradle.kts`, `android.defaultConfig { versionCode, versionName }`. Nothing else sets or derives the Android version (no CI override, no git-derived code) |
 | Related | [rc1 checklist §1, §5, §8](rc1-release-checklist.md), [multi-store signing](appgallery/multi-store-signing.md), [AppGallery §6.1](appgallery/testing-and-publication.md#61-open-testing--formal-production-release), [Play signing §6.4](google-play/signing.md#64-versions-across-the-three-stores), [Play closed testing §6](google-play/closed-testing.md) |
 
-## 1. Owner decision (2026-10-20)
+## 1. Owner decision (2026-10-20, revised 2026-10-21)
 
 - First test build: `versionName = "1.0.0"`, `versionCode = 1`.
-- First public build: `versionName = "1.0.0"`, `versionCode = 2`, provided the testing round
-  does not need a further `versionCode` (§3).
+- `versionCode = 2` (`versionName = "1.0.0"`) is used for the **local production OTA smoke**
+  ([OTA enablement §4](../ota/android-production-enablement.md#4-ручные-проверки-владельца-не-выполнены-не-отмечать-pass-без-запуска)):
+  an update over an installed `1` build on the owner's own devices. It is **not** uploaded to any
+  store console (§3).
+- The first public `versionCode` is **not decided**. The owner decides it after testing is
+  finished, under the rules in §2. This revision supersedes the 2026-10-20 plan of public
+  `2` / `1.0.0`.
 - All three stores share **one** `versionCode` sequence.
 - RuStore and AppGallery receive **the same signed universal APK** file.
 - Google Play receives an AAB signed with a **separate upload key**.
@@ -19,6 +24,9 @@
 
 Applied by this milestone: `versionName` `0.1.0` → `1.0.0`; `versionCode` stays `1`. `applicationId`,
 `minSdk`, `targetSdk`, signing, OTA, the manifest and the on-device storage format are unchanged.
+
+Applied by M5.OTA.SMOKE.VERSION (2026-10-21): `versionCode` `1` → `2`; `versionName` stays `1.0.0`.
+Nothing else changes: OTA client, game data, signing, keys and the manifest sources are untouched.
 
 ## 2. Rules
 
@@ -47,14 +55,14 @@ Applied by this milestone: `versionName` `0.1.0` → `1.0.0`; `versionCode` stay
 
 ## 3. Planned sequence and ledger
 
-Public `versionCode` = (highest consumed code) + 1. With one test round and no fix:
-
 | `versionCode` | `versionName` | Build | Destination |
 |---|---|---|---|
 | 1 | 1.0.0 | test: `TalentForge-1.0.0-1.apk` + `TalentForge-1.0.0-1.aab`, one commit | APK → AppGallery Open Testing (and any RuStore test upload); AAB → Play closed testing |
-| 2 | 1.0.0 | public: `TalentForge-1.0.0-2.apk` + `TalentForge-1.0.0-2.aab`, one commit | APK → RuStore release **and** AppGallery formal version (same file); AAB → Play production |
+| 2 | 1.0.0 | local production OTA smoke: OTA ON APK signed by the owner, installed over `1` on the owner's devices | **No store upload.** Not a store test build and not the public build |
+| not decided | 1.0.0 | public: `TalentForge-1.0.0-<N>.apk` + `TalentForge-1.0.0-<N>.aab`, one commit | APK → RuStore release **and** AppGallery formal version (same file); AAB → Play production |
 
-If testing needs a fix build, it takes the next code (2) and the public build moves up (3), and so on.
+The owner decides the public `N` after testing is finished (§1), by the rules in §2 and the
+procedure in §5.
 
 Ledger. The owner fills it in when an artifact is built or uploaded. Only public facts go here
 (no paths, passwords or keystore details). An empty row means nothing has been built or uploaded
@@ -63,14 +71,20 @@ with that code yet.
 | `versionCode` | Commit / tag | Purpose | APK SHA-256 | AAB SHA-256 | Uploaded to (date) |
 |---|---|---|---|---|---|
 | 1 | | test | | | |
-| 2 | | public (planned) | | | |
+| 2 | | local production OTA smoke (no store upload) | | | none (local only) |
 
-## 4. Test build (`versionCode 1`)
+## 4. Test build (`versionCode 1`) and OTA smoke build (`versionCode 2`)
 
-The current `main` is already set to `1` / `1.0.0`. No version change is needed. The owner builds
-`assemblePublishableRelease` and `bundlePublishablePlay` from the reviewed release commit
+`versionCode 1` builds come from commits before M5.OTA.SMOKE.VERSION (up to `3d8df68`, the merge of
+PR #66). The owner builds `assemblePublishableRelease` and `bundlePublishablePlay` from the reviewed
+release commit
 ([rc3 readiness §7](rc3-readiness.md#7-exact-build-and-verification-commands-owner-machine-release-commit))
 and records both SHA-256 values in §3 before the first upload.
+
+From M5.OTA.SMOKE.VERSION on, `main` builds `2` / `1.0.0`. The owner builds the OTA ON APK as in
+[OTA enablement §3](../ota/android-production-enablement.md#3-сборка-ota-on-для-магазинов-выполняет-только-владелец-),
+installs it locally over the `1` build for the §4 checks there, and records its SHA-256 in the §3
+ledger. It is **not** uploaded to RuStore, AppGallery or Google Play.
 
 ## 5. Raising `versionCode` before the public release
 
@@ -139,7 +153,8 @@ artifacts only. They are never uploaded.
 
 ## 7. Where the version shows
 
-- About screen: "Version 1.0.0 (1)" / "Версия 1.0.0 (1)", read from the installed package.
-- OTA HTTP User-Agent `TalentForge/1.0.0`. Production OTA is off in release builds.
+- About screen: "Version 1.0.0 (2)" / "Версия 1.0.0 (2)", read from the installed package.
+- OTA HTTP User-Agent `TalentForge/1.0.0`. Production OTA is off in release builds unless the owner
+  enables it at build time ([OTA enablement](../ota/android-production-enablement.md)).
 - The UI tests and screenshot tests use their own fixed `AppVersion("0.1.0", 1)` fixture, which is
   independent of the build. It is not changed here.
