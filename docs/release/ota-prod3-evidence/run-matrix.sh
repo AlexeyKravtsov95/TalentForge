@@ -157,6 +157,12 @@ if [ -f "$kept/release-ota-on.apk" ] && [ -f "$kept/release-ota-off.apk" ]; then
     checker_bites on-artifact-as-off off "$kept/release-ota-on.apk" "$kept/release-ota-on.kt"
     python3 -I -c 'import sys; t = open(sys.argv[1]).read(); k = "OtaKeySetting(\"tf-prod-2026b\""; open(sys.argv[2], "w").write(t.replace(k, "OtaKeySetting(\"tf-staging-x\", \"ecdsa-p256-sha256\", \"S\"),\n            " + k, 1))' "$kept/release-ota-on.kt" "$kept/staging-key-added.kt"
     checker_bites staging-key-in-generated on "$kept/release-ota-on.apk" "$kept/staging-key-added.kt"
+    # the same key as the LAST entry of the list, and the backup key removed: a parser that reads
+    # only part of the list would miss both
+    python3 -I -c 'import sys; lines = open(sys.argv[1]).read().split("\n"); i = next(n for n, l in enumerate(lines) if "OtaKeySetting(\"tf-prod-2026b\"" in l); lines.insert(i + 1, lines[i].replace("tf-prod-2026b", "tf-staging-x")); open(sys.argv[2], "w").write("\n".join(lines))' "$kept/release-ota-on.kt" "$kept/staging-key-last.kt"
+    checker_bites staging-key-last-in-generated on "$kept/release-ota-on.apk" "$kept/staging-key-last.kt"
+    grep -v 'OtaKeySetting("tf-prod-2026b"' "$kept/release-ota-on.kt" > "$kept/backup-key-removed.kt"
+    checker_bites backup-key-removed-in-generated on "$kept/release-ota-on.apk" "$kept/backup-key-removed.kt"
     sed 's#baseUrl = "https://ota.mythweld.com"#baseUrl = "https://ota.example.org"#' "$kept/release-ota-on.kt" > "$kept/other-origin.kt"
     checker_bites other-origin-in-generated on "$kept/release-ota-on.apk" "$kept/other-origin.kt"
     python3 -I - "$wt/docs/ota/keys/production-keyring.json" "$kept/tampered-keyring.json" <<'PY'

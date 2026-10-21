@@ -39,7 +39,9 @@ P256_SPKI = re.compile(r"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE[A-Za-z0-9+/]+={0,2
 CHANNEL = re.compile(
     r"val (?P<name>\w+): OtaPlatformSettings = OtaPlatformSettings\(\s*"
     r"enabled = (?P<enabled>true|false),\s*channel = OtaChannel\.\w+,\s*"
-    r"baseUrl = (?P<base>null|\"[^\"]*\"),\s*keys = listOf\((?P<keys>.*?)\),\s*\)",
+    # every key line ends with "),": the list is a run of OtaKeySetting(...) entries
+    r"baseUrl = (?P<base>null|\"[^\"]*\"),\s*"
+    r"keys = listOf\((?P<keys>(?:\s*OtaKeySetting\([^)]*\),)*)\s*\),\s*\)",
     re.DOTALL,
 )
 KEY = re.compile(r'OtaKeySetting\("([^"]*)", "([^"]*)", "([^"]*)"\)')
