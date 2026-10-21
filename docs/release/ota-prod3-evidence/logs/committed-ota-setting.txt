@@ -1,0 +1,40 @@
+> Task :composeApp:copyNonXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :composeApp:prepareComposeResourcesTaskForAndroidMain NO-SOURCE
+> Task :composeApp:generateResourceAccessorsForAndroidMain NO-SOURCE
+> Task :composeApp:convertXmlValueResourcesForCommonMain UP-TO-DATE
+> Task :composeApp:copyNonXmlValueResourcesForCommonMain UP-TO-DATE
+> Task :composeApp:prepareComposeResourcesTaskForCommonMain UP-TO-DATE
+> Task :composeApp:generateResourceAccessorsForCommonMain UP-TO-DATE
+> Task :composeApp:convertXmlValueResourcesForJvmCommonMain NO-SOURCE
+> Task :composeApp:copyNonXmlValueResourcesForJvmCommonMain NO-SOURCE
+> Task :composeApp:prepareComposeResourcesTaskForJvmCommonMain NO-SOURCE
+> Task :composeApp:generateResourceAccessorsForJvmCommonMain NO-SOURCE
+> Task :composeApp:generateActualResourceCollectorsForAndroidMain UP-TO-DATE
+> Task :composeApp:generateComposeResClass UP-TO-DATE
+> Task :composeApp:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
+> Task :composeApp:generateOtaSettings FAILED
+
+[Incubating] Problems report is available at: file://<worktree>/mobile/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':composeApp:generateOtaSettings' (registered in build file 'composeApp/build.gradle.kts').
+> Error while evaluating property 'source' of task ':composeApp:generateOtaSettings'.
+   > Invalid OTA settings:
+       talentforge.ota.android.production.enabled must not be committed: set it in the environment, ~/.gradle/gradle.properties or -P (docs/ota/android-production-enablement.md)
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 589ms
+59 actionable tasks: 6 executed, 1 from cache, 52 up-to-date

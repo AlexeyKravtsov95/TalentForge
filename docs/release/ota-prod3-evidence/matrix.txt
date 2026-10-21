@@ -1,0 +1,35 @@
+M5.OTA.PROD.3 build matrix — 2026-10-21T11:44:24Z, commit ad251a8
+
+== self-tests
+PASS  verifyOtaSettingsRules + verifyReleaseInternetRules
+
+== artifacts (unsigned)
+PASS  release-ota-off: INTERNET=no (expected no); permissions: io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION 
+      pins in dex: https://legal.mythweld.com/privacy-en.html https://legal.mythweld.com/privacy.html https://ota.invalid 
+      generated: enabled = false,;baseUrl = null,;enabled = false,;baseUrl = null,;enabled = false,;baseUrl = null,;enabled = false,;baseUrl = null,;val androidStagingTrustAnchorPem: String? = null;
+PASS  play-ota-off: INTERNET=no (expected no); permissions: io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+      pins in dex: https://legal.mythweld.com/privacy-en.html https://legal.mythweld.com/privacy.html https://ota.invalid 
+      generated: enabled = false,;baseUrl = null,;enabled = false,;baseUrl = null,;enabled = false,;baseUrl = null,;enabled = false,;baseUrl = null,;val androidStagingTrustAnchorPem: String? = null;
+PASS  release-ota-on: INTERNET=yes (expected yes); permissions: android.permission.INTERNET io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION 
+      pins in dex: https://legal.mythweld.com/privacy-en.html https://legal.mythweld.com/privacy.html https://ota.invalid https://ota.mythweld.com tf-prod-2026a tf-prod-2026b 
+      generated: enabled = true,;baseUrl = "https://ota.mythweld.com",;OtaKeySetting("tf-prod-2026a", "ecdsa-p256-sha256", "<spki>"),;OtaKeySetting("tf-prod-2026b", "ecdsa-p256-sha256", "<spki>"),;enabled = false,;baseUrl = null,;enabled = false,;baseUrl = null,;enabled = false,;baseUrl = null,;val androidStagingTrustAnchorPem: String? = null;
+PASS  play-ota-on: INTERNET=yes (expected yes); permissions: android.permission.INTERNET io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+      pins in dex: https://legal.mythweld.com/privacy-en.html https://legal.mythweld.com/privacy.html https://ota.invalid https://ota.mythweld.com tf-prod-2026a tf-prod-2026b 
+      generated: enabled = true,;baseUrl = "https://ota.mythweld.com",;OtaKeySetting("tf-prod-2026a", "ecdsa-p256-sha256", "<spki>"),;OtaKeySetting("tf-prod-2026b", "ecdsa-p256-sha256", "<spki>"),;enabled = false,;baseUrl = null,;enabled = false,;baseUrl = null,;enabled = false,;baseUrl = null,;val androidStagingTrustAnchorPem: String? = null;
+PASS  release-ota-explicit-off: INTERNET=no (expected no); permissions: io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION 
+      pins in dex: https://legal.mythweld.com/privacy-en.html https://legal.mythweld.com/privacy.html https://ota.invalid 
+      generated: enabled = false,;baseUrl = null,;enabled = false,;baseUrl = null,;enabled = false,;baseUrl = null,;enabled = false,;baseUrl = null,;val androidStagingTrustAnchorPem: String? = null;
+
+== refused configurations
+PASS  origin-override: refused ("baseUrl is pinned to https://ota.mythweld.com")
+PASS  http-origin: refused ("must be an https origin")
+PASS  fixture-keyring: refused ("contains a test- key")
+PASS  staging-in-release: refused ("Release builds never carry staging OTA settings")
+PASS  staging-in-play: refused ("Release builds never carry staging OTA settings")
+PASS  ios-staging-in-release: refused ("Release builds never carry staging OTA settings; unset talentforge.ota.ios.staging.baseUrl")
+PASS  not-boolean: refused ("enabled must be true or false")
+PASS  broken-overlay-release: refused ("so the production OTA client could not connect")
+PASS  broken-overlay-play: refused ("so the production OTA client could not connect")
+PASS  committed-ota-setting: refused ("talentforge.ota.android.production.enabled must not be committed")
+
+RESULT: PASS

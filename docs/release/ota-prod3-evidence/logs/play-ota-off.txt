@@ -1,0 +1,40 @@
+w: file://<worktree>/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeScreen.kt:1274:50 Condition is always 'true'.
+w: file://<worktree>/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeScreen.kt:1277:37 Condition is always 'true'.
+w: file://<worktree>/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeScreen.kt:1313:72 Condition is always 'true'.
+w: file://<worktree>/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeScreen.kt:1313:100 Condition is always 'true'.
+
+> Task :composeApp:compilePlayJavaWithJavac NO-SOURCE
+> Task :composeApp:dexBuilderPlay
+> Task :composeApp:mergePlayGlobalSynthetics UP-TO-DATE
+> Task :composeApp:processPlayJavaRes UP-TO-DATE
+> Task :composeApp:mergePlayJavaResource UP-TO-DATE
+> Task :composeApp:generatePlayLintVitalReportModel
+
+> Task :composeApp:lintVitalAnalyzePlay
+e: file:///private<tmp> Module was compiled with an incompatible version of Kotlin. The binary version of its metadata is 2.4.0, expected version is 2.2.0.
+e: file:///private<tmp> Module was compiled with an incompatible version of Kotlin. The binary version of its metadata is 2.4.0, expected version is 2.2.0.
+e: file:///private<tmp> Module was compiled with an incompatible version of Kotlin. The binary version of its metadata is 2.4.0, expected version is 2.2.0.
+e: file:///private<tmp> Module was compiled with an incompatible version of Kotlin. The binary version of its metadata is 2.4.0, expected version is 2.2.0.
+
+> Task :composeApp:mergeDexPlay
+> Task :composeApp:buildPlayPreBundle
+> Task :composeApp:lintVitalReportPlay
+> Task :composeApp:lintVitalPlay
+> Task :composeApp:compilePlayArtProfile
+> Task :composeApp:packagePlayBundle
+> Task :composeApp:signPlayBundle
+> Task :composeApp:producePlayBundleIdeListingFile
+> Task :composeApp:createPlayBundleListingFileRedirect UP-TO-DATE
+> Task :composeApp:bundlePlay
+
+[Incubating] Problems report is available at: file://<worktree>/mobile/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 20s
+103 actionable tasks: 19 executed, 84 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.5.1/userguide/configuration_cache_enabling.html
