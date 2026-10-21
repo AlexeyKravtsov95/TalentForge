@@ -31,15 +31,17 @@ import kotlin.test.assertTrue
 import org.junit.Rule
 
 /**
- * M5.UI.ABOUT.1: the simplified About screen in English and Russian — the
- * icon/name/description/installed version header (the version from the host,
- * never invented), the talent data in use, the independent-project statement,
- * the compact privacy block whose every statement stays one explicit toggle
- * away, the published policy link of the UI language where a policy is
- * published for the platform and none on iOS (M5.LEGAL.LINK), the one row into the third-party licenses, and NO technology, dependency or
- * module names; 48 dp targets at 320 dp / 200 %; and Home → About → Licenses
- * → Back → Back through the real app root. The licenses themselves:
- * `LicensesScreenUiTest`.
+ * M5.UI.ABOUT.1/2: the simplified About screen in English and Russian — the
+ * icon/name/installed version header (the version name from the host, never
+ * invented, and never the internal build number), the talent data in use and
+ * its source, about the project (description and the independent-project
+ * statement), the compact privacy block whose every statement stays one
+ * explicit toggle away, the published policy link of the UI language where a
+ * policy is published for the platform and none on iOS (M5.LEGAL.LINK), the
+ * quiet open-source licenses link at the bottom, and NO technology,
+ * dependency or module names; 48 dp targets at 320 dp / 200 %; and Home →
+ * About → Licenses → Back → Back through the real app root. The licenses
+ * themselves: `LicensesScreenUiTest`.
  */
 @OptIn(ExperimentalTestApi::class)
 class AboutScreenUiTest {
@@ -89,13 +91,15 @@ class AboutScreenUiTest {
     fun englishAboutShowsTheHeaderDataStatementAndCompactPrivacy() = onScreen(content = about()) {
         awaitText("About")
         awaitText("TalentForge")
-        awaitText("Version 0.1.0 (1)")
+        awaitText("Version 0.1.0")
+        assertAbsent("Version 0.1.0 (1)")
+        awaitText("TALENT DATA")
+        awaitText("Forever · talent data $dataVersion")
+        awaitText("Included with the app")
+        awaitText("ABOUT THE PROJECT")
         awaitText(
             "A talent planner: spend points across the talent trees, keep your builds on this device and share them as codes.",
         )
-        awaitText("TALENT DATA")
-        awaitText("Forever · talent data $dataVersion")
-        awaitText("INDEPENDENT PROJECT")
         awaitText(
             "TalentForge is an independent, unofficial project. It is not affiliated with, endorsed by or " +
                 "sponsored by the game's developer or publisher.",
@@ -103,13 +107,12 @@ class AboutScreenUiTest {
         awaitText("PRIVACY")
         awaitText("TalentForge works offline, without an account, ads or analytics", substring = true)
         awaitText("Show details")
-        awaitText("Third-party licenses")
-        awaitText("Open-source notices and full license texts")
+        awaitText("Open-source licenses")
         // compact: the detailed statements wait behind the toggle
         assertAbsent("The app turns off Android backup", substring = true)
-        // OTA is off: no data-source line and no check action
+        // OTA is off: the data is the app's own; no game build line and no check action
         assertAbsent("Check for updates")
-        assertAbsent("Included with the app")
+        assertAbsent("Game build", substring = true)
         // the published policy link of the UI language (M5.LEGAL.LINK)
         awaitText("Privacy policy")
     }
@@ -147,6 +150,8 @@ class AboutScreenUiTest {
     @Test
     fun anOtaEnabledBuildSaysWhatItDownloads() = onScreen(content = about(ota = true)) {
         awaitText("Check for updates")
+        awaitText("Game build ${PRODUCT_BUNDLE.clientBuild}")
+        awaitText("Included with the app")
         awaitText("Your builds stay on this device; only talent data updates are downloaded from the internet.", substring = true)
         assertAbsent("works offline", substring = true)
 
@@ -188,8 +193,8 @@ class AboutScreenUiTest {
     fun theLicensesRowOpensTheLicenses() {
         var opened = 0
         onScreen(content = about(onOpenLicenses = { opened += 1 })) {
-            awaitText("Third-party licenses")
-            onAllNodes(clickLabelled("open the third-party licenses")).onFirst().performScrollTo().performClick()
+            awaitText("Open-source licenses")
+            onAllNodes(clickLabelled("open the open-source licenses")).onFirst().performScrollTo().performClick()
             waitForIdle()
             assertEquals(1, opened)
         }
@@ -211,29 +216,67 @@ class AboutScreenUiTest {
     @Test
     fun russianAboutIsFullyLocalized() = onScreen(language = AppLanguage.RUSSIAN, content = about(AppLanguage.RUSSIAN)) {
         awaitText("О приложении")
-        awaitText("Версия 0.1.0 (1)")
+        awaitText("Версия 0.1.0")
+        assertAbsent("Версия 0.1.0 (1)")
+        awaitText("ДАННЫЕ ТАЛАНТОВ")
+        awaitText("Forever · данные талантов $dataVersion")
+        awaitText("Встроены в приложение")
+        awaitText("О ПРОЕКТЕ")
         awaitText(
             "Планировщик талантов: распределяйте очки по веткам талантов, храните билды на этом устройстве " +
                 "и делитесь ими в виде кодов.",
         )
-        awaitText("ДАННЫЕ ТАЛАНТОВ")
-        awaitText("Forever · данные талантов $dataVersion")
-        awaitText("НЕЗАВИСИМЫЙ ПРОЕКТ")
         awaitText(
             "TalentForge — независимый неофициальный проект. Он не связан с разработчиком и издателем игры, " +
                 "не одобрен и не поддерживается ими.",
         )
         awaitText("КОНФИДЕНЦИАЛЬНОСТЬ")
         awaitText("Политика конфиденциальности")
-        awaitText("Лицензии сторонних компонентов")
-        awaitText("Уведомления об открытом ПО и полные тексты лицензий")
+        awaitText("Лицензии открытого ПО")
         assertAbsent("Приложение отключает резервное копирование Android", substring = true)
         clickText("Подробнее")
         awaitText("Приложение отключает резервное копирование Android", substring = true)
         awaitText("Скрыть подробности")
-        assertEquals(1, onAllNodes(clickLabelled("открыть лицензии сторонних компонентов")).fetchSemanticsNodes().size)
-        for (english in listOf("About", "Show details", "Hide details", "Third-party licenses", "PRIVACY", "Privacy policy")) {
+        assertEquals(1, onAllNodes(clickLabelled("открыть лицензии открытого ПО")).fetchSemanticsNodes().size)
+        for (english in listOf("About", "Show details", "Hide details", "Open-source licenses", "PRIVACY", "Privacy policy", "Included with the app")) {
             assertAbsent(english)
+        }
+    }
+
+    // ------------------------------------------------------- M5.UI.ABOUT.2
+
+    @Test
+    fun theVersionNameIsShownWithoutTheInternalBuildNumber() {
+        for (language in AppLanguage.entries) {
+            val ru = language == AppLanguage.RUSSIAN
+            onScreen(language = language, content = about(language, appVersion = AppVersion(name = "1.0.0", code = 2))) {
+                awaitText(if (ru) "Версия 1.0.0" else "Version 1.0.0")
+                assertAbsent("(2)", substring = true)
+                assertTrue(texts().none { it.contains("1.0.0") && it.contains('2') }, "the build number is shown: ${texts()}")
+            }
+        }
+    }
+
+    @Test
+    fun theSectionsComeInOrderAndTheLicensesLinkIsLast() {
+        for ((language, ota) in AppLanguage.entries.flatMap { language -> listOf(language to false, language to true) }) {
+            val ru = language == AppLanguage.RUSSIAN
+            onScreen(language = language, content = about(language, ota = ota)) {
+                val order = if (ru) {
+                    listOf("TalentForge", "ДАННЫЕ ТАЛАНТОВ", "О ПРОЕКТЕ", "КОНФИДЕНЦИАЛЬНОСТЬ", "Лицензии открытого ПО")
+                } else {
+                    listOf("TalentForge", "TALENT DATA", "ABOUT THE PROJECT", "PRIVACY", "Open-source licenses")
+                }
+                order.forEach { awaitText(it) }
+                val tops = order.map { text -> onAllNodesWithText(text).onFirst().fetchSemanticsNode().positionInRoot.y }
+                assertEquals(tops.sorted(), tops, "$language OTA=$ota: $order at $tops")
+                // the link is the last target on the screen and keeps 48 dp
+                val link = onAllNodes(clickLabelled(if (ru) "открыть лицензии открытого ПО" else "open the open-source licenses"))
+                    .fetchSemanticsNodes().single()
+                assertUsableTarget(link, widthDp = 393)
+                val lastTarget = onAllNodes(anyClickable).fetchSemanticsNodes().maxBy { it.positionInRoot.y }
+                assertEquals(link.id, lastTarget.id, "$language OTA=$ota: the licenses link is not the last action")
+            }
         }
     }
 
@@ -306,7 +349,7 @@ class AboutScreenUiTest {
             ) {
                 awaitText(if (ru) "Новый билд" else "New build")
                 onAllNodes(clickLabelled(if (ru) "открыть сведения о TalentForge" else "open About TalentForge")).onFirst().performClick()
-                awaitText(if (ru) "О приложении" else "Version 0.1.0 (1)")
+                awaitText(if (ru) "О приложении" else "Version 0.1.0")
                 clickText(if (ru) "Политика конфиденциальности" else "Privacy policy")
                 // the desktop host is the Android UI's: the app root passes the Android policy
                 assertEquals(listOf(privacyPolicyUrlOf(PublishedPrivacyPolicy.Android, language)), handler.opened)
@@ -318,7 +361,7 @@ class AboutScreenUiTest {
     fun largeTextOnANarrowPhoneKeepsEveryActionReachable() {
         for (language in AppLanguage.entries) {
             onScreen(language = language, widthDp = 320, heightDp = 640, fontScale = 2f, content = about(language)) {
-                awaitText(if (language == AppLanguage.RUSSIAN) "Лицензии сторонних компонентов" else "Third-party licenses")
+                awaitText(if (language == AppLanguage.RUSSIAN) "Лицензии открытого ПО" else "Open-source licenses")
                 val targets = onAllNodes(anyClickable).fetchSemanticsNodes()
                 val labels = targets.map { it.config.getOrNull(SemanticsActions.OnClick)?.label }
                 assertEquals(4, targets.size, "Back, the privacy toggle, the policy link and the licenses row: $labels")
@@ -396,19 +439,29 @@ class AboutScreenUiTest {
         val entry = onAllNodesWithContentDescription("About").fetchSemanticsNodes().single()
         assertTrue(entry.size.width >= 48 && entry.size.height >= 48, "About entry ${entry.size} < 48 dp")
         onAllNodes(clickLabelled("open About TalentForge")).onFirst().performClick()
-        awaitText("Version 0.1.0 (1)")
+        awaitText("Version 0.1.0")
 
-        onAllNodes(clickLabelled("open the third-party licenses")).onFirst().performScrollTo().performClick()
+        onAllNodes(clickLabelled("open the open-source licenses")).onFirst().performScrollTo().performClick()
         awaitText("AndroidX (Android Jetpack)")
-        assertAbsent("Version 0.1.0 (1)")
+        assertAbsent("Version 0.1.0")
+
+        // a group and a licence text close first, one Back each
+        onAllNodes(clickLabelled("open AndroidX (Android Jetpack)")).onFirst().performScrollTo().performClick()
+        awaitText("LICENSE TEXTS")
+        onAllNodes(clickLabelled("open the text of Apache License 2.0")).onFirst().performScrollTo().performClick()
+        awaitText("TERMS AND CONDITIONS", substring = true)
+        onAllNodesWithContentDescription("go back").onFirst().performClick()
+        awaitText("LICENSE TEXTS")
+        onAllNodesWithContentDescription("go back").onFirst().performClick()
+        awaitText("COMPONENTS")
 
         onAllNodesWithContentDescription("go back").onFirst().performClick()
-        awaitText("Version 0.1.0 (1)")
+        awaitText("Version 0.1.0")
         assertAbsent("AndroidX (Android Jetpack)")
 
         onAllNodesWithContentDescription("go back").onFirst().performClick()
         awaitText("New build")
-        assertAbsent("Version 0.1.0 (1)")
+        assertAbsent("Version 0.1.0")
     }
 
     @Test
@@ -422,12 +475,12 @@ class AboutScreenUiTest {
         awaitText("Новый билд")
         onAllNodes(clickLabelled("открыть сведения о TalentForge")).onFirst().performClick()
         awaitText("О приложении")
-        awaitText("НЕЗАВИСИМЫЙ ПРОЕКТ")
-        onAllNodes(clickLabelled("открыть лицензии сторонних компонентов")).onFirst().performScrollTo().performClick()
-        awaitText("Лицензии сторонних компонентов")
-        awaitText("Apache License 2.0 · 88 модулей")
+        awaitText("О ПРОЕКТЕ")
+        onAllNodes(clickLabelled("открыть лицензии открытого ПО")).onFirst().performScrollTo().performClick()
+        awaitText("Лицензии открытого ПО")
+        awaitText("КОМПОНЕНТЫ")
         onAllNodesWithContentDescription("назад").onFirst().performClick()
-        awaitText("НЕЗАВИСИМЫЙ ПРОЕКТ")
+        awaitText("О ПРОЕКТЕ")
     }
 
     private companion object {

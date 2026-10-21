@@ -26,6 +26,40 @@ data class OpenSourceNotices(
 ) {
     /** The Gradle modules listed (linked native components are not modules). */
     val moduleCount: Int get() = components.sumOf { (it as? NoticeComponent.Packaged)?.modules?.size ?: 0 }
+
+    /**
+     * The groups the Licenses screen shows (M5.UI.ABOUT.2): one per packaged
+     * component, in document order, with every linked component placed in the
+     * group of the packaged component whose module contains it (Skia and the
+     * other native code in Skiko's group). Derived from the data alone — no
+     * curated mapping — so every component lands in exactly one group: the
+     * parser guarantees each linked component's module is listed, and once.
+     */
+    val groups: List<NoticeGroup>
+        get() {
+            val linked = components.filterIsInstance<NoticeComponent.Linked>()
+            return components.filterIsInstance<NoticeComponent.Packaged>().map { head ->
+                NoticeGroup(head = head, linked = linked.filter { it.linkedInto in head.modules })
+            }
+        }
+
+    /** The components whose licence requires a statement in the product documentation, in document order. */
+    val attributions: List<NoticeComponent.Linked>
+        get() = components.filterIsInstance<NoticeComponent.Linked>().filter { it.attribution != null }
+
+    /** Every component distributed under [licenseId], in document order. */
+    fun componentsUnder(licenseId: String): List<NoticeComponent> = components.filter { licenseId in it.licenseIds }
+}
+
+/** One group of the Licenses screen: a packaged component and the third-party code linked into it. */
+data class NoticeGroup(
+    val head: NoticeComponent.Packaged,
+    val linked: List<NoticeComponent.Linked>,
+) {
+    val components: List<NoticeComponent> get() = listOf(head) + linked
+
+    /** Every licence of the group's components, each once, in first-use order. */
+    val licenseIds: List<String> get() = components.flatMap { it.licenseIds }.distinct()
 }
 
 /** A licence or notice text the notices reference: display name and the bundled full text's resource path. */
