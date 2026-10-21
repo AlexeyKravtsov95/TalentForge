@@ -3,6 +3,8 @@ import com.android.build.api.variant.BuiltArtifactsLoader
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.io.ByteArrayOutputStream
 import java.io.StringReader
+import java.security.MessageDigest
+import java.util.Base64
 import javax.inject.Inject
 import javax.xml.parsers.DocumentBuilderFactory
 import org.w3c.dom.Element
@@ -48,12 +50,35 @@ plugins {
 // (tf-prod-2026a + backup tf-prod-2026b). talentforge.ota.android.production.enabled=true is the
 // only setting the owner supplies (docs/ota/android-production-enablement.md); its baseUrl and
 // keyring default to the pinned values, and any other value fails the build. Unset, the channel
-// stays off and the generated settings are those of the OTA-off release.
+// stays off and the generated settings are those of the OTA-off release. The committed keyring's
+// content is pinned as well, by the SHA-256 of each key's DER SPKI (the fingerprints the key
+// ceremony prints, docs/ota/production-deployment.md §4.4): every build fails while it differs.
 val otaPlatforms = listOf("android", "ios")
 val otaChannels = listOf("production", "staging")
 val otaKeyIdPrefixes = mapOf("production" to "tf-prod-", "staging" to "tf-staging-")
 val androidProductionOtaOrigin = "https://ota.mythweld.com"
 val androidProductionOtaKeyringFile: File = rootProject.file("../docs/ota/keys/production-keyring.json")
+val androidProductionOtaSpkiSha256 = mapOf(
+    "tf-prod-2026a" to "1fac1b0d15f2a09fc3769099623fe1038e846f0033ec6e233f5111ff71239278",
+    "tf-prod-2026b" to "6997b3d47d74ceeb6daec62b1d94f3f3e3bc476534eefe8cd140f67578532b26",
+)
+
+/** SHA-256 (hex) of a base64 DER SPKI, or null when it is not base64. */
+fun spkiSha256(base64Spki: String): String? = runCatching<String> {
+    MessageDigest.getInstance("SHA-256").digest(Base64.getDecoder().decode(base64Spki))
+        .joinToString("") { byte -> "%02x".format(byte) }
+}.getOrNull()
+
+/** Why [keys] are not exactly the keys whose SPKI fingerprints [expected] lists (empty: they are). */
+fun keyringFingerprintProblems(keys: List<Map<String, String>>, expected: Map<String, String>): List<String> {
+    val ids = keys.map { it.getValue("keyId") }
+    if (ids.sorted() != expected.keys.sorted()) return listOf("pins $ids, expected ${expected.keys.toList()}")
+    return keys.mapNotNull { key ->
+        val id = key.getValue("keyId")
+        val actual = spkiSha256(key.getValue("publicKeySpki"))
+        if (actual == expected.getValue(id)) null else "$id has SPKI SHA-256 $actual, expected ${expected.getValue(id)}"
+    }
+}
 
 fun otaSetting(platform: String, channel: String, name: String): String? =
     (providers.environmentVariable("TALENTFORGE_OTA_${platform.uppercase()}_${channel.uppercase()}_${name.uppercase()}").orNull
@@ -78,6 +103,8 @@ class OtaChannelInput(
     val pinnedBaseUrl: String? = null,
     /** M5.OTA.PROD.3: the only keys this channel may pin (the committed keyring), or null (not pinned). */
     val pinnedKeys: List<Map<String, String>>? = null,
+    /** M5.OTA.PROD.3: the SPKI SHA-256 per key id that [pinnedKeys] must have, or null. */
+    val pinnedSpkiSha256: Map<String, String>? = null,
 )
 
 /** Every reason these settings must fail the build (empty: valid). Pure: verifyOtaSettingsRules runs it on fixed inputs. */
@@ -105,6 +132,12 @@ fun otaSettingsProblems(inputs: List<OtaChannelInput>): List<String> {
         }
         if (input.pinnedKeys != null && input.keys.isNotEmpty() && input.keys.toSet() != input.pinnedKeys.toSet()) {
             problems += "$where.keyring must pin exactly the committed production keyring (${input.pinnedKeys.joinToString { it.getValue("keyId") }}); unset it"
+        }
+        // checked on every build, enabled or not: the committed keyring cannot change unnoticed
+        if (input.pinnedKeys != null && input.pinnedSpkiSha256 != null) {
+            keyringFingerprintProblems(input.pinnedKeys, input.pinnedSpkiSha256).forEach {
+                problems += "$where: the committed production keyring changed: $it (update the pinned fingerprints only after the key ceremony record)"
+            }
         }
         input.trustAnchorPem?.let { pem ->
             if (input.platform != "android" || input.channel != "staging") problems += "$where.trustAnchor: a trust anchor is for the Android staging channel only"
@@ -151,6 +184,7 @@ fun readOtaChannelInput(platform: String, channel: String): OtaChannelInput {
         entries, keyringProblem, trustAnchorPem,
         pinnedBaseUrl = androidProductionOtaOrigin.takeIf { pinned },
         pinnedKeys = if (pinned) readKeyringEntries(androidProductionOtaKeyringFile) else null,
+        pinnedSpkiSha256 = androidProductionOtaSpkiSha256.takeIf { pinned },
     )
 }
 
@@ -240,12 +274,32 @@ fun otaSettingsRuleFailures(): List<String> {
     if (otaSettingsProblems(emptyList()).isNotEmpty()) failures += "no settings must be valid (OTA off)"
     val pinned = otaSettingsProblems(listOf(pinnedProduction(androidProductionOtaOrigin, prodB, prodA), staging(stagingKey)))
     if (pinned.isNotEmpty()) failures += "the pinned production channel was refused: $pinned"
-    // the committed keyring itself: exactly the primary and the backup production key, valid for the pinned channel
+    // the committed keyring itself: exactly the primary and the backup production key, valid for the
+    // pinned channel and carrying the pinned SPKI fingerprints
     val committed = readKeyringEntries(androidProductionOtaKeyringFile)
     val committedIds = committed.map { it.getValue("keyId") }
     if (committedIds != listOf("tf-prod-2026a", "tf-prod-2026b")) failures += "the committed production keyring pins $committedIds, expected [tf-prod-2026a, tf-prod-2026b]"
-    val committedProblems = otaSettingsProblems(listOf(OtaChannelInput("android", "production", "true", androidProductionOtaOrigin, committed, pinnedBaseUrl = androidProductionOtaOrigin, pinnedKeys = committed)))
+    fun committedInput(keys: List<Map<String, String>>) = OtaChannelInput(
+        "android", "production", "true", androidProductionOtaOrigin, keys,
+        pinnedBaseUrl = androidProductionOtaOrigin, pinnedKeys = keys, pinnedSpkiSha256 = androidProductionOtaSpkiSha256,
+    )
+    val committedProblems = otaSettingsProblems(listOf(committedInput(committed)))
     if (committedProblems.isNotEmpty()) failures += "the committed production keyring was refused: $committedProblems"
+    // ... and a keyring whose content differs from the fingerprints is refused, enabled or not
+    val (a, b) = committed
+    val tampered = listOf(
+        "the backup key replaced by the primary's SPKI" to listOf(a, b + ("publicKeySpki" to a.getValue("publicKeySpki"))) to "tf-prod-2026b has SPKI SHA-256 ${androidProductionOtaSpkiSha256.getValue("tf-prod-2026a")}",
+        "a changed SPKI byte" to listOf(a + ("publicKeySpki" to a.getValue("publicKeySpki").replaceRange(40, 41, if (a.getValue("publicKeySpki")[40] == 'A') "B" else "A")), b) to "tf-prod-2026a has SPKI SHA-256",
+        "the backup key missing" to listOf(a) to "pins [tf-prod-2026a], expected [tf-prod-2026a, tf-prod-2026b]",
+        "an extra production key" to listOf(a, b, key("tf-prod-2026c", a.getValue("publicKeySpki"))) to "expected [tf-prod-2026a, tf-prod-2026b]",
+    )
+    for ((case, expected) in tampered) {
+        val (name, keys) = case
+        for (enabled in listOf("true", null)) {
+            val problems = otaSettingsProblems(listOf(OtaChannelInput("android", "production", enabled, null, emptyList(), pinnedBaseUrl = androidProductionOtaOrigin, pinnedKeys = keys, pinnedSpkiSha256 = androidProductionOtaSpkiSha256)))
+            if (problems.none { "the committed production keyring changed" in it && expected in it }) failures += "tampered keyring ($name, enabled=$enabled): expected \"$expected\", got $problems"
+        }
+    }
     return failures
 }
 
