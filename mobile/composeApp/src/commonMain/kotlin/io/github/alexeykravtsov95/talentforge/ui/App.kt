@@ -61,7 +61,8 @@ import kotlinx.coroutines.launch
  *   opened; a confirmed import REPLACES the import screen with the new
  *   record's editor, so Back from it returns to Home or Builds likewise;
  * - Home → About (push, M5.RC.2b): Back → Home;
- * - About → Third-party licenses (push, M5.UI.ABOUT.1): Back → About.
+ * - About → Open-source licenses (push, M5.UI.ABOUT.1): Back → About; a
+ *   group or licence text opened inside it closes first (M5.UI.ABOUT.2).
  *
  * The editor opens by opaque local build id — never by passing mutable UI
  * state between screens. Navigation state is not the persistence model: the

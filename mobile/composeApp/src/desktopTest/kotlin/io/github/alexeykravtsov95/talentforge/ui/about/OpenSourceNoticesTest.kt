@@ -26,6 +26,75 @@ class OpenSourceNoticesTest {
 
     private fun OpenSourceNotices.linked() = components.filterIsInstance<NoticeComponent.Linked>()
 
+    // ------------------------------------------------- M5.UI.ABOUT.2 grouping
+
+    @Test
+    fun groupingLosesNoComponentAndNoLicenceOnEitherPlatform() {
+        for (notices in listOf(android, ios)) {
+            val grouped = notices.groups.flatMap { it.components }
+            // every component exactly once, nothing invented
+            assertEquals(notices.components.size, grouped.size, notices.platform)
+            assertEquals(notices.components.toSet(), grouped.toSet(), notices.platform)
+            // every bundled licence text is reachable from some group
+            assertEquals(notices.licenses.keys, notices.groups.flatMap { it.licenseIds }.toSet(), notices.platform)
+            for (group in notices.groups) {
+                assertEquals(group.components.flatMap { it.licenseIds }.toSet(), group.licenseIds.toSet())
+                assertEquals(group.licenseIds.size, group.licenseIds.toSet().size, "${group.head.name}: a licence row twice")
+                for (linked in group.linked) assertTrue(linked.linkedInto in group.head.modules, "${linked.name} outside its module's group")
+            }
+            // each licence names every component it applies to
+            for (id in notices.licenses.keys) {
+                assertEquals(notices.components.filter { id in it.licenseIds }, notices.componentsUnder(id))
+                assertTrue(notices.componentsUnder(id).isNotEmpty(), "$id applies to nothing")
+            }
+        }
+    }
+
+    @Test
+    fun theAndroidGroupsAreThePackagedComponents() {
+        assertEquals(android.components.map { it.name }, android.groups.map { it.head.name })
+        assertTrue(android.groups.all { it.linked.isEmpty() })
+        assertTrue(android.attributions.isEmpty(), "no Android licence requires a documentation statement")
+        assertEquals(
+            listOf("Apache-2.0", "ThreeTen-BSD-3-Clause"),
+            android.groups.single { it.head.name == "Kotlin Standard Library" }.licenseIds,
+        )
+    }
+
+    @Test
+    fun theIosNativeCodeIsGroupedUnderTheModuleItIsLinkedInto() {
+        assertEquals(
+            listOf(
+                "AndroidX (Android Jetpack)", "Compose Multiplatform", "Kotlin Standard Library", "kotlinx.coroutines",
+                "kotlinx.serialization", "kotlinx.atomicfu", "Skiko",
+            ),
+            ios.groups.map { it.head.name },
+        )
+        val skiko = ios.groups.single { it.head.name == "Skiko" }
+        assertEquals(
+            listOf(
+                "Skia", "HarfBuzz", "ICU (International Components for Unicode)", "libjpeg-turbo", "libpng", "libwebp",
+                "Wuffs", "zlib (Chromium)", "Expat", "Adobe DNG SDK", "Piex",
+            ),
+            skiko.linked.map { it.name },
+        )
+        // Skiko's own Apache-2.0 + NOTICE, then every native licence, the DNG patent licence and the WebM patent grant included
+        assertEquals(15, skiko.licenseIds.size)
+        assertTrue("DNG-PATENTS" in skiko.licenseIds && "libwebp-PATENTS" in skiko.licenseIds && "Skiko-NOTICE" in skiko.licenseIds)
+        assertEquals(
+            listOf("Kotlin Standard Library: third-party code (ThreeTen, GWT, Guava)"),
+            ios.groups.single { it.head.name == "Kotlin Standard Library" }.linked.map { it.name },
+        )
+        // the statements the IJG and Adobe DNG terms require in the product documentation
+        assertEquals(
+            mapOf(
+                "libjpeg-turbo" to "This software is based in part on the work of the Independent JPEG Group.",
+                "Adobe DNG SDK" to "This product includes DNG technology under license by Adobe Systems Incorporated.",
+            ),
+            ios.attributions.associate { it.name to it.attribution },
+        )
+    }
+
     @Test
     fun theBundledAndroidNoticesParseStrictly() {
         assertEquals("android", android.platform)

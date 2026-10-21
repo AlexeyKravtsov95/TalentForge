@@ -1,41 +1,39 @@
 package io.github.alexeykravtsov95.talentforge.ui.about
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
-import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_license_hide_text
-import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_license_show_text
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_license_applies_to
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_license_open_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_failed
-import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_hide_modules
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_group_action
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_includes
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_intro
-import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_linked_into
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_license_count
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_loading
-import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_module_count
-import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_show_modules
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_section_groups
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_section_included
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_section_notices
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_section_texts
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_title
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_unavailable
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_version
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_retry
 import io.github.alexeykravtsov95.talentforge.ui.library.InlineNotice
-import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeRadius
+import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTypography
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
@@ -56,12 +54,23 @@ sealed interface NoticesState {
 }
 
 /**
- * **Third-party licenses** (M5.UI.ABOUT.1) — pushed from About (Back returns
- * to About). The open-source notices of this platform's binary
- * ([noticesPath]), unchanged since M5.RC.2b: every component with its licences,
- * version or module list and required attribution, and the full text of every
- * licence behind its own toggle. A notices file that cannot be read is an
- * error with Retry, never an empty list.
+ * **Open-source licenses** (M5.UI.ABOUT.1, grouped in M5.UI.ABOUT.2) — pushed
+ * from About (Back returns to About). The open-source notices of this
+ * platform's binary ([noticesPath]) on three levels, each one Back from the
+ * last (the visible chevron and the system Back agree):
+ *
+ * 1. the list: the statements the licences require in the product
+ *    documentation, verbatim and up front (iOS: the IJG and Adobe DNG
+ *    notices), then one row per [NoticeGroup] naming every component it
+ *    includes;
+ * 2. a group: each of its components with its licences, version and required
+ *    statement, and one row per licence text;
+ * 3. a licence: every component it applies to, and its full original text.
+ *
+ * Every component and every licence text of the generated file stays
+ * reachable; only the module coordinates are left out of the screen (they stay
+ * in the generated notices). A notices file that cannot be read is an error
+ * with Retry, never an empty list.
  */
 @Composable
 fun LicensesScreen(
@@ -85,77 +94,126 @@ fun LicensesScreen(
     // written off the UI thread in the desktop test harness.
     val shownNotices = notices
 
-    AboutScaffold(title = stringResource(Res.string.about_licenses_title), onBack = onBack) {
-        when (shownNotices) {
-            NoticesState.NotIncluded -> AboutBody(stringResource(Res.string.about_licenses_unavailable))
-            NoticesState.Loading -> AboutMeta(stringResource(Res.string.about_licenses_loading))
-            NoticesState.Failed -> InlineNotice(
-                text = stringResource(Res.string.about_licenses_failed),
-                actionText = stringResource(Res.string.common_retry),
-                onAction = { attempt += 1 },
-            )
-            is NoticesState.Ready -> NoticesContent(shownNotices.notices)
+    // the page shown: the list, a group (its index) or a licence text (its id, opened from that group)
+    var openGroup by rememberSaveable { mutableStateOf<Int?>(null) }
+    var openLicense by rememberSaveable { mutableStateOf<String?>(null) }
+    val ready = (shownNotices as? NoticesState.Ready)?.notices
+    val group = openGroup?.let { index -> ready?.groups?.getOrNull(index) }
+    val license = openLicense?.let { id -> ready?.licenses?.get(id) }?.takeIf { group != null }
+    val listScroll = rememberScrollState()
+
+    // Registered after the app's own handler: while a group is open (a licence opens only from
+    // one), the system Back closes the innermost page. It reads the page state when it runs —
+    // never values captured by an earlier composition.
+    PlatformBackHandler(enabled = group != null) {
+        if (openLicense != null) openLicense = null else openGroup = null
+    }
+
+    when {
+        ready != null && license != null -> key("license", license.id) {
+            LicensePage(ready, license, onBack = { openLicense = null })
         }
-    }
-}
-
-@Composable
-private fun NoticesContent(notices: OpenSourceNotices) {
-    AboutBody(stringResource(Res.string.about_licenses_intro))
-    for (component in notices.components) {
-        ComponentCard(component, licenseNames = component.licenseIds.joinToString(", ") { notices.licenses.getValue(it).name })
-    }
-    for (license in notices.licenses.values) {
-        LicenseText(license)
-    }
-}
-
-@Composable
-private fun ComponentCard(component: NoticeComponent, licenseNames: String) {
-    val colors = talentForgeColors()
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .background(colors.surfaceElevated, RoundedCornerShape(TalentForgeRadius.medium))
-            .border(1.dp, colors.borderDefault, RoundedCornerShape(TalentForgeRadius.medium))
-            .padding(horizontal = TalentForgeSpacing.rowGap, vertical = TalentForgeSpacing.inline),
-        verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.hairline),
-    ) {
-        BasicText(component.name, style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary))
-        when (component) {
-            is NoticeComponent.Packaged -> {
-                var expanded by rememberSaveable(component.name) { mutableStateOf(false) }
-                val moduleCount = component.modules.size
-                AboutMeta("$licenseNames · ${pluralStringResource(Res.plurals.about_licenses_module_count, moduleCount, moduleCount)}")
-                AboutMeta(component.url)
-                AboutToggle(
-                    expanded = expanded,
-                    show = stringResource(Res.string.about_licenses_show_modules),
-                    hide = stringResource(Res.string.about_licenses_hide_modules),
-                    onToggle = { expanded = !expanded },
+        ready != null && group != null -> key("group", openGroup) {
+            GroupPage(ready, group, onBack = { openGroup = null }, onOpenLicense = { openLicense = it })
+        }
+        else -> AboutScaffold(title = stringResource(Res.string.about_licenses_title), onBack = onBack, scrollState = listScroll) {
+            when (shownNotices) {
+                NoticesState.NotIncluded -> AboutBody(stringResource(Res.string.about_licenses_unavailable))
+                NoticesState.Loading -> AboutMeta(stringResource(Res.string.about_licenses_loading))
+                NoticesState.Failed -> InlineNotice(
+                    text = stringResource(Res.string.about_licenses_failed),
+                    actionText = stringResource(Res.string.common_retry),
+                    onAction = { attempt += 1 },
                 )
-                if (expanded) {
-                    BasicText(component.modules.joinToString("\n"), style = LicenseMonoStyle.copy(color = colors.textSecondary))
-                }
-            }
-            is NoticeComponent.Linked -> {
-                AboutMeta("$licenseNames · ${stringResource(Res.string.about_licenses_version, component.version)}")
-                AboutMeta(component.url)
-                AboutMeta(stringResource(Res.string.about_licenses_linked_into, component.linkedInto))
-                component.attribution?.let { AboutBody(it) }
+                is NoticesState.Ready -> GroupList(shownNotices.notices, onOpenGroup = { openGroup = it })
             }
         }
     }
 }
 
+/** The first level: the required statements, then one row per group naming everything it includes. */
 @Composable
-private fun LicenseText(license: NoticeLicense) {
+private fun GroupList(notices: OpenSourceNotices, onOpenGroup: (Int) -> Unit) {
+    AboutBody(stringResource(Res.string.about_licenses_intro))
+    val attributions = notices.attributions
+    if (attributions.isNotEmpty()) {
+        AboutSection(stringResource(Res.string.about_licenses_section_notices))
+        for (component in attributions) RequiredStatement(component)
+    }
+    AboutSection(stringResource(Res.string.about_licenses_section_groups))
+    notices.groups.forEachIndexed { index, group ->
+        // the licence names while they read as one short line; a count beyond that (Skiko's 15)
+        val licenseCount = group.licenseIds.size
+        val licenses = if (licenseCount <= MAX_NAMED_LICENSES) {
+            group.licenseIds.joinToString(", ") { notices.licenses.getValue(it).name }
+        } else {
+            pluralStringResource(Res.plurals.about_licenses_license_count, licenseCount, licenseCount)
+        }
+        val includes = group.linked.takeIf { it.isNotEmpty() }
+            ?.let { linked -> stringResource(Res.string.about_licenses_includes, linked.joinToString(", ") { it.name }) }
+        AboutNavigationRow(
+            title = group.head.name,
+            detail = listOfNotNull(licenses, includes).joinToString("\n"),
+            onClickLabel = stringResource(Res.string.about_licenses_group_action, group.head.name),
+            onClick = { onOpenGroup(index) },
+        )
+    }
+}
+
+/** A statement a licence requires in the product documentation, verbatim, above the component it belongs to. */
+@Composable
+private fun RequiredStatement(component: NoticeComponent.Linked) {
+    val statement = component.attribution ?: return
+    Column(verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.hairline)) {
+        BasicText(statement, style = TalentForgeTypography.body.copy(color = talentForgeColors().textPrimary))
+        AboutMeta(component.name)
+    }
+}
+
+/** The second level: every component of [group] with its licences, then one row per licence text. */
+@Composable
+private fun GroupPage(notices: OpenSourceNotices, group: NoticeGroup, onBack: () -> Unit, onOpenLicense: (String) -> Unit) {
+    AboutScaffold(title = group.head.name, onBack = onBack) {
+        AboutMeta(group.head.url)
+        AboutMeta(licenseNames(notices, group.head))
+        if (group.linked.isNotEmpty()) {
+            AboutSection(stringResource(Res.string.about_licenses_section_included))
+            for (component in group.linked) LinkedComponent(notices, component)
+        }
+        AboutSection(stringResource(Res.string.about_licenses_section_texts))
+        for (id in group.licenseIds) {
+            val license = notices.licenses.getValue(id)
+            AboutNavigationRow(
+                title = license.name,
+                detail = null,
+                onClickLabel = stringResource(Res.string.about_license_open_action, license.name),
+                onClick = { onOpenLicense(id) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun LinkedComponent(notices: OpenSourceNotices, component: NoticeComponent.Linked) {
+    Column(verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.hairline)) {
+        BasicText(component.name, style = TalentForgeTypography.componentTitle.copy(color = talentForgeColors().textPrimary))
+        AboutMeta("${licenseNames(notices, component)} · ${stringResource(Res.string.about_licenses_version, component.version)}")
+        AboutMeta(component.url)
+        component.attribution?.let { AboutBody(it) }
+    }
+}
+
+private fun licenseNames(notices: OpenSourceNotices, component: NoticeComponent): String =
+    component.licenseIds.joinToString(", ") { notices.licenses.getValue(it).name }
+
+/** The third level: what [license] applies to, and its full original text (never translated). */
+@Composable
+private fun LicensePage(notices: OpenSourceNotices, license: NoticeLicense, onBack: () -> Unit) {
     val colors = talentForgeColors()
-    var expanded by rememberSaveable(license.id) { mutableStateOf(false) }
     var attempt by remember { mutableStateOf(0) }
     var text by remember(license.textPath) { mutableStateOf<Result<String>?>(null) }
-    LaunchedEffect(expanded, license.textPath, attempt) {
-        if (!expanded || text?.isSuccess == true) return@LaunchedEffect
+    LaunchedEffect(license.textPath, attempt) {
+        if (text?.isSuccess == true) return@LaunchedEffect
         text = null
         text = try {
             Result.success(readLegalResource(license.textPath))
@@ -164,30 +222,29 @@ private fun LicenseText(license: NoticeLicense) {
         }
     }
     val shownText = text
-    Column(verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.hairline)) {
-        BasicText(license.name, style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary))
-        AboutToggle(
-            expanded = expanded,
-            show = stringResource(Res.string.about_license_show_text),
-            hide = stringResource(Res.string.about_license_hide_text),
-            onToggle = { expanded = !expanded },
+    AboutScaffold(title = license.name, onBack = onBack) {
+        AboutMeta(
+            stringResource(
+                Res.string.about_license_applies_to,
+                notices.componentsUnder(license.id).joinToString(", ") { it.name },
+            ),
         )
-        if (expanded) {
-            when {
-                shownText == null -> AboutMeta(stringResource(Res.string.about_licenses_loading))
-                shownText.isSuccess -> BasicText(
-                    shownText.getOrThrow(),
-                    style = LicenseMonoStyle.copy(color = colors.textSecondary),
-                )
-                else -> InlineNotice(
-                    text = stringResource(Res.string.about_licenses_failed),
-                    actionText = stringResource(Res.string.common_retry),
-                    onAction = { attempt += 1 },
-                )
-            }
+        when {
+            shownText == null -> AboutMeta(stringResource(Res.string.about_licenses_loading))
+            shownText.isSuccess -> BasicText(
+                shownText.getOrThrow(),
+                style = LicenseMonoStyle.copy(color = colors.textSecondary),
+            )
+            else -> InlineNotice(
+                text = stringResource(Res.string.about_licenses_failed),
+                actionText = stringResource(Res.string.common_retry),
+                onAction = { attempt += 1 },
+            )
         }
     }
 }
+
+private const val MAX_NAMED_LICENSES = 2
 
 private val LicenseMonoStyle = TextStyle(
     fontFamily = FontFamily.Monospace,

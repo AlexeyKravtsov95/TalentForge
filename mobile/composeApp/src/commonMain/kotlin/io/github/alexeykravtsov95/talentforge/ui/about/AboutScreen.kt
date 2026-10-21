@@ -1,11 +1,9 @@
 package io.github.alexeykravtsov95.talentforge.ui.about
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -26,12 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.Role
@@ -39,7 +32,6 @@ import androidx.compose.ui.unit.dp
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_disclaimer
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_entry_action
-import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_entry_detail
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_title
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_backup_android
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_backup_ios
@@ -82,16 +74,20 @@ import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * **About** (M5.RC.2b, simplified in M5.UI.ABOUT.1) — a pushed destination
- * from Home (Back returns to Home; no persistent navigation, UX/UI spec 02 §1).
- * One scrolling column, free of technology and dependency names:
+ * **About** (M5.RC.2b, simplified in M5.UI.ABOUT.1 and M5.UI.ABOUT.2) — a
+ * pushed destination from Home (Back returns to Home; no persistent
+ * navigation, UX/UI spec 02 §1). One scrolling column, free of technology and
+ * dependency names:
  *
- * - the app icon (the approved launcher artwork), the name, what the app does,
- *   and the installed version ([appVersion] from the host's package metadata;
- *   omitted when the host cannot report one — never invented);
- * - the talent data in use; the OTA data source and "check now" ONLY in
- *   OTA-enabled builds ([otaStatus] and [onCheckForUpdates] both set);
- * - the independent-project statement (the trademark-free draft, LR-2);
+ * - the app icon (the approved launcher artwork), the name and the installed
+ *   version name ([appVersion] from the host's package metadata; omitted when
+ *   the host cannot report one — never invented). The internal build number
+ *   ([AppVersion.code]) is not shown (M5.UI.ABOUT.2);
+ * - the talent data in use and where it came from — included with the app, or
+ *   a downloaded update; the game build and "check now" ONLY in OTA-enabled
+ *   builds ([otaStatus] and [onCheckForUpdates] both set);
+ * - about the project: what the app does and the independent-project
+ *   statement (the trademark-free draft, LR-2);
  * - the privacy summary: its first statement always visible, the remaining
  *   verified statements (with the backup paragraph true for this platform,
  *   [backupStatement]) behind one explicit 48 dp toggle — in OTA-enabled builds
@@ -101,8 +97,8 @@ import org.jetbrains.compose.resources.stringResource
  *   published privacy policy of the UI language ([privacyPolicyUrl],
  *   M5.LEGAL.LINK), opened in the system browser, ONLY when one is published
  *   for this platform (Android; none for iOS yet, so `null` there);
- * - one row that opens the third-party licenses ([onOpenLicenses],
- *   [LicensesScreen]), where every open-source notice lives.
+ * - at the bottom, a quiet 48 dp link that opens the open-source licenses
+ *   ([onOpenLicenses], [LicensesScreen]), where every open-source notice lives.
  */
 @Composable
 fun AboutScreen(
@@ -122,7 +118,6 @@ fun AboutScreen(
 
     AboutScaffold(title = stringResource(Res.string.about_title), onBack = onBack) {
         AppIdentity(appVersion)
-        AboutBody(stringResource(Res.string.about_tagline))
 
         AboutSection(stringResource(Res.string.ota_section_talent_data))
         AboutMeta(
@@ -132,12 +127,13 @@ fun AboutScreen(
                 dataVersionOf(otaStatus?.productBuild ?: PRODUCT_BUNDLE.clientBuild),
             ),
         )
+        if (otaStatus != null) AboutMeta(stringResource(Res.string.ota_data_build, otaStatus.productBuild))
+        // without OTA the data in use is always the data the app shipped with
+        AboutMeta(
+            otaStatus?.productReleaseId?.let { stringResource(Res.string.ota_data_source_release, it) }
+                ?: stringResource(Res.string.ota_data_source_bundled),
+        )
         if (otaStatus != null && onCheckForUpdates != null) {
-            AboutMeta(stringResource(Res.string.ota_data_build, otaStatus.productBuild))
-            AboutMeta(
-                otaStatus.productReleaseId?.let { stringResource(Res.string.ota_data_source_release, it) }
-                    ?: stringResource(Res.string.ota_data_source_bundled),
-            )
             val outcome = otaStatus.lastOutcome
             when {
                 otaStatus.checking -> AboutBody(stringResource(Res.string.ota_checking))
@@ -153,6 +149,7 @@ fun AboutScreen(
         }
 
         AboutSection(stringResource(Res.string.about_section_project))
+        AboutBody(stringResource(Res.string.about_tagline))
         AboutBody(stringResource(Res.string.about_disclaimer))
 
         AboutSection(stringResource(Res.string.about_section_privacy))
@@ -188,8 +185,8 @@ fun AboutScreen(
             )
         }
 
-        Spacer(Modifier.height(TalentForgeSpacing.hairline))
-        LicensesEntry(onClick = onOpenLicenses)
+        Spacer(Modifier.height(TalentForgeSpacing.inline))
+        LicensesLink(onClick = onOpenLicenses)
     }
 }
 
@@ -231,58 +228,41 @@ private fun AppIdentity(appVersion: AppVersion?) {
                 autoSize = TextAutoSize.StepBased(maxFontSize = TalentForgeTypography.title.fontSize),
             )
             if (appVersion != null) {
-                AboutMeta(stringResource(Res.string.about_version, appVersion.name, appVersion.code.toString()))
+                AboutMeta(stringResource(Res.string.about_version, appVersion.name))
             }
         }
     }
 }
 
-/** The one way into the third-party licenses: a full-width row with a forward chevron. */
+/**
+ * The way into the open-source licenses: a quiet text link with a forward
+ * chevron at the end of the screen — clearly there, never competing with the
+ * screen's own content. The whole 48 dp row is the target.
+ */
 @Composable
-private fun LicensesEntry(onClick: () -> Unit) {
+private fun LicensesLink(onClick: () -> Unit) {
     val colors = talentForgeColors()
-    val shape = RoundedCornerShape(TalentForgeRadius.medium)
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 56.dp)
-            .clip(shape)
-            .background(colors.surfaceElevated)
-            .border(1.dp, colors.borderDefault, shape)
+            .heightIn(min = 48.dp)
+            .clip(RoundedCornerShape(TalentForgeRadius.medium))
             .clickable(
                 role = Role.Button,
                 onClickLabel = stringResource(Res.string.about_licenses_entry_action),
                 onClick = onClick,
             )
-            .padding(horizontal = TalentForgeSpacing.rowGap, vertical = TalentForgeSpacing.inline),
+            .padding(vertical = TalentForgeSpacing.inline),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.rowGap),
+        horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
     ) {
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.hairline),
-        ) {
-            BasicText(
-                stringResource(Res.string.about_licenses_title),
-                style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary),
-            )
-            AboutMeta(stringResource(Res.string.about_licenses_entry_detail))
-        }
-        val chevron = colors.textSecondary
-        Box(
-            Modifier
-                .size(width = 10.dp, height = 16.dp)
-                .drawBehind { drawForwardChevron(chevron) },
+        BasicText(
+            stringResource(Res.string.about_licenses_title),
+            style = TalentForgeTypography.body.copy(color = colors.textSecondary),
+            modifier = Modifier.weight(1f, fill = false),
         )
+        ForwardChevron(colors.textMuted)
     }
-}
-
-/** A › chevron: two strokes meeting in a right point (the mirror of the Back chevron). */
-private fun DrawScope.drawForwardChevron(color: Color) {
-    val stroke = 2.dp.toPx()
-    val point = Offset(size.width * 0.8f, size.height * 0.5f)
-    drawLine(color, start = Offset(size.width * 0.2f, size.height * 0.1f), end = point, strokeWidth = stroke, cap = StrokeCap.Round)
-    drawLine(color, start = Offset(size.width * 0.2f, size.height * 0.9f), end = point, strokeWidth = stroke, cap = StrokeCap.Round)
 }
 
 private val AppIconSize = 64.dp
