@@ -1,0 +1,7 @@
+Starting: Intent { cmp=io.github.alexeykravtsov95.talentforge.otastaging/io.github.alexeykravtsov95.talentforge.ui.MainActivity }
+Status: ok
+LaunchState: COLD
+Activity: io.github.alexeykravtsov95.talentforge.otastaging/io.github.alexeykravtsov95.talentforge.ui.MainActivity
+TotalTime: 1575
+WaitTime: 1581
+Complete
