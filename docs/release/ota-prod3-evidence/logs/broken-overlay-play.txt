@@ -1,0 +1,40 @@
+> Task :composeApp:mergePlayStartupProfile UP-TO-DATE
+> Task :composeApp:mergeExtDexPlay UP-TO-DATE
+> Task :composeApp:mergeDexPlay UP-TO-DATE
+> Task :composeApp:mergePlayShaders UP-TO-DATE
+> Task :composeApp:compilePlayShaders NO-SOURCE
+> Task :composeApp:generatePlayAssets UP-TO-DATE
+> Task :composeApp:playAssetsCopyForAGP NO-SOURCE
+> Task :composeApp:mergePlayAssets UP-TO-DATE
+> Task :composeApp:mergePlayGlobalSynthetics UP-TO-DATE
+> Task :composeApp:processPlayJavaRes UP-TO-DATE
+> Task :composeApp:mergePlayJavaResource UP-TO-DATE
+> Task :composeApp:mergePlayJniLibFolders UP-TO-DATE
+> Task :composeApp:mergePlayNativeLibs UP-TO-DATE
+> Task :composeApp:stripPlayDebugSymbols UP-TO-DATE
+> Task :composeApp:writePlayAppMetadata UP-TO-DATE
+> Task :composeApp:buildPlayPreBundle
+> Task :composeApp:checkPlayInternetPermission FAILED
+
+[Incubating] Problems report is available at: file:///private<worktree>/mobile/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':composeApp:checkPlayInternetPermission' (registered by plugin 'com.android.internal.application').
+> talentforge.ota.android.production.enabled is true, but the release manifest does not request android.permission.INTERNET, so the production OTA client could not connect. OTA-enabled release builds merge src/androidReleaseOta/AndroidManifest.xml, which must declare it (NET-1, M5.OTA.PROD.3).
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 762ms
+88 actionable tasks: 8 executed, 5 from cache, 75 up-to-date

@@ -8,6 +8,8 @@
 | Sources checked | 2026-10-17 ([§7](#7-sources)) |
 | Related | [readiness](readiness.md) · [signing](multi-store-signing.md) · [assets](assets-checklist.md) · [privacy](privacy-and-compliance.md) · [listing EN](store-listing-en.md) / [RU](store-listing-ru.md) |
 
+> **M5.OTA.PROD.3 (2026-10-21).** Утверждения этого документа об отсутствии `INTERNET` и сетевых соединений относятся к сборке **OTA OFF** (по умолчанию) и остаются для неё верными. Комментарии модератору («offline app») для OTA ON заменяются по §6–§7. Сборка с production OTA (`talentforge.ota.android.production.enabled=true`) запрашивает `INTERNET` и загружает данные талантов с `https://ota.mythweld.com`: для неё действуют [ota-prod3-privacy-and-stores](../ota-prod3-privacy-and-stores.md) (тексты, политика, декларации, действия владельца) и [android-production-enablement](../../ota/android-production-enablement.md). Ничего не подано и не опубликовано; LR-1…LR-5 без изменений.
+
 Legend: 🔑 = needs the owner's **Huawei Developer** account (or RuStore Console account) ·
 **UNVERIFIED** = not executed or not observable without a device or account.
 

@@ -7,6 +7,8 @@
 | Sources | Google help pages read 2026-10-19 ([§10](#10-sources)) |
 | Prerequisites | [signing](signing.md) (keys, Play App Signing with the owner's key), [data safety](data-safety.md) (privacy policy and App content), [listing EN](store-listing-en.md)/[RU](store-listing-ru.md), [assets](assets-checklist.md) |
 
+> **M5.OTA.PROD.3 (2026-10-21).** Утверждения этого документа об отсутствии `INTERNET` и сетевых соединений относятся к сборке **OTA OFF** (по умолчанию) и остаются для неё верными. Тексты для тестировщиков («does not request internet access») для OTA ON заменяются по §8. Сборка с production OTA (`talentforge.ota.android.production.enabled=true`) запрашивает `INTERNET` и загружает данные талантов с `https://ota.mythweld.com`: для неё действуют [ota-prod3-privacy-and-stores](../ota-prod3-privacy-and-stores.md) (тексты, политика, декларации, действия владельца) и [android-production-enablement](../../ota/android-production-enablement.md). Ничего не подано и не опубликовано; LR-1…LR-5 без изменений.
+
 ## 1. Account checks 🔑
 
 | Check | Rule (Google) | Owner |

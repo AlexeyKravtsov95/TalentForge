@@ -4,6 +4,13 @@
 владелец выполняет сам, вручную, через веб-консоль. Инструменты репозитория облачные ресурсы не
 создают, не меняют и не удаляют. Production signing keys не генерируют и не читают.
 
+> **M5.OTA.PROD.3 (2026-10-21).** Android-клиент подготовлен к production OTA: origin
+> `https://ota.mythweld.com` и keyring `docs/ota/keys/production-keyring.json` закреплены в Gradle,
+> канал включается только настройкой владельца `talentforge.ota.android.production.enabled=true`,
+> `INTERNET` в release/play — ровно при включённом канале. По умолчанию OTA выключен, iOS — выключен.
+> Процедура, ручные проверки и откат: [android-production-enablement.md](android-production-enablement.md).
+> Абзац «Состояние» ниже описывает M5.OTA.PROD.1 (исторически).
+
 Состояние на момент M5.OTA.PROD.1:
 
 * Production OTA **выключен** во всех сборках Android и iOS. `AndroidManifest`, `INTERNET` и
@@ -293,6 +300,29 @@ publisher-and-security §5.2 и publisher-runbook §5.
 
 ---
 
+### 4.4 Закреплённые отпечатки SPKI (M5.OTA.PROD.3)
+
+SHA-256 от DER SPKI каждого ключа закоммиченного [`keys/production-keyring.json`](keys/production-keyring.json).
+Значения вычислены тем же способом, что печатает `scripts/ota_production_keys.py keyring` (stderr,
+§4.2). Keyring не менялся с коммита `ac5de52` (PR #63, M5.OTA.PROD.2):
+
+| keyId | Роль | SPKI SHA-256 |
+| --- | --- | --- |
+| `tf-prod-2026a` | основной | `1fac1b0d15f2a09fc3769099623fe1038e846f0033ec6e233f5111ff71239278` |
+| `tf-prod-2026b` | резервный | `6997b3d47d74ceeb6daec62b1d94f3f3e3bc476534eefe8cd140f67578532b26` |
+
+Где закреплены (любое расхождение — ошибка):
+
+* `mobile/composeApp/build.gradle.kts` (`androidProductionOtaSpkiSha256`). **Каждая** сборка, с OTA и
+  без, останавливается, если содержимое keyring не совпадает с отпечатками. `verifyOtaSettingsRules`
+  (перед `desktopTest`, в том числе в CI) доказывает это на подменённых копиях.
+* `docs/release/ota-prod3-evidence/run-matrix.sh`: проверяет keyring, `GeneratedOtaSettings` и dex
+  OTA ON сборок.
+
+**Owner-only:** сверьте эти значения с отпечатками, записанными на церемонии (§4.2). До записи в
+репозиторий отпечатки нигде не хранились, поэтому агент вычислил их из keyring и с церемонией не
+сверял. При ротации ключей отпечатки меняются в том же PR, что и keyring, после записи церемонии.
+
 ## 5. Первая публикация в production
 
 Предусловия:
@@ -421,6 +451,11 @@ talent-data ota resign --channel production $P --keyring $K --out artifacts/ota 
 | 9.8 CDN отдаёт старый каталог | Подождите `max-age` (5 минут) или очистите кэш пути каталога (§7). `catalog.bucket WARN` в preflight показывает такое расхождение |
 
 ## 10. Проверки перед включением OTA в Android-релизе (вход в M5.OTA.PROD.2 и далее)
+
+**M5.OTA.PROD.3:** Gradle-конфигурация, `INTERNET` и тексты для OTA ON подготовлены
+([android-production-enablement.md](android-production-enablement.md),
+[ota-prod3-privacy-and-stores.md](../release/ota-prod3-privacy-and-stores.md)); условия ниже по-прежнему
+выполняет владелец перед выпуском OTA ON сборки.
 
 Включение OTA — **отдельная задача** (M5.OTA.PROD.2 или позже): `INTERNET`, privacy policy,
 data-safety, production keyring и base URL в Gradle-конфигурации. В M5.OTA.PROD.1 ничего из этого

@@ -3,6 +3,8 @@ import com.android.build.api.variant.BuiltArtifactsLoader
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.io.ByteArrayOutputStream
 import java.io.StringReader
+import java.security.MessageDigest
+import java.util.Base64
 import javax.inject.Inject
 import javax.xml.parsers.DocumentBuilderFactory
 import org.w3c.dom.Element
@@ -42,9 +44,41 @@ plugins {
 // build never carries staging settings: release variants stop on any Android staging setting
 // (:composeApp:checkReleaseOtaSettings). :composeApp:verifyOtaSettingsRules (run before
 // desktopTest) proves each rule on fixed inputs.
+//
+// M5.OTA.PROD.3: the Android production channel is pinned in the repository — the origin
+// https://ota.mythweld.com and the public keyring docs/ota/keys/production-keyring.json
+// (tf-prod-2026a + backup tf-prod-2026b). talentforge.ota.android.production.enabled=true is the
+// only setting the owner supplies (docs/ota/android-production-enablement.md); its baseUrl and
+// keyring default to the pinned values, and any other value fails the build. Unset, the channel
+// stays off and the generated settings are those of the OTA-off release. The committed keyring's
+// content is pinned as well, by the SHA-256 of each key's DER SPKI (the fingerprints the key
+// ceremony prints, docs/ota/production-deployment.md §4.4): every build fails while it differs.
 val otaPlatforms = listOf("android", "ios")
 val otaChannels = listOf("production", "staging")
 val otaKeyIdPrefixes = mapOf("production" to "tf-prod-", "staging" to "tf-staging-")
+val androidProductionOtaOrigin = "https://ota.mythweld.com"
+val androidProductionOtaKeyringFile: File = rootProject.file("../docs/ota/keys/production-keyring.json")
+val androidProductionOtaSpkiSha256 = mapOf(
+    "tf-prod-2026a" to "1fac1b0d15f2a09fc3769099623fe1038e846f0033ec6e233f5111ff71239278",
+    "tf-prod-2026b" to "6997b3d47d74ceeb6daec62b1d94f3f3e3bc476534eefe8cd140f67578532b26",
+)
+
+/** SHA-256 (hex) of a base64 DER SPKI, or null when it is not base64. */
+fun spkiSha256(base64Spki: String): String? = runCatching<String> {
+    MessageDigest.getInstance("SHA-256").digest(Base64.getDecoder().decode(base64Spki))
+        .joinToString("") { byte -> "%02x".format(byte) }
+}.getOrNull()
+
+/** Why [keys] are not exactly the keys whose SPKI fingerprints [expected] lists (empty: they are). */
+fun keyringFingerprintProblems(keys: List<Map<String, String>>, expected: Map<String, String>): List<String> {
+    val ids = keys.map { it.getValue("keyId") }
+    if (ids.sorted() != expected.keys.sorted()) return listOf("pins $ids, expected ${expected.keys.toList()}")
+    return keys.mapNotNull { key ->
+        val id = key.getValue("keyId")
+        val actual = spkiSha256(key.getValue("publicKeySpki"))
+        if (actual == expected.getValue(id)) null else "$id has SPKI SHA-256 $actual, expected ${expected.getValue(id)}"
+    }
+}
 
 fun otaSetting(platform: String, channel: String, name: String): String? =
     (providers.environmentVariable("TALENTFORGE_OTA_${platform.uppercase()}_${channel.uppercase()}_${name.uppercase()}").orNull
@@ -65,6 +99,12 @@ class OtaChannelInput(
     val keyringProblem: String? = null,
     /** The PEM text of `trustAnchor` (M5.OTA.4a), or null. */
     val trustAnchorPem: String? = null,
+    /** M5.OTA.PROD.3: the only base URL this channel may name, or null (not pinned). */
+    val pinnedBaseUrl: String? = null,
+    /** M5.OTA.PROD.3: the only keys this channel may pin (the committed keyring), or null (not pinned). */
+    val pinnedKeys: List<Map<String, String>>? = null,
+    /** M5.OTA.PROD.3: the SPKI SHA-256 per key id that [pinnedKeys] must have, or null. */
+    val pinnedSpkiSha256: Map<String, String>? = null,
 )
 
 /** Every reason these settings must fail the build (empty: valid). Pure: verifyOtaSettingsRules runs it on fixed inputs. */
@@ -87,6 +127,18 @@ fun otaSettingsProblems(inputs: List<OtaChannelInput>): List<String> {
             problems += "$where.keyring pins $it, which is not a ${input.channel} key ($prefix*)"
         }
         if (input.keys.any { it.getValue("algorithm") != "ecdsa-p256-sha256" }) problems += "$where.keyring: every key must be ecdsa-p256-sha256"
+        if (input.pinnedBaseUrl != null && input.baseUrl != null && input.baseUrl != input.pinnedBaseUrl) {
+            problems += "$where.baseUrl is pinned to ${input.pinnedBaseUrl}; unset it (the origin is not configurable)"
+        }
+        if (input.pinnedKeys != null && input.keys.isNotEmpty() && input.keys.toSet() != input.pinnedKeys.toSet()) {
+            problems += "$where.keyring must pin exactly the committed production keyring (${input.pinnedKeys.joinToString { it.getValue("keyId") }}); unset it"
+        }
+        // checked on every build, enabled or not: the committed keyring cannot change unnoticed
+        if (input.pinnedKeys != null && input.pinnedSpkiSha256 != null) {
+            keyringFingerprintProblems(input.pinnedKeys, input.pinnedSpkiSha256).forEach {
+                problems += "$where: the committed production keyring changed: $it (update the pinned fingerprints only after the key ceremony record)"
+            }
+        }
         input.trustAnchorPem?.let { pem ->
             if (input.platform != "android" || input.channel != "staging") problems += "$where.trustAnchor: a trust anchor is for the Android staging channel only"
             if ("PRIVATE KEY" in pem) problems += "$where.trustAnchor contains a private key"
@@ -104,28 +156,49 @@ fun otaSettingsProblems(inputs: List<OtaChannelInput>): List<String> {
     return problems
 }
 
+fun readKeyringEntries(file: File): List<Map<String, String>> {
+    @Suppress("UNCHECKED_CAST")
+    val parsed = groovy.json.JsonSlurper().parse(file) as Map<String, Any?>
+    return (parsed["keys"] as? List<Map<String, Any?>>).orEmpty().map { key ->
+        listOf("keyId", "algorithm", "publicKeySpki").associateWith { (key[it] as? String).orEmpty() }
+    }
+}
+
 fun readOtaChannelInput(platform: String, channel: String): OtaChannelInput {
-    val keyringPath = otaSetting(platform, channel, "keyring")
+    val pinned = platform == "android" && channel == "production"
+    val enabledRaw = otaSetting(platform, channel, "enabled")
+    // the pinned channel, when enabled, defaults to the committed origin and keyring
+    val defaults = pinned && enabledRaw == "true"
+    val keyringPath = otaSetting(platform, channel, "keyring") ?: androidProductionOtaKeyringFile.path.takeIf { defaults }
     var keyringProblem: String? = null
     val entries: List<Map<String, String>> = if (keyringPath == null) emptyList() else {
         val file = File(keyringPath)
-        if (!file.isFile) { keyringProblem = "does not name a file"; emptyList() } else {
-            @Suppress("UNCHECKED_CAST")
-            val parsed = groovy.json.JsonSlurper().parse(file) as Map<String, Any?>
-            (parsed["keys"] as? List<Map<String, Any?>>).orEmpty().map { key ->
-                listOf("keyId", "algorithm", "publicKeySpki").associateWith { (key[it] as? String).orEmpty() }
-            }
-        }
+        if (!file.isFile) { keyringProblem = "does not name a file"; emptyList() } else readKeyringEntries(file)
     }
     val trustAnchorPath = otaSetting(platform, channel, "trustAnchor")
     // a path that names no file reads as "" and is refused as "not PEM certificates"
     val trustAnchorPem = trustAnchorPath?.let { path -> File(path).takeIf { it.isFile }?.readText().orEmpty() }
-    return OtaChannelInput(platform, channel, otaSetting(platform, channel, "enabled"), otaSetting(platform, channel, "baseUrl"), entries, keyringProblem, trustAnchorPem)
+    return OtaChannelInput(
+        platform, channel, enabledRaw,
+        otaSetting(platform, channel, "baseUrl") ?: androidProductionOtaOrigin.takeIf { defaults },
+        entries, keyringProblem, trustAnchorPem,
+        pinnedBaseUrl = androidProductionOtaOrigin.takeIf { pinned },
+        pinnedKeys = if (pinned) readKeyringEntries(androidProductionOtaKeyringFile) else null,
+        pinnedSpkiSha256 = androidProductionOtaSpkiSha256.takeIf { pinned },
+    )
 }
+
+// M5.OTA.PROD.3: OTA settings are the owner's, per build: one committed to the repository's
+// gradle.properties would turn OTA on (or point it elsewhere) for every checkout and CI build.
+val committedOtaKeys: List<String> = listOf(rootProject.file("gradle.properties"), file("gradle.properties"))
+    .filter { it.isFile }
+    .flatMap { properties -> properties.readLines().map { it.substringBefore('=').trim() }.filter { it.startsWith("talentforge.ota.") } }
 
 fun renderOtaSettings(): String {
     val inputs = otaPlatforms.flatMap { platform -> otaChannels.map { channel -> readOtaChannelInput(platform, channel) } }
-    val problems = otaSettingsProblems(inputs)
+    val problems = otaSettingsProblems(inputs) + committedOtaKeys.distinct().map {
+        "$it must not be committed: set it in the environment, ~/.gradle/gradle.properties or -P (docs/ota/android-production-enablement.md)"
+    }
     if (problems.isNotEmpty()) throw GradleException("Invalid OTA settings:\n  " + problems.joinToString("\n  "))
     val sections = StringBuilder()
     for (input in inputs) {
@@ -162,6 +235,8 @@ fun otaSettingsRuleFailures(): List<String> {
     val prodA = key("tf-prod-2026a", "PA")
     val prodB = key("tf-prod-2026b", "PB")
     val stagingKey = key("tf-staging-2026", "S")
+    fun pinnedProduction(baseUrl: String, vararg keys: Map<String, String>) =
+        OtaChannelInput("android", "production", "true", baseUrl, keys.toList(), pinnedBaseUrl = androidProductionOtaOrigin, pinnedKeys = listOf(prodA, prodB))
     val refused = listOf(
         // a staging key in production with no staging channel configured at all
         "staging key in production, staging absent" to listOf(production(prodA, prodB, stagingKey)) to "pins tf-staging-2026, which is not a production key",
@@ -178,6 +253,13 @@ fun otaSettingsRuleFailures(): List<String> {
         "a trust anchor on iOS" to listOf(OtaChannelInput("ios", "staging", "true", "https://staging.example.org", listOf(stagingKey), trustAnchorPem = certificate)) to "for the Android staging channel only",
         "a private key as trust anchor" to listOf(OtaChannelInput("android", "staging", "true", "https://staging.example.org", listOf(stagingKey), trustAnchorPem = certificate + "-----BEGIN PRIVATE KEY-----\nK\n-----END PRIVATE KEY-----\n")) to "contains a private key",
         "a trust anchor that is not a certificate" to listOf(OtaChannelInput("android", "staging", "true", "https://staging.example.org", listOf(stagingKey), trustAnchorPem = "not a certificate")) to "must be PEM certificates only",
+        // M5.OTA.PROD.3: the pinned Android production channel
+        "another origin for the pinned channel" to listOf(pinnedProduction("https://ota.example.org", prodA, prodB)) to "baseUrl is pinned to https://ota.mythweld.com",
+        "an http origin for the pinned channel" to listOf(pinnedProduction("http://ota.mythweld.com", prodA, prodB)) to "must be an https origin",
+        "other production keys for the pinned channel" to listOf(pinnedProduction(androidProductionOtaOrigin, prodA, key("tf-prod-2026c", "PC"))) to "must pin exactly the committed production keyring",
+        "a staging key added to the pinned keyring" to listOf(pinnedProduction(androidProductionOtaOrigin, prodA, prodB, stagingKey)) to "pins tf-staging-2026, which is not a production key",
+        "a test key added to the pinned keyring" to listOf(pinnedProduction(androidProductionOtaOrigin, prodA, prodB, key("test-a", "T"))) to "contains a test- key",
+        "a trust anchor on the pinned channel" to listOf(OtaChannelInput("android", "production", "true", androidProductionOtaOrigin, listOf(prodA, prodB), trustAnchorPem = certificate, pinnedBaseUrl = androidProductionOtaOrigin, pinnedKeys = listOf(prodA, prodB))) to "for the Android staging channel only",
     )
     val failures = mutableListOf<String>()
     for ((case, expected) in refused) {
@@ -190,6 +272,34 @@ fun otaSettingsRuleFailures(): List<String> {
     val anchored = otaSettingsProblems(listOf(production(prodA, prodB), OtaChannelInput("android", "staging", "true", "https://10.0.2.2:8443", listOf(stagingKey), trustAnchorPem = certificate)))
     if (anchored.isNotEmpty()) failures += "a staging trust anchor was refused: $anchored"
     if (otaSettingsProblems(emptyList()).isNotEmpty()) failures += "no settings must be valid (OTA off)"
+    val pinned = otaSettingsProblems(listOf(pinnedProduction(androidProductionOtaOrigin, prodB, prodA), staging(stagingKey)))
+    if (pinned.isNotEmpty()) failures += "the pinned production channel was refused: $pinned"
+    // the committed keyring itself: exactly the primary and the backup production key, valid for the
+    // pinned channel and carrying the pinned SPKI fingerprints
+    val committed = readKeyringEntries(androidProductionOtaKeyringFile)
+    val committedIds = committed.map { it.getValue("keyId") }
+    if (committedIds != listOf("tf-prod-2026a", "tf-prod-2026b")) failures += "the committed production keyring pins $committedIds, expected [tf-prod-2026a, tf-prod-2026b]"
+    fun committedInput(keys: List<Map<String, String>>) = OtaChannelInput(
+        "android", "production", "true", androidProductionOtaOrigin, keys,
+        pinnedBaseUrl = androidProductionOtaOrigin, pinnedKeys = keys, pinnedSpkiSha256 = androidProductionOtaSpkiSha256,
+    )
+    val committedProblems = otaSettingsProblems(listOf(committedInput(committed)))
+    if (committedProblems.isNotEmpty()) failures += "the committed production keyring was refused: $committedProblems"
+    // ... and a keyring whose content differs from the fingerprints is refused, enabled or not
+    val (a, b) = committed
+    val tampered = listOf(
+        "the backup key replaced by the primary's SPKI" to listOf(a, b + ("publicKeySpki" to a.getValue("publicKeySpki"))) to "tf-prod-2026b has SPKI SHA-256 ${androidProductionOtaSpkiSha256.getValue("tf-prod-2026a")}",
+        "a changed SPKI byte" to listOf(a + ("publicKeySpki" to a.getValue("publicKeySpki").replaceRange(40, 41, if (a.getValue("publicKeySpki")[40] == 'A') "B" else "A")), b) to "tf-prod-2026a has SPKI SHA-256",
+        "the backup key missing" to listOf(a) to "pins [tf-prod-2026a], expected [tf-prod-2026a, tf-prod-2026b]",
+        "an extra production key" to listOf(a, b, key("tf-prod-2026c", a.getValue("publicKeySpki"))) to "expected [tf-prod-2026a, tf-prod-2026b]",
+    )
+    for ((case, expected) in tampered) {
+        val (name, keys) = case
+        for (enabled in listOf("true", null)) {
+            val problems = otaSettingsProblems(listOf(OtaChannelInput("android", "production", enabled, null, emptyList(), pinnedBaseUrl = androidProductionOtaOrigin, pinnedKeys = keys, pinnedSpkiSha256 = androidProductionOtaSpkiSha256)))
+            if (problems.none { "the committed production keyring changed" in it && expected in it }) failures += "tampered keyring ($name, enabled=$enabled): expected \"$expected\", got $problems"
+        }
+    }
     return failures
 }
 
@@ -467,6 +577,11 @@ val playPublishableProblem: String? = when {
 // *-SELFTEST-NOT-FOR-UPLOAD. Without it, a self-test certificate fails validation. Environment only.
 val signingSelftest: Boolean = providers.environmentVariable("TALENTFORGE_SIGNING_SELFTEST").orNull == "true"
 
+// The channel a release or play build reads (AndroidOta); it decides the NET-1 manifest overlay.
+val androidProductionOtaEnabled: Boolean = otaSetting("android", "production", "enabled") == "true"
+val releaseManifestOverlay: String =
+    if (androidProductionOtaEnabled) "src/androidReleaseOta/AndroidManifest.xml" else "src/androidRelease/AndroidManifest.xml"
+
 android {
     namespace = "io.github.alexeykravtsov95.talentforge"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -503,10 +618,13 @@ android {
         }
     }
 
-    // NET-1 = B: the release manifest overlay that removes INTERNET. `:composeApp:sourceSets` reports
-    // this path for `release`, but with this KMP/AGP pair the manifest merger ignored the file until
-    // it was set here; checkReleaseInternetPermission fails the release build if it is not merged.
-    sourceSets.getByName("release").manifest.srcFile("src/androidRelease/AndroidManifest.xml")
+    // NET-1: the release manifest overlay. OTA off (the default, NET-1 = B): src/androidRelease
+    // removes INTERNET. talentforge.ota.android.production.enabled=true (M5.OTA.PROD.3):
+    // src/androidReleaseOta declares it for the production channel instead. `:composeApp:sourceSets`
+    // reports src/androidRelease for `release`, but with this KMP/AGP pair the manifest merger ignored
+    // the file until it was set here; checkReleaseInternetPermission fails the release build if the
+    // merged manifest disagrees with the setting.
+    sourceSets.getByName("release").manifest.srcFile(releaseManifestOverlay)
 
     // Opt-in isolated debug install for device checks (M5.UX.2b.1):
     // `-Ptalentforge.applicationIdSuffix=.devcheck` installs next to the real
@@ -528,8 +646,8 @@ android {
             matchingFallbacks += "release"
         }
     }
-    // the same NET-1 = B overlay as release: the Play bundle requests no network access either
-    sourceSets.getByName("play").manifest.srcFile("src/androidRelease/AndroidManifest.xml")
+    // the same NET-1 overlay as release: the Play bundle requests INTERNET exactly when release does
+    sourceSets.getByName("play").manifest.srcFile(releaseManifestOverlay)
 }
 
 // Every release-variant build stops here on an incomplete or invalid signing setup.
@@ -549,16 +667,21 @@ val checkPublishableSigning = tasks.register("checkPublishableSigning") {
 
 // M5.OTA.4a: a store release build never carries the staging configuration of a device test
 // (staging base URL, staging keyring, the stand's trust anchor) — not even unused: the generated
-// OTA settings are compiled into every variant, so release variants stop on any of them.
-val androidStagingOtaSettings: List<String> = listOf("enabled", "baseUrl", "keyring", "trustAnchor")
-    .filter { name -> otaSetting("android", "staging", name).let { it != null && !(name == "enabled" && it == "false") } }
+// OTA settings are compiled into every variant, so release variants stop on any of them. Since
+// M5.OTA.PROD.3 this covers the iOS staging channel too: GeneratedOtaSettings holds every platform,
+// so an iOS staging keyring set on the release machine would otherwise land in the Android APK.
+val stagingOtaSettings: List<String> = otaPlatforms.flatMap { platform ->
+    listOf("enabled", "baseUrl", "keyring", "trustAnchor")
+        .filter { name -> otaSetting(platform, "staging", name).let { it != null && !(name == "enabled" && it == "false") } }
+        .map { "talentforge.ota.$platform.staging.$it" }
+}
 val checkReleaseOtaSettings = tasks.register("checkReleaseOtaSettings") {
     group = "release"
-    description = "Fails a release-variant build while any Android staging OTA setting is set."
-    val present = androidStagingOtaSettings
+    description = "Fails a release-variant build while any staging OTA setting (Android or iOS) is set."
+    val present = stagingOtaSettings
     doLast {
         if (present.isNotEmpty()) {
-            throw GradleException("Release builds never carry staging OTA settings; unset talentforge.ota.android.staging.{${present.joinToString(",")}} (debug/device-test builds only).")
+            throw GradleException("Release builds never carry staging OTA settings; unset ${present.joinToString(", ")} (debug/device-test builds only).")
         }
     }
 }
@@ -609,6 +732,8 @@ tasks.matching { it.name == "packagePlay" }.configureEach { dependsOn(refusePlay
 // Owner decision NET-1 = B (docs/release/store1-release-audit.md §5.4): while the production OTA
 // channel is off, a release build requests no network access; src/androidRelease/AndroidManifest.xml
 // removes the INTERNET permission that androidMain declares for the staging channel of debug builds.
+// With talentforge.ota.android.production.enabled=true (M5.OTA.PROD.3) the release and play variants
+// merge src/androidReleaseOta/AndroidManifest.xml instead, which keeps it for the production channel.
 // Each release variant's MERGED manifest must declare INTERNET exactly when
 // talentforge.ota.android.production.enabled is true (the channel a release build reads), so the
 // variant cannot be packaged when production OTA is enabled without the permission (the client could
@@ -644,11 +769,11 @@ object ReleaseInternetRule {
         return when {
             productionOtaEnabled && !requested ->
                 "talentforge.ota.android.production.enabled is true, but the release manifest does not request $INTERNET, " +
-                    "so the production OTA client could not connect. The change that enables production OTA deletes the removal " +
-                    "in src/androidRelease/AndroidManifest.xml and updates the privacy and store texts (NET-1, store1 audit §5.4)."
+                    "so the production OTA client could not connect. OTA-enabled release builds merge " +
+                    "src/androidReleaseOta/AndroidManifest.xml, which must declare it (NET-1, M5.OTA.PROD.3)."
             !productionOtaEnabled && requested ->
-                "The release manifest requests $INTERNET while production OTA is off. NET-1 = B: release builds request no " +
-                    "network access (store and privacy texts rely on it). Keep the tools:node=\"remove\" in " +
+                "The release manifest requests $INTERNET while production OTA is off. NET-1 = B: OTA-off release builds request " +
+                    "no network access (the OTA-off store and privacy texts rely on it). Keep the tools:node=\"remove\" in " +
                     "src/androidRelease/AndroidManifest.xml, or change the NET-1 decision and its texts deliberately."
             else -> null
         }
@@ -702,8 +827,6 @@ abstract class CheckReleaseInternetPermission : DefaultTask() {
         ReleaseInternetRule.problem(productionOtaEnabled.get(), mergedManifest.get().asFile.readText())?.let { throw GradleException(it) }
     }
 }
-
-val androidProductionOtaEnabled: Boolean = otaSetting("android", "production", "enabled") == "true"
 
 /**
  * Copies the signed release APK to `build/outputs/publishable/TalentForge-<versionName>-<versionCode>.apk`

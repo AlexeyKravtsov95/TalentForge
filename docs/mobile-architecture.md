@@ -1297,7 +1297,8 @@ App(storage, …, appVersion)          ← host: Android PackageManager / iOS NS
   and `null` on iOS: the iOS About screen keeps the in-app summary and shows no link until an
   iOS policy is published. `LocalUriHandler` hands the URL to the system browser (no WebView, no
   `INTERNET` permission — the browser, not the app, loads the page; the release/play manifests
-  keep removing INTERNET, NET-1 = B).
+  keep removing INTERNET, NET-1 = B — while production OTA is off; an OTA-enabled build keeps it,
+  M5.OTA.PROD.3, [ota/android-production-enablement.md](ota/android-production-enablement.md)).
 - **Backup (manifest):** `allowBackup="false"`, `dataExtractionRules`
   (`res/xml/data_extraction_rules.xml`) and `fullBackupContent` (`res/xml/backup_rules.xml`). Every
   domain is excluded from cloud backup and device transfer.
@@ -1514,6 +1515,11 @@ enables it, so `MainActivity` and `MainViewController` pass `ota = null` and the
 before on its bundled datasets. A configuration is enabled only with an `https` base URL and a
 keyring without `test-` keys (production: primary + backup); anything else fails the build or
 resolves to disabled. Android and iOS are enabled independently (OD-17).
+M5.OTA.PROD.3: the Android production channel is pinned (`https://ota.mythweld.com`, the committed
+production keyring); `talentforge.ota.android.production.enabled=true`, set outside the repository,
+turns it on for release/play builds, which then also keep `INTERNET`. Unset, `AndroidOta.runtime()`
+returns `null` and `MainActivity` passes `ota = null` as before
+([ota/android-production-enablement.md](ota/android-production-enablement.md)).
 
 **Module split.** Everything that decides is pure `shared` code (`data/ota/`): the strict readers
 (the byte-level duplicate-name/strict-JSON scanner runs before any decoding), `CatalogVerifier`,

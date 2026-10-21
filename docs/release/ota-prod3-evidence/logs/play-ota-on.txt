@@ -1,0 +1,40 @@
+> Task :composeApp:generatePlayAssets UP-TO-DATE
+> Task :composeApp:playAssetsCopyForAGP NO-SOURCE
+> Task :composeApp:mergePlayAssets UP-TO-DATE
+> Task :composeApp:mergePlayGlobalSynthetics UP-TO-DATE
+> Task :composeApp:processPlayJavaRes UP-TO-DATE
+> Task :composeApp:mergePlayJavaResource UP-TO-DATE
+> Task :composeApp:mergePlayJniLibFolders UP-TO-DATE
+> Task :composeApp:mergePlayNativeLibs UP-TO-DATE
+> Task :composeApp:stripPlayDebugSymbols UP-TO-DATE
+> Task :composeApp:writePlayAppMetadata UP-TO-DATE
+> Task :composeApp:buildPlayPreBundle
+> Task :composeApp:checkPlayInternetPermission
+> Task :composeApp:mergePlayArtProfile UP-TO-DATE
+> Task :composeApp:compilePlayArtProfile FROM-CACHE
+> Task :composeApp:collectPlayDependencies UP-TO-DATE
+> Task :composeApp:configurePlayDependencies UP-TO-DATE
+> Task :composeApp:extractPlayNativeSymbolTables UP-TO-DATE
+> Task :composeApp:extractProguardFiles UP-TO-DATE
+> Task :composeApp:generatePlayLintVitalReportModel
+> Task :composeApp:lintVitalAnalyzePlay FROM-CACHE
+> Task :composeApp:parsePlayIntegrityConfig UP-TO-DATE
+> Task :composeApp:lintVitalReportPlay
+> Task :composeApp:lintVitalPlay
+> Task :composeApp:packagePlayBundle
+> Task :composeApp:signPlayBundle
+> Task :composeApp:producePlayBundleIdeListingFile
+> Task :composeApp:createPlayBundleListingFileRedirect UP-TO-DATE
+> Task :composeApp:bundlePlay
+
+[Incubating] Problems report is available at: file:///private<worktree>/mobile/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 2s
+103 actionable tasks: 13 executed, 10 from cache, 80 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.5.1/userguide/configuration_cache_enabling.html

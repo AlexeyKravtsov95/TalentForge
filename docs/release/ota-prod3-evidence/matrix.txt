@@ -1,0 +1,42 @@
+M5.OTA.PROD.3 build matrix — 2026-10-21T12:41:47Z, commit 300da91 (built in a temporary worktree of it)
+
+== self-tests
+PASS  verifyOtaSettingsRules + verifyReleaseInternetRules
+
+== artifacts (unsigned), each checked by check_ota_artifact.py
+PASS  release-ota-off: INTERNET=no; permissions: io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION 
+PASS  release-ota-off: pins (10 assertions: dex string table, GeneratedOtaSettings, keyring SPKI SHA-256)
+PASS  play-ota-off: INTERNET=no; permissions: io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+PASS  play-ota-off: pins (10 assertions: dex string table, GeneratedOtaSettings, keyring SPKI SHA-256)
+PASS  release-ota-on: INTERNET=yes; permissions: android.permission.INTERNET io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION 
+PASS  release-ota-on: pins (14 assertions: dex string table, GeneratedOtaSettings, keyring SPKI SHA-256)
+PASS  play-ota-on: INTERNET=yes; permissions: android.permission.INTERNET io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+PASS  play-ota-on: pins (14 assertions: dex string table, GeneratedOtaSettings, keyring SPKI SHA-256)
+PASS  release-ota-explicit-off: INTERNET=no; permissions: io.github.alexeykravtsov95.talentforge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION 
+PASS  release-ota-explicit-off: pins (10 assertions: dex string table, GeneratedOtaSettings, keyring SPKI SHA-256)
+
+== the checker refuses what it must (it is not a rubber stamp)
+PASS  checker-off-artifact-as-on: refused (6 FAIL: generated androidProduction: enabled…)
+PASS  checker-on-artifact-as-off: refused (4 FAIL: generated androidProduction: disabled, no URL, no keys (enabled=true, baseUrl="https:…)
+PASS  checker-staging-key-in-generated: refused (1 FAIL: generated androidProduction: keys ['tf-prod-2026a', 'tf-staging-x', 'tf-prod-2026b'] …)
+PASS  checker-staging-key-last-in-generated: refused (2 FAIL: generated androidProduction: keys ['tf-prod-2026a', 'tf-prod-2026b', 'tf-staging-x'] …)
+PASS  checker-backup-key-removed-in-generated: refused (1 FAIL: generated androidProduction: keys ['tf-prod-2026a'] == the keyring's, SPKIs equal…)
+PASS  checker-other-origin-in-generated: refused (1 FAIL: generated androidProduction: baseUrl "https://ota.example.org"…)
+PASS  checker-tampered-keyring: refused (3 FAIL: keyring SPKI SHA-256 {'tf-prod-2026a': '1fac1b0d15f2a09fc3769099623fe1038e846f0033ec6…)
+
+== refused configurations (built in the temporary worktree)
+PASS  origin-override: refused ("baseUrl is pinned to https://ota.mythweld.com")
+PASS  http-origin: refused ("must be an https origin")
+PASS  fixture-keyring: refused ("contains a test- key")
+PASS  staging-in-release: refused ("Release builds never carry staging OTA settings")
+PASS  staging-in-play: refused ("Release builds never carry staging OTA settings")
+PASS  ios-staging-in-release: refused ("Release builds never carry staging OTA settings; unset talentforge.ota.ios.staging.baseUrl")
+PASS  not-boolean: refused ("enabled must be true or false")
+PASS  broken-overlay-release: refused ("so the production OTA client could not connect")
+PASS  broken-overlay-play: refused ("so the production OTA client could not connect")
+PASS  committed-ota-setting: refused ("talentforge.ota.android.production.enabled must not be committed")
+PASS  tampered-keyring-ota-off: refused ("the committed production keyring changed: tf-prod-2026b has SPKI SHA-256")
+PASS  tampered-keyring-ota-on: refused ("the committed production keyring changed: tf-prod-2026b has SPKI SHA-256")
+PASS  pinned-fingerprint-changed: refused ("the committed production keyring was refused")
+
+RESULT: PASS

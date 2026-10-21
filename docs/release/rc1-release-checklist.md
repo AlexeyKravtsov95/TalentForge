@@ -7,6 +7,8 @@ How to read this checklist:
 - Items marked **(gate)** must be checked before M5.RC.3 can pass.
 - Defect IDs refer to [rc1-defects.md](rc1-defects.md).
 
+> **M5.OTA.PROD.3 (2026-10-21).** Утверждения этого документа об отсутствии `INTERNET` и сетевых соединений относятся к сборке **OTA OFF** (по умолчанию) и остаются для неё верными. Матрица OTA ON/OFF: [ota-prod3-evidence](ota-prod3-evidence/README.md). Сборка с production OTA (`talentforge.ota.android.production.enabled=true`) запрашивает `INTERNET` и загружает данные талантов с `https://ota.mythweld.com`: для неё действуют [ota-prod3-privacy-and-stores](ota-prod3-privacy-and-stores.md) (тексты, политика, декларации, действия владельца) и [android-production-enablement](../ota/android-production-enablement.md). Ничего не подано и не опубликовано; LR-1…LR-5 без изменений.
+
 ## 1. Android release checklist (RuStore first)
 
 **Identity and versioning**

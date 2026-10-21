@@ -1,0 +1,36 @@
+[11:17:41Z] device: google/sdk_gphone64_arm64/emu64a:15/AE3A.240806.043/12960925:userdebug/dev-keys (API 35)
+[11:17:41Z] PASS ota.mythweld.com does not resolve on this emulator (DNS blackholed): ping: unknown host ota.mythweld.com
+[11:17:41Z] == OTA OFF release APK
+[11:17:41Z] PASS OTA OFF requests no INTERNET
+[11:17:42Z] launch: TotalTime: 513 WaitTime: 518 
+[11:17:44Z] PASS shown: No builds yet
+[11:17:46Z] tapped 'Import build'
+[11:17:50Z] tapped 'Paste the code here'
+[11:17:55Z] tapped 'Continue'
+[11:18:01Z] PASS shown: Import this build?
+[11:18:03Z] tapped 'Import'
+[11:18:09Z] PASS shown: Warrior
+[11:18:14Z] tapped 'About'
+[11:18:19Z] PASS shown: TalentForge works offline
+[11:18:21Z] PASS absent: Check for updates
+[11:18:23Z] == OTA ON release APK installed over it (app update)
+[11:18:23Z] PASS OTA ON: android.permission.INTERNET android.permission.INTERNET: granted=true 
+[11:18:24Z] launch: TotalTime: 576 WaitTime: 577 
+[11:18:26Z] PASS shown: Warrior
+[11:18:26Z] PASS the imported build survived the update
+[11:18:28Z] tapped 'About'
+[11:18:33Z] PASS shown: only talent data updates are downloaded from the internet
+[11:18:35Z] PASS absent: works offline
+[11:18:37Z] PASS shown: Included with the app
+[11:18:39Z] tapped 'Check for updates'
+[11:18:47Z] PASS shown: Couldn't check for updates
+[11:18:49Z] tapped 'Show details'
+[11:18:53Z] PASS shown: ota.mythweld.com
+[11:18:57Z] tapped 'Continue editing'
+[11:19:04Z] PASS shown: Arms
+[11:19:06Z] PASS absent: Continue editing
+[11:19:08Z] PASS absent: is not available
+[11:19:09Z] app process: 6554 (alive = no crash)
+[11:19:09Z] PASS no crash of io.github.alexeykravtsov95.talentforge in the crash buffer
+[11:19:09Z] uninstalled
+[11:19:09Z] RESULT: PASS

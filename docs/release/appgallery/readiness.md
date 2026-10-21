@@ -9,6 +9,8 @@
 | Environment | owner's Mac (Apple silicon, macOS 26.3.1), JDK 17.0.19, Python 3.12.13, Android build-tools 37.0.0 ([evidence](evidence/README.md)) |
 | Documents | [Signing](multi-store-signing.md) · [Testing and publication](testing-and-publication.md) · [Privacy and compliance](privacy-and-compliance.md) · [Assets](assets-checklist.md) · [Listing EN](store-listing-en.md) · [Listing RU](store-listing-ru.md) · [Release checklist §9](../rc1-release-checklist.md#9-huawei-appgallery-publication-m5gallery1) |
 
+> **M5.OTA.PROD.3 (2026-10-21).** Утверждения этого документа об отсутствии `INTERNET` и сетевых соединений относятся к сборке **OTA OFF** (по умолчанию) и остаются для неё верными. Сборка с production OTA (`talentforge.ota.android.production.enabled=true`) запрашивает `INTERNET` и загружает данные талантов с `https://ota.mythweld.com`: для неё действуют [ota-prod3-privacy-and-stores](../ota-prod3-privacy-and-stores.md) (тексты, политика, декларации, действия владельца) и [android-production-enablement](../../ota/android-production-enablement.md). Ничего не подано и не опубликовано; LR-1…LR-5 без изменений.
+
 > **M5.RC.2b update (2026-10-18).** M5.RC.2b closed the engineering side of the release gates
 > below, with evidence in [rc2b-evidence](../rc2b-evidence/README.md):
 > - fail-closed release signing and the only upload path, `assemblePublishableRelease`, which

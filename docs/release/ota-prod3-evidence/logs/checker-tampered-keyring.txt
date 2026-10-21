@@ -1,0 +1,14 @@
+FAIL keyring SPKI SHA-256 {'tf-prod-2026a': '1fac1b0d15f2a09fc3769099623fe1038e846f0033ec6e233f5111ff71239278', 'tf-prod-2026b': '1fac1b0d15f2a09fc3769099623fe1038e846f0033ec6e233f5111ff71239278'} == pinned {'tf-prod-2026a': '1fac1b0d15f2a09fc3769099623fe1038e846f0033ec6e233f5111ff71239278', 'tf-prod-2026b': '6997b3d47d74ceeb6daec62b1d94f3f3e3bc476534eefe8cd140f67578532b26'}
+PASS generated channels ['androidProduction', 'androidStaging', 'iosProduction', 'iosStaging']
+PASS generated: no staging trust anchor
+PASS generated androidProduction: enabled
+PASS generated androidProduction: baseUrl "https://ota.mythweld.com"
+FAIL generated androidProduction: keys ['tf-prod-2026a', 'tf-prod-2026b'] == the keyring's, SPKIs equal
+PASS generated androidProduction: every SPKI has its pinned SHA-256
+PASS generated androidStaging: disabled, no URL, no keys (enabled=false, baseUrl=null, 0 keys)
+PASS generated iosProduction: disabled, no URL, no keys (enabled=false, baseUrl=null, 0 keys)
+PASS generated iosStaging: disabled, no URL, no keys (enabled=false, baseUrl=null, 0 keys)
+PASS dex: production origin strings ['https://ota.mythweld.com']
+PASS dex: key ids ['tf-prod-2026a', 'tf-prod-2026b'] == ['tf-prod-2026a', 'tf-prod-2026b'] (no staging or test key)
+FAIL dex: 2 P-256 SPKI string(s), exactly the keyring's
+PASS dex: every SPKI has a pinned SHA-256

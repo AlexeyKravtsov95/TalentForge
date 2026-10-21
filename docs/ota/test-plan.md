@@ -164,6 +164,15 @@ on bundled datasets — until gate C passes.
    checklist (`docs/release/`); privacy policy; RuStore and AppGallery (and Google Play, if used)
    data-safety answers updated ([OD-4](open-decisions.md)).
 
+**M5.OTA.PROD.3 status (2026-10-21, Android).** B.1/A: not re-run here (owner gates A.6–A.10 are
+recorded in production-deployment). B.2: L4 adapters — the existing desktop/JVM suites ran green in this PR.
+B.3 (real HTTPS on API 26 and current) and B.4 (physical device with the exact store candidate):
+**owner-only, NOT run** — checks M-1…M-8 in [android-production-enablement §4](android-production-enablement.md).
+B.5 (kill switch / OTA OFF): verified locally — OTA OFF release APK and Play AAB have no `INTERNET`
+and generated settings `enabled = false` ([ota-prod3-evidence](../release/ota-prod3-evidence/README.md));
+existing tests unchanged and green. B.6: texts and declarations prepared, **not confirmed** by the owner
+([ota-prod3-privacy-and-stores](../release/ota-prod3-privacy-and-stores.md)).
+
 ### C. iOS release gate (only before a public iOS release with OTA)
 
 1. Gate A passed.

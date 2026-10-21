@@ -7,6 +7,8 @@
 | Earlier evidence | [AppGallery privacy and compliance §1–§6](../appgallery/privacy-and-compliance.md) (M5.GALLERY.1, updated by M5.STORE.1 and NET.1) · [store1 audit §5](../store1-release-audit.md#5-privacy-and-ota-what-the-production-build-actually-does) |
 | Not legal advice | The wording of the privacy policy and the IP questions are LR-5 and LR-1…LR-3 (owner/legal) |
 
+> **M5.OTA.PROD.3 (2026-10-21).** Утверждения этого документа об отсутствии `INTERNET` и сетевых соединений относятся к сборке **OTA OFF** (по умолчанию) и остаются для неё верными. Ответы Data safety для OTA ON — §5 документа ниже. Сборка с production OTA (`talentforge.ota.android.production.enabled=true`) запрашивает `INTERNET` и загружает данные талантов с `https://ota.mythweld.com`: для неё действуют [ota-prod3-privacy-and-stores](../ota-prod3-privacy-and-stores.md) (тексты, политика, декларации, действия владельца) и [android-production-enablement](../../ota/android-production-enablement.md). Ничего не подано и не опубликовано; LR-1…LR-5 без изменений.
+
 ## 1. What the app does with data (verified)
 
 | Area | Fact | How it was checked |
@@ -43,7 +45,8 @@ Google's definitions ([Data safety help](https://support.google.com/googleplay/a
 The resulting store label would read "No data collected" and "No data shared with third parties".
 The owner must still confirm every answer in the console 🔑. If production OTA is ever enabled
 (NET-1 changes), redo this form: OTA requests would then send device data (at least the IP address)
-to the hosting origin.
+to the hosting origin. **M5.OTA.PROD.3:** proposed OTA ON answers and their conditions are in
+[ota-prod3-privacy-and-stores §5](../ota-prod3-privacy-and-stores.md).
 
 ## 3. Privacy policy
 

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+      M5.OTA.PROD.3: the release and play overlay of an OTA-enabled build, merged INSTEAD of
+      src/androidRelease/AndroidManifest.xml when talentforge.ota.android.production.enabled=true
+      (composeApp/build.gradle.kts, releaseManifestOverlay). The production OTA client makes HTTPS
+      GETs of the public catalog and data files on https://ota.mythweld.com only; cleartext stays
+      refused by the default network security configuration. Declared here as well as in androidMain
+      so that the OTA-enabled release manifest does not depend on the debug manifest.
+      :composeApp:checkReleaseInternetPermission / checkPlayInternetPermission fail the build when
+      the merged manifest and the setting disagree (docs/ota/android-production-enablement.md).
+    -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+</manifest>

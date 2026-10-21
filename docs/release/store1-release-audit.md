@@ -227,6 +227,12 @@ manifest requests `INTERNET` while `talentforge.ota.android.production.enabled` 
 is. The change that enables production OTA (option C) deletes the removal and changes the texts in the same
 release ([NET-1 evidence](net1-evidence/README.md)).
 
+**M5.OTA.PROD.3 (2026-10-21).** Вариант C подготовлен, но не выбран: removal **не удалён**. При
+`talentforge.ota.android.production.enabled=true` release/play варианты подключают
+`src/androidReleaseOta/AndroidManifest.xml` (с `INTERNET`) вместо `src/androidRelease` (без него); guard
+проверяет merged manifest в обе стороны. Тексты варианта C (§5.5), декларации (§5.6) и действия владельца:
+[ota-prod3-privacy-and-stores.md](ota-prod3-privacy-and-stores.md). Решение о выпуске с OTA ON — за владельцем (O-1).
+
 ### 5.5 Replacement texts (drafts for owner/legal review)
 
 **Variant A** (keep the permission, OTA off) — privacy policy item 6:

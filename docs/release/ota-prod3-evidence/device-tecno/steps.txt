@@ -1,0 +1,64 @@
+[12:14:13Z] device: TECNO KM5n / Android 15 (API 35)
+[12:14:13Z] adb reverse tcp:8443 -> the local stand
+[12:14:13Z] == 1. install and launch (stand: 1-a-staged)
+live -> 1-a-staged
+[12:14:17Z] launch cold-1: TotalTime: 2007
+[12:14:20Z] PASS shown: Пока нет билдов
+[12:14:23Z] tapped 'О приложении'
+[12:14:28Z] PASS shown: Сборка игры 1.60.1.70450
+[12:14:31Z] PASS shown: Встроены в приложение
+[12:14:32Z] state: {"format":"talentforge-ota-state","formatVersion":1,"game":"forever","channel":"staging","catalog":{"sequence":1,"payloadSha256":"sha256:50efbb10d532046ab89f2bd3bfc6344783f0c04383f8c8e1cb99769a996ff9db"},"active":null,"previous":null,"installed":[],"rejected":[]}
+[12:14:32Z] == 2. a saved build (imported code: Warrior 13/51, 1.60.1.70374)
+[12:14:36Z] tapped 'Импортировать билд'
+[12:14:41Z] tapped 'Вставьте код сюда'
+[12:14:50Z] tapped 'Продолжить'
+[12:14:57Z] PASS shown: Импортировать этот билд?
+[12:15:00Z] tapped 'Импортировать'
+[12:15:07Z] PASS shown: Воин
+[12:15:07Z] library sha256/16: 6504e0bea6b7e119
+[12:15:12Z] PASS shown: О приложении
+[12:15:12Z] == 3. activate 2-b-staged; check
+live -> 2-b-staged
+[12:15:15Z] tapped 'О приложении'
+[12:15:21Z] tapped 'Проверить обновления'
+[12:15:31Z] PASS shown: Данные талантов обновлены до
+[12:15:33Z] PASS shown: Загруженное обновление 1.60.1.70450-r1
+[12:15:34Z] state: {"format":"talentforge-ota-state","formatVersion":1,"game":"forever","channel":"staging","catalog":{"sequence":2,"payloadSha256":"sha256:f99c774fa56a9058d280d323be253e707414fc498fd31373d71e448d50e3529e"},"active":"1.60.1.70450-r1","previous":null,"installed":[{"releaseId":"1.60.1.70450-r1","clientBuild":"1.60.1.70450","manifestSha256":"sha256:70d924568ee4fdd1e24ef7302bcd295ab56eee718aea17f8fb99ddd
+[12:15:34Z] == 4. check again
+[12:15:37Z] tapped 'Проверить обновления'
+[12:15:41Z] PASS shown: Данные талантов актуальны.
+[12:15:42Z] == 5. background -> foreground
+[12:15:45Z] launch warm-5: TotalTime: 74
+[12:15:45Z] PASS alive after foreground
+[12:15:45Z] == 6. process death
+[12:15:48Z] launch cold-6: TotalTime: 1575
+[12:15:51Z] tapped 'О приложении'
+[12:15:57Z] PASS shown: Загруженное обновление 1.60.1.70450-r1
+[12:15:57Z] == 7. no connection (adb reverse removed: the origin is unreachable)
+[12:16:00Z] tapped 'Проверить обновления'
+[12:16:05Z] PASS shown: Не удалось проверить обновления: нет соединения.
+[12:16:07Z] PASS shown: Загруженное обновление 1.60.1.70450-r1
+[12:16:08Z] == 8. rollback to A (below the bundled floor)
+live -> 3-rollback-a
+[12:16:11Z] tapped 'Проверить обновления'
+[12:16:15Z] PASS shown: Данные талантов актуальны.
+[12:16:18Z] PASS shown: Загруженное обновление 1.60.1.70450-r1
+[12:16:18Z] state: {"format":"talentforge-ota-state","formatVersion":1,"game":"forever","channel":"staging","catalog":{"sequence":3,"payloadSha256":"sha256:29f7afca529526498c7b0363e39973fa529d1f55adb64a511a64e7b3646d8621"},"active":"1.60.1.70450-r1","previous":null,"installed":[{"releaseId":"1.60.1.70450-r1","clientBuild":"1.60.1.70450","manifestSha256":"sha256:70d924568ee4fdd1e24ef7302bcd295ab56eee718aea17f8fb99ddd
+[12:16:18Z] == 9. minDataLevel 2
+live -> 4-level-2
+[12:16:21Z] tapped 'Проверить обновления'
+[12:16:26Z] PASS shown: Для новых данных талантов нужно обновить приложение.
+[12:16:27Z] state: {"format":"talentforge-ota-state","formatVersion":1,"game":"forever","channel":"staging","catalog":{"sequence":4,"payloadSha256":"sha256:f4f19bb9166f2b9789b46e24c8561cd7a27d1b998c608ec9487adf39d4ced7dd"},"active":"1.60.1.70450-r1","previous":null,"installed":[{"releaseId":"1.60.1.70450-r1","clientBuild":"1.60.1.70450","manifestSha256":"sha256:70d924568ee4fdd1e24ef7302bcd295ab56eee718aea17f8fb99ddd
+[12:16:27Z] == 10. replay of an older catalog
+live -> 3-rollback-a
+[12:16:30Z] tapped 'Проверить обновления'
+[12:16:34Z] PASS shown: SEQUENCE_REGRESSION
+[12:16:35Z] state: {"format":"talentforge-ota-state","formatVersion":1,"game":"forever","channel":"staging","catalog":{"sequence":4,"payloadSha256":"sha256:f4f19bb9166f2b9789b46e24c8561cd7a27d1b998c608ec9487adf39d4ced7dd"},"active":"1.60.1.70450-r1","previous":null,"installed":[{"releaseId":"1.60.1.70450-r1","clientBuild":"1.60.1.70450","manifestSha256":"sha256:70d924568ee4fdd1e24ef7302bcd295ab56eee718aea17f8fb99ddd
+[12:16:35Z] == the saved-build library and the build itself
+[12:16:35Z] PASS library unchanged by every check (6504e0bea6b7e119)
+[12:16:40Z] tapped 'Продолжить'
+[12:16:48Z] PASS shown: Оружие
+[12:16:51Z] PASS absent: недоступн
+[12:16:52Z] PASS no crash of io.github.alexeykravtsov95.talentforge.otastaging in the crash buffer
+[12:16:52Z] uninstalled io.github.alexeykravtsov95.talentforge.otastaging
+[12:16:52Z] RESULT: PASS

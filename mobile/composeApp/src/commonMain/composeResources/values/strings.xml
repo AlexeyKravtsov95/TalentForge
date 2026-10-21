@@ -316,6 +316,12 @@
     <string name="about_privacy_sharing">The app writes to the clipboard only when you tap Copy code, reads it only when you tap Paste, and hands a build code to the system share menu only when you tap Share. A code contains no build name and nothing about you.</string>
     <string name="about_privacy_permissions">The app works without the internet and does not ask for access to your location, contacts, camera, microphone, files or notifications.</string>
     <string name="about_privacy_delete">Delete a build in the app, or uninstall the app or clear its storage, to remove saved builds from this device.</string>
+    <!-- M5.OTA.PROD.3: the statements of a build with talent data updates (OTA) on, shown
+         instead of about_privacy_offline / about_privacy_permissions; facts in
+         docs/release/ota-prod3-privacy-and-stores.md §2, pending owner and legal review (LR-5). -->
+    <string name="about_privacy_online">TalentForge works without an account, ads or analytics. Your builds stay on this device; only talent data updates are downloaded from the internet.</string>
+    <string name="about_privacy_updates">To keep talent data current, the app downloads a public list of updates and game-data files over a secure connection (HTTPS) from ota.mythweld.com: after it starts, from time to time when you return to it, and when you tap Check for updates. Each download is checked against the developer's signature on this device. As with any website, the server and its delivery network may process your device's IP address and the time of the request. The requests contain the app version and no account, device identifier or anything about your builds. Without a connection the app uses the talent data it already has.</string>
+    <string name="about_privacy_permissions_online">The app uses the internet only to download talent data updates and does not ask for access to your location, contacts, camera, microphone, files or notifications.</string>
     <string name="about_privacy_show_details">Show details</string>
     <string name="about_privacy_hide_details">Hide details</string>
     <string name="about_privacy_policy_link">Privacy policy</string>

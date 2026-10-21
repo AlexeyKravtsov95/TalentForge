@@ -1,0 +1,40 @@
+> Task :composeApp:mergeReleaseStartupProfile UP-TO-DATE
+> Task :composeApp:mergeExtDexRelease UP-TO-DATE
+> Task :composeApp:mergeDexRelease FROM-CACHE
+> Task :composeApp:mergeReleaseArtProfile UP-TO-DATE
+> Task :composeApp:mergeReleaseGlobalSynthetics UP-TO-DATE
+> Task :composeApp:compileReleaseArtProfile FROM-CACHE
+> Task :composeApp:mergeReleaseShaders UP-TO-DATE
+> Task :composeApp:compileReleaseShaders NO-SOURCE
+> Task :composeApp:generateReleaseAssets UP-TO-DATE
+> Task :composeApp:releaseAssetsCopyForAGP NO-SOURCE
+> Task :composeApp:mergeReleaseAssets UP-TO-DATE
+> Task :composeApp:compressReleaseAssets UP-TO-DATE
+> Task :composeApp:extractReleaseVersionControlInfo UP-TO-DATE
+> Task :composeApp:extractProguardFiles UP-TO-DATE
+> Task :composeApp:generateReleaseLintVitalReportModel
+> Task :composeApp:lintVitalAnalyzeRelease FROM-CACHE
+> Task :composeApp:processReleaseJavaRes UP-TO-DATE
+> Task :composeApp:mergeReleaseJavaResource UP-TO-DATE
+> Task :composeApp:optimizeReleaseResources FROM-CACHE
+> Task :composeApp:collectReleaseDependencies UP-TO-DATE
+> Task :composeApp:sdkReleaseDependencyData UP-TO-DATE
+> Task :composeApp:writeReleaseAppMetadata UP-TO-DATE
+> Task :composeApp:writeReleaseSigningConfigVersions UP-TO-DATE
+> Task :composeApp:lintVitalReportRelease
+> Task :composeApp:lintVitalRelease
+> Task :composeApp:packageRelease
+> Task :composeApp:createReleaseApkListingFileRedirect UP-TO-DATE
+> Task :composeApp:assembleRelease
+
+[Incubating] Problems report is available at: file:///private<worktree>/mobile/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 1s
+100 actionable tasks: 10 executed, 10 from cache, 80 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.5.1/userguide/configuration_cache_enabling.html

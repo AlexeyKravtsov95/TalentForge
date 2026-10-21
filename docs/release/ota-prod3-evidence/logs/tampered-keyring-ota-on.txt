@@ -1,0 +1,40 @@
+> Task :composeApp:copyNonXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :composeApp:prepareComposeResourcesTaskForAndroidMain NO-SOURCE
+> Task :composeApp:generateResourceAccessorsForAndroidMain NO-SOURCE
+> Task :composeApp:convertXmlValueResourcesForCommonMain UP-TO-DATE
+> Task :composeApp:copyNonXmlValueResourcesForCommonMain UP-TO-DATE
+> Task :composeApp:prepareComposeResourcesTaskForCommonMain UP-TO-DATE
+> Task :composeApp:generateResourceAccessorsForCommonMain UP-TO-DATE
+> Task :composeApp:convertXmlValueResourcesForJvmCommonMain NO-SOURCE
+> Task :composeApp:copyNonXmlValueResourcesForJvmCommonMain NO-SOURCE
+> Task :composeApp:prepareComposeResourcesTaskForJvmCommonMain NO-SOURCE
+> Task :composeApp:generateResourceAccessorsForJvmCommonMain NO-SOURCE
+> Task :composeApp:generateActualResourceCollectorsForAndroidMain UP-TO-DATE
+> Task :composeApp:generateComposeResClass UP-TO-DATE
+> Task :composeApp:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
+> Task :composeApp:generateOtaSettings FAILED
+
+[Incubating] Problems report is available at: file:///private<worktree>/mobile/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':composeApp:generateOtaSettings' (registered in build file 'composeApp/build.gradle.kts').
+> Error while evaluating property 'source' of task ':composeApp:generateOtaSettings'.
+   > Invalid OTA settings:
+       talentforge.ota.android.production: the committed production keyring changed: tf-prod-2026b has SPKI SHA-256 1fac1b0d15f2a09fc3769099623fe1038e846f0033ec6e233f5111ff71239278, expected 6997b3d47d74ceeb6daec62b1d94f3f3e3bc476534eefe8cd140f67578532b26 (update the pinned fingerprints only after the key ceremony record)
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 485ms
+59 actionable tasks: 6 executed, 1 from cache, 52 up-to-date

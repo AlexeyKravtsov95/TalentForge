@@ -392,3 +392,5 @@ document. `enabled` is set **per platform** and build type, so Android can ship 
 builds keep it off until the iOS release gate passes (test-plan §6, [OD-17](open-decisions.md)).
 With `enabled = false` the binary behaves exactly as today. The first OTA-enabled store release needs working production hosting
 and keys first ([OD-1](open-decisions.md), [OD-2](open-decisions.md)).
+
+**M5.OTA.PROD.3 (2026-10-21).** Для Android production-строка таблицы закреплена в репозитории: base URL `https://ota.mythweld.com`, keyring `docs/ota/keys/production-keyring.json` (`tf-prod-2026a` + резервный `tf-prod-2026b`). Владелец задаёт только `talentforge.ota.android.production.enabled=true`, любая другая настройка origin или keyring останавливает сборку. Release/play manifest содержит `INTERNET` ровно при включённом канале ([android-production-enablement](android-production-enablement.md)). iOS production по-прежнему выключен.
