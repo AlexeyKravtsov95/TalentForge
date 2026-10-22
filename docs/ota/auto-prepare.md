@@ -67,7 +67,7 @@ In a disposable clone of `main` (the runner's checkout is never modified), with 
 | --- | --- | --- |
 | source (network) | `fetch`, `visuals fetch`, `tooltips fetch`, `localization fetch --locale ruRU` | exit 5 (wago.tools unreachable after the HTTP client's retries) → `UNKNOWN`; any other → `BLOCKED` |
 | pipeline (offline) | `normalize --class all`, `manifest --expect-complete`, `diff --class all --from <base>`, `visuals normalize/check`, `tooltips normalize/check`, `localization normalize --classes all/check` | `BLOCKED`; later steps are `SKIPPED` |
-| scope | only the candidate's own `data/*/forever/<build>/`, diff and coverage files may change; when `main` already carries the build (forced re-run), its classes must be identical (`contentHash`) and main's bytes are kept | `BLOCKED` |
+| scope | only the candidate's own `data/*/forever/<build>/`, diff and coverage files may change; when `main` already carries the build (forced re-run), its classes must be identical (`contentHash`) and its visuals the same by meaning - files, sidecars, icon FileDataIDs, client files (`sourceSha256`) and pixels, PNG bytes excepted ([talent-visuals.md](../talent-visuals.md) §3) - and then main's bytes are kept (`logs/visuals-reproduction.log`) | `BLOCKED` |
 | publisher | local candidate commit (never pushed) → `build_release` → `validate_release` (G1–G8, production channel) against a verified mirror of production → `render_review_report` | a STOP gate → `BLOCKED` (G1 excepted, below); a FLAG → a required human step |
 | regression | `scripts/sync_mobile_{datasets,visuals,tooltips,localization}.py --check` (the app's bundles are unchanged), `pytest` (offline suite with the candidate data present) | `BLOCKED` (every check still runs) |
 
@@ -176,8 +176,15 @@ A run without preparation uploads `ota-prepare-detection-<run id>` (7 days).
   commit in a fresh clone.
 * `actionlint` 1.7.12 with `shellcheck` 0.11.0: no finding for `ota-prepare.yml`; the
   `Final status` script is also executed by the tests for every combination of outcomes.
-* Not run here: the workflow itself on GitHub - `workflow_dispatch` lists a workflow only once
-  it is on `main`.
+* First run of the workflow on GitHub (run 39776364185, `build=1.60.1.70450`,
+  `base=1.60.1.70374`, `force=true`, `main` `8f18066`): `BLOCKED`. Every pipeline step and
+  G2-G6, G8 passed, but `sync-visuals-check` failed and `pytest` had 10 failures: the runner
+  re-encoded 353 of the 359 committed 70450 icons into other PNG bytes (the manylinux Pillow
+  wheel bundles zlib 1.3.1, the macOS wheel that made the committed icons zlib-ng) - the same
+  `sourceSha256`, the same pixels. The preparation now compares a committed build's visuals by
+  meaning and keeps main's bytes ([talent-visuals.md](../talent-visuals.md) §3); the runner
+  image is pinned to `ubuntu-24.04` and its icon environment is printed. The run reaches
+  `PREPARED` only from a `main` that carries this change (the workflow checks out `main`).
 
 ## Testing
 
@@ -186,7 +193,9 @@ evaluations, the production reader against an in-memory origin (signed with TEST
 `tf-prod-*` ids; absent, unreachable, wrongly signed, expired) and the verified mirror, the
 step list, the scope guard, and `prepare` end to end over a temporary git repository with a
 fake runner - `PREPARED` / `BLOCKED` / `UNKNOWN`, skipped steps, kept files, an untouched source
-checkout, forced re-runs of a committed build, repeated runs, a `BLOCKED` run prepared again
+checkout, forced re-runs of a committed build (main's dataset and visuals kept; the real
+70450 visuals with the live run's Linux-encoded icon kept as main's bytes; a changed client
+file or pixel blocked), repeated runs, a `BLOCKED` run prepared again
 once the source recovers (then `PREPARED`, then skipped) - plus the CLI's exit code 5, the
 workflow's `Final status` script run in `bash` for every outcome (a step that died, a missing
 decision, a contradictory status are red), and the workflow's no-secret / no-publish
