@@ -41,7 +41,10 @@ concurrency:
 
 jobs:
   prepare:
-    runs-on: ubuntu-latest
+    # Pinned, not ubuntu-latest: the PNG bytes of newly prepared icons depend on the image's
+    # Pillow wheel and the zlib it bundles (docs/talent-visuals.md §3, the generation
+    # environment); committed builds are compared by pixels, not bytes.
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
       # Full history: the publisher gates and the offline tests need origin/main and the
@@ -59,6 +62,10 @@ jobs:
 
       - name: Install
         run: pip install -e ".[dev]"
+
+      # Recorded in every new icons.json too (provenance.converter).
+      - name: Icon generation environment
+        run: python -c "import talent_data.visuals.icons as i; print(i.converter_description())"
 
       # Every preparation is kept as an artifact whose name carries its inputs and status;
       # detect skips only a PREPARED one (BLOCKED / UNKNOWN / FAILED are prepared again on the

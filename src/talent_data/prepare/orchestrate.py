@@ -37,12 +37,14 @@ statuses, production status), never from message text:
 
 from __future__ import annotations
 
+import io
 import json
 import os
 import shlex
 import shutil
 import subprocess
 import sys
+import tarfile
 import time
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
@@ -459,6 +461,81 @@ def keep_committed_dataset(workspace: Path, main: str, game: str, build: str) ->
     return None
 
 
+def _committed_tree(workspace: Path, commit: str, directory: str) -> dict[str, bytes]:
+    """``{path relative to directory: bytes}`` of every file under ``directory`` at ``commit``."""
+    listed = _git(workspace, "ls-tree", "-r", "--name-only", commit, "--", f"{directory}/")
+    if not listed.strip():
+        return {}  # not in the commit
+    try:
+        archive = subprocess.run(
+            ["git", "-C", str(workspace), "archive", "--format=tar", commit, "--", directory],
+            capture_output=True,
+            check=True,
+        ).stdout
+    except subprocess.CalledProcessError as exc:
+        raise PrepareError(f"git archive {commit} {directory} failed: {exc.stderr!r}") from exc
+    files: dict[str, bytes] = {}
+    with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
+        for member in tar.getmembers():
+            extracted = tar.extractfile(member) if member.isfile() else None
+            if extracted is not None:
+                name = PurePosixPath(member.name).relative_to(directory).as_posix()
+                files[name] = extracted.read()
+    return files
+
+
+def keep_committed_visuals(
+    workspace: Path, main: str, game: str, build: str, log: Path
+) -> Finding | None:
+    """When ``main`` already carries the visuals of ``build``, the regenerated ones must hold
+    the same visuals: the same files, sidecars, icon FileDataIDs, client files (sourceSha256)
+    and pixels (``talent_data.visuals.reproduction``). The PNG bytes may differ - they depend
+    on the zlib build of the converting machine - and then main's committed bytes, the
+    canonical ones, are kept. Any other difference is a blocker (the regenerated files stay
+    for inspection). ``log`` records what was compared."""
+    from talent_data.visuals.reproduction import compare_visuals
+
+    directory = f"data/visuals/{game}/{build}"
+    committed = _committed_tree(workspace, main, directory)
+    if not committed:
+        return None  # visuals new to main: nothing to reproduce
+    root = workspace / directory
+    regenerated = {
+        p.relative_to(root).as_posix(): p.read_bytes()
+        for p in sorted(root.rglob("*"))
+        if p.is_file()
+    }
+    comparison = compare_visuals(committed, regenerated)
+    lines = [
+        f"main {main} already carries {directory}: {len(committed)} committed, "
+        f"{len(regenerated)} regenerated file(s), {comparison.identical_files} byte-identical",
+        f"re-encoded (other PNG bytes, the same image): {len(comparison.reencoded)} icon(s)",
+    ]
+    if comparison.converters is not None:
+        committed_by, regenerated_by = comparison.converters
+        lines.append(f"converter: committed {committed_by!r}, regenerated {regenerated_by!r}")
+    lines += [f"DIFFERS: {problem}" for problem in comparison.problems]
+    lines.append(
+        "result: the same visuals; main's committed bytes are kept"
+        if comparison.equivalent
+        else "result: the visuals differ; the regenerated files are kept for inspection"
+    )
+    log.parent.mkdir(parents=True, exist_ok=True)
+    log.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    if not comparison.equivalent:
+        more = len(comparison.problems) - 3
+        return Finding(
+            FindingKind.BLOCKER,
+            "reproducibility",
+            f"main already carries the visuals of {build}, and the regenerated ones differ: "
+            + "; ".join(comparison.problems[:3])
+            + (f" (+{more} more in logs/visuals-reproduction.log)" if more > 0 else "")
+            + ". A changed visual of a committed build needs a human decision",
+        )
+    _git(workspace, "checkout", main, "--", directory)
+    return None
+
+
 # --------------------------------------------------------------------------- the publisher
 
 
@@ -727,6 +804,14 @@ def prepare(
 
     try:
         reproduced = keep_committed_dataset(workspace, detection.main_commit, game, build)
+        if reproduced is None:
+            reproduced = keep_committed_visuals(
+                workspace,
+                detection.main_commit,
+                game,
+                build,
+                out / "logs" / "visuals-reproduction.log",
+            )
         candidate = commit_candidate(
             workspace, game=game, build=build, base=base, when=report.started_at
         )
