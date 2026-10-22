@@ -60,8 +60,10 @@ jobs:
       - name: Install
         run: pip install -e ".[dev]"
 
-      # A finished preparation (PREPARED / BLOCKED) of the same inputs is kept as an artifact
-      # whose name carries them; detect skips it. A failed listing only means a repeat.
+      # Every preparation is kept as an artifact whose name carries its inputs and status;
+      # detect skips only a PREPARED one (BLOCKED / UNKNOWN / FAILED are prepared again on the
+      # next run). A failed listing only means a repeat; the concurrency group still keeps
+      # one run at a time.
       - name: List kept preparations
         id: prior
         env:
@@ -140,20 +142,47 @@ jobs:
           retention-days: 7
           overwrite: true
 
+      # Green only for a clean decision (NO_ACTION) or a preparation that both exited 0 and
+      # reported PREPARED. A step that died before recording its result, a detection
+      # without a decision, BLOCKED, UNKNOWN or a crash all end red - never green.
       - name: Final status
         if: always()
         shell: bash
         env:
           DETECT_EXIT: ${{ steps.detect.outputs.exit_code }}
+          DETECT_ACTION: ${{ steps.detect.outputs.action }}
           PREPARE_EXIT: ${{ steps.prepare.outputs.exit_code }}
+          PREPARE_STATUS: ${{ steps.prepare.outputs.status }}
         run: |
-          if [ -z "$DETECT_EXIT" ]; then echo "::error::the detection did not run"; exit 1; fi
+          if [ -z "$DETECT_EXIT" ]; then
+            echo "::error::the detection did not finish (no exit code recorded)"
+            exit 1
+          fi
           if [ "$DETECT_EXIT" != "0" ]; then
             echo "::error::detection exited with $DETECT_EXIT (4 UNKNOWN, 1 failure)"
             exit "$DETECT_EXIT"
           fi
-          if [ -n "$PREPARE_EXIT" ] && [ "$PREPARE_EXIT" != "0" ]; then
+          case "$DETECT_ACTION" in
+            NO_ACTION)
+              echo "no action: see the job summary"
+              exit 0
+              ;;
+            PREPARE) ;;
+            *)
+              echo "::error::detection exited 0 without a decision (action '$DETECT_ACTION')"
+              exit 1
+              ;;
+          esac
+          if [ -z "$PREPARE_EXIT" ]; then
+            echo "::error::the preparation did not finish (no exit code recorded)"
+            exit 1
+          fi
+          if [ "$PREPARE_EXIT" != "0" ]; then
             echo "::error::preparation exited with $PREPARE_EXIT (3 BLOCKED, 4 UNKNOWN, 1 failure)"
             exit "$PREPARE_EXIT"
           fi
-          echo "done: see the job summary and the artifact"
+          if [ "$PREPARE_STATUS" != "PREPARED" ]; then
+            echo "::error::preparation exited 0 but reported '$PREPARE_STATUS'"
+            exit 1
+          fi
+          echo "PREPARED - not publishable: see the job summary and the artifact"
