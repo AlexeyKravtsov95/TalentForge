@@ -14,7 +14,9 @@ nothing but the standard library, so normal CI stays dependency-light and offlin
 from __future__ import annotations
 
 import io
+import platform
 import struct
+import zlib
 from dataclasses import dataclass
 
 from talent_data.models.visuals import (
@@ -70,6 +72,118 @@ def read_png_size(data: bytes) -> tuple[int, int]:
     return int(width), int(height)
 
 
+# The only chunks the converter writes; anything else could change how the image renders.
+_PNG_CHUNKS = (b"IHDR", b"IDAT", b"IEND")
+_BYTES_PER_PIXEL = {2: 3, 6: 4}
+
+
+@dataclass(frozen=True)
+class PngImage:
+    """A converter PNG, inflated but still filtered: one filter-type byte, then the row."""
+
+    width: int
+    height: int
+    colour_type: int
+    filtered: bytes
+
+    def pixels(self) -> bytes:
+        """The unfiltered 8-bit samples, row after row (PNG specification §9)."""
+        bpp = _BYTES_PER_PIXEL[self.colour_type]
+        stride = self.width * bpp
+        out = bytearray()
+        prior = bytearray(stride)
+        for y in range(self.height):
+            start = y * (stride + 1)
+            kind = self.filtered[start]
+            row = bytearray(self.filtered[start + 1 : start + 1 + stride])
+            if kind == 1:
+                for i in range(bpp, stride):
+                    row[i] = (row[i] + row[i - bpp]) & 0xFF
+            elif kind == 2:
+                for i in range(stride):
+                    row[i] = (row[i] + prior[i]) & 0xFF
+            elif kind == 3:
+                for i in range(stride):
+                    left = row[i - bpp] if i >= bpp else 0
+                    row[i] = (row[i] + ((left + prior[i]) >> 1)) & 0xFF
+            elif kind == 4:
+                for i in range(stride):
+                    a = row[i - bpp] if i >= bpp else 0
+                    b = prior[i]
+                    c = prior[i - bpp] if i >= bpp else 0
+                    p = a + b - c
+                    pa, pb, pc = abs(p - a), abs(p - b), abs(p - c)
+                    pred = a if pa <= pb and pa <= pc else b if pb <= pc else c
+                    row[i] = (row[i] + pred) & 0xFF
+            elif kind != 0:
+                raise IconAssetError(f"PNG row {y} has unknown filter type {kind}")
+            out += row
+            prior = row
+        return bytes(out)
+
+
+def read_png(data: bytes) -> PngImage:
+    """Parse a PNG as the converter writes it - ``IHDR``, ``IDAT``..., ``IEND``, 8-bit RGB or
+    RGBA, not interlaced - verifying every CRC and the zlib stream; reject anything else."""
+    width, height = read_png_size(data)
+    offset, kinds, idat = 8, [], bytearray()
+    while offset < len(data):
+        if offset + 12 > len(data):
+            raise IconAssetError("PNG ends inside a chunk header")
+        (length,) = struct.unpack_from(">I", data, offset)
+        kind = data[offset + 4 : offset + 8]
+        body = data[offset + 8 : offset + 8 + length]
+        if offset + 12 + length > len(data):
+            raise IconAssetError(f"PNG chunk {kind!r} is truncated")
+        (crc,) = struct.unpack_from(">I", data, offset + 8 + length)
+        if zlib.crc32(kind + body) != crc:
+            raise IconAssetError(f"PNG chunk {kind!r} has a wrong CRC")
+        if kind not in _PNG_CHUNKS:
+            raise IconAssetError(f"PNG chunk {kind!r} is not one the converter writes")
+        kinds.append(kind)
+        if kind == b"IHDR" and (body[10], body[11], body[12]) != (0, 0, 0):
+            raise IconAssetError("PNG is interlaced or uses a non-standard method")
+        if kind == b"IDAT":
+            idat += body
+        offset += 12 + length
+        if kind == b"IEND":
+            break
+    if offset != len(data):
+        raise IconAssetError("PNG has data after IEND")
+    if kinds.count(b"IHDR") != 1 or kinds[0] != b"IHDR" or kinds[-1] != b"IEND":
+        raise IconAssetError("PNG chunks are not IHDR, IDAT..., IEND")
+    if b"IDAT" not in kinds:
+        raise IconAssetError("PNG has no image data")
+    inflater = zlib.decompressobj()
+    try:
+        filtered = inflater.decompress(bytes(idat)) + inflater.flush()
+    except zlib.error as exc:
+        raise IconAssetError(f"PNG image data is not a valid zlib stream: {exc}") from exc
+    if not inflater.eof or inflater.unused_data:
+        raise IconAssetError("PNG image data is not exactly one zlib stream")
+    colour_type = data[25]
+    if len(filtered) != height * (1 + width * _BYTES_PER_PIXEL[colour_type]):
+        raise IconAssetError(f"PNG image data does not hold {width}x{height} pixels")
+    return PngImage(width, height, colour_type, filtered)
+
+
+def same_image(a: bytes, b: bytes) -> bool:
+    """Whether two converter PNGs hold the same image: size, colour type and every pixel.
+
+    The compressed bytes are not compared - they depend on the zlib build (see
+    ``docs/talent-visuals.md`` §3). Equal filtered streams already mean equal pixels; only
+    when the encoders chose other row filters are the rows unfiltered and compared.
+    """
+    first, second = read_png(a), read_png(b)
+    if (first.width, first.height, first.colour_type) != (
+        second.width,
+        second.height,
+        second.colour_type,
+    ):
+        return False
+    return first.filtered == second.filtered or first.pixels() == second.pixels()
+
+
 @dataclass(frozen=True)
 class ConvertedIcon:
     file_data_id: int
@@ -118,11 +232,17 @@ def convert_blp2(file_data_id: int, data: bytes) -> ConvertedIcon:
 
 
 def converter_description() -> str:
+    """The converter and the environment its PNG bytes depend on: Pillow's zlib build and
+    the platform (the pixels do not depend on either; see ``docs/talent-visuals.md`` §3)."""
     try:
         import PIL
+        from PIL import features
     except ImportError:  # pragma: no cover - environment dependent
         return "Pillow BLP decoder -> PNG"
-    return f"Pillow {PIL.__version__} BLP decoder -> PNG (compress_level=9)"
+    return (
+        f"Pillow {PIL.__version__} BLP decoder -> PNG (compress_level=9; "
+        f"zlib {features.version('zlib')}; {platform.system()} {platform.machine()})"
+    )
 
 
 def build_icon_registry(

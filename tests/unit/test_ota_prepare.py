@@ -13,6 +13,7 @@
 
 from __future__ import annotations
 
+import io
 import json
 import subprocess
 import sys
@@ -23,6 +24,7 @@ from typing import Any
 
 import httpx
 import pytest
+from PIL import Image
 
 from talent_data.cli import main as cli_main
 from talent_data.freshness import evaluate_freshness
@@ -65,6 +67,13 @@ from talent_data.sources.base import BuildInfo, SourceError
 from talent_data.sources.http import DownloadError
 from talent_data.versions import ClientVersion
 from tests.unit.ota.test_ota_preflight import KEYRING, ORIGIN, FakeOrigin, publication
+from tests.unit.visuals.test_reproduction import (
+    ICON,
+    LINUX_CONVERTER,
+    LINUX_PNG,
+    with_icon,
+)
+from tests.unit.visuals.test_reproduction import committed_files as committed_visuals
 
 ROOT = Path(__file__).resolve().parents[2]
 GAME = get_game("forever")
@@ -502,10 +511,12 @@ class FakeRunner:
         codes: dict[str, int] | None = None,
         stray: bool = False,
         manifest: bytes = b"{}\n",
+        visuals: dict[str, bytes] | None = None,
     ) -> None:
         self.codes = codes or {}
         self.stray = stray
         self.manifest = manifest  # what ``normalize`` writes as the dataset manifest
+        self.visuals = visuals or {}  # what ``visuals normalize`` writes, by relative path
         self.calls: list[str] = []
 
     def __call__(self, argv: Sequence[str], cwd: Path, log: Path) -> int:
@@ -519,6 +530,11 @@ class FakeRunner:
             (target / "manifest.json").write_bytes(self.manifest)
             if self.stray:
                 (cwd / "mobile.txt").write_text("not the candidate's\n")
+        if step == "visuals-normalize":
+            for name, data in self.visuals.items():
+                target = cwd / f"data/visuals/forever/{BUILD}/{name}"
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(data)
         if step == "tooltips-normalize":
             (cwd / "docs/research").mkdir(parents=True, exist_ok=True)
             (cwd / f"docs/research/forever-{BUILD}-tooltip-coverage.md").write_text("ok\n")
@@ -703,9 +719,10 @@ def test_a_publisher_error_blocks(repo: Path, tmp_path: Path) -> None:
 REAL_MANIFEST = (ROOT / "data/normalized/forever/1.60.1.70450/manifest.json").read_bytes()
 
 
-def commit_on_main(repo: Path, path: str, data: bytes) -> str:
-    (repo / path).parent.mkdir(parents=True, exist_ok=True)
-    (repo / path).write_bytes(data)
+def commit_on_main(repo: Path, files: dict[str, bytes]) -> str:
+    for path, data in files.items():
+        (repo / path).parent.mkdir(parents=True, exist_ok=True)
+        (repo / path).write_bytes(data)
     git(repo, "add", "--all")
     git(
         repo,
@@ -728,7 +745,7 @@ def test_a_rerun_of_a_committed_build_keeps_main_bytes_when_identical(
     repo: Path, tmp_path: Path
 ) -> None:
     path = f"data/normalized/forever/{BUILD}/manifest.json"
-    head = commit_on_main(repo, path, REAL_MANIFEST)
+    head = commit_on_main(repo, {path: REAL_MANIFEST})
     regenerated = json.loads(REAL_MANIFEST)
     regenerated["generatedAt"] = "2026-10-22T06:30:00Z"  # volatile: same classes and hashes
     runner = FakeRunner(manifest=json.dumps(regenerated, indent=2).encode())
@@ -743,7 +760,7 @@ def test_a_rerun_of_a_committed_build_keeps_main_bytes_when_identical(
 
 def test_a_rerun_that_changes_a_committed_build_blocks(repo: Path, tmp_path: Path) -> None:
     path = f"data/normalized/forever/{BUILD}/manifest.json"
-    head = commit_on_main(repo, path, REAL_MANIFEST)
+    head = commit_on_main(repo, {path: REAL_MANIFEST})
     changed = json.loads(REAL_MANIFEST)
     changed["classes"][0]["contentHash"] = "sha256:" + "0" * 64
     svc, _ = services(FakeRunner(manifest=json.dumps(changed).encode()))
@@ -751,6 +768,77 @@ def test_a_rerun_that_changes_a_committed_build_blocks(repo: Path, tmp_path: Pat
     assert report.status is Readiness.BLOCKED
     assert "reproducibility" in kinds(report)["BLOCKER"]
     assert json.loads((out / path).read_bytes()) == changed  # kept for inspection
+
+
+VISUALS = f"data/visuals/forever/{BUILD}"
+
+
+def main_with_visuals(repo: Path) -> tuple[str, dict[str, bytes]]:
+    """main carries the build: its manifest and the real committed 1.60.1.70450 visuals."""
+    visuals = committed_visuals()
+    files = {f"data/normalized/forever/{BUILD}/manifest.json": REAL_MANIFEST}
+    files.update({f"{VISUALS}/{name}": data for name, data in visuals.items()})
+    return commit_on_main(repo, files), visuals
+
+
+def test_a_rerun_on_another_platform_keeps_main_visuals_when_only_png_bytes_differ(
+    repo: Path, tmp_path: Path
+) -> None:
+    """Regression (live run 39776364185): regenerated on ubuntu-24.04 x86_64, an icon of the
+    committed build has other PNG bytes but the same client file and pixels. The run is
+    PREPARED and the candidate carries main's bytes - the bundle checks and the OTA
+    fixtures see the committed visuals unchanged."""
+    head, committed = main_with_visuals(repo)
+    linux = with_icon(committed, ICON, LINUX_PNG.read_bytes(), converter=LINUX_CONVERTER)
+    assert linux[f"icons/{ICON}.png"] != committed[f"icons/{ICON}.png"]
+    svc, evaluated = services(FakeRunner(manifest=REAL_MANIFEST, visuals=linux))
+    report, out = run_prepare(repo, tmp_path, svc, detect(main=head))
+    assert report.status is Readiness.PREPARED, report.findings
+    ws = evaluated[0]["workspace"]
+    for name, data in committed.items():
+        assert (ws / VISUALS / name).read_bytes() == data, name
+        assert (out / VISUALS / name).read_bytes() == data, name
+    assert git(ws, "diff", "--name-only", head, report.candidate_commit or "", "--", VISUALS) == ""
+    assert not any(p.startswith(VISUALS) for p in report.changed_paths)
+    log = (out / "logs/visuals-reproduction.log").read_text()
+    assert "re-encoded (other PNG bytes, the same image): 1 icon(s)" in log
+    assert LINUX_CONVERTER in log
+    assert "result: the same visuals; main's committed bytes are kept" in log
+
+
+@pytest.mark.parametrize(
+    ("change", "expected"),
+    [
+        ({"source_sha256": "sha256:" + "0" * 64}, "source_sha256 differ"),
+        ({}, "the image differs"),
+    ],
+    ids=["client-file", "pixels"],
+)
+def test_a_rerun_that_changes_committed_visuals_blocks(
+    repo: Path, tmp_path: Path, change: dict[str, object], expected: str
+) -> None:
+    """Real changes of a committed build's visuals are never replaced by main's files."""
+    head, committed = main_with_visuals(repo)
+    if change:
+        png = LINUX_PNG.read_bytes()
+    else:
+        image = Image.open(io.BytesIO(committed[f"icons/{ICON}.png"]))
+        image.load()
+        image.putpixel((0, 0), tuple(255 - v for v in image.getpixel((0, 0))))
+        buffer = io.BytesIO()
+        image.save(buffer, format="PNG")
+        png = buffer.getvalue()
+    regenerated = with_icon(committed, ICON, png, **change)
+    svc, _ = services(FakeRunner(manifest=REAL_MANIFEST, visuals=regenerated))
+    report, out = run_prepare(repo, tmp_path, svc, detect(main=head))
+    assert report.status is Readiness.BLOCKED
+    assert "reproducibility" in kinds(report)["BLOCKER"]
+    finding = next(f for f in report.findings if f.source == "reproducibility")
+    assert expected in finding.detail and f"icon {ICON}" in finding.detail
+    # the regenerated files stay for inspection, main's are not slipped in
+    assert (out / VISUALS / f"icons/{ICON}.png").read_bytes() == png
+    assert (out / VISUALS / "icons.json").read_bytes() == regenerated["icons.json"]
+    assert "DIFFERS: icon" in (out / "logs/visuals-reproduction.log").read_text()
 
 
 def test_a_blocked_run_is_prepared_once_the_source_recovers(repo: Path, tmp_path: Path) -> None:
@@ -916,6 +1004,17 @@ def test_the_workflow_holds_no_secret_and_cannot_publish() -> None:
     assert "persist-credentials: false" in text
     assert 'workflows: ["Dataset freshness"]' in text and "workflow_dispatch:" in text
     assert "actions/upload-artifact@v4" in text
+
+
+def test_the_workflow_pins_the_icon_generation_environment() -> None:
+    """New icons get their PNG bytes from the runner's Pillow wheel: a pinned image, and the
+    environment in the job log (docs/talent-visuals.md §3)."""
+    text = (ROOT / ".github/workflows/ota-prepare.yml").read_text(encoding="utf-8")
+    assert [line.strip() for line in text.splitlines() if "runs-on:" in line] == [
+        "runs-on: ubuntu-24.04"
+    ]
+    step = text.split("      - name: Icon generation environment\n", 1)[1].splitlines()[0]
+    assert "print(i.converter_description())" in step
 
 
 def workflow_step_script(name: str) -> str:

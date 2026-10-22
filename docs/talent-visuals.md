@@ -252,12 +252,43 @@ build time only (`visuals/icons.py`):
 * pixel-exact: tests decode the PNG and the BLP2 texture and compare the raw pixels.
 
 Pillow is an optional dependency (`pip install -e ".[visuals]"`, also part of `dev`),
-pinned to `12.3.0`; it is needed only to *generate* assets. The PNG bytes are reproducible
-only with the same Pillow build, including the zlib it bundles: the macOS arm64 wheel of
-12.3.0 links zlib-ng, and a different build of the same version can compress the same
-pixels into different bytes (observed in M5.DATA.4). Across Pillow builds only the decoded
-pixels are guaranteed, so tests that compare icons across builds compare pixels, not PNG
-bytes. Checking committed assets parses the PNG header with the standard library.
+pinned to `12.3.0`; it is needed only to *generate* assets. Checking committed assets parses
+the PNG header with the standard library.
+
+**What is reproducible.** The pixels are: the same client file (`sourceSha256`) decodes to
+the same pixels everywhere, and Pillow picks the same row filters. The PNG **bytes** are
+reproducible only with the same zlib *implementation*, which Pillow's wheels bundle
+(`PIL.features.version("zlib")`), not merely with the same Pillow version. Measured for
+12.3.0 (M5.OTA.AUTO.1, 2026-10-22) by re-encoding the committed pixels of `132089.png`:
+
+| wheel | bundled zlib | PNG bytes of 132089 |
+| --- | --- | --- |
+| macOS arm64 (the committed 70374/70450 icons) | `1.3.1.zlib-ng` | `sha256:941724bb…` (committed) |
+| manylinux x86_64 (GitHub `ubuntu-24.04`; `python:3.12-slim` amd64) | `1.3.1` | `sha256:0e7602b8…` |
+| manylinux aarch64 (`python:3.12-slim` arm64) | `1.3.1` | `sha256:0e7602b8…` |
+
+So the first live OTA preparation (Actions run 39776364185) regenerated 353 of the 359
+committed 1.60.1.70450 icons into other bytes - identical `IHDR`, row filters and inflated
+stream; only the deflate output differs - and its byte-level bundle checks failed although
+nothing had changed (M5.DATA.4 had already seen the same between 70374 and 70450).
+
+**The rule.** The committed bytes on `main` are canonical. A regeneration of a build that
+`main` already carries is compared *by meaning* (`talent_data.visuals.reproduction`): the
+same files, class sidecars (`contentHash` and payload; only `provenance` may differ), icon
+FileDataIDs, per-icon `file` / size / `sourceFormat` / `sourceByteLength` /
+`sourceSha256`, and pixels (a standard-library PNG reader that accepts only the converter's
+`IHDR`/`IDAT`/`IEND`, verifies every CRC and undoes all five row filters). Only then are
+main's bytes kept; a changed FileDataID, client file, pixel or sidecar blocks, and the
+regenerated files stay for inspection. The OTA preparation applies this to every forced
+re-run (`docs/ota/auto-prepare.md`).
+
+**The generation environment.** New icons are generated where the OTA preparation runs:
+GitHub's pinned `ubuntu-24.04` image, Python 3.12 and the pinned Pillow 12.3.0 manylinux
+wheel (zlib 1.3.1) - the CPU architecture does not matter there. `provenance.converter` of
+every newly generated `icons.json` records it, e.g. `Pillow 12.3.0 BLP decoder -> PNG
+(compress_level=9; zlib 1.3.1; Linux x86_64)`, and the workflow prints it. To reproduce those
+bytes on a Mac, generate in `python:3.12-slim` (Docker) rather than with the macOS wheel;
+elsewhere a byte difference with identical pixels is expected and is not a data change.
 
 ### Size
 
