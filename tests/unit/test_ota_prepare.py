@@ -267,23 +267,34 @@ def test_a_base_without_a_committed_dataset_is_unknown() -> None:
     assert "no committed dataset" in d.reason
 
 
-@pytest.mark.parametrize("status", ["PREPARED", "BLOCKED"])
-def test_a_finished_preparation_of_the_same_inputs_is_not_repeated(status: str) -> None:
+def test_a_prepared_preparation_of_the_same_inputs_is_not_repeated() -> None:
     key = detect().preparation_key
     assert key is not None
-    kept = [artifact_name(key, status), "freshness-report"]
+    kept = [artifact_name(key, "BLOCKED"), artifact_name(key, "PREPARED"), "freshness-report"]
     d = detect(prior_artifacts=kept)
     assert d.action is Action.NO_ACTION
-    assert d.prior_artifact == artifact_name(key, status)
+    assert d.prior_artifact == artifact_name(key, "PREPARED")
     assert d.prior_listing is PriorListing.LISTED
     assert detect(prior_artifacts=kept, force=True).action is Action.PREPARE
+
+
+@pytest.mark.parametrize("status", ["BLOCKED", "UNKNOWN", "FAILED"])
+def test_a_kept_failure_is_prepared_again_on_the_next_run(status: str) -> None:
+    """Right after a patch the source can be incomplete; a kept BLOCKED (or UNKNOWN, or a
+    crashed run) must not hide the build for the artifact's whole retention."""
+    key = detect().preparation_key
+    assert key is not None
+    d = detect(prior_artifacts=[artifact_name(key, status)])
+    assert d.action is Action.PREPARE
+    assert d.prior_artifact == artifact_name(key, status)
+    assert f"preparing again after {artifact_name(key, status)}" in d.reason
 
 
 def test_unknown_or_other_inputs_are_prepared_again() -> None:
     key = detect().preparation_key
     assert key is not None
     other_main = key.replace(MAIN[:12], "b" * 12)
-    kept = [artifact_name(key, "UNKNOWN"), artifact_name(other_main, "PREPARED")]
+    kept = [artifact_name(other_main, "PREPARED")]  # main moved on: other inputs
     assert detect(prior_artifacts=kept).action is Action.PREPARE
     failed = detect(prior_artifacts=None, unlisted=PriorListing.UNAVAILABLE)
     assert failed.action is Action.PREPARE
@@ -742,6 +753,36 @@ def test_a_rerun_that_changes_a_committed_build_blocks(repo: Path, tmp_path: Pat
     assert json.loads((out / path).read_bytes()) == changed  # kept for inspection
 
 
+def test_a_blocked_run_is_prepared_once_the_source_recovers(repo: Path, tmp_path: Path) -> None:
+    """Regression (PR #71 review): run 1 is BLOCKED because a DB2 table is not exported
+    yet (a definitive answer of the source, exit 1); the next scheduled run, with run 1's
+    artifact kept, prepares again and - the source has caught up - ends PREPARED; the run
+    after that is skipped."""
+    head = git(repo, "rev-parse", "HEAD")
+    kept: list[str] = []
+
+    first = detect(main=head, prior_artifacts=kept)
+    assert first.action is Action.PREPARE
+    blocked, _ = run_prepare(repo, tmp_path / "1", services(FakeRunner({"fetch": 1}))[0], first)
+    assert blocked.status is Readiness.BLOCKED
+    kept.append(blocked.artifact_name)
+
+    second = detect(main=head, prior_artifacts=kept)
+    assert second.action is Action.PREPARE, second.reason
+    assert second.prior_artifact == blocked.artifact_name
+    prepared, out = run_prepare(repo, tmp_path / "2", services(FakeRunner())[0], second)
+    assert prepared.status is Readiness.PREPARED
+    assert prepared.artifact_name == blocked.artifact_name.replace("-BLOCKED", "-PREPARED")
+    assert json.loads((out / "detection.json").read_text())["priorArtifact"] == (
+        blocked.artifact_name
+    )
+    kept.append(prepared.artifact_name)
+
+    third = detect(main=head, prior_artifacts=kept)
+    assert third.action is Action.NO_ACTION
+    assert third.prior_artifact == prepared.artifact_name
+
+
 def test_writes_outside_the_candidate_block_before_any_commit(repo: Path, tmp_path: Path) -> None:
     svc, evaluated = services(FakeRunner(stray=True))
     report, _ = run_prepare(repo, tmp_path, svc)
@@ -875,3 +916,71 @@ def test_the_workflow_holds_no_secret_and_cannot_publish() -> None:
     assert "persist-credentials: false" in text
     assert 'workflows: ["Dataset freshness"]' in text and "workflow_dispatch:" in text
     assert "actions/upload-artifact@v4" in text
+
+
+def workflow_step_script(name: str) -> str:
+    """The ``run: |`` block of one workflow step, dedented (no YAML library needed)."""
+    lines = (ROOT / ".github/workflows/ota-prepare.yml").read_text(encoding="utf-8").splitlines()
+    start = lines.index(f"      - name: {name}")
+    run = next(i for i in range(start, len(lines)) if lines[i] == "        run: |")
+    body: list[str] = []
+    for line in lines[run + 1 :]:
+        if line and not line.startswith(" " * 10):
+            break
+        body.append(line[10:])
+    return "\n".join(body) + "\n"
+
+
+@pytest.mark.parametrize(
+    ("detect_exit", "action", "prepare_exit", "status", "job_exit"),
+    [
+        ("0", "NO_ACTION", "", "", 0),
+        ("0", "PREPARE", "0", "PREPARED", 0),
+        ("0", "PREPARE", "3", "BLOCKED", 3),
+        ("0", "PREPARE", "4", "UNKNOWN", 4),
+        ("0", "PREPARE", "1", "", 1),  # crashed
+        ("0", "PREPARE", "", "", 1),  # the prepare step died before recording its result
+        ("0", "PREPARE", "0", "BLOCKED", 1),  # contradictory result
+        ("0", "PREPARE", "0", "", 1),
+        ("0", "", "", "", 1),  # exit 0 without a decision
+        ("4", "UNKNOWN", "", "", 4),
+        ("1", "", "", "", 1),
+        ("", "", "", "", 1),  # the detection never ran (install failed)
+    ],
+)
+def test_the_workflow_never_turns_a_failed_preparation_green(
+    detect_exit: str, action: str, prepare_exit: str, status: str, job_exit: int
+) -> None:
+    env = {
+        "PATH": "/usr/bin:/bin",
+        "DETECT_EXIT": detect_exit,
+        "DETECT_ACTION": action,
+        "PREPARE_EXIT": prepare_exit,
+        "PREPARE_STATUS": status,
+    }
+    # GitHub runs ``shell: bash`` as ``bash --noprofile --norc -eo pipefail {0}``
+    completed = subprocess.run(
+        [
+            "bash",
+            "--noprofile",
+            "--norc",
+            "-eo",
+            "pipefail",
+            "-c",
+            workflow_step_script("Final status"),
+        ],
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == job_exit, completed.stdout + completed.stderr
+
+
+def test_the_workflow_uploads_every_outcome_and_prepares_only_on_prepare() -> None:
+    text = (ROOT / ".github/workflows/ota-prepare.yml").read_text(encoding="utf-8")
+    assert "if: steps.detect.outputs.action == 'PREPARE'" in text
+    assert "if: always() && steps.prepare.outcome != 'skipped'" in text  # the preparation
+    assert "if: always() && steps.prepare.outcome == 'skipped'" in text  # the detection only
+    assert "steps.prepare.outputs.artifact_name || format('ota-prepare-{0}-FAILED'" in text
+    assert "cancel-in-progress: false" in text and "group: ota-prepare" in text

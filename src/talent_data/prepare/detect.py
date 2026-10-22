@@ -8,7 +8,10 @@ actions, written as the ``ota-prepare-detection`` v1 document the preparation re
   catalog does not list it;
 * ``NO_ACTION`` - nothing to prepare: no newer build, the build is the app's bundled
   ``PRODUCT_BUNDLE``, the *verified* production catalog already lists it, or the same inputs
-  were already prepared (a kept artifact of a finished preparation);
+  were already ``PREPARED`` (a kept artifact). A ``BLOCKED`` or ``UNKNOWN`` preparation of
+  the same inputs is prepared again on the next run: right after a patch the source can
+  still be incomplete (a DB2 table not exported yet), and a kept failure must not hide the
+  build for the artifact's whole retention;
 * ``UNKNOWN``   - the answer cannot be established: the build index failed or is
   ambiguous (``FreshnessStatus.UNKNOWN``), a requested build is not listed or not
   publishable, or the base build has no committed dataset.
@@ -119,8 +122,11 @@ def artifact_name(preparation_key: str, status: str) -> str:
     return f"{ARTIFACT_PREFIX}{preparation_key}-{status}"
 
 
-#: outcomes a re-run with the same inputs would reproduce (UNKNOWN is retried)
-FINAL_STATUSES = ("PREPARED", "BLOCKED")
+#: the only outcome a kept artifact makes final for the same inputs; BLOCKED and UNKNOWN
+#: are prepared again (the source may still be catching up with a new patch)
+SKIP_STATUSES = ("PREPARED",)
+#: outcomes kept as artifacts that do not stop the next run, recorded for the report
+RETRY_STATUSES = ("BLOCKED", "UNKNOWN", "FAILED")
 
 
 def production_fact(state: ProductionState) -> ProductionFact:
@@ -248,26 +254,29 @@ def decide(
     )
     facts.update(revision=revision, preparation_key=key)
 
-    # 6. idempotency: a finished preparation of the same inputs is kept as an artifact
-    if prior_artifacts is not None and not force:
-        finished = sorted(
-            name
-            for name in prior_artifacts
-            if name in {artifact_name(key, status) for status in FINAL_STATUSES}
+    # 6. idempotency: a PREPARED preparation of the same inputs is kept as an artifact
+    def kept(statuses: Sequence[str]) -> list[str]:
+        names = {artifact_name(key, status) for status in statuses}
+        return sorted(name for name in prior_artifacts or () if name in names)
+
+    if not force and (prepared := kept(SKIP_STATUSES)):
+        return result(
+            Action.NO_ACTION,
+            f"already prepared for these inputs: artifact {prepared[0]} "
+            "(re-run with force to prepare again)",
+            prior_artifact=prepared[0],
         )
-        if finished:
-            return result(
-                Action.NO_ACTION,
-                f"already prepared for these inputs: artifact {finished[0]} "
-                "(re-run with force to prepare again)",
-                prior_artifact=finished[0],
-            )
+    retried = kept(RETRY_STATUSES)
+    if retried:
+        facts["prior_artifact"] = retried[0]
 
     reason = f"{candidate} is publishable (is_bgdl=false) and newer than the base {base}"
     if requested_build is not None:
         reason = f"{candidate} was requested; it is listed and publishable (is_bgdl=false)"
     if force:
         reason += "; forced"
+    if retried:
+        reason += f"; preparing again after {retried[0]}"
     if production.status is ProductionStatus.UNKNOWN:
         reason += (
             "; the production catalog could not be verified, so the build is not treated as "
