@@ -1,8 +1,5 @@
 package io.github.alexeykravtsov95.talentforge.ui.ota
 
-import com.sun.net.httpserver.HttpExchange
-import com.sun.net.httpserver.HttpsConfigurator
-import com.sun.net.httpserver.HttpsServer
 import io.github.alexeykravtsov95.talentforge.data.ClassToken
 import io.github.alexeykravtsov95.talentforge.data.DatasetBundleId
 import io.github.alexeykravtsov95.talentforge.data.DatasetId
@@ -23,19 +20,7 @@ import io.github.alexeykravtsov95.talentforge.ui.library.createClassDraft
 import io.github.alexeykravtsov95.talentforge.ui.library.loadEditorSession
 import io.github.alexeykravtsov95.talentforge.ui.library.loadNewBuildChoices
 import java.io.File
-import java.io.IOException
-import java.net.InetSocketAddress
-import java.security.KeyFactory
-import java.security.KeyStore
-import java.security.cert.CertificateFactory
-import java.security.spec.PKCS8EncodedKeySpec
-import java.util.Base64
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CopyOnWriteArrayList
-import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
-import javax.net.ssl.KeyManagerFactory
-import javax.net.ssl.SSLContext
 import kotlin.reflect.KClass
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -80,156 +65,28 @@ class OtaStagingE2ETest {
 
     private val stand: File get() = out!!
 
-    private val report: JsonObject by lazy { Json.parseToJsonElement(stand.resolve("report.json").readText()).jsonObject }
+    private val standFiles: StagingStand by lazy { StagingStand(stand) }
 
-    private fun reportString(vararg path: String): String {
-        var node: JsonObject = report
-        for (key in path.dropLast(1)) node = node.getValue(key).jsonObject
-        return node.getValue(path.last()).jsonPrimitive.content
-    }
+    private fun reportString(vararg path: String): String = standFiles.reportString(*path)
 
-    private val publishedAt: UtcInstant by lazy { UtcInstant.parseOrNull(reportString("now"))!! }
+    private val publishedAt: UtcInstant get() = standFiles.publishedAt
 
-    private fun snapshotField(snapshot: String, field: String): String = report.getValue("snapshots").jsonArray
-        .map { it.jsonObject }.single { it.getValue("name").jsonPrimitive.content == snapshot }.getValue(field).jsonPrimitive.content
+    private fun snapshotField(snapshot: String, field: String): String = standFiles.snapshotField(snapshot, field)
 
-    private val stagingKeys: List<OtaKeySetting> by lazy {
-        Json.parseToJsonElement(stand.resolve(reportString("keyring")).readText()).jsonObject.getValue("keys").jsonArray.map {
-            val key = it.jsonObject
-            OtaKeySetting(key.getValue("keyId").jsonPrimitive.content, key.getValue("algorithm").jsonPrimitive.content, key.getValue("publicKeySpki").jsonPrimitive.content)
-        }
-    }
+    private val stagingKeys: List<OtaKeySetting> get() = standFiles.stagingKeys
 
-    private val caPem: String by lazy { stand.resolve(reportString("tls", "ca")).readText() }
+    private fun publishedManifest(releaseId: String): ByteArray = standFiles.publishedManifest(releaseId)
 
-    private fun publishedManifest(releaseId: String): ByteArray = stand.resolve(reportString("manifests", releaseId, "path")).readBytes()
-
-    private fun manifestHex(releaseId: String): String = reportString("manifests", releaseId, "sha256").removePrefix("sha256:")
+    private fun manifestHex(releaseId: String): String = standFiles.manifestHex(releaseId)
 
     /** path → SHA-256 hex of every file of a published release (from the publisher's manifest bytes). */
-    private fun releaseFiles(releaseId: String): Map<String, String> =
-        Json.parseToJsonElement(publishedManifest(releaseId).decodeToString()).jsonObject.getValue("files").jsonArray.associate {
-            val file = it.jsonObject
-            file.getValue("path").jsonPrimitive.content to file.getValue("sha256").jsonPrimitive.content.removePrefix("sha256:")
-        }
-
-    // ------------------------------------------------------------------ the stand over HTTPS
-
-    /** What the origin does instead of the normal response to one request. */
-    sealed interface Fault {
-        data class Status(val code: Int, val location: String? = null) : Fault
-
-        /** Announces the full length, sends at most [keepBytes], then drops the connection (lost network). */
-        data class Truncate(val keepBytes: Int) : Fault
-
-        /** Waits before the normal response (a read timeout on the client). */
-        data class Stall(val millis: Long) : Fault
-
-        /** Serves other bytes under the same name (corruption in transit or at rest). */
-        class Replace(val body: ByteArray) : Fault
-    }
-
-    /**
-     * `stores/<snapshot>` of the stand served like the static origin of contract §1, over HTTPS
-     * with the stand's server certificate: the catalog path and blob paths only, 404 otherwise,
-     * never a redirect unless a [Fault] says so. Every request path is logged.
-     */
-    private class StandOrigin(private val stand: File) : AutoCloseable {
-        @Volatile
-        var snapshot: String = "1-a-staged"
-
-        @Volatile
-        var fault: ((path: String, count: Int) -> Fault?)? = null
-
-        val requests = CopyOnWriteArrayList<String>()
-        private val counts = ConcurrentHashMap<String, AtomicInteger>()
-        private val pool = Executors.newFixedThreadPool(8)
-        private val server: HttpsServer = HttpsServer.create(InetSocketAddress("127.0.0.1", 0), 0).apply {
-            httpsConfigurator = HttpsConfigurator(serverContext(stand))
-            executor = pool
-            createContext("/") { exchange -> exchange.use { handle(it) } }
-            start()
-        }
-        val base: String = "https://127.0.0.1:${server.address.port}"
-
-        fun blobRequests(): List<String> = requests.filter { it.startsWith(BLOB_PREFIX) }.map { it.removePrefix(BLOB_PREFIX) }
-
-        private fun handle(exchange: HttpExchange) {
-            val path = exchange.requestURI.rawPath.removePrefix("/")
-            requests += path
-            val count = counts.getOrPut(path) { AtomicInteger() }.incrementAndGet()
-            val file = if (exchange.requestMethod == "GET" && (path == CATALOG_PATH || BLOB_PATH.matches(path))) {
-                stand.resolve("stores/$snapshot/$path").takeIf { it.isFile }
-            } else {
-                null
-            }
-            when (val fault = fault?.invoke(path, count)) {
-                is Fault.Status -> {
-                    fault.location?.let { exchange.responseHeaders.add("Location", it) }
-                    exchange.sendResponseHeaders(fault.code, -1)
-                }
-                is Fault.Truncate -> {
-                    val body = file?.readBytes() ?: return exchange.sendResponseHeaders(404, -1)
-                    exchange.sendResponseHeaders(200, body.size.toLong())
-                    try {
-                        exchange.responseBody.write(body, 0, fault.keepBytes.coerceAtMost(body.size - 1))
-                        exchange.responseBody.flush()
-                        exchange.responseBody.close() // fewer bytes than announced: the connection is dropped
-                    } catch (_: IOException) {
-                    }
-                }
-                is Fault.Stall -> {
-                    Thread.sleep(fault.millis)
-                    serve(exchange, file?.readBytes())
-                }
-                is Fault.Replace -> serve(exchange, fault.body)
-                null -> serve(exchange, file?.readBytes())
-            }
-        }
-
-        private fun serve(exchange: HttpExchange, body: ByteArray?) {
-            if (body == null) return exchange.sendResponseHeaders(404, -1)
-            exchange.sendResponseHeaders(200, body.size.toLong())
-            try {
-                exchange.responseBody.use { it.write(body) }
-            } catch (_: IOException) {
-                // the client gave up (timeout, cancelled attempt)
-            }
-        }
-
-        override fun close() {
-            server.stop(0)
-            pool.shutdownNow()
-        }
-
-        companion object {
-            /** The stand's server key and chain (`tls/server.key`, `tls/server.pem`), never committed. */
-            fun serverContext(stand: File): SSLContext {
-                val keyBase64 = stand.resolve("tls/server.key").readLines().filterNot { it.startsWith("-----") }.joinToString("")
-                val key = KeyFactory.getInstance("EC").generatePrivate(PKCS8EncodedKeySpec(Base64.getDecoder().decode(keyBase64)))
-                val chain = stand.resolve("tls/server.pem").inputStream().use { CertificateFactory.getInstance("X.509").generateCertificates(it).toTypedArray() }
-                val password = CharArray(0)
-                val keys = KeyStore.getInstance("PKCS12").apply {
-                    load(null, null)
-                    setKeyEntry("server", key, password, chain)
-                }
-                val managers = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm()).apply { init(keys, password) }.keyManagers
-                return SSLContext.getInstance("TLS").apply { init(managers, null, null) }
-            }
-        }
-    }
+    private fun releaseFiles(releaseId: String): Map<String, String> = StagingStand.releaseFiles(publishedManifest(releaseId))
 
     // ------------------------------------------------------------------ the device
 
-    /** The staging configuration exactly as an app build resolves it (contract §8, client design §8). */
-    private fun stagingConfig(baseUrl: String): OtaConfig =
-        assertIs<OtaConfig.Resolution.Enabled>(OtaConfig.resolve(OtaPlatformSettings(enabled = true, channel = OtaChannel.STAGING, baseUrl = baseUrl, keys = stagingKeys))).config
+    private fun stagingConfig(baseUrl: String): OtaConfig = standFiles.config(baseUrl)
 
-    private fun fetcher(trustStand: Boolean = true, readTimeoutMillis: Int = 30_000) = PlatformBlobFetcher(
-        userAgent = "TalentForge/staging-e2e",
-        readTimeoutMillis = readTimeoutMillis,
-        sslSocketFactory = if (trustStand) pinnedTrustSocketFactory(caPem) else null,
-    )
+    private fun fetcher(trustStand: Boolean = true, readTimeoutMillis: Int = 30_000) = standFiles.fetcher(trustStand, readTimeoutMillis)
 
     private fun device(
         origin: StandOrigin,
@@ -381,7 +238,7 @@ class OtaStagingE2ETest {
             origin.snapshot = "2-b-staged"
             val library = device.library.payload
             val served = AtomicInteger()
-            origin.fault = { path, _ -> if (path.startsWith(BLOB_PREFIX) && served.incrementAndGet() > 150) Fault.Truncate(keepBytes = 100) else null }
+            origin.fault = { path, _ -> if (path.startsWith(BLOB_PREFIX) && served.incrementAndGet() > 150) StandFault.Truncate(keepBytes = 100) else null }
             assertIs<OtaFailure.Network>(failure(device.check()))
             assertNothingChanged(device, library, null, A_BUILD, "lost connection")
             val staged = device.stagedHashes(B_ID)
@@ -410,10 +267,10 @@ class OtaStagingE2ETest {
         val talentHex = releaseFiles(B_ID).getValue("dataset/forever/$B_BUILD/druid.json")
         val talent = stand.resolve("stores/2-b-staged/$BLOB_PREFIX$talentHex").readBytes()
         fun flipped(bytes: ByteArray, at: Int) = bytes.copyOf().also { it[at] = (it[at].toInt() xor 0x20).toByte() }
-        val cases: List<Triple<String, (String) -> Fault?, KClass<out OtaFailure>>> = listOf(
-            Triple("signature", { path -> if (path == CATALOG_PATH) Fault.Replace(badSignature) else null }, OtaFailure.SignatureInvalid::class),
-            Triple("release manifest", { path -> if (path == BLOB_PREFIX + manifestHex(B_ID)) Fault.Replace(flipped(manifest, 100)) else null }, OtaFailure.ManifestHashMismatch::class),
-            Triple("blob", { path -> if (path == BLOB_PREFIX + talentHex) Fault.Replace(flipped(talent, 10)) else null }, OtaFailure.BlobHashMismatch::class),
+        val cases: List<Triple<String, (String) -> StandFault?, KClass<out OtaFailure>>> = listOf(
+            Triple("signature", { path -> if (path == CATALOG_PATH) StandFault.Replace(badSignature) else null }, OtaFailure.SignatureInvalid::class),
+            Triple("release manifest", { path -> if (path == BLOB_PREFIX + manifestHex(B_ID)) StandFault.Replace(flipped(manifest, 100)) else null }, OtaFailure.ManifestHashMismatch::class),
+            Triple("blob", { path -> if (path == BLOB_PREFIX + talentHex) StandFault.Replace(flipped(talent, 10)) else null }, OtaFailure.BlobHashMismatch::class),
         )
         for ((what, fault, expected) in cases) {
             device(origin).test { device ->
@@ -482,7 +339,7 @@ class OtaStagingE2ETest {
             val resolver = device.runtime.resolver
             assertTrue(!resolver.isAvailable(bundle(A_BUILD)))
 
-            origin.fault = { _, _ -> Fault.Truncate(0) } // every connection drops
+            origin.fault = { _, _ -> StandFault.Truncate(0) } // every connection drops
             val offline = assertIs<DatasetResolution.Unavailable>(runBlocking { resolver.resolve(bundle(A_BUILD)) })
             assertEquals(DatasetUnavailableReason.Offline, offline.reason)
             assertEquals(library, device.library.payload)
@@ -569,10 +426,10 @@ class OtaStagingE2ETest {
     fun theTransportRefusesRedirectsErrorsTimeoutsUntrustedCertificatesAndPlaintext() = StandOrigin(stand).use { origin ->
         StandOrigin(stand).use { elsewhere ->
             origin.snapshot = "2-b-staged"
-            val cases: List<Triple<String, (String) -> Fault, OtaFailure>> = listOf(
-                Triple("404", { _ -> Fault.Status(404) }, OtaFailure.Http(404)),
-                Triple("500", { _ -> Fault.Status(500) }, OtaFailure.Http(500)),
-                Triple("redirect", { path -> Fault.Status(302, "${elsewhere.base}/$path") }, OtaFailure.Http(302)),
+            val cases: List<Triple<String, (String) -> StandFault, OtaFailure>> = listOf(
+                Triple("404", { _ -> StandFault.Status(404) }, OtaFailure.Http(404)),
+                Triple("500", { _ -> StandFault.Status(500) }, OtaFailure.Http(500)),
+                Triple("redirect", { path -> StandFault.Status(302, "${elsewhere.base}/$path") }, OtaFailure.Http(302)),
             )
             for ((name, fault, expected) in cases) {
                 device(origin).test { device ->
@@ -584,7 +441,7 @@ class OtaStagingE2ETest {
             }
             assertTrue(elsewhere.requests.isEmpty(), "a redirect is never followed")
             // a stalled response hits the read timeout
-            origin.fault = { path, _ -> if (path == CATALOG_PATH) Fault.Stall(3_000) else null }
+            origin.fault = { path, _ -> if (path == CATALOG_PATH) StandFault.Stall(3_000) else null }
             device(origin, fetcher = fetcher(readTimeoutMillis = 500)).test { device ->
                 assertIs<OtaFailure.Network>(failure(device.check()))
                 assertNothingChanged(device, device.library.payload, null, A_BUILD, "timeout")
@@ -627,8 +484,7 @@ class OtaStagingE2ETest {
 
     private companion object {
         const val PROPERTY = "talentforge.ota.staging"
-        const val CATALOG_PATH = "v1/channels/staging/catalog.json"
-        const val BLOB_PREFIX = "v1/blobs/sha256/"
-        val BLOB_PATH = Regex("v1/blobs/sha256/[0-9a-f]{64}")
+        const val CATALOG_PATH = STAND_CATALOG_PATH
+        const val BLOB_PREFIX = STAND_BLOB_PREFIX
     }
 }
