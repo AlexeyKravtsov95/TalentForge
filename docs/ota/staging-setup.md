@@ -92,6 +92,12 @@ signatures and the `java.nio` store. One command runs everything:
 scripts/ota_integration_check.sh            # --android adds assembleDebug, --keep keeps the stand
 ```
 
+**Historical replay (M5.OTA.AUTO.2).** `OtaHistoricalReplayTest` runs the same client as the app
+*before* 70450 (70374 bundled, the product) against the stand, and
+`scripts/ota_historical_replay.py run <out>` chains it with the detection over recorded build
+indexes, the real preparation of 70450 and the stand
+([M5.OTA.AUTO.2-replay-report.md](M5.OTA.AUTO.2-replay-report.md)).
+
 **Android debug build (manual).** Debug builds read the staging channel
 (`GeneratedOtaSettings.androidStaging`). `android-staging.env` sets it for the emulator
 (`https://10.0.2.2:8443` reaches the host's `127.0.0.1:8443`), with the stand's keyring and its CA

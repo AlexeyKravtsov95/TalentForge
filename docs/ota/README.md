@@ -17,6 +17,7 @@ production OTA is off on every platform.
 | M5.OTA.4b | VK Cloud remote staging (OD-1): S3 store adapter, real publication, JVM and TECNO E2E over public HTTPS, ADR-0002 accepted (parallelism 8) | merged ([report](M5.OTA.4b-remote-staging-report.md)) |
 | M5.OTA.PROD.1 | production S3 publisher (channel isolation, catalog guard), read-only production preflight, key ceremony helper, VK Cloud templates and owner runbook; no cloud resource created, OTA still disabled | this milestone ([runbook](production-deployment.md)) |
 | M5.OTA.AUTO.1 | automatic preparation of a new publishable build in GitHub Actions: detection against the signed production catalog, the existing pipeline and gates in a disposable clone, artifacts and a machine-readable report; never publishes | [runbook](auto-prepare.md) |
+| M5.OTA.AUTO.2 | historical patch replay 70374 → 70450 end to end: detection over recorded build indexes, the real preparation, a staging publication with an ephemeral key, the real client as the app before the patch over HTTPS; JVM automated, Android emulator by procedure | [report](M5.OTA.AUTO.2-replay-report.md) |
 
 | Document | What it answers |
 | --- | --- |
@@ -39,6 +40,7 @@ production OTA is off on every platform.
 | [M5.OTA.2-publisher-brief.md](M5.OTA.2-publisher-brief.md) | Implementation brief: publisher (GLM) |
 | [M5.OTA.3-client-brief.md](M5.OTA.3-client-brief.md) | Implementation brief: KMP client (Opus) |
 | [M5.OTA.4c-retry-remeasurement.md](M5.OTA.4c-retry-remeasurement.md) | M5.OTA.4c: the per-request retry measured against VK staging (read-only), retry vs. the M5.OTA.4b client, real and injected connection loss |
+| [M5.OTA.AUTO.2-replay-report.md](M5.OTA.AUTO.2-replay-report.md) | M5.OTA.AUTO.2 (Russian): the historical replay 70374 → 70450 — entrypoint, what came over the network, signature and integrity, every scenario (PASS / FAIL / BLOCKED / NOT RUN), the emulator procedure |
 
 Integration (M5.OTA.4a): `scripts/ota_integration_check.sh` runs the Python baseline, the staging
 stand (`scripts/ota_staging_stand.py`: the real publisher, an ephemeral `tf-staging-local-*` key, a
