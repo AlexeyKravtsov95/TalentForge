@@ -53,7 +53,7 @@ so the build is prepared, but the preparation cannot end `PREPARED`.
 | result | when |
 | --- | --- |
 | `PREPARE` | the latest publishable build (or the requested one) is newer than the base and the verified production catalog does not list it |
-| `NO_ACTION` | no newer build; the build is `PRODUCT_BUNDLE`; the verified catalog already lists it; it is not newer than the base; or the same inputs were already prepared |
+| `NO_ACTION` | no newer build; the build is `PRODUCT_BUNDLE`; the verified catalog already lists it; it is not newer than the base; or the same inputs were already `PREPARED` |
 | `UNKNOWN` | the build index failed or is inconclusive (freshness `UNKNOWN`), a requested build is not listed or not publishable, or the base has no committed dataset on `main` |
 
 The **base** of the diff is what an up-to-date install shows: the newer of `PRODUCT_BUNDLE` and
@@ -79,11 +79,15 @@ PR is merged and the release is rebuilt from the merge commit.
 
 | status | job exit | meaning |
 | --- | --- | --- |
-| no action | 0 (green) | nothing new, already published, bundled, or already prepared |
-| `PREPARED` | 0 (green) | every step, check and test passed; no gate stopped except G1. **Not publishable**: `publishable` is always `false`; the report lists the remaining human steps |
+| no action | 0 (green) | nothing new, already published, bundled, or already `PREPARED` |
+| `PREPARED` | 0 (green) | the preparation exited 0 **and** reported `PREPARED`: every step, check and test passed; no gate stopped except G1. **Not publishable**: `publishable` is always `false`; the report lists the remaining human steps |
 | `BLOCKED` | 3 (red) | source data, the pipeline, a gate, the scope guard, a bundle check or a test failed; diagnostics are in the artifact |
 | `UNKNOWN` | 4 (red) | not established: build index inconclusive, wago.tools unreachable, production catalog unverifiable or changed during the run |
-| failure | 1 (red) | the detection or preparation itself could not run (`crash.txt` holds the traceback) |
+| failure | 1 (red) | the detection or preparation itself could not run (`crash.txt` holds the traceback), a step died before recording its result, the detection gave no decision, or exit code and reported status disagree |
+
+The last step (`Final status`) restores these codes from the recorded step outputs; it is green
+only for `NO_ACTION` or for exit 0 together with `PREPARED` - any missing or contradictory
+output is red. A failed artifact upload fails the job as well.
 
 ## The artifact
 
@@ -106,9 +110,15 @@ A run without preparation uploads `ota-prepare-detection-<run id>` (7 days).
 ## Idempotency and network errors
 
 * The preparation key names the inputs: game, build, release revision, base (release id or
-  build) and the `main` commit. A kept `PREPARED` or `BLOCKED` artifact with that key makes the
-  next detection `NO_ACTION`; `UNKNOWN` is retried on the next run; `force` prepares again.
-  A failed artifact listing is recorded (`priorListing: unavailable`) and only causes a repeat.
+  build) and the `main` commit. Only a kept `PREPARED` artifact with that key makes the next
+  detection `NO_ACTION`. `BLOCKED`, `UNKNOWN` and `FAILED` are prepared again on the next
+  scheduled run (the detection records the earlier artifact in `priorArtifact` and its
+  reason): right after a patch wago.tools may still lack a DB2 table, and a kept failure
+  must not hide the build for the artifact's 30-day retention. `force` prepares again in
+  every case. A failed artifact listing is recorded (`priorListing: unavailable`) and only
+  causes a repeat.
+* One run at a time: `concurrency: ota-prepare` queues runs (never cancels one), so a retry
+  never overlaps a running preparation.
 * Every run starts from an empty clone and writes only its own artifact: re-running is safe.
 * wago.tools requests keep the existing HTTP client's retries (timeouts, 408/425/429/5xx,
   truncated bodies); what still fails is `UNKNOWN`, never "no new build". A definitive 4xx
@@ -164,6 +174,8 @@ A run without preparation uploads `ota-prepare-detection-<run id>` (7 days).
   steps passed (the offline suite in the clone: 1565 passed), 434 files / 6.2 MB kept, and
   `git fetch candidate.bundle ota-prepare/<build>:data/forever-<build>` restored the candidate
   commit in a fresh clone.
+* `actionlint` 1.7.12 with `shellcheck` 0.11.0: no finding for `ota-prepare.yml`; the
+  `Final status` script is also executed by the tests for every combination of outcomes.
 * Not run here: the workflow itself on GitHub - `workflow_dispatch` lists a workflow only once
   it is on `main`.
 
@@ -174,5 +186,8 @@ evaluations, the production reader against an in-memory origin (signed with TEST
 `tf-prod-*` ids; absent, unreachable, wrongly signed, expired) and the verified mirror, the
 step list, the scope guard, and `prepare` end to end over a temporary git repository with a
 fake runner - `PREPARED` / `BLOCKED` / `UNKNOWN`, skipped steps, kept files, an untouched source
-checkout, forced re-runs of a committed build, repeated runs - plus the CLI's exit code 5 and
-the workflow's no-secret / no-publish properties.
+checkout, forced re-runs of a committed build, repeated runs, a `BLOCKED` run prepared again
+once the source recovers (then `PREPARED`, then skipped) - plus the CLI's exit code 5, the
+workflow's `Final status` script run in `bash` for every outcome (a step that died, a missing
+decision, a contradictory status are red), and the workflow's no-secret / no-publish
+properties.
