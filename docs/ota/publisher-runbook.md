@@ -91,6 +91,12 @@ signature, integrity and succession are its whole proof.
 
 ## 2. Routine refresh (a new build)
 
+The data of a new build is prepared automatically (M5.OTA.AUTO.1,
+[auto-prepare.md](auto-prepare.md)): a `PREPARED` artifact carries the normalized data,
+icons, descriptions, translations, the diff, the gate results and a git bundle of the
+candidate. It is input for the refresh PR, never a publication: the release is built here
+from the merge commit on `main`.
+
 Same as §1 with the new build's commit. `promote` appends the release to the catalog
 (append-only: every earlier release stays listed with identical members) and makes it
 active. Re-read `ota report` first — it shows the semantic diff, warning moves, G6
