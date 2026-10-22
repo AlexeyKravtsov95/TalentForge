@@ -102,6 +102,13 @@ A closed issue is history: the next `OUTDATED` / `UNKNOWN` opens a new one.
 
 ## After a new build is detected
 
+Every completed watcher run triggers **OTA data preparation**
+(`.github/workflows/ota-prepare.yml`, M5.OTA.AUTO.1, [ota/auto-prepare.md](ota/auto-prepare.md)):
+when the newest publishable build is not in the signed production catalog, it runs the steps
+below up to the review diff and the publisher gates in a disposable clone and keeps everything
+as an artifact - it never commits, publishes or changes `PRODUCT_BUNDLE`. Start from that
+artifact when it is `PREPARED`; the manual steps are the same.
+
 Follow the steps in the issue (they name the real builds), in short: re-check freshness;
 `fetch` / `normalize --class all` / `diff --from <product> --to <new>`; review the diff and
 allocation compatibility; publish icons and descriptions (`visuals`, `tooltips`); add the

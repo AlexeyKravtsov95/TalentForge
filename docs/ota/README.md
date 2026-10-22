@@ -16,6 +16,7 @@ production OTA is off on every platform.
 | M5.OTA.4a | publisher ↔ client integration: local staging stand over HTTPS, staging E2E, Android staging debug configuration, ADR-0002 | merged (PR #45, [report](M5.OTA.4a-integration-report.md)) |
 | M5.OTA.4b | VK Cloud remote staging (OD-1): S3 store adapter, real publication, JVM and TECNO E2E over public HTTPS, ADR-0002 accepted (parallelism 8) | merged ([report](M5.OTA.4b-remote-staging-report.md)) |
 | M5.OTA.PROD.1 | production S3 publisher (channel isolation, catalog guard), read-only production preflight, key ceremony helper, VK Cloud templates and owner runbook; no cloud resource created, OTA still disabled | this milestone ([runbook](production-deployment.md)) |
+| M5.OTA.AUTO.1 | automatic preparation of a new publishable build in GitHub Actions: detection against the signed production catalog, the existing pipeline and gates in a disposable clone, artifacts and a machine-readable report; never publishes | [runbook](auto-prepare.md) |
 
 | Document | What it answers |
 | --- | --- |
@@ -26,6 +27,7 @@ production OTA is off on every platform.
 | [client-performance-report.md](client-performance-report.md) | M5.OTA.3: test-plan §7 measurements of the per-file design |
 | [publisher-and-security.md](publisher-and-security.md) | Publisher pipeline and gates, channels, atomic pointer, rollback, keys, threat model, why `is_bgdl=false` is not "live" |
 | [publisher-runbook.md](publisher-runbook.md) | Operator procedures (M5.OTA.2): first publication, refresh, rollback, re-sign, key loss, hosting change |
+| [auto-prepare.md](auto-prepare.md) | M5.OTA.AUTO.1: when a new build is prepared automatically, statuses (PREPARED / BLOCKED / UNKNOWN), the artifact, idempotency, and the manual path from a prepared candidate to a release |
 | [test-plan.md](test-plan.md) | Test layers, scenarios S1–S14, performance measurements, release gates: common, Android, iOS |
 | [open-decisions.md](open-decisions.md) | OD-1…OD-17, each with a recommended default |
 | [M5.OTA.4a-integration-report.md](M5.OTA.4a-integration-report.md) | M5.OTA.4a: what was verified together (PASSED / FAILED / BLOCKED / NOT RUN), CI status, what the owner must provide |

@@ -21,6 +21,10 @@ ota            build-release|validate|report|stage|promote|attach-signature|
 build and prints a ``product-freshness`` v1 JSON document; its exit code is the status:
 0 CURRENT, 3 OUTDATED, 4 UNKNOWN (a source/network failure is UNKNOWN, never CURRENT).
 
+Every other command exits 0 on success and 1 on a failure, except 5 when the failure was
+caused by the source being unreachable (network, timeout, retryable HTTP status after the
+client's retries; ``source_unavailable``) - the answer is then unknown, not wrong.
+
 ``--class all`` (M1) normalizes / diffs every class of the build, deterministically ordered
 by class id, and writes a dataset manifest (normalize). A batch that fails for any class
 names the class, prints its error, exits non-zero and publishes nothing.
@@ -36,6 +40,7 @@ from collections.abc import Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 
+import httpx
 from pydantic import BaseModel
 
 from talent_data import paths
@@ -81,7 +86,7 @@ from talent_data.pipeline import (
 )
 from talent_data.sources.base import SourceError, TableStatus, classify_build
 from talent_data.sources.capabilities import snapshot_path
-from talent_data.sources.http import DownloadError, HttpClient
+from talent_data.sources.http import RETRYABLE_STATUS, DownloadError, HttpClient
 from talent_data.sources.wago.source import WagoBuildSource, WagoDb2Source
 from talent_data.validation.validators import ValidationReport, validate_document
 from talent_data.versions import ClientVersion
@@ -90,6 +95,10 @@ log = logging.getLogger("talent_data")
 
 EXIT_OK = 0
 EXIT_FAILURE = 1
+# The source could not be reached - a network/timeout failure or a retryable HTTP status
+# that outlived the client's retries - so the answer is unknown, not wrong. Automation
+# (M5.OTA.AUTO.1) tells it apart from a data or pipeline failure (1) by this code alone.
+EXIT_SOURCE_UNAVAILABLE = 5
 # ``builds freshness``: the exit code is the status (argparse already uses 2 for usage).
 FRESHNESS_EXIT = {
     FreshnessStatus.CURRENT: EXIT_OK,
@@ -116,7 +125,28 @@ def main(argv: Sequence[str] | None = None) -> int:
         OtaPublisherError,
     ) as exc:
         print(f"error: {exc}", file=sys.stderr)
-        return EXIT_FAILURE
+        return EXIT_SOURCE_UNAVAILABLE if source_unavailable(exc) else EXIT_FAILURE
+
+
+def source_unavailable(exc: BaseException) -> bool:
+    """Whether ``exc`` was caused by a transport failure of the source, not by its data.
+
+    Sources wrap :class:`DownloadError` in their own errors and the HTTP client raises its
+    "failed after N attempts" error from the last transport failure (``raise ... from``), so
+    the explicit cause chain is followed down to a connection/timeout error or a retryable
+    HTTP status. Anything the source *answered* - a definitive 4xx such as "Table not
+    found", an HTML page instead of CSV, an empty or non-JSON body - is its data, never
+    "unavailable"."""
+    current: BaseException | None = exc
+    seen: set[int] = set()
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        if isinstance(current, httpx.TransportError | httpx.TimeoutException):
+            return True
+        if isinstance(current, DownloadError) and current.status_code in RETRYABLE_STATUS:
+            return True
+        current = current.__cause__
+    return False
 
 
 # --------------------------------------------------------------------------- parser

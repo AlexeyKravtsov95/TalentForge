@@ -261,6 +261,10 @@ exposed (Last Stand: 1 rank, 3-point curve); missing ranks yield `"incomplete"`
    HTML or have no `ID` column are rejected (real case: wago.tools served `TraitCurrency` for
    1.60.1.69876 with placeholder columns `Field_1_60_1_69876_000…` because no DB2 definition
    matched that layout — the fetch fails with a clear message instead of producing garbage).
+   A command whose failure was caused by an unreachable source (network, timeout, or a
+   retryable status that outlived the retries) exits **5** instead of 1, so automation
+   (M5.OTA.AUTO.1, `docs/ota/auto-prepare.md`) reports "unknown, retry later" rather than
+   "bad data"; a definitive 4xx stays 1.
 3. `TraitDataSet.load()` parses rows into typed records (`db2/tables.py`); any non-numeric
    value or missing column fails with table + column in the message; duplicate primary keys
    fail.
