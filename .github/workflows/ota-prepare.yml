@@ -1,0 +1,159 @@
+name: OTA data preparation
+
+# M5.OTA.AUTO.1: when the wago.tools build index lists a new publishable Forever build that
+# the signed production OTA catalog does not, prepare it for a later OTA release with the
+# existing pipeline, checks and publisher gates, and keep everything as a GitHub Actions
+# artifact for review. It never publishes, signs, pushes, commits to the repository, opens
+# PRs or merges, and it holds no secret: no production signing key, no S3 credential (the
+# production catalog is read anonymously and verified against the committed public keyring).
+# Runbook: docs/ota/auto-prepare.md
+on:
+  # after every run of the existing freshness watcher (M5.DATA.WATCH, daily ~06:00 UTC)
+  workflow_run:
+    workflows: ["Dataset freshness"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      build:
+        description: "Client build to prepare (empty: the latest publishable build)"
+        required: false
+        type: string
+        default: ""
+      base:
+        description: "Committed build to diff against (empty: what an up-to-date install shows)"
+        required: false
+        type: string
+        default: ""
+      force:
+        description: "Prepare even if already published, bundled, not newer or already prepared"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: read # list the kept preparation artifacts (idempotency)
+
+# One preparation at a time, queued not cancelled.
+concurrency:
+  group: ota-prepare
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      # Full history: the publisher gates and the offline tests need origin/main and the
+      # OTA fixture commit (see ci.yml).
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: pip install -e ".[dev]"
+
+      # A finished preparation (PREPARED / BLOCKED) of the same inputs is kept as an artifact
+      # whose name carries them; detect skips it. A failed listing only means a repeat.
+      - name: List kept preparations
+        id: prior
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          mkdir -p prep
+          if gh api --paginate "repos/${GITHUB_REPOSITORY}/actions/artifacts?per_page=100" \
+              --jq '.artifacts[] | select(.expired == false) | .name' > prep/prior-artifacts.txt; then
+            echo "listed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::kept artifacts could not be listed; a finished preparation may run again (harmless)"
+            echo "listed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Exits 0 with a decision (PREPARE / NO_ACTION), 4 UNKNOWN, 1 failure. The code is
+      # recorded so the detection is uploaded either way; the last step restores it.
+      - name: Detect
+        id: detect
+        shell: bash
+        env:
+          INPUT_BUILD: ${{ inputs.build }}
+          INPUT_BASE: ${{ inputs.base }}
+          INPUT_FORCE: ${{ inputs.force }}
+          PRIOR_LISTED: ${{ steps.prior.outputs.listed }}
+        run: |
+          args=(detect --output prep/detection.json)
+          if [ -n "$INPUT_BUILD" ]; then args+=(--build "$INPUT_BUILD"); fi
+          if [ -n "$INPUT_BASE" ]; then args+=(--base "$INPUT_BASE"); fi
+          if [ "$INPUT_FORCE" = "true" ]; then args+=(--force); fi
+          if [ "$PRIOR_LISTED" = "true" ]; then
+            args+=(--prior-artifacts prep/prior-artifacts.txt)
+          else
+            args+=(--prior-unavailable)
+          fi
+          set +e
+          python scripts/ota_prepare.py "${args[@]}" > /dev/null
+          code=$?
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          echo "ota_prepare.py detect exited with $code"
+
+      # Exits 0 PREPARED / 3 BLOCKED / 4 UNKNOWN / 1 failure; recorded, restored at the end.
+      - name: Prepare
+        id: prepare
+        if: steps.detect.outputs.action == 'PREPARE'
+        shell: bash
+        run: |
+          set +e
+          python scripts/ota_prepare.py prepare --detection prep/detection.json \
+            --out prep/out --workspace "$RUNNER_TEMP/ota-prepare/workspace" > /dev/null
+          code=$?
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          echo "ota_prepare.py prepare exited with $code"
+
+      # Name: ota-prepare-<game>-<build>-r<n>-from-<base>-main-<sha12>-<STATUS>; the next
+      # detection compares it with the inputs it would prepare.
+      - name: Upload the preparation
+        if: always() && steps.prepare.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.prepare.outputs.artifact_name || format('ota-prepare-{0}-FAILED', steps.detect.outputs.key) }}
+          path: prep/
+          if-no-files-found: error
+          retention-days: 30
+          overwrite: true
+
+      - name: Upload the detection
+        if: always() && steps.prepare.outcome == 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ota-prepare-detection-${{ github.run_id }}
+          path: prep/
+          if-no-files-found: warn
+          retention-days: 7
+          overwrite: true
+
+      - name: Final status
+        if: always()
+        shell: bash
+        env:
+          DETECT_EXIT: ${{ steps.detect.outputs.exit_code }}
+          PREPARE_EXIT: ${{ steps.prepare.outputs.exit_code }}
+        run: |
+          if [ -z "$DETECT_EXIT" ]; then echo "::error::the detection did not run"; exit 1; fi
+          if [ "$DETECT_EXIT" != "0" ]; then
+            echo "::error::detection exited with $DETECT_EXIT (4 UNKNOWN, 1 failure)"
+            exit "$DETECT_EXIT"
+          fi
+          if [ -n "$PREPARE_EXIT" ] && [ "$PREPARE_EXIT" != "0" ]; then
+            echo "::error::preparation exited with $PREPARE_EXIT (3 BLOCKED, 4 UNKNOWN, 1 failure)"
+            exit "$PREPARE_EXIT"
+          fi
+          echo "done: see the job summary and the artifact"
