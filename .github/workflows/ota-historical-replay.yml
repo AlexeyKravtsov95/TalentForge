@@ -1,0 +1,102 @@
+name: OTA historical replay
+
+# M5.OTA.AUTO.2: replays the real 1.60.1.70374 -> 1.60.1.70450 patch end to end without waiting
+# for a new one: detection over recorded build indexes, the existing preparation (wago.tools
+# source data), the existing staging stand with an ephemeral tf-staging-local-* key, and the
+# real Kotlin client over HTTPS as the app before the patch. Everything runs on the runner: it
+# holds no secret, publishes nothing outside the runner, never touches production (the public
+# production catalog is only read, before and after, to show it did not change), never pushes,
+# opens PRs or merges, and never changes PRODUCT_BUNDLE.
+# Runbook and results: docs/ota/M5.OTA.AUTO.2-replay-report.md
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "scripts/ota_historical_replay.py"
+      - "scripts/ota_staging_stand.py"
+      - "src/talent_data/prepare/**"
+      - "mobile/composeApp/src/desktopTest/kotlin/io/github/alexeykravtsov95/talentforge/ui/ota/OtaHistoricalReplayTest.kt"
+      - "mobile/composeApp/src/desktopTest/kotlin/io/github/alexeykravtsov95/talentforge/ui/ota/OtaStagingStand.kt"
+      - "mobile/composeApp/src/desktopTest/kotlin/io/github/alexeykravtsov95/talentforge/ui/ota/OtaStagingE2ETest.kt"
+      - ".github/workflows/ota-historical-replay.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ota-historical-replay-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  replay:
+    # Pinned like ota-prepare.yml: the preparation regenerates icons, whose PNG bytes depend on
+    # the image's Pillow wheel (committed builds are compared by pixels, docs/talent-visuals.md §3).
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      # Full history: the stand and the preparation build from origin/main, the gates need it.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Install
+        run: pip install -e ".[dev]"
+
+      # Exits 0 every automatic check PASS, 1 a FAIL, 3 BLOCKED / NOT RUN; recorded so the
+      # report is uploaded either way, restored by the last step.
+      - name: Historical replay
+        id: replay
+        shell: bash
+        run: |
+          set +e
+          python scripts/ota_historical_replay.py run "$RUNNER_TEMP/replay"
+          code=$?
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          echo "ota_historical_replay.py exited with $code"
+
+      # The report, logs, JUnit results and the prepared candidate. Never the stand's private
+      # staging and TLS keys (ephemeral, but private), nor its reproducible stores.
+      - name: Upload the replay report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ota-historical-replay-${{ github.run_id }}
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            ${{ runner.temp }}/replay
+            !${{ runner.temp }}/replay/stand/keys/*.pem
+            !${{ runner.temp }}/replay/stand/tls/server.key
+            !${{ runner.temp }}/replay/stand/stores
+            !${{ runner.temp }}/replay/stand/live
+            !${{ runner.temp }}/replay/stand/work
+            !${{ runner.temp }}/replay/prepare/workspace
+
+      - name: Final status
+        if: always()
+        shell: bash
+        env:
+          REPLAY_EXIT: ${{ steps.replay.outputs.exit_code }}
+        run: |
+          if [ "$REPLAY_EXIT" = "0" ]; then
+            echo "historical replay: PASS"
+            exit 0
+          fi
+          echo "::error::historical replay did not pass (exit '${REPLAY_EXIT:-none}'); see the summary and the artifact"
+          exit 1

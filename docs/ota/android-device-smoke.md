@@ -65,7 +65,8 @@ bundled product). On a device, therefore:
 * **Rollback** (`3-rollback-a`): A is below the floor → `KEEP_BUNDLED_FLOOR`; B stays active.
 * **Level 2** (`4-level-2`): "Newer talent data needs an app update"; nothing downloaded.
 
-A multi-megabyte download on a device needs a release of a build the app does not bundle; no such
+A multi-megabyte download on a device needs a release of a build the app does not bundle (a
+historical debug APK that bundles 70374 only does: [M5.OTA.AUTO.2-replay-report.md](M5.OTA.AUTO.2-replay-report.md) §7); no such
 build exists in `data/` today (every published build is bundled). That path — the same
 `jvmCommonMain` code Android runs — is covered on the JVM by `OtaStagingE2ETest`; on a device it
 becomes testable with the next data refresh (M5.OTA.4b).

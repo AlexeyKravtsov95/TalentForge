@@ -1125,6 +1125,7 @@ androidComponents {
 // `-Dtalentforge.m5tablet1.screenshots` (M5.UI.TABLET.1, tablet specialization headers) or
 // `-Dtalentforge.m5releasefinal1.screenshots` (M5.RELEASE.FINAL.1, OTA-enabled About) or
 // `-Dtalentforge.ota.remote=<dir>` (M5.OTA.4b, remote staging check) or
+// `-Dtalentforge.ota.replay=<dir>` (M5.OTA.AUTO.2, historical patch replay) or
 // `-Dtalentforge.pr19.recording`
 // (PR #19, gesture frames) — skipped by default.
 tasks.named<Test>("desktopTest") {
@@ -1189,6 +1190,10 @@ tasks.named<Test>("desktopTest") {
     }
     System.getProperty("talentforge.ota.staging")?.let {
         systemProperty("talentforge.ota.staging", it)
+    }
+    // M5.OTA.AUTO.2: OtaHistoricalReplayTest (opt-in; the replay's output directory)
+    System.getProperty("talentforge.ota.replay")?.let {
+        systemProperty("talentforge.ota.replay", it)
     }
     // M5.OTA.4b: OtaRemoteStagingCheck against the remote staging origin (opt-in; out dir,
     // phase, base URL, keyring, runs, parallelism)
