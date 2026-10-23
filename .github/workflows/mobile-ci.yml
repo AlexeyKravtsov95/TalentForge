@@ -24,6 +24,9 @@ on:
       - "scripts/play_signing_selftest.sh"
       - "scripts/verify_ios_archive.py"
       - "scripts/ios_simulator_smoke.sh"
+      - "scripts/ios_ota_e2e.py"
+      - "scripts/ota_staging_stand.py"
+      - "src/talent_data/ota/**"
       - "docs/ota/keys/production-keyring.json"
       - ".github/workflows/mobile-ci.yml"
   # Manual re-run from the Actions tab (e.g. after a runner/infrastructure outage).
@@ -190,17 +193,49 @@ jobs:
             -archivePath build/TalentForge.xcarchive \
             CODE_SIGNING_ALLOWED=NO archive
 
-      - name: Verify the archive (identity, version, Xcode 27.1 SDK, privacy manifest, OTA off, no secrets)
+      - name: Verify the archive (identity, version, Xcode 27.1 SDK, privacy manifest, ATS, OTA off, no secrets)
         working-directory: mobile/iosApp
         run: |
           set -euo pipefail
           settings=$(xcodebuild -project iosApp.xcodeproj -target iosApp -configuration Release -showBuildSettings)
           version=$(awk -F' = ' '/^ *MARKETING_VERSION = / {print $2}' <<<"$settings")
           build=$(awk -F' = ' '/^ *CURRENT_PROJECT_VERSION = / {print $2}' <<<"$settings")
-          python3 ../../scripts/verify_ios_archive.py --archive build/TalentForge.xcarchive \
+          python3 ../../scripts/verify_ios_archive.py --archive build/TalentForge.xcarchive --ota off \
             --expected-version "$version" --expected-build "$build" \
             --expected-sdk "$IOS_SDK" --expected-xcode-build "$XCODE_BUILD" \
             --report build/ios-archive-report.json
+
+      # M5.IOS.2: the owner's OTA ON candidate, built the only way the owner can build it (the one
+      # flag; origin and keyring pinned by the Gradle build), never uploaded or signed here.
+      - name: Unsigned Release archive, OTA ON (talentforge.ota.ios.production.enabled=true)
+        working-directory: mobile/iosApp
+        env:
+          TALENTFORGE_OTA_IOS_PRODUCTION_ENABLED: "true"
+        run: |
+          xcodebuild -project iosApp.xcodeproj -scheme iosApp -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build-archive-ota-on \
+            -archivePath build/TalentForge-ota-on.xcarchive \
+            CODE_SIGNING_ALLOWED=NO archive
+
+      - name: Verify the OTA ON archive (production origin and exactly the two pinned keys, no staging, ATS)
+        working-directory: mobile/iosApp
+        run: |
+          set -euo pipefail
+          settings=$(xcodebuild -project iosApp.xcodeproj -target iosApp -configuration Release -showBuildSettings)
+          version=$(awk -F' = ' '/^ *MARKETING_VERSION = / {print $2}' <<<"$settings")
+          build=$(awk -F' = ' '/^ *CURRENT_PROJECT_VERSION = / {print $2}' <<<"$settings")
+          python3 ../../scripts/verify_ios_archive.py --archive build/TalentForge-ota-on.xcarchive --ota on \
+            --expected-version "$version" --expected-build "$build" \
+            --expected-sdk "$IOS_SDK" --expected-xcode-build "$XCODE_BUILD" \
+            --report build/ios-archive-ota-on-report.json
+          # each archive fails the other mode's checks: a mislabelled build cannot pass
+          if python3 ../../scripts/verify_ios_archive.py --archive build/TalentForge-ota-on.xcarchive --ota off >/dev/null; then
+            echo "::error::the OTA ON archive passed as OTA OFF"; exit 1
+          fi
+          if python3 ../../scripts/verify_ios_archive.py --archive build/TalentForge.xcarchive --ota on >/dev/null; then
+            echo "::error::the OTA OFF archive passed as OTA ON"; exit 1
+          fi
 
       - name: Simulator launch smoke (iPhone 18 Pro, iPhone 18 Pro Max, iPad Pro 13-inch)
         run: >-
@@ -214,6 +249,68 @@ jobs:
           name: ios-xcode-27.1-evidence
           path: |
             mobile/iosApp/build/ios-archive-report.json
+            mobile/iosApp/build/ios-archive-ota-on-report.json
             mobile/iosApp/build/ios-smoke/
+          if-no-files-found: ignore
+          retention-days: 30
+
+  ios-ota-e2e:
+    name: iOS OTA staging E2E (Simulator, Xcode 27.1)
+    # M5.IOS.2: the real iOS OTA client (NSURLSession, Security.framework, the Application Support
+    # store, NSUserDefaults builds, the app's resources) on a new iPhone 18 Pro simulator against
+    # the real publisher's staging releases over verified HTTPS. Same toolchain rule as above.
+    runs-on: xcode-27
+    timeout-minutes: 90
+    env:
+      XCODE_APP: /Applications/Xcode_27.1.app
+      XCODE_BUILD: 27A9275
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the stand publishes the data of merge-base(HEAD, origin/main)
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Select Xcode 27.1
+        run: |
+          set -euo pipefail
+          if [ ! -d "$XCODE_APP" ]; then
+            echo "::error::BLOCKED: $XCODE_APP is not installed on this runner image"; exit 1
+          fi
+          sudo xcode-select --switch "$XCODE_APP/Contents/Developer"
+          build=$(xcodebuild -version | awk '/^Build version/ {print $3}')
+          if [ "$build" != "$XCODE_BUILD" ]; then
+            echo "::error::expected Xcode 27.1 build $XCODE_BUILD, found $build"; exit 1
+          fi
+          xcrun simctl list runtimes
+
+      - name: Install the publisher
+        run: pip install -e ".[dev]"
+
+      - name: iOS OTA staging E2E (14 phases on iPhone 18 Pro)
+        run: python scripts/ios_ota_e2e.py run "$RUNNER_TEMP/ios-ota-e2e" --device-type "iPhone 18 Pro"
+
+      - name: Upload the E2E report and phase logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ota-e2e-xcode-27.1
+          path: |
+            ${{ runner.temp }}/ios-ota-e2e/ios-ota-e2e-report.json
+            ${{ runner.temp }}/ios-ota-e2e/logs/
+            ${{ runner.temp }}/ios-ota-e2e/results/
           if-no-files-found: ignore
           retention-days: 30
