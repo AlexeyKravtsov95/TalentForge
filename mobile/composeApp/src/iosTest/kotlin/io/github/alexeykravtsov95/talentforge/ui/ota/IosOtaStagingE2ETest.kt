@@ -72,7 +72,11 @@ class IosOtaStagingE2ETest {
 
     private fun bundle(build: String) = DatasetBundleId(GameId("forever"), build)
 
-    private fun failure(outcome: CheckOutcome): OtaFailure = assertIs<CheckOutcome.Failed>(outcome, "expected a failed check").failure
+    private fun failure(outcome: CheckOutcome): OtaFailure = assertIs<CheckOutcome.Failed>(outcome, "expected a failed check, got $outcome").failure
+
+    /** The outcome as an activation; any other outcome fails with its failure named (CI diagnosis). */
+    private fun activated(outcome: CheckOutcome, label: String = "check"): CheckOutcome.Activated =
+        outcome as? CheckOutcome.Activated ?: fail("$label: expected an activation, got $outcome")
 
     private fun opensOnItsOwnBuild(device: IosOtaDevice, session: SessionDatasets, record: LocalBuildRecord) {
         val opened = runBlocking { loadEditorSession(device.repository, session.datasets, record.localId, session.icons, session.descriptions, session.localization) }
@@ -128,7 +132,7 @@ class IosOtaStagingE2ETest {
             assertEquals(emptyList(), device.fetcher.requests(), "no network on the startup path")
 
             device.serve("1-a-staged")
-            assertEquals(E2E_A_ID, assertIs<CheckOutcome.Activated>(device.check()).releaseId)
+            assertEquals(E2E_A_ID, activated(device.check()).releaseId)
             assertEquals(listOf(stand.manifestHex(E2E_A_ID)), device.blobRequests(), "every file of A is reused from the bundle")
             val savedOnA = device.saveBuild(E2E_A_BUILD, "PRIEST")
 
@@ -144,7 +148,7 @@ class IosOtaStagingE2ETest {
             // B: downloaded over HTTPS, verified with Security.framework, installed atomically, activated
             device.serve("2-b-staged")
             device.fetcher.clear()
-            val activated = assertIs<CheckOutcome.Activated>(device.check())
+            val activated = activated(device.check())
             assertEquals(E2E_B_ID, activated.releaseId)
             assertContentEquals(stand.manifest(E2E_B_ID), device.installedManifest(E2E_B_ID), "the publisher's exact manifest bytes")
             assertTrue(device.fetcher.requests().all { it.endsWith(E2E_CATALOG_PATH) || E2E_BLOB_PREFIX in it }, "only contract paths")
@@ -198,7 +202,7 @@ class IosOtaStagingE2ETest {
         try {
             val savedOnA = device.saveBuild(E2E_A_BUILD, "MAGE")
             device.serve("2-b-staged")
-            assertEquals(E2E_B_ID, assertIs<CheckOutcome.Activated>(device.check()).releaseId)
+            assertEquals(E2E_B_ID, activated(device.check()).releaseId)
             val savedOnB = device.saveBuild(E2E_B_BUILD, "HUNTER")
             phaseNote("relaunch", savedOnA.localId, savedOnB.localId, device.library.read()!!)
             e2e.result("03-relaunch", "PASSED relaunch phase 1 (process 1): B installed and active; saved builds on 70374 and 70450; the process exits")
@@ -264,7 +268,7 @@ class IosOtaStagingE2ETest {
             val staged = device.stagedHashes(E2E_B_ID)
             assertTrue(staged.size >= 100, "verified files survive the kill: ${staged.size}")
             device.serve("2-b-staged")
-            val resumed = assertIs<CheckOutcome.Activated>(device.check())
+            val resumed = activated(device.check())
             assertEquals(E2E_B_ID, resumed.releaseId)
             assertTrue(device.blobRequests().none { it in staged }, "no verified file is downloaded again")
             assertEquals(note.library, device.library.read())
@@ -297,7 +301,9 @@ class IosOtaStagingE2ETest {
             device.serve("2-b-staged")
             device.fetcher.clear()
             device.runtime.coordinator.onForeground()
-            device.waitUntil("B to be activated") { device.runtime.status.value.lastOutcome is CheckOutcome.Activated }
+            device.waitUntil("B to be activated", detail = { "(last outcome: ${device.runtime.status.value.lastOutcome})" }) {
+                device.runtime.status.value.lastOutcome is CheckOutcome.Activated
+            }
             assertEquals(E2E_B_ID, device.active())
             assertTrue(device.blobRequests().none { it in staged }, "the resume after the foreground downloads no verified file again")
             assertEquals(library, device.library.read())
@@ -350,7 +356,7 @@ class IosOtaStagingE2ETest {
             assertTrue(staged.size >= 100, "verified files kept for resume: ${staged.size}")
             lost.serve("2-b-staged")
             lost.fetcher.clear()
-            val resumed = assertIs<CheckOutcome.Activated>(lost.check())
+            val resumed = activated(lost.check())
             assertTrue(lost.blobRequests().none { it in staged }, "no verified file is downloaded again")
             lines += "connection lost after 150 files -> Network, ${staged.size} verified files kept; the resume downloaded ${resumed.report.downloaded}, reused ${resumed.report.reusedStaged}"
         } finally {
@@ -430,7 +436,7 @@ class IosOtaStagingE2ETest {
                 }
                 opensOnItsOwnBuild(device, SessionDatasets.of(device.runtime.snapshot.value), saved)
                 device.serve("2-b-staged")
-                assertEquals(E2E_B_ID, assertIs<CheckOutcome.Activated>(device.check()).releaseId, "$name: the next clean check installs B")
+                assertEquals(E2E_B_ID, activated(device.check()).releaseId, "$name: the next clean check installs B")
                 lines += "$name -> ${failure::class.simpleName}"
             } finally {
                 device.close()
@@ -469,7 +475,7 @@ class IosOtaStagingE2ETest {
             assertIs<OtaFailure.InsufficientStorage>(failure(device.check()))
             assertNothingChanged(device, library, null, E2E_A_BUILD, "ENOSPC")
             space!!.failPartWritesAfter = Int.MAX_VALUE
-            assertEquals(E2E_B_ID, assertIs<CheckOutcome.Activated>(device.check()).releaseId)
+            assertEquals(E2E_B_ID, activated(device.check()).releaseId)
             assertEquals(library, device.library.read())
             e2e.result("11-disk-space", "PASSED insufficient storage (free space and ENOSPC of the Application Support store under test control): before the first file and ENOSPC half-way both end InsufficientStorage, no partial file, nothing changes; with space the next check installs B")
         } finally {
@@ -484,13 +490,13 @@ class IosOtaStagingE2ETest {
         val device = e2e.device("rollback")
         try {
             device.serve("2-b-staged")
-            assertEquals(E2E_B_ID, assertIs<CheckOutcome.Activated>(device.check()).releaseId)
+            assertEquals(E2E_B_ID, activated(device.check()).releaseId)
             val savedOnB = device.saveBuild(E2E_B_BUILD, "PRIEST")
             val saved = device.library.read()
 
             device.serve("3-rollback-a")
             device.fetcher.clear()
-            assertEquals(E2E_A_ID, assertIs<CheckOutcome.Activated>(device.check()).releaseId)
+            assertEquals(E2E_A_ID, activated(device.check()).releaseId)
             assertTrue(device.blobRequests().all { it == stand.manifestHex(E2E_A_ID) }, "A comes from the bundle: ${device.blobRequests()}")
             val state = device.runtime.activation.currentState()
             assertEquals(E2E_A_ID, state.active)
@@ -525,7 +531,7 @@ class IosOtaStagingE2ETest {
         val device = e2e.device("corrupt")
         try {
             device.serve("2-b-staged")
-            assertEquals(E2E_B_ID, assertIs<CheckOutcome.Activated>(device.check()).releaseId)
+            assertEquals(E2E_B_ID, activated(device.check()).releaseId)
             val saved = device.saveBuild(E2E_A_BUILD, "HUNTER")
             var library = device.library.read()
 
@@ -539,7 +545,7 @@ class IosOtaStagingE2ETest {
             opensOnItsOwnBuild(device, SessionDatasets.of(device.runtime.snapshot.value), saved)
             library = device.library.read() // opening a build records lastOpenedAt: the user's own change
             device.fetcher.clear()
-            assertEquals(E2E_B_ID, assertIs<CheckOutcome.Activated>(device.check()).releaseId)
+            assertEquals(E2E_B_ID, activated(device.check()).releaseId)
             val talentRequests = device.blobRequests().filter { it != stand.manifestHex(E2E_B_ID) }
             assertEquals(emptyList(), talentRequests, "the installed release is reused, not downloaded")
 
@@ -552,7 +558,7 @@ class IosOtaStagingE2ETest {
             assertEquals(E2E_A_BUILD, device.product(), "new sessions fall back to the bundle")
             assertEquals(library, device.library.read())
             device.fetcher.clear()
-            assertEquals(E2E_B_ID, assertIs<CheckOutcome.Activated>(device.check()).releaseId, "the next check re-installs B")
+            assertEquals(E2E_B_ID, activated(device.check()).releaseId, "the next check re-installs B")
             assertEquals(E2E_B_BUILD, device.product())
             assertEquals(library, device.library.read())
             e2e.result("13-corrupted-store", "PASSED corrupted OTA store: garbage state.json -> cold start on the bundle, no release deleted, the next check takes B back with 0 talent files fetched; a flipped byte in an installed file -> DatasetOutcome.Failed for the reader, B quarantined, new sessions on 70374, the next check re-installs B (${device.blobRequests().size} files fetched); the library is unchanged throughout")
@@ -568,7 +574,7 @@ class IosOtaStagingE2ETest {
         val device = e2e.device("historical", bundled = setOf(E2E_B_BUILD))
         try {
             device.serve("2-b-staged") // lists A and B; B is this app's bundled product
-            assertEquals(E2E_B_ID, assertIs<CheckOutcome.Activated>(device.check()).releaseId)
+            assertEquals(E2E_B_ID, activated(device.check()).releaseId)
             val savedOnA = device.saveBuild(E2E_A_BUILD, "MAGE")
             val library = device.library.read()
             val resolver = device.runtime.resolver

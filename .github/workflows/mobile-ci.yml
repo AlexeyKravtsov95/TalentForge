@@ -310,6 +310,7 @@ jobs:
           name: ios-ota-e2e-xcode-27.1
           path: |
             ${{ runner.temp }}/ios-ota-e2e/ios-ota-e2e-report.json
+            ${{ runner.temp }}/ios-ota-e2e/origin-log.json
             ${{ runner.temp }}/ios-ota-e2e/logs/
             ${{ runner.temp }}/ios-ota-e2e/results/
           if-no-files-found: ignore

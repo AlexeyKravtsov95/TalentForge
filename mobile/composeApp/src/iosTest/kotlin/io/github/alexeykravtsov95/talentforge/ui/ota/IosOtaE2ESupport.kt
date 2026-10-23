@@ -306,10 +306,10 @@ internal class IosOtaDevice(
         assertIs<DraftCreation.Created>(created, "a $clientBuild build").record
     }
 
-    fun waitUntil(what: String, timeoutMillis: Long = 120_000, condition: () -> Boolean) = runBlocking {
+    fun waitUntil(what: String, timeoutMillis: Long = 120_000, detail: () -> String = { "" }, condition: () -> Boolean) = runBlocking {
         var waited = 0L
         while (!condition()) {
-            if (waited >= timeoutMillis) fail("timed out after $timeoutMillis ms waiting for $what")
+            if (waited >= timeoutMillis) fail("timed out after $timeoutMillis ms waiting for $what ${detail()}")
             delay(50)
             waited += 50
         }

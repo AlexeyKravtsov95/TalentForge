@@ -63,6 +63,7 @@ from talent_data.ota.signing import build_envelope, sign_pae_der  # noqa: E402
 TEST_BINARY = ROOT / "mobile/composeApp/build/bin/iosSimulatorArm64/debugTest/test.kexe"
 TEST_CLASS = "io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest"
 CATALOG = "v1/channels/staging/catalog.json"
+TLS_HANDSHAKE = "tls-handshake"  # log key of a connection that ended in its TLS handshake
 BLOB = re.compile(r"v1/blobs/sha256/([0-9a-f]{64})")
 EXIT_PASS, EXIT_FAIL, EXIT_ERROR = 0, 1, 2
 DEFAULT_DEVICE_TYPES = ("iPhone 18 Pro", "iPhone 17 Pro")
@@ -421,7 +422,41 @@ def handler(origin: Origin, kind: str) -> type[http.server.BaseHTTPRequestHandle
 
 
 class QuietServer(http.server.ThreadingHTTPServer):
-    """Connections the client cancels or a fault drops end in broken pipes: expected, not errors."""
+    """An HTTPS origin that accepts like a CDN edge: a deep accept queue, and every TLS handshake
+    in the connection's own thread. The client opens a new connection per file, 8 at a time; with
+    the handshake inside ``accept()`` (one thread) and Python's default queue of 5, a slow runner
+    reset connections the client then reported as network failures (mobile-ci run 39946215591).
+    Connections the client cancels or a fault drops end in broken pipes: expected, not errors."""
+
+    request_queue_size = 128
+
+    def __init__(
+        self, port: int, handler_class: Any, context: ssl.SSLContext, origin: Origin, kind: str
+    ) -> None:
+        self.context, self.origin, self.kind = context, origin, kind
+        super().__init__(("127.0.0.1", port), handler_class)
+
+    def finish_request(self, request: Any, client_address: Any) -> None:
+        try:
+            connection = self.context.wrap_socket(request, server_side=True)
+        except (ssl.SSLError, OSError) as error:
+            # a refused certificate ends here (the client never sends a request): recorded apart
+            self.origin.record(
+                {
+                    "origin": self.kind,
+                    "key": TLS_HANDSHAKE,
+                    "path": "",
+                    "fault": "",
+                    "status": 0,
+                    "headers": {},
+                    "error": type(error).__name__,
+                }
+            )
+            return
+        try:
+            super().finish_request(connection, client_address)
+        finally:
+            connection.close()
 
     def handle_error(self, request: Any, client_address: Any) -> None:
         if not isinstance(sys.exc_info()[1], (ConnectionError, ssl.SSLError, TimeoutError)):
@@ -433,9 +468,8 @@ class Server:
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         context.minimum_version = ssl.TLSVersion.TLSv1_2
         context.load_cert_chain(chain, key)
-        self.httpd = QuietServer(("127.0.0.1", port), handler(origin, kind))
+        self.httpd = QuietServer(port, handler(origin, kind), context, origin, kind)
         self.httpd.daemon_threads = True
-        self.httpd.socket = context.wrap_socket(self.httpd.socket, server_side=True)
         self.port = int(self.httpd.server_address[1])
         threading.Thread(target=self.httpd.serve_forever, daemon=True).start()
 
@@ -727,17 +761,34 @@ def run(args: argparse.Namespace) -> int:
         "phases": results,
         "results": lines,
         "requests": len(origin.log),
-        "requestsOnRefusedTlsOrigins": sum(1 for e in origin.log if e["origin"] != "trusted"),
+        "requestsOnRefusedTlsOrigins": sum(
+            1 for e in origin.log if e["origin"] != "trusted" and e["key"] != TLS_HANDSHAKE
+        ),
+        "tlsHandshakeFailures": {
+            kind: sum(1 for e in origin.log if e["origin"] == kind and e["key"] == TLS_HANDSHAKE)
+            for kind in ("trusted", "untrusted", "expired", "wrong-host")
+        },
+        "statuses": {
+            str(status): sum(1 for e in origin.log if e["status"] == status)
+            for status in sorted({e["status"] for e in origin.log})
+        },
         "redirectTargetRequests": sum(1 for e in origin.log if e["key"] == "redirect-target"),
         "result": "PASS" if results and all(r["passed"] for r in results) else "FAIL",
     }
     (work / "ios-ota-e2e-report.json").write_text(
         json.dumps(report, indent=2) + "\n", encoding="utf-8"
     )
+    # what the origin saw, request by request (no headers): the server side of a failed phase
+    entries = [
+        {k: e.get(k) for k in ("origin", "key", "path", "fault", "status", "error")}
+        for e in origin.log
+    ]
+    (work / "origin-log.json").write_text(json.dumps(entries, indent=1) + "\n", encoding="utf-8")
     print(
         f"requests served: {report['requests']}; on refused TLS origins: "
         f"{report['requestsOnRefusedTlsOrigins']}; "
-        f"redirect target: {report['redirectTargetRequests']}"
+        f"redirect target: {report['redirectTargetRequests']}; "
+        f"TLS handshakes that failed: {report['tlsHandshakeFailures']}"
     )
     print(f"RESULT: {report['result']} ({work / 'ios-ota-e2e-report.json'})")
     return EXIT_PASS if report["result"] == "PASS" else EXIT_FAIL
