@@ -61,12 +61,34 @@ the active production release (or the `base` input). Today both are `1.60.1.7045
 
 ## Preparation
 
-In a disposable clone of `main` (the runner's checkout is never modified), with one log per step:
+In a disposable clone of `main` (the runner's checkout is never modified), with one log per step.
+The pipeline steps run in this order, which follows what each command reads
+(`pipeline_steps` in `orchestrate.py`; the first failure stops the pipeline and the later
+steps are `SKIPPED`):
+
+| # | step | kind | reads |
+| --- | --- | --- | --- |
+| 1 | `fetch` | source | wago.tools: the talent DB2 tables |
+| 2 | `tooltips fetch` | source | wago.tools: the tooltip tables |
+| 3 | `localization fetch --locale ruRU` | source | wago.tools: the enUS and ruRU text tables |
+| 4 | `normalize --class all --offline` | pipeline | the tables of 1 → writes the dataset |
+| 5 | `manifest --expect-complete` | pipeline | the dataset (all nine classes) |
+| 6 | `visuals fetch` | source | **the normalized dataset** (icon of every talent entry), then wago.tools: icon tables and client files |
+| 7 | `diff --class all --from <base> --offline` | pipeline | the base and the candidate datasets |
+| 8–9 | `visuals normalize --offline` / `check` | pipeline | the dataset and the icons of 6 |
+| 10–11 | `tooltips normalize --offline` / `check` | pipeline | the dataset and the tables of 2 |
+| 12–13 | `localization normalize --classes all --offline` / `check` | pipeline | the dataset, the tooltips of 10 and the tables of 3 |
+
+`visuals fetch` is a network step that needs the normalized dataset: it resolves the icons
+from it before downloading them. Until issue #78 it ran second, before `normalize`, and so
+failed on every build that `main` does not carry yet (`no normalized dataset for <build>`);
+the forced re-runs of `1.60.1.70450` did not show it because `main` already held that dataset.
+`tests/unit/test_ota_prepare.py` holds the dependencies of every step and checks the order.
 
 | phase | commands (existing CLI) | failure |
 | --- | --- | --- |
-| source (network) | `fetch`, `visuals fetch`, `tooltips fetch`, `localization fetch --locale ruRU` | exit 5 (wago.tools unreachable after the HTTP client's retries) → `UNKNOWN`; any other → `BLOCKED` |
-| pipeline (offline) | `normalize --class all`, `manifest --expect-complete`, `diff --class all --from <base>`, `visuals normalize/check`, `tooltips normalize/check`, `localization normalize --classes all/check` | `BLOCKED`; later steps are `SKIPPED` |
+| source (network) | steps 1, 2, 3 and 6 | exit 5 (wago.tools unreachable after the HTTP client's retries) → `UNKNOWN`; any other → `BLOCKED` |
+| pipeline (offline) | steps 4, 5 and 7–13 | `BLOCKED` |
 | scope | only the candidate's own `data/*/forever/<build>/`, diff and coverage files may change; when `main` already carries the build (forced re-run), its classes must be identical (`contentHash`) and its visuals the same by meaning - files, sidecars, icon FileDataIDs, client files (`sourceSha256`) and pixels, PNG bytes excepted ([talent-visuals.md](../talent-visuals.md) §3) - and then main's bytes are kept (`logs/visuals-reproduction.log`) | `BLOCKED` |
 | publisher | local candidate commit (never pushed) → `build_release` → `validate_release` (G1–G8, production channel) against a verified mirror of production → `render_review_report` | a STOP gate → `BLOCKED` (G1 excepted, below); a FLAG → a required human step |
 | regression | `scripts/sync_mobile_{datasets,visuals,tooltips,localization}.py --check` (the app's bundles are unchanged), `pytest` (offline suite with the candidate data present) | `BLOCKED` (every check still runs) |
