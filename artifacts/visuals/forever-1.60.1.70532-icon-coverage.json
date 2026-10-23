@@ -1,0 +1,789 @@
+{
+  "game": "forever",
+  "clientBuild": "1.60.1.70532",
+  "totalEntries": 469,
+  "resolvedEntries": 469,
+  "unresolvedEntries": 0,
+  "distinctFileDataIds": 359,
+  "sharedFileDataIds": 86,
+  "classes": [
+    {
+      "classToken": "WARRIOR",
+      "totalEntries": 52,
+      "resolvedEntries": 52,
+      "unresolvedEntries": 0,
+      "distinctFileDataIds": 52
+    },
+    {
+      "classToken": "PALADIN",
+      "totalEntries": 50,
+      "resolvedEntries": 50,
+      "unresolvedEntries": 0,
+      "distinctFileDataIds": 50
+    },
+    {
+      "classToken": "HUNTER",
+      "totalEntries": 52,
+      "resolvedEntries": 52,
+      "unresolvedEntries": 0,
+      "distinctFileDataIds": 50
+    },
+    {
+      "classToken": "ROGUE",
+      "totalEntries": 53,
+      "resolvedEntries": 53,
+      "unresolvedEntries": 0,
+      "distinctFileDataIds": 53
+    },
+    {
+      "classToken": "PRIEST",
+      "totalEntries": 53,
+      "resolvedEntries": 53,
+      "unresolvedEntries": 0,
+      "distinctFileDataIds": 52
+    },
+    {
+      "classToken": "SHAMAN",
+      "totalEntries": 50,
+      "resolvedEntries": 50,
+      "unresolvedEntries": 0,
+      "distinctFileDataIds": 49
+    },
+    {
+      "classToken": "MAGE",
+      "totalEntries": 55,
+      "resolvedEntries": 55,
+      "unresolvedEntries": 0,
+      "distinctFileDataIds": 55
+    },
+    {
+      "classToken": "WARLOCK",
+      "totalEntries": 52,
+      "resolvedEntries": 52,
+      "unresolvedEntries": 0,
+      "distinctFileDataIds": 52
+    },
+    {
+      "classToken": "DRUID",
+      "totalEntries": 52,
+      "resolvedEntries": 52,
+      "unresolvedEntries": 0,
+      "distinctFileDataIds": 52
+    }
+  ],
+  "sharedIcons": [
+    {
+      "fileDataId": 132089,
+      "entryCount": 2,
+      "entryIds": [
+        129600,
+        130476
+      ]
+    },
+    {
+      "fileDataId": 132090,
+      "entryCount": 2,
+      "entryIds": [
+        130448,
+        130680
+      ]
+    },
+    {
+      "fileDataId": 132091,
+      "entryCount": 2,
+      "entryIds": [
+        129614,
+        129630
+      ]
+    },
+    {
+      "fileDataId": 132147,
+      "entryCount": 3,
+      "entryIds": [
+        130469,
+        130663,
+        137853
+      ]
+    },
+    {
+      "fileDataId": 132152,
+      "entryCount": 3,
+      "entryIds": [
+        129407,
+        129607,
+        130658
+      ]
+    },
+    {
+      "fileDataId": 132155,
+      "entryCount": 3,
+      "entryIds": [
+        129648,
+        130471,
+        130686
+      ]
+    },
+    {
+      "fileDataId": 132204,
+      "entryCount": 2,
+      "entryIds": [
+        129667,
+        137868
+      ]
+    },
+    {
+      "fileDataId": 132219,
+      "entryCount": 2,
+      "entryIds": [
+        129651,
+        130462
+      ]
+    },
+    {
+      "fileDataId": 132269,
+      "entryCount": 5,
+      "entryIds": [
+        129405,
+        129659,
+        130436,
+        130467,
+        130687
+      ]
+    },
+    {
+      "fileDataId": 132275,
+      "entryCount": 2,
+      "entryIds": [
+        130422,
+        130459
+      ]
+    },
+    {
+      "fileDataId": 132277,
+      "entryCount": 3,
+      "entryIds": [
+        129657,
+        130451,
+        130704
+      ]
+    },
+    {
+      "fileDataId": 132282,
+      "entryCount": 3,
+      "entryIds": [
+        130362,
+        130478,
+        130688
+      ]
+    },
+    {
+      "fileDataId": 132292,
+      "entryCount": 2,
+      "entryIds": [
+        130437,
+        130669
+      ]
+    },
+    {
+      "fileDataId": 132306,
+      "entryCount": 2,
+      "entryIds": [
+        130468,
+        130675
+      ]
+    },
+    {
+      "fileDataId": 132307,
+      "entryCount": 2,
+      "entryIds": [
+        130461,
+        130656
+      ]
+    },
+    {
+      "fileDataId": 132312,
+      "entryCount": 2,
+      "entryIds": [
+        129675,
+        130677
+      ]
+    },
+    {
+      "fileDataId": 132325,
+      "entryCount": 3,
+      "entryIds": [
+        129413,
+        130028,
+        130695
+      ]
+    },
+    {
+      "fileDataId": 132336,
+      "entryCount": 2,
+      "entryIds": [
+        129653,
+        130464
+      ]
+    },
+    {
+      "fileDataId": 132340,
+      "entryCount": 2,
+      "entryIds": [
+        130488,
+        137850
+      ]
+    },
+    {
+      "fileDataId": 132347,
+      "entryCount": 2,
+      "entryIds": [
+        130425,
+        137848
+      ]
+    },
+    {
+      "fileDataId": 132369,
+      "entryCount": 2,
+      "entryIds": [
+        129650,
+        130707
+      ]
+    },
+    {
+      "fileDataId": 134297,
+      "entryCount": 2,
+      "entryIds": [
+        129606,
+        129628
+      ]
+    },
+    {
+      "fileDataId": 134952,
+      "entryCount": 2,
+      "entryIds": [
+        130706,
+        137872
+      ]
+    },
+    {
+      "fileDataId": 135463,
+      "entryCount": 2,
+      "entryIds": [
+        130544,
+        130579
+      ]
+    },
+    {
+      "fileDataId": 135805,
+      "entryCount": 2,
+      "entryIds": [
+        130518,
+        130616
+      ]
+    },
+    {
+      "fileDataId": 135808,
+      "entryCount": 2,
+      "entryIds": [
+        130519,
+        130627
+      ]
+    },
+    {
+      "fileDataId": 135817,
+      "entryCount": 2,
+      "entryIds": [
+        129430,
+        130511
+      ]
+    },
+    {
+      "fileDataId": 135819,
+      "entryCount": 2,
+      "entryIds": [
+        130526,
+        130612
+      ]
+    },
+    {
+      "fileDataId": 135821,
+      "entryCount": 2,
+      "entryIds": [
+        130521,
+        130607
+      ]
+    },
+    {
+      "fileDataId": 135824,
+      "entryCount": 2,
+      "entryIds": [
+        129424,
+        130510
+      ]
+    },
+    {
+      "fileDataId": 135830,
+      "entryCount": 2,
+      "entryIds": [
+        129426,
+        130608
+      ]
+    },
+    {
+      "fileDataId": 135831,
+      "entryCount": 2,
+      "entryIds": [
+        130517,
+        130617
+      ]
+    },
+    {
+      "fileDataId": 135850,
+      "entryCount": 2,
+      "entryIds": [
+        129427,
+        130509
+      ]
+    },
+    {
+      "fileDataId": 135860,
+      "entryCount": 2,
+      "entryIds": [
+        129676,
+        130501
+      ]
+    },
+    {
+      "fileDataId": 135863,
+      "entryCount": 3,
+      "entryIds": [
+        129577,
+        130435,
+        130573
+      ]
+    },
+    {
+      "fileDataId": 135865,
+      "entryCount": 3,
+      "entryIds": [
+        129385,
+        129673,
+        130495
+      ]
+    },
+    {
+      "fileDataId": 135881,
+      "entryCount": 2,
+      "entryIds": [
+        129618,
+        130681
+      ]
+    },
+    {
+      "fileDataId": 135882,
+      "entryCount": 2,
+      "entryIds": [
+        130351,
+        130455
+      ]
+    },
+    {
+      "fileDataId": 135892,
+      "entryCount": 3,
+      "entryIds": [
+        129406,
+        130354,
+        130543
+      ]
+    },
+    {
+      "fileDataId": 135895,
+      "entryCount": 2,
+      "entryIds": [
+        137844,
+        137869
+      ]
+    },
+    {
+      "fileDataId": 135918,
+      "entryCount": 2,
+      "entryIds": [
+        130018,
+        130596
+      ]
+    },
+    {
+      "fileDataId": 135926,
+      "entryCount": 2,
+      "entryIds": [
+        130570,
+        137870
+      ]
+    },
+    {
+      "fileDataId": 135967,
+      "entryCount": 2,
+      "entryIds": [
+        130594,
+        137847
+      ]
+    },
+    {
+      "fileDataId": 135972,
+      "entryCount": 2,
+      "entryIds": [
+        130017,
+        137845
+      ]
+    },
+    {
+      "fileDataId": 135988,
+      "entryCount": 2,
+      "entryIds": [
+        130444,
+        130491
+      ]
+    },
+    {
+      "fileDataId": 135994,
+      "entryCount": 2,
+      "entryIds": [
+        130360,
+        130482
+      ]
+    },
+    {
+      "fileDataId": 136006,
+      "entryCount": 2,
+      "entryIds": [
+        129583,
+        129624
+      ]
+    },
+    {
+      "fileDataId": 136012,
+      "entryCount": 2,
+      "entryIds": [
+        129400,
+        130660
+      ]
+    },
+    {
+      "fileDataId": 136031,
+      "entryCount": 3,
+      "entryIds": [
+        130530,
+        130566,
+        130684
+      ]
+    },
+    {
+      "fileDataId": 136041,
+      "entryCount": 2,
+      "entryIds": [
+        129396,
+        129582
+      ]
+    },
+    {
+      "fileDataId": 136047,
+      "entryCount": 3,
+      "entryIds": [
+        129646,
+        137851,
+        140697
+      ]
+    },
+    {
+      "fileDataId": 136053,
+      "entryCount": 2,
+      "entryIds": [
+        129390,
+        130577
+      ]
+    },
+    {
+      "fileDataId": 136056,
+      "entryCount": 3,
+      "entryIds": [
+        129408,
+        130480,
+        130705
+      ]
+    },
+    {
+      "fileDataId": 136057,
+      "entryCount": 3,
+      "entryIds": [
+        129395,
+        129596,
+        130581
+      ]
+    },
+    {
+      "fileDataId": 136075,
+      "entryCount": 2,
+      "entryIds": [
+        129592,
+        130668
+      ]
+    },
+    {
+      "fileDataId": 136076,
+      "entryCount": 3,
+      "entryIds": [
+        129386,
+        129581,
+        129621
+      ]
+    },
+    {
+      "fileDataId": 136080,
+      "entryCount": 2,
+      "entryIds": [
+        129397,
+        129637
+      ]
+    },
+    {
+      "fileDataId": 136090,
+      "entryCount": 4,
+      "entryIds": [
+        129394,
+        129404,
+        130026,
+        130572
+      ]
+    },
+    {
+      "fileDataId": 136094,
+      "entryCount": 2,
+      "entryIds": [
+        129425,
+        129578
+      ]
+    },
+    {
+      "fileDataId": 136095,
+      "entryCount": 2,
+      "entryIds": [
+        129412,
+        129603
+      ]
+    },
+    {
+      "fileDataId": 136096,
+      "entryCount": 2,
+      "entryIds": [
+        129591,
+        130542
+      ]
+    },
+    {
+      "fileDataId": 136097,
+      "entryCount": 2,
+      "entryIds": [
+        129417,
+        130667
+      ]
+    },
+    {
+      "fileDataId": 136100,
+      "entryCount": 3,
+      "entryIds": [
+        129422,
+        129586,
+        129658
+      ]
+    },
+    {
+      "fileDataId": 136107,
+      "entryCount": 3,
+      "entryIds": [
+        129398,
+        129569,
+        130574
+      ]
+    },
+    {
+      "fileDataId": 136115,
+      "entryCount": 2,
+      "entryIds": [
+        129418,
+        130513
+      ]
+    },
+    {
+      "fileDataId": 136116,
+      "entryCount": 3,
+      "entryIds": [
+        129433,
+        129579,
+        130536
+      ]
+    },
+    {
+      "fileDataId": 136126,
+      "entryCount": 2,
+      "entryIds": [
+        130651,
+        137843
+      ]
+    },
+    {
+      "fileDataId": 136129,
+      "entryCount": 2,
+      "entryIds": [
+        130490,
+        130529
+      ]
+    },
+    {
+      "fileDataId": 136130,
+      "entryCount": 2,
+      "entryIds": [
+        130439,
+        130558
+      ]
+    },
+    {
+      "fileDataId": 136146,
+      "entryCount": 2,
+      "entryIds": [
+        130618,
+        130657
+      ]
+    },
+    {
+      "fileDataId": 136147,
+      "entryCount": 2,
+      "entryIds": [
+        130449,
+        130665
+      ]
+    },
+    {
+      "fileDataId": 136160,
+      "entryCount": 2,
+      "entryIds": [
+        130561,
+        130622
+      ]
+    },
+    {
+      "fileDataId": 136162,
+      "entryCount": 2,
+      "entryIds": [
+        129416,
+        130643
+      ]
+    },
+    {
+      "fileDataId": 136164,
+      "entryCount": 2,
+      "entryIds": [
+        130553,
+        130628
+      ]
+    },
+    {
+      "fileDataId": 136168,
+      "entryCount": 2,
+      "entryIds": [
+        130477,
+        130635
+      ]
+    },
+    {
+      "fileDataId": 136170,
+      "entryCount": 3,
+      "entryIds": [
+        129428,
+        130539,
+        130567
+      ]
+    },
+    {
+      "fileDataId": 136184,
+      "entryCount": 2,
+      "entryIds": [
+        130557,
+        130630
+      ]
+    },
+    {
+      "fileDataId": 136188,
+      "entryCount": 2,
+      "entryIds": [
+        130562,
+        130642
+      ]
+    },
+    {
+      "fileDataId": 136206,
+      "entryCount": 2,
+      "entryIds": [
+        130453,
+        130636
+      ]
+    },
+    {
+      "fileDataId": 136207,
+      "entryCount": 2,
+      "entryIds": [
+        130559,
+        130613
+      ]
+    },
+    {
+      "fileDataId": 136208,
+      "entryCount": 2,
+      "entryIds": [
+        130532,
+        130555
+      ]
+    },
+    {
+      "fileDataId": 136218,
+      "entryCount": 2,
+      "entryIds": [
+        130638,
+        130664
+      ]
+    },
+    {
+      "fileDataId": 136223,
+      "entryCount": 3,
+      "entryIds": [
+        129656,
+        130547,
+        130644
+      ]
+    },
+    {
+      "fileDataId": 136224,
+      "entryCount": 2,
+      "entryIds": [
+        130560,
+        130661
+      ]
+    },
+    {
+      "fileDataId": 136230,
+      "entryCount": 2,
+      "entryIds": [
+        130549,
+        130655
+      ]
+    },
+    {
+      "fileDataId": 237539,
+      "entryCount": 2,
+      "entryIds": [
+        130433,
+        130569
+      ]
+    }
+  ],
+  "unresolved": []
+}

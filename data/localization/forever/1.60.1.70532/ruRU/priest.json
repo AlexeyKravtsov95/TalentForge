@@ -1,0 +1,3787 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "clientBuild": "1.60.1.70532",
+  "classToken": "PRIEST",
+  "locale": "ruRU",
+  "talentDataContentHash": "sha256:c26748a94c00c54db44fc5b49f40bde24775f9a125d43ff6acc63e6f89780064",
+  "tooltipsContentHash": "sha256:114694d4ae2b6b992971942b886597e77ddef704666ff042e3613214494a6643",
+  "entries": [
+    {
+      "entryId": 130546,
+      "nodeId": 105817,
+      "definitionId": 135347,
+      "spellId": 15473,
+      "textSpellId": 15473,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Облик Тьмы",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Вы принимаете облик Тьмы, увеличивающий урон от заклинаний темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": ", снижающий затраты маны на их применение на "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": ", увеличивающий критический урон от темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " и уменьшающий получаемый физический урон на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": ". В этом облике нельзя применять исцеляющие заклинания."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130547,
+      "nodeId": 105818,
+      "definitionId": 135348,
+      "spellId": 15259,
+      "textSpellId": 15259,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Мрак",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает наносимый вами урон от темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает наносимый вами урон от темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает наносимый вами урон от темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает наносимый вами урон от темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает наносимый вами урон от темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130548,
+      "nodeId": 105819,
+      "definitionId": 135349,
+      "spellId": 1309950,
+      "textSpellId": 1309950,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Всепожирающее заражение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на \"Всепожирающую чуму\" на "
+              },
+              {
+                "kind": "value",
+                "text": "25%"
+              },
+              {
+                "kind": "text",
+                "text": ".\n\nЕсли цель погибает под действием \"Всепожирающей чумы\", болезнь переходит на "
+              },
+              {
+                "kind": "value",
+                "text": "2"
+              },
+              {
+                "kind": "text",
+                "text": " ближайших противников в радиусе "
+              },
+              {
+                "kind": "value",
+                "text": "5"
+              },
+              {
+                "kind": "text",
+                "text": " м на оставшееся время действия."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на \"Всепожирающую чуму\" на "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": ".\n\nЕсли цель погибает под действием \"Всепожирающей чумы\", болезнь переходит на "
+              },
+              {
+                "kind": "value",
+                "text": "2"
+              },
+              {
+                "kind": "text",
+                "text": " ближайших противников в радиусе "
+              },
+              {
+                "kind": "value",
+                "text": "10"
+              },
+              {
+                "kind": "text",
+                "text": " м на оставшееся время действия."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130549,
+      "nodeId": 105820,
+      "definitionId": 135350,
+      "spellId": 15286,
+      "textSpellId": 15286,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Объятия вампира",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Переполняет вашу цель темной энергией. Когда ваши заклинания наносят этой цели урон от темной магии, участники вашей группы восполняют здоровье в объеме "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " нанесенного урона. Длительность - "
+              },
+              {
+                "kind": "value",
+                "text": "30 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130550,
+      "nodeId": 105821,
+      "definitionId": 135351,
+      "spellId": 15257,
+      "textSpellId": 15257,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Плетение Тьмы",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Наносящие урон заклинания темной магии с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "33%"
+              },
+              {
+                "kind": "text",
+                "text": " увеличивают урон от темной магии, который цель получает от вас, на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": ". Эффект длится "
+              },
+              {
+                "kind": "value",
+                "text": "15 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". и суммируется до "
+              },
+              {
+                "kind": "value",
+                "text": "5"
+              },
+              {
+                "kind": "text",
+                "text": " раз."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Наносящие урон заклинания темной магии с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "67%"
+              },
+              {
+                "kind": "text",
+                "text": " увеличивают урон от темной магии, который цель получает от вас, на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": ". Эффект длится "
+              },
+              {
+                "kind": "value",
+                "text": "15 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". и суммируется до "
+              },
+              {
+                "kind": "value",
+                "text": "5"
+              },
+              {
+                "kind": "text",
+                "text": " раз."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Наносящие урон заклинания темной магии с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " увеличивают урон от темной магии, который цель получает от вас, на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": ". Эффект длится "
+              },
+              {
+                "kind": "value",
+                "text": "15 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". и суммируется до "
+              },
+              {
+                "kind": "value",
+                "text": "5"
+              },
+              {
+                "kind": "text",
+                "text": " раз."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130552,
+      "nodeId": 105823,
+      "definitionId": 135353,
+      "spellId": 1326159,
+      "textSpellId": 1326159,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Темное воодушевление",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Взрыв разума\" и \"Пытка разума\" по завершении поддержания вызывают срабатывание \"Темного воодушевления\", которое повышает дух для вас и вашей группы на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "10 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Взрыв разума\" и \"Пытка разума\" по завершении поддержания вызывают срабатывание \"Темного воодушевления\", которое повышает дух для вас и вашей группы на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "10 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Взрыв разума\" и \"Пытка разума\" по завершении поддержания вызывают срабатывание \"Темного воодушевления\", которое повышает дух для вас и вашей группы на "
+              },
+              {
+                "kind": "value",
+                "text": "9%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "10 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Взрыв разума\" и \"Пытка разума\" по завершении поддержания вызывают срабатывание \"Темного воодушевления\", которое повышает дух для вас и вашей группы на "
+              },
+              {
+                "kind": "value",
+                "text": "12%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "10 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "\"Взрыв разума\" и \"Пытка разума\" по завершении поддержания вызывают срабатывание \"Темного воодушевления\", которое повышает дух для вас и вашей группы на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "10 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130553,
+      "nodeId": 105824,
+      "definitionId": 135354,
+      "spellId": 15487,
+      "textSpellId": 15487,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Молчание",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Вызывает у цели немоту, предотвращая применение заклинаний в течение "
+              },
+              {
+                "kind": "value",
+                "text": "5 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". и прерывая применение заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "3 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130554,
+      "nodeId": 105825,
+      "definitionId": 135355,
+      "spellId": 1225139,
+      "textSpellId": 1225139,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенная пытка разума",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Каждый такт \"Пытки разума\" наносит на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " больше урона, чем предыдущий."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Каждый такт \"Пытки разума\" наносит на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " больше урона, чем предыдущий."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130555,
+      "nodeId": 105826,
+      "definitionId": 135356,
+      "spellId": 15407,
+      "textSpellId": 15407,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Пытка разума",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130557,
+      "nodeId": 105828,
+      "definitionId": 135358,
+      "spellId": 15392,
+      "textSpellId": 15392,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенный ментальный крик",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Сокращение времени восстановления заклинания \"Ментальный крик\" на "
+              },
+              {
+                "kind": "value",
+                "text": "2"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Сокращение времени восстановления заклинания \"Ментальный крик\" на "
+              },
+              {
+                "kind": "value",
+                "text": "4"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130558,
+      "nodeId": 105829,
+      "definitionId": 135359,
+      "spellId": 17322,
+      "textSpellId": 17322,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Предел Тьмы",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает дальность действия атакующих заклинаний темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает дальность действия атакующих заклинаний темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130559,
+      "nodeId": 105830,
+      "definitionId": 135360,
+      "spellId": 15275,
+      "textSpellId": 15275,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенное слово Тьмы: Боль",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Продлевает время действия заклинания \"Слово Тьмы: Боль\" на "
+              },
+              {
+                "kind": "value",
+                "text": "3"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Продлевает время действия заклинания \"Слово Тьмы: Боль\" на "
+              },
+              {
+                "kind": "value",
+                "text": "6"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130560,
+      "nodeId": 105831,
+      "definitionId": 135361,
+      "spellId": 15273,
+      "textSpellId": 15273,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенный взрыв разума",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "decimalFormatUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130561,
+      "nodeId": 105832,
+      "definitionId": 135362,
+      "spellId": 15326,
+      "textSpellId": 15326,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Затмение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Заклинания темной магии с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": " оглушают цель на "
+              },
+              {
+                "kind": "value",
+                "text": "3 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Заклинания темной магии с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": " оглушают цель на "
+              },
+              {
+                "kind": "value",
+                "text": "3 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Заклинания темной магии с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": " оглушают цель на "
+              },
+              {
+                "kind": "value",
+                "text": "3 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Заклинания темной магии с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": " оглушают цель на "
+              },
+              {
+                "kind": "value",
+                "text": "3 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Заклинания темной магии с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " оглушают цель на "
+              },
+              {
+                "kind": "value",
+                "text": "3 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130562,
+      "nodeId": 105833,
+      "definitionId": 135363,
+      "spellId": 15270,
+      "textSpellId": 15270,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Захват духа",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда вы убиваете представляющего угрозу противника или когда умирает цель под действием ваших \"Объятий вампира\", ваш дух с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " повышается на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "15 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". В это время вы восполняете ману во время применения заклинаний со скоростью "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда вы убиваете представляющего угрозу противника или когда умирает цель под действием ваших \"Объятий вампира\", ваш дух с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "40%"
+              },
+              {
+                "kind": "text",
+                "text": " повышается на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "15 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". В это время вы восполняете ману во время применения заклинаний со скоростью "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда вы убиваете представляющего угрозу противника или когда умирает цель под действием ваших \"Объятий вампира\", ваш дух с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "60%"
+              },
+              {
+                "kind": "text",
+                "text": " повышается на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "15 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". В это время вы восполняете ману во время применения заклинаний со скоростью "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда вы убиваете представляющего угрозу противника или когда умирает цель под действием ваших \"Объятий вампира\", ваш дух с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "80%"
+              },
+              {
+                "kind": "text",
+                "text": " повышается на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "15 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". В это время вы восполняете ману во время применения заклинаний со скоростью "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда вы убиваете представляющего угрозу противника или когда умирает цель под действием ваших \"Объятий вампира\", ваш дух с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " повышается на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "15 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". В это время вы восполняете ману во время применения заклинаний со скоростью "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130563,
+      "nodeId": 105834,
+      "definitionId": 135364,
+      "spellId": 402174,
+      "textSpellId": 402174,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Исповедь",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130564,
+      "nodeId": 105835,
+      "definitionId": 135365,
+      "spellId": 425280,
+      "textSpellId": 425280,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Новая надежда",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Вероятность критического эффекта \"Быстрого исцеления\", \"Связующего исцеления\", \"Малого исцеления\", \"Исцеления\", \"Великого исцеления\" и \"Исповеди\" повышается на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": ", когда вы применяете их к целям под действием \"Ослабленной души\". Эти заклинания также сокращают оставшееся время действия \"Ослабленной души\" на цели на "
+              },
+              {
+                "kind": "value",
+                "text": "1"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Вероятность критического эффекта \"Быстрого исцеления\", \"Связующего исцеления\", \"Малого исцеления\", \"Исцеления\", \"Великого исцеления\" и \"Исповеди\" повышается на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": ", когда вы применяете их к целям под действием \"Ослабленной души\". Эти заклинания также сокращают оставшееся время действия \"Ослабленной души\" на цели на "
+              },
+              {
+                "kind": "value",
+                "text": "2"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Вероятность критического эффекта \"Быстрого исцеления\", \"Связующего исцеления\", \"Малого исцеления\", \"Исцеления\", \"Великого исцеления\" и \"Исповеди\" повышается на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": ", когда вы применяете их к целям под действием \"Ослабленной души\". Эти заклинания также сокращают оставшееся время действия \"Ослабленной души\" на цели на "
+              },
+              {
+                "kind": "value",
+                "text": "3"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Вероятность критического эффекта \"Быстрого исцеления\", \"Связующего исцеления\", \"Малого исцеления\", \"Исцеления\", \"Великого исцеления\" и \"Исповеди\" повышается на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": ", когда вы применяете их к целям под действием \"Ослабленной души\". Эти заклинания также сокращают оставшееся время действия \"Ослабленной души\" на цели на "
+              },
+              {
+                "kind": "value",
+                "text": "4"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Вероятность критического эффекта \"Быстрого исцеления\", \"Связующего исцеления\", \"Малого исцеления\", \"Исцеления\", \"Великого исцеления\" и \"Исповеди\" повышается на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": ", когда вы применяете их к целям под действием \"Ослабленной души\". Эти заклинания также сокращают оставшееся время действия \"Ослабленной души\" на цели на "
+              },
+              {
+                "kind": "value",
+                "text": "5"
+              },
+              {
+                "kind": "text",
+                "text": " сек."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130565,
+      "nodeId": 105836,
+      "definitionId": 135366,
+      "spellId": 10060,
+      "textSpellId": 10060,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Придание сил",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Наполняет цель силой, увеличивая урон и силу исцеления заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "15 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130566,
+      "nodeId": 105837,
+      "definitionId": 135367,
+      "spellId": 18551,
+      "textSpellId": 18551,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Сила мысли",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает интеллект на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает интеллект на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает интеллект на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает интеллект на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает интеллект на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130567,
+      "nodeId": 105838,
+      "definitionId": 135368,
+      "spellId": 14750,
+      "textSpellId": 14750,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенное сожжение маны",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "decimalFormatUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130568,
+      "nodeId": 105839,
+      "definitionId": 135369,
+      "spellId": 402000,
+      "textSpellId": 402000,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Оберег души",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Сокращает время восстановления \"Слова силы: Щит\" на "
+              },
+              {
+                "kind": "value",
+                "text": "4"
+              },
+              {
+                "kind": "text",
+                "text": " сек. и снижает затраты маны на его применение на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130569,
+      "nodeId": 105840,
+      "definitionId": 135370,
+      "spellId": 431622,
+      "textSpellId": 431622,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Божественное покровительство",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130570,
+      "nodeId": 105841,
+      "definitionId": 135371,
+      "spellId": 14747,
+      "textSpellId": 14747,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенный внутренний огонь",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "pluralRuleUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130571,
+      "nodeId": 105842,
+      "definitionId": 135372,
+      "spellId": 14520,
+      "textSpellId": 14520,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Подвижность мысли",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на применение \"Кары\", \"Священного огня\" и мгновенно применяемых заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на применение \"Кары\", \"Священного огня\" и мгновенно применяемых заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "7%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на применение \"Кары\", \"Священного огня\" и мгновенно применяемых заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130572,
+      "nodeId": 105843,
+      "definitionId": 135373,
+      "spellId": 14521,
+      "textSpellId": 14521,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Медитация",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "В процессе применения заклинаний продолжается "
+              },
+              {
+                "kind": "value",
+                "text": "17%"
+              },
+              {
+                "kind": "text",
+                "text": " от восполнения маны."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "В процессе применения заклинаний продолжается "
+              },
+              {
+                "kind": "value",
+                "text": "33%"
+              },
+              {
+                "kind": "text",
+                "text": " от восполнения маны."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "В процессе применения заклинаний продолжается "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " от восполнения маны."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130573,
+      "nodeId": 105844,
+      "definitionId": 135374,
+      "spellId": 14751,
+      "textSpellId": 14751,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Внутреннее сосредоточение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "При активации снижает стоимость следующего заклинания на "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": ", а также повышает вероятность критического удара его мгновенного эффекта на "
+              },
+              {
+                "kind": "value",
+                "text": "25%"
+              },
+              {
+                "kind": "text",
+                "text": ", если это возможно."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130574,
+      "nodeId": 105845,
+      "definitionId": 135375,
+      "spellId": 14531,
+      "textSpellId": 14531,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Мученичество",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "С вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "50%"
+              },
+              {
+                "kind": "text",
+                "text": " при получении критического удара в ближнем или дальнем бою вы получаете эффект \"Средоточие заклинаний\" на "
+              },
+              {
+                "kind": "value",
+                "text": "6 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Этот эффект предотвращает задержку применения заклинаний при получении урона и повышает сопротивление эффектам прерывания на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "С вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "100%"
+              },
+              {
+                "kind": "text",
+                "text": " при получении критического удара в ближнем или дальнем бою вы получаете эффект \"Средоточие заклинаний\" на "
+              },
+              {
+                "kind": "value",
+                "text": "6 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Этот эффект предотвращает задержку применения заклинаний при получении урона и повышает сопротивление эффектам прерывания на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130575,
+      "nodeId": 105846,
+      "definitionId": 135376,
+      "spellId": 14748,
+      "textSpellId": 14748,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенное Слово силы: Щит",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение на "
+              },
+              {
+                "kind": "value",
+                "text": "7%"
+              },
+              {
+                "kind": "text",
+                "text": " количества урона, поглощаемого при применении заклинания \"Слово силы: щит\"."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение на "
+              },
+              {
+                "kind": "value",
+                "text": "14%"
+              },
+              {
+                "kind": "text",
+                "text": " количества урона, поглощаемого при применении заклинания \"Слово силы: щит\"."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " количества урона, поглощаемого при применении заклинания \"Слово силы: щит\"."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130577,
+      "nodeId": 105848,
+      "definitionId": 135378,
+      "spellId": 14523,
+      "textSpellId": 14523,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Молчаливая решимость",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает уровень угрозы, создаваемой заклинаниями, на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " и сокращает время действия применяемых к вам эффектов оглушения, страха и немоты на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает уровень угрозы, создаваемой заклинаниями, на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " и сокращает время действия применяемых к вам эффектов оглушения, страха и немоты на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает уровень угрозы, создаваемой заклинаниями, на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " и сокращает время действия применяемых к вам эффектов оглушения, страха и немоты на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130578,
+      "nodeId": 105849,
+      "definitionId": 135379,
+      "spellId": 1225132,
+      "textSpellId": 1225132,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Две дисциплины",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон и силу исцеления ваших мгновенных заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон и силу исцеления ваших мгновенных заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон и силу исцеления ваших мгновенных заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон и силу исцеления ваших мгновенных заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает урон и силу исцеления ваших мгновенных заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130579,
+      "nodeId": 105850,
+      "definitionId": 135380,
+      "spellId": 14524,
+      "textSpellId": 14524,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Специализация на жезлах",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение на "
+              },
+              {
+                "kind": "value",
+                "text": "13%"
+              },
+              {
+                "kind": "text",
+                "text": " урона, наносимого при использовании магических жезлов."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение на "
+              },
+              {
+                "kind": "value",
+                "text": "25%"
+              },
+              {
+                "kind": "text",
+                "text": " урона, наносимого при использовании магических жезлов."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130580,
+      "nodeId": 105851,
+      "definitionId": 135381,
+      "spellId": 401859,
+      "textSpellId": 401859,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Молитва восстановления",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130581,
+      "nodeId": 105852,
+      "definitionId": 135382,
+      "spellId": 14898,
+      "textSpellId": 14898,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Духовное исцеление",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Усиливает исцеление от ваших заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Усиливает исцеление от ваших заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "7%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Усиливает исцеление от ваших заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130582,
+      "nodeId": 105853,
+      "definitionId": 135383,
+      "spellId": 14901,
+      "textSpellId": 14901,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Духовное направление",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает силу исцеления заклинаний максимум на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": " вашего духа, а урон от заклинаний – максимум на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": " вашего духа."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает силу исцеления заклинаний максимум на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " вашего духа, а урон от заклинаний – максимум на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": " вашего духа."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает силу исцеления заклинаний максимум на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": " вашего духа, а урон от заклинаний – максимум на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": " вашего духа."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает силу исцеления заклинаний максимум на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": " вашего духа, а урон от заклинаний – максимум на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": " вашего духа."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает силу исцеления заклинаний максимум на "
+              },
+              {
+                "kind": "value",
+                "text": "25%"
+              },
+              {
+                "kind": "text",
+                "text": " вашего духа, а урон от заклинаний – максимум на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": " вашего духа."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130583,
+      "nodeId": 105854,
+      "definitionId": 135384,
+      "spellId": 20711,
+      "textSpellId": 20711,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Дух воздаяния",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "После смерти жрец превращается в Дух воздаяния на "
+              },
+              {
+                "kind": "value",
+                "text": "15 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". Дух воздаяния не может двигаться, атаковать, быть атакованным или стать целью любых заклинаний и воздействий. Находясь в этом облике, жрец может бесплатно воспользоваться любым исцеляющим заклинанием. По окончании действия эффекта жрец умирает."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130584,
+      "nodeId": 105855,
+      "definitionId": 135385,
+      "spellId": 1317006,
+      "textSpellId": 1317006,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Литания Света",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда вы применяете исцеляющее заклинание, отличающееся от вашего предыдущего исцеляющего заклинания, вы восполняете ману в объеме "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": " его базовой стоимости."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Когда вы применяете исцеляющее заклинание, отличающееся от вашего предыдущего исцеляющего заклинания, вы восполняете ману в объеме "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " его базовой стоимости."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130585,
+      "nodeId": 105856,
+      "definitionId": 135386,
+      "spellId": 401937,
+      "textSpellId": 401937,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Связующее исцеление",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130586,
+      "nodeId": 105857,
+      "definitionId": 135387,
+      "spellId": 14909,
+      "textSpellId": 14909,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Опаляющий свет",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает наносимый урон от светлой магии на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": ". Каждый раз, когда \"Священный огонь\" наносит периодический урон, следующее применение \"Кольца Света\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": " не требует затрат маны."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает наносимый урон от светлой магии на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": ". Каждый раз, когда \"Священный огонь\" наносит периодический урон, следующее применение \"Кольца Света\" с вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " не требует затрат маны."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130587,
+      "nodeId": 105858,
+      "definitionId": 135388,
+      "spellId": 14912,
+      "textSpellId": 14912,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенное исцеление",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на \"Малое исцеление\", \"Исцеление\", \"Великое исцеление\", \"Исповедь\" и \"Молитву восстановления\" на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на \"Малое исцеление\", \"Исцеление\", \"Великое исцеление\", \"Исповедь\" и \"Молитву восстановления\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижает затраты маны на \"Малое исцеление\", \"Исцеление\", \"Великое исцеление\", \"Исповедь\" и \"Молитву восстановления\" на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130588,
+      "nodeId": 105859,
+      "definitionId": 135389,
+      "spellId": 27789,
+      "textSpellId": 27789,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Предел сил Света",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает дальность действия \"Кары\" и \"Священного огня\", а также радиус действия \"Молитвы об исцелении\" и \"Кольца Света\" на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличивает дальность действия \"Кары\" и \"Священного огня\", а также радиус действия \"Молитвы об исцелении\" и \"Кольца Света\" на "
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130589,
+      "nodeId": 105860,
+      "definitionId": 135390,
+      "spellId": 14892,
+      "textSpellId": 14892,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Вдохновение",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Критические эффекты заклинаний прямого исцеления укрепляют броню вашей цели на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "15 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Критические эффекты заклинаний прямого исцеления укрепляют броню вашей цели на "
+              },
+              {
+                "kind": "value",
+                "text": "17%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "15 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Критические эффекты заклинаний прямого исцеления укрепляют броню вашей цели на "
+              },
+              {
+                "kind": "value",
+                "text": "25%"
+              },
+              {
+                "kind": "text",
+                "text": " на "
+              },
+              {
+                "kind": "value",
+                "text": "15 сек"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130590,
+      "nodeId": 105861,
+      "definitionId": 135391,
+      "spellId": 27811,
+      "textSpellId": 27811,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Благословленное восстановление",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "После получения критического удара в ближнем или дальнем бою или единовременном получении урона, превышающего "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " максимального запаса здоровья, вы восполняете здоровье в объеме "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": " полученного урона за "
+              },
+              {
+                "kind": "value",
+                "text": "6 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". При обновлении эффекта новое исцеление добавляется к оставшемуся."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "После получения критического удара в ближнем или дальнем бою или единовременном получении урона, превышающего "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " максимального запаса здоровья, вы восполняете здоровье в объеме "
+              },
+              {
+                "kind": "value",
+                "text": "17%"
+              },
+              {
+                "kind": "text",
+                "text": " полученного урона за "
+              },
+              {
+                "kind": "value",
+                "text": "6 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". При обновлении эффекта новое исцеление добавляется к оставшемуся."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "После получения критического удара в ближнем или дальнем бою или единовременном получении урона, превышающего "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " максимального запаса здоровья, вы восполняете здоровье в объеме "
+              },
+              {
+                "kind": "value",
+                "text": "25%"
+              },
+              {
+                "kind": "text",
+                "text": " полученного урона за "
+              },
+              {
+                "kind": "value",
+                "text": "6 сек"
+              },
+              {
+                "kind": "text",
+                "text": ". При обновлении эффекта новое исцеление добавляется к оставшемуся."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130591,
+      "nodeId": 105862,
+      "definitionId": 135392,
+      "spellId": 15237,
+      "textSpellId": 15237,
+      "maxRank": 1,
+      "name": {
+        "status": "translated",
+        "text": "Кольцо Света",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "sourceNotResolved",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130592,
+      "nodeId": 105863,
+      "definitionId": 135393,
+      "spellId": 18530,
+      "textSpellId": 18530,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Божественное неистовство",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "decimalFormatUnverified",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 130593,
+      "nodeId": 105864,
+      "definitionId": 135394,
+      "spellId": 27900,
+      "textSpellId": 27900,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Защита от заклинаний",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижение получаемого урона от заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижение получаемого урона от заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижение получаемого урона от заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижение получаемого урона от заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "8%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Снижение получаемого урона от заклинаний на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130594,
+      "nodeId": 105865,
+      "definitionId": 135395,
+      "spellId": 14889,
+      "textSpellId": 14889,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Cпециализация на магии Света",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта заклинаний светлой магии на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта заклинаний светлой магии на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта заклинаний светлой магии на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта заклинаний светлой магии на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта заклинаний светлой магии на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130595,
+      "nodeId": 105866,
+      "definitionId": 135396,
+      "spellId": 14908,
+      "textSpellId": 14908,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Улучшенное обновление",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": " количества здоровья, восполняемого при действии заклинания \"Обновление\"."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение на "
+              },
+              {
+                "kind": "value",
+                "text": "10%"
+              },
+              {
+                "kind": "text",
+                "text": " количества здоровья, восполняемого при действии заклинания \"Обновление\"."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Увеличение на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": " количества здоровья, восполняемого при действии заклинания \"Обновление\"."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 130596,
+      "nodeId": 105867,
+      "definitionId": 135397,
+      "spellId": 14913,
+      "textSpellId": 14913,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Сумеречная концентрация",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "С вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "23%"
+              },
+              {
+                "kind": "text",
+                "text": " позволяет избежать задержки при применении заклинания, когда вы получаете урон."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "С вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "47%"
+              },
+              {
+                "kind": "text",
+                "text": " позволяет избежать задержки при применении заклинания, когда вы получаете урон."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "С вероятностью "
+              },
+              {
+                "kind": "value",
+                "text": "70%"
+              },
+              {
+                "kind": "text",
+                "text": " позволяет избежать задержки при применении заклинания, когда вы получаете урон."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 137843,
+      "nodeId": 110851,
+      "definitionId": 142597,
+      "spellId": 15260,
+      "textSpellId": 15260,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Средоточие Тьмы",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания заклинаниями темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания заклинаниями темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания заклинаниями темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания заклинаниями темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания заклинаниями темной магии на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 137844,
+      "nodeId": 110852,
+      "definitionId": 142598,
+      "spellId": 1309957,
+      "textSpellId": 1309957,
+      "maxRank": 3,
+      "name": {
+        "status": "translated",
+        "text": "Священная точность",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания заклинаниями светлой магии на "
+              },
+              {
+                "kind": "value",
+                "text": "6%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания заклинаниями светлой магии на "
+              },
+              {
+                "kind": "value",
+                "text": "12%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность попадания заклинаниями светлой магии на "
+              },
+              {
+                "kind": "value",
+                "text": "18%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 137845,
+      "nodeId": 110853,
+      "definitionId": 142599,
+      "spellId": 1309969,
+      "textSpellId": 1309969,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Усиливающий Свет",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "untranslated",
+        "source": "Spell.Description_lang",
+        "ranks": []
+      }
+    },
+    {
+      "entryId": 137846,
+      "nodeId": 110854,
+      "definitionId": 142600,
+      "spellId": 1310076,
+      "textSpellId": 1310076,
+      "maxRank": 2,
+      "name": {
+        "status": "translated",
+        "text": "Ранняя гибель",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Вероятность критического удара \"Слова Тьмы: Смерть\" повышается на "
+              },
+              {
+                "kind": "value",
+                "text": "15%"
+              },
+              {
+                "kind": "text",
+                "text": " против целей с уровнем здоровья не выше"
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Вероятность критического удара \"Слова Тьмы: Смерть\" повышается на "
+              },
+              {
+                "kind": "value",
+                "text": "30%"
+              },
+              {
+                "kind": "text",
+                "text": " против целей с уровнем здоровья не выше"
+              },
+              {
+                "kind": "value",
+                "text": "20%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "entryId": 137847,
+      "nodeId": 110855,
+      "definitionId": 142601,
+      "spellId": 14889,
+      "textSpellId": 14889,
+      "maxRank": 5,
+      "name": {
+        "status": "translated",
+        "text": "Cпециализация на магии Света",
+        "source": "SpellName.Name_lang"
+      },
+      "description": {
+        "status": "rendered",
+        "source": "Spell.Description_lang",
+        "ranks": [
+          {
+            "rank": 1,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта заклинаний светлой магии на "
+              },
+              {
+                "kind": "value",
+                "text": "1%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта заклинаний светлой магии на "
+              },
+              {
+                "kind": "value",
+                "text": "2%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта заклинаний светлой магии на "
+              },
+              {
+                "kind": "value",
+                "text": "3%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта заклинаний светлой магии на "
+              },
+              {
+                "kind": "value",
+                "text": "4%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "segments": [
+              {
+                "kind": "text",
+                "text": "Повышает вероятность критического эффекта заклинаний светлой магии на "
+              },
+              {
+                "kind": "value",
+                "text": "5%"
+              },
+              {
+                "kind": "text",
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "contentHash": "sha256:223ec4ac29deb9ac9b6b44d11d249f4fea327755bb68433df0e808eb4321320d",
+  "provenance": {
+    "source": "wago.tools",
+    "renderer": "talent_data.localization gates-v1 + talent_data.tooltips grammar-v1",
+    "tables": [
+      {
+        "table": "SpellName",
+        "locale": "enUS",
+        "url": "https://wago.tools/db2/SpellName/csv?build=1.60.1.70532"
+      },
+      {
+        "table": "TraitDefinition",
+        "locale": "enUS",
+        "url": "https://wago.tools/db2/TraitDefinition/csv?build=1.60.1.70532"
+      },
+      {
+        "table": "Spell",
+        "locale": "enUS",
+        "url": "https://wago.tools/db2/Spell/csv?build=1.60.1.70532"
+      },
+      {
+        "table": "GlobalStrings",
+        "locale": "enUS",
+        "url": "https://wago.tools/db2/GlobalStrings/csv?build=1.60.1.70532"
+      },
+      {
+        "table": "SpellName",
+        "locale": "ruRU",
+        "url": "https://wago.tools/db2/SpellName/csv?build=1.60.1.70532&locale=ruRU"
+      },
+      {
+        "table": "TraitDefinition",
+        "locale": "ruRU",
+        "url": "https://wago.tools/db2/TraitDefinition/csv?build=1.60.1.70532&locale=ruRU"
+      },
+      {
+        "table": "Spell",
+        "locale": "ruRU",
+        "url": "https://wago.tools/db2/Spell/csv?build=1.60.1.70532&locale=ruRU"
+      },
+      {
+        "table": "GlobalStrings",
+        "locale": "ruRU",
+        "url": "https://wago.tools/db2/GlobalStrings/csv?build=1.60.1.70532&locale=ruRU"
+      }
+    ]
+  }
+}
