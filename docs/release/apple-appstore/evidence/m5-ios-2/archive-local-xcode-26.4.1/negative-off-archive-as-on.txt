@@ -1,0 +1,25 @@
+iOS archive: TalentForge.xcarchive
+  [PASS] archive-record: ApplicationPath='Applications/iosApp.app', Architectures=['arm64']
+  [PASS] bundle-id: CFBundleIdentifier='io.github.alexeykravtsov95.talentforge'
+  [PASS] version: CFBundleShortVersionString='1.0.0' (expected any), CFBundleVersion='1' (expected a positive integer)
+  [PASS] minimum-os: MinimumOSVersion='17.2' (expected 17.2)
+  [PASS] device-family: UIDeviceFamily=[1, 2] (expected [1, 2]: iPhone and iPad)
+  [PASS] localizations: CFBundleLocalizations=['en', 'ru'] (required ['en', 'ru'])
+  [PASS] device-capabilities: UIRequiredDeviceCapabilities=['arm64']
+  [PASS] toolchain: DTSDKName='iphoneos26.4' (expected an iphoneos SDK), DTXcodeBuild='17E202' (expected any), DTXcode='2641'
+  [PASS] export-compliance: ITSAppUsesNonExemptEncryption=False (expected false)
+  [PASS] single-scene: UIApplicationSupportsMultipleScenes=False (expected false, TF-RC1-IOS-SCENES)
+  [PASS] ats-default: no NSAppTransportSecurity: Apple's defaults (HTTPS only, TLS 1.2+, no exceptions)
+  [PASS] app-icon: CFBundleIconName='AppIcon', Assets.car present
+  [PASS] executable: kind=macho, architectures=['arm64'], file types=[2] (expected a thin arm64 executable)
+  [PASS] embedded-code: no embedded frameworks or libraries
+  [PASS] privacy-tracking: NSPrivacyTracking=False, NSPrivacyTrackingDomains=[]
+  [PASS] privacy-required-reasons: declared UserDefaults=CA92.1, FileTimestamp=C617.1, DiskSpace=E174.1; used FileTimestamp (_fstat, _stat), DiskSpace (_NSURLVolumeAvailableCapacityForImportantUsageKey), UserDefaults (_OBJC_CLASS_$_NSUserDefaults)
+  [PASS] privacy-collected-data: NSPrivacyCollectedDataTypes=[] (expected none: [])
+  [PASS] compose-resources: 50 dataset JSON files, values-ru present under compose-resources/composeResources
+  [PASS] ota-keyring: the production keyring given is the committed one: ['tf-prod-2026a', 'tf-prod-2026b']
+  [PASS] ota-no-staging-origin: no staging, loopback or emulator origin in the executable
+  [FAIL] ota-on: expected origin https://ota.mythweld.com and exactly ['tf-prod-2026a', 'tf-prod-2026b']: origin missing, keys [], key ids missing
+  [PASS] no-secrets: no key files or private keys in the bundle
+RESULT: FAIL
+exit=1

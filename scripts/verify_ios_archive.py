@@ -23,9 +23,24 @@ anything it cannot establish is a failure, never a pass:
   one Apple defines for its category, and every required-reason API category the executable
   imports (by symbol or Objective-C selector) is declared;
 - the bundled Compose resources hold the talent datasets and the Russian strings;
-- production OTA is off: the executable carries neither the production origin nor any public
-  key of the committed production keyring (Kotlin/Native keeps string literals as UTF-16LE, so
-  both encodings are searched). M5.IOS.2 owns the OTA ON variant of this check;
+- App Transport Security keeps Apple's defaults: the built ``Info.plist`` has no
+  ``NSAppTransportSecurity`` dictionary at all (M5.IOS.2);
+- the OTA configuration is exactly the mode the caller names (``--ota``, required, M5.IOS.2).
+  Kotlin/Native keeps string literals as UTF-16LE, so every search covers UTF-8 and UTF-16LE,
+  and every embedded P-256 public key (any base64 DER SPKI literal) is enumerated:
+
+  * ``off``: no production origin and no public key at all in the executable;
+  * ``on``: the production origin ``https://ota.mythweld.com`` and exactly the two pinned
+    production keys ``tf-prod-2026a`` / ``tf-prod-2026b`` — identified by the SHA-256 of their
+    DER SPKI, pinned here as in the Gradle build — and no other key (staging, ``test-`` or
+    unknown);
+  * both: no staging or development origin (the VK Cloud staging host, ``localhost``,
+    loopback, the Android emulator alias), and the production keyring given is the committed
+    one (its fingerprints equal the pinned ones), so a substituted keyring cannot make a
+    build pass;
+- ``NSPrivacyCollectedDataTypes`` declares exactly what the caller names
+  (``--privacy-collected``: ``none``, or ``other-diagnostic`` for OTA ON when the owner
+  decides that the CDN's request logs are collection — app-privacy.md §3);
 - no private key, certificate store or key file is bundled.
 
 The report holds public facts only: file names, sizes, SHA-256 digests and plist values.
@@ -34,7 +49,7 @@ owner signs the distribution archive with their own team.
 
 Usage::
 
-    python3 scripts/verify_ios_archive.py --archive TalentForge.xcarchive \\
+    python3 scripts/verify_ios_archive.py --archive TalentForge.xcarchive --ota off \\
         --expected-version 1.0.0 --expected-build 1 \\
         --expected-sdk iphoneos27.1 --expected-xcode-build 27A9275 --report report.json
 
@@ -44,9 +59,11 @@ Exit status: 0 = all checks pass, 1 = a check failed, 2 = the check could not ru
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import json
 import plistlib
+import re
 import struct
 import sys
 from dataclasses import dataclass, field
@@ -58,6 +75,34 @@ DEFAULT_MIN_OS = "17.2"
 REQUIRED_LOCALIZATIONS = frozenset({"en", "ru"})
 REPORT_SCHEMA = "talentforge.ios-archive-report.v1"
 PRODUCTION_OTA_ORIGIN_HOST = "ota.mythweld.com"
+PRODUCTION_OTA_ORIGIN = f"https://{PRODUCTION_OTA_ORIGIN_HOST}"
+# The SHA-256 of each pinned production key's DER SPKI (the key ceremony's fingerprints; the same
+# values pin the keyring in mobile/composeApp/build.gradle.kts).
+PRODUCTION_KEY_SPKI_SHA256 = {
+    "tf-prod-2026a": "1fac1b0d15f2a09fc3769099623fe1038e846f0033ec6e233f5111ff71239278",
+    "tf-prod-2026b": "6997b3d47d74ceeb6daec62b1d94f3f3e3bc476534eefe8cd140f67578532b26",
+}
+OTA_MODES = ("off", "on")
+# Hosts of staging and development origins: none may be compiled into a store archive.
+FORBIDDEN_ORIGIN_HOSTS = re.compile(
+    r"(^|\.)(localhost|vkcloud-storage\.ru)$|^127\.|^10\.0\.2\.2$|(^|[.-])staging([.-]|$)"
+)
+# Every P-256 public key as the app pins it: base64 of a 91-byte DER SPKI with this fixed header.
+P256_SPKI = rb"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE[A-Za-z0-9+/]{86}=="
+HTTPS_ORIGIN = rb"https://[A-Za-z0-9.-]+(?::[0-9]{1,5})?"
+PRIVACY_COLLECTED: dict[str, list[dict[str, Any]]] = {
+    "none": [],
+    "other-diagnostic": [
+        {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeOtherDiagnosticData",
+            "NSPrivacyCollectedDataTypeLinked": False,
+            "NSPrivacyCollectedDataTypeTracking": False,
+            "NSPrivacyCollectedDataTypePurposes": [
+                "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ],
+        }
+    ],
+}
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_PRODUCTION_KEYRING = ROOT / "docs/ota/keys/production-keyring.json"
 COMPOSE_RESOURCES = "compose-resources/composeResources"
@@ -258,6 +303,20 @@ def contains_text(data: bytes, text: str) -> bool:
     return text.encode() in data or text.encode("utf-16-le") in data
 
 
+# A run of at least four printable ASCII characters encoded as UTF-16LE (Kotlin/Native literals).
+UTF16_RUN = re.compile(rb"(?:[\x20-\x7e]\x00){4,}")
+
+
+def find_text(data: bytes, pattern: bytes) -> set[str]:
+    """Every match of an ASCII regex ``pattern`` in ``data``, read as UTF-8 and as UTF-16LE."""
+    regex = re.compile(pattern)
+    found = {match.decode("ascii") for match in regex.findall(data)}
+    for run in UTF16_RUN.findall(data):
+        text = run.decode("utf-16-le").encode("ascii")
+        found |= {match.decode("ascii") for match in regex.findall(text)}
+    return found
+
+
 # ----------------------------------------------------------------------------- reading
 
 
@@ -282,15 +341,28 @@ def find_app(archive: Path) -> Path:
     return apps[0]
 
 
-def production_spkis(keyring: Path) -> list[str]:
+def production_keys(keyring: Path) -> dict[str, str]:
+    """``keyId`` → base64 SPKI of the production keyring file."""
     try:
         parsed = json.loads(keyring.read_text(encoding="utf-8"))
-        spkis = [key["publicKeySpki"] for key in parsed["keys"]]
+        keys = {key["keyId"]: key["publicKeySpki"] for key in parsed["keys"]}
     except (OSError, ValueError, KeyError, TypeError) as error:
         raise ToolError(f"cannot read the production keyring {keyring}: {error}") from error
-    if not spkis or not all(isinstance(spki, str) and spki for spki in spkis):
+    if not keys or not all(isinstance(spki, str) and spki for spki in keys.values()):
         raise ToolError("the production keyring pins no public key")
-    return spkis
+    return keys
+
+
+def production_spkis(keyring: Path) -> list[str]:
+    return list(production_keys(keyring).values())
+
+
+def spki_sha256(base64_spki: str) -> str | None:
+    """SHA-256 (hex) of a base64 DER SPKI, or None when it is not base64."""
+    try:
+        return hashlib.sha256(base64.b64decode(base64_spki, validate=True)).hexdigest()
+    except ValueError:
+        return None
 
 
 def file_sha256(path: Path) -> str:
@@ -356,8 +428,16 @@ def evaluate(
     expected_sdk: str | None,
     expected_xcode_build: str | None,
     keyring: Path,
+    ota: str,
+    privacy_collected: str = "none",
 ) -> tuple[Evaluation, dict[str, Any]]:
     """Run every check on ``archive``; raises ToolError when a check cannot run."""
+    if ota not in OTA_MODES:
+        raise ToolError(f"--ota must be one of {OTA_MODES}, not {ota!r}")
+    if privacy_collected not in PRIVACY_COLLECTED:
+        raise ToolError(f"--privacy-collected must be one of {sorted(PRIVACY_COLLECTED)}")
+    if ota == "off" and privacy_collected != "none":
+        raise ToolError("an OTA OFF build makes no request: it declares no collected data")
     if not archive.is_dir():
         raise ToolError("the archive does not exist or is not a directory")
     record = load_plist(archive / "Info.plist")
@@ -442,6 +522,14 @@ def evaluate(
         scenes is False,
         f"UIApplicationSupportsMultipleScenes={scenes!r} (expected false, TF-RC1-IOS-SCENES)",
     )
+    ats = info.get("NSAppTransportSecurity")
+    evaluation.add(
+        "ats-default",
+        ats is None,
+        "no NSAppTransportSecurity: Apple's defaults (HTTPS only, TLS 1.2+, no exceptions)"
+        if ats is None
+        else f"App Transport Security is changed: NSAppTransportSecurity={ats!r}",
+    )
     icon_name = info.get("CFBundleIcons", {}).get("CFBundlePrimaryIcon", {}).get("CFBundleIconName")
     has_assets = (app / "Assets.car").is_file()
     evaluation.add(
@@ -513,6 +601,13 @@ def evaluate(
         )
         used_categories = _required_reason_check(evaluation, manifest, executable, macho)
         collected = manifest.get("NSPrivacyCollectedDataTypes", [])
+        expected_collected = PRIVACY_COLLECTED[privacy_collected]
+        evaluation.add(
+            "privacy-collected-data",
+            collected == expected_collected,
+            f"NSPrivacyCollectedDataTypes={collected!r} "
+            f"(expected {privacy_collected}: {expected_collected!r})",
+        )
     else:
         evaluation.add(
             "privacy-manifest", False, "PrivacyInfo.xcprivacy is not bundled (TF-RC1-IOS-PRIVACY)"
@@ -530,16 +625,7 @@ def evaluate(
         f"values-ru {'present' if russian else 'missing'} under {COMPOSE_RESOURCES}",
     )
 
-    spkis = production_spkis(keyring)
-    compiled_keys = [spki[:16] + "…" for spki in spkis if contains_text(executable, spki)]
-    has_origin = contains_text(executable, PRODUCTION_OTA_ORIGIN_HOST)
-    evaluation.add(
-        "ota-off",
-        not compiled_keys and not has_origin,
-        "no production OTA origin or production public key in the executable"
-        if not compiled_keys and not has_origin
-        else f"production OTA compiled in: origin={has_origin}, keys={compiled_keys}",
-    )
+    ota_report = _ota_checks(evaluation, executable, keyring, ota)
 
     forbidden: list[str] = []
     for path in sorted(app.rglob("*")):
@@ -583,6 +669,7 @@ def evaluate(
             "sha256": hashlib.sha256(executable).hexdigest(),
             "architectures": list(macho.architectures),
         },
+        "ota": ota_report,
         "requiredReasonApisUsed": used_categories,
         "collectedDataTypes": collected,
         "bundleSize": sum(p.stat().st_size for p in app.rglob("*") if p.is_file()),
@@ -590,6 +677,71 @@ def evaluate(
         "result": "PASS" if evaluation.passed else "FAIL",
     }
     return evaluation, report
+
+
+def _ota_checks(
+    evaluation: Evaluation, executable: bytes, keyring: Path, ota: str
+) -> dict[str, Any]:
+    """The OTA mode checks (M5.IOS.2): what the executable pins against what ``ota`` requires."""
+    keys = production_keys(keyring)
+    fingerprints = {key_id: spki_sha256(spki) for key_id, spki in keys.items()}
+    evaluation.add(
+        "ota-keyring",
+        fingerprints == PRODUCTION_KEY_SPKI_SHA256,
+        f"the production keyring given is the committed one: {sorted(keys)}"
+        if fingerprints == PRODUCTION_KEY_SPKI_SHA256
+        else f"the production keyring given is not the pinned one: {fingerprints} "
+        f"(expected {PRODUCTION_KEY_SPKI_SHA256})",
+    )
+    embedded = {spki: spki_sha256(spki) for spki in find_text(executable, P256_SPKI)}
+    by_fingerprint = {sha: key_id for key_id, sha in PRODUCTION_KEY_SPKI_SHA256.items()}
+    embedded_ids = sorted(
+        by_fingerprint.get(sha or "", f"unknown:{sha}") for sha in embedded.values()
+    )
+    origins = sorted(find_text(executable, HTTPS_ORIGIN))
+    has_origin = PRODUCTION_OTA_ORIGIN in origins or contains_text(
+        executable, PRODUCTION_OTA_ORIGIN_HOST
+    )
+    forbidden = [
+        o for o in origins if FORBIDDEN_ORIGIN_HOSTS.search(o.split("//", 1)[1].split(":")[0])
+    ]
+    evaluation.add(
+        "ota-no-staging-origin",
+        not forbidden,
+        f"staging or development origins compiled in: {forbidden}"
+        if forbidden
+        else "no staging, loopback or emulator origin in the executable",
+    )
+    if ota == "off":
+        passed = not embedded and not has_origin
+        evaluation.add(
+            "ota-off",
+            passed,
+            "no production OTA origin and no public key in the executable"
+            if passed
+            else f"OTA compiled in: production origin={has_origin}, keys={embedded_ids}",
+        )
+    else:
+        expected_ids = sorted(PRODUCTION_KEY_SPKI_SHA256)
+        ids_named = all(contains_text(executable, key_id) for key_id in expected_ids)
+        passed = PRODUCTION_OTA_ORIGIN in origins and embedded_ids == expected_ids and ids_named
+        evaluation.add(
+            "ota-on",
+            passed,
+            f"origin {PRODUCTION_OTA_ORIGIN} and exactly the pinned keys {expected_ids} "
+            "(SPKI SHA-256 verified)"
+            if passed
+            else f"expected origin {PRODUCTION_OTA_ORIGIN} and exactly {expected_ids}: "
+            f"origin {'present' if PRODUCTION_OTA_ORIGIN in origins else 'missing'}, "
+            f"keys {embedded_ids}, key ids {'named' if ids_named else 'missing'}",
+        )
+    return {
+        "mode": ota,
+        "productionOrigin": has_origin,
+        "embeddedKeys": embedded_ids,
+        "embeddedKeySpkiSha256": sorted(sha or "not-base64" for sha in embedded.values()),
+        "httpsOrigins": origins,
+    }
 
 
 def format_summary(evaluation: Evaluation, archive: Path) -> str:
@@ -602,6 +754,18 @@ def format_summary(evaluation: Evaluation, archive: Path) -> str:
 def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0] if __doc__ else None)
     parser.add_argument("--archive", required=True, help="the .xcarchive to check")
+    parser.add_argument(
+        "--ota",
+        required=True,
+        choices=OTA_MODES,
+        help="the OTA mode the archive must have: off (no origin, no key) or on (production)",
+    )
+    parser.add_argument(
+        "--privacy-collected",
+        default="none",
+        choices=sorted(PRIVACY_COLLECTED),
+        help="what NSPrivacyCollectedDataTypes must declare (app-privacy.md §3; default none)",
+    )
     parser.add_argument("--expected-version", help="CFBundleShortVersionString, e.g. 1.0.0")
     parser.add_argument("--expected-build", help="CFBundleVersion, e.g. 1")
     parser.add_argument(
@@ -612,7 +776,7 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser.add_argument(
         "--production-keyring",
         default=str(DEFAULT_PRODUCTION_KEYRING),
-        help="the committed production keyring whose keys an OTA-off build must not carry",
+        help="the committed production keyring (its fingerprints must be the pinned ones)",
     )
     parser.add_argument("--report", help="write the JSON report to this file")
     return parser.parse_args(argv)
@@ -630,6 +794,8 @@ def main(argv: list[str] | None = None) -> int:
             expected_sdk=args.expected_sdk,
             expected_xcode_build=args.expected_xcode_build,
             keyring=Path(args.production_keyring),
+            ota=args.ota,
+            privacy_collected=args.privacy_collected,
         )
     except ToolError as error:
         print(f"ERROR: {error}", file=sys.stderr)
