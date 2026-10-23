@@ -1,6 +1,6 @@
 > Task :composeApp:generateOtaSettings
 
-[Incubating] Problems report is available at: file:///Users/alexeykravtsov/Desktop/workspace/TalentForge/mobile/build/reports/problems/problems-report.html
+[Incubating] Problems report is available at: file://~/Desktop/workspace/TalentForge/mobile/build/reports/problems/problems-report.html
 
 Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
 

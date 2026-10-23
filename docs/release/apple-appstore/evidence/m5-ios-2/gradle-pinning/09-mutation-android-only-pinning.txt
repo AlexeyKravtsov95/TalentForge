@@ -1,10 +1,10 @@
 
 > Configure project :composeApp
-w: file:///Users/alexeykravtsov/Desktop/workspace/TalentForge/mobile/composeApp/build.gradle.kts:168:28: Unchecked cast of 'Any?' to 'List<Map<String, Any?>>'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/build.gradle.kts:168:28: Unchecked cast of 'Any?' to 'List<Map<String, Any?>>'.
 
 > Task :composeApp:verifyOtaSettingsRules FAILED
 
-[Incubating] Problems report is available at: file:///Users/alexeykravtsov/Desktop/workspace/TalentForge/mobile/build/reports/problems/problems-report.html
+[Incubating] Problems report is available at: file://~/Desktop/workspace/TalentForge/mobile/build/reports/problems/problems-report.html
 
 FAILURE: Build failed with an exception.
 

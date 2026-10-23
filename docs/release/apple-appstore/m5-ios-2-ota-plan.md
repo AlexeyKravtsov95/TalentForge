@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Статус | **ПЛАН.** В M5.IOS.1 production OTA на iOS **выключен** и не включается |
+| Статус | **ПЛАН (исторический).** Реализовано в M5.IOS.2: результаты и статусы — [m5-ios-2-ota-readiness](m5-ios-2-ota-readiness.md), действия владельца — [m5-ios-2-owner-guide](m5-ios-2-owner-guide.md). Шаги 11 (физический iPhone) и 13 (privacy и магазин) остаются за владельцем |
 | Цель | включить на iOS тот же production OTA, что на Android (contract v1, `https://ota.mythweld.com`, ключи `tf-prod-2026a` + резерв `tf-prod-2026b`) после отдельного iOS release gate |
 | Основа | [ota-contract-v1](../../ota/ota-contract-v1.md), [client-architecture](../../ota/client-architecture.md), [test-plan §6 C](../../ota/test-plan.md#c-ios-release-gate-only-before-a-public-ios-release-with-ota) (iOS release gate), [android-production-enablement](../../ota/android-production-enablement.md), [production-deployment](../../ota/production-deployment.md) |
 | Merge | только после code review; самостоятельный merge запрещён |

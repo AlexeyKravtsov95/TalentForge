@@ -313,7 +313,7 @@ SHA-256 от DER SPKI каждого ключа закоммиченного [`k
 
 Где закреплены (любое расхождение — ошибка):
 
-* `mobile/composeApp/build.gradle.kts` (`androidProductionOtaSpkiSha256`). **Каждая** сборка, с OTA и
+* `mobile/composeApp/build.gradle.kts` (`productionOtaSpkiSha256`, общий для Android и iOS с M5.IOS.2). **Каждая** сборка, с OTA и
   без, останавливается, если содержимое keyring не совпадает с отпечатками. `verifyOtaSettingsRules`
   (перед `desktopTest`, в том числе в CI) доказывает это на подменённых копиях.
 * `docs/release/ota-prod3-evidence/run-matrix.sh`: проверяет keyring, `GeneratedOtaSettings` и dex

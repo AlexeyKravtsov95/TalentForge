@@ -186,6 +186,23 @@ existing tests unchanged and green. B.6: texts and declarations prepared, **not 
 5. App Store privacy answers and privacy policy updated; App Transport Security defaults
    unchanged.
 
+**M5.IOS.2 status (2026-10-23, iOS).** Results and evidence:
+[m5-ios-2-ota-readiness](../release/apple-appstore/m5-ios-2-ota-readiness.md).
+C.1/A: not re-run here (gate A was passed for Android; the production origin was re-checked
+read-only, preflight `OK`). C.2: **PASS on the iOS Simulator** — the existing L4 adapter tests,
+plus the new `IosOtaStagingE2ETest`: the production iOS stack (`NSURLSession` with ATS defaults
+and the system trust store, Security.framework, the Application Support store, `NSUserDefaults`
+builds, the app's Compose resources) against the real publisher's staging releases over verified
+HTTPS, 14 phases run by `scripts/ios_ota_e2e.py` one simulator process at a time (S1–S12, S3b,
+SIGKILL mid-download and cold-start resume, background/foreground, rejected certificates), and
+the real app on the simulator (`ios_ota_e2e.py app`). C.3 (physical device, including
+suspension and relaunch on hardware): **NOT RUN** — owner plan P-1…P-13 in
+[m5-ios-2-owner-guide §5](../release/apple-appstore/m5-ios-2-owner-guide.md). C.4 (kill switch):
+**PASS** — the OTA OFF archive carries no origin and no key (`verify_ios_archive.py --ota off`),
+the OTA OFF app opens no Internet socket, and a binary without settings has no OTA runtime. C.5:
+ATS defaults verified in both archives; App Privacy answers and the published policy:
+**BLOCKED** (owner).
+
 ## 7. Performance measurements (M5.OTA.3, L6)
 
 The per-file design (ADR-0001 D2) costs about 400 requests for a first install. M5.OTA.3 measures

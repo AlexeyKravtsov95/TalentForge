@@ -1,0 +1,17 @@
+PASS    dns                      ota.mythweld.com -> cl-541e19d9.mf.cdnmgf.megafon.ru ['178.176.128.203'] (aliases ['ota.mythweld.com', 'cl-541e19d9.service.cdn.msk.vkcs.cloud'])
+PASS    tls                      TLSv1.3, certificate for ['ota.mythweld.com'] (hostname verified), issuer countryName=US, organizationName=Let's Encrypt, commonName=YE2
+PASS    tls.expiry               certificate valid until 2027-01-18 (87 days)
+PASS    tls.legacy               TLS 1.0/1.1 handshake refused: TLSV1_ALERT_INTERNAL_ERROR
+WARN    http.plain               plain HTTP is served (200); clients refuse http:// themselves - prefer an HTTPS redirect for http:// at the edge
+PASS    catalog.http             200, contract §1 headers, 1031 B
+PASS    catalog.gzip             same bytes with Accept-Encoding: gzip (identity)
+PASS    catalog.signature        verified: sequence 1, active 1.60.1.70450-r1, 1 release(s), payload sha256:cd4e25b9cf4d4f35c7e7f3d679a790dac69b8b19c334e8861181d79b51e18e8c
+PASS    catalog.validity         expires 2026-12-05T08:31:31Z (42 days left; re-sign below 15)
+PASS    release.1.60.1.70450-r1  397 files, 5,077,048 bytes re-hashed; 398 objects with contract headers
+PASS    releases                 1/1 listed release(s) verified
+PASS    catalog.bucket           the bucket host serves the same
+PASS    private.origin           13 private paths answered 403/404 (staging catalog, listings, acl/policy/versioning, keys outside the contract)
+PASS    private.bucket           13 private paths answered 403/404 (staging catalog, listings, acl/policy/versioning, keys outside the contract)
+MANUAL  write.anonymous          anonymous writes are not attempted (a probe would itself be a write): confirm the bucket ACL is private and the policy grants s3:GetObject only (docs/ota/production-deployment.md §2)
+result: OK (https://ota.mythweld.com, 2026-10-23T10:07:12Z)
+exit=0
