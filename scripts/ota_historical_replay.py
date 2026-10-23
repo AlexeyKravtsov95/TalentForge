@@ -24,7 +24,8 @@ Replays the real patch without waiting for a new one and without touching produc
 <out> must be outside any git checkout (the stand writes private staging and TLS keys there)
 and empty. Exit codes: 0 every automatic check PASS, 1 a FAIL, 3 BLOCKED or NOT RUN (no FAIL),
 2 usage. The checkout is never modified; production is only ever read (optional guard: two
-anonymous GETs of the public production catalog, compared before and after).
+anonymous GETs of the public production catalog, compared before and after; a catalog not read
+or changed in between is BLOCKED, never PASS, and the report is written either way).
 """
 
 from __future__ import annotations
@@ -41,7 +42,7 @@ import sys
 import time
 import traceback
 from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from types import ModuleType
 from typing import Any
@@ -591,13 +592,77 @@ def phase_client(r: Replay) -> None:
 # --------------------------------------------------------------------------- guards
 
 
-def production_catalog_sha() -> str | None:
-    """SHA-256 of the public production catalog (an anonymous GET); None when unreachable."""
-    with httpx.Client(follow_redirects=False, timeout=30.0) as client:
-        response = fetch(client, PRODUCTION_CATALOG)
+@dataclass(frozen=True)
+class CatalogRead:
+    at: str
+    sha256: str | None  # None: not read (see detail)
+    detail: str
+
+
+def _production_client() -> httpx.Client:
+    return httpx.Client(follow_redirects=False, timeout=30.0)
+
+
+def read_production_catalog(out: Path, name: str) -> CatalogRead:
+    """One anonymous GET of the public production catalog; never raises.
+
+    A timeout, a network error, an unavailable CDN or any other exception is a catalog not read,
+    with its reason (the traceback under ``logs/``); the body read is kept under ``guard/``.
+    """
+    at = _stamp(_now())
+    try:
+        with _production_client() as client:
+            response = fetch(client, PRODUCTION_CATALOG)
+    except Exception as exc:  # noqa: BLE001 - recorded as a catalog not read, never a crash
+        log = out / "logs" / f"guard-{name}-crash.txt"
+        log.parent.mkdir(parents=True, exist_ok=True)
+        log.write_text(traceback.format_exc(), encoding="utf-8")
+        return CatalogRead(at, None, f"{type(exc).__name__}: {exc}; {log.relative_to(out)}")
     if response.status != 200:
-        return None
-    return "sha256:" + hashlib.sha256(response.body).hexdigest()
+        return CatalogRead(at, None, f"HTTP {response.status or response.error}")
+    body = out / "guard" / f"production-catalog-{name}.json"
+    body.parent.mkdir(parents=True, exist_ok=True)
+    body.write_bytes(response.body)
+    sha = "sha256:" + hashlib.sha256(response.body).hexdigest()
+    return CatalogRead(at, sha, f"HTTP 200, {len(response.body)} bytes; {body.relative_to(out)}")
+
+
+def guard_production(r: Replay, before: CatalogRead, after: CatalogRead) -> None:
+    """G2 from the reads before and after the replay: PASS only when both were read and equal.
+
+    A catalog not read is BLOCKED. A catalog that changed between the reads is BLOCKED too, not
+    FAIL: the replay holds no production credential and publishes to its local staging stand
+    only, so the change is an external publication the guard can report but not attribute.
+    """
+    r.facts["productionGuard"] = {
+        "url": PRODUCTION_CATALOG,
+        "before": asdict(before),
+        "after": asdict(after),
+    }
+    title = "the production catalog did not change during the replay"
+    unread = [(n, c) for n, c in (("before", before), ("after", after)) if c.sha256 is None]
+    if unread:
+        reasons = "; ".join(f"{n} ({c.at}): {c.detail}" for n, c in unread)
+        r.add("G2", "guard", title, Verdict.BLOCKED, f"{PRODUCTION_CATALOG} not read - {reasons}")
+    elif before.sha256 == after.sha256:
+        r.add(
+            "G2",
+            "guard",
+            title,
+            Verdict.PASS,
+            f"anonymous GET at {before.at} and {after.at}: {before.sha256}",
+        )
+    else:
+        r.add(
+            "G2",
+            "guard",
+            title,
+            Verdict.BLOCKED,
+            f"changed between {before.at} and {after.at}: {before.sha256} -> {after.sha256}; "
+            "an external change (the replay holds no production credential and publishes to "
+            "its local staging stand only), so whether production stayed untouched is not "
+            "established by this guard; both bodies under guard/",
+        )
 
 
 def checkout_state() -> dict[str, str]:
@@ -671,7 +736,7 @@ def run(args: argparse.Namespace) -> int:
     r = Replay(out)
     main = main_commit(ROOT)
     before = checkout_state()
-    production_before = None if args.no_production_guard else production_catalog_sha()
+    production_before = None if args.no_production_guard else read_production_catalog(out, "before")
     r.facts.update(startedAt=_stamp(_now()), mainCommit=main, checkout=before)
 
     detected: list[DetectionDocument | None] = [None]
@@ -714,22 +779,11 @@ def run(args: argparse.Namespace) -> int:
         f"HEAD {after['head'][:12]}, BundledDatasets.kt sha256 {after['bundledDatasets'][:12]}, "
         f"production keyring sha256 {after['productionKeyring'][:12]}",
     )
-    title = "the production catalog did not change during the replay"
-    if args.no_production_guard:
+    if production_before is None:
+        title = "the production catalog did not change during the replay"
         r.add("G2", "guard", title, Verdict.NOT_RUN, "--no-production-guard")
     else:
-        production_after = production_catalog_sha()
-        if production_before is None or production_after is None:
-            r.add("G2", "guard", title, Verdict.BLOCKED, f"{PRODUCTION_CATALOG} unreachable")
-        else:
-            r.expect(
-                "G2",
-                "guard",
-                title,
-                production_before == production_after,
-                f"anonymous GET before and after: {production_before[:19]}... / "
-                f"{production_after[:19]}...",
-            )
+        guard_production(r, production_before, read_production_catalog(out, "after"))
     r.add(
         "M1",
         "android",
