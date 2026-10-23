@@ -1,0 +1,265 @@
+{
+  "format": "talentforge-ios-ota-app-e2e",
+  "at": "2026-10-23T10:01:39Z",
+  "xcode": "Xcode 26.4.1 Build version 17E202",
+  "simulator": {
+    "device": "iPhone 17 Pro",
+    "runtime": "iOS 26.4.1"
+  },
+  "checks": [
+    {
+      "id": "app-first-launch-activates",
+      "passed": true,
+      "detail": "2 HTTPS requests by the app (catalog, the manifest 13e2750e0815\u2026; files from the app's bundle), state.json active=1.60.1.70450-r1, running=True"
+    },
+    {
+      "id": "app-request-headers",
+      "passed": true,
+      "detail": "User-Agent ['TalentForge/1.0.0']; Accept-Language ['*'] (no device language); header names ['Accept', 'Accept-Encoding', 'Accept-Language', 'Connection', 'Host', 'User-Agent']; no Cookie; paths ['13e2750e0815f3e9fe8fc18487bd9691a4509faf6c7268a0863260d7e03148ec', 'catalog.json']\u2026"
+    },
+    {
+      "id": "app-relaunch-offline-keeps-b",
+      "passed": true,
+      "detail": "relaunched with every connection dropped: running=True, active=1.60.1.70450-r1"
+    },
+    {
+      "id": "app-terminated-mid-install-recovers",
+      "passed": true,
+      "detail": "terminated with the manifest in flight (then active=None); after the cold start: active=1.60.1.70450-r1, running=True"
+    },
+    {
+      "id": "app-background-then-foreground",
+      "passed": true,
+      "detail": "in the background for 6 s: active=None; back in the foreground: active=1.60.1.70450-r1"
+    },
+    {
+      "id": "app-ota-off-no-network",
+      "passed": true,
+      "detail": "15 s after launch: running=True, Internet sockets none (lsof), requests 0, OTA directory absent"
+    }
+  ],
+  "requests": [
+    {
+      "path": "v1/channels/staging/catalog.json",
+      "fault": "ok",
+      "status": 200,
+      "headers": {
+        "Host": "localhost:8443",
+        "Accept": "*/*",
+        "Accept-Language": "*",
+        "Connection": "keep-alive",
+        "Accept-Encoding": "gzip, deflate, br",
+        "User-Agent": "TalentForge/1.0.0"
+      }
+    },
+    {
+      "path": "v1/blobs/sha256/13e2750e0815f3e9fe8fc18487bd9691a4509faf6c7268a0863260d7e03148ec",
+      "fault": "ok",
+      "status": 200,
+      "headers": {
+        "Host": "localhost:8443",
+        "Accept": "*/*",
+        "Accept-Language": "*",
+        "Connection": "keep-alive",
+        "Accept-Encoding": "gzip, deflate, br",
+        "User-Agent": "TalentForge/1.0.0"
+      }
+    },
+    {
+      "path": "v1/channels/staging/catalog.json",
+      "fault": "drop",
+      "status": 0,
+      "headers": {
+        "Host": "localhost:8443",
+        "Accept": "*/*",
+        "Accept-Language": "*",
+        "Connection": "keep-alive",
+        "Accept-Encoding": "gzip, deflate, br",
+        "User-Agent": "TalentForge/1.0.0"
+      }
+    },
+    {
+      "path": "v1/channels/staging/catalog.json",
+      "fault": "drop",
+      "status": 0,
+      "headers": {
+        "Host": "localhost:8443",
+        "Accept": "*/*",
+        "Accept-Language": "*",
+        "Connection": "keep-alive",
+        "Accept-Encoding": "gzip, deflate, br",
+        "User-Agent": "TalentForge/1.0.0"
+      }
+    },
+    {
+      "path": "v1/channels/staging/catalog.json",
+      "fault": "drop",
+      "status": 0,
+      "headers": {
+        "Host": "localhost:8443",
+        "Accept": "*/*",
+        "Accept-Language": "*",
+        "Connection": "keep-alive",
+        "Accept-Encoding": "gzip, deflate, br",
+        "User-Agent": "TalentForge/1.0.0"
+      }
+    },
+    {
+      "path": "v1/channels/staging/catalog.json",
+      "fault": "drop",
+      "status": 0,
+      "headers": {
+        "Host": "localhost:8443",
+        "Accept": "*/*",
+        "Accept-Language": "*",
+        "Connection": "keep-alive",
+        "Accept-Encoding": "gzip, deflate, br",
+        "User-Agent": "TalentForge/1.0.0"
+      }
+    },
+    {
+      "path": "v1/channels/staging/catalog.json",
+      "fault": "drop",
+      "status": 0,
+      "headers": {
+        "Host": "localhost:8443",
+        "Accept": "*/*",
+        "Accept-Language": "*",
+        "Connection": "keep-alive",
+        "Accept-Encoding": "gzip, deflate, br",
+        "User-Agent": "TalentForge/1.0.0"
+      }
+    },
+    {
+      "path": "v1/channels/staging/catalog.json",
+      "fault": "drop",
+      "status": 0,
+      "headers": {
+        "Host": "localhost:8443",
+        "Accept": "*/*",
+        "Accept-Language": "*",
+        "Connection": "keep-alive",
+        "Accept-Encoding": "gzip, deflate, br",
+        "User-Agent": "TalentForge/1.0.0"
+      }
+    },
+    {
+      "path": "v1/channels/staging/catalog.json",
+      "fault": "drop",
+      "status": 0,
+      "headers": {
+        "Host": "localhost:8443",
+        "Accept": "*/*",
+        "Accept-Language": "*",
+        "Connection": "keep-alive",
+        "Accept-Encoding": "gzip, deflate, br",
+        "User-Agent": "TalentForge/1.0.0"
+      }
+    },
+    {
+      "path": "v1/channels/staging/catalog.json",
+      "fault": "drop",
+      "status": 0,
+      "headers": {
+        "Host": "localhost:8443",
+        "Accept": "*/*",
+        "Accept-Language": "*",
+        "Connection": "keep-alive",
+        "Accept-Encoding": "gzip, deflate, br",
+        "User-Agent": "TalentForge/1.0.0"
+      }
+    },
+    {
+      "path": "v1/channels/staging/catalog.json",
+      "fault": "drop",
+      "status": 0,
+      "headers": {
+        "Host": "localhost:8443",
+        "Accept": "*/*",
+        "Accept-Language": "*",
+        "Connection": "keep-alive",
+        "Accept-Encoding": "gzip, deflate, br",
+        "User-Agent": "TalentForge/1.0.0"
+      }
+    },
+    {
+      "path": "v1/channels/staging/catalog.json",
+      "fault": "slow:4000",
+      "status": 200,
+      "headers": {
+        "Host": "localhost:8443",
+        "Accept": "*/*",
+        "Accept-Language": "*",
+        "Connection": "keep-alive",
+        "Accept-Encoding": "gzip, deflate, br",
+        "User-Agent": "TalentForge/1.0.0"
+      }
+    },
+    {
+      "path": "v1/channels/staging/catalog.json",
+      "fault": "ok",
+      "status": 200,
+      "headers": {
+        "Host": "localhost:8443",
+        "Accept": "*/*",
+        "Accept-Language": "*",
+        "Connection": "keep-alive",
+        "Accept-Encoding": "gzip, deflate, br",
+        "User-Agent": "TalentForge/1.0.0"
+      }
+    },
+    {
+      "path": "v1/blobs/sha256/13e2750e0815f3e9fe8fc18487bd9691a4509faf6c7268a0863260d7e03148ec",
+      "fault": "ok",
+      "status": 200,
+      "headers": {
+        "Host": "localhost:8443",
+        "Accept": "*/*",
+        "Accept-Language": "*",
+        "Connection": "keep-alive",
+        "Accept-Encoding": "gzip, deflate, br",
+        "User-Agent": "TalentForge/1.0.0"
+      }
+    },
+    {
+      "path": "v1/channels/staging/catalog.json",
+      "fault": "slow:4000",
+      "status": 200,
+      "headers": {
+        "Host": "localhost:8443",
+        "Accept": "*/*",
+        "Accept-Language": "*",
+        "Connection": "keep-alive",
+        "Accept-Encoding": "gzip, deflate, br",
+        "User-Agent": "TalentForge/1.0.0"
+      }
+    },
+    {
+      "path": "v1/channels/staging/catalog.json",
+      "fault": "ok",
+      "status": 200,
+      "headers": {
+        "Host": "localhost:8443",
+        "Accept": "*/*",
+        "Accept-Language": "*",
+        "Connection": "keep-alive",
+        "Accept-Encoding": "gzip, deflate, br",
+        "User-Agent": "TalentForge/1.0.0"
+      }
+    },
+    {
+      "path": "v1/blobs/sha256/13e2750e0815f3e9fe8fc18487bd9691a4509faf6c7268a0863260d7e03148ec",
+      "fault": "ok",
+      "status": 200,
+      "headers": {
+        "Host": "localhost:8443",
+        "Accept": "*/*",
+        "Accept-Language": "*",
+        "Connection": "keep-alive",
+        "Accept-Encoding": "gzip, deflate, br",
+        "User-Agent": "TalentForge/1.0.0"
+      }
+    }
+  ],
+  "result": "PASS"
+}

@@ -790,6 +790,12 @@ tasks.matching { it.name.startsWith("linkRelease") && it.name.contains("Ios") }.
     dependsOn(checkReleaseOtaSettings)
 }
 
+// M5.IOS.2: IosOtaStagingE2ETest needs the HTTPS origin and simulator of scripts/ios_ota_e2e.py,
+// which spawns its phases one process at a time; the plain simulator test run leaves it out.
+tasks.withType<org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeSimulatorTest>().configureEach {
+    filter.excludeTestsMatching("*IosOtaStagingE2ETest*")
+}
+
 // M5.PLAY.1: the same gates for the Google Play bundle, with the upload key's settings.
 val checkPlayUploadSigning = tasks.register("checkPlayUploadSigning") {
     group = "release"
