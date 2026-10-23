@@ -255,9 +255,9 @@ UIDeviceFamily [1, 2], en/ru, arm64, `DTSDKName iphoneos26.4`, `DTXcodeBuild 17E
 | `PlatformBlobFetcher` | NSURLSession, ephemeral, HTTPS-only, без редиректов, лимит размера, ATS по умолчанию (`NSAppTransportSecurity` нет) | PASS (код + `IosOtaAdapterTest`) |
 | Подпись Security.framework | ECDSA P-256/SHA-256, векторы контракта, некорректные ключи/подписи → `false` | PASS (`IosOtaAdapterTest`) |
 | Хранилище / атомарная установка | `fsync` + `rename(2)`, небезопасные пути отклоняются | PASS (`IosOtaAdapterTest`) |
-| Ретеншн, восстановление, сохранность билдов | общая логика с Android (`OtaRuntime.open` → `recover()`) | PASS (общие тесты); на iOS end-to-end — M5.IOS.2 |
+| Ретеншн, восстановление, сохранность билдов | общая логика с Android (`OtaRuntime.open` → `recover()`) | PASS (общие тесты); на iOS end-to-end — PASS в M5.IOS.2 ([§4](m5-ios-2-ota-readiness.md#4-ios-staging-e2e-на-симуляторе)) |
 | Совместимость с contract v1 и `https://ota.mythweld.com` | тот же клиент и контракт, что на Android | PASS (код) |
-| Закрепление iOS production-канала за origin/keyring | **нет**: Android production-канал закреплён в сборке (M5.OTA.PROD.3), iOS — нет (принимается любой `https`-origin с `tf-prod-*` ключами) | GAP → шаг 1 M5.IOS.2 |
+| Закрепление iOS production-канала за origin/keyring | M5.IOS.1: не закреплён. **Закрыто в M5.IOS.2**: origin и keyring закреплены так же, как у Android ([m5-ios-2-ota-readiness §2](m5-ios-2-ota-readiness.md#2-закрепление-production-канала-gradle)) | PASS (M5.IOS.2) |
 | Staging/test ключи в production | правила `verifyOtaSettingsRules` запрещают | PASS |
 
 План включения — [m5-ios-2-ota-plan.md](m5-ios-2-ota-plan.md) (14 шагов, включая все 12 обязательных пунктов задачи).
@@ -397,7 +397,7 @@ iPad Pro 13-inch (M5).
 | O-2 | iPad 13": на стартовой камере видны 1,5–2 дерева из трёх, третье — за краем или под панелью инспектора; остальное — панорамированием | так же выглядит утверждённый эталон M5.UI.TABLET.1 (`docs/screenshots/m5-ui-tablet-1/after/tablet1-1024x1366-portrait-paladin-en.png`): минимальный размер узла 68 dp. Изменение — вопрос к дизайну, не регрессия iOS |
 | O-3 | На Home в меню «⋯» недавнего билда нет «Создать копию» (есть в «Все билды») | поведение общего кода, одинаково на Android; описание в сторе не обещает дублирование с Home |
 | O-4 | `platformPrefersReducedMotion()` на iOS читает Reduce Motion один раз (`remember`); переключение в настройках без перезапуска экрана не проверялось. Dynamic Type проверен только при запуске с уже выбранным размером | smoke пройден; живое обновление — возможное улучшение, не требование |
-| O-5 | iOS production OTA-канал не закреплён за origin/keyring в сборке (Android закреплён) | безопасность перед OTA ON → шаг 1 M5.IOS.2 |
+| O-5 | iOS production OTA-канал не закреплён за origin/keyring в сборке (Android закреплён) | **закрыто в M5.IOS.2** ([readiness](m5-ios-2-ota-readiness.md)) |
 | O-6 | Kotlin 2.4.20 официально заявляет Xcode 26.4; Xcode 27.x не заявлен | несовместимость не выявлена; эмпирика — CI 27.1 |
 | O-7 | Bundle/executable называются `iosApp` (`CFBundleName = iosApp`); пользователю показывается `CFBundleDisplayName = TalentForge` | косметика, не влияет на Store; переименование таргета — отдельное решение |
 

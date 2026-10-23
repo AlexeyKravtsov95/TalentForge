@@ -1,0 +1,11 @@
+[==========] Running 1 tests from 3 test cases.
+[----------] Global test environment set-up.
+[----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest
+[ RUN      ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.insufficientStorageChangesNothing
+[ios-ota-e2e] PASSED insufficient storage (free space and ENOSPC of the Application Support store under test control): before the first file and ENOSPC half-way both end InsufficientStorage, no partial file, nothing changes; with space the next check installs B
+[       OK ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.insufficientStorageChangesNothing (5162 ms)
+[----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest (5162 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 tests from 1 test cases ran. (5162 ms total)
+[  PASSED  ] 1 tests.

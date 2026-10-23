@@ -1,0 +1,42 @@
+
+> Configure project :composeApp
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/build.gradle.kts:168:28: Unchecked cast of 'Any?' to 'List<Map<String, Any?>>'.
+
+> Task :composeApp:verifyOtaSettingsRules FAILED
+
+[Incubating] Problems report is available at: file://~/Desktop/workspace/TalentForge/mobile/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':composeApp:verifyOtaSettingsRules' (registered in build file 'composeApp/build.gradle.kts').
+> OTA settings rules do not hold:
+    iOS production, another origin: expected a problem containing "talentforge.ota.ios.production.baseUrl is pinned to https://ota.mythweld.com", got [talentforge.ota.ios.production.keyring must pin at least one key, talentforge.ota.ios.production.keyring must pin a primary and a backup key]
+    iOS production, the staging origin: expected a problem containing "talentforge.ota.ios.production.baseUrl is pinned to https://ota.mythweld.com", got [talentforge.ota.ios.production.keyring must pin at least one key, talentforge.ota.ios.production.keyring must pin a primary and a backup key]
+    iOS production, the origin with a path: expected a problem containing "talentforge.ota.ios.production.baseUrl is pinned to https://ota.mythweld.com", got [talentforge.ota.ios.production.keyring must pin at least one key, talentforge.ota.ios.production.keyring must pin a primary and a backup key]
+    iOS production, another origin while disabled: expected a problem containing "talentforge.ota.ios.production.baseUrl is pinned to https://ota.mythweld.com", got []
+    iOS production, another production key: expected a problem containing "talentforge.ota.ios.production.keyring must pin exactly the committed production keyring", got [talentforge.ota.ios.production.baseUrl must be an https origin without query or trailing slash]
+    iOS production, the committed key ids over other SPKIs: expected a problem containing "talentforge.ota.ios.production.keyring must pin exactly the committed production keyring", got [talentforge.ota.ios.production.baseUrl must be an https origin without query or trailing slash]
+    iOS production ON was refused: [talentforge.ota.ios.production.baseUrl must be an https origin without query or trailing slash, talentforge.ota.ios.production.keyring must pin at least one key, talentforge.ota.ios.production.keyring must pin a primary and a backup key]
+    iOS production ON did not generate exactly the pinned origin, the production channel and [tf-prod-2026a, tf-prod-2026b]:  = OtaPlatformSettings(
+          enabled = true,
+          channel = OtaChannel.PRODUCTION,
+          baseUrl = null,
+          keys = listOf(
+          ),
+      )
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 2s
+1 actionable task: 1 executed

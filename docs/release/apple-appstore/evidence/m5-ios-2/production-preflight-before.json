@@ -1,0 +1,82 @@
+{
+  "origin": "https://ota.mythweld.com",
+  "at": "2026-10-23T09:23:42Z",
+  "result": "OK",
+  "checks": [
+    {
+      "id": "dns",
+      "status": "PASS",
+      "detail": "ota.mythweld.com -> cl-541e19d9.mf.cdnmgf.megafon.ru ['178.176.128.203'] (aliases ['ota.mythweld.com', 'cl-541e19d9.service.cdn.msk.vkcs.cloud'])"
+    },
+    {
+      "id": "tls",
+      "status": "PASS",
+      "detail": "TLSv1.3, certificate for ['ota.mythweld.com'] (hostname verified), issuer countryName=US, organizationName=Let's Encrypt, commonName=YE2"
+    },
+    {
+      "id": "tls.expiry",
+      "status": "PASS",
+      "detail": "certificate valid until 2027-01-18 (87 days)"
+    },
+    {
+      "id": "tls.legacy",
+      "status": "PASS",
+      "detail": "TLS 1.0/1.1 handshake refused: TLSV1_ALERT_INTERNAL_ERROR"
+    },
+    {
+      "id": "http.plain",
+      "status": "WARN",
+      "detail": "plain HTTP is served (200); clients refuse http:// themselves - prefer an HTTPS redirect for http:// at the edge"
+    },
+    {
+      "id": "catalog.http",
+      "status": "PASS",
+      "detail": "200, contract \u00a71 headers, 1031 B"
+    },
+    {
+      "id": "catalog.gzip",
+      "status": "PASS",
+      "detail": "same bytes with Accept-Encoding: gzip (identity)"
+    },
+    {
+      "id": "catalog.signature",
+      "status": "PASS",
+      "detail": "verified: sequence 1, active 1.60.1.70450-r1, 1 release(s), payload sha256:cd4e25b9cf4d4f35c7e7f3d679a790dac69b8b19c334e8861181d79b51e18e8c"
+    },
+    {
+      "id": "catalog.validity",
+      "status": "PASS",
+      "detail": "expires 2026-12-05T08:31:31Z (42 days left; re-sign below 15)"
+    },
+    {
+      "id": "release.1.60.1.70450-r1",
+      "status": "PASS",
+      "detail": "397 files, 5,077,048 bytes re-hashed; 398 objects with contract headers"
+    },
+    {
+      "id": "releases",
+      "status": "PASS",
+      "detail": "1/1 listed release(s) verified"
+    },
+    {
+      "id": "catalog.bucket",
+      "status": "PASS",
+      "detail": "the bucket host serves the same"
+    },
+    {
+      "id": "private.origin",
+      "status": "PASS",
+      "detail": "13 private paths answered 403/404 (staging catalog, listings, acl/policy/versioning, keys outside the contract)"
+    },
+    {
+      "id": "private.bucket",
+      "status": "PASS",
+      "detail": "13 private paths answered 403/404 (staging catalog, listings, acl/policy/versioning, keys outside the contract)"
+    },
+    {
+      "id": "write.anonymous",
+      "status": "MANUAL",
+      "detail": "anonymous writes are not attempted (a probe would itself be a write): confirm the bucket ACL is private and the policy grants s3:GetObject only (docs/ota/production-deployment.md \u00a72)"
+    }
+  ]
+}

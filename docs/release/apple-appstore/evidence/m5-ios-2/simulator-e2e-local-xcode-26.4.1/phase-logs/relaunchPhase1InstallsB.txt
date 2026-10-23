@@ -1,0 +1,11 @@
+[==========] Running 1 tests from 3 test cases.
+[----------] Global test environment set-up.
+[----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest
+[ RUN      ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.relaunchPhase1InstallsB
+[ios-ota-e2e] PASSED relaunch phase 1 (process 1): B installed and active; saved builds on 70374 and 70450; the process exits
+[       OK ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.relaunchPhase1InstallsB (4775 ms)
+[----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest (4775 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 tests from 1 test cases ran. (4775 ms total)
+[  PASSED  ] 1 tests.

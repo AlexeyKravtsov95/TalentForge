@@ -1,0 +1,157 @@
+{
+  "format": "talentforge-ios-ota-e2e",
+  "at": "2026-10-23T11:26:22Z",
+  "toolchain": {
+    "xcode": "Xcode 26.4.1 Build version 17E202",
+    "iphoneosSdk": "26.4",
+    "iphonesimulatorSdk": "26.4"
+  },
+  "simulator": {
+    "device": "iPhone 17 Pro",
+    "runtime": "iOS 26.4.1",
+    "runtimeBuild": "23E254a",
+    "runtimeIdentifier": "com.apple.CoreSimulator.SimRuntime.iOS-26-4"
+  },
+  "stand": {
+    "keyId": "tf-staging-local-1c72b193",
+    "commit": "eb9fc468060f43cf1c1d5aa6e12394cabebf4748",
+    "releases": {
+      "a": "1.60.1.70374-r1",
+      "b": "1.60.1.70450-r1",
+      "bLevel2": "1.60.1.70450-r2"
+    }
+  },
+  "phases": [
+    {
+      "phase": "key-classes",
+      "method": "theAppConfigurationRefusesProductionTestAndPlaintextSettings",
+      "expect": "pass",
+      "passed": true,
+      "detail": "exit 0",
+      "seconds": 0.8
+    },
+    {
+      "phase": "update-70374-to-70450",
+      "method": "aToBOverHttpsKeepsTheOpenEditorAndTheSavedBuilds",
+      "expect": "pass",
+      "passed": true,
+      "detail": "exit 0",
+      "seconds": 17.1
+    },
+    {
+      "phase": "relaunch-1-install",
+      "method": "relaunchPhase1InstallsB",
+      "expect": "pass",
+      "passed": true,
+      "detail": "exit 0",
+      "seconds": 5.2
+    },
+    {
+      "phase": "relaunch-2-offline-cold-start",
+      "method": "relaunchPhase2ColdStartsOfflineOnB",
+      "expect": "pass",
+      "passed": true,
+      "detail": "exit 0",
+      "seconds": 3.4
+    },
+    {
+      "phase": "terminate-1-mid-download",
+      "method": "terminatePhase1KilledMidDownload",
+      "expect": "killed",
+      "passed": true,
+      "detail": "exit 137 (killed), marker present",
+      "seconds": 1.5
+    },
+    {
+      "phase": "terminate-2-cold-start-resume",
+      "method": "terminatePhase2ColdStartResumes",
+      "expect": "pass",
+      "passed": true,
+      "detail": "exit 0",
+      "seconds": 4.9
+    },
+    {
+      "phase": "suspension",
+      "method": "backgroundCancelsTheAttemptAndForegroundResumesIt",
+      "expect": "pass",
+      "passed": true,
+      "detail": "exit 0",
+      "seconds": 7.8
+    },
+    {
+      "phase": "transport",
+      "method": "transportFailuresChangeNothing",
+      "expect": "pass",
+      "passed": true,
+      "detail": "exit 0",
+      "seconds": 23.7
+    },
+    {
+      "phase": "tls",
+      "method": "rejectedCertificatesChangeNothing",
+      "expect": "pass",
+      "passed": true,
+      "detail": "exit 0",
+      "seconds": 0.6
+    },
+    {
+      "phase": "integrity",
+      "method": "signatureManifestAndFileFailuresChangeNothing",
+      "expect": "pass",
+      "passed": true,
+      "detail": "exit 0",
+      "seconds": 34.2
+    },
+    {
+      "phase": "disk-space",
+      "method": "insufficientStorageChangesNothing",
+      "expect": "pass",
+      "passed": true,
+      "detail": "exit 0",
+      "seconds": 5.6
+    },
+    {
+      "phase": "rollback-and-data-level",
+      "method": "rollbackAndAnIncompatibleDataLevel",
+      "expect": "pass",
+      "passed": true,
+      "detail": "exit 0",
+      "seconds": 7.9
+    },
+    {
+      "phase": "corrupted-store",
+      "method": "aCorruptedStoreRecovers",
+      "expect": "pass",
+      "passed": true,
+      "detail": "exit 0",
+      "seconds": 9.7
+    },
+    {
+      "phase": "historical-on-demand",
+      "method": "aSavedBuildOfAnUnbundledBuildDownloadsItsData",
+      "expect": "pass",
+      "passed": true,
+      "detail": "exit 0",
+      "seconds": 10.6
+    }
+  ],
+  "results": [
+    "PASSED kill switch: the binary without OTA settings resolves iosProduction and iosStaging to NOT_ENABLED and IosOta.runtime() = null; the stand key tf-staging-local-1c72b193 is refused in production (KEY_NOT_FOR_CHANNEL), test- keys in staging (TEST_KEY_IN_APP_KEYRING), http:// (BAD_BASE_URL, and the fetcher refuses it before connecting)",
+    "PASSED 70374 -> 70450 over HTTPS (NSURLSession, Security.framework): A from the bundle (only its manifest fetched); B 391 files / 5042736 bytes downloaded, 0 from the bundle, the publisher's manifest bytes installed; a new editor and a new DRUID build use 70450; the editor opened before reads only 70374 (5 reads after the switch); saved 70374 builds open on 70374; the library is unchanged by the update; the same catalog again: NO_CHANGE, 1 request",
+    "PASSED relaunch phase 1 (process 1): B installed and active; saved builds on 70374 and 70450; the process exits",
+    "PASSED relaunch phase 2 (a new process, offline): B active from disk with 0 requests at startup, both saved builds open on their own build, a check fails as Network and changes nothing",
+    "PASSED SIGKILL mid-download, then a cold start in a new process: recover() deleted 0 partial file(s) and kept 149 verified files; nothing was active and new builds stayed on 70374; the resume downloaded 248 files, reused 149, and activated B; the library is unchanged",
+    "PASSED background mid-download (onBackground, as ON_STOP calls it): the attempt is cancelled cooperatively, no request in the 2 s after it, no partial file, 68 verified files kept, nothing activated; foreground (onForeground) resumed and activated B without downloading a verified file again",
+    "PASSED transport (library, active release and product unchanged in every case; nothing installed): catalog 404 -> Http(status=404); catalog 500 -> Http(status=500); catalog 503 -> Http(status=503); catalog redirect -> Http(status=302); catalog connection dropped -> Network(detail=NSURLErrorDomain); manifest missing on the CDN -> Http(status=404); a file missing on the CDN -> Http(status=404); every connection dropped -> Network(detail=NSURLErrorDomain); connection lost after 150 files -> Network, 149 verified files kept; the resume downloaded 248, reused 149; origin down (connection refused) -> Network; no DNS answer -> Network",
+    "PASSED TLS (ATS defaults, the simulator's trust store with only the run's CA added): untrusted CA -> NetworkError(NSURLErrorDomain, retryable=false), 1 attempt; expired certificate -> NetworkError(NSURLErrorDomain, retryable=false), 1 attempt; certificate for another host -> NetworkError(NSURLErrorDomain, retryable=false), 1 attempt",
+    "PASSED integrity (library, active release and product unchanged, the saved build opens; the next clean check installs B): bad signature -> SignatureInvalid; tampered catalog payload -> SignatureInvalid; catalog signed by a foreign key -> UntrustedSigner; catalog signed by the fixtures' test- key -> UntrustedSigner; corrupt release manifest -> ManifestHashMismatch; SHA-256 mismatch of a file -> BlobHashMismatch; incomplete file -> BlobSizeMismatch; catalog past expiresAt -> CatalogExpired, 1 request",
+    "PASSED insufficient storage (free space and ENOSPC of the Application Support store under test control): before the first file and ENOSPC half-way both end InsufficientStorage, no partial file, nothing changes; with space the next check installs B",
+    "PASSED rollback B -> A (sequence 3): A active from the bundle (no talent file fetched), B kept as previous and the saved 70450 build opens on 70450; minDataLevel 2 -> NeedsNewerApp(1.60.1.70450-r2), 1 request, A stays; the old sequence 2 again -> SequenceRegression, nothing changes",
+    "PASSED corrupted OTA store: garbage state.json -> cold start on the bundle, no release deleted, the next check takes B back with 0 talent files fetched; a flipped byte in an installed file -> DatasetOutcome.Failed for the reader, B quarantined, new sessions on 70374, the next check re-installs B (398 files fetched); the library is unchanged throughout",
+    "PASSED a saved build of 70374 on an app that bundles only 70450: offline -> Unavailable(Offline), record unchanged; online -> 70374 downloaded (391 files), 70450 stays active, the build opens on 70374 with its record unchanged"
+  ],
+  "requests": 6887,
+  "requestsOnRefusedTlsOrigins": 0,
+  "redirectTargetRequests": 0,
+  "result": "PASS"
+}

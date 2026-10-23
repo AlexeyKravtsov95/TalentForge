@@ -1,0 +1,178 @@
+{
+  "schema": "talentforge.ios-archive-report.v1",
+  "archive": "TalentForge-ota-on.xcarchive",
+  "application": "iosApp.app",
+  "signed": false,
+  "info": {
+    "CFBundleIdentifier": "io.github.alexeykravtsov95.talentforge",
+    "CFBundleShortVersionString": "1.0.0",
+    "CFBundleVersion": "1",
+    "MinimumOSVersion": "17.2",
+    "UIDeviceFamily": [
+      1,
+      2
+    ],
+    "CFBundleLocalizations": [
+      "en",
+      "ru"
+    ],
+    "DTSDKName": "iphoneos27.1",
+    "DTXcode": "2710",
+    "DTXcodeBuild": "27A9275",
+    "DTPlatformVersion": "27.1",
+    "BuildMachineOSBuild": "26A434"
+  },
+  "executable": {
+    "name": "iosApp",
+    "size": 33963552,
+    "sha256": "1eaa616afd0a55f17d789e240ac7813776ef6f0dba5a3eec19a9d01c5cbb5468",
+    "architectures": [
+      "arm64"
+    ]
+  },
+  "ota": {
+    "mode": "on",
+    "productionOrigin": true,
+    "embeddedKeys": [
+      "tf-prod-2026a",
+      "tf-prod-2026b"
+    ],
+    "embeddedKeySpkiSha256": [
+      "1fac1b0d15f2a09fc3769099623fe1038e846f0033ec6e233f5111ff71239278",
+      "6997b3d47d74ceeb6daec62b1d94f3f3e3bc476534eefe8cd140f67578532b26"
+    ],
+    "httpsOrigins": [
+      "https://goo.gle",
+      "https://legal.mythweld.com",
+      "https://ota.mythweld.com",
+      "https://youtrack.jetbrains.com"
+    ]
+  },
+  "requiredReasonApisUsed": {
+    "NSPrivacyAccessedAPICategoryFileTimestamp": [
+      "_fstat",
+      "_stat"
+    ],
+    "NSPrivacyAccessedAPICategoryDiskSpace": [
+      "_NSURLVolumeAvailableCapacityForImportantUsageKey"
+    ],
+    "NSPrivacyAccessedAPICategoryUserDefaults": [
+      "_OBJC_CLASS_$_NSUserDefaults"
+    ]
+  },
+  "collectedDataTypes": [],
+  "bundleSize": 61480406,
+  "checks": [
+    {
+      "id": "archive-record",
+      "passed": true,
+      "detail": "ApplicationPath='Applications/iosApp.app', Architectures=['arm64']"
+    },
+    {
+      "id": "bundle-id",
+      "passed": true,
+      "detail": "CFBundleIdentifier='io.github.alexeykravtsov95.talentforge'"
+    },
+    {
+      "id": "version",
+      "passed": true,
+      "detail": "CFBundleShortVersionString='1.0.0' (expected 1.0.0), CFBundleVersion='1' (expected 1)"
+    },
+    {
+      "id": "minimum-os",
+      "passed": true,
+      "detail": "MinimumOSVersion='17.2' (expected 17.2)"
+    },
+    {
+      "id": "device-family",
+      "passed": true,
+      "detail": "UIDeviceFamily=[1, 2] (expected [1, 2]: iPhone and iPad)"
+    },
+    {
+      "id": "localizations",
+      "passed": true,
+      "detail": "CFBundleLocalizations=['en', 'ru'] (required ['en', 'ru'])"
+    },
+    {
+      "id": "device-capabilities",
+      "passed": true,
+      "detail": "UIRequiredDeviceCapabilities=['arm64']"
+    },
+    {
+      "id": "toolchain",
+      "passed": true,
+      "detail": "DTSDKName='iphoneos27.1' (expected iphoneos27.1), DTXcodeBuild='27A9275' (expected 27A9275), DTXcode='2710'"
+    },
+    {
+      "id": "export-compliance",
+      "passed": true,
+      "detail": "ITSAppUsesNonExemptEncryption=False (expected false)"
+    },
+    {
+      "id": "single-scene",
+      "passed": true,
+      "detail": "UIApplicationSupportsMultipleScenes=False (expected false, TF-RC1-IOS-SCENES)"
+    },
+    {
+      "id": "ats-default",
+      "passed": true,
+      "detail": "no NSAppTransportSecurity: Apple's defaults (HTTPS only, TLS 1.2+, no exceptions)"
+    },
+    {
+      "id": "app-icon",
+      "passed": true,
+      "detail": "CFBundleIconName='AppIcon', Assets.car present"
+    },
+    {
+      "id": "executable",
+      "passed": true,
+      "detail": "kind=macho, architectures=['arm64'], file types=[2] (expected a thin arm64 executable)"
+    },
+    {
+      "id": "embedded-code",
+      "passed": true,
+      "detail": "no embedded frameworks or libraries"
+    },
+    {
+      "id": "privacy-tracking",
+      "passed": true,
+      "detail": "NSPrivacyTracking=False, NSPrivacyTrackingDomains=[]"
+    },
+    {
+      "id": "privacy-required-reasons",
+      "passed": true,
+      "detail": "declared UserDefaults=CA92.1, FileTimestamp=C617.1, DiskSpace=E174.1; used FileTimestamp (_fstat, _stat), DiskSpace (_NSURLVolumeAvailableCapacityForImportantUsageKey), UserDefaults (_OBJC_CLASS_$_NSUserDefaults)"
+    },
+    {
+      "id": "privacy-collected-data",
+      "passed": true,
+      "detail": "NSPrivacyCollectedDataTypes=[] (expected none: [])"
+    },
+    {
+      "id": "compose-resources",
+      "passed": true,
+      "detail": "50 dataset JSON files, values-ru present under compose-resources/composeResources"
+    },
+    {
+      "id": "ota-keyring",
+      "passed": true,
+      "detail": "the production keyring given is the committed one: ['tf-prod-2026a', 'tf-prod-2026b']"
+    },
+    {
+      "id": "ota-no-staging-origin",
+      "passed": true,
+      "detail": "no staging, loopback or emulator origin in the executable"
+    },
+    {
+      "id": "ota-on",
+      "passed": true,
+      "detail": "origin https://ota.mythweld.com and exactly the pinned keys ['tf-prod-2026a', 'tf-prod-2026b'] (SPKI SHA-256 verified)"
+    },
+    {
+      "id": "no-secrets",
+      "passed": true,
+      "detail": "no key files or private keys in the bundle"
+    }
+  ],
+  "result": "PASS"
+}

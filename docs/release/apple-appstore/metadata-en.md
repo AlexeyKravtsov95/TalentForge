@@ -121,11 +121,13 @@ This build makes no network requests: all talent data is bundled. The interface 
 • Talent data is included with the app. When a talent data update is published, the app downloads it over HTTPS and verifies its signature; without a connection it keeps working with the data it has.
 ```
 
-и добавить в App Review Notes абзац:
+а в App Review Notes заменить последний абзац («This build makes no network requests…») на (M5.IOS.2, сверено со сборкой OTA ON):
 
 ```text
-Talent data updates: the app downloads a signed public catalog and talent data files over HTTPS from https://ota.mythweld.com and verifies an ECDSA P-256 signature before using them. The downloaded files are JSON data only (talent trees and texts), never executable code; the app's behaviour and features do not change. Without a network connection the app keeps working with its bundled data.
+Talent data updates (App Review Guideline 2.5.2): after launch, when returning to the app, from About → "Check for updates", and when a saved build needs a game-data version that is not on the device, the app downloads a signed public catalog and talent data files over HTTPS (GET only) from https://ota.mythweld.com. It verifies the catalog's ECDSA P-256 signature against keys built into the app and the SHA-256 of every file before using them. The files are data and images only — talent trees and texts (JSON) and talent icons (PNG) — never executable code; the app's behaviour and features do not change. Requests carry no account, device or advertising identifier and no build contents. Without a network connection the app keeps working with its bundled data. The interface follows the device language (English or Russian).
 ```
+
+Длина Review Notes с этим абзацем ≈ 1 600 символов (лимит App Store Connect — 4 000).
 
 Одновременно обновить App Privacy ([app-privacy.md §3](app-privacy.md#3-сборка-ota-on-m5ios2)) и опубликовать iOS-политику ([docs/legal/ios](../../legal/ios/README.md)).
 

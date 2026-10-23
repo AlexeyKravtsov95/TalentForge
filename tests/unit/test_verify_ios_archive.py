@@ -22,8 +22,14 @@ from typing import Any
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-SPKI_A = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEsyntheticKeyA"
-SPKI_B = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEsyntheticKeyB"
+COMMITTED_KEYRING = ROOT / "docs/ota/keys/production-keyring.json"
+_KEYS = {
+    key["keyId"]: key["publicKeySpki"] for key in json.loads(COMMITTED_KEYRING.read_text())["keys"]
+}
+SPKI_A, SPKI_B = _KEYS["tf-prod-2026a"], _KEYS["tf-prod-2026b"]
+FIXTURE_SPKI = json.loads((ROOT / "docs/ota/fixtures/v1/keyring.json").read_text())["keys"][0][
+    "publicKeySpki"
+]
 
 
 def load_validator() -> ModuleType:
@@ -173,14 +179,23 @@ def make_archive(
 
 
 @pytest.fixture
-def keyring(tmp_path: Path) -> Path:
-    path = tmp_path / "production-keyring.json"
-    keys = [
-        {"keyId": "tf-prod-2026a", "publicKeySpki": SPKI_A},
-        {"keyId": "tf-prod-2026b", "publicKeySpki": SPKI_B},
-    ]
-    path.write_text(json.dumps({"keys": keys}))
-    return path
+def keyring() -> Path:
+    return COMMITTED_KEYRING
+
+
+def utf16(text: str) -> bytes:
+    """A Kotlin/Native string literal: UTF-16LE, here between NULs like the literal pool."""
+    return b"\0\0" + text.encode("utf-16-le") + b"\0\0"
+
+
+def ota_on_tail(
+    *,
+    origin: str = "https://ota.mythweld.com",
+    spkis: tuple[str, ...] = (SPKI_A, SPKI_B),
+    ids: tuple[str, ...] = ("tf-prod-2026a", "tf-prod-2026b"),
+) -> bytes:
+    """The literals GeneratedOtaSettings.iosProduction compiles into an OTA ON executable."""
+    return b"".join(utf16(text) for text in (origin, *ids, *spkis))
 
 
 def run(archive: Path, keyring: Path, **expected: str | None) -> tuple[Any, dict[str, Any]]:
@@ -190,6 +205,7 @@ def run(archive: Path, keyring: Path, **expected: str | None) -> tuple[Any, dict
         "expected_min_os": "17.2",
         "expected_sdk": "iphoneos27.1",
         "expected_xcode_build": "27A9275",
+        "ota": "off",
     }
     arguments.update(expected)
     return v.evaluate(archive, keyring=keyring, **arguments)
@@ -336,12 +352,145 @@ def test_the_datasets_must_be_bundled(tmp_path: Path, keyring: Path) -> None:
 
 @pytest.mark.parametrize("encoding", ["utf-8", "utf-16-le"])
 def test_production_ota_compiled_in_fails(tmp_path: Path, keyring: Path, encoding: str) -> None:
-    executable = macho(undefined=DEFAULT_SYMBOLS, tail=SPKI_B.encode(encoding))
+    executable = macho(undefined=DEFAULT_SYMBOLS, tail=b"\0" + SPKI_B.encode(encoding) + b"\0")
     evaluation, _ = run(make_archive(tmp_path, executable=executable), keyring)
-    assert "production OTA compiled in" in failed(evaluation)["ota-off"]
+    assert "keys=['tf-prod-2026b']" in failed(evaluation)["ota-off"]
     executable = macho(undefined=DEFAULT_SYMBOLS, tail="https://ota.mythweld.com".encode(encoding))
     evaluation, _ = run(make_archive(tmp_path / "origin", executable=executable), keyring)
-    assert "origin=True" in failed(evaluation)["ota-off"]
+    assert "production origin=True" in failed(evaluation)["ota-off"]
+
+
+def test_any_embedded_public_key_fails_an_ota_off_build(tmp_path: Path, keyring: Path) -> None:
+    executable = macho(undefined=DEFAULT_SYMBOLS, tail=utf16(FIXTURE_SPKI))
+    evaluation, report = run(make_archive(tmp_path, executable=executable), keyring)
+    assert "keys=['unknown:" in failed(evaluation)["ota-off"]
+    assert report["ota"]["embeddedKeys"][0].startswith("unknown:")
+
+
+def test_an_ota_on_archive_passes_in_on_mode_only(tmp_path: Path, keyring: Path) -> None:
+    executable = macho(undefined=DEFAULT_SYMBOLS, tail=ota_on_tail())
+    archive = make_archive(tmp_path, executable=executable)
+    evaluation, report = run(archive, keyring, ota="on")
+    assert failed(evaluation) == {}
+    assert report["ota"] == {
+        "mode": "on",
+        "productionOrigin": True,
+        "embeddedKeys": ["tf-prod-2026a", "tf-prod-2026b"],
+        "embeddedKeySpkiSha256": sorted(v.PRODUCTION_KEY_SPKI_SHA256.values()),
+        "httpsOrigins": ["https://ota.mythweld.com"],
+    }
+    # the same archive claimed as OTA OFF never passes
+    evaluation, _ = run(archive, keyring, ota="off")
+    assert set(failed(evaluation)) == {"ota-off"}
+
+
+def test_an_ota_off_archive_never_passes_as_ota_on(tmp_path: Path, keyring: Path) -> None:
+    evaluation, _ = run(make_archive(tmp_path), keyring, ota="on")
+    assert "origin missing, keys [], key ids missing" in failed(evaluation)["ota-on"]
+
+
+@pytest.mark.parametrize(
+    ("tail", "reason"),
+    [
+        (ota_on_tail(origin="https://ota.example.org"), "origin missing"),
+        (ota_on_tail(spkis=(SPKI_A,)), "keys ['tf-prod-2026a']"),
+        (
+            ota_on_tail(spkis=(SPKI_A, SPKI_B, FIXTURE_SPKI)),
+            "keys ['tf-prod-2026a', 'tf-prod-2026b', 'unknown:",
+        ),
+        (ota_on_tail(spkis=(FIXTURE_SPKI, SPKI_B)), "keys ['tf-prod-2026b', 'unknown:"),
+        (ota_on_tail(ids=("tf-prod-2026a", "tf-staging-2026")), "key ids missing"),
+    ],
+    ids=[
+        "another origin",
+        "backup key missing",
+        "an extra test key",
+        "a substituted primary key",
+        "a substituted key id",
+    ],
+)
+def test_ota_on_requires_exactly_the_pinned_origin_and_keys(
+    tmp_path: Path, keyring: Path, tail: bytes, reason: str
+) -> None:
+    executable = macho(undefined=DEFAULT_SYMBOLS, tail=tail)
+    evaluation, _ = run(make_archive(tmp_path, executable=executable), keyring, ota="on")
+    assert reason in failed(evaluation)["ota-on"]
+
+
+@pytest.mark.parametrize(
+    "origin",
+    [
+        "https://talentforge-ota-staging.hb.ru-msk.vkcloud-storage.ru",
+        "https://localhost:8443",
+        "https://127.0.0.1:8443",
+        "https://10.0.2.2:8443",
+        "https://staging.mythweld.com",
+    ],
+)
+@pytest.mark.parametrize("ota", ["on", "off"])
+def test_a_staging_or_development_origin_fails_either_mode(
+    tmp_path: Path, keyring: Path, origin: str, ota: str
+) -> None:
+    tail = (ota_on_tail() if ota == "on" else b"") + utf16(origin)
+    executable = macho(undefined=DEFAULT_SYMBOLS, tail=tail)
+    evaluation, _ = run(make_archive(tmp_path, executable=executable), keyring, ota=ota)
+    assert origin in failed(evaluation)["ota-no-staging-origin"]
+
+
+def test_the_test_factory_origin_is_not_a_staging_origin(tmp_path: Path, keyring: Path) -> None:
+    # OtaConfig.forTesting's default base URL is compiled into every build and names no host
+    tail = ota_on_tail() + utf16("https://ota.invalid")
+    executable = macho(undefined=DEFAULT_SYMBOLS, tail=tail)
+    evaluation, _ = run(make_archive(tmp_path, executable=executable), keyring, ota="on")
+    assert failed(evaluation) == {}
+
+
+def test_a_substituted_production_keyring_never_passes(tmp_path: Path) -> None:
+    substituted = tmp_path / "keyring.json"
+    keys = [
+        {"keyId": "tf-prod-2026a", "publicKeySpki": FIXTURE_SPKI},
+        {"keyId": "tf-prod-2026b", "publicKeySpki": SPKI_B},
+    ]
+    substituted.write_text(json.dumps({"keys": keys}))
+    tail = ota_on_tail(spkis=(FIXTURE_SPKI, SPKI_B))
+    executable = macho(undefined=DEFAULT_SYMBOLS, tail=tail)
+    evaluation, _ = run(make_archive(tmp_path, executable=executable), substituted, ota="on")
+    assert "is not the pinned one" in failed(evaluation)["ota-keyring"]
+    assert "ota-on" in failed(evaluation)
+    evaluation, _ = run(make_archive(tmp_path / "off"), substituted)
+    assert "ota-keyring" in failed(evaluation)
+
+
+@pytest.mark.parametrize(
+    "ats",
+    [{"NSAllowsArbitraryLoads": True}, {"NSExceptionDomains": {"ota.mythweld.com": {}}}, {}],
+)
+def test_app_transport_security_must_keep_the_defaults(
+    tmp_path: Path, keyring: Path, ats: dict[str, Any]
+) -> None:
+    evaluation, _ = run(make_archive(tmp_path, info=app_info(NSAppTransportSecurity=ats)), keyring)
+    assert "App Transport Security is changed" in failed(evaluation)["ats-default"]
+
+
+def test_collected_data_must_be_what_the_caller_declares(tmp_path: Path, keyring: Path) -> None:
+    diagnostic = v.PRIVACY_COLLECTED["other-diagnostic"]
+    on = macho(undefined=DEFAULT_SYMBOLS, tail=ota_on_tail())
+    archive = make_archive(
+        tmp_path, executable=on, privacy=manifest(NSPrivacyCollectedDataTypes=diagnostic)
+    )
+    evaluation, _ = run(archive, keyring, ota="on", privacy_collected="other-diagnostic")
+    assert failed(evaluation) == {}
+    evaluation, _ = run(archive, keyring, ota="on")
+    assert "privacy-collected-data" in failed(evaluation)
+    evaluation, _ = run(
+        make_archive(tmp_path / "none", executable=on),
+        keyring,
+        ota="on",
+        privacy_collected="other-diagnostic",
+    )
+    assert "privacy-collected-data" in failed(evaluation)
+    with pytest.raises(v.ToolError, match="declares no collected data"):
+        run(make_archive(tmp_path / "off"), keyring, privacy_collected="other-diagnostic")
 
 
 def test_key_material_in_the_bundle_fails(tmp_path: Path, keyring: Path) -> None:
@@ -357,6 +506,8 @@ def test_cli_writes_a_report_and_exits_by_result(tmp_path: Path, keyring: Path) 
     common = [
         "--archive",
         str(archive),
+        "--ota",
+        "off",
         "--production-keyring",
         str(keyring),
         "--report",
@@ -368,9 +519,26 @@ def test_cli_writes_a_report_and_exits_by_result(tmp_path: Path, keyring: Path) 
     )
     assert json.loads(report_path.read_text())["schema"] == "talentforge.ios-archive-report.v1"
     assert v.main([*common, "--expected-sdk", "iphoneos27.2"]) == v.EXIT_FAIL
-    assert v.main(["--archive", str(tmp_path / "missing.xcarchive")]) == v.EXIT_ERROR
+    assert (
+        v.main(["--archive", str(tmp_path / "missing.xcarchive"), "--ota", "off"]) == v.EXIT_ERROR
+    )
 
 
-def test_the_committed_production_keyring_is_the_default() -> None:
-    spkis = v.production_spkis(v.DEFAULT_PRODUCTION_KEYRING)
-    assert len(spkis) == 2
+def test_the_cli_requires_the_ota_mode(tmp_path: Path) -> None:
+    with pytest.raises(SystemExit):
+        v.main(["--archive", str(make_archive(tmp_path))])
+    with pytest.raises(SystemExit):
+        v.main(["--archive", str(make_archive(tmp_path / "x")), "--ota", "maybe"])
+
+
+def test_the_committed_production_keyring_is_the_default_and_pinned() -> None:
+    keys = v.production_keys(v.DEFAULT_PRODUCTION_KEYRING)
+    assert {
+        key_id: v.spki_sha256(spki) for key_id, spki in keys.items()
+    } == v.PRODUCTION_KEY_SPKI_SHA256
+
+
+def test_the_verifier_pins_the_same_fingerprints_as_the_gradle_build() -> None:
+    gradle = (ROOT / "mobile/composeApp/build.gradle.kts").read_text()
+    for key_id, sha in v.PRODUCTION_KEY_SPKI_SHA256.items():
+        assert f'"{key_id}" to "{sha}"' in gradle

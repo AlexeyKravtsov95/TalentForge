@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Статус | Код и guards готовы (PR M5.OTA.PROD.3). **Ни одна OTA ON сборка не опубликована.** Публикация, подпись и live-проверки выполняет только владелец |
-| Платформа | Android: `release` (RuStore, AppGallery) и `play` (Google Play). iOS production OTA **остаётся выключенным**, этот документ его не касается |
+| Платформа | Android: `release` (RuStore, AppGallery) и `play` (Google Play). iOS закреплён теми же значениями в M5.IOS.2: [m5-ios-2-owner-guide](../release/apple-appstore/m5-ios-2-owner-guide.md) |
 | Связанные документы | [production-deployment](production-deployment.md) · [client-architecture §8](client-architecture.md) · [test-plan §6](test-plan.md) · [privacy и магазины](../release/ota-prod3-privacy-and-stores.md) · [evidence](../release/ota-prod3-evidence/README.md) · [android-release-signing](../release/android-release-signing.md) · [google-play/signing](../release/google-play/signing.md) |
 
 ## 1. Что закреплено в репозитории
@@ -12,9 +12,9 @@ Production-канал Android **не настраивается**. Все зна
 
 | Параметр | Значение | Где проверяется |
 |---|---|---|
-| Origin | `https://ota.mythweld.com` | `androidProductionOtaOrigin`. Любой другой `talentforge.ota.android.production.baseUrl` останавливает сборку: «baseUrl is pinned to https://ota.mythweld.com» |
+| Origin | `https://ota.mythweld.com` | `productionOtaOrigin`. Любой другой `talentforge.ota.android.production.baseUrl` останавливает сборку: «baseUrl is pinned to https://ota.mythweld.com» |
 | Канал | `production`, путь `/v1/channels/production/catalog.json` | `OtaConfig.catalogUrl` (контракт §1) |
-| Keyring | [`docs/ota/keys/production-keyring.json`](keys/production-keyring.json): `tf-prod-2026a` (основной) + `tf-prod-2026b` (резервный) | `androidProductionOtaKeyringFile`. Любой другой keyring (даже с `tf-prod-*`) останавливает сборку. `verifyOtaSettingsRules` проверяет и сам закоммиченный файл |
+| Keyring | [`docs/ota/keys/production-keyring.json`](keys/production-keyring.json): `tf-prod-2026a` (основной) + `tf-prod-2026b` (резервный) | `productionOtaKeyringFile`. Любой другой keyring (даже с `tf-prod-*`) останавливает сборку. `verifyOtaSettingsRules` проверяет и сам закоммиченный файл |
 | Запрещённые ключи | `test-*`, `tf-staging-*` и любые ключи без префикса `tf-prod-` | `otaSettingsProblems` (Gradle) **и** `OtaConfig.resolve` (в приложении, fail-closed: канал выключается) |
 | Data level | приложение поддерживает `minDataLevel ≤ 1` (`OtaContract.SUPPORTED_DATA_LEVEL = 1`). Релиз с уровнем выше не активируется (`KEEP_CURRENT_INCOMPATIBLE`) | `ActivationPolicy`, `ReleaseVerifier` |
 | Транспорт | только `https://`, редиректы не выполняются, cleartext запрещён платформой | `PlatformBlobFetcher` (`instanceFollowRedirects = false`), `OtaConfig.BASE_URL` |

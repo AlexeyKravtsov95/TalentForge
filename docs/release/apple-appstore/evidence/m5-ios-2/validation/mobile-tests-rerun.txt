@@ -1,0 +1,223 @@
+> Task :shared:kmpPartiallyResolvedDependenciesChecker
+> Task :shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:jvmProcessResources NO-SOURCE
+> Task :shared:processJvmMainResources SKIPPED
+> Task :shared:jvmTestProcessResources
+> Task :shared:processJvmTestResources SKIPPED
+> Task :shared:preBuild UP-TO-DATE
+> Task :shared:preDebugBuild UP-TO-DATE
+> Task :shared:processDebugNavigationResources
+> Task :shared:writeDebugAarMetadata
+> Task :shared:generateDebugResValues
+> Task :shared:generateDebugResources
+> Task :shared:packageDebugResources
+> Task :shared:extractDeepLinksDebug
+> Task :shared:compileDebugLibraryResources
+> Task :shared:mergeDebugShaders
+> Task :shared:compileDebugShaders NO-SOURCE
+> Task :shared:debugAssetsCopyForAGP NO-SOURCE
+> Task :shared:generateDebugAssets UP-TO-DATE
+> Task :shared:mergeDebugAssets
+> Task :shared:javaPreCompileDebug
+> Task :shared:mergeDebugJniLibFolders
+> Task :shared:mergeDebugNativeLibs NO-SOURCE
+> Task :shared:processDebugManifest
+> Task :shared:copyDebugJniLibsProjectOnly
+> Task :shared:parseDebugLocalResources
+> Task :shared:generateDebugRFile
+> Task :composeApp:kmpPartiallyResolvedDependenciesChecker
+> Task :composeApp:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :composeApp:convertXmlValueResourcesForCommonMain
+> Task :composeApp:copyNonXmlValueResourcesForCommonMain
+> Task :composeApp:prepareComposeResourcesTaskForCommonMain
+> Task :composeApp:generateResourceAccessorsForCommonMain
+> Task :composeApp:convertXmlValueResourcesForDesktopMain NO-SOURCE
+> Task :composeApp:copyNonXmlValueResourcesForDesktopMain NO-SOURCE
+> Task :composeApp:prepareComposeResourcesTaskForDesktopMain NO-SOURCE
+> Task :composeApp:generateResourceAccessorsForDesktopMain NO-SOURCE
+> Task :composeApp:convertXmlValueResourcesForJvmCommonMain NO-SOURCE
+> Task :composeApp:copyNonXmlValueResourcesForJvmCommonMain NO-SOURCE
+> Task :composeApp:prepareComposeResourcesTaskForJvmCommonMain NO-SOURCE
+> Task :composeApp:generateResourceAccessorsForJvmCommonMain NO-SOURCE
+> Task :composeApp:generateActualResourceCollectorsForDesktopMain
+> Task :composeApp:generateComposeResClass
+> Task :composeApp:generateExpectResourceCollectorsForCommonMain
+> Task :composeApp:generateOtaSettings
+> Task :composeApp:assembleDesktopMainResources
+> Task :composeApp:desktopProcessResources
+> Task :composeApp:processDesktopMainResources SKIPPED
+> Task :composeApp:convertXmlValueResourcesForCommonTest NO-SOURCE
+> Task :composeApp:copyNonXmlValueResourcesForCommonTest NO-SOURCE
+> Task :composeApp:prepareComposeResourcesTaskForCommonTest NO-SOURCE
+> Task :composeApp:generateResourceAccessorsForCommonTest NO-SOURCE
+> Task :composeApp:convertXmlValueResourcesForDesktopTest NO-SOURCE
+> Task :composeApp:copyNonXmlValueResourcesForDesktopTest NO-SOURCE
+> Task :composeApp:prepareComposeResourcesTaskForDesktopTest NO-SOURCE
+> Task :composeApp:generateResourceAccessorsForDesktopTest NO-SOURCE
+> Task :composeApp:convertXmlValueResourcesForJvmCommonTest NO-SOURCE
+> Task :composeApp:copyNonXmlValueResourcesForJvmCommonTest NO-SOURCE
+> Task :composeApp:prepareComposeResourcesTaskForJvmCommonTest NO-SOURCE
+> Task :composeApp:generateResourceAccessorsForJvmCommonTest NO-SOURCE
+> Task :composeApp:assembleDesktopTestResources
+> Task :composeApp:desktopTestProcessResources
+> Task :composeApp:processDesktopTestResources SKIPPED
+> Task :composeApp:verifyOtaSettingsRules
+> Task :composeApp:verifyReleaseInternetRules
+> Task :composeApp:preBuild UP-TO-DATE
+> Task :composeApp:preDebugBuild UP-TO-DATE
+> Task :composeApp:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :composeApp:convertXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :composeApp:copyNonXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :composeApp:prepareComposeResourcesTaskForAndroidMain NO-SOURCE
+> Task :composeApp:generateResourceAccessorsForAndroidMain NO-SOURCE
+> Task :composeApp:generateActualResourceCollectorsForAndroidMain
+> Task :composeApp:convertXmlValueResourcesForAndroidDebug NO-SOURCE
+> Task :composeApp:copyNonXmlValueResourcesForAndroidDebug NO-SOURCE
+> Task :composeApp:prepareComposeResourcesTaskForAndroidDebug NO-SOURCE
+> Task :composeApp:generateResourceAccessorsForAndroidDebug NO-SOURCE
+> Task :composeApp:processDebugNavigationResources
+> Task :composeApp:checkDebugAarMetadata
+> Task :composeApp:generateDebugResValues
+> Task :composeApp:compileDebugNavigationResources
+> Task :composeApp:mapDebugSourceSetPaths
+> Task :composeApp:generateDebugResources
+> Task :shared:compileDebugKotlinAndroid
+> Task :shared:compileDebugJavaWithJavac NO-SOURCE
+> Task :shared:compileKotlinJvm
+> Task :shared:processDebugJavaRes
+> Task :shared:compileJvmMainJava NO-SOURCE
+> Task :shared:jvmMainClasses
+> Task :shared:bundleLibCompileToJarDebug
+> Task :shared:bundleLibRuntimeToJarDebug
+> Task :shared:jvmJar
+> Task :composeApp:mergeDebugResources
+> Task :shared:bundleLibRuntimeToDirDebug
+> Task :composeApp:copyDebugComposeResourcesToAndroidAssets
+> Task :composeApp:packageDebugResources
+> Task :composeApp:createDebugCompatibleScreenManifests
+> Task :composeApp:extractDeepLinksDebug
+> Task :composeApp:parseDebugLocalResources
+> Task :composeApp:processDebugMainManifest
+> Task :composeApp:processDebugManifest
+> Task :composeApp:javaPreCompileDebug
+> Task :composeApp:mergeDebugShaders
+> Task :composeApp:compileDebugShaders NO-SOURCE
+> Task :composeApp:debugAssetsCopyForAGP NO-SOURCE
+> Task :composeApp:generateDebugAssets UP-TO-DATE
+> Task :composeApp:mergeDebugAssets
+
+> Task :shared:compileTestKotlinJvm
+w: file://~/Desktop/workspace/TalentForge/mobile/shared/src/jvmTest/kotlin/io/github/alexeykravtsov95/talentforge/data/ota/OtaFixtures.kt:98:23 Cast is redundant.
+
+> Task :shared:compileJvmTestJava NO-SOURCE
+> Task :shared:jvmTestClasses
+> Task :composeApp:desugarDebugFileDependencies
+> Task :composeApp:processDebugManifestForPackage
+> Task :composeApp:mergeDebugJniLibFolders
+> Task :composeApp:checkDebugDuplicateClasses
+> Task :composeApp:mergeDebugNativeLibs
+> Task :composeApp:validateSigningDebug
+> Task :composeApp:writeDebugAppMetadata
+> Task :composeApp:writeDebugSigningConfigVersions
+
+> Task :composeApp:stripDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libandroidx.graphics.path.so. Run with --info option to learn more.
+
+> Task :composeApp:mergeLibDexDebug
+> Task :composeApp:processDebugResources
+> Task :composeApp:compressDebugAssets
+> Task :composeApp:mergeExtDexDebug
+
+> Task :composeApp:compileKotlinDesktop
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/App.kt:200:30 'val LocalLifecycleOwner: ProvidableCompositionLocal<LifecycleOwner>' is deprecated. Moved to lifecycle-runtime-compose library in androidx.lifecycle.compose package.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/ota/DatasetDownloadManager.kt:135:27 Unnecessary non-null assertion (!!) on a non-null receiver of type 'ByteArray'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/ota/DatasetDownloadManager.kt:163:17 'when' is exhaustive so 'else' is redundant here.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeScreen.kt:599:68 Unnecessary safe call on a non-null receiver of type 'TalentTreeSectionsResult.Sectioned'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeScreen.kt:891:80 Unnecessary safe call on a non-null receiver of type 'TalentTreeSectionsResult.Sectioned'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeScreen.kt:974:84 Unnecessary safe call on a non-null receiver of type 'TalentTreeSectionsResult.Sectioned'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeScreen.kt:1184:78 Unnecessary safe call on a non-null receiver of type 'TalentTreeSectionsResult.Sectioned'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeScreen.kt:1210:74 Unnecessary safe call on a non-null receiver of type 'TalentTreeSectionsResult.Sectioned'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeScreen.kt:1261:110 Condition is always 'true'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeScreen.kt:1274:50 Condition is always 'true'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeScreen.kt:1277:37 Condition is always 'true'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeScreen.kt:1313:72 Condition is always 'true'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeScreen.kt:1313:100 Condition is always 'true'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/jvmCommonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/ota/JvmOtaPorts.kt:99:13 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+
+> Task :composeApp:compileDesktopMainJava NO-SOURCE
+> Task :composeApp:desktopMainClasses
+> Task :shared:jvmTest
+> Task :composeApp:desktopJar
+
+> Task :composeApp:compileDebugKotlinAndroid
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/App.kt:200:30 'val LocalLifecycleOwner: ProvidableCompositionLocal<LifecycleOwner>' is deprecated. Moved to lifecycle-runtime-compose library in androidx.lifecycle.compose package.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/ota/DatasetDownloadManager.kt:135:27 Unnecessary non-null assertion (!!) on a non-null receiver of type 'ByteArray'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/ota/DatasetDownloadManager.kt:163:17 'when' is exhaustive so 'else' is redundant here.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeScreen.kt:599:68 Unnecessary safe call on a non-null receiver of type 'TalentTreeSectionsResult.Sectioned'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeScreen.kt:891:80 Unnecessary safe call on a non-null receiver of type 'TalentTreeSectionsResult.Sectioned'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeScreen.kt:974:84 Unnecessary safe call on a non-null receiver of type 'TalentTreeSectionsResult.Sectioned'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeScreen.kt:1184:78 Unnecessary safe call on a non-null receiver of type 'TalentTreeSectionsResult.Sectioned'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeScreen.kt:1210:74 Unnecessary safe call on a non-null receiver of type 'TalentTreeSectionsResult.Sectioned'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeScreen.kt:1261:110 Condition is always 'true'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeScreen.kt:1274:50 Condition is always 'true'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeScreen.kt:1277:37 Condition is always 'true'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeScreen.kt:1313:72 Condition is always 'true'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/commonMain/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeScreen.kt:1313:100 Condition is always 'true'.
+
+> Task :composeApp:compileDebugJavaWithJavac NO-SOURCE
+> Task :composeApp:dexBuilderDebug
+> Task :composeApp:mergeDebugGlobalSynthetics
+> Task :composeApp:processDebugJavaRes
+> Task :composeApp:mergeProjectDexDebug
+> Task :composeApp:mergeDebugJavaResource
+> Task :composeApp:packageDebug
+> Task :composeApp:createDebugApkListingFileRedirect
+> Task :composeApp:assembleDebug
+
+> Task :composeApp:compileTestKotlinDesktop
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/desktopTest/kotlin/io/github/alexeykravtsov95/talentforge/ui/ota/OtaSessionTest.kt:250:74 Unnecessary non-null assertion (!!) on a non-null receiver of type 'DatasetSnapshot'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/desktopTest/kotlin/io/github/alexeykravtsov95/talentforge/ui/ota/OtaSessionTest.kt:255:45 Unnecessary non-null assertion (!!) on a non-null receiver of type 'DatasetSnapshot'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/desktopTest/kotlin/io/github/alexeykravtsov95/talentforge/ui/ota/OtaStagingE2ETest.kt:370:18 Unnecessary non-null assertion (!!) on a non-null receiver of type 'OtaStagingE2ETest.SpaceLimitedStore'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/desktopTest/kotlin/io/github/alexeykravtsov95/talentforge/ui/ota/OtaStagingE2ETest.kt:371:18 Unnecessary non-null assertion (!!) on a non-null receiver of type 'OtaStagingE2ETest.SpaceLimitedStore'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/desktopTest/kotlin/io/github/alexeykravtsov95/talentforge/ui/ota/OtaStagingE2ETest.kt:375:18 Unnecessary non-null assertion (!!) on a non-null receiver of type 'OtaStagingE2ETest.SpaceLimitedStore'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/desktopTest/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentInspectorAdaptiveUiTest.kt:119:22 This extension is shadowed by a member: 'fun overlaps(other: Rect): Boolean' defined in 'androidx.compose.ui.geometry.Rect'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/desktopTest/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentInspectorAdaptiveUiTest.kt:395:57 Unnecessary non-null assertion (!!) on a non-null receiver of type 'String'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/desktopTest/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTabletSectionHeadersUiTest.kt:196:22 This extension is shadowed by a member: 'fun overlaps(other: Rect): Boolean' defined in 'androidx.compose.ui.geometry.Rect'.
+w: file://~/Desktop/workspace/TalentForge/mobile/composeApp/src/desktopTest/kotlin/io/github/alexeykravtsov95/talentforge/ui/tree/TalentTreeSectionsTest.kt:365:48 Cast is redundant.
+
+> Task :composeApp:compileDesktopTestJava NO-SOURCE
+> Task :composeApp:desktopTestClasses
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.jetbrains.skiko.Library in an unnamed module (file:~/.gradle/caches/modules-2/files-2.1/org.jetbrains.skiko/skiko-awt/0.9.37.4/fc7470cca1041a52b182a921205c5c224e7709ad/skiko-awt-0.9.37.4.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+> Task :composeApp:desktopTest
+
+OtaScenarioTest[desktop] > s5b_aResumedAttemptRequestsOnlyTheMissingBlobs[desktop] FAILED
+    java.lang.AssertionError at OtaScenarioTest.kt:172
+
+834 tests completed, 1 failed, 58 skipped
+
+> Task :composeApp:desktopTest FAILED
+
+[Incubating] Problems report is available at: file://~/Desktop/workspace/TalentForge/mobile/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':composeApp:desktopTest'.
+> There were failing tests. See the report at: file://~/Desktop/workspace/TalentForge/mobile/composeApp/build/reports/tests/desktopTest/index.html
+
+* Try:
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 6m 43s
+84 actionable tasks: 84 executed
+exit=1
