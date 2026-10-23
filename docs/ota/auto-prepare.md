@@ -207,6 +207,23 @@ A run without preparation uploads `ota-prepare-detection-<run id>` (7 days).
   meaning and keeps main's bytes ([talent-visuals.md](../talent-visuals.md) §3); the runner
   image is pinned to `ubuntu-24.04` and its icon environment is printed. The run reaches
   `PREPARED` only from a `main` that carries this change (the workflow checks out `main`).
+* First automatic run for a build `main` does not carry (run 39942655153, `1.60.1.70532`,
+  issue #78): `BLOCKED` at step 2 - `visuals fetch` ran before `normalize` and found no
+  dataset; every later step was skipped. Fixed by the step order above.
+* Local preparation of `1.60.1.70532` against production `1.60.1.70450-r1` (2026-10-24,
+  developer machine, real wago.tools and the verified production catalog). With the fixed
+  order every pipeline step passed, but the clone's offline suite failed once:
+  `test_content_hash_vectors` listed every overlay under `data/localization`, the
+  candidate's included, while the committed vectors - outside the preparation's scope - know
+  only the bundled builds. The vectors now follow `BUNDLED_BUILDS` (the fixture is
+  byte-identical). Re-run with that code as `origin/main`: `PREPARED` - 18/18 steps (the
+  suite in the clone: 1757 passed), G2-G6 and G8 `PASS`, G1 and G7 the expected required
+  steps, release `1.60.1.70532-r1` (397 files, 5,077,082 bytes). The diff to `1.60.1.70450`
+  is empty, and so is every other comparison: the 30 enUS and 4 ruRU DB2 tables of both
+  builds are byte-identical, and the prepared data equals 70450's apart from the build
+  identity fields (`clientBuild`, `generatedAt`, `provenance`, the content hashes that
+  cover them); the 359 icons are byte-identical. Two runs gave the same data apart from
+  `generatedAt`.
 
 ## Testing
 
