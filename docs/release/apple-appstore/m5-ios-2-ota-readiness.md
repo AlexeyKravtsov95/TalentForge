@@ -29,8 +29,8 @@
 | 2 | OTA OFF — конфигурация по умолчанию; флаг нельзя закоммитить | **PASS** (локально) | §2 |
 | 3 | Позитивные и негативные правила в `verifyOtaSettingsRules`, мутационная проверка | **PASS** (локально) | §2 |
 | 4 | Verifier архива: режимы `--ota off` / `--ota on`, ATS, privacy, без ложного PASS | **PASS** (unit 56/56; реальные архивы локально) | §3 |
-| 5 | Архивы OTA OFF и OTA ON на Xcode 27.1 проходят verifier | см. §9 (CI) | §9 |
-| 6 | iOS staging E2E на симуляторе (`NSURLSession`, Security.framework, 70374 → 70450) | **PASS** (локально, 14/14 фаз) | §4 |
+| 5 | Архивы OTA OFF и OTA ON на Xcode 27.1 проходят verifier | **PASS** (CI) | §9 |
+| 6 | iOS staging E2E на симуляторе (`NSURLSession`, Security.framework, 70374 → 70450) | **PASS**: CI — Xcode 27.1 / SDK 27.1, runtime iOS 27.0, iPhone 18 Pro, 14/14; локально — 14/14 | §4, §9 |
 | 7 | Негативные и восстановительные сценарии | **PASS** (локально) | §4, §5 |
 | 8 | Сохранность билдов и их версий данных | **PASS** (локально) | §4 |
 | 9 | Настоящее приложение на симуляторе: OTA ON (staging) и OTA OFF | **PASS** (локально, 6/6) | §5 |
@@ -39,7 +39,7 @@
 | 12 | App Privacy answers для OTA ON | **BLOCKED** (владелец, OA-1) | §6, [app-privacy §3](app-privacy.md#3-сборка-ota-on-m5ios2) |
 | 13 | iOS-политика опубликована, ссылка в About | **BLOCKED** (владелец; страницы отвечают 403) | §6 |
 | 14 | App Review Notes и метаданные OTA ON RU/EN | **PASS** (текст готов) | [metadata-en §8](metadata-en.md#8-замены-для-сборки-ota-on-только-после-m5ios2), [metadata-ru §8](metadata-ru.md#8-замены-для-сборки-ota-on-только-после-m5ios2) |
-| 15 | Android regression, shared-тесты, Python | см. §9 | §9 |
+| 15 | Android regression, shared-тесты, Python | **PASS** | §9 |
 | 16 | Исправление SIGPIPE из PR #75 сохранено | **PASS** | §9 |
 | 17 | Физический iPhone / TestFlight | **BLOCKED** (нет устройства и подписи) | §8, [план владельца](m5-ios-2-owner-guide.md#5-проверка-на-физическом-iphone-testflight--план) |
 
@@ -77,7 +77,7 @@ ECDSA P-256 / SHA-256 и оба SPKI закреплены отпечатками
 | Unit-тесты: подмена origin, keyring и отдельных ключей, лишний `test-` ключ, подменённый key id, staging-origin в обоих режимах, архив OFF в режиме ON и наоборот, ATS, privacy, CLI без `--ota` | **PASS** 56/56 | `tests/unit/test_verify_ios_archive.py` |
 | Реальные unsigned-архивы, **локально Xcode 26.4.1** (SDK `iphoneos26.4`): OFF как `off`, ON как `on` | **PASS** / **PASS** | [ota-off](evidence/m5-ios-2/archive-local-xcode-26.4.1/ota-off.txt), [ota-on](evidence/m5-ios-2/archive-local-xcode-26.4.1/ota-on.txt) |
 | Те же архивы в чужом режиме | ожидаемый **FAIL**: OFF как `on` → «origin missing, keys []»; ON как `off` → «production origin=True, keys=[tf-prod-2026a, tf-prod-2026b]» | [negative](evidence/m5-ios-2/archive-local-xcode-26.4.1/) |
-| Xcode 27.1 (CI) | см. §9 | — |
+| Xcode 27.1 (CI), SDK `iphoneos27.1` | **PASS** OFF и ON, перекрёстно — FAIL как и должно | [archive-ci-xcode-27.1](evidence/m5-ios-2/archive-ci-xcode-27.1/) |
 
 HTTPS-литералы в реальном OTA ON бинарнике: `https://ota.mythweld.com`, `https://legal.mythweld.com` (ссылка на политику), `https://goo.gle`, `https://youtrack.jetbrains.com` (тексты ошибок библиотек). В OFF — те же, кроме `ota.mythweld.com`.
 
@@ -211,13 +211,15 @@ HTTPS-литералы в реальном OTA ON бинарнике: `https://o
 
 | Задача / шаг | Статус |
 |---|---|
-| `mobile-macos`: iOS simulator tests, release frameworks, Release для симулятора | итог для финального коммита — в PR #76 (комментарий с run id и ссылками на артефакты) |
-| `mobile-macos`: архив OTA OFF + `--ota off`; архив OTA ON + `--ota on`; перекрёстная проверка режимов | итог для финального коммита — в PR #76 (комментарий с run id и ссылками на артефакты) |
-| `mobile-macos`: launch smoke iPhone 18 Pro, iPhone 18 Pro Max, iPad Pro 13-inch (M5) | итог для финального коммита — в PR #76 (комментарий с run id и ссылками на артефакты) |
-| `ios-ota-e2e`: 14 фаз на iPhone 18 Pro (Xcode 27.1, iOS 27.1 SDK; runtime — таблица «Инструменты» в начале) | итог для финального коммита — в PR #76 (комментарий с run id и ссылками на артефакты) |
-| `mobile-linux`: shared, desktop, Android | итог для финального коммита — в PR #76 (комментарий с run id и ссылками на артефакты) |
+| `mobile-macos`: iOS simulator tests, release frameworks, Release для симулятора | **PASS** ([run 39954106784](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/39954106784), коммит `7b8cd95`) |
+| `mobile-macos`: архив OTA OFF + `--ota off`; архив OTA ON + `--ota on`; перекрёстная проверка режимов | **PASS**: оба архива SDK `iphoneos27.1`, Xcode 27A9275; ON — ровно `tf-prod-2026a/b`, OFF — ни одного ключа; ни один архив не проходит в чужом режиме ([отчёты](evidence/m5-ios-2/archive-ci-xcode-27.1/)) |
+| `mobile-macos`: launch smoke iPhone 18 Pro, iPhone 18 Pro Max, iPad Pro 13-inch (M5) | **PASS**: все три на runtime iOS 27.0 (сборка Xcode 27.1 / SDK 27.1) |
+| `ios-ota-e2e`: 14 фаз на iPhone 18 Pro (Xcode 27.1, iOS 27.1 SDK; runtime — таблица «Инструменты» в начале) | **PASS 14/14**: runtime **iOS 27.0 (24A434)**, `com.apple.CoreSimulator.SimRuntime.iOS-27-0` ([отчёт](evidence/m5-ios-2/simulator-e2e-ci-xcode-27.1/ios-ota-e2e-report.json), [строки](evidence/m5-ios-2/simulator-e2e-ci-xcode-27.1/results.txt), [журналы](evidence/m5-ios-2/simulator-e2e-ci-xcode-27.1/phase-logs/)) |
+| `mobile-linux`: shared, desktop, Android | **PASS** |
 
 Инцидент CI (исправлен в этом PR). Первые два запуска `ios-ota-e2e` (runs 39938806401 и 39939931594) завершились `ERROR: iPhone 18 Pro is not supported by iOS 27.1` **до** первой фазы: `pick_device()` сначала брал самый новый runtime (27.1) и только потом проверял устройство. Теперь `choose_runtime()` для запрошенной модели берёт самый новый *доступный* runtime, который её поддерживает. Модель, указанная явно, никогда не заменяется другой; если подходящего runtime нет, выводятся все runtime и их устройства. Покрыто `tests/unit/test_ios_ota_e2e.py`: только 27.0 поддерживает; обе версии поддерживают; устройства нет; runtime недоступен; нет iOS runtime; выбор по умолчанию; числовое сравнение версий.
+
+Затем на iOS 27.0 (run 39946215591) 9 из 14 фаз упали на полной установке B с `CheckOutcome.Failed`; тип ошибки тест тогда не печатал, локально (под полной нагрузкой CPU) не воспроизводилось. Исправлено в стенде, а не в клиенте: HTTPS-origin делал каждое TLS-рукопожатие внутри `accept()` единственного потока с очередью 5 — одно зависшее рукопожатие останавливало приём всех новых соединений клиента (8 параллельных, новое соединение на каждый файл). Теперь рукопожатие идёт в потоке соединения, очередь 128, неудачные рукопожатия записываются в отчёт, а сервер пишет `origin-log.json`; тест печатает фактический исход. С этим run 39954106784 — 14/14. Причина названа как **наиболее вероятная**: прямого воспроизведения нет. 21 неудачное рукопожатие на доверенном origin в зелёном прогоне приходится только на фазы, где клиент сам обрывает соединения (отмена при сбое, фон, `SIGKILL`): 17 `ConnectionResetError`, 4 `SSLEOFError`.
 
 ## 10. Только владелец
 

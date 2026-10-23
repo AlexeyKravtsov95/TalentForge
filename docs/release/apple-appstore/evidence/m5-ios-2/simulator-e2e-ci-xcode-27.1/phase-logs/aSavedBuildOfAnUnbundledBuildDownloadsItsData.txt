@@ -1,0 +1,11 @@
+[==========] Running 1 tests from 3 test cases.
+[----------] Global test environment set-up.
+[----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest
+[ RUN      ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.aSavedBuildOfAnUnbundledBuildDownloadsItsData
+[ios-ota-e2e] PASSED a saved build of 70374 on an app that bundles only 70450: offline -> Unavailable(Offline), record unchanged; online -> 70374 downloaded (391 files), 70450 stays active, the build opens on 70374 with its record unchanged
+[       OK ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.aSavedBuildOfAnUnbundledBuildDownloadsItsData (32227 ms)
+[----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest (32227 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 tests from 1 test cases ran. (32227 ms total)
+[  PASSED  ] 1 tests.

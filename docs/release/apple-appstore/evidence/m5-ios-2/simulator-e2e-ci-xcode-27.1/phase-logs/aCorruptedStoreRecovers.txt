@@ -1,0 +1,11 @@
+[==========] Running 1 tests from 3 test cases.
+[----------] Global test environment set-up.
+[----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest
+[ RUN      ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.aCorruptedStoreRecovers
+[ios-ota-e2e] PASSED corrupted OTA store: garbage state.json -> cold start on the bundle, no release deleted, the next check takes B back with 0 talent files fetched; a flipped byte in an installed file -> DatasetOutcome.Failed for the reader, B quarantined, new sessions on 70374, the next check re-installs B (398 files fetched); the library is unchanged throughout
+[       OK ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.aCorruptedStoreRecovers (40572 ms)
+[----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest (40572 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 tests from 1 test cases ran. (40572 ms total)
+[  PASSED  ] 1 tests.

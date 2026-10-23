@@ -1,0 +1,11 @@
+[==========] Running 1 tests from 3 test cases.
+[----------] Global test environment set-up.
+[----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest
+[ RUN      ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.aToBOverHttpsKeepsTheOpenEditorAndTheSavedBuilds
+[ios-ota-e2e] PASSED 70374 -> 70450 over HTTPS (NSURLSession, Security.framework): A from the bundle (only its manifest fetched); B 391 files / 5042736 bytes downloaded, 0 from the bundle, the publisher's manifest bytes installed; a new editor and a new DRUID build use 70450; the editor opened before reads only 70374 (5 reads after the switch); saved 70374 builds open on 70374; the library is unchanged by the update; the same catalog again: NO_CHANGE, 1 request
+[       OK ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.aToBOverHttpsKeepsTheOpenEditorAndTheSavedBuilds (28848 ms)
+[----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest (28848 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 tests from 1 test cases ran. (28848 ms total)
+[  PASSED  ] 1 tests.
