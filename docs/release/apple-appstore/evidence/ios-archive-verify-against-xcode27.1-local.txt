@@ -1,0 +1,20 @@
+iOS archive: TalentForge-final.xcarchive
+  [PASS] archive-record: ApplicationPath='Applications/iosApp.app', Architectures=['arm64']
+  [PASS] bundle-id: CFBundleIdentifier='io.github.alexeykravtsov95.talentforge'
+  [PASS] version: CFBundleShortVersionString='1.0.0' (expected 1.0.0), CFBundleVersion='1' (expected 1)
+  [PASS] minimum-os: MinimumOSVersion='17.2' (expected 17.2)
+  [PASS] device-family: UIDeviceFamily=[1, 2] (expected [1, 2]: iPhone and iPad)
+  [PASS] localizations: CFBundleLocalizations=['en', 'ru'] (required ['en', 'ru'])
+  [PASS] device-capabilities: UIRequiredDeviceCapabilities=['arm64']
+  [FAIL] toolchain: DTSDKName='iphoneos26.4' (expected iphoneos27.1), DTXcodeBuild='17E202' (expected 27A9275), DTXcode='2641'
+  [PASS] export-compliance: ITSAppUsesNonExemptEncryption=False (expected false)
+  [PASS] single-scene: UIApplicationSupportsMultipleScenes=False (expected false, TF-RC1-IOS-SCENES)
+  [PASS] app-icon: CFBundleIconName='AppIcon', Assets.car present
+  [PASS] executable: kind=macho, architectures=['arm64'], file types=[2] (expected a thin arm64 executable)
+  [PASS] embedded-code: no embedded frameworks or libraries
+  [PASS] privacy-tracking: NSPrivacyTracking=False, NSPrivacyTrackingDomains=[]
+  [PASS] privacy-required-reasons: declared UserDefaults=CA92.1, FileTimestamp=C617.1, DiskSpace=E174.1; used FileTimestamp (_fstat, _stat), DiskSpace (_NSURLVolumeAvailableCapacityForImportantUsageKey), UserDefaults (_OBJC_CLASS_$_NSUserDefaults)
+  [PASS] compose-resources: 50 dataset JSON files, values-ru present under compose-resources/composeResources
+  [PASS] ota-off: no production OTA origin or production public key in the executable
+  [PASS] no-secrets: no key files or private keys in the bundle
+RESULT: FAIL

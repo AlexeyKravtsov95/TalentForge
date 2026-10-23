@@ -316,6 +316,7 @@
     <string name="about_privacy_sharing">The app writes to the clipboard only when you tap Copy code, reads it only when you tap Paste, and hands a build code to the system share menu only when you tap Share. A code contains no build name and nothing about you.</string>
     <string name="about_privacy_permissions">The app works without the internet and does not ask for access to your location, contacts, camera, microphone, files or notifications.</string>
     <string name="about_privacy_delete">Delete a build in the app, or uninstall the app or clear its storage, to remove saved builds from this device.</string>
+    <string name="about_privacy_delete_ios">Delete a build in the app, or delete the app, to remove saved builds from this device.</string>
     <!-- M5.OTA.PROD.3: the statements of a build with talent data updates (OTA) on, shown
          instead of about_privacy_offline / about_privacy_permissions; facts in
          docs/release/ota-prod3-privacy-and-stores.md §2, pending owner and legal review (LR-5). -->

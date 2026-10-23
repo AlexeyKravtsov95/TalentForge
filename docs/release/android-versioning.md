@@ -15,7 +15,7 @@
 - All three stores share **one** `versionCode` sequence.
 - RuStore and AppGallery receive **the same signed universal APK** file.
 - Google Play receives an AAB signed with a **separate upload key**.
-- iOS is not released now; `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` stay `0.1.0` / `1`.
+- iOS is not released now; `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` stay `0.1.0` / `1`. (M5.IOS.1 later sets iOS to `1.0.0` / `1`; its rule is in [apple-appstore/readiness.md §2](apple-appstore/readiness.md#2-конфигурация-release-сборки). The iOS build number is a separate sequence.)
 
 Applied by this milestone: `versionName` `0.1.0` → `1.0.0`; `versionCode` stays `1`. `applicationId`,
 `minSdk`, `targetSdk`, signing, OTA, the manifest and the on-device storage format are unchanged.

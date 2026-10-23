@@ -5,7 +5,10 @@ import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
 /** The installed app's version, as the platform package reports it (Android `versionName`/`versionCode`, iOS `CFBundleShortVersionString`/`CFBundleVersion`). */
 data class AppVersion(val name: String, val code: Long)
 
-/** Which backup statement is true for this platform's build (M5.RC.2b, TF-RC1-ANDROID-CONFIG). */
+/**
+ * Which backup statement is true for this platform's build (M5.RC.2b, TF-RC1-ANDROID-CONFIG), and
+ * with it how saved builds are removed (M5.IOS.1: Android can clear an app's storage, iOS deletes the app).
+ */
 enum class BackupStatement {
     /** Android: `allowBackup="false"` plus data-extraction rules that exclude every domain. */
     AndroidBackupDisabled,

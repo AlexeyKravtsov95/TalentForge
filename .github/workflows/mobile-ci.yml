@@ -22,6 +22,9 @@ on:
       - "scripts/release_signing_selftest.sh"
       - "scripts/verify_play_bundle.py"
       - "scripts/play_signing_selftest.sh"
+      - "scripts/verify_ios_archive.py"
+      - "scripts/ios_simulator_smoke.sh"
+      - "docs/ota/keys/production-keyring.json"
       - ".github/workflows/mobile-ci.yml"
   # Manual re-run from the Actions tab (e.g. after a runner/infrastructure outage).
   workflow_dispatch:
@@ -103,10 +106,19 @@ jobs:
           retention-days: 14
 
   mobile-macos:
-    name: Mobile (macOS) — iOS
-    runs-on: macos-latest
+    name: Mobile (macOS) — iOS, Xcode 27.1
+    # M5.IOS.1: the iOS release toolchain is Xcode 27.1 / iOS 27.1 SDK. GitHub ships Xcode 27 only
+    # on the xcode-27 image (public preview, macOS 27); macos-latest carries Xcode 26.x and is
+    # never used here, so a build with an older Xcode cannot pass for one made with 27.1. A
+    # missing Xcode 27.1 fails the job (BLOCKED), it is never skipped.
+    runs-on: xcode-27
     env:
       ANDROID_HOME: /Users/runner/Library/Android/sdk
+      XCODE_APP: /Applications/Xcode_27.1.app
+      # Xcode 27.1 release build (the same build as its RC 1)
+      XCODE_BUILD: 27A9275
+      IOS_SDK: iphoneos27.1
+      IOS_SIMULATOR_SDK: iphonesimulator27.1
     steps:
       - uses: actions/checkout@v4
 
@@ -119,24 +131,89 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Show Xcode version
-        run: xcodebuild -version
+      - name: Select Xcode 27.1 and verify the toolchain
+        run: |
+          set -euo pipefail
+          if [ ! -d "$XCODE_APP" ]; then
+            echo "::error::BLOCKED: $XCODE_APP is not installed on this runner image"
+            ls -d /Applications/Xcode*.app || true
+            exit 1
+          fi
+          sudo xcode-select --switch "$XCODE_APP/Contents/Developer"
+          xcodebuild -version
+          build=$(xcodebuild -version | awk '/^Build version/ {print $3}')
+          if [ "$build" != "$XCODE_BUILD" ]; then
+            echo "::error::expected Xcode 27.1 build $XCODE_BUILD, found $build"
+            exit 1
+          fi
+          sdks=$(xcodebuild -showsdks)
+          echo "$sdks"
+          for sdk in "$IOS_SDK" "$IOS_SIMULATOR_SDK"; do
+            if ! grep -qE -- "-sdk ${sdk}( |$)" <<<"$sdks"; then
+              echo "::error::SDK $sdk is not installed with $XCODE_APP"
+              exit 1
+            fi
+          done
+          sw_vers
+          xcrun simctl list runtimes
 
       - name: OSS notices drift check (full content, POM licences and klib native archives == committed iOS notices)
         run: python3 scripts/generate_oss_notices.py --check --platform ios
 
-      - name: Shared iOS compilation and simulator tests
+      - name: Shared iOS compilation and simulator tests, Compose iOS adapter tests
         working-directory: mobile
-        run: ./gradlew :shared:compileKotlinIosArm64 :shared:compileKotlinIosSimulatorArm64 :shared:iosSimulatorArm64Test --console=plain
+        run: >-
+          ./gradlew :shared:compileKotlinIosArm64 :shared:compileKotlinIosSimulatorArm64
+          :shared:iosSimulatorArm64Test :composeApp:iosSimulatorArm64Test --console=plain
 
-      - name: Link Compose iOS frameworks (device + simulator)
+      - name: Link Compose iOS frameworks (debug and release, device and simulator)
         working-directory: mobile
-        run: ./gradlew :composeApp:linkDebugFrameworkIosArm64 :composeApp:linkDebugFrameworkIosSimulatorArm64 --console=plain
+        run: >-
+          ./gradlew :composeApp:linkDebugFrameworkIosArm64 :composeApp:linkDebugFrameworkIosSimulatorArm64
+          :composeApp:linkReleaseFrameworkIosArm64 :composeApp:linkReleaseFrameworkIosSimulatorArm64
+          --console=plain
 
-      - name: Build iosApp for simulator
+      - name: Build iosApp Release for simulator
         working-directory: mobile/iosApp
         run: |
-          xcodebuild -project iosApp.xcodeproj -scheme iosApp -configuration Debug \
+          xcodebuild -project iosApp.xcodeproj -scheme iosApp -configuration Release \
             -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO ARCHS=arm64 build
+
+      - name: Unsigned Release archive (generic/platform=iOS)
+        working-directory: mobile/iosApp
+        run: |
+          xcodebuild -project iosApp.xcodeproj -scheme iosApp -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build-archive \
+            -archivePath build/TalentForge.xcarchive \
+            CODE_SIGNING_ALLOWED=NO archive
+
+      - name: Verify the archive (identity, version, Xcode 27.1 SDK, privacy manifest, OTA off, no secrets)
+        working-directory: mobile/iosApp
+        run: |
+          set -euo pipefail
+          settings=$(xcodebuild -project iosApp.xcodeproj -target iosApp -configuration Release -showBuildSettings)
+          version=$(awk -F' = ' '/^ *MARKETING_VERSION = / {print $2}' <<<"$settings")
+          build=$(awk -F' = ' '/^ *CURRENT_PROJECT_VERSION = / {print $2}' <<<"$settings")
+          python3 ../../scripts/verify_ios_archive.py --archive build/TalentForge.xcarchive \
+            --expected-version "$version" --expected-build "$build" \
+            --expected-sdk "$IOS_SDK" --expected-xcode-build "$XCODE_BUILD" \
+            --report build/ios-archive-report.json
+
+      - name: Simulator launch smoke (iPhone 18 Pro, iPhone 18 Pro Max, iPad Pro 13-inch)
+        run: >-
+          scripts/ios_simulator_smoke.sh mobile/iosApp/build/Build/Products/Release-iphonesimulator/iosApp.app
+          mobile/iosApp/build/ios-smoke "iPhone 18 Pro" "iPhone 18 Pro Max" "iPad Pro 13-inch (M5)"
+
+      - name: Upload iOS evidence (archive report, simulator screenshots)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-xcode-27.1-evidence
+          path: |
+            mobile/iosApp/build/ios-archive-report.json
+            mobile/iosApp/build/ios-smoke/
+          if-no-files-found: ignore
+          retention-days: 30

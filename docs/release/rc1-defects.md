@@ -214,6 +214,8 @@ The device-level checks behind that statement ran on an Android emulator only (s
 
 **Verification.** Upload a signed archive to App Store Connect (TestFlight). There must be no ITMS-91053 email or validation error.
 
+**M5.IOS.1: RESOLVED in code; App Store Connect confirmation OPEN.** `mobile/iosApp/iosApp/PrivacyInfo.xcprivacy` is bundled: `NSPrivacyTracking = false`, no tracking domains, no collected data types, and the categories the release executable imports — User Defaults `CA92.1`, File Timestamp `C617.1` (`stat`/`fstat` from Skia `SkOSFile` and ICU `umapfile`), Disk Space `E174.1` (OTA free-space check). The JetBrains-quoted `0A2A.1` (third-party SDK wrapper) does not apply: the code is statically linked into the app, which uses the APIs on its own files. No `mach_absolute_time`/`systemUptime` import exists, so no System Boot Time entry. `scripts/verify_ios_archive.py` derives the used categories from the archive and fails on an undeclared one ([readiness §6.1](apple-appstore/readiness.md#61-privacyinfoxcprivacy-и-required-reason-api)). Still open: the upload of an owner-signed archive (no ITMS-91053).
+
 ---
 
 ## P2 — Non-blocking
@@ -253,6 +255,7 @@ The device-level checks behind that statement ran on an Android emulator only (s
   - **(b)** cross-scene-safe persistence is implemented and tested (for example one process-wide serialized writer, or compare-and-swap on the stored payload) **in a separately reviewed change**, with a two-window iPad test showing that neither concurrent edits nor edits to different builds lose data.
 - **Resolution:** option (a) is the smaller change for v1 (`INFOPLIST_KEY_UIApplicationSupportsMultipleScenes = NO`, or drop the scene-manifest generation key).
 - **Verification:** `plutil -p <archive>.app/Info.plist | grep UIApplicationSupportsMultipleScenes`, and on an iPad simulator check that a second window cannot be opened; for option (b), the two-window scenario.
+- **M5.IOS.1: RESOLVED with option (a).** `INFOPLIST_KEY_UIApplicationSceneManifest_Generation` is removed from both configurations, so the source plist's `UIApplicationSupportsMultipleScenes = false` reaches the built Release `.app` (`plutil -p`, and the `single-scene` check of `scripts/verify_ios_archive.py`, run on every `mobile-ci` archive). The iPad second-window check is not run (no iPad window gesture is driven in this milestone); with multiple scenes off iPadOS offers no second window of the app.
 
 ### TF-RC1-COPY-NAME — Duplicate names are persisted in English (" (copy)", "Draft (copy)") in the Russian UI
 

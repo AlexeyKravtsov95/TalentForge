@@ -683,7 +683,28 @@ presents `MainViewController()` from the `ComposeApp` framework — no separate
 Swift business or domain layer, no CocoaPods. The framework is built by the
 standard Compose Multiplatform integration: the Xcode target runs a
 `Build KMP Framework` script phase invoking
-`gradlew :composeApp:embedAndSignAppleFrameworkForXcode` and embeds the result.
+`gradlew :composeApp:embedAndSignAppleFrameworkForXcode` and links the result.
+
+Since M5.IOS.1 (App Store readiness, [release/apple-appstore/readiness.md](release/apple-appstore/readiness.md)):
+
+- the framework is static (`isStatic = true`), so it is **linked, not embedded**: the Embed
+  Frameworks phase is gone. Embedding it had put a 33 KB stub dylib with a temporary build-path
+  install name into `Frameworks/`. The Compose resources (`compose-resources/`, the bundled
+  datasets) are synced into the app bundle by the same Gradle task;
+- `MARKETING_VERSION` 1.0.0, `CURRENT_PROJECT_VERSION` 1 (rule in the readiness document),
+  deployment target 17.2, iPhone + iPad, `en` + `ru`;
+- `Info.plist` is the only source of the scene manifest and the launch screen: the
+  `INFOPLIST_KEY_UIApplicationSceneManifest_Generation` and `…UILaunchScreen_Generation`
+  settings are removed, so the built plist keeps `UIApplicationSupportsMultipleScenes = false`
+  (TF-RC1-IOS-SCENES: one `App` composition, one writer of the build library) and the launch
+  screen is the `LaunchBackground` colour (the spec-G `background` token, #0B0D11) instead of a
+  white flash before the dark UI; `ITSAppUsesNonExemptEncryption = false` (OS HTTPS only);
+- `PrivacyInfo.xcprivacy` (TF-RC1-IOS-PRIVACY): no tracking, no collected data, and the
+  required-reason APIs the executable actually imports — User Defaults `CA92.1` (the build
+  library), File Timestamp `C617.1` (`stat`/`fstat` in Skia's `SkOSFile` and ICU's `umapfile`,
+  for files in the app bundle/container), Disk Space `E174.1` (the OTA store's free-space check).
+  `scripts/verify_ios_archive.py` re-derives the used categories from the archive's Mach-O
+  imports and fails when one is undeclared.
 
 ## Local build library (M5.1)
 
@@ -1311,7 +1332,9 @@ App(storage, …, appVersion)          ← host: Android PackageManager / iOS NS
     is the Android UI's dev host and is not distributed) and the iOS file on iOS
     (TF-RC2B-IOS-NOTICES, [evidence](release/rc2b-evidence/ios-oss-notices.md)).
 - **Privacy:** factual summary of the draft policy. `BackupStatement` picks the paragraph that is
-  true per platform. The policy link opens the page published for the platform and the UI
+  true per platform, and since M5.IOS.1 also the deletion paragraph: Android "uninstall the app or
+  clear its storage", iOS "delete the app" (`about_privacy_delete_ios`; iOS offers no per-app
+  storage clearing). The policy link opens the page published for the platform and the UI
   language (M5.LEGAL.LINK, the hosting decision of LR-5). The published policy covers the
   Android app only, so `platformPrivacyPolicy` is `PublishedPrivacyPolicy.Android` on Android
   (and on the desktop host of the Android UI) and `NotPublished` on iOS.
