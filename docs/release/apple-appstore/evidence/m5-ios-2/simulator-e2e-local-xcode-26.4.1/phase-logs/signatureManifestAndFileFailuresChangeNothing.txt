@@ -1,0 +1,11 @@
+[==========] Running 1 tests from 3 test cases.
+[----------] Global test environment set-up.
+[----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest
+[ RUN      ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.signatureManifestAndFileFailuresChangeNothing
+[ios-ota-e2e] PASSED integrity (library, active release and product unchanged, the saved build opens; the next clean check installs B): bad signature -> SignatureInvalid; tampered catalog payload -> SignatureInvalid; catalog signed by a foreign key -> UntrustedSigner; catalog signed by the fixtures' test- key -> UntrustedSigner; corrupt release manifest -> ManifestHashMismatch; SHA-256 mismatch of a file -> BlobHashMismatch; incomplete file -> BlobSizeMismatch; catalog past expiresAt -> CatalogExpired, 1 request
+[       OK ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.signatureManifestAndFileFailuresChangeNothing (39746 ms)
+[----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest (39746 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 tests from 1 test cases ran. (39746 ms total)
+[  PASSED  ] 1 tests.

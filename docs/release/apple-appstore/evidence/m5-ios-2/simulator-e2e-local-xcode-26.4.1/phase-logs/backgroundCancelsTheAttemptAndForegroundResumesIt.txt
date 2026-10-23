@@ -1,0 +1,11 @@
+[==========] Running 1 tests from 3 test cases.
+[----------] Global test environment set-up.
+[----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest
+[ RUN      ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.backgroundCancelsTheAttemptAndForegroundResumesIt
+[ios-ota-e2e] PASSED background mid-download (onBackground, as ON_STOP calls it): the attempt is cancelled cooperatively, no request in the 2 s after it, no partial file, 62 verified files kept, nothing activated; foreground (onForeground) resumed and activated B without downloading a verified file again
+[       OK ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.backgroundCancelsTheAttemptAndForegroundResumesIt (8303 ms)
+[----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest (8303 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 tests from 1 test cases ran. (8303 ms total)
+[  PASSED  ] 1 tests.

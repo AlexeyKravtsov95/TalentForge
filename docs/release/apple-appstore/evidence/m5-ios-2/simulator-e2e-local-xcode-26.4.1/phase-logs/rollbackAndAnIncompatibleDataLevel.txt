@@ -1,0 +1,11 @@
+[==========] Running 1 tests from 3 test cases.
+[----------] Global test environment set-up.
+[----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest
+[ RUN      ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.rollbackAndAnIncompatibleDataLevel
+[ios-ota-e2e] PASSED rollback B -> A (sequence 3): A active from the bundle (no talent file fetched), B kept as previous and the saved 70450 build opens on 70450; minDataLevel 2 -> NeedsNewerApp(1.60.1.70450-r2), 1 request, A stays; the old sequence 2 again -> SequenceRegression, nothing changes
+[       OK ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.rollbackAndAnIncompatibleDataLevel (7749 ms)
+[----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest (7749 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 tests from 1 test cases ran. (7749 ms total)
+[  PASSED  ] 1 tests.

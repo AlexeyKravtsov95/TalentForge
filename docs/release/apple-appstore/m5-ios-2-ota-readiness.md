@@ -91,7 +91,7 @@ HTTPS-литералы в реальном OTA ON бинарнике: `https://o
 
 В bundle только `70374`, как у версии приложения до 70450. Поэтому A → B — **настоящее** обновление по сети, а не повторная активация той же версии.
 
-Прогон: **локально, Xcode 26.4.1, iOS 26.4.1, iPhone 17 Pro**, стенд на `eb9fc46`, ключ `tf-staging-local-8095a18a`. Итог — 14/14 фаз **PASS** ([отчёт](evidence/m5-ios-2/simulator-e2e-local-xcode-26.4.1/ios-ota-e2e-report.json), [строки результатов](evidence/m5-ios-2/simulator-e2e-local-xcode-26.4.1/results.txt), [журналы фаз](evidence/m5-ios-2/simulator-e2e-local-xcode-26.4.1/logs/)). Xcode 27.1 / iPhone 18 Pro — задача `ios-ota-e2e` в CI (§9).
+Прогон: **локально, Xcode 26.4.1, iOS 26.4.1, iPhone 17 Pro**, стенд на `eb9fc46`, ключ `tf-staging-local-8095a18a`. Итог — 14/14 фаз **PASS** ([отчёт](evidence/m5-ios-2/simulator-e2e-local-xcode-26.4.1/ios-ota-e2e-report.json), [строки результатов](evidence/m5-ios-2/simulator-e2e-local-xcode-26.4.1/results.txt), [журналы фаз](evidence/m5-ios-2/simulator-e2e-local-xcode-26.4.1/phase-logs/)). Xcode 27.1 / iPhone 18 Pro — задача `ios-ota-e2e` в CI, её отчёт и журналы фаз — артефакт `ios-ota-e2e-xcode-27.1` (§9).
 
 | Фаза | Что проверено | Результат |
 |---|---|---|
