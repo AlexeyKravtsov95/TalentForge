@@ -55,6 +55,8 @@ from talent_data.prepare.orchestrate import (
     pipeline_steps,
     prepare,
     run_command,
+    run_steps,
+    step_findings,
 )
 from talent_data.prepare.production import (
     CATALOG_KEY,
@@ -399,11 +401,11 @@ def test_the_steps_are_the_existing_pipeline_commands() -> None:
     steps = pipeline_steps("forever", "1.60.1.70500", "1.60.1.70450", ["ruRU"])
     assert [s.id for s in steps] == [
         "fetch",
-        "visuals-fetch",
         "tooltips-fetch",
         "localization-fetch-ruRU",
         "normalize",
         "manifest",
+        "visuals-fetch",  # after normalize: it resolves icons from the dataset (issue #78)
         "diff",
         "visuals-normalize",
         "visuals-check",
@@ -425,6 +427,111 @@ def test_the_steps_are_the_existing_pipeline_commands() -> None:
     checks = [s.argv[1:] for s in check_steps()]
     assert ("scripts/sync_mobile_datasets.py", "--check") in checks
     assert ("-m", "pytest", "-q", "-p", "no:cacheprovider") in checks
+
+
+#: what each pipeline step reads, by the step that produces it (from the commands' code):
+#: ``visuals fetch``/``normalize``, ``tooltips normalize`` and ``localization normalize``
+#: load the normalized dataset (``visuals.pipeline.load_canonical_dataset``),
+#: ``localization normalize`` also the published tooltips; the fetches of tooltips and
+#: localization only download tables
+STEP_NEEDS: dict[str, set[str]] = {
+    "fetch": set(),
+    "tooltips-fetch": set(),
+    "localization-fetch-ruRU": set(),
+    "normalize": {"fetch"},
+    "manifest": {"normalize"},
+    "visuals-fetch": {"normalize", "manifest"},
+    "diff": {"normalize"},
+    "visuals-normalize": {"normalize", "visuals-fetch"},
+    "visuals-check": {"visuals-normalize"},
+    "tooltips-normalize": {"normalize", "tooltips-fetch"},
+    "tooltips-check": {"tooltips-normalize"},
+    "localization-normalize-ruRU": {
+        "normalize",
+        "tooltips-normalize",
+        "localization-fetch-ruRU",
+    },
+    "localization-check-ruRU": {"localization-normalize-ruRU", "tooltips-normalize"},
+}
+
+
+def test_every_step_runs_after_the_steps_it_reads() -> None:
+    order = [s.id for s in pipeline_steps("forever", "1.60.1.70500", "1.60.1.70450", ["ruRU"])]
+    assert set(order) == set(STEP_NEEDS)
+    for position, step in enumerate(order):
+        missing = STEP_NEEDS[step] - set(order[:position])
+        assert not missing, f"{step} runs before {sorted(missing)}"
+
+
+def test_visuals_fetch_reads_the_normalized_dataset_and_the_other_fetches_do_not(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The dependency behind issue #78, on the real code: without the candidate's
+    normalized dataset, icon resolution stops before reading a single table, while the
+    tooltip and localization fetches only ask the source for tables."""
+    from talent_data.tooltips.pipeline import fetch_tooltip_tables
+    from talent_data.visuals.pipeline import resolve_build
+
+    class Tables:
+        def __init__(self) -> None:
+            self.asked: list[str] = []
+
+        def ensure_table(self, version: ClientVersion, table: str) -> None:
+            self.asked.append(table)
+
+        def load_table(self, version: ClientVersion, table: str) -> Any:
+            self.asked.append(table)
+            raise AssertionError("no table is loaded without the dataset")
+
+    monkeypatch.setenv("TALENT_DATA_ROOT", str(tmp_path))  # no data/normalized at all
+    version = ClientVersion.parse("1.60.1.70532")
+    source = Tables()
+    with pytest.raises(PipelineError, match=r"no normalized dataset for 1\.60\.1\.70532"):
+        resolve_build(source, GAME, version)  # type: ignore[arg-type]
+    assert source.asked == []
+    assert fetch_tooltip_tables(source, version)  # type: ignore[arg-type]
+    assert source.asked  # tables only: no dataset needed
+
+
+ISSUE_78_ORDER = (  # the order of issue #78's run: visuals-fetch second
+    "fetch",
+    "visuals-fetch",
+    "tooltips-fetch",
+    "localization-fetch-ruRU",
+    "normalize",
+    "manifest",
+    "diff",
+)
+
+
+def test_the_issue_78_order_fails_on_a_new_build_and_the_fixed_order_does_not(
+    tmp_path: Path,
+) -> None:
+    """Issue #78: on a build main does not carry yet, ``visuals fetch`` before ``normalize``
+    found no dataset and blocked the run; everything after it was skipped."""
+    by_id = {s.id: s for s in pipeline_steps("forever", BUILD, BASE)}
+    old = run_steps(
+        [by_id[i] for i in ISSUE_78_ORDER],
+        FakeRunner(),
+        cwd=tmp_path / "old",
+        logs=tmp_path / "old-logs",
+        stop_on_failure=True,
+    )
+    outcomes = {r.step.id: r.outcome for r in old}
+    assert outcomes["fetch"] is StepOutcome.PASSED
+    assert outcomes["visuals-fetch"] is StepOutcome.FAILED
+    assert {outcomes[i] for i in ISSUE_78_ORDER[2:]} == {StepOutcome.SKIPPED}
+    assert "no normalized dataset" in (tmp_path / "old-logs/visuals-fetch.log").read_text()
+    assert [f.source for f in step_findings(old)] == ["visuals-fetch"]
+
+    fixed = run_steps(
+        pipeline_steps("forever", BUILD, BASE),
+        FakeRunner(),
+        cwd=tmp_path / "fixed",
+        logs=tmp_path / "fixed-logs",
+        stop_on_failure=True,
+    )
+    assert {r.outcome for r in fixed} == {StepOutcome.PASSED}
 
 
 @pytest.mark.parametrize(
@@ -524,6 +631,12 @@ class FakeRunner:
         self.calls.append(step)
         log.parent.mkdir(parents=True, exist_ok=True)
         log.write_text(f"$ {' '.join(argv)}\n")
+        dataset = cwd / f"data/normalized/forever/{BUILD}/manifest.json"
+        if "normalize" in STEP_NEEDS.get(step, set()) and not dataset.is_file():
+            # what the real commands do: they read the normalized dataset first
+            with log.open("a") as out:
+                out.write(f"error: no normalized dataset for {BUILD} ({dataset})\n")
+            return cli_main.EXIT_FAILURE
         if step == "normalize":
             target = cwd / f"data/normalized/forever/{BUILD}"
             target.mkdir(parents=True, exist_ok=True)
@@ -659,10 +772,12 @@ def test_an_unreachable_source_is_unknown_and_stops_the_pipeline(
     report, out = run_prepare(repo, tmp_path, svc)
     assert report.status is Readiness.UNKNOWN
     assert orchestrate.EXIT_CODES[report.status] == 4
-    assert runner.calls == ["fetch", "visuals-fetch"]
+    order = list(STEP_IDS.values())
+    assert runner.calls == order[: order.index("visuals-fetch") + 1]
     outcomes = {r.step.id: r.outcome for r in report.steps}
+    assert outcomes["normalize"] is StepOutcome.PASSED
     assert outcomes["visuals-fetch"] is StepOutcome.SOURCE_UNAVAILABLE
-    assert outcomes["normalize"] is StepOutcome.SKIPPED
+    assert outcomes["diff"] is StepOutcome.SKIPPED
     assert not evaluated and report.candidate_commit is None
     assert kinds(report) == {"UNKNOWN": {"visuals-fetch"}}
     assert (out / "logs/visuals-fetch.log").is_file() and (out / "report.json").is_file()
