@@ -4,9 +4,11 @@ The preparation never publishes, signs or pushes anything, and never touches the
 it runs from. Everything happens in a **disposable clone** of the repository at the
 ``origin/main`` commit the detection recorded:
 
-1. the existing pipeline commands, as subprocesses with one log each - ``fetch``,
-   ``visuals fetch``, ``tooltips fetch``, ``localization fetch`` (the only network steps),
-   then offline ``normalize --class all``, ``manifest --expect-complete``,
+1. the existing pipeline commands, as subprocesses with one log each, in dependency order
+   (``pipeline_steps``): the table downloads ``fetch``, ``tooltips fetch`` and
+   ``localization fetch``; offline ``normalize --class all`` and
+   ``manifest --expect-complete``; then ``visuals fetch`` - the last network step, which
+   resolves icons from the normalized dataset and so needs it; then offline
    ``diff --class all`` against the base, ``visuals``/``tooltips``/``localization``
    ``normalize`` and ``check``;
 2. a guard that the pipeline wrote nothing outside the candidate build's own data, diff and
@@ -168,11 +170,25 @@ def _talent_data(*args: str) -> tuple[str, ...]:
 def pipeline_steps(
     game: str, build: str, base: str, locales: Sequence[str] = SUPPORTED_LOCALES
 ) -> list[Step]:
-    """The existing pipeline commands for ``build`` (docs/data-pipeline.md §9), in order."""
+    """The existing pipeline commands for ``build`` (docs/data-pipeline.md §9), in order.
+
+    The order follows what each command reads, not whether it is online:
+
+    * ``fetch``, ``tooltips fetch`` and ``localization fetch`` only download DB2 tables;
+    * ``normalize`` reads the ``fetch`` tables and writes the dataset; ``manifest`` checks it;
+    * ``visuals fetch`` resolves the icon of every talent entry of the *normalized* dataset
+      (``visuals.pipeline.load_canonical_dataset``) before downloading the client files, so
+      it runs after ``normalize`` and ``manifest`` (issue #78: placed before them, it failed
+      on every build that ``main`` does not carry yet);
+    * ``diff`` reads the base and the candidate datasets;
+    * ``visuals normalize`` reads the dataset and the fetched icons, ``tooltips normalize``
+      the dataset and the tooltip tables, ``localization normalize`` the dataset, the
+      published tooltips and the localized tables; each ``check`` reads what its
+      ``normalize`` wrote.
+    """
     g, b = ("--game", game), ("--build", build)
     steps = [
         Step("fetch", StepKind.SOURCE, _talent_data("fetch", *g, *b)),
-        Step("visuals-fetch", StepKind.SOURCE, _talent_data("visuals", "fetch", *g, *b)),
         Step("tooltips-fetch", StepKind.SOURCE, _talent_data("tooltips", "fetch", *g, *b)),
     ]
     steps += [
@@ -200,6 +216,7 @@ def pipeline_steps(
                 "--expect-complete",
             ),
         ),
+        Step("visuals-fetch", StepKind.SOURCE, _talent_data("visuals", "fetch", *g, *b)),
         Step(
             "diff",
             StepKind.PIPELINE,

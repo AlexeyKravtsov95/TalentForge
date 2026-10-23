@@ -12,7 +12,9 @@ Regenerate after a deliberate change:
 
 from __future__ import annotations
 
+import importlib.util
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -94,6 +96,25 @@ def canonical(payload: Any) -> str:
     return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
 
+def bundled_builds() -> tuple[str, ...]:
+    """``BUNDLED_BUILDS`` of ``scripts/mobile_bundles.py``: the overlays the app ships.
+
+    Only those are vectors. ``data/localization`` may also hold a build the app does not
+    bundle yet - the OTA preparation writes the candidate's overlays there in its clone
+    (issue #78) - and its hashes are checked by ``localization check`` and the OTA gates.
+    """
+    name = "mobile_bundles"
+    module = sys.modules.get(name)
+    if module is None:
+        spec = importlib.util.spec_from_file_location(name, ROOT / "scripts" / f"{name}.py")
+        assert spec is not None and spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module  # registered first, as the sync scripts expect
+        spec.loader.exec_module(module)
+    builds: tuple[str, ...] = module.BUNDLED_BUILDS
+    return builds
+
+
 def generate() -> str:
     vectors = [
         {
@@ -109,7 +130,8 @@ def generate() -> str:
             "path": path.relative_to(ROOT).as_posix(),
             "contentHash": expected_content_hash(read_localization_document(path)),
         }
-        for path in sorted(OVERLAYS.glob("*/*/*/*.json"))
+        for build in bundled_builds()
+        for path in sorted(OVERLAYS.glob(f"*/{build}/*/*.json"))
     ]
     document = {"vectors": vectors, "overlays": overlays}
     return json.dumps(document, ensure_ascii=False, indent=2) + "\n"
