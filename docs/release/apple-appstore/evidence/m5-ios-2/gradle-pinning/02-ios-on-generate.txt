@@ -1,0 +1,23 @@
+> Task :composeApp:generateOtaSettings
+
+[Incubating] Problems report is available at: file:///Users/alexeykravtsov/Desktop/workspace/TalentForge/mobile/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 583ms
+1 actionable task: 1 executed
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.5.1/userguide/configuration_cache_enabling.html
+    val iosProduction: OtaPlatformSettings = OtaPlatformSettings(
+        enabled = true,
+        channel = OtaChannel.PRODUCTION,
+        baseUrl = "https://ota.mythweld.com",
+        keys = listOf(
+            OtaKeySetting("tf-prod-2026a", "ecdsa-p256-sha256", "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEode8Lk5MV8iMB3qMIPeJWO9Yd1t3j9FdXZfSRZ4m3G9VFgIRAc9pMhYnylTVeonyvRaJL2pW3CuAgYN0xetQqQ=="),
+            OtaKeySetting("tf-prod-2026b", "ecdsa-p256-sha256", "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEv/PyI3N9mNWbFSKeo8AJ1ddv577hRG4gG5vA5N8TdWhCa3WdQEL41THeCX9Z9UoxZ4LvADTebVNb8nKIzeq/CA=="),
+        ),
+    )
+

@@ -53,12 +53,18 @@ plugins {
 // stays off and the generated settings are those of the OTA-off release. The committed keyring's
 // content is pinned as well, by the SHA-256 of each key's DER SPKI (the fingerprints the key
 // ceremony prints, docs/ota/production-deployment.md §4.4): every build fails while it differs.
+//
+// M5.IOS.2: the iOS production channel is pinned to the same origin and keyring by the same
+// rules; talentforge.ota.ios.production.enabled=true is its only owner setting
+// (docs/release/apple-appstore/m5-ios-2-ota-readiness.md). An iOS release framework is linked only
+// while no staging setting (Android or iOS) is set (checkReleaseOtaSettings), so a store archive
+// never carries staging or test keys.
 val otaPlatforms = listOf("android", "ios")
 val otaChannels = listOf("production", "staging")
 val otaKeyIdPrefixes = mapOf("production" to "tf-prod-", "staging" to "tf-staging-")
-val androidProductionOtaOrigin = "https://ota.mythweld.com"
-val androidProductionOtaKeyringFile: File = rootProject.file("../docs/ota/keys/production-keyring.json")
-val androidProductionOtaSpkiSha256 = mapOf(
+val productionOtaOrigin = "https://ota.mythweld.com"
+val productionOtaKeyringFile: File = rootProject.file("../docs/ota/keys/production-keyring.json")
+val productionOtaSpkiSha256 = mapOf(
     "tf-prod-2026a" to "1fac1b0d15f2a09fc3769099623fe1038e846f0033ec6e233f5111ff71239278",
     "tf-prod-2026b" to "6997b3d47d74ceeb6daec62b1d94f3f3e3bc476534eefe8cd140f67578532b26",
 )
@@ -164,27 +170,32 @@ fun readKeyringEntries(file: File): List<Map<String, String>> {
     }
 }
 
-fun readOtaChannelInput(platform: String, channel: String): OtaChannelInput {
-    val pinned = platform == "android" && channel == "production"
-    val enabledRaw = otaSetting(platform, channel, "enabled")
+fun readOtaChannelInput(platform: String, channel: String): OtaChannelInput =
+    otaChannelInputOf(platform, channel) { name -> otaSetting(platform, channel, name) }
+
+/** The input of one platform x channel from its raw settings [setting] (`enabled`, `baseUrl`, `keyring`, `trustAnchor`). */
+fun otaChannelInputOf(platform: String, channel: String, setting: (String) -> String?): OtaChannelInput {
+    // M5.OTA.PROD.3 (Android), M5.IOS.2 (iOS): every production channel is pinned
+    val pinned = channel == "production"
+    val enabledRaw = setting("enabled")
     // the pinned channel, when enabled, defaults to the committed origin and keyring
     val defaults = pinned && enabledRaw == "true"
-    val keyringPath = otaSetting(platform, channel, "keyring") ?: androidProductionOtaKeyringFile.path.takeIf { defaults }
+    val keyringPath = setting("keyring") ?: productionOtaKeyringFile.path.takeIf { defaults }
     var keyringProblem: String? = null
     val entries: List<Map<String, String>> = if (keyringPath == null) emptyList() else {
         val file = File(keyringPath)
         if (!file.isFile) { keyringProblem = "does not name a file"; emptyList() } else readKeyringEntries(file)
     }
-    val trustAnchorPath = otaSetting(platform, channel, "trustAnchor")
+    val trustAnchorPath = setting("trustAnchor")
     // a path that names no file reads as "" and is refused as "not PEM certificates"
     val trustAnchorPem = trustAnchorPath?.let { path -> File(path).takeIf { it.isFile }?.readText().orEmpty() }
     return OtaChannelInput(
         platform, channel, enabledRaw,
-        otaSetting(platform, channel, "baseUrl") ?: androidProductionOtaOrigin.takeIf { defaults },
+        setting("baseUrl") ?: productionOtaOrigin.takeIf { defaults },
         entries, keyringProblem, trustAnchorPem,
-        pinnedBaseUrl = androidProductionOtaOrigin.takeIf { pinned },
-        pinnedKeys = if (pinned) readKeyringEntries(androidProductionOtaKeyringFile) else null,
-        pinnedSpkiSha256 = androidProductionOtaSpkiSha256.takeIf { pinned },
+        pinnedBaseUrl = productionOtaOrigin.takeIf { pinned },
+        pinnedKeys = if (pinned) readKeyringEntries(productionOtaKeyringFile) else null,
+        pinnedSpkiSha256 = productionOtaSpkiSha256.takeIf { pinned },
     )
 }
 
@@ -200,6 +211,11 @@ fun renderOtaSettings(): String {
         "$it must not be committed: set it in the environment, ~/.gradle/gradle.properties or -P (docs/ota/android-production-enablement.md)"
     }
     if (problems.isNotEmpty()) throw GradleException("Invalid OTA settings:\n  " + problems.joinToString("\n  "))
+    return renderOtaSettingsSource(inputs)
+}
+
+/** GeneratedOtaSettings.kt for [inputs] (one per platform x channel), already validated. Pure: verifyOtaSettingsRules renders fixed inputs. */
+fun renderOtaSettingsSource(inputs: List<OtaChannelInput>): String {
     val sections = StringBuilder()
     for (input in inputs) {
         val name = input.platform + input.channel.replaceFirstChar { it.uppercase() }
@@ -236,7 +252,7 @@ fun otaSettingsRuleFailures(): List<String> {
     val prodB = key("tf-prod-2026b", "PB")
     val stagingKey = key("tf-staging-2026", "S")
     fun pinnedProduction(baseUrl: String, vararg keys: Map<String, String>) =
-        OtaChannelInput("android", "production", "true", baseUrl, keys.toList(), pinnedBaseUrl = androidProductionOtaOrigin, pinnedKeys = listOf(prodA, prodB))
+        OtaChannelInput("android", "production", "true", baseUrl, keys.toList(), pinnedBaseUrl = productionOtaOrigin, pinnedKeys = listOf(prodA, prodB))
     val refused = listOf(
         // a staging key in production with no staging channel configured at all
         "staging key in production, staging absent" to listOf(production(prodA, prodB, stagingKey)) to "pins tf-staging-2026, which is not a production key",
@@ -256,10 +272,10 @@ fun otaSettingsRuleFailures(): List<String> {
         // M5.OTA.PROD.3: the pinned Android production channel
         "another origin for the pinned channel" to listOf(pinnedProduction("https://ota.example.org", prodA, prodB)) to "baseUrl is pinned to https://ota.mythweld.com",
         "an http origin for the pinned channel" to listOf(pinnedProduction("http://ota.mythweld.com", prodA, prodB)) to "must be an https origin",
-        "other production keys for the pinned channel" to listOf(pinnedProduction(androidProductionOtaOrigin, prodA, key("tf-prod-2026c", "PC"))) to "must pin exactly the committed production keyring",
-        "a staging key added to the pinned keyring" to listOf(pinnedProduction(androidProductionOtaOrigin, prodA, prodB, stagingKey)) to "pins tf-staging-2026, which is not a production key",
-        "a test key added to the pinned keyring" to listOf(pinnedProduction(androidProductionOtaOrigin, prodA, prodB, key("test-a", "T"))) to "contains a test- key",
-        "a trust anchor on the pinned channel" to listOf(OtaChannelInput("android", "production", "true", androidProductionOtaOrigin, listOf(prodA, prodB), trustAnchorPem = certificate, pinnedBaseUrl = androidProductionOtaOrigin, pinnedKeys = listOf(prodA, prodB))) to "for the Android staging channel only",
+        "other production keys for the pinned channel" to listOf(pinnedProduction(productionOtaOrigin, prodA, key("tf-prod-2026c", "PC"))) to "must pin exactly the committed production keyring",
+        "a staging key added to the pinned keyring" to listOf(pinnedProduction(productionOtaOrigin, prodA, prodB, stagingKey)) to "pins tf-staging-2026, which is not a production key",
+        "a test key added to the pinned keyring" to listOf(pinnedProduction(productionOtaOrigin, prodA, prodB, key("test-a", "T"))) to "contains a test- key",
+        "a trust anchor on the pinned channel" to listOf(OtaChannelInput("android", "production", "true", productionOtaOrigin, listOf(prodA, prodB), trustAnchorPem = certificate, pinnedBaseUrl = productionOtaOrigin, pinnedKeys = listOf(prodA, prodB))) to "for the Android staging channel only",
     )
     val failures = mutableListOf<String>()
     for ((case, expected) in refused) {
@@ -272,32 +288,108 @@ fun otaSettingsRuleFailures(): List<String> {
     val anchored = otaSettingsProblems(listOf(production(prodA, prodB), OtaChannelInput("android", "staging", "true", "https://10.0.2.2:8443", listOf(stagingKey), trustAnchorPem = certificate)))
     if (anchored.isNotEmpty()) failures += "a staging trust anchor was refused: $anchored"
     if (otaSettingsProblems(emptyList()).isNotEmpty()) failures += "no settings must be valid (OTA off)"
-    val pinned = otaSettingsProblems(listOf(pinnedProduction(androidProductionOtaOrigin, prodB, prodA), staging(stagingKey)))
+    val pinned = otaSettingsProblems(listOf(pinnedProduction(productionOtaOrigin, prodB, prodA), staging(stagingKey)))
     if (pinned.isNotEmpty()) failures += "the pinned production channel was refused: $pinned"
     // the committed keyring itself: exactly the primary and the backup production key, valid for the
     // pinned channel and carrying the pinned SPKI fingerprints
-    val committed = readKeyringEntries(androidProductionOtaKeyringFile)
+    val committed = readKeyringEntries(productionOtaKeyringFile)
     val committedIds = committed.map { it.getValue("keyId") }
     if (committedIds != listOf("tf-prod-2026a", "tf-prod-2026b")) failures += "the committed production keyring pins $committedIds, expected [tf-prod-2026a, tf-prod-2026b]"
     fun committedInput(keys: List<Map<String, String>>) = OtaChannelInput(
-        "android", "production", "true", androidProductionOtaOrigin, keys,
-        pinnedBaseUrl = androidProductionOtaOrigin, pinnedKeys = keys, pinnedSpkiSha256 = androidProductionOtaSpkiSha256,
+        "android", "production", "true", productionOtaOrigin, keys,
+        pinnedBaseUrl = productionOtaOrigin, pinnedKeys = keys, pinnedSpkiSha256 = productionOtaSpkiSha256,
     )
     val committedProblems = otaSettingsProblems(listOf(committedInput(committed)))
     if (committedProblems.isNotEmpty()) failures += "the committed production keyring was refused: $committedProblems"
     // ... and a keyring whose content differs from the fingerprints is refused, enabled or not
     val (a, b) = committed
     val tampered = listOf(
-        "the backup key replaced by the primary's SPKI" to listOf(a, b + ("publicKeySpki" to a.getValue("publicKeySpki"))) to "tf-prod-2026b has SPKI SHA-256 ${androidProductionOtaSpkiSha256.getValue("tf-prod-2026a")}",
+        "the backup key replaced by the primary's SPKI" to listOf(a, b + ("publicKeySpki" to a.getValue("publicKeySpki"))) to "tf-prod-2026b has SPKI SHA-256 ${productionOtaSpkiSha256.getValue("tf-prod-2026a")}",
         "a changed SPKI byte" to listOf(a + ("publicKeySpki" to a.getValue("publicKeySpki").replaceRange(40, 41, if (a.getValue("publicKeySpki")[40] == 'A') "B" else "A")), b) to "tf-prod-2026a has SPKI SHA-256",
         "the backup key missing" to listOf(a) to "pins [tf-prod-2026a], expected [tf-prod-2026a, tf-prod-2026b]",
         "an extra production key" to listOf(a, b, key("tf-prod-2026c", a.getValue("publicKeySpki"))) to "expected [tf-prod-2026a, tf-prod-2026b]",
     )
     for ((case, expected) in tampered) {
         val (name, keys) = case
-        for (enabled in listOf("true", null)) {
-            val problems = otaSettingsProblems(listOf(OtaChannelInput("android", "production", enabled, null, emptyList(), pinnedBaseUrl = androidProductionOtaOrigin, pinnedKeys = keys, pinnedSpkiSha256 = androidProductionOtaSpkiSha256)))
-            if (problems.none { "the committed production keyring changed" in it && expected in it }) failures += "tampered keyring ($name, enabled=$enabled): expected \"$expected\", got $problems"
+        for (platform in otaPlatforms) for (enabled in listOf("true", null)) {
+            val problems = otaSettingsProblems(listOf(OtaChannelInput(platform, "production", enabled, null, emptyList(), pinnedBaseUrl = productionOtaOrigin, pinnedKeys = keys, pinnedSpkiSha256 = productionOtaSpkiSha256)))
+            if (problems.none { "the committed production keyring changed" in it && expected in it }) failures += "tampered keyring ($name, $platform, enabled=$enabled): expected \"$expected\", got $problems"
+        }
+    }
+    failures += iosProductionRuleFailures(committed)
+    return failures
+}
+
+/**
+ * M5.IOS.2: the pinned iOS production channel, through the same path an owner's build takes
+ * ([otaChannelInputOf] from raw settings, then [otaSettingsProblems] and [renderOtaSettingsSource]).
+ * `enabled=true` alone yields exactly the committed origin, channel and two keys; every attempt to
+ * name another origin, keyring, channel key or a staging/test key is refused; unset, nothing of
+ * production reaches the generated source. Returns what did not hold.
+ */
+fun iosProductionRuleFailures(committed: List<Map<String, String>>): List<String> {
+    val failures = mutableListOf<String>()
+    val scratch = layout.buildDirectory.dir("tmp/verifyOtaSettingsRules").get().asFile.apply { mkdirs() }
+    fun keyringFile(name: String, keys: List<Map<String, String>>): String = File(scratch, "$name.json").apply {
+        writeText(groovy.json.JsonOutput.toJson(mapOf("keys" to keys)))
+    }.path
+    fun key(id: String, spki: String) = mapOf("keyId" to id, "algorithm" to "ecdsa-p256-sha256", "publicKeySpki" to spki)
+    val (prodA, prodB) = committed
+    val stagingKeys = listOf(key("tf-staging-2026", "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEstaging"))
+    fun ios(channel: String, vararg settings: Pair<String, String>) = otaChannelInputOf("ios", channel) { settings.toMap()[it] }
+    fun offExcept(vararg inputs: OtaChannelInput): List<OtaChannelInput> = otaPlatforms.flatMap { platform ->
+        otaChannels.map { channel -> inputs.singleOrNull { it.platform == platform && it.channel == channel } ?: otaChannelInputOf(platform, channel) { null } }
+    }
+    val where = "talentforge.ota.ios.production"
+    val refused = listOf(
+        "another origin" to ios("production", "enabled" to "true", "baseUrl" to "https://ota.example.org") to "$where.baseUrl is pinned to $productionOtaOrigin",
+        "the staging origin" to ios("production", "enabled" to "true", "baseUrl" to "https://talentforge-ota-staging.hb.ru-msk.vkcloud-storage.ru") to "$where.baseUrl is pinned to $productionOtaOrigin",
+        "an http origin" to ios("production", "enabled" to "true", "baseUrl" to "http://ota.mythweld.com") to "$where.baseUrl must be an https origin",
+        "the origin with a path" to ios("production", "enabled" to "true", "baseUrl" to "$productionOtaOrigin/v2") to "$where.baseUrl is pinned to $productionOtaOrigin",
+        "another origin while disabled" to ios("production", "baseUrl" to "https://ota.example.org") to "$where.baseUrl is pinned to $productionOtaOrigin",
+        "the staging keyring" to ios("production", "enabled" to "true", "keyring" to keyringFile("staging", stagingKeys)) to "$where.keyring pins tf-staging-2026, which is not a production key",
+        "a test key added" to ios("production", "enabled" to "true", "keyring" to keyringFile("test", listOf(prodA, prodB, key("test-primary", "T")))) to "$where.keyring contains a test- key",
+        "a staging key added" to ios("production", "enabled" to "true", "keyring" to keyringFile("mixed", listOf(prodA, prodB) + stagingKeys)) to "$where.keyring pins tf-staging-2026, which is not a production key",
+        "the primary key only" to ios("production", "enabled" to "true", "keyring" to keyringFile("primary", listOf(prodA))) to "$where.keyring must pin a primary and a backup key",
+        "another production key" to ios("production", "enabled" to "true", "keyring" to keyringFile("other", listOf(prodA, key("tf-prod-2026c", "PC")))) to "$where.keyring must pin exactly the committed production keyring",
+        "the committed key ids over other SPKIs" to ios("production", "enabled" to "true", "keyring" to keyringFile("swapped", listOf(prodA + ("publicKeySpki" to prodB.getValue("publicKeySpki")), prodB))) to "$where.keyring must pin exactly the committed production keyring",
+        "another algorithm" to ios("production", "enabled" to "true", "keyring" to keyringFile("rsa", listOf(prodA + ("algorithm" to "rsa-pss-sha256"), prodB))) to "$where.keyring: every key must be ecdsa-p256-sha256",
+        "a keyring that is no file" to ios("production", "enabled" to "true", "keyring" to File(scratch, "missing.json").path) to "$where.keyring does not name a file",
+        "a trust anchor" to ios("production", "enabled" to "true", "trustAnchor" to File(scratch, "missing.pem").path) to "$where.trustAnchor: a trust anchor is for the Android staging channel only",
+        "enabled neither true nor false" to ios("production", "enabled" to "yes") to "$where.enabled must be true or false",
+        "a production key in the iOS staging keyring" to ios("staging", "enabled" to "true", "baseUrl" to "https://localhost:8443", "keyring" to keyringFile("staging-prod", listOf(prodA))) to "talentforge.ota.ios.staging.keyring pins tf-prod-2026a, which is not a staging key",
+    )
+    for ((case, expected) in refused) {
+        val (name, input) = case
+        val problems = otaSettingsProblems(offExcept(input))
+        if (problems.none { expected in it }) failures += "iOS production, $name: expected a problem containing \"$expected\", got $problems"
+    }
+    fun section(source: String, name: String): String = source.substringAfter("    val $name: OtaPlatformSettings", "").substringBefore("\n\n")
+    // ON: enabled=true alone (and the same with the committed values spelled out) pins exactly the committed origin and keys
+    for (on in listOf(ios("production", "enabled" to "true"), ios("production", "enabled" to "true", "baseUrl" to productionOtaOrigin, "keyring" to productionOtaKeyringFile.path))) {
+        val inputs = offExcept(on)
+        val problems = otaSettingsProblems(inputs)
+        if (problems.isNotEmpty()) failures += "iOS production ON was refused: $problems"
+        val source = renderOtaSettingsSource(inputs)
+        val ios = section(source, "iosProduction")
+        val expectedKeys = committed.map { "OtaKeySetting(${otaKotlinString(it["keyId"])}, \"ecdsa-p256-sha256\", ${otaKotlinString(it["publicKeySpki"])})" }
+        val keyLines = ios.lines().filter { "OtaKeySetting(" in it }.map { it.trim().removeSuffix(",") }
+        if ("enabled = true," !in ios || "channel = OtaChannel.PRODUCTION," !in ios || "baseUrl = \"$productionOtaOrigin\"," !in ios || keyLines != expectedKeys) {
+            failures += "iOS production ON did not generate exactly the pinned origin, the production channel and [tf-prod-2026a, tf-prod-2026b]: $ios"
+        }
+        for (other in listOf("androidProduction", "androidStaging", "iosStaging")) {
+            val section = section(source, other)
+            if ("enabled = false," !in section || "baseUrl = null," !in section || "OtaKeySetting(" in section) failures += "iOS production ON changed $other: $section"
+        }
+    }
+    // OFF: nothing set (or enabled=false) generates no origin and no key anywhere
+    for (off in listOf(ios("production"), ios("production", "enabled" to "false"))) {
+        val inputs = offExcept(off)
+        val problems = otaSettingsProblems(inputs)
+        if (problems.isNotEmpty()) failures += "iOS production OFF was refused: $problems"
+        val source = renderOtaSettingsSource(inputs)
+        if ("ota.mythweld.com" in source || committed.any { it.getValue("publicKeySpki") in source } || "enabled = true" in source) {
+            failures += "iOS production OFF generated production settings: $source"
         }
     }
     return failures
@@ -690,6 +782,12 @@ tasks.matching { it.name == "preReleaseBuild" }.configureEach {
     dependsOn(checkReleaseSigning)
     dependsOn(checkReleaseOtaSettings)
     mustRunAfter(checkPublishableSigning)
+}
+
+// M5.IOS.2: the App Store archive links the release framework (embedAndSignAppleFrameworkForXcode
+// with CONFIGURATION=Release), so the same staging guard runs before every iOS release link.
+tasks.matching { it.name.startsWith("linkRelease") && it.name.contains("Ios") }.configureEach {
+    dependsOn(checkReleaseOtaSettings)
 }
 
 // M5.PLAY.1: the same gates for the Google Play bundle, with the upload key's settings.

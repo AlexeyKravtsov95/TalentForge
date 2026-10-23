@@ -1,0 +1,46 @@
+:composeApp:kmpPartiallyResolvedDependenciesChecker SKIPPED
+:composeApp:checkKotlinGradlePluginConfigurationErrors SKIPPED
+:composeApp:checkReleaseOtaSettings SKIPPED
+:composeApp:downloadKotlinNativeDistribution SKIPPED
+:composeApp:convertXmlValueResourcesForAppleMain SKIPPED
+:composeApp:copyNonXmlValueResourcesForAppleMain SKIPPED
+:composeApp:prepareComposeResourcesTaskForAppleMain SKIPPED
+:composeApp:generateResourceAccessorsForAppleMain SKIPPED
+:composeApp:convertXmlValueResourcesForCommonMain SKIPPED
+:composeApp:copyNonXmlValueResourcesForCommonMain SKIPPED
+:composeApp:prepareComposeResourcesTaskForCommonMain SKIPPED
+:composeApp:generateResourceAccessorsForCommonMain SKIPPED
+:composeApp:convertXmlValueResourcesForIosArm64Main SKIPPED
+:composeApp:copyNonXmlValueResourcesForIosArm64Main SKIPPED
+:composeApp:prepareComposeResourcesTaskForIosArm64Main SKIPPED
+:composeApp:generateResourceAccessorsForIosArm64Main SKIPPED
+:composeApp:convertXmlValueResourcesForIosMain SKIPPED
+:composeApp:copyNonXmlValueResourcesForIosMain SKIPPED
+:composeApp:prepareComposeResourcesTaskForIosMain SKIPPED
+:composeApp:generateResourceAccessorsForIosMain SKIPPED
+:composeApp:convertXmlValueResourcesForNativeMain SKIPPED
+:composeApp:copyNonXmlValueResourcesForNativeMain SKIPPED
+:composeApp:prepareComposeResourcesTaskForNativeMain SKIPPED
+:composeApp:generateResourceAccessorsForNativeMain SKIPPED
+:composeApp:generateActualResourceCollectorsForIosArm64Main SKIPPED
+:composeApp:generateComposeResClass SKIPPED
+:composeApp:generateExpectResourceCollectorsForCommonMain SKIPPED
+:composeApp:generateOtaSettings SKIPPED
+:shared:kmpPartiallyResolvedDependenciesChecker SKIPPED
+:shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+:shared:downloadKotlinNativeDistribution SKIPPED
+:shared:compileKotlinIosArm64 SKIPPED
+:shared:exportCrossCompilationMetadataForIosArm64ApiElements SKIPPED
+:composeApp:compileKotlinIosArm64 SKIPPED
+:composeApp:linkReleaseFrameworkIosArm64 SKIPPED
+
+[Incubating] Problems report is available at: file:///Users/alexeykravtsov/Desktop/workspace/TalentForge/mobile/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 692ms
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.5.1/userguide/configuration_cache_enabling.html
