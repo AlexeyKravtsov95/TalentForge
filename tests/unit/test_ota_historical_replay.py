@@ -10,6 +10,7 @@ without Gradle - the detection, staging and guard phases of the entrypoint. The 
 
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import json
 import re
@@ -17,6 +18,7 @@ import sys
 from pathlib import Path
 from types import ModuleType
 
+import httpx
 import pytest
 
 from talent_data.freshness import FreshnessStatus, evaluate_freshness
@@ -228,6 +230,125 @@ def test_the_offline_phases_end_to_end(tmp_path: Path) -> None:
     assert "| S4 | stage | the new staging catalog activates 70450 | PASS |" in (
         out / "summary.md"
     ).read_text(encoding="utf-8")
+
+
+# --------------------------------------------------------------------------- production guard
+
+CATALOG = b'{"sequence": 7}'
+
+
+def _production(monkeypatch: pytest.MonkeyPatch, *answers: bytes | int | Exception) -> list[str]:
+    """The public production catalog answers ``answers`` in turn (body, status or exception);
+    bodies are streams, as on the wire (``fetch`` reads them with ``iter_raw``)."""
+    pending, requests = list(answers), []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(f"{request.method} {request.url}")
+        answer = pending.pop(0)
+        if isinstance(answer, Exception):
+            raise answer
+        if isinstance(answer, int):
+            return httpx.Response(answer, stream=httpx.ByteStream(b"unavailable"))
+        return httpx.Response(200, stream=httpx.ByteStream(answer))
+
+    monkeypatch.setattr(
+        script, "_production_client", lambda: httpx.Client(transport=httpx.MockTransport(handler))
+    )
+    return requests
+
+
+@pytest.mark.parametrize(
+    ("answer", "reason"),
+    [
+        (httpx.ConnectTimeout("timed out"), "HTTP ConnectTimeout: timed out"),
+        (httpx.ReadTimeout("timed out"), "HTTP ReadTimeout: timed out"),
+        (httpx.ConnectError("no route to host"), "HTTP ConnectError: no route to host"),
+        (503, "HTTP 503"),
+        (404, "HTTP 404"),
+        (RuntimeError("TLS stack broken"), "RuntimeError: TLS stack broken"),
+    ],
+)
+def test_an_unreadable_production_catalog_is_recorded_not_raised(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, answer: int | Exception, reason: str
+) -> None:
+    requests = _production(monkeypatch, answer)
+    read = script.read_production_catalog(tmp_path, "before")
+    assert requests == [f"GET {script.PRODUCTION_CATALOG}"]
+    assert read.sha256 is None and read.detail.startswith(reason)
+    assert not (tmp_path / "guard").exists()
+    crash = tmp_path / "logs" / "guard-before-crash.txt"
+    assert crash.is_file() == isinstance(answer, RuntimeError)
+    if crash.is_file():
+        assert "RuntimeError: TLS stack broken" in crash.read_text(encoding="utf-8")
+
+
+def test_a_read_production_catalog_keeps_its_body(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    _production(monkeypatch, CATALOG)
+    read = script.read_production_catalog(tmp_path, "after")
+    assert read.sha256 == "sha256:" + hashlib.sha256(CATALOG).hexdigest()
+    assert (tmp_path / "guard/production-catalog-after.json").read_bytes() == CATALOG
+
+
+def test_g2_passes_only_when_both_reads_agree(tmp_path: Path) -> None:
+    def g2(before: str | None, after: str | None) -> tuple[Verdict, str]:
+        r = script.Replay(tmp_path)
+        script.guard_production(
+            r,
+            script.CatalogRead("2026-10-23T10:00:00Z", before, "before detail"),
+            script.CatalogRead("2026-10-23T10:10:00Z", after, "after detail"),
+        )
+        (check,) = r.checks
+        assert check.id == "G2" and r.facts["productionGuard"]["before"]["sha256"] == before
+        # whatever else passed, G2 decides whether the replay may PASS
+        passed = script.Check("D1", "detect", "t", Verdict.PASS, "")
+        assert script.overall([passed, check]) is check.verdict
+        return check.verdict, check.detail
+
+    a, b = "sha256:" + "a" * 64, "sha256:" + "b" * 64
+    assert g2(a, a)[0] is Verdict.PASS
+    for before, after in ((None, a), (a, None), (None, None)):
+        verdict, detail = g2(before, after)
+        assert verdict is Verdict.BLOCKED and "not read" in detail
+    verdict, detail = g2(a, b)
+    # an external publication between the reads: uncertain, never blamed on the replay
+    assert verdict is Verdict.BLOCKED
+    assert f"{a} -> {b}" in detail and "external change" in detail
+    assert "not established" in detail
+
+
+@pytest.mark.parametrize(
+    ("answers", "unread"),
+    [
+        ((httpx.ConnectTimeout("timed out"), CATALOG), "before"),
+        ((CATALOG, RuntimeError("CDN gone")), "after"),
+    ],
+)
+def test_a_cdn_failure_around_the_replay_is_blocked_with_its_report(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    answers: tuple[bytes | Exception, ...],
+    unread: str,
+) -> None:
+    """The CDN failing before the replay starts or after it ends: BLOCKED, reports written."""
+    requests = _production(monkeypatch, *answers)
+    out = tmp_path / "replay"
+    code = script.main(["run", str(out), "--skip-prepare", "--skip-client"])
+    assert len(requests) == 2
+    report = json.loads((out / "replay-report.json").read_text(encoding="utf-8"))
+    checks = {c["id"]: c for c in report["checks"]}
+    assert checks["G2"]["verdict"] == "BLOCKED" and f"{unread} (" in checks["G2"]["detail"]
+    assert checks["S4"]["verdict"] == "PASS"  # the replay itself still ran to the end
+    assert report["verdict"] == "BLOCKED" and code == script.EXIT_INCOMPLETE
+    guard = report["facts"]["productionGuard"]
+    read = "after" if unread == "before" else "before"
+    assert guard[unread]["sha256"] is None
+    assert guard[read]["sha256"] == "sha256:" + hashlib.sha256(CATALOG).hexdigest()
+    assert (out / f"guard/production-catalog-{read}.json").read_bytes() == CATALOG
+    assert "| G2 | guard |" in (out / "summary.md").read_text(encoding="utf-8")
+    if unread == "after":
+        assert "RuntimeError: CDN gone" in (out / "logs/guard-after-crash.txt").read_text()
 
 
 def test_the_workflow_holds_no_secret_and_cannot_publish() -> None:
