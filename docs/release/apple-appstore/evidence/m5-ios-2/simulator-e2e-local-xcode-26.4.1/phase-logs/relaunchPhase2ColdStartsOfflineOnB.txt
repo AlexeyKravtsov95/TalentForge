@@ -3,9 +3,9 @@
 [----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest
 [ RUN      ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.relaunchPhase2ColdStartsOfflineOnB
 [ios-ota-e2e] PASSED relaunch phase 2 (a new process, offline): B active from disk with 0 requests at startup, both saved builds open on their own build, a check fails as Network and changes nothing
-[       OK ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.relaunchPhase2ColdStartsOfflineOnB (2987 ms)
-[----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest (2987 ms total)
+[       OK ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.relaunchPhase2ColdStartsOfflineOnB (3024 ms)
+[----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest (3024 ms total)
 
 [----------] Global test environment tear-down
-[==========] 1 tests from 1 test cases ran. (2987 ms total)
+[==========] 1 tests from 1 test cases ran. (3024 ms total)
 [  PASSED  ] 1 tests.

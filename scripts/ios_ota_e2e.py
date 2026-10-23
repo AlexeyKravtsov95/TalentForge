@@ -463,36 +463,113 @@ def run_command(*args: str, check: bool = True, **kwargs: Any) -> subprocess.Com
     return result
 
 
-def pick_device(requested: str | None) -> tuple[str, str, str, str]:
-    """(device type identifier, its name, the newest iOS runtime identifier, its version)."""
-    listing = json.loads(run_command("xcrun", "simctl", "list", "-j", "runtimes").stdout)
-    runtimes = [
-        r for r in listing["runtimes"] if r.get("isAvailable") and r.get("platform") == "iOS"
-    ]
-    if not runtimes:
-        raise HarnessError("no available iOS simulator runtime")
-    runtime = max(runtimes, key=lambda r: [int(p) for p in r["version"].split(".")])
-    supported = {t["name"]: t["identifier"] for t in runtime.get("supportedDeviceTypes", [])}
+@dataclass(frozen=True)
+class RuntimeChoice:
+    """The simulator a run creates: a device type and the newest iOS runtime that supports it."""
+
+    device_type: str  # identifier, e.g. com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro
+    device: str  # its name, e.g. "iPhone 18 Pro"
+    runtime: str  # identifier, e.g. com.apple.CoreSimulator.SimRuntime.iOS-27-0
+    version: str  # e.g. "27.0"
+    build: str  # e.g. "24A434"
+
+
+def _version_key(runtime: dict[str, Any]) -> list[int]:
+    return [int(part) for part in str(runtime.get("version", "0")).split(".") if part.isdigit()]
+
+
+def _ios_runtimes(listing: dict[str, Any]) -> list[dict[str, Any]]:
+    return [r for r in listing.get("runtimes", []) if r.get("platform") == "iOS"]
+
+
+def runtime_diagnostics(listing: dict[str, Any]) -> str:
+    """Every iOS runtime simctl knows, its availability and the iPhone/iPad types it supports."""
+    lines = []
+    for runtime in sorted(_ios_runtimes(listing), key=_version_key, reverse=True):
+        state = (
+            "available"
+            if runtime.get("isAvailable")
+            else f"unavailable ({runtime.get('availabilityError', 'no reason given')})"
+        )
+        names = sorted(t.get("name", "?") for t in runtime.get("supportedDeviceTypes", []))
+        lines.append(
+            f"  {runtime.get('name', '?')} ({runtime.get('buildversion', '?')}) "
+            f"{runtime.get('identifier', '?')}: {state}; "
+            f"devices: {', '.join(names) or 'none listed'}"
+        )
+    return "\n".join(lines) or "  (simctl lists no iOS runtime)"
+
+
+def choose_runtime(listing: dict[str, Any], requested: str | None) -> RuntimeChoice:
+    """The newest *available* iOS runtime that supports the device type.
+
+    A device type named by the caller is never replaced by another one: when no available runtime
+    supports it, the run stops with every runtime and its devices listed. Without a request the
+    first of ``DEFAULT_DEVICE_TYPES`` that some runtime supports is used. The runtime is chosen
+    per device type, never "the newest runtime first": a runner may carry a newer runtime that
+    lacks the newest devices (xcode-27: iPhone 18 Pro on iOS 27.0 only)."""
+    available = [r for r in _ios_runtimes(listing) if r.get("isAvailable")]
+    if not available:
+        raise HarnessError("no available iOS simulator runtime:\n" + runtime_diagnostics(listing))
     for name in [requested] if requested else DEFAULT_DEVICE_TYPES:
-        if name in supported:
-            return supported[name], name, runtime["identifier"], runtime["version"]
+        supporting = [
+            (runtime, device)
+            for runtime in available
+            for device in runtime.get("supportedDeviceTypes", [])
+            if device.get("name") == name
+        ]
+        if supporting:
+            runtime, device = max(supporting, key=lambda pair: _version_key(pair[0]))
+            return RuntimeChoice(
+                device["identifier"],
+                name,
+                runtime["identifier"],
+                str(runtime["version"]),
+                str(runtime.get("buildversion", "?")),
+            )
     wanted = requested or " / ".join(DEFAULT_DEVICE_TYPES)
-    raise HarnessError(f"{wanted} is not supported by {runtime['name']}")
+    raise HarnessError(
+        f"{wanted} is not supported by any available iOS simulator runtime "
+        f"(a requested device type is never replaced by another one). Runtimes:\n"
+        + runtime_diagnostics(listing)
+    )
+
+
+def pick_device(requested: str | None) -> RuntimeChoice:
+    listing = json.loads(run_command("xcrun", "simctl", "list", "-j", "runtimes").stdout)
+    return choose_runtime(listing, requested)
 
 
 @dataclass
 class Simulator:
     udid: str
-    device: str
-    runtime: str
+    choice: RuntimeChoice
+
+    @property
+    def device(self) -> str:
+        return self.choice.device
+
+    @property
+    def runtime(self) -> str:
+        return f"iOS {self.choice.version} ({self.choice.build})"
 
     @classmethod
     def create(cls, requested: str | None, ca: Path) -> Simulator:
-        type_id, name, runtime_id, version = pick_device(requested)
-        created = run_command(
-            "xcrun", "simctl", "create", f"TF OTA E2E {os.getpid()}", type_id, runtime_id
+        choice = pick_device(requested)
+        print(
+            f"simulator: {choice.device} on iOS {choice.version} ({choice.build}), "
+            f"{choice.runtime}",
+            flush=True,
         )
-        simulator = cls(created.stdout.strip(), name, f"iOS {version}")
+        created = run_command(
+            "xcrun",
+            "simctl",
+            "create",
+            f"TF OTA E2E {os.getpid()}",
+            choice.device_type,
+            choice.runtime,
+        )
+        simulator = cls(created.stdout.strip(), choice)
         run_command("xcrun", "simctl", "bootstatus", simulator.udid, "-b", timeout=900)
         # the run's CA becomes a trusted root of this simulator only: TLS is verified, not skipped
         run_command("xcrun", "simctl", "keychain", simulator.udid, "add-root-cert", str(ca))
@@ -501,6 +578,31 @@ class Simulator:
     def delete(self) -> None:
         run_command("xcrun", "simctl", "shutdown", self.udid, check=False)
         run_command("xcrun", "simctl", "delete", self.udid, check=False)
+
+
+def toolchain() -> dict[str, str]:
+    """Xcode and the SDKs the binaries were built with (the simulator runtime is reported apart)."""
+
+    def sdk(name: str) -> str:
+        return run_command("xcrun", "--sdk", name, "--show-sdk-version", check=False).stdout.strip()
+
+    return {
+        "xcode": " ".join(run_command("xcodebuild", "-version").stdout.split()),
+        "iphoneosSdk": sdk("iphoneos"),
+        "iphonesimulatorSdk": sdk("iphonesimulator"),
+    }
+
+
+def simulator_facts(simulator: Simulator | None) -> dict[str, str | None]:
+    """The device and the iOS Simulator runtime the phases actually ran on."""
+    if simulator is None:
+        return {"device": None, "runtime": None, "runtimeBuild": None, "runtimeIdentifier": None}
+    return {
+        "device": simulator.choice.device,
+        "runtime": f"iOS {simulator.choice.version}",
+        "runtimeBuild": simulator.choice.build,
+        "runtimeIdentifier": simulator.choice.runtime,
+    }
 
 
 # ----------------------------------------------------------------------------- phases
@@ -615,11 +717,8 @@ def run(args: argparse.Namespace) -> int:
     report = {
         "format": "talentforge-ios-ota-e2e",
         "at": dt.datetime.now(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "xcode": " ".join(run_command("xcodebuild", "-version").stdout.split()),
-        "simulator": {
-            "device": simulator.device if simulator else None,
-            "runtime": simulator.runtime if simulator else None,
-        },
+        "toolchain": toolchain(),
+        "simulator": simulator_facts(simulator),
         "stand": {
             "keyId": stand.report["keyId"],
             "commit": stand.report["commit"],
@@ -872,11 +971,8 @@ def app(args: argparse.Namespace) -> int:
     report = {
         "format": "talentforge-ios-ota-app-e2e",
         "at": dt.datetime.now(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "xcode": " ".join(run_command("xcodebuild", "-version").stdout.split()),
-        "simulator": {
-            "device": simulator.device if simulator else None,
-            "runtime": simulator.runtime if simulator else None,
-        },
+        "toolchain": toolchain(),
+        "simulator": simulator_facts(simulator),
         "checks": run.checks,
         "requests": [{k: e[k] for k in ("path", "fault", "status", "headers")} for e in origin.log],
         "result": "PASS" if run.checks and all(c["passed"] for c in run.checks) else "FAIL",

@@ -2,10 +2,10 @@
 [----------] Global test environment set-up.
 [----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest
 [ RUN      ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.theAppConfigurationRefusesProductionTestAndPlaintextSettings
-[ios-ota-e2e] PASSED kill switch: the binary without OTA settings resolves iosProduction and iosStaging to NOT_ENABLED and IosOta.runtime() = null; the stand key tf-staging-local-8095a18a is refused in production (KEY_NOT_FOR_CHANNEL), test- keys in staging (TEST_KEY_IN_APP_KEYRING), http:// (BAD_BASE_URL, and the fetcher refuses it before connecting)
-[       OK ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.theAppConfigurationRefusesProductionTestAndPlaintextSettings (12 ms)
-[----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest (12 ms total)
+[ios-ota-e2e] PASSED kill switch: the binary without OTA settings resolves iosProduction and iosStaging to NOT_ENABLED and IosOta.runtime() = null; the stand key tf-staging-local-1c72b193 is refused in production (KEY_NOT_FOR_CHANNEL), test- keys in staging (TEST_KEY_IN_APP_KEYRING), http:// (BAD_BASE_URL, and the fetcher refuses it before connecting)
+[       OK ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.theAppConfigurationRefusesProductionTestAndPlaintextSettings (16 ms)
+[----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest (16 ms total)
 
 [----------] Global test environment tear-down
-[==========] 1 tests from 1 test cases ran. (12 ms total)
+[==========] 1 tests from 1 test cases ran. (16 ms total)
 [  PASSED  ] 1 tests.

@@ -3,9 +3,9 @@
 [----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest
 [ RUN      ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.rejectedCertificatesChangeNothing
 [ios-ota-e2e] PASSED TLS (ATS defaults, the simulator's trust store with only the run's CA added): untrusted CA -> NetworkError(NSURLErrorDomain, retryable=false), 1 attempt; expired certificate -> NetworkError(NSURLErrorDomain, retryable=false), 1 attempt; certificate for another host -> NetworkError(NSURLErrorDomain, retryable=false), 1 attempt
-[       OK ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.rejectedCertificatesChangeNothing (125 ms)
-[----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest (125 ms total)
+[       OK ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.rejectedCertificatesChangeNothing (121 ms)
+[----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest (121 ms total)
 
 [----------] Global test environment tear-down
-[==========] 1 tests from 1 test cases ran. (125 ms total)
+[==========] 1 tests from 1 test cases ran. (121 ms total)
 [  PASSED  ] 1 tests.

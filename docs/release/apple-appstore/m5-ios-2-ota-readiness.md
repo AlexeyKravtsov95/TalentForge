@@ -11,7 +11,15 @@
 
 Статусы: **PASS** — выполнено здесь и прошло; **FAIL** — выполнено и не прошло; **BLOCKED** — нельзя выполнить без внешнего условия (владелец, устройство, инструмент); **NOT RUN** — можно было, но не выполнено. Ничего не помечено PASS по выводу из другой проверки.
 
-Инструменты. Локально установлены только **Xcode 26.4.1 (17E202)** и симуляторы **iOS 26.4.1**. Всё, что выполнено локально, помечено «локально, Xcode 26.4.1» и **не** выдаётся за проверку на Xcode 27.1. Проверки на **Xcode 27.1 / iOS 27.1 SDK** выполняет `mobile-ci` на образе `xcode-27` (§9).
+Инструменты. Сборка и среда выполнения указываются **раздельно**:
+
+| | Локально | CI (`mobile-ci`, образ `xcode-27`) |
+|---|---|---|
+| Xcode | 26.4.1 (17E202) | **27.1 (27A9275)** |
+| SDK сборки | iphoneos26.4 / iphonesimulator26.4 | **iphoneos27.1 / iphonesimulator27.1** |
+| iOS Simulator Runtime | iOS 26.4.1 (23E254a), iPhone 17 Pro | выбирается под устройство: на образе есть iOS 27.1 (24A94425) и iOS 27.0 (24A434), **iPhone 18 Pro поддерживает только iOS 27.0** → E2E идёт на **iOS 27.0 runtime**; фактические версия и сборка runtime записываются в отчёт (`simulator.runtime`, `runtimeBuild`, `runtimeIdentifier`) |
+
+Всё, что выполнено локально, помечено «локально, Xcode 26.4.1» и **не** выдаётся за проверку на Xcode 27.1. Бинарники CI собираются Xcode 27.1 с iOS 27.1 SDK (минимальная iOS приложения — 17.2), поэтому выполнение на runtime 27.0 не меняет SDK сборки (§9).
 
 ## 1. Сводная матрица
 
@@ -91,7 +99,7 @@ HTTPS-литералы в реальном OTA ON бинарнике: `https://o
 
 В bundle только `70374`, как у версии приложения до 70450. Поэтому A → B — **настоящее** обновление по сети, а не повторная активация той же версии.
 
-Прогон: **локально, Xcode 26.4.1, iOS 26.4.1, iPhone 17 Pro**, стенд на `eb9fc46`, ключ `tf-staging-local-8095a18a`. Итог — 14/14 фаз **PASS** ([отчёт](evidence/m5-ios-2/simulator-e2e-local-xcode-26.4.1/ios-ota-e2e-report.json), [строки результатов](evidence/m5-ios-2/simulator-e2e-local-xcode-26.4.1/results.txt), [журналы фаз](evidence/m5-ios-2/simulator-e2e-local-xcode-26.4.1/phase-logs/)). Xcode 27.1 / iPhone 18 Pro — задача `ios-ota-e2e` в CI, её отчёт и журналы фаз — артефакт `ios-ota-e2e-xcode-27.1` (§9).
+Прогон: **локально** — Xcode 26.4.1, SDK iphonesimulator26.4; runtime **iOS 26.4.1 (23E254a)**, iPhone 17 Pro, выбран `choose_runtime`; стенд на `eb9fc46`, ключ `tf-staging-local-1c72b193`. Итог — 14/14 фаз **PASS** ([отчёт](evidence/m5-ios-2/simulator-e2e-local-xcode-26.4.1/ios-ota-e2e-report.json), [строки результатов](evidence/m5-ios-2/simulator-e2e-local-xcode-26.4.1/results.txt), [журналы фаз](evidence/m5-ios-2/simulator-e2e-local-xcode-26.4.1/phase-logs/)). Xcode 27.1 / iPhone 18 Pro — задача `ios-ota-e2e` в CI, её отчёт и журналы фаз — артефакт `ios-ota-e2e-xcode-27.1` (§9).
 
 | Фаза | Что проверено | Результат |
 |---|---|---|
@@ -203,11 +211,13 @@ HTTPS-литералы в реальном OTA ON бинарнике: `https://o
 
 | Задача / шаг | Статус |
 |---|---|
-| `mobile-macos`: iOS simulator tests, release frameworks, Release для симулятора | NOT RUN на момент этого коммита (результат — в PR) |
-| `mobile-macos`: архив OTA OFF + `--ota off`; архив OTA ON + `--ota on`; перекрёстная проверка режимов | NOT RUN на момент этого коммита |
-| `mobile-macos`: launch smoke iPhone 18 Pro, iPhone 18 Pro Max, iPad Pro 13-inch (M5) | NOT RUN на момент этого коммита |
-| `ios-ota-e2e`: 14 фаз на iPhone 18 Pro, iOS 27.1 | NOT RUN на момент этого коммита |
-| `mobile-linux`: shared, desktop, Android | NOT RUN на момент этого коммита |
+| `mobile-macos`: iOS simulator tests, release frameworks, Release для симулятора | итог для финального коммита — в PR #76 (комментарий с run id и ссылками на артефакты) |
+| `mobile-macos`: архив OTA OFF + `--ota off`; архив OTA ON + `--ota on`; перекрёстная проверка режимов | итог для финального коммита — в PR #76 (комментарий с run id и ссылками на артефакты) |
+| `mobile-macos`: launch smoke iPhone 18 Pro, iPhone 18 Pro Max, iPad Pro 13-inch (M5) | итог для финального коммита — в PR #76 (комментарий с run id и ссылками на артефакты) |
+| `ios-ota-e2e`: 14 фаз на iPhone 18 Pro (Xcode 27.1, iOS 27.1 SDK; runtime — таблица «Инструменты» в начале) | итог для финального коммита — в PR #76 (комментарий с run id и ссылками на артефакты) |
+| `mobile-linux`: shared, desktop, Android | итог для финального коммита — в PR #76 (комментарий с run id и ссылками на артефакты) |
+
+Инцидент CI (исправлен в этом PR). Первые два запуска `ios-ota-e2e` (runs 39938806401 и 39939931594) завершились `ERROR: iPhone 18 Pro is not supported by iOS 27.1` **до** первой фазы: `pick_device()` сначала брал самый новый runtime (27.1) и только потом проверял устройство. Теперь `choose_runtime()` для запрошенной модели берёт самый новый *доступный* runtime, который её поддерживает. Модель, указанная явно, никогда не заменяется другой; если подходящего runtime нет, выводятся все runtime и их устройства. Покрыто `tests/unit/test_ios_ota_e2e.py`: только 27.0 поддерживает; обе версии поддерживают; устройства нет; runtime недоступен; нет iOS runtime; выбор по умолчанию; числовое сравнение версий.
 
 ## 10. Только владелец
 

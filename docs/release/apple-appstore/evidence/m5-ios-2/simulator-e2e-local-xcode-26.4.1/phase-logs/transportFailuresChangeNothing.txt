@@ -3,9 +3,9 @@
 [----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest
 [ RUN      ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.transportFailuresChangeNothing
 [ios-ota-e2e] PASSED transport (library, active release and product unchanged in every case; nothing installed): catalog 404 -> Http(status=404); catalog 500 -> Http(status=500); catalog 503 -> Http(status=503); catalog redirect -> Http(status=302); catalog connection dropped -> Network(detail=NSURLErrorDomain); manifest missing on the CDN -> Http(status=404); a file missing on the CDN -> Http(status=404); every connection dropped -> Network(detail=NSURLErrorDomain); connection lost after 150 files -> Network, 149 verified files kept; the resume downloaded 248, reused 149; origin down (connection refused) -> Network; no DNS answer -> Network
-[       OK ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.transportFailuresChangeNothing (26881 ms)
-[----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest (26881 ms total)
+[       OK ] io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest.transportFailuresChangeNothing (23311 ms)
+[----------] 1 tests from io.github.alexeykravtsov95.talentforge.ui.ota.IosOtaStagingE2ETest (23311 ms total)
 
 [----------] Global test environment tear-down
-[==========] 1 tests from 1 test cases ran. (26881 ms total)
+[==========] 1 tests from 1 test cases ran. (23311 ms total)
 [  PASSED  ] 1 tests.
