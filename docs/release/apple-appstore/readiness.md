@@ -4,7 +4,7 @@
 |---|---|
 | Дата | 2026-10-23 |
 | Ветка | `release/m5-ios-1-appstore-readiness` от `main` @ `7f91b40` (после PR #74) |
-| Итог | **Не готово к отправке.** Код, проект, CI и документы подготовлены. Блокеры: Xcode 27.1 на машине владельца, подписанный архив, публикация iOS-политики, iPhone 18 / iPhone Duo / физическое устройство (§11) |
+| Итог | **Не готово к отправке.** Код, проект, CI и документы подготовлены; unsigned-сборка и архив на **Xcode 27.1 / iOS 27.1 SDK — PASS в CI** ([прогон](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/39917498331)). Блокеры: подписанный архив (Xcode 27.1 у владельца), публикация iOS-политики, интерактивная проверка iPhone 18 / iPhone Duo / физическое устройство (§11) |
 | Production OTA | **выключен** на iOS (проверено по бинарнику, §7). Включение — отдельный M5.IOS.2 ([план](m5-ios-2-ota-plan.md)) |
 | Владельческие решения | игровые материалы WoW: Forever — `RISK ACCEPTED — OWNER DECISION`, повторный юридический аудит не проводился; лицензия Blizzard не заявляется; название TalentForge + маркировка неофициального приложения; целевая архитектура iOS — OTA ON |
 | Связанные документы | [metadata-en](metadata-en.md) · [metadata-ru](metadata-ru.md) · [app-privacy](app-privacy.md) · [m5-ios-2-ota-plan](m5-ios-2-ota-plan.md) · [iOS-политика](../../legal/ios/README.md) · [evidence](evidence/README.md) |
@@ -16,11 +16,11 @@
 
 | Критерий | Статус | Комментарий |
 |---|---|---|
-| Сборка с Xcode 27.1 и iOS 27.1 SDK | **BLOCKED** локально; **NOT RUN** в CI на момент написания | На машине Xcode 26.4.1, macOS 26.3.1; Xcode 27.1 требует macOS 26.6+ (§1). CI-job на образе `xcode-27` (Xcode 27.1 = build 27A9275) подготовлен и запустится на этом PR (§9); его результат — в чеках PR |
+| Сборка с Xcode 27.1 и iOS 27.1 SDK | **PASS в CI**; BLOCKED локально | [mobile-ci 39917498331](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/39917498331) (образ `xcode-27`, macOS 27.0.1): Xcode 27.1 build 27A9275, release-фреймворки, Release-сборка для симулятора, unsigned archive, `verify_ios_archive.py` 18/18 с `iphoneos27.1`/`27A9275` ([отчёт](evidence/ci-xcode27.1/ios-archive-report-xcode27.1-ci.json)). Локально Xcode 26.4.1 на macOS 26.3.1 (Xcode 27.1 требует 26.6+, §1) |
 | Минимальная iOS 17.2 | **PASS** | `MinimumOSVersion = 17.2` в собранном архиве |
 | Release framework собирается | **PASS** (Xcode 26.4.1) | `linkReleaseFrameworkIosArm64` + `…IosSimulatorArm64` |
 | Unsigned Release archive создаётся и проверяется | **PASS** (Xcode 26.4.1) | 18/18 проверок `verify_ios_archive.py`; с ожиданиями Xcode 27.1 — FAIL по `toolchain` (так и должно быть) |
-| Запуск на доступных симуляторах | **PASS** | iPhone 17 Pro, iPhone 17 Pro Max, iPad Pro 13" (M5) на iOS 26.4; iPhone 12 mini на iOS 26.0 |
+| Запуск на доступных симуляторах | **PASS** | локально: iPhone 17 Pro, iPhone 17 Pro Max, iPad Pro 13" (M5) на iOS 26.4; iPhone 12 mini на iOS 26.0. CI (сборка Xcode 27.1, runtime iOS 27.0): iPhone 18 Pro, iPhone 18 Pro Max, iPad Pro 13" (M5) — launch-smoke PASS |
 | Smoke основных сценариев | **PASS** на доступных устройствах | §4 |
 | Существенные ошибки UI исправлены | **PASS** | 4 исправления (§3.3); оставшиеся наблюдения — §11 |
 | Privacy и App Review checklist | **PASS** (подготовлены) | §5, §6, [app-privacy](app-privacy.md) |
@@ -146,8 +146,8 @@ UIDeviceFamily [1, 2], en/ru, arm64, `DTSDKName iphoneos26.4`, `DTXcodeBuild 17E
 
 | Устройство | Требование | Статус | Причина / доказательство |
 |---|---|---|---|
-| iPhone 18 Pro | да | **NOT RUN** локально | нет симулятора (нужен Xcode 27 / iOS 27 runtime). В CI: launch-smoke на iPhone 18 Pro (iOS 27.0 runtime образа `xcode-27`) — результат в артефакте `ios-xcode-27.1-evidence` PR |
-| iPhone 18 Pro Max | да | **NOT RUN** локально | то же; CI launch-smoke |
+| iPhone 18 Pro | да | **PASS (launch-smoke, CI)**; интерактивно **NOT RUN** | CI, сборка Xcode 27.1, runtime iOS 27.0: приложение работает через 15 с (pid в логе), [скриншот](evidence/ci-xcode27.1/iphone-18-pro-launch-smoke.png). Сценарии §4.2 на нём не выполнялись: локального симулятора нет |
+| iPhone 18 Pro Max | да | **PASS (launch-smoke, CI)**; интерактивно **NOT RUN** | то же ([скриншот](evidence/ci-xcode27.1/iphone-18-pro-max-launch-smoke.png)). Первый прогон дал FAIL из-за ошибки smoke-скрипта (SIGPIPE, §9.1), не приложения |
 | iPhone Duo (внешний и внутренний дисплей) | да | **NOT RUN** | симулятора нет ни локально, ни на CI-образе `xcode-27`; переходы между дисплеями, ресайз окна и сохранение editor state **не проверены**. Скриншоты другого устройства не подставлялись |
 | iPad Pro 13-inch | да | **PASS** (iPad Pro 13-inch (M5), iOS 26.4) | §4.2 |
 | Компактный iPhone, совместимый с 17.2 | да | **PASS** (iPhone 12 mini, 5.4", 360×780 pt, iOS 26.0) | запуск, тёмная заставка, выбор класса, дерево Druid целиком |
@@ -339,7 +339,28 @@ PNG/JPEG, до 10 на размер.
 нём лежит как `Xcode_27.1_Release_Candidate.app` с алиасом `Xcode_27.1.app`; его build `27A9275` совпадает с
 релизным Xcode 27.1 ([xcodereleases](https://xcodereleases.com): 27.1 Release = 27A9275, 2026-10-15), поэтому job
 проверяет именно номер сборки. Если образ уберут или поменяют, job упадёт (BLOCKED), а не позеленеет на старом Xcode.
-**Результат первого прогона на этом PR на момент написания отчёта неизвестен — NOT RUN**; смотреть чеки PR.
+Результат: первый прогон (39910279665) — сборка, архив и проверка 18/18 PASS, smoke FAIL на iPhone 18 Pro Max из-за
+ошибки скрипта (§9.1); после исправления [прогон 39917498331](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/39917498331) — **оба job зелёные**: `mobile-linux` (Android,
+контракты, дрейф) за 12 мин, `mobile-macos` (Xcode 27.1) за 44 мин, smoke PASS на iPhone 18 Pro, iPhone 18 Pro Max и
+iPad Pro 13-inch (M5).
+
+### 9.1 Падение smoke в первом прогоне — ошибка инфраструктуры, не приложения
+
+- Симптом: `Child process terminated with signal 13: Broken pipe`, затем `FAIL [iPhone 18 Pro Max]: … is not running`.
+- Первопричина (подтверждена): проверка `xcrun simctl spawn … launchctl list | grep -q <bundle>` под `set -o pipefail`.
+  `grep -q` закрывает канал на **первом совпадении**; `launchctl` (строка приложения — в начале вывода из сотен строк)
+  ещё пишет и получает SIGPIPE; `simctl spawn` сообщает о сигнале и возвращает ненулевой код; `pipefail` делает весь
+  конвейер ложным. Сообщение о SIGPIPE само доказывает, что строка приложения **была найдена**: без совпадения `grep`
+  читает поток до конца и SIGPIPE не возникает. Гонка зависит от объёма вывода и планирования, поэтому на iPhone 18 Pro и
+  iPad проверка прошла.
+- Исправление (`scripts/ios_simulator_smoke.sh`): полный вывод `launchctl` сначала сохраняется в переменную, проверяется
+  код завершения самого `simctl spawn`, строка приложения ищется без конвейера и должна содержать числовой PID (строка с
+  `-` = не запущено); до 3 проверок с интервалом 2 с повторяют только **неудавшийся запрос** — отсутствие приложения
+  окончательно; при FAIL сохраняются полный `launchctl list`, лог приложения из симулятора, `listapps` и новые crash
+  reports; приложение и симулятор завершаются при любом исходе (`trap`); `pipefail` не убирался.
+- Регрессия: `tests/unit/test_ios_simulator_smoke.py` (10 тестов) — поддельный `xcrun` с выводом ~10 МБ, строка приложения
+  в начале, процесс умирает от SIGPIPE как настоящий: старый конвейер детерминированно даёт 141 (при том что `grep` нашёл
+  строку), новая проверка находит PID; отсутствующее/мёртвое/чужое приложение, ошибка `simctl`, ограниченные повторы.
 
 ## 10. Только владелец
 
@@ -362,10 +383,10 @@ PNG/JPEG, до 10 на размер.
 
 | ID | Описание | Статус |
 |---|---|---|
-| B-1 | Нет Xcode 27.1 / iOS 27.1 SDK на машине (macOS 26.3.1 < 26.6) | BLOCKED (OW-1); CI-job подготовлен |
+| B-1 | Нет Xcode 27.1 / iOS 27.1 SDK на машине (macOS 26.3.1 < 26.6) | unsigned-сборка на 27.1 — PASS в CI; локально и для подписанного архива — BLOCKED (OW-1) |
 | B-2 | Нет подписанного дистрибутивного архива | BLOCKED (OW-2) |
 | B-3 | iOS-политика не опубликована | BLOCKED (OW-4) |
-| B-4 | iPhone 18 Pro / Pro Max не проверены интерактивно, iPhone Duo — совсем | NOT RUN (нет симуляторов); CI даёт только launch-smoke iPhone 18 |
+| B-4 | iPhone 18 Pro / Pro Max проверены только launch-smoke в CI (PASS), интерактивно — нет; iPhone Duo — совсем | NOT RUN (нет симуляторов локально; Duo нет и в CI) |
 | B-5 | Нет проверки на физическом устройстве и TestFlight | NOT RUN (OW-7) |
 
 ### Наблюдения (не исправлялись в этом PR)
@@ -383,8 +404,8 @@ PNG/JPEG, до 10 на размер.
 ## 12. Evidence
 
 - [evidence/README.md](evidence/README.md) — отчёты верификатора архива и 23 скриншота симуляторов.
-- CI-артефакт `ios-xcode-27.1-evidence` (отчёт архива Xcode 27.1, скриншоты iPhone 18 Pro / Pro Max / iPad Pro 13") — в
-  прогоне `mobile-ci` этого PR.
+- [evidence/ci-xcode27.1/](evidence/ci-xcode27.1/) — отчёт проверки архива Xcode 27.1 и скриншоты launch-smoke iPhone 18 Pro /
+  Pro Max / iPad Pro 13" из [прогона 39917498331](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/39917498331) (артефакт `ios-xcode-27.1-evidence`).
 - Код проверок: [`scripts/verify_ios_archive.py`](../../../scripts/verify_ios_archive.py),
   [`scripts/ios_simulator_smoke.sh`](../../../scripts/ios_simulator_smoke.sh),
   [`tests/unit/test_verify_ios_archive.py`](../../../tests/unit/test_verify_ios_archive.py).
