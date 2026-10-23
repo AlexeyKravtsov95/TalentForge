@@ -297,6 +297,8 @@ class AboutScreenUiTest {
         clickText("Show details")
         awaitText("If your device's backup (iCloud or a computer) is on", substring = true)
         assertAbsent("The app turns off Android backup", substring = true)
+        awaitText("Delete a build in the app, or delete the app, to remove saved builds", substring = true)
+        assertAbsent("clear its storage", substring = true)
     }
 
     @Test
@@ -335,6 +337,7 @@ class AboutScreenUiTest {
                 awaitText(if (ru) "TalentForge работает без интернета" else "TalentForge works offline", substring = true)
                 clickText(if (ru) "Подробнее" else "Show details")
                 awaitText(if (ru) "Если на устройстве включено резервное копирование" else "If your device's backup (iCloud or a computer) is on", substring = true)
+                awaitText(if (ru) "Удалите билд в приложении или удалите само приложение" else "Delete a build in the app, or delete the app", substring = true)
                 // but no link: the published policy is the Android app's
                 assertAbsent("Privacy policy")
                 assertAbsent("Политика конфиденциальности")

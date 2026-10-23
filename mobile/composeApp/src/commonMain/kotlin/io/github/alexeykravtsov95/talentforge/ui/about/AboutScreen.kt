@@ -36,6 +36,7 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.abo
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_backup_android
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_backup_ios
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_delete
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_delete_ios
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_hide_details
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_offline
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_online
@@ -167,7 +168,15 @@ fun AboutScreen(
             )
             AboutBody(stringResource(Res.string.about_privacy_sharing))
             AboutBody(stringResource(if (otaEnabled) Res.string.about_privacy_permissions_online else Res.string.about_privacy_permissions))
-            AboutBody(stringResource(Res.string.about_privacy_delete))
+            AboutBody(
+                stringResource(
+                    when (backupStatement) {
+                        BackupStatement.AndroidBackupDisabled -> Res.string.about_privacy_delete
+                        // iOS has no "clear storage" for an app: deleting the app removes its data
+                        BackupStatement.IosDeviceBackup -> Res.string.about_privacy_delete_ios
+                    },
+                ),
+            )
         }
         AboutToggle(
             expanded = privacyDetails,
