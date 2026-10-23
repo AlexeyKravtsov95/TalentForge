@@ -1,0 +1,140 @@
+{
+  "schema": "talentforge.ios-archive-report.v1",
+  "archive": "TalentForge-final.xcarchive",
+  "application": "iosApp.app",
+  "signed": false,
+  "info": {
+    "CFBundleIdentifier": "io.github.alexeykravtsov95.talentforge",
+    "CFBundleShortVersionString": "1.0.0",
+    "CFBundleVersion": "1",
+    "MinimumOSVersion": "17.2",
+    "UIDeviceFamily": [
+      1,
+      2
+    ],
+    "CFBundleLocalizations": [
+      "en",
+      "ru"
+    ],
+    "DTSDKName": "iphoneos26.4",
+    "DTXcode": "2641",
+    "DTXcodeBuild": "17E202",
+    "DTPlatformVersion": "26.4",
+    "BuildMachineOSBuild": "25D2128"
+  },
+  "executable": {
+    "name": "iosApp",
+    "size": 33897832,
+    "sha256": "2b47af816a5c2788b3f6131f103bf5065475fdca04f2702fef5782a5fe036cc9",
+    "architectures": [
+      "arm64"
+    ]
+  },
+  "requiredReasonApisUsed": {
+    "NSPrivacyAccessedAPICategoryFileTimestamp": [
+      "_fstat",
+      "_stat"
+    ],
+    "NSPrivacyAccessedAPICategoryDiskSpace": [
+      "_NSURLVolumeAvailableCapacityForImportantUsageKey"
+    ],
+    "NSPrivacyAccessedAPICategoryUserDefaults": [
+      "_OBJC_CLASS_$_NSUserDefaults"
+    ]
+  },
+  "collectedDataTypes": [],
+  "bundleSize": 61414684,
+  "checks": [
+    {
+      "id": "archive-record",
+      "passed": true,
+      "detail": "ApplicationPath='Applications/iosApp.app', Architectures=['arm64']"
+    },
+    {
+      "id": "bundle-id",
+      "passed": true,
+      "detail": "CFBundleIdentifier='io.github.alexeykravtsov95.talentforge'"
+    },
+    {
+      "id": "version",
+      "passed": true,
+      "detail": "CFBundleShortVersionString='1.0.0' (expected 1.0.0), CFBundleVersion='1' (expected 1)"
+    },
+    {
+      "id": "minimum-os",
+      "passed": true,
+      "detail": "MinimumOSVersion='17.2' (expected 17.2)"
+    },
+    {
+      "id": "device-family",
+      "passed": true,
+      "detail": "UIDeviceFamily=[1, 2] (expected [1, 2]: iPhone and iPad)"
+    },
+    {
+      "id": "localizations",
+      "passed": true,
+      "detail": "CFBundleLocalizations=['en', 'ru'] (required ['en', 'ru'])"
+    },
+    {
+      "id": "device-capabilities",
+      "passed": true,
+      "detail": "UIRequiredDeviceCapabilities=['arm64']"
+    },
+    {
+      "id": "toolchain",
+      "passed": true,
+      "detail": "DTSDKName='iphoneos26.4' (expected iphoneos26.4), DTXcodeBuild='17E202' (expected 17E202), DTXcode='2641'"
+    },
+    {
+      "id": "export-compliance",
+      "passed": true,
+      "detail": "ITSAppUsesNonExemptEncryption=False (expected false)"
+    },
+    {
+      "id": "single-scene",
+      "passed": true,
+      "detail": "UIApplicationSupportsMultipleScenes=False (expected false, TF-RC1-IOS-SCENES)"
+    },
+    {
+      "id": "app-icon",
+      "passed": true,
+      "detail": "CFBundleIconName='AppIcon', Assets.car present"
+    },
+    {
+      "id": "executable",
+      "passed": true,
+      "detail": "kind=macho, architectures=['arm64'], file types=[2] (expected a thin arm64 executable)"
+    },
+    {
+      "id": "embedded-code",
+      "passed": true,
+      "detail": "no embedded frameworks or libraries"
+    },
+    {
+      "id": "privacy-tracking",
+      "passed": true,
+      "detail": "NSPrivacyTracking=False, NSPrivacyTrackingDomains=[]"
+    },
+    {
+      "id": "privacy-required-reasons",
+      "passed": true,
+      "detail": "declared UserDefaults=CA92.1, FileTimestamp=C617.1, DiskSpace=E174.1; used FileTimestamp (_fstat, _stat), DiskSpace (_NSURLVolumeAvailableCapacityForImportantUsageKey), UserDefaults (_OBJC_CLASS_$_NSUserDefaults)"
+    },
+    {
+      "id": "compose-resources",
+      "passed": true,
+      "detail": "50 dataset JSON files, values-ru present under compose-resources/composeResources"
+    },
+    {
+      "id": "ota-off",
+      "passed": true,
+      "detail": "no production OTA origin or production public key in the executable"
+    },
+    {
+      "id": "no-secrets",
+      "passed": true,
+      "detail": "no key files or private keys in the bundle"
+    }
+  ],
+  "result": "PASS"
+}
