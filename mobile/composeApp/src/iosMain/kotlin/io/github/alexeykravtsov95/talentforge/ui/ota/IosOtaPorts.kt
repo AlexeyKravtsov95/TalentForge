@@ -150,6 +150,8 @@ class PlatformBlobFetcher(private val userAgent: String) : BlobFetcher {
             val session = NSURLSession.sessionWithConfiguration(configuration, delegate, NSOperationQueue())
             val request = NSMutableURLRequest.requestWithURL(nsUrl).apply {
                 setValue(userAgent, forHTTPHeaderField = "User-Agent")
+                // NSURLSession would send the device's preferred languages; static data needs none (M5.IOS.2)
+                setValue(ACCEPT_ANY_LANGUAGE, forHTTPHeaderField = "Accept-Language")
                 setCachePolicy(NSURLRequestReloadIgnoringLocalCacheData)
             }
             val task = session.dataTaskWithRequest(request)
@@ -161,6 +163,9 @@ class PlatformBlobFetcher(private val userAgent: String) : BlobFetcher {
         }
     }
 }
+
+/** The `Accept-Language` of every OTA request: any language, so no request tells the device's languages. */
+internal const val ACCEPT_ANY_LANGUAGE = "*"
 
 private class BoundedDataDelegate(
     private val maxBytes: Long,
