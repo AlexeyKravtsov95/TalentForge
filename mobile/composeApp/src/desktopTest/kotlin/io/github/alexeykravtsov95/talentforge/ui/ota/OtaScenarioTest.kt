@@ -156,11 +156,15 @@ class OtaScenarioTest {
         waitUntil { stagedPaths(device, B_ID).size == k && hung.get() == slots }
         assertNull(device.runtime.activation.currentState().active, "nothing is activated before full verification")
         assertEquals(A_BUILD, device.runtime.snapshot.value.product.clientBuild)
-        device.server.beforeResponse = null
         val library = device.library.payload
         // the process dies while a blob is being written: a .part is left behind. It is placed after
-        // the old runtime is gone — its cooperative cancellation cleanup deletes .part files itself
+        // the old runtime is gone — its cooperative cancellation cleanup deletes .part files itself.
+        // The hang is lifted only after the kill: while the parent cancels its children one by one,
+        // a queued download can take a permit a cancelled one released before its own cancellation;
+        // with the hang still in place it parks and is cancelled, instead of staging one more file
+        // (the in-memory fetch never suspends, so nothing else would stop it).
         device.kill()
+        device.server.beforeResponse = null
         val inFlight = device.directory.resolve("v1/staging/$B_ID/${files.last().path}.part")
         inFlight.parentFile.mkdirs()
         inFlight.writeBytes(ByteArray(10))
