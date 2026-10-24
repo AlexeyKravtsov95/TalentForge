@@ -33,12 +33,41 @@
 
 ## 3. Публикация (выполняет только владелец)
 
-1. Скопируйте оба файла в отдельный каталог, подставьте дату фактической публикации вместо `{{PUBLICATION_DATE}}`
-   (одна дата в RU и EN). Убедитесь, что меток не осталось: `grep -c '{{' privacy-ios*.html` → `0`.
-2. Загрузите `privacy-ios.html` и `privacy-ios-en.html` в корень сайта `legal.mythweld.com` (тот же бакет VK Cloud, что и
-   `privacy.html`), с `Content-Type: text/html; charset=utf-8`. `style.css` уже опубликован, загружать его не нужно.
-3. По желанию добавьте ссылку на iOS-редакцию в раздел «Документы» главной страницы `index.html` (единственная главная страница сайта; `index-en.html` не существует — 403).
-4. Проверьте:
+Обновлено в M5.IOS.3: подстановка даты и проверка опубликованных страниц выполняются скриптом
+[`scripts/ios_privacy_pages.py`](../../../scripts/ios_privacy_pages.py), а не вручную. Сам скрипт ничего не загружает.
+
+На 2026-10-24 обе страницы отвечают **403** (`verify-live` → FAIL). Сайт отвечает 403 и на несуществующие объекты
+(например, `index-en.html`), поэтому 403 здесь означает «не опубликовано».
+
+1. **Дата.** Одна дата для RU и EN — день фактической загрузки, в формате `YYYY-MM-DD` (в страницах она станет
+   «25 октября 2026 года» / «25 October 2026», как в опубликованной Android-редакции). Если загрузка переносится на
+   другой день, повторите шаг 2 с новой датой.
+2. **Подготовка файлов** (из корня репозитория; каталог `legal-publish/` не в git):
+
+   ```bash
+   python3 scripts/ios_privacy_pages.py render --date 2026-10-25 --out legal-publish/ios
+   ```
+
+   Скрипт проверяет, что в каждой странице ровно одна метка `{{PUBLICATION_DATE}}` и что после подстановки `{{` не
+   осталось, и печатает SHA-256 обоих файлов. После этого шага файлы не редактируйте.
+3. **Загрузка** `legal-publish/ios/privacy-ios.html` и `legal-publish/ios/privacy-ios-en.html` в корень сайта
+   `legal.mythweld.com` (тот же бакет VK Cloud, что и `privacy.html`), с метаданными объекта:
+
+   | Метаданные | Значение |
+   |---|---|
+   | Имя объекта | `privacy-ios.html`, `privacy-ios-en.html` (в корне, без каталога) |
+   | `Content-Type` | **`text/html; charset=utf-8`** — точно так; без `charset` проверка шага 4 не пройдёт |
+   | Доступ | публичное чтение, как у `privacy.html` |
+
+   `style.css` уже опубликован; `privacy.html` / `privacy-en.html` (Android) **не трогать**.
+4. **Проверка HTTP 200** — с той же датой, что на шаге 2:
+
+   ```bash
+   python3 scripts/ios_privacy_pages.py verify-live --date 2026-10-25
+   ```
+
+   Ожидается `RESULT: PASS`: для каждой страницы `200`, `Content-Type: text/html; charset=utf-8`, тело побайтно равно
+   файлу из шага 2. Та же проверка вручную:
 
    ```bash
    curl -sI https://legal.mythweld.com/privacy-ios.html
@@ -48,10 +77,14 @@
    curl -sI https://legal.mythweld.com/privacy-ios-en.html
    ```
 
-   Ожидается `200` и `content-type: text/html`.
-5. Сообщите о публикации: агент проверит страницы (хэш опубликованного файла = файл с датой) и подготовит отдельный
-   маленький PR, который включает ссылку в iOS-экране About (`platformPrivacyPolicy` на iOS сейчас `NotPublished`, ссылка
-   намеренно не показывается, пока страница не существует — иначе это была бы ложная кнопка).
-6. В App Store Connect укажите Privacy Policy URL: EN-локализация — `…/privacy-ios-en.html`, RU — `…/privacy-ios.html`.
+   Ожидается `HTTP/2 200` и `content-type: text/html; charset=utf-8`. Если кэш ещё отдаёт старый ответ, повторите
+   проверку через несколько минут; не меняйте файлы, чтобы «пройти» её.
+5. По желанию добавьте ссылку на iOS-редакцию в раздел «Документы» главной страницы `index.html` (единственная главная
+   страница сайта; `index-en.html` не существует — 403).
+6. Сообщите агенту дату публикации. Только после `verify-live` → PASS агент готовит **отдельный** маленький PR, который
+   включает ссылку в iOS-экране About (`platformPrivacyPolicy` на iOS сейчас `NotPublished`: ссылка намеренно не
+   показывается, пока страница не существует, иначе это была бы ложная кнопка). M5.IOS.3 ссылку не меняет.
+7. В App Store Connect укажите Privacy Policy URL: EN-локализация — `https://legal.mythweld.com/privacy-ios-en.html`,
+   RU — `https://legal.mythweld.com/privacy-ios.html` (файлы `privacy_url.txt` [пакета отправки](../../release/apple-appstore/submission/README.md)).
 
-До шага 5 статус App Store-готовности по политике — **BLOCKED** ([readiness](../../release/apple-appstore/readiness.md)).
+До шага 6 статус App Store-готовности по политике — **BLOCKED** ([readiness M5.IOS.3](../../release/apple-appstore/m5-ios-3-readiness.md)).
