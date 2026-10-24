@@ -1,0 +1,59 @@
+TalentForge 1.0.0 (1) — iOS acceptance before TestFlight, local simulator run
+Date (UTC): 2026-10-24T20:30Z .. 2026-10-24T20:57Z (2026-10-25 local, UTC+3)
+Base: main @ c21be4f49444303bdd5320874bb29d4fb9b045a1
+
+== Toolchain (local; NOT Xcode 27.1) ==
+macOS 26.3.1
+Xcode 26.4.1 (17E202)
+SDK iphonesimulator26.4
+Runtime iOS 26.4.1 (23E254a)
+Devices (created for this run): "TF-Accept iPhone 17 Pro" (iPhone-17-Pro), "TF-Accept iPad Pro 13" (iPad-Pro-13-inch-M5-12GB)
+
+== Build ==
+env TALENTFORGE_OTA_IOS_PRODUCTION_ENABLED=true
+cd mobile/iosApp && xcodebuild -project iosApp.xcodeproj -scheme iosApp -configuration Release
+  -destination 'generic/platform=iOS Simulator' -derivedDataPath <scratch> CODE_SIGNING_ALLOWED=NO ARCHS=arm64 build
+-> ** BUILD SUCCEEDED **
+Product: Release-iphonesimulator/iosApp.app
+Info.plist: CFBundleIdentifier=io.github.alexeykravtsov95.talentforge CFBundleShortVersionString=1.0.0
+            CFBundleVersion=1 DTSDKName=iphonesimulator26.4 DTXcodeBuild=17E202
+Executable SHA-256: 7b9d723d3021ecc7117ef17a4c69df3e64d829a86b90b8360310f77fb1d639a7
+
+== OTA flag in the executable (scripts/verify_ios_archive.py _ota_checks, mode "on") ==
+PASS ota-keyring           the production keyring given is the committed one: ['tf-prod-2026a', 'tf-prod-2026b']
+PASS ota-no-staging-origin no staging, loopback or emulator origin in the executable
+PASS ota-on                origin https://ota.mythweld.com and exactly the pinned keys ['tf-prod-2026a', 'tf-prod-2026b'] (SPKI SHA-256 verified)
+httpsOrigins: https://goo.gle, https://legal.mythweld.com, https://ota.mythweld.com, https://youtrack.jetbrains.com
+
+== Production preflight (read-only, scripts/ota_production_preflight.py --expect published) ==
+run 1 2026-10-24T20:30:35Z  result: FAIL — release blob read timeout and DNS errors (nodename nor servname provided)
+                            during the run: local network flakiness while the Release build was running
+run 2 2026-10-24T20:37:14Z  result: OK — catalog sequence 1, active 1.60.1.70450-r1, 1/1 release verified
+                            (397 files re-hashed), expires 2026-12-05T08:31:31Z (41 days), private paths 403/404;
+                            WARN http.plain (as in M5.IOS.2/M5.IOS.3)
+
+== First launch with network (iPhone, fresh install) ==
+launch 2026-10-24T20:39:49Z
+ota/v1/state.json after first launch:
+{"format":"talentforge-ota-state","formatVersion":1,"game":"forever","channel":"production",
+ "catalog":{"sequence":1,"payloadSha256":"sha256:cd4e25b9cf4d4f35c7e7f3d679a790dac69b8b19c334e8861181d79b51e18e8c"},
+ "active":"1.60.1.70450-r1","previous":null,
+ "installed":[{"releaseId":"1.60.1.70450-r1","clientBuild":"1.60.1.70450",
+   "manifestSha256":"sha256:0aa7ab9513698f6b3deec2cf3a2be46cbebf1eb90d42b5f4a29867237ec8f4df"}],"rejected":[]}
+About: "Downloaded update 1.60.1.70450-r1"; "Check for updates" -> "Talent data is up to date."
+iPad fresh install 2026-10-24T20:52:51Z: identical state.json; About "Talent data updated to 1.60.1 (1.60.1.70450)".
+
+== About -> privacy policy -> Safari (Safari History.db visits, read from a copy) ==
+iPhone, EN interface: https://legal.mythweld.com/privacy-ios-en.html  2026-10-24 20:40:31
+iPhone, RU interface: https://legal.mythweld.com/privacy-ios.html     2026-10-24 20:52:15
+iPad,   EN interface: https://legal.mythweld.com/privacy-ios-en.html  2026-10-24 20:53:32
+Return via the system "< TalentForge" back link: app process unchanged
+  (iPhone EN pid 34411, iPhone RU pid 84485, iPad EN pid 92861), same screen and state.
+
+== Builds after relaunch ==
+iPhone: simctl terminate + launch 2026-10-24T20:50:11Z -> "Warrior build" 5/51 (imported) and renamed "тест" 5/51 both listed.
+iPad:   simctl terminate + launch 2026-10-24T20:55:56Z -> "Mage build" 7/51 (Arcane 5, Fire 1, Frost 1).
+
+== Copy code ==
+simctl pbpaste after "Copy code" = the code shown in the sheet:
+TF1043PCVVJCNV6AWGC64Q3CC1E64Q3EC1M6MR0ENT1A994JKTJVM407MNV0TGS660M0C902J8FC820
