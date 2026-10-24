@@ -228,20 +228,21 @@ python3 scripts/verify_appstore_screenshots.py
    xcrun devicectl list devices
    ```
 
-4. **Сборка с OTA ON и установка** — Release, production-канал, как в шаге 3. `ABCDE12345` — Team ID из п. 2,
-   `00008000-XXXXXXXXXXXXXXXX` — UDID из п. 3; значения остаются только в истории терминала. В окружении не должно
-   быть `TALENTFORGE_OTA_ANDROID_*` и staging-настроек:
+4. **Сборка с OTA ON и установка** — Release, production-канал, как в шаге 3. Все команды п. 4 и 6 выполняются
+   **из корня репозитория** (без `cd`). `ABCDE12345` — Team ID из п. 2, `00008000-XXXXXXXXXXXXXXXX` — UDID из п. 3;
+   значения остаются только в истории терминала. В окружении не должно быть `TALENTFORGE_OTA_ANDROID_*` и
+   staging-настроек:
 
    ```bash
    export TALENTFORGE_OTA_IOS_PRODUCTION_ENABLED=true
    ```
 
    ```bash
-   cd mobile/iosApp && xcodebuild -project iosApp.xcodeproj -scheme iosApp -configuration Release -destination 'id=00008000-XXXXXXXXXXXXXXXX' -derivedDataPath build/personal-team -allowProvisioningUpdates DEVELOPMENT_TEAM=ABCDE12345 PRODUCT_BUNDLE_IDENTIFIER=io.github.alexeykravtsov95.talentforge.personal build
+   xcodebuild -project mobile/iosApp/iosApp.xcodeproj -scheme iosApp -configuration Release -destination 'id=00008000-XXXXXXXXXXXXXXXX' -derivedDataPath mobile/iosApp/build/personal-team -allowProvisioningUpdates DEVELOPMENT_TEAM=ABCDE12345 PRODUCT_BUNDLE_IDENTIFIER=io.github.alexeykravtsov95.talentforge.personal build
    ```
 
    ```bash
-   xcrun devicectl device install app --device 00008000-XXXXXXXXXXXXXXXX build/personal-team/Build/Products/Release-iphoneos/iosApp.app
+   xcrun devicectl device install app --device 00008000-XXXXXXXXXXXXXXXX mobile/iosApp/build/personal-team/Build/Products/Release-iphoneos/iosApp.app
    ```
 
    При первом открытии iOS сообщит о ненадёжном разработчике: Настройки → Основные → VPN и управление устройством →
@@ -250,10 +251,10 @@ python3 scripts/verify_appstore_screenshots.py
    Дальше — сценарии §6 п. 1–3 (авиарежим P-1/P-8, политика в Safari из About и т. д.).
 6. **Срок подписи.** Профиль Personal Team действует **7 дней**, после этого приложение не запускается. Чтобы
    продолжить, повторите п. 4: установка поверх сохраняет билды, удаление приложения их стирает. После проверки
-   удалите приложение с iPhone и проверьте рабочую копию:
+   удалите приложение с iPhone и проверьте рабочую копию (из корня репозитория):
 
    ```bash
-   git status --short mobile/iosApp
+   git status --short -- mobile/iosApp
    ```
 
    ```bash
