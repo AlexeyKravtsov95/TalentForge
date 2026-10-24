@@ -109,6 +109,13 @@ def replace(root: Path, name: str, data: bytes) -> None:
     write_manifest(root)
 
 
+def test_the_committed_pack_passes() -> None:
+    evaluation, report = v.evaluate(v.DEFAULT_SCREENSHOTS)
+    assert {c.id: c.detail for c in evaluation.checks if not c.passed} == {}
+    sizes = {(s["width"], s["height"]) for s in report["screenshots"]}
+    assert sizes == {IPHONE, IPAD}
+
+
 def test_a_complete_pack_passes(tmp_path: Path) -> None:
     root = make_pack(tmp_path)
     _, report = v.evaluate(root)

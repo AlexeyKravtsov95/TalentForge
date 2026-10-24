@@ -13,7 +13,7 @@
 | Путь | Что |
 |---|---|
 | [`metadata/`](metadata/) | по одному UTF-8 файлу на поле App Store Connect (§2). Файл = точный текст поля, без кавычек и комментариев |
-| [`screenshots/`](screenshots/) | `<locale>/<display>/<NN>-<screen>.png` + `manifest.json` ([readiness §2](../m5-ios-3-readiness.md#2-задача-a--скриншоты-app-store)) |
+| [`screenshots/`](screenshots/) | 18 PNG: `<locale>/<display>/<NN>-<screen>.png` + `manifest.json`. В App Store Connect загружать по возрастанию `NN`: `iphone-6.3/` — в «iPhone 6.3" Display», `ipad-13/` — в «iPad 13" Display» ([readiness §2](../m5-ios-3-readiness.md#2-задача-a--скриншоты-app-store)) |
 | [`testflight-runbook.md`](testflight-runbook.md) | шаги владельца: Apple Developer → подпись → архив → проверка → TestFlight → iPhone → карточка и ревью |
 | `scripts/verify_appstore_metadata.py` | проверка текстов: лимиты Apple, формат файлов, ключевые слова, позиционирование, утверждения OTA ON, URL |
 | `scripts/verify_appstore_screenshots.py` | проверка скриншотов: размеры по классу дисплея, PNG RGB без альфа-канала, целостность, нумерация, паритет локалей, manifest |
@@ -92,7 +92,7 @@ Keywords 100, App Review Notes 4000. Счёт — `verify_appstore_metadata.py` 
 
 | # | Пункт | Статус | Доказательство / что нужно |
 |---|---|---|---|
-| A | Скриншоты iPhone 6.3" и iPad 13", EN и RU, из Release-сборки | см. [readiness §2](../m5-ios-3-readiness.md#2-задача-a--скриншоты-app-store) | — |
+| A | Скриншоты iPhone 6.3" (6) и iPad 13" (3), EN и RU, из Release-сборки | **PASS** | `verify_appstore_screenshots.py` → PASS; [readiness §2](../m5-ios-3-readiness.md#2-задача-a--скриншоты-app-store) |
 | B1 | Метаданные EN/RU: лимиты Apple, позиционирование, OTA ON, URL | **PASS** | `verify_appstore_metadata.py` → PASS (§2) |
 | B2 | Утверждение текстов владельцем | **BLOCKED** | владелец |
 | C1 | iOS-политика RU/EN опубликована (HTTP 200, `text/html; charset=utf-8`, байты = файл с датой) | **BLOCKED** | на 2026-10-24 обе страницы отвечают **403**; инструкция — [docs/legal/ios §3](../../../legal/ios/README.md#3-публикация-выполняет-только-владелец) |
