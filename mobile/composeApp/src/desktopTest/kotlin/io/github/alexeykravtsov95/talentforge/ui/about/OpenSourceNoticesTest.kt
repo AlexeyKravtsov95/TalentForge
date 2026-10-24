@@ -303,7 +303,7 @@ class OpenSourceNoticesTest {
 
     @Test
     fun aPlatformWithoutAPublishedPolicyGetsNoLinkInAnyLanguage() {
-        // iOS (M5.LEGAL.LINK): the Android policy must never be offered as the iOS one
+        // No other platform's policy may be offered in place of an unpublished policy.
         for (language in AppLanguage.entries) {
             assertNull(privacyPolicyUrlOf(PublishedPrivacyPolicy.NotPublished, language))
             assertNull(privacyPolicyLinkOf(privacyPolicyUrlOf(PublishedPrivacyPolicy.NotPublished, language)))
@@ -319,9 +319,11 @@ class OpenSourceNoticesTest {
 
     @Test
     fun everyPublishedPrivacyPolicyUrlIsALegalHttpsLink() {
-        for (language in AppLanguage.entries) {
-            val url = privacyPolicyUrlOf(PublishedPrivacyPolicy.Android, language)
-            assertEquals(url, privacyPolicyLinkOf(url))
+        for (policy in listOf(PublishedPrivacyPolicy.Android, PublishedPrivacyPolicy.Ios)) {
+            for (language in AppLanguage.entries) {
+                val url = privacyPolicyUrlOf(policy, language)
+                assertEquals(url, privacyPolicyLinkOf(url))
+            }
         }
     }
 

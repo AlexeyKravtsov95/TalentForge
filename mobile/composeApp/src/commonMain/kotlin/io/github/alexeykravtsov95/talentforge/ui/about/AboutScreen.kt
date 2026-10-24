@@ -97,7 +97,7 @@ import org.jetbrains.compose.resources.stringResource
  *   (M5.OTA.PROD.3) — and the link to the
  *   published privacy policy of the UI language ([privacyPolicyUrl],
  *   M5.LEGAL.LINK), opened in the system browser, ONLY when one is published
- *   for this platform (Android; none for iOS yet, so `null` there);
+ *   for this platform (separate Android and iOS pages; `null` for an unpublished policy);
  * - at the bottom, a quiet 48 dp link that opens the open-source licenses
  *   ([onOpenLicenses], [LicensesScreen]), where every open-source notice lives.
  */

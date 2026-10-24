@@ -37,7 +37,7 @@ import org.junit.Rule
  * its source, about the project (description and the independent-project
  * statement), the compact privacy block whose every statement stays one
  * explicit toggle away, the published policy link of the UI language where a
- * policy is published for the platform and none on iOS (M5.LEGAL.LINK), the
+ * policy is published for the platform (M5.LEGAL.LINK), the
  * quiet open-source licenses link at the bottom, and NO technology,
  * dependency or module names; 48 dp targets at 320 dp / 200 %; and Home →
  * About → Licenses → Back → Back through the real app root. The licenses
@@ -325,7 +325,7 @@ class AboutScreenUiTest {
     }
 
     @Test
-    fun iosShowsThePrivacySummaryWithoutTheAndroidPolicyLink() {
+    fun anUnpublishedPolicyKeepsThePrivacySummaryWithoutALink() {
         for (language in AppLanguage.entries) {
             val ru = language == AppLanguage.RUSSIAN
             onScreen(
@@ -338,10 +338,35 @@ class AboutScreenUiTest {
                 clickText(if (ru) "Подробнее" else "Show details")
                 awaitText(if (ru) "Если на устройстве включено резервное копирование" else "If your device's backup (iCloud or a computer) is on", substring = true)
                 awaitText(if (ru) "Удалите билд в приложении или удалите само приложение" else "Delete a build in the app, or delete the app", substring = true)
-                // but no link: the published policy is the Android app's
+                // a platform without a published policy still offers no external link
                 assertAbsent("Privacy policy")
                 assertAbsent("Политика конфиденциальности")
                 assertEquals(0, onAllNodes(clickLabelled(if (ru) "открыть политику конфиденциальности в браузере" else "open the privacy policy in the browser")).fetchSemanticsNodes().size)
+            }
+        }
+    }
+
+    @Test
+    fun iosOpensItsOwnLocalizedPolicyAndKeepsItsOtaPrivacySummary() {
+        for (language in AppLanguage.entries) {
+            val handler = RecordingUriHandler()
+            val ru = language == AppLanguage.RUSSIAN
+            val expectedUrl = if (ru) {
+                "https://legal.mythweld.com/privacy-ios.html"
+            } else {
+                "https://legal.mythweld.com/privacy-ios-en.html"
+            }
+            onScreen(
+                language = language,
+                uriHandler = handler,
+                content = about(language, backup = BackupStatement.IosDeviceBackup, policy = PublishedPrivacyPolicy.Ios, ota = true),
+            ) {
+                // The published policy is reachable while the privacy details are collapsed.
+                clickText(if (ru) "Политика конфиденциальности" else "Privacy policy")
+                assertEquals(listOf(expectedUrl), handler.opened)
+                clickText(if (ru) "Подробнее" else "Show details")
+                awaitText("ota.mythweld.com", substring = true)
+                awaitText(if (ru) "Если на устройстве включено резервное копирование" else "If your device's backup (iCloud or a computer) is on", substring = true)
             }
         }
     }

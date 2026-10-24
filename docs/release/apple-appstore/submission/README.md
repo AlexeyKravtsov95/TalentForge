@@ -95,8 +95,8 @@ Keywords 100, App Review Notes 4000. Счёт — `verify_appstore_metadata.py` 
 | A | Скриншоты iPhone 6.3" (6) и iPad 13" (3), EN и RU, из Release-сборки | **PASS** | `verify_appstore_screenshots.py` → PASS; [readiness §2](../m5-ios-3-readiness.md#2-задача-a--скриншоты-app-store) |
 | B1 | Метаданные EN/RU: лимиты Apple, позиционирование, OTA ON, URL | **PASS** | `verify_appstore_metadata.py` → PASS (§2) |
 | B2 | Утверждение текстов владельцем | **BLOCKED** | владелец |
-| C1 | iOS-политика RU/EN опубликована (HTTP 200, `text/html; charset=utf-8`, байты = файл с датой) | **BLOCKED** | на 2026-10-24 обе страницы отвечают **403**; инструкция — [docs/legal/ios §3](../../../legal/ios/README.md#3-публикация-выполняет-только-владелец) |
-| C2 | Ссылка на политику в About | **BLOCKED** до C1 | в этом PR не меняется (условие задачи) |
+| C1 | iOS-политика RU/EN опубликована (HTTP 200, HTML с декларацией UTF-8, байты = файл с датой) | **PASS** | опубликовано 2026-10-24; `verify-live --date 2026-10-24` → PASS для обеих страниц на 2026-10-25; [evidence](../evidence/m5-ios-3/privacy-pages-verify-live-2026-10-25.txt) |
+| C2 | Ссылка на политику в About | Подключена в коде | iOS открывает отдельную RU/EN-страницу по языку интерфейса; native-маппинг проверяет iOS CI, нажатие — desktop UI-тест; открытие браузера на физическом устройстве — шаг D4 |
 | C3 | App Privacy для OTA ON | **BLOCKED** (OA-1) | [app-privacy §5](../app-privacy.md#5-аудит-m5ios3-ota-on) |
 | C4 | App Review Notes | **PASS** (текст) | `review_information/notes.txt` |
 | D1 | `iosApp.xcodeproj` пригоден для App Store Connect | **PASS** | `verify_ios_project.py` → 14/14 |
