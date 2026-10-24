@@ -44,8 +44,25 @@ anything it cannot establish is a failure, never a pass:
 - no private key, certificate store or key file is bundled.
 
 The report holds public facts only: file names, sizes, SHA-256 digests and plist values.
-Signing is reported (``signed``), not required: the readiness archive is built unsigned; the
-owner signs the distribution archive with their own team.
+Signing is reported (``signed``) and verified only with ``--require-signed`` (M5.IOS.3): the CI
+archive is built unsigned; the owner signs the archive with their own team. The signature is
+then checked with the macOS tools themselves, never by the presence of files alone:
+
+- ``codesign --verify --strict --verbose=2`` accepts the application;
+- ``codesign -d --verbose=4`` names a real signing identity (Apple Development or Apple
+  Distribution), a Team ID and the frozen bundle id: an ad-hoc signature (``Signature=adhoc``,
+  no team) fails, as does a Team ID other than ``--expected-team-id`` when one is given;
+- ``security cms -D`` decodes ``embedded.mobileprovision``: the profile is in force (created
+  before and expiring after now), belongs to the same team, names exactly
+  ``<team>.io.github.alexeykravtsov95.talentforge`` (no wildcard) and is not an enterprise
+  profile; the signing certificate (``codesign --extract-certificates``) is one of its
+  ``DeveloperCertificates``; the signature's entitlements match the profile's;
+- the configuration can reach TestFlight: an App Store profile with an Apple Distribution
+  identity, or the development signing Xcode gives an archive (Organizer re-signs it with
+  Apple Distribution on Distribute App → App Store Connect). An Ad Hoc profile (a distribution
+  identity with listed devices) and ``get-task-allow`` with a distribution identity fail.
+
+Without ``codesign`` or ``security`` (not macOS) the check cannot run: exit 2, never a pass.
 
 Usage::
 
@@ -60,12 +77,17 @@ from __future__ import annotations
 
 import argparse
 import base64
+import datetime as dt
 import hashlib
 import json
 import plistlib
 import re
+import shutil
 import struct
+import subprocess
 import sys
+import tempfile
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -109,6 +131,13 @@ COMPOSE_RESOURCES = "compose-resources/composeResources"
 # A file under this size is searched for private-key markers; the executable is not text.
 TEXT_SCAN_LIMIT = 8 * 1024 * 1024
 FORBIDDEN_SUFFIXES = frozenset({".p12", ".p8", ".pem", ".key", ".keystore", ".jks", ".pfx"})
+
+# Signing (--require-signed): the macOS tools and what a TestFlight-ready signature looks like.
+SIGNING_TOOLS = ("codesign", "security")
+DEVELOPMENT_IDENTITY = re.compile(r"^(Apple Development|iPhone Developer): ")
+DISTRIBUTION_IDENTITY = re.compile(r"^(Apple Distribution|iPhone Distribution): ")
+TEAM_ID = re.compile(r"^[A-Z0-9]{10}$")
+TOOL_TIMEOUT_SECONDS = 120
 
 EXIT_PASS, EXIT_FAIL, EXIT_ERROR = 0, 1, 2
 
@@ -430,6 +459,10 @@ def evaluate(
     keyring: Path,
     ota: str,
     privacy_collected: str = "none",
+    require_signed: bool = False,
+    expected_team_id: str | None = None,
+    runner: Runner | None = None,
+    now: dt.datetime | None = None,
 ) -> tuple[Evaluation, dict[str, Any]]:
     """Run every check on ``archive``; raises ToolError when a check cannot run."""
     if ota not in OTA_MODES:
@@ -642,11 +675,31 @@ def evaluate(
         "; ".join(forbidden) or "no key files or private keys in the bundle",
     )
 
+    signed = (app / "_CodeSignature").is_dir()
+    signing: dict[str, Any] | None = None
+    if require_signed:
+        if runner is None:
+            missing = [tool for tool in SIGNING_TOOLS if shutil.which(tool) is None]
+            if missing:
+                raise ToolError(
+                    f"BLOCKED: {', '.join(missing)} not available — the signature can only be "
+                    "verified on macOS with the Xcode command line tools"
+                )
+            runner = run_tool
+        signing = _signing_checks(
+            evaluation,
+            app,
+            runner=runner,
+            expected_team_id=expected_team_id,
+            now=now or dt.datetime.now(dt.UTC),
+        )
+
     report: dict[str, Any] = {
         "schema": REPORT_SCHEMA,
         "archive": archive.name,
         "application": app.name,
-        "signed": (app / "_CodeSignature").is_dir(),
+        "signed": signed,
+        "signing": signing,
         "info": {
             key: info.get(key)
             for key in (
@@ -677,6 +730,207 @@ def evaluate(
         "result": "PASS" if evaluation.passed else "FAIL",
     }
     return evaluation, report
+
+
+@dataclass(frozen=True)
+class ToolResult:
+    """What a command line tool returned."""
+
+    returncode: int
+    stdout: bytes
+    stderr: str
+
+
+Runner = Callable[[list[str]], ToolResult]
+
+
+def run_tool(args: list[str]) -> ToolResult:
+    try:
+        completed = subprocess.run(
+            args, capture_output=True, check=False, timeout=TOOL_TIMEOUT_SECONDS
+        )
+    except (OSError, subprocess.TimeoutExpired) as error:
+        raise ToolError(f"cannot run {args[0]}: {error}") from error
+    return ToolResult(
+        completed.returncode, completed.stdout, completed.stderr.decode("utf-8", "replace")
+    )
+
+
+def _codesign_fields(text: str) -> tuple[dict[str, str], list[str]]:
+    """The ``key=value`` lines of ``codesign -d --verbose=4`` and its ``Authority`` chain."""
+    fields: dict[str, str] = {}
+    authorities: list[str] = []
+    for line in text.splitlines():
+        key, sep, value = line.partition("=")
+        if not sep:
+            continue
+        if key == "Authority":
+            authorities.append(value)
+        else:
+            fields.setdefault(key, value)
+    return fields, authorities
+
+
+def _plist(data: bytes) -> dict[str, Any] | None:
+    try:
+        value = plistlib.loads(data)
+    except (plistlib.InvalidFileException, ValueError, TypeError):
+        return None
+    return value if isinstance(value, dict) else None
+
+
+def _as_utc(value: object) -> dt.datetime | None:
+    if not isinstance(value, dt.datetime):
+        return None
+    return value if value.tzinfo else value.replace(tzinfo=dt.UTC)
+
+
+def _signing_checks(
+    evaluation: Evaluation,
+    app: Path,
+    *,
+    runner: Runner,
+    expected_team_id: str | None,
+    now: dt.datetime,
+) -> dict[str, Any]:
+    """The --require-signed checks: the real signature, its identity and its profile."""
+    verify = runner(["codesign", "--verify", "--strict", "--verbose=2", str(app)])
+    evaluation.add(
+        "signature-valid",
+        verify.returncode == 0,
+        f"codesign --verify --strict: exit {verify.returncode}: "
+        + " / ".join(line.strip() for line in verify.stderr.splitlines() if line.strip()),
+    )
+
+    display = runner(["codesign", "-d", "--verbose=4", str(app)])
+    fields, authorities = _codesign_fields(
+        display.stderr + "\n" + display.stdout.decode(errors="replace")
+    )
+    identity = authorities[0] if authorities else None
+    team = fields.get("TeamIdentifier")
+    # codesign prints "Signature=adhoc" and "CodeDirectory v=… flags=0x2(adhoc) …" for -s - signing
+    adhoc = fields.get("Signature") == "adhoc" or "(adhoc)" in fields.get("CodeDirectory v", "")
+    development = bool(identity and DEVELOPMENT_IDENTITY.match(identity))
+    distribution = bool(identity and DISTRIBUTION_IDENTITY.match(identity))
+    identity_problems = []
+    if display.returncode != 0:
+        identity_problems.append(f"codesign -d failed (exit {display.returncode})")
+    if adhoc:
+        identity_problems.append("ad-hoc signature (no certificate, no team)")
+    if not (development or distribution):
+        identity_problems.append(
+            f"signing identity {identity!r} is not Apple Development/Distribution"
+        )
+    if not (team and TEAM_ID.fullmatch(team)):
+        identity_problems.append(f"TeamIdentifier={team!r}")
+    elif expected_team_id is not None and team != expected_team_id:
+        identity_problems.append(f"Team ID {team} is not the expected {expected_team_id}")
+    if fields.get("Identifier") != FROZEN_BUNDLE_ID:
+        identity_problems.append(f"Identifier={fields.get('Identifier')!r}")
+    evaluation.add(
+        "signature-identity",
+        not identity_problems,
+        "; ".join(identity_problems)
+        or f"{identity}, Team ID {team}, identifier {FROZEN_BUNDLE_ID}",
+    )
+
+    profile_path = app / "embedded.mobileprovision"
+    profile: dict[str, Any] | None = None
+    if profile_path.is_file():
+        decoded = runner(["security", "cms", "-D", "-i", str(profile_path)])
+        profile = _plist(decoded.stdout) if decoded.returncode == 0 else None
+    profile_problems = []
+    entitlements: dict[str, Any] = {}
+    devices = False
+    if profile is None:
+        profile_problems.append(
+            "embedded.mobileprovision is missing or not a CMS-signed provisioning profile"
+        )
+    else:
+        profile_entitlements = profile.get("Entitlements")
+        entitlements = profile_entitlements if isinstance(profile_entitlements, dict) else {}
+        created, expires = (
+            _as_utc(profile.get("CreationDate")),
+            _as_utc(profile.get("ExpirationDate")),
+        )
+        if not (created and expires and created <= now < expires):
+            profile_problems.append(f"not in force now (created {created}, expires {expires})")
+        teams = profile.get("TeamIdentifier") or []
+        if team not in teams:
+            profile_problems.append(f"profile teams {teams} do not include the signature's {team}")
+        if entitlements.get("application-identifier") != f"{team}.{FROZEN_BUNDLE_ID}":
+            profile_problems.append(
+                f"application-identifier {entitlements.get('application-identifier')!r} is not "
+                f"{team}.{FROZEN_BUNDLE_ID}"
+            )
+        if profile.get("ProvisionsAllDevices") is True:
+            profile_problems.append("enterprise (ProvisionsAllDevices) profile")
+        devices = bool(profile.get("ProvisionedDevices"))
+    evaluation.add(
+        "provisioning-profile",
+        not profile_problems,
+        "; ".join(profile_problems)
+        or f"{profile.get('Name') if profile else None!r}, team {team}, expires "
+        f"{_as_utc(profile.get('ExpirationDate')) if profile else None}",
+    )
+
+    with tempfile.TemporaryDirectory() as scratch:
+        prefix = Path(scratch) / "cert"
+        extracted = runner(["codesign", "-d", f"--extract-certificates={prefix}", str(app)])
+        leaf_path = Path(f"{prefix}0")
+        leaf = leaf_path.read_bytes() if extracted.returncode == 0 and leaf_path.is_file() else None
+    certificates = [
+        c for c in (profile or {}).get("DeveloperCertificates", []) if isinstance(c, bytes)
+    ]
+    evaluation.add(
+        "profile-certificate",
+        leaf is not None and leaf in certificates,
+        "the signing certificate is one of the profile's DeveloperCertificates"
+        if leaf is not None and leaf in certificates
+        else "the signing certificate is missing or not in the profile",
+    )
+
+    signed_entitlements = (
+        _plist(runner(["codesign", "-d", "--entitlements", "-", "--xml", str(app)]).stdout) or {}
+    )
+    entitlement_problems = [
+        f"{key}: signature {signed_entitlements.get(key)!r}, profile {entitlements.get(key)!r}"
+        for key in (
+            "application-identifier",
+            "com.apple.developer.team-identifier",
+            "get-task-allow",
+        )
+        if signed_entitlements.get(key) != entitlements.get(key)
+    ]
+    get_task_allow = signed_entitlements.get("get-task-allow") is True
+    if distribution and devices:
+        kind, kind_ok = "Ad Hoc (distribution identity, listed devices): not for TestFlight", False
+    elif distribution and get_task_allow:
+        kind, kind_ok = "distribution identity with get-task-allow: not for TestFlight", False
+    elif distribution:
+        kind, kind_ok = "App Store (Apple Distribution, no device list)", True
+    elif development:
+        kind, kind_ok = (
+            "development-signed archive: Organizer re-signs it with Apple Distribution on "
+            "Distribute App → App Store Connect",
+            True,
+        )
+    else:
+        kind, kind_ok = "no usable signing identity", False
+    evaluation.add(
+        "testflight-signing",
+        kind_ok and not entitlement_problems,
+        "; ".join([kind, *entitlement_problems]),
+    )
+    return {
+        "identity": identity,
+        "teamId": team,
+        "adhoc": adhoc,
+        "profileName": profile.get("Name") if profile else None,
+        "profileExpires": str(_as_utc(profile.get("ExpirationDate"))) if profile else None,
+        "profileHasDevices": devices,
+        "configuration": kind,
+    }
 
 
 def _ota_checks(
@@ -778,6 +1032,15 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
         default=str(DEFAULT_PRODUCTION_KEYRING),
         help="the committed production keyring (its fingerprints must be the pinned ones)",
     )
+    parser.add_argument(
+        "--require-signed",
+        action="store_true",
+        help="verify the real signature and provisioning profile with codesign/security (macOS)",
+    )
+    parser.add_argument(
+        "--expected-team-id",
+        help="with --require-signed: the owner's 10-character Team ID (passed, never committed)",
+    )
     parser.add_argument("--report", help="write the JSON report to this file")
     return parser.parse_args(argv)
 
@@ -796,6 +1059,8 @@ def main(argv: list[str] | None = None) -> int:
             keyring=Path(args.production_keyring),
             ota=args.ota,
             privacy_collected=args.privacy_collected,
+            require_signed=args.require_signed,
+            expected_team_id=args.expected_team_id,
         )
     except ToolError as error:
         print(f"ERROR: {error}", file=sys.stderr)

@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Статус | **ЧЕРНОВИК (M5.IOS.1).** В App Store Connect ничего не вносилось, приложение не создано, сборка не загружена. Нужны одобрение владельца |
+| Статус | **ЗАМЕНЁН в M5.IOS.3.** Окончательные тексты для App Store Connect (сборка OTA ON) — по файлу на поле в [`submission/metadata/en-US/`](submission/metadata/en-US/) и [`review_information/notes.txt`](submission/metadata/review_information/notes.txt), изменения — [submission §2.1](submission/README.md#21-что-изменилось-относительно-черновиков). Этот файл — история черновика M5.IOS.1/M5.IOS.2; в App Store Connect его не копировать |
 | Сборка | тексты верны для сборки **OTA OFF** (эта readiness-сборка). Для OTA ON заменить строки по §8 после M5.IOS.2 |
 | Позиционирование | неофициальное приложение; лицензия Blizzard **не заявляется**. Использование названия игры — `RISK ACCEPTED — OWNER DECISION` ([readiness §5](readiness.md#5-app-review-compliance)) |
 | Лимиты Apple | Name ≤ 30, Subtitle ≤ 30, Promotional Text ≤ 170, Description ≤ 4000, Keywords ≤ 100 байт/символов (через запятую), What's New ≤ 4000 ([App information](https://developer.apple.com/help/app-store-connect/reference/app-information/app-information/), [Platform version information](https://developer.apple.com/help/app-store-connect/reference/app-information/platform-version-information/)) |

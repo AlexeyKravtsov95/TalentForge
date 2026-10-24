@@ -1,4 +1,4 @@
-# App Privacy (App Store Connect): черновик ответов (M5.IOS.1, обновлено в M5.IOS.2)
+# App Privacy (App Store Connect): черновик ответов (M5.IOS.1, обновлено в M5.IOS.2 и M5.IOS.3)
 
 | | |
 |---|---|
@@ -91,3 +91,44 @@ Apple не выделяет IP-адрес в отдельный тип; журн
 - **Export compliance:** `ITSAppUsesNonExemptEncryption = false` в `Info.plist`. Приложение использует только шифрование ОС (HTTPS через `NSURLSession`) и проверку подписи (аутентификация данных). Владелец подтверждает этот ответ в App Store Connect при первой загрузке; при сомнении — ответ по [Complying with Encryption Export Regulations](https://developer.apple.com/documentation/security/complying-with-encryption-export-regulations).
 - **Privacy Policy URL:** обязателен; страница iOS-редакции **не опубликована** → BLOCKED ([docs/legal/ios](../../legal/ios/README.md)).
 - **Privacy manifest:** [readiness §6.1](readiness.md#61-privacyinfoxcprivacy-и-required-reason-api).
+
+## 5. Аудит M5.IOS.3 (OTA ON)
+
+Дата: 2026-10-24, `main` @ `d51cbed`. Ответ в App Store Connect по-прежнему **не выбран** — его даёт владелец.
+
+### 5.1 Что проверено
+
+| Пункт | Факт | Как проверено | Статус |
+|---|---|---|---|
+| Код сети с M5.IOS.2 | не менялся: `git diff 2b807a1 d51cbed -- mobile/` пуст (после M5.IOS.2 менялись только Python-инструменты OTA, документы и данные вне мобильного bundle) | git | **PASS** |
+| Сетевые запросы | только `GET https://ota.mythweld.com/v1/channels/production/catalog.json` и `/v1/blobs/sha256/<hex>`; редиректы не выполняются, только HTTPS, ATS по умолчанию | M5.IOS.2 (код + E2E на симуляторе); код с тех пор тот же | **PASS** |
+| Заголовки | `Host`, `User-Agent: TalentForge/1.0.0`, `Accept: */*`, `Accept-Encoding`, `Accept-Language: *` (фиксирован в `IosOtaPorts.kt`), `Connection`; без cookies (ephemeral-сессия) и идентификаторов | измерено в M5.IOS.2 (`app-request-headers`); `IosOtaPorts.kt` прочитан заново | **PASS** |
+| Что получает инфраструктура | IP-адрес, время, URL (может указывать нужную версию игровых данных), `User-Agent`, параметры TLS. Цепочка: `ota.mythweld.com` → CNAME `cl-541e19d9.mf.cdnmgf.megafon.ru` (CDN МегаФон) → бакет VK Cloud Object Storage | `scripts/ota_production_preflight.py` (только чтение, 2026-10-24T08:32:27Z, `result: OK`) | **PASS** (факт доставки) |
+| Хранение журналов CDN и бакета (OA-1…OA-4) | **неизвестно**: в репозитории сведений нет; у агента нет доступа к консолям провайдеров | — | **BLOCKED** (владелец) |
+| `PrivacyInfo.xcprivacy` | `NSPrivacyTracking = false`, доменов нет, `NSPrivacyCollectedDataTypes = []`; Required Reason API `CA92.1`, `C617.1`, `E174.1` совпадают с импортами бинарника | `verify_ios_archive.py --ota on` на unsigned-архиве OTA ON текущего `main` (локально, Xcode 26.4.1): 22/22 PASS ([evidence](evidence/m5-ios-3/)) | **PASS** для варианта A; для B манифест меняется отдельным PR (§3.2) |
+| iOS-политика RU/EN | верно описывает OTA ON: моменты проверок (запуск, возврат в приложение, «Проверить обновления», открытие билда без нужных данных), состав запроса, IP у инфраструктуры без утверждений о сроках хранения, отсутствие идентификаторов и cookies, проверку подписи, исключение из бэкапа, отсутствие разрешений. Изменения не нужны | сверено с кодом: `App.kt` (`onAppStarted`, `ON_START` → `onForeground`, `checkNow`, `resolveDataset`), `AboutScreen.kt` (кнопка «Проверить обновления» только при OTA ON) | **PASS** (текст); публикация — **BLOCKED** |
+| Согласованность с другими магазинами | Google Play Data safety, RuStore и AppGallery для OTA ON зависят от того же факта (OA-1…OA-5, [store-declarations](../../legal/ota-on/store-declarations.md)). При одной и той же инфраструктуре ответ «не собирается» в одном магазине и «собирается» в другом противоречат друг другу | документы | к сведению владельца |
+
+### 5.2 Варианты декларации
+
+| | A — Data Not Collected | B — Diagnostics (Other Diagnostic Data) |
+|---|---|---|
+| Условие | владелец **подтвердил**: ни CDN МегаФон, ни VK Cloud не хранят журналы запросов дольше обслуживания запроса, **или** ни владелец, ни провайдеры не имеют к ним доступа после обслуживания (определение «collect» Apple) | журналы хранятся, **или** факт на дату отправки не установлен |
+| Ответ в ASC | «No, we do not collect data from this app» | Diagnostics → Other Diagnostic Data; Linked to the user: **No**; Tracking: **No**; Purpose: **App Functionality** |
+| `PrivacyInfo.xcprivacy` | без изменений | `NSPrivacyCollectedDataTypeOtherDiagnosticData` (§3.2), отдельный PR **до** архива |
+| Проверка архива | `--ota on` | `--ota on --privacy-collected other-diagnostic` |
+| Риск | если журналы на самом деле хранятся, карточка расходится с фактом (Guideline 5.1.1/5.1.2); исправляется обновлением ответа и, при необходимости, новой версией | карточка показывает «Data Not Linked to You: Diagnostics»; связь с личностью и трекинг не заявляются, потому что их нет |
+
+Apple не выделяет IP-адрес в отдельный тип данных; «Other Diagnostic Data» — ближайший тип для журналов доставки.
+Условие варианта A — подтверждённый факт; без него условие не выполнено. Выбор остаётся за владельцем, агент его не
+делает. Юридическая квалификация IP-адреса (OA-5, 152-ФЗ) остаётся открытой.
+
+### 5.3 Что выяснить для выбора (OA-1…OA-4)
+
+1. **CDN МегаФон** (ресурс `ota.mythweld.com`): в личном кабинете или у менеджера — ведутся ли журналы доступа (access
+   logs), какие поля (IP, URL, User-Agent), срок хранения, кто имеет к ним доступ (только провайдер или и клиент).
+2. **VK Cloud Object Storage** (бакет `talentforge-ota-production`): включено ли журналирование запросов к бакету и
+   куда пишутся журналы; срок хранения.
+3. Анализируются ли IP-адреса сверх доставки и защиты (OA-4).
+4. Записать ответы с датой в [OWNER_ACTION_REQUIRED](../../legal/ota-on/OWNER_ACTION_REQUIRED.md) и выбрать вариант
+   **одинаково** для App Store и Google Play.

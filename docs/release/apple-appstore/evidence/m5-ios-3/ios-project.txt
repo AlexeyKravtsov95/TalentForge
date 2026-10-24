@@ -1,0 +1,16 @@
+iOS project: iosApp.xcodeproj
+  [PASS] configurations: target configurations ['Debug', 'Release'] (expected ['Debug', 'Release'])
+  [PASS] bundle-id: PRODUCT_BUNDLE_IDENTIFIER='io.github.alexeykravtsov95.talentforge' in Debug and Release (expected io.github.alexeykravtsov95.talentforge)
+  [PASS] version: MARKETING_VERSION='1.0.0' (expected 1.0.0), CURRENT_PROJECT_VERSION='1' (expected 1), equal in Debug and Release
+  [PASS] display-name: INFOPLIST_KEY_CFBundleDisplayName='TalentForge' (expected TalentForge)
+  [PASS] platform: IPHONEOS_DEPLOYMENT_TARGET=['17.2'] (expected 17.2), SDKROOT=['iphoneos'], TARGETED_DEVICE_FAMILY='1,2' (expected '1,2'), SUPPORTS_MACCATALYST='NO'
+  [PASS] signing: CODE_SIGN_STYLE='Automatic' (expected Automatic); no team, profile or identity committed (the owner selects the team in Xcode)
+  [PASS] privacy-manifest: PrivacyInfo.xcprivacy is in the Resources build phase
+  [PASS] archive-configuration: the iosApp scheme archives 'Release' (expected Release)
+  [PASS] export-compliance: ITSAppUsesNonExemptEncryption=False (expected false)
+  [PASS] ats-default: no NSAppTransportSecurity: Apple's defaults
+  [PASS] no-permissions: usage descriptions [], UIBackgroundModes=None (expected none: the privacy policy says the app requests no permission)
+  [PASS] single-scene: UIApplicationSupportsMultipleScenes=False (expected false, TF-RC1-IOS-SCENES)
+  [PASS] localizations: CFBundleLocalizations=['en', 'ru'] (required ['en', 'ru'])
+  [PASS] ipad-orientations: iPad orientations ['UIInterfaceOrientationLandscapeLeft', 'UIInterfaceOrientationLandscapeRight', 'UIInterfaceOrientationPortrait', 'UIInterfaceOrientationPortraitUpsideDown'], UIRequiresFullScreen=False (iPad multitasking needs all four orientations)
+RESULT: PASS

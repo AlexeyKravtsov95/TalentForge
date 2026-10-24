@@ -1,0 +1,88 @@
+{
+  "schema": "talentforge.ios-project-report.v1",
+  "project": "iosApp.xcodeproj",
+  "settings": {
+    "PRODUCT_BUNDLE_IDENTIFIER": "io.github.alexeykravtsov95.talentforge",
+    "MARKETING_VERSION": "1.0.0",
+    "CURRENT_PROJECT_VERSION": "1",
+    "IPHONEOS_DEPLOYMENT_TARGET": [
+      "17.2"
+    ],
+    "TARGETED_DEVICE_FAMILY": "1,2",
+    "CODE_SIGN_STYLE": "Automatic",
+    "archiveConfiguration": "Release"
+  },
+  "checks": [
+    {
+      "id": "configurations",
+      "passed": true,
+      "detail": "target configurations ['Debug', 'Release'] (expected ['Debug', 'Release'])"
+    },
+    {
+      "id": "bundle-id",
+      "passed": true,
+      "detail": "PRODUCT_BUNDLE_IDENTIFIER='io.github.alexeykravtsov95.talentforge' in Debug and Release (expected io.github.alexeykravtsov95.talentforge)"
+    },
+    {
+      "id": "version",
+      "passed": true,
+      "detail": "MARKETING_VERSION='1.0.0' (expected 1.0.0), CURRENT_PROJECT_VERSION='1' (expected 1), equal in Debug and Release"
+    },
+    {
+      "id": "display-name",
+      "passed": true,
+      "detail": "INFOPLIST_KEY_CFBundleDisplayName='TalentForge' (expected TalentForge)"
+    },
+    {
+      "id": "platform",
+      "passed": true,
+      "detail": "IPHONEOS_DEPLOYMENT_TARGET=['17.2'] (expected 17.2), SDKROOT=['iphoneos'], TARGETED_DEVICE_FAMILY='1,2' (expected '1,2'), SUPPORTS_MACCATALYST='NO'"
+    },
+    {
+      "id": "signing",
+      "passed": true,
+      "detail": "CODE_SIGN_STYLE='Automatic' (expected Automatic); no team, profile or identity committed (the owner selects the team in Xcode)"
+    },
+    {
+      "id": "privacy-manifest",
+      "passed": true,
+      "detail": "PrivacyInfo.xcprivacy is in the Resources build phase"
+    },
+    {
+      "id": "archive-configuration",
+      "passed": true,
+      "detail": "the iosApp scheme archives 'Release' (expected Release)"
+    },
+    {
+      "id": "export-compliance",
+      "passed": true,
+      "detail": "ITSAppUsesNonExemptEncryption=False (expected false)"
+    },
+    {
+      "id": "ats-default",
+      "passed": true,
+      "detail": "no NSAppTransportSecurity: Apple's defaults"
+    },
+    {
+      "id": "no-permissions",
+      "passed": true,
+      "detail": "usage descriptions [], UIBackgroundModes=None (expected none: the privacy policy says the app requests no permission)"
+    },
+    {
+      "id": "single-scene",
+      "passed": true,
+      "detail": "UIApplicationSupportsMultipleScenes=False (expected false, TF-RC1-IOS-SCENES)"
+    },
+    {
+      "id": "localizations",
+      "passed": true,
+      "detail": "CFBundleLocalizations=['en', 'ru'] (required ['en', 'ru'])"
+    },
+    {
+      "id": "ipad-orientations",
+      "passed": true,
+      "detail": "iPad orientations ['UIInterfaceOrientationLandscapeLeft', 'UIInterfaceOrientationLandscapeRight', 'UIInterfaceOrientationPortrait', 'UIInterfaceOrientationPortraitUpsideDown'], UIRequiresFullScreen=False (iPad multitasking needs all four orientations)"
+    }
+  ],
+  "result": "PASS"
+}

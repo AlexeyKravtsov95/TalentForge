@@ -7,6 +7,7 @@
 | Итог | **Не готово к отправке.** Код, проект, CI и документы подготовлены; unsigned-сборка и архив на **Xcode 27.1 / iOS 27.1 SDK — PASS в CI** ([прогон](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/39917498331)). Блокеры: подписанный архив (Xcode 27.1 у владельца), публикация iOS-политики, интерактивная проверка iPhone 18 / iPhone Duo / физическое устройство (§11) |
 | Production OTA | **выключен** на iOS (проверено по бинарнику, §7). Включение — отдельный M5.IOS.2 ([план](m5-ios-2-ota-plan.md)) |
 | Владельческие решения | игровые материалы WoW: Forever — `RISK ACCEPTED — OWNER DECISION`, повторный юридический аудит не проводился; лицензия Blizzard не заявляется; название TalentForge + маркировка неофициального приложения; целевая архитектура iOS — OTA ON |
+| Продолжение | M5.IOS.2 — [OTA ON](m5-ios-2-ota-readiness.md); **M5.IOS.3 — [пакет отправки в App Store](submission/README.md), [отчёт](m5-ios-3-readiness.md)** |
 | Связанные документы | [metadata-en](metadata-en.md) · [metadata-ru](metadata-ru.md) · [app-privacy](app-privacy.md) · [m5-ios-2-ota-plan](m5-ios-2-ota-plan.md) · [iOS-политика](../../legal/ios/README.md) · [evidence](evidence/README.md) |
 
 Статусы: **PASS** — выполнено и проверено; **FAIL** — выполнено, требование не выполнено; **BLOCKED** — нельзя

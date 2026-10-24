@@ -1,0 +1,46 @@
+App Store screenshots:
+  [PASS] layout: every file is <locale>/<display>/<NN>-<screen>.png
+  [PASS] count:en-US/iphone-6.3: 6 screenshots numbered [1, 2, 3, 4, 5, 6] (expected 1-10, numbered from 01 without gaps)
+  [PASS] png:en-US/iphone-6.3/01-editor.png: 1206 x 2622, 8-bit RGB, no alpha
+  [PASS] manifest:en-US/iphone-6.3/01-editor.png: recorded in the manifest with these dimensions, size and SHA-256
+  [PASS] png:en-US/iphone-6.3/02-talent-details.png: 1206 x 2622, 8-bit RGB, no alpha
+  [PASS] manifest:en-US/iphone-6.3/02-talent-details.png: recorded in the manifest with these dimensions, size and SHA-256
+  [PASS] png:en-US/iphone-6.3/03-class-picker.png: 1206 x 2622, 8-bit RGB, no alpha
+  [PASS] manifest:en-US/iphone-6.3/03-class-picker.png: recorded in the manifest with these dimensions, size and SHA-256
+  [PASS] png:en-US/iphone-6.3/04-build-library.png: 1206 x 2622, 8-bit RGB, no alpha
+  [PASS] manifest:en-US/iphone-6.3/04-build-library.png: recorded in the manifest with these dimensions, size and SHA-256
+  [PASS] png:en-US/iphone-6.3/05-share-code.png: 1206 x 2622, 8-bit RGB, no alpha
+  [PASS] manifest:en-US/iphone-6.3/05-share-code.png: recorded in the manifest with these dimensions, size and SHA-256
+  [PASS] png:en-US/iphone-6.3/06-import-preview.png: 1206 x 2622, 8-bit RGB, no alpha
+  [PASS] manifest:en-US/iphone-6.3/06-import-preview.png: recorded in the manifest with these dimensions, size and SHA-256
+  [PASS] count:en-US/ipad-13: 3 screenshots numbered [1, 2, 3] (expected 1-10, numbered from 01 without gaps)
+  [PASS] png:en-US/ipad-13/01-editor.png: 2064 x 2752, 8-bit RGB, no alpha
+  [PASS] manifest:en-US/ipad-13/01-editor.png: recorded in the manifest with these dimensions, size and SHA-256
+  [PASS] png:en-US/ipad-13/02-share-code.png: 2064 x 2752, 8-bit RGB, no alpha
+  [PASS] manifest:en-US/ipad-13/02-share-code.png: recorded in the manifest with these dimensions, size and SHA-256
+  [PASS] png:en-US/ipad-13/03-import-preview.png: 2064 x 2752, 8-bit RGB, no alpha
+  [PASS] manifest:en-US/ipad-13/03-import-preview.png: recorded in the manifest with these dimensions, size and SHA-256
+  [PASS] count:ru/iphone-6.3: 6 screenshots numbered [1, 2, 3, 4, 5, 6] (expected 1-10, numbered from 01 without gaps)
+  [PASS] png:ru/iphone-6.3/01-editor.png: 1206 x 2622, 8-bit RGB, no alpha
+  [PASS] manifest:ru/iphone-6.3/01-editor.png: recorded in the manifest with these dimensions, size and SHA-256
+  [PASS] png:ru/iphone-6.3/02-talent-details.png: 1206 x 2622, 8-bit RGB, no alpha
+  [PASS] manifest:ru/iphone-6.3/02-talent-details.png: recorded in the manifest with these dimensions, size and SHA-256
+  [PASS] png:ru/iphone-6.3/03-class-picker.png: 1206 x 2622, 8-bit RGB, no alpha
+  [PASS] manifest:ru/iphone-6.3/03-class-picker.png: recorded in the manifest with these dimensions, size and SHA-256
+  [PASS] png:ru/iphone-6.3/04-build-library.png: 1206 x 2622, 8-bit RGB, no alpha
+  [PASS] manifest:ru/iphone-6.3/04-build-library.png: recorded in the manifest with these dimensions, size and SHA-256
+  [PASS] png:ru/iphone-6.3/05-share-code.png: 1206 x 2622, 8-bit RGB, no alpha
+  [PASS] manifest:ru/iphone-6.3/05-share-code.png: recorded in the manifest with these dimensions, size and SHA-256
+  [PASS] png:ru/iphone-6.3/06-import-preview.png: 1206 x 2622, 8-bit RGB, no alpha
+  [PASS] manifest:ru/iphone-6.3/06-import-preview.png: recorded in the manifest with these dimensions, size and SHA-256
+  [PASS] count:ru/ipad-13: 3 screenshots numbered [1, 2, 3] (expected 1-10, numbered from 01 without gaps)
+  [PASS] png:ru/ipad-13/01-editor.png: 2064 x 2752, 8-bit RGB, no alpha
+  [PASS] manifest:ru/ipad-13/01-editor.png: recorded in the manifest with these dimensions, size and SHA-256
+  [PASS] png:ru/ipad-13/02-share-code.png: 2064 x 2752, 8-bit RGB, no alpha
+  [PASS] manifest:ru/ipad-13/02-share-code.png: recorded in the manifest with these dimensions, size and SHA-256
+  [PASS] png:ru/ipad-13/03-import-preview.png: 2064 x 2752, 8-bit RGB, no alpha
+  [PASS] manifest:ru/ipad-13/03-import-preview.png: recorded in the manifest with these dimensions, size and SHA-256
+  [PASS] locales-match:iphone-6.3: ru: ['editor', 'talent-details', 'class-picker', 'build-library', 'share-code', 'import-preview']; en-US: ['editor', 'talent-details', 'class-picker', 'build-library', 'share-code', 'import-preview']
+  [PASS] locales-match:ipad-13: ru: ['editor', 'share-code', 'import-preview']; en-US: ['editor', 'share-code', 'import-preview']
+  [PASS] manifest-complete: every manifest entry exists
+RESULT: PASS

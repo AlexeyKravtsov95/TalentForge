@@ -1,0 +1,199 @@
+{
+  "schema": "talentforge.appstore-screenshots.v1",
+  "capture": {
+    "date": "2026-10-24",
+    "commit": "d51cbed",
+    "build": "Release (iphonesimulator, ARCHS=arm64), OTA OFF, TalentForge 1.0.0 (1)",
+    "xcode": "Xcode 26.4.1 (17E202)",
+    "runtime": "iOS 26.4.1 (23E254a)",
+    "method": "xcrun simctl io <device> screenshot --type=png; status bar via simctl status_bar override (9:41, full battery); alpha channel removed (fully opaque RGBA -> RGB, pixels unchanged); no crop, no scale, no edits; iPad set re-captured with iPadOS Multitasking set to Full Screen Apps (no window resize marker); review fix (FIX-2): iPhone set re-captured on a Paladin build (Holy/Protection/Retribution, no truncated spec tab) and iPad 01-editor re-captured with the tree zoomed to the app's maximum and panned within the camera bounds"
+  },
+  "screenshots": [
+    {
+      "path": "en-US/ipad-13/01-editor.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 637701,
+      "sha256": "f8fbd629889fff073ef2738982e58ced1727fcc65c6a6b1c7cee6c60efc30261",
+      "sourceSha256": "926b4a729033a0c8d5347161de5da93c59ed242b95457896a6672ec93d58efdc",
+      "device": "iPad Pro 13-inch (M5)",
+      "deviceLanguage": "en-US",
+      "multitasking": "Full Screen Apps"
+    },
+    {
+      "path": "en-US/ipad-13/02-share-code.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 520242,
+      "sha256": "e9531a31206f025dec24d3f3804926054dda729725157169ae4008c98f5ebf52",
+      "sourceSha256": "1656ec419974890c3d1dd564d7c04aa33a5de2355b2797bffb0cc7b304b00bbd",
+      "device": "iPad Pro 13-inch (M5)",
+      "deviceLanguage": "en-US",
+      "multitasking": "Full Screen Apps"
+    },
+    {
+      "path": "en-US/ipad-13/03-import-preview.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 143131,
+      "sha256": "7b7e781018edffa0cfdfb4945eb10df5b0940f600f3d4dbc25c18747fd101a4e",
+      "sourceSha256": "9941c37a890a8584eecba191c1553259dc9cfc9672931c5f3f3a048f9dec5fc9",
+      "device": "iPad Pro 13-inch (M5)",
+      "deviceLanguage": "en-US",
+      "multitasking": "Full Screen Apps"
+    },
+    {
+      "path": "en-US/iphone-6.3/01-editor.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 566578,
+      "sha256": "4568543aef66e3151cacf906c863f1d04a6412fcf47b7bbbce1fade787669b80",
+      "sourceSha256": "8bd8d2709059bcf077f2ec2a2d771458d1e1f194b6c60d4265e8409596f1ffa7",
+      "device": "iPhone 17 Pro",
+      "deviceLanguage": "en-US"
+    },
+    {
+      "path": "en-US/iphone-6.3/02-talent-details.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 539346,
+      "sha256": "956a71535101ede3520dff741088454b8a6e9fbd395921d8fcbab9a5b34c5b52",
+      "sourceSha256": "a7d46343c3669ebd3b07afb7b58c2a3f20c05fba9b47c3feeb7095cf7efef854",
+      "device": "iPhone 17 Pro",
+      "deviceLanguage": "en-US"
+    },
+    {
+      "path": "en-US/iphone-6.3/03-class-picker.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 454100,
+      "sha256": "2e83ca7d27f3a8c5bae436e8a838ce73de1ca4c3cd59fe6d569de5d9b0985133",
+      "sourceSha256": "40b47cfe0fbdfc0918667d68a064ac0c0a4fec174bf6b237ad9e16878663439e",
+      "device": "iPhone 17 Pro",
+      "deviceLanguage": "en-US"
+    },
+    {
+      "path": "en-US/iphone-6.3/04-build-library.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 213777,
+      "sha256": "346300eb537b99a7263cedb00c470730b3872de4dd29ef966673c572d157ee27",
+      "sourceSha256": "70d387937283d32d505d3528e87022b719d2a5acf42f11bd253501a8314dc597",
+      "device": "iPhone 17 Pro",
+      "deviceLanguage": "en-US"
+    },
+    {
+      "path": "en-US/iphone-6.3/05-share-code.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 430956,
+      "sha256": "aa7d056333f9791efcc2f22fd41d9a981299467ebd50c2ec507a88dee8fad681",
+      "sourceSha256": "87b39c79f4c8e630f08a4c862d88d005472a64d52ef1f871a71309ceb29e341b",
+      "device": "iPhone 17 Pro",
+      "deviceLanguage": "en-US"
+    },
+    {
+      "path": "en-US/iphone-6.3/06-import-preview.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 203928,
+      "sha256": "71ea4be64b8fe5410c754e857c3de190162899847954b32ca17b32baae1ebbaf",
+      "sourceSha256": "56f74067306439c3c8e9693a57a517b3bec20851f5f2538fed3cba9b5aaf31c2",
+      "device": "iPhone 17 Pro",
+      "deviceLanguage": "en-US"
+    },
+    {
+      "path": "ru/ipad-13/01-editor.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 646572,
+      "sha256": "305da8ab905de7c64b6c65d80868148b9c54cf2365e1138379c27fa56b3c88aa",
+      "sourceSha256": "3389e60ed12d8ae23cc8650834371e12ce111f3696051f1184ffa5f1f4c386e5",
+      "device": "iPad Pro 13-inch (M5)",
+      "deviceLanguage": "ru-RU",
+      "multitasking": "Full Screen Apps"
+    },
+    {
+      "path": "ru/ipad-13/02-share-code.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 515830,
+      "sha256": "1b166525aab4affbfa6bcd5fac482c4b10daaf879da2a12aad88ad2de1a4185e",
+      "sourceSha256": "93b70ff08d1eea249d4c3e4cc765cc5a47f877d9ef92933f71a7e15599eb3051",
+      "device": "iPad Pro 13-inch (M5)",
+      "deviceLanguage": "ru-RU",
+      "multitasking": "Full Screen Apps"
+    },
+    {
+      "path": "ru/ipad-13/03-import-preview.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 146500,
+      "sha256": "15ca6da832a049b8d7e42f2bae894e502812b31623eb608f3b0e0a49077c207f",
+      "sourceSha256": "f1e55f85cf3454b890e55397ec5b510e63fb43cfb231e2ec6e28bc7bf3c3af39",
+      "device": "iPad Pro 13-inch (M5)",
+      "deviceLanguage": "ru-RU",
+      "multitasking": "Full Screen Apps"
+    },
+    {
+      "path": "ru/iphone-6.3/01-editor.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 569835,
+      "sha256": "de99192c7624611a60b4a598b14075a41837f62efc5bc44d909d02c3165d1905",
+      "sourceSha256": "f7feefbe4c4c478e75ec8a3217d9e8a0352ea1ef2eefa5655a0c93adb6560f8b",
+      "device": "iPhone 17 Pro",
+      "deviceLanguage": "ru-RU"
+    },
+    {
+      "path": "ru/iphone-6.3/02-talent-details.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 467163,
+      "sha256": "a6f971242b9534fdf7d84a1e58202420131f0d08db96b89686945b3bad7d84d5",
+      "sourceSha256": "77b6519b7ab0894fbf086c588c7fb28cfef99dfc18fc0e7044b19b9dbc9254c7",
+      "device": "iPhone 17 Pro",
+      "deviceLanguage": "ru-RU"
+    },
+    {
+      "path": "ru/iphone-6.3/03-class-picker.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 456904,
+      "sha256": "e362938d4c5468b2944ff7e9e92600a9bf066008d3ed908dab7e3aa821604c66",
+      "sourceSha256": "8e2f4deaf0b010c743537661db10bf364438fc9da7e8f30c0b83fa7167bec32c",
+      "device": "iPhone 17 Pro",
+      "deviceLanguage": "ru-RU"
+    },
+    {
+      "path": "ru/iphone-6.3/04-build-library.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 218712,
+      "sha256": "3920d270ce90b7a02d50342c5e9892b1659b6782c58f10259998de53ce9b11a7",
+      "sourceSha256": "ef85acb1f79d7472caa8f92bb826e28543896e2a2d28019aabed27749c5a0d45",
+      "device": "iPhone 17 Pro",
+      "deviceLanguage": "ru-RU"
+    },
+    {
+      "path": "ru/iphone-6.3/05-share-code.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 385428,
+      "sha256": "08af74324edf6aaaaf4958e64414760c7efeb39aeed7b3dc56b9e30e1d51cb6a",
+      "sourceSha256": "cb705da37f625baed958b5a57a47315c617b60d37807e063cf2690e4d171b219",
+      "device": "iPhone 17 Pro",
+      "deviceLanguage": "ru-RU"
+    },
+    {
+      "path": "ru/iphone-6.3/06-import-preview.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 211726,
+      "sha256": "1d3be3c1ceca12069bc44722b2f05cad38e0c6bee7ca75c4c1ad36044b6b299e",
+      "sourceSha256": "887c7bcf1c4435fa61f5e129cd8b21434ad144095585925b956906f91ce96a02",
+      "device": "iPhone 17 Pro",
+      "deviceLanguage": "ru-RU"
+    }
+  ]
+}

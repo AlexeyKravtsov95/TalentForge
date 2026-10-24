@@ -1,0 +1,290 @@
+{
+  "schema": "talentforge.appstore-metadata-report.v1",
+  "fields": {
+    "copyright.txt": {
+      "characters": 20,
+      "bytes": 20
+    },
+    "en-US/description.txt": {
+      "characters": 1907,
+      "bytes": 1941
+    },
+    "en-US/keywords.txt": {
+      "characters": 98,
+      "bytes": 98
+    },
+    "en-US/name.txt": {
+      "characters": 11,
+      "bytes": 11
+    },
+    "en-US/privacy_url.txt": {
+      "characters": 46,
+      "bytes": 46
+    },
+    "en-US/promotional_text.txt": {
+      "characters": 163,
+      "bytes": 163
+    },
+    "en-US/subtitle.txt": {
+      "characters": 30,
+      "bytes": 30
+    },
+    "en-US/support_url.txt": {
+      "characters": 27,
+      "bytes": 27
+    },
+    "primary_category.txt": {
+      "characters": 9,
+      "bytes": 9
+    },
+    "review_information/notes.txt": {
+      "characters": 2020,
+      "bytes": 2032
+    },
+    "ru/description.txt": {
+      "characters": 2073,
+      "bytes": 3668
+    },
+    "ru/keywords.txt": {
+      "characters": 53,
+      "bytes": 100
+    },
+    "ru/name.txt": {
+      "characters": 11,
+      "bytes": 11
+    },
+    "ru/privacy_url.txt": {
+      "characters": 43,
+      "bytes": 43
+    },
+    "ru/promotional_text.txt": {
+      "characters": 170,
+      "bytes": 288
+    },
+    "ru/subtitle.txt": {
+      "characters": 27,
+      "bytes": 40
+    },
+    "ru/support_url.txt": {
+      "characters": 27,
+      "bytes": 27
+    },
+    "secondary_category.txt": {
+      "characters": 9,
+      "bytes": 9
+    }
+  },
+  "checks": [
+    {
+      "id": "format:en-US/name.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:en-US/subtitle.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:en-US/promotional_text.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:en-US/description.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:en-US/keywords.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:en-US/support_url.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:en-US/privacy_url.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "limit:en-US/name",
+      "passed": true,
+      "detail": "11 characters (allowed 2-30)"
+    },
+    {
+      "id": "limit:en-US/subtitle",
+      "passed": true,
+      "detail": "30 characters (allowed 1-30)"
+    },
+    {
+      "id": "limit:en-US/promotional_text",
+      "passed": true,
+      "detail": "163 characters (allowed 1-170)"
+    },
+    {
+      "id": "limit:en-US/description",
+      "passed": true,
+      "detail": "1907 characters (allowed 1-4000)"
+    },
+    {
+      "id": "keywords:en-US",
+      "passed": true,
+      "detail": "14 keywords, 98 bytes"
+    },
+    {
+      "id": "name:en-US",
+      "passed": true,
+      "detail": "name='TalentForge' (expected 'TalentForge')"
+    },
+    {
+      "id": "positioning:en-US/subtitle",
+      "passed": true,
+      "detail": "the subtitle must name the game ('WoW: Forever'): 'Talent builds for WoW: Forever'"
+    },
+    {
+      "id": "positioning:en-US/description",
+      "passed": true,
+      "detail": "names the game, the unofficial status, the disclaimer and the OTA facts"
+    },
+    {
+      "id": "urls:en-US",
+      "passed": true,
+      "detail": "support='https://legal.mythweld.com/', privacy='https://legal.mythweld.com/privacy-ios-en.html' (expected 'https://legal.mythweld.com/', 'https://legal.mythweld.com/privacy-ios-en.html')"
+    },
+    {
+      "id": "format:ru/name.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:ru/subtitle.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:ru/promotional_text.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:ru/description.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:ru/keywords.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:ru/support_url.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:ru/privacy_url.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "limit:ru/name",
+      "passed": true,
+      "detail": "11 characters (allowed 2-30)"
+    },
+    {
+      "id": "limit:ru/subtitle",
+      "passed": true,
+      "detail": "27 characters (allowed 1-30)"
+    },
+    {
+      "id": "limit:ru/promotional_text",
+      "passed": true,
+      "detail": "170 characters (allowed 1-170)"
+    },
+    {
+      "id": "limit:ru/description",
+      "passed": true,
+      "detail": "2073 characters (allowed 1-4000)"
+    },
+    {
+      "id": "keywords:ru",
+      "passed": true,
+      "detail": "7 keywords, 100 bytes"
+    },
+    {
+      "id": "name:ru",
+      "passed": true,
+      "detail": "name='TalentForge' (expected 'TalentForge')"
+    },
+    {
+      "id": "positioning:ru/subtitle",
+      "passed": true,
+      "detail": "the subtitle must name the game ('WoW: Forever'): 'Билды талантов WoW: Forever'"
+    },
+    {
+      "id": "positioning:ru/description",
+      "passed": true,
+      "detail": "names the game, the unofficial status, the disclaimer and the OTA facts"
+    },
+    {
+      "id": "urls:ru",
+      "passed": true,
+      "detail": "support='https://legal.mythweld.com/', privacy='https://legal.mythweld.com/privacy-ios.html' (expected 'https://legal.mythweld.com/', 'https://legal.mythweld.com/privacy-ios.html')"
+    },
+    {
+      "id": "format:review_information/notes.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "limit:review_information/notes",
+      "passed": true,
+      "detail": "2032 bytes (limit 4000)"
+    },
+    {
+      "id": "review-notes",
+      "passed": true,
+      "detail": "the unofficial status and the OTA mechanism (2.5.2) are explained"
+    },
+    {
+      "id": "format:copyright.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "copyright",
+      "passed": true,
+      "detail": "copyright='2026 Alexey Kravtsov' (expected '<year> <owner>')"
+    },
+    {
+      "id": "format:primary_category.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:secondary_category.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "categories",
+      "passed": true,
+      "detail": "primary='Reference', secondary='Utilities' (two different App Store categories, not Games: TalentForge is a tool, not a game)"
+    },
+    {
+      "id": "ota-on-claims",
+      "passed": true,
+      "detail": "no text claims that the app makes no network requests"
+    },
+    {
+      "id": "other-platforms",
+      "passed": true,
+      "detail": "no other store or platform is named"
+    }
+  ],
+  "result": "PASS"
+}
