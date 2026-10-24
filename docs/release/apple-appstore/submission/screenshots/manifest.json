@@ -6,38 +6,41 @@
     "build": "Release (iphonesimulator, ARCHS=arm64), OTA OFF, TalentForge 1.0.0 (1)",
     "xcode": "Xcode 26.4.1 (17E202)",
     "runtime": "iOS 26.4.1 (23E254a)",
-    "method": "xcrun simctl io <device> screenshot --type=png; status bar via simctl status_bar override (9:41, full battery); alpha channel removed (fully opaque RGBA -> RGB, pixels unchanged); no crop, no scale, no edits"
+    "method": "xcrun simctl io <device> screenshot --type=png; status bar via simctl status_bar override (9:41, full battery); alpha channel removed (fully opaque RGBA -> RGB, pixels unchanged); no crop, no scale, no edits; iPad set re-captured with iPadOS Multitasking set to Full Screen Apps (no window resize marker)"
   },
   "screenshots": [
     {
       "path": "en-US/ipad-13/01-editor.png",
       "width": 2064,
       "height": 2752,
-      "bytes": 536029,
-      "sha256": "5caf49e81db499acc21c1c914a825e91730a183286ed3e6380c7d02bb9ca0e16",
-      "sourceSha256": "4f25b06834631553bb8507e03e5282f5bbbe886753da0e55f28e089c2d58c8d4",
+      "bytes": 534915,
+      "sha256": "d684a0b2293026cedab67f89967c095d14f5fa37bc82092a77e4b7f0afb74829",
+      "sourceSha256": "2e85be853c8c8dc36567a813edff021b63407b09b0d7e92d1bc3929585556732",
       "device": "iPad Pro 13-inch (M5)",
-      "deviceLanguage": "en-US"
+      "deviceLanguage": "en-US",
+      "multitasking": "Full Screen Apps"
     },
     {
       "path": "en-US/ipad-13/02-share-code.png",
       "width": 2064,
       "height": 2752,
-      "bytes": 521328,
-      "sha256": "2d2fd04b447938d46df8fb93aa245e72bd09e975327a1e2ad69c421288544b84",
-      "sourceSha256": "138aa6583a7c286dbb4ea02e452c2ea927f376c0396751e5b33333ae21cec8f7",
+      "bytes": 520242,
+      "sha256": "e9531a31206f025dec24d3f3804926054dda729725157169ae4008c98f5ebf52",
+      "sourceSha256": "1656ec419974890c3d1dd564d7c04aa33a5de2355b2797bffb0cc7b304b00bbd",
       "device": "iPad Pro 13-inch (M5)",
-      "deviceLanguage": "en-US"
+      "deviceLanguage": "en-US",
+      "multitasking": "Full Screen Apps"
     },
     {
       "path": "en-US/ipad-13/03-import-preview.png",
       "width": 2064,
       "height": 2752,
-      "bytes": 144224,
-      "sha256": "b3c9f5562df9db14b83799b872ca22e3b63b85b2c95c86362e104400c9d558b3",
-      "sourceSha256": "d2019b0fe4d5186240756169ca902b4414584ed51150e35df4dbf690df939e30",
+      "bytes": 143131,
+      "sha256": "7b7e781018edffa0cfdfb4945eb10df5b0940f600f3d4dbc25c18747fd101a4e",
+      "sourceSha256": "9941c37a890a8584eecba191c1553259dc9cfc9672931c5f3f3a048f9dec5fc9",
       "device": "iPad Pro 13-inch (M5)",
-      "deviceLanguage": "en-US"
+      "deviceLanguage": "en-US",
+      "multitasking": "Full Screen Apps"
     },
     {
       "path": "en-US/iphone-6.3/01-editor.png",
@@ -103,31 +106,34 @@
       "path": "ru/ipad-13/01-editor.png",
       "width": 2064,
       "height": 2752,
-      "bytes": 525517,
-      "sha256": "695940d2b39c407da8c176de34b35451b7cd8698bd3de77ee2079101499a6268",
-      "sourceSha256": "1ab26c3a80bd7ee802a1031dee26256b41e41dfb4404dfd71587b4510303d898",
+      "bytes": 524480,
+      "sha256": "beadb3b12e75d8f9885e5a1aa55ed46fbd4966298f17dcf5daf1f8f61fb1bc35",
+      "sourceSha256": "bc557ba7de3a5a1574b0c2d676d2676d6482510f4211267135f44f9a270bd1de",
       "device": "iPad Pro 13-inch (M5)",
-      "deviceLanguage": "ru-RU"
+      "deviceLanguage": "ru-RU",
+      "multitasking": "Full Screen Apps"
     },
     {
       "path": "ru/ipad-13/02-share-code.png",
       "width": 2064,
       "height": 2752,
-      "bytes": 516785,
-      "sha256": "b1ce3efcb4ad8fa4c710e744341529c2425280f99910078a1e80dd8c7bb0ec2e",
-      "sourceSha256": "a60a9a495a51d5e835ed141d76943af8739b590560a06e660fb3d3d7828d3d22",
+      "bytes": 515830,
+      "sha256": "1b166525aab4affbfa6bcd5fac482c4b10daaf879da2a12aad88ad2de1a4185e",
+      "sourceSha256": "93b70ff08d1eea249d4c3e4cc765cc5a47f877d9ef92933f71a7e15599eb3051",
       "device": "iPad Pro 13-inch (M5)",
-      "deviceLanguage": "ru-RU"
+      "deviceLanguage": "ru-RU",
+      "multitasking": "Full Screen Apps"
     },
     {
       "path": "ru/ipad-13/03-import-preview.png",
       "width": 2064,
       "height": 2752,
-      "bytes": 147612,
-      "sha256": "110b2a7411edd513f146ba28bdaf3391caba999e71768f691c56236ceaf1c69b",
-      "sourceSha256": "fdc364992e6b7fea3787c3d26778975f7f7c49d4c7a93371a32b8df6f8e34e8b",
+      "bytes": 146500,
+      "sha256": "15ca6da832a049b8d7e42f2bae894e502812b31623eb608f3b0e0a49077c207f",
+      "sourceSha256": "f1e55f85cf3454b890e55397ec5b510e63fb43cfb231e2ec6e28bc7bf3c3af39",
       "device": "iPad Pro 13-inch (M5)",
-      "deviceLanguage": "ru-RU"
+      "deviceLanguage": "ru-RU",
+      "multitasking": "Full Screen Apps"
     },
     {
       "path": "ru/iphone-6.3/01-editor.png",
