@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 11,
+    "token": "DRUID",
+    "name": "Druid"
+  },
+  "fromBuild": "1.60.1.70450",
+  "toBuild": "1.60.1.70532",
+  "fromContentHash": "sha256:8dea4e498e691d777f93df13a1822797aad7bfcbe40ef07ee861a112344984c0",
+  "toContentHash": "sha256:91c49fb77977ce51aa5e56a0a0f341952579e049b6c58829657f7e98fd2887d8",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 0,
+    "changesByKind": {}
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": []
+}

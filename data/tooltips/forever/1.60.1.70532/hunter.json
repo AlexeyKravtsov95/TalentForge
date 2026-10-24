@@ -1,0 +1,4263 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "clientBuild": "1.60.1.70532",
+  "classToken": "HUNTER",
+  "talentDataContentHash": "sha256:8e4a1ab7a382fbd5edb7e9597f9f9628faff848fb6f0d4d8f0a46ae31562e0fd",
+  "entries": [
+    {
+      "entryId": 129621,
+      "definitionId": 134422,
+      "spellId": 19552,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "While Aspect of the Hawk is active, Auto Shot has a "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": " chance of increasing ranged attack speed by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "12 sec"
+            },
+            {
+              "kind": "text",
+              "text": ". While Aspect of the Beast is active, all melee auto attacks have a "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": " chance of increasing melee attack speed by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "12 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "While Aspect of the Hawk is active, Auto Shot has a "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": " chance of increasing ranged attack speed by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "12 sec"
+            },
+            {
+              "kind": "text",
+              "text": ". While Aspect of the Beast is active, all melee auto attacks have a "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": " chance of increasing melee attack speed by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "12 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "While Aspect of the Hawk is active, Auto Shot has a "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": " chance of increasing ranged attack speed by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "12 sec"
+            },
+            {
+              "kind": "text",
+              "text": ". While Aspect of the Beast is active, all melee auto attacks have a "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": " chance of increasing melee attack speed by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "12 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "While Aspect of the Hawk is active, Auto Shot has a "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": " chance of increasing ranged attack speed by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "12 sec"
+            },
+            {
+              "kind": "text",
+              "text": ". While Aspect of the Beast is active, all melee auto attacks have a "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": " chance of increasing melee attack speed by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "12 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "While Aspect of the Hawk is active, Auto Shot has a "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " chance of increasing ranged attack speed by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "12 sec"
+            },
+            {
+              "kind": "text",
+              "text": ". While Aspect of the Beast is active, all melee auto attacks have a "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " chance of increasing melee attack speed by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "12 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129622,
+      "definitionId": 134423,
+      "spellId": 19574,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Send your pet into a rage causing "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " additional damage for "
+            },
+            {
+              "kind": "value",
+              "text": "18 sec"
+            },
+            {
+              "kind": "text",
+              "text": ". While enraged, the beast does not feel pity or remorse or fear and it cannot be stopped unless killed."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129623,
+      "definitionId": 134424,
+      "spellId": 19621,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your pet a "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to gain a "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " attack speed increase for "
+            },
+            {
+              "kind": "value",
+              "text": "8 sec"
+            },
+            {
+              "kind": "text",
+              "text": " after dealing a critical strike."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your pet a "
+            },
+            {
+              "kind": "value",
+              "text": "40%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to gain a "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " attack speed increase for "
+            },
+            {
+              "kind": "value",
+              "text": "8 sec"
+            },
+            {
+              "kind": "text",
+              "text": " after dealing a critical strike."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your pet a "
+            },
+            {
+              "kind": "value",
+              "text": "60%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to gain a "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " attack speed increase for "
+            },
+            {
+              "kind": "value",
+              "text": "8 sec"
+            },
+            {
+              "kind": "text",
+              "text": " after dealing a critical strike."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your pet a "
+            },
+            {
+              "kind": "value",
+              "text": "80%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to gain a "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " attack speed increase for "
+            },
+            {
+              "kind": "value",
+              "text": "8 sec"
+            },
+            {
+              "kind": "text",
+              "text": " after dealing a critical strike."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your pet a "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to gain a "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " attack speed increase for "
+            },
+            {
+              "kind": "value",
+              "text": "8 sec"
+            },
+            {
+              "kind": "text",
+              "text": " after dealing a critical strike."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129624,
+      "definitionId": 134425,
+      "spellId": 19590,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the Focus regeneration of your pets by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " and allows "
+            },
+            {
+              "kind": "value",
+              "text": "25%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Mana regeneration to continue while casting."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the Focus regeneration of your pets by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " and allows "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Mana regeneration to continue while casting."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129625,
+      "definitionId": 134426,
+      "spellId": 19577,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Command your pet to Stun the target for "
+            },
+            {
+              "kind": "value",
+              "text": "3 sec"
+            },
+            {
+              "kind": "text",
+              "text": " on its next successful attack, which also gains "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " increased critical strike chance. Generates high threat."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129626,
+      "definitionId": 134427,
+      "spellId": 19578,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "While your pet is active, you and your pet will regenerate "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": " of total health every "
+            },
+            {
+              "kind": "value",
+              "text": "10"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "While your pet is active, you and your pet will regenerate "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": " of total health every "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129627,
+      "definitionId": 134428,
+      "spellId": 1293241,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "partial",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Command a hawk to dive-bomb your targeted enemy, dealing "
+            },
+            {
+              "kind": "gap",
+              "text": ""
+            },
+            {
+              "kind": "text",
+              "text": " Physical damage and continuing its assault for "
+            },
+            {
+              "kind": "value",
+              "text": "18 sec"
+            },
+            {
+              "kind": "text",
+              "text": ". Only "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": " hawks can be active at once. Summon Hawk shares its cooldown with Arcane Shot."
+            }
+          ],
+          "gaps": [
+            {
+              "category": "named-variable",
+              "classification": "unsupported",
+              "fragment": "${$s1+($rap*($s4/100))}",
+              "token": "$rap",
+              "reason": "named variable $rap has no source in the build's DB2 tables (a client-side value)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "entryId": 129628,
+      "definitionId": 134429,
+      "spellId": 19598,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike chance of your pets and hawks by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike chance of your pets and hawks by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike chance of your pets and hawks by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike chance of your pets and hawks by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike chance of your pets and hawks by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129629,
+      "definitionId": 134430,
+      "spellId": 19572,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Mend Pet spell a "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": " chance of cleansing "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": " Curse, Disease, Magic, or Poison effect from your pet each time it heals and reduces the Mana cost by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Mend Pet spell a "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " chance of cleansing "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": " Curse, Disease, Magic, or Poison effect from your pet each time it heals and reduces the Mana cost by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129630,
+      "definitionId": 134431,
+      "spellId": 19616,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your pets and hawks by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your pets and hawks by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your pets and hawks by "
+            },
+            {
+              "kind": "value",
+              "text": "9%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your pets and hawks by "
+            },
+            {
+              "kind": "value",
+              "text": "12%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your pets and hawks by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129631,
+      "definitionId": 134432,
+      "spellId": 19596,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the movement speed of your pets by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129633,
+      "definitionId": 134434,
+      "spellId": 24443,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Revive Pet's casting time is reduced by "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": " sec, mana cost is reduced by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": ", and increases the health your pet returns with by an additional "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Revive Pet's casting time is reduced by "
+            },
+            {
+              "kind": "value",
+              "text": "6"
+            },
+            {
+              "kind": "text",
+              "text": " sec, mana cost is reduced by "
+            },
+            {
+              "kind": "value",
+              "text": "40%"
+            },
+            {
+              "kind": "text",
+              "text": ", and increases the health your pet returns with by an additional "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129634,
+      "definitionId": 134435,
+      "spellId": 19559,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the speed bonus of your Aspect of the Cheetah and Aspect of the Pack by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the speed bonus of your Aspect of the Cheetah and Aspect of the Pack by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129635,
+      "definitionId": 134436,
+      "spellId": 19549,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the Dodge bonus of your Aspect of the Monkey by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": ". Additionally, your pet gains 50% of the effect of your Aspect of the Monkey ability."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the Dodge bonus of your Aspect of the Monkey by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": ". Additionally, your pet gains 50% of the effect of your Aspect of the Monkey ability."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the Dodge bonus of your Aspect of the Monkey by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": ". Additionally, your pet gains 50% of the effect of your Aspect of the Monkey ability."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129636,
+      "definitionId": 134437,
+      "spellId": 1223755,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases all damage you and your pet deal by "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": " while your pet is active."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases all damage you and your pet deal by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": " while your pet is active."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129637,
+      "definitionId": 134438,
+      "spellId": 19583,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the Health and Armor of your pets by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the Health and Armor of your pets by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the Health and Armor of your pets by "
+            },
+            {
+              "kind": "value",
+              "text": "9%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the Health and Armor of your pets by "
+            },
+            {
+              "kind": "value",
+              "text": "12%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the Health and Armor of your pets by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129645,
+      "definitionId": 134446,
+      "spellId": 1317257,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "A powerful kick that deals "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " melee weapon damage and increases movement speed by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "3 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129646,
+      "definitionId": 134447,
+      "spellId": 19168,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Agility by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Agility by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Agility by "
+            },
+            {
+              "kind": "value",
+              "text": "9%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Agility by "
+            },
+            {
+              "kind": "value",
+              "text": "12%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Agility by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129647,
+      "definitionId": 134448,
+      "spellId": 440529,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Mana cost of your Trap and melee abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": ", and grants your melee and ranged ability Critical Strikes a "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to allow "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Mana Regeneration to continue while casting for "
+            },
+            {
+              "kind": "value",
+              "text": "30 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Mana cost of your Trap and melee abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "60%"
+            },
+            {
+              "kind": "text",
+              "text": ", and grants your melee and ranged ability Critical Strikes a "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to allow "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Mana Regeneration to continue while casting for "
+            },
+            {
+              "kind": "value",
+              "text": "30 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129648,
+      "definitionId": 134449,
+      "spellId": 1310533,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Your Mongoose Bite also causes the target to Bleed for damage equal to "
+            },
+            {
+              "kind": "value",
+              "text": "40%"
+            },
+            {
+              "kind": "text",
+              "text": " of the damage done by Mongoose Bite over "
+            },
+            {
+              "kind": "value",
+              "text": "21 sec"
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129649,
+      "definitionId": 134450,
+      "spellId": 1310532,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Grants your melee and ranged attacks against enemies afflicted by Hunter's Mark a "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to allow an activation of Mongoose Bite. Lasts "
+            },
+            {
+              "kind": "value",
+              "text": "10 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Grants your melee and ranged attacks against enemies afflicted by Hunter's Mark a "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to allow an activation of Mongoose Bite. Lasts "
+            },
+            {
+              "kind": "value",
+              "text": "10 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129650,
+      "definitionId": 134451,
+      "spellId": 19263,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "When activated, increases your Dodge and Parry chance by "
+            },
+            {
+              "kind": "value",
+              "text": "25%"
+            },
+            {
+              "kind": "text",
+              "text": " for "
+            },
+            {
+              "kind": "value",
+              "text": "10 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129651,
+      "definitionId": 134452,
+      "spellId": 19290,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your hit chance by "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": " and reduces the duration of movement impairing effects on you by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your hit chance by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": " and reduces the duration of movement impairing effects on you by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your hit chance by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": " and reduces the duration of movement impairing effects on you by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129652,
+      "definitionId": 134453,
+      "spellId": 19376,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your chance to hit with your Trap and Feign Death abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your chance to hit with your Trap and Feign Death abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129653,
+      "definitionId": 134454,
+      "spellId": 19306,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "A strike that becomes active after parrying an opponent's attack. This attack deals "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " weapon damage plus "
+            },
+            {
+              "kind": "value",
+              "text": "26"
+            },
+            {
+              "kind": "text",
+              "text": " and immobilizes the target for "
+            },
+            {
+              "kind": "value",
+              "text": "5 sec"
+            },
+            {
+              "kind": "text",
+              "text": ". Counterattack cannot be blocked, dodged, or parried."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129654,
+      "definitionId": 134455,
+      "spellId": 19228,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Wing Clip ability a "
+            },
+            {
+              "kind": "value",
+              "text": "7%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to immobilize the target for "
+            },
+            {
+              "kind": "value",
+              "text": "5 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Wing Clip ability a "
+            },
+            {
+              "kind": "value",
+              "text": "13%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to immobilize the target for "
+            },
+            {
+              "kind": "value",
+              "text": "5 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Wing Clip ability a "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to immobilize the target for "
+            },
+            {
+              "kind": "value",
+              "text": "5 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129655,
+      "definitionId": 134456,
+      "spellId": 19239,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the duration of Freezing and Frost trap effects by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": " and the damage of Immolation and Explosive trap effects by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the duration of Freezing and Frost trap effects by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " and the damage of Immolation and Explosive trap effects by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129656,
+      "definitionId": 134457,
+      "spellId": 19255,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your total Health by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your total Health by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your total Health by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your total Health by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your total Health by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129657,
+      "definitionId": 134458,
+      "spellId": 19159,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike chance of all your melee abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike chance of all your melee abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129658,
+      "definitionId": 134459,
+      "spellId": 19184,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "When your traps are triggered, all affected targets are Entrapped, preventing them from moving for "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "When your traps are triggered, all affected targets are Entrapped, preventing them from moving for "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "When your traps are triggered, all affected targets are Entrapped, preventing them from moving for "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "When your traps are triggered, all affected targets are Entrapped, preventing them from moving for "
+            },
+            {
+              "kind": "value",
+              "text": "4"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "When your traps are triggered, all affected targets are Entrapped, preventing them from moving for "
+            },
+            {
+              "kind": "value",
+              "text": "5"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129659,
+      "definitionId": 134460,
+      "spellId": 19295,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Parry chance by "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Parry chance by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Parry chance by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Parry chance by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Parry chance by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129660,
+      "definitionId": 134461,
+      "spellId": 24293,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "While tracking Beasts, Demons, Dragonkin, Elementals, Giants, Humanoids, or Undead, all damage you deal to the tracked creature type is increased by "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "While tracking Beasts, Demons, Dragonkin, Elementals, Giants, Humanoids, or Undead, all damage you deal to the tracked creature type is increased by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "While tracking Beasts, Demons, Dragonkin, Elementals, Giants, Humanoids, or Undead, all damage you deal to the tracked creature type is increased by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "While tracking Beasts, Demons, Dragonkin, Elementals, Giants, Humanoids, or Undead, all damage you deal to the tracked creature type is increased by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "While tracking Beasts, Demons, Dragonkin, Elementals, Giants, Humanoids, or Undead, all damage you deal to the tracked creature type is increased by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129661,
+      "definitionId": 134462,
+      "spellId": 1310687,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "A long-range shot that deals ranged damage plus "
+            },
+            {
+              "kind": "value",
+              "text": "160"
+            },
+            {
+              "kind": "text",
+              "text": " and increases the range of your next "
+            },
+            {
+              "kind": "value",
+              "text": "3"
+            },
+            {
+              "kind": "text",
+              "text": " Shots by "
+            },
+            {
+              "kind": "value",
+              "text": "10"
+            },
+            {
+              "kind": "text",
+              "text": " yards for "
+            },
+            {
+              "kind": "value",
+              "text": "10 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129662,
+      "definitionId": 134463,
+      "spellId": 19507,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage you deal with ranged weapons by "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage you deal with ranged weapons by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage you deal with ranged weapons by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage you deal with ranged weapons by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage you deal with ranged weapons by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129663,
+      "definitionId": 134464,
+      "spellId": 1223987,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Afflicting a target with Serpent Sting allows "
+            },
+            {
+              "kind": "value",
+              "text": "25%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Mana Regeneration to continue while casting for "
+            },
+            {
+              "kind": "value",
+              "text": "15 sec"
+            },
+            {
+              "kind": "text",
+              "text": ", increased to "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " when Rapid Killing is consumed."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Afflicting a target with Serpent Sting allows "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Mana Regeneration to continue while casting for "
+            },
+            {
+              "kind": "value",
+              "text": "15 sec"
+            },
+            {
+              "kind": "text",
+              "text": ", increased to "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " when Rapid Killing is consumed."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129664,
+      "definitionId": 134465,
+      "spellId": 19503,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "A short-range shot that deals "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": " weapon damage and disorients the target for "
+            },
+            {
+              "kind": "value",
+              "text": "4 sec"
+            },
+            {
+              "kind": "text",
+              "text": ". Any damage caused will remove the effect. Turns off your attack when used."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129665,
+      "definitionId": 134466,
+      "spellId": 19461,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your Multi-Shot, Aimed Shot, and Volley abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your Multi-Shot, Aimed Shot, and Volley abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "7%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your Multi-Shot, Aimed Shot, and Volley abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129666,
+      "definitionId": 134467,
+      "spellId": 19485,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike damage bonus on all ranged abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike damage bonus on all ranged abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "12%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike damage bonus on all ranged abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "18%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike damage bonus on all ranged abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "24%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the critical strike damage bonus on all ranged abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129667,
+      "definitionId": 134468,
+      "spellId": 19464,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your Serpent Sting by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your Serpent Sting by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your Serpent Sting by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your Serpent Sting by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage done by your Serpent Sting by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129668,
+      "definitionId": 134469,
+      "spellId": 1299346,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the Ranged Attack Power of party or raid members within "
+            },
+            {
+              "kind": "value",
+              "text": "45"
+            },
+            {
+              "kind": "text",
+              "text": " yds by "
+            },
+            {
+              "kind": "value",
+              "text": "30"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129669,
+      "definitionId": 134470,
+      "spellId": 415405,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown on your Rapid Fire ability by "
+            },
+            {
+              "kind": "value",
+              "text": "1"
+            },
+            {
+              "kind": "text",
+              "text": " min. In addition, when you kill a non-trivial enemy or it dies while afflicted by your Serpent Sting, you gain Rapid Killing, increasing the damage of your next Shot ability within "
+            },
+            {
+              "kind": "value",
+              "text": "20 sec"
+            },
+            {
+              "kind": "text",
+              "text": " by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown on your Rapid Fire ability by "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": " min. In addition, when you kill a non-trivial enemy or it dies while afflicted by your Serpent Sting, you gain Rapid Killing, increasing the damage of your next Shot ability within "
+            },
+            {
+              "kind": "value",
+              "text": "20 sec"
+            },
+            {
+              "kind": "text",
+              "text": " by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129670,
+      "definitionId": 134471,
+      "spellId": 19454,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown of your Arcane Shot by "
+            },
+            {
+              "kind": "value",
+              "text": "0.3"
+            },
+            {
+              "kind": "text",
+              "text": " sec. Does not affect the cooldown of abilities which share a cooldown with Arcane Shot."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown of your Arcane Shot by "
+            },
+            {
+              "kind": "value",
+              "text": "0.6"
+            },
+            {
+              "kind": "text",
+              "text": " sec. Does not affect the cooldown of abilities which share a cooldown with Arcane Shot."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown of your Arcane Shot by "
+            },
+            {
+              "kind": "value",
+              "text": "0.9"
+            },
+            {
+              "kind": "text",
+              "text": " sec. Does not affect the cooldown of abilities which share a cooldown with Arcane Shot."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown of your Arcane Shot by "
+            },
+            {
+              "kind": "value",
+              "text": "1.2"
+            },
+            {
+              "kind": "text",
+              "text": " sec. Does not affect the cooldown of abilities which share a cooldown with Arcane Shot."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown of your Arcane Shot by "
+            },
+            {
+              "kind": "value",
+              "text": "1.5"
+            },
+            {
+              "kind": "text",
+              "text": " sec. Does not affect the cooldown of abilities which share a cooldown with Arcane Shot."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129671,
+      "definitionId": 134472,
+      "spellId": 415370,
+      "maxRank": 1,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "You deal "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " increased damage with all attacks while you do not have an active pet."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129672,
+      "definitionId": 134473,
+      "spellId": 1223984,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Attack Power by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Intellect."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Attack Power by "
+            },
+            {
+              "kind": "value",
+              "text": "40%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Intellect."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Attack Power by "
+            },
+            {
+              "kind": "value",
+              "text": "60%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Intellect."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Attack Power by "
+            },
+            {
+              "kind": "value",
+              "text": "80%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Intellect."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Attack Power by "
+            },
+            {
+              "kind": "value",
+              "text": "100%"
+            },
+            {
+              "kind": "text",
+              "text": " of your Intellect."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129673,
+      "definitionId": 134474,
+      "spellId": 19416,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Mana cost of your Shots, Stings, and melee abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Mana cost of your Shots, Stings, and melee abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Mana cost of your Shots, Stings, and melee abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "9%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Mana cost of your Shots, Stings, and melee abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "12%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the Mana cost of your Shots, Stings, and melee abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "15%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129675,
+      "definitionId": 134476,
+      "spellId": 19426,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your critical strike chance with all attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "1%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your critical strike chance with all attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your critical strike chance with all attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "3%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your critical strike chance with all attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your critical strike chance with all attacks by "
+            },
+            {
+              "kind": "value",
+              "text": "5%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129676,
+      "definitionId": 134477,
+      "spellId": 19407,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Concussive Shot a "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to stun the target for "
+            },
+            {
+              "kind": "value",
+              "text": "3 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Concussive Shot a "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to stun the target for "
+            },
+            {
+              "kind": "value",
+              "text": "3 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Concussive Shot a "
+            },
+            {
+              "kind": "value",
+              "text": "12%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to stun the target for "
+            },
+            {
+              "kind": "value",
+              "text": "3 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Concussive Shot a "
+            },
+            {
+              "kind": "value",
+              "text": "16%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to stun the target for "
+            },
+            {
+              "kind": "value",
+              "text": "3 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gives your Concussive Shot a "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": " chance to stun the target for "
+            },
+            {
+              "kind": "value",
+              "text": "3 sec"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 129677,
+      "definitionId": 134478,
+      "spellId": 19498,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the range of your ranged weapons by "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": " yards."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the range of your ranged weapons by "
+            },
+            {
+              "kind": "value",
+              "text": "4"
+            },
+            {
+              "kind": "text",
+              "text": " yards."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the range of your ranged weapons by "
+            },
+            {
+              "kind": "value",
+              "text": "6"
+            },
+            {
+              "kind": "text",
+              "text": " yards."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 137851,
+      "definitionId": 142605,
+      "spellId": 19168,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Agility by "
+            },
+            {
+              "kind": "value",
+              "text": "2%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Agility by "
+            },
+            {
+              "kind": "value",
+              "text": "4%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Agility by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Agility by "
+            },
+            {
+              "kind": "value",
+              "text": "8%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your Agility by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 137852,
+      "definitionId": 142606,
+      "spellId": 1310496,
+      "maxRank": 2,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown of your Trap and Deterrence abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Reduces the cooldown of your Trap and Deterrence abilities by "
+            },
+            {
+              "kind": "value",
+              "text": "40%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 137853,
+      "definitionId": 142607,
+      "spellId": 1310627,
+      "maxRank": 5,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your melee ability critical strike damage by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": " and your Off Hand weapon damage by "
+            },
+            {
+              "kind": "value",
+              "text": "10%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your melee ability critical strike damage by "
+            },
+            {
+              "kind": "value",
+              "text": "12%"
+            },
+            {
+              "kind": "text",
+              "text": " and your Off Hand weapon damage by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your melee ability critical strike damage by "
+            },
+            {
+              "kind": "value",
+              "text": "18%"
+            },
+            {
+              "kind": "text",
+              "text": " and your Off Hand weapon damage by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 4,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your melee ability critical strike damage by "
+            },
+            {
+              "kind": "value",
+              "text": "24%"
+            },
+            {
+              "kind": "text",
+              "text": " and your Off Hand weapon damage by "
+            },
+            {
+              "kind": "value",
+              "text": "40%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 5,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases your melee ability critical strike damage by "
+            },
+            {
+              "kind": "value",
+              "text": "30%"
+            },
+            {
+              "kind": "text",
+              "text": " and your Off Hand weapon damage by "
+            },
+            {
+              "kind": "value",
+              "text": "50%"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    },
+    {
+      "entryId": 137868,
+      "definitionId": 142622,
+      "spellId": 1310661,
+      "maxRank": 3,
+      "ranks": [
+        {
+          "rank": 1,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage of your Serpent Sting ability by "
+            },
+            {
+              "kind": "value",
+              "text": "6%"
+            },
+            {
+              "kind": "text",
+              "text": ", reduces the cooldown of your Viper Sting ability by "
+            },
+            {
+              "kind": "value",
+              "text": "2"
+            },
+            {
+              "kind": "text",
+              "text": " sec, and increases the duration of your Scorpid Sting ability by "
+            },
+            {
+              "kind": "value",
+              "text": "15"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 2,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage of your Serpent Sting ability by "
+            },
+            {
+              "kind": "value",
+              "text": "13%"
+            },
+            {
+              "kind": "text",
+              "text": ", reduces the cooldown of your Viper Sting ability by "
+            },
+            {
+              "kind": "value",
+              "text": "4"
+            },
+            {
+              "kind": "text",
+              "text": " sec, and increases the duration of your Scorpid Sting ability by "
+            },
+            {
+              "kind": "value",
+              "text": "30"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        },
+        {
+          "rank": 3,
+          "status": "resolved",
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Increases the damage of your Serpent Sting ability by "
+            },
+            {
+              "kind": "value",
+              "text": "20%"
+            },
+            {
+              "kind": "text",
+              "text": ", reduces the cooldown of your Viper Sting ability by "
+            },
+            {
+              "kind": "value",
+              "text": "6"
+            },
+            {
+              "kind": "text",
+              "text": " sec, and increases the duration of your Scorpid Sting ability by "
+            },
+            {
+              "kind": "value",
+              "text": "45"
+            },
+            {
+              "kind": "text",
+              "text": " sec."
+            }
+          ],
+          "gaps": []
+        }
+      ]
+    }
+  ],
+  "contentHash": "sha256:bcc82d17902fde5e5b2f866c20d658bb7e2ff241457072fb55869f4e74c1515d",
+  "provenance": {
+    "source": "wago.tools",
+    "tables": [
+      "Spell",
+      "SpellEffect",
+      "SpellMisc",
+      "SpellDuration",
+      "SpellRadius",
+      "SpellAuraOptions",
+      "SpellXDescriptionVariables",
+      "SpellDescriptionVariables",
+      "GlobalStrings"
+    ],
+    "renderer": "talent_data.tooltips grammar-v1"
+  }
+}
