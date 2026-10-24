@@ -242,9 +242,9 @@ UIDeviceFamily [1, 2], en/ru, arm64, `DTSDKName iphoneos26.4`, `DTXcodeBuild 17E
 | Пункт | Статус |
 |---|---|
 | iOS-редакция RU/EN подготовлена ([docs/legal/ios](../../legal/ios/README.md)) | PASS |
-| Опубликована на `legal.mythweld.com` | **BLOCKED**: `privacy-ios.html` и `privacy-ios-en.html` отвечают 403 (2026-10-23); публикует владелец |
-| Ссылка в About (iOS) | **BLOCKED** до публикации: `platformPrivacyPolicy = NotPublished` намеренно — ссылка на несуществующую страницу была бы ложной кнопкой. После публикации — отдельный маленький PR |
-| Ссылка в App Store Connect | **BLOCKED** до публикации ([metadata §9](metadata-en.md#9-url-и-категория-общие-для-всех-языков)) |
+| Опубликована на `legal.mythweld.com` | **PASS** (обновлено 2026-10-25): опубликована владельцем 2026-10-24, `verify-live --date 2026-10-24` → PASS для обеих страниц ([evidence](evidence/m5-ios-3/privacy-pages-verify-live-2026-10-25.txt)). На 2026-10-23 страницы отвечали 403 |
+| Ссылка в About (iOS) | **PASS** (код и тесты): `platformPrivacyPolicy = Ios`, RU/EN-страница по языку интерфейса (`IosAboutFactsTest`, `AboutScreenUiTest`). Открытие браузера на физическом iPhone — [runbook §6](submission/testflight-runbook.md#6-проверка-на-физическом-iphone) |
+| Ссылка в App Store Connect | разблокирована публикацией; вносит владелец ([metadata §9](metadata-en.md#9-url-и-категория-общие-для-всех-языков), [runbook §7](submission/testflight-runbook.md#7-карточка-app-store-и-отправка-на-ревью)) |
 | App Privacy answers | черновик: OTA OFF — **Data Not Collected** ([app-privacy](app-privacy.md)) |
 
 ## 7. Готовность iOS OTA
@@ -299,7 +299,7 @@ PNG/JPEG, до 10 на размер.
 | Name | TalentForge (11) | TalentForge (11) | черновик |
 | Subtitle | Talent builds for WoW: Forever (30) | Билды талантов WoW: Forever (27) | черновик |
 | Description, Keywords, Promotional Text, What's New, Review Notes | [metadata-en](metadata-en.md) | [metadata-ru](metadata-ru.md) | черновик |
-| Privacy Policy URL | `…/privacy-ios-en.html` | `…/privacy-ios.html` | BLOCKED (не опубликованы) |
+| Privacy Policy URL | `…/privacy-ios-en.html` | `…/privacy-ios.html` | PASS (опубликованы 2026-10-24, `verify-live` → PASS) |
 | Support URL | `https://legal.mythweld.com/` | то же | PASS (200, контакт) |
 | Категория | Reference (+ Utilities) | — | рекомендация |
 | Дисклеймер | в Description, About и на сайте | то же | PASS |
