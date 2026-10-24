@@ -1,0 +1,12 @@
+TalentForge is an unofficial talent build planner for World of Warcraft: Forever. It is an independent companion tool: it is not affiliated with or endorsed by Blizzard Entertainment and does not claim a Blizzard license. It does not need the game, a Blizzard account or any other account. There is no sign-in, no in-app purchase, no advertising, no analytics and no tracking, so no demo account is needed.
+
+How to review:
+1. Tap "New build" and choose a class (for example Mage).
+2. Tap a talent to select it; tapping never spends points. Use "+", "−" and "Max" in the talent panel to spend or refund points. Drag to move the tree, pinch to zoom. A locked talent shows what it requires; "Show" jumps to that talent without spending.
+3. Use the ⋯ menu to rename or share the build. "Share" opens the iOS share sheet with a text code; "Copy code" copies it.
+4. On the home screen, tap "Import build", then "Paste" and "Continue": the build from the code is previewed, and "Import" saves it as a new build.
+5. The ⓘ button opens About: app version, talent data version, privacy summary, "Check for updates" and open-source licenses.
+
+Talent data updates (Guideline 2.5.2): after launch, when returning to the app, from About → "Check for updates", and when a saved build needs a game-data version that is not on the device, the app downloads a signed public catalog and talent data files over HTTPS (GET only) from https://ota.mythweld.com. It verifies the catalog's ECDSA P-256 signature against keys built into the app and the SHA-256 of every file before using them. The files are data and images only — talent trees and texts (JSON) and talent icons (PNG) — never executable code; the app's behaviour and features do not change. Requests carry no account, device or advertising identifier and no build contents. Without a network connection the app keeps working with its bundled and previously downloaded data, so every feature can be reviewed offline.
+
+The interface follows the device language (English or Russian).

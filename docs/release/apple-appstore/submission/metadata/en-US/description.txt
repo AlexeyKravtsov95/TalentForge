@@ -1,0 +1,32 @@
+TalentForge is an unofficial talent build planner for World of Warcraft: Forever. Pick a class, spend points on its talent trees and keep every build on your iPhone or iPad.
+
+Plan
+• All nine classes, each with its three talent trees.
+• Tap a talent to select it. Spending and refunding use clear buttons, never hidden gestures. Max out a talent in one step.
+• Read each talent's description for its current and next rank, what it requires and how many points its tier needs.
+• Jump to the talent that unlocks another one.
+• Undo, redo and reset talents.
+• Drag to move around the tree and pinch to zoom. Works in portrait and landscape, on iPhone and iPad.
+
+Keep
+• Builds are saved automatically on your device.
+• Continue editing where you left off from the home screen.
+• Rename, duplicate and delete builds.
+
+Share
+• Share a build as a short text code through any app, or copy the code.
+• Import a code and preview the build before it is saved. An imported build never overwrites your other builds.
+
+Works offline
+• Talent data for World of Warcraft: Forever is included with the app, so it works without a connection from the first launch.
+• When a talent data update is published, the app downloads only game data (talent trees, texts and icons) over HTTPS and checks the developer's signature before using it. It never downloads code.
+• Without a connection, the app keeps working with the bundled and previously downloaded talent data.
+
+Private
+• No account, no ads, no analytics, no tracking.
+• Your builds stay on your device and are never uploaded.
+
+Languages
+• English and Russian interface and talent texts, following your device language.
+
+TalentForge is an independent, unofficial project. It is not affiliated with, endorsed by or sponsored by Blizzard Entertainment. World of Warcraft is a trademark or registered trademark of Blizzard Entertainment, Inc. in the U.S. and/or other countries.
