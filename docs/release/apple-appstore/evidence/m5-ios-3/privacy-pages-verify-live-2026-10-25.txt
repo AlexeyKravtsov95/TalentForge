@@ -1,0 +1,23 @@
+Verification date: 2026-10-25 (Asia/Novosibirsk)
+Publication date: 2026-10-24
+Template baseline: main @ f48e32ccdf34be697d6bf09b7d7192b75b168e0a
+Checker: scripts/ios_privacy_pages.py from this correction
+Access: anonymous HTTPS GET; no cloud credentials or writes
+
+Command:
+python3 scripts/ios_privacy_pages.py verify-live --date 2026-10-24
+
+Output (exit code 0):
+iOS privacy pages published on 2026-10-24:
+  [PASS] https://legal.mythweld.com/privacy-ios.html: 200, text/html, UTF-8 meta, identical to the rendered page
+  [PASS] https://legal.mythweld.com/privacy-ios-en.html: 200, text/html, UTF-8 meta, identical to the rendered page
+RESULT: PASS
+
+Independent byte-for-byte comparison with the rendered repository templates:
+privacy-ios.html: 13579 bytes, valid UTF-8, real UTF-8 meta within the first 1024 bytes
+SHA-256: 5c3f01ad7a85a6334ceceed7d1b494a6123d4c09a6404f74876c7d8de6aba93a
+privacy-ios-en.html: 8193 bytes, valid UTF-8, real UTF-8 meta within the first 1024 bytes
+SHA-256: eb6a2c1c0037e61a8c8ef1a4815b8cd173389a8a31ff99feb3d40c03998f46b1
+
+This verifies publication only. The iOS About link, App Privacy choice, signed archive,
+and App Store Connect/TestFlight submission remain separate steps.

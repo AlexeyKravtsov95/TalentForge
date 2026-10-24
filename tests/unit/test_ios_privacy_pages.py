@@ -2,7 +2,8 @@
 
 ``scripts/ios_privacy_pages.py`` renders the committed pages with the publication date and
 checks the published copies. The network is replaced by a fake ``fetch``: the live check must
-pass only for HTTP 200, ``text/html; charset=utf-8`` and the exact rendered bytes.
+pass only for HTTP 200, HTML with UTF-8 declared in the document (and optionally the HTTP
+header), valid UTF-8 bytes, and the exact rendered content.
 """
 
 from __future__ import annotations
@@ -70,11 +71,23 @@ def serving(pages: dict[str, bytes], **override: Any) -> Any:
     return fetch
 
 
-def test_verify_live_passes_for_the_exact_pages() -> None:
+@pytest.mark.parametrize(
+    "content_type",
+    [
+        "text/html",
+        "text/html; charset=utf-8",
+        'Text/HTML; Charset="UTF-8"',
+        "text/html;\tcharset=utf-8",
+    ],
+)
+def test_verify_live_passes_for_the_exact_pages(content_type: str) -> None:
     pages = t.render(t.SOURCE, DATE)
-    passed, lines = t.verify_live(pages, "https://legal.mythweld.com", serving(pages))
+    passed, lines = t.verify_live(
+        pages, "https://legal.mythweld.com", serving(pages, content_type=content_type)
+    )
     assert passed
     assert lines[0].startswith("  [PASS] https://legal.mythweld.com/privacy-ios.html")
+    assert content_type in lines[0]
 
 
 @pytest.mark.parametrize(
@@ -82,7 +95,9 @@ def test_verify_live_passes_for_the_exact_pages() -> None:
     [
         ({"status": 403, "body": b"Forbidden"}, "HTTP 403"),
         ({"content_type": "text/plain; charset=utf-8"}, "Content-Type"),
-        ({"content_type": "text/html"}, "Content-Type"),
+        ({"content_type": "text/html; charset=windows-1251"}, "Content-Type"),
+        ({"content_type": "text/html; charset=utf-8; charset=windows-1251"}, "Content-Type"),
+        ({"content_type": "text / html"}, "Content-Type"),
         ({"content_type": None}, "Content-Type"),
         ({"body": b"<html>older edition</html>"}, "is not the rendered page"),
     ],
@@ -92,6 +107,40 @@ def test_verify_live_fails_closed(override: dict[str, Any], problem: str) -> Non
     passed, lines = t.verify_live(pages, "https://legal.mythweld.com", serving(pages, **override))
     assert not passed
     assert all(problem in line for line in lines)
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        b"<!doctype html><head></head><body>No declaration</body>",
+        b'<!-- <meta charset="utf-8"> -->',
+        b"<script>const text = '<meta charset=\"utf-8\">';</script>",
+        b'<meta charset="windows-1251">',
+        b'<meta charset="utf-8"><meta charset="windows-1251">',
+        b'<meta charset="utf-8" charset="windows-1251">',
+        b" " * 1024 + b'<meta charset="utf-8">',
+        b" " * 1023 + b'<meta charset="utf-8">',
+    ],
+)
+def test_matching_bytes_still_require_a_real_early_utf8_declaration(body: bytes) -> None:
+    pages = dict.fromkeys(t.PAGES, body)
+    passed, lines = t.verify_live(pages, "https://x", serving(pages, content_type="text/html"))
+    assert not passed
+    assert all("UTF-8 meta declaration" in line for line in lines)
+
+
+def test_the_complete_meta_tag_may_end_at_byte_1024() -> None:
+    tag = b'<meta charset="utf-8">'
+    pages = dict.fromkeys(t.PAGES, b" " * (1024 - len(tag)) + tag)
+    passed, _ = t.verify_live(pages, "https://x", serving(pages, content_type="text/html"))
+    assert passed
+
+
+def test_matching_bytes_with_a_meta_declaration_must_still_be_valid_utf8() -> None:
+    pages = dict.fromkeys(t.PAGES, b'<meta charset="utf-8"><p>\xff</p>')
+    passed, lines = t.verify_live(pages, "https://x", serving(pages, content_type="text/html"))
+    assert not passed
+    assert all("body is not valid UTF-8" in line for line in lines)
 
 
 def test_a_page_published_with_another_date_does_not_pass() -> None:

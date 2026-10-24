@@ -13,9 +13,10 @@ around that upload that can be checked:
 
 ``verify-live --date YYYY-MM-DD``
     Fetch both published pages (anonymous ``GET``, no cookies) and require for each: HTTP 200,
-    ``Content-Type: text/html; charset=utf-8``, and a body byte-for-byte equal to the page
-    rendered with that date. Only when both pass may the iOS About screen link to the policy
-    and App Store Connect use the URLs.
+    ``Content-Type: text/html`` (optionally with a UTF-8 charset), valid UTF-8 with one
+    ``<meta charset="utf-8">`` declaration within the first 1024 bytes, and a body
+    byte-for-byte equal to the page rendered with that date. Only when both pass may the
+    iOS About screen link to the policy and App Store Connect use the URLs.
 
 Exit status: 0 = pass, 1 = a check failed, 2 = the check could not run.
 """
@@ -25,11 +26,13 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import hashlib
+import re
 import sys
 import urllib.error
 import urllib.request
 from collections.abc import Callable
 from dataclasses import dataclass
+from html.parser import HTMLParser
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -38,6 +41,10 @@ BASE_URL = "https://legal.mythweld.com"
 PLACEHOLDER = "{{PUBLICATION_DATE}}"
 PAGES = {"privacy-ios.html": "ru", "privacy-ios-en.html": "en"}
 CONTENT_TYPE = "text/html; charset=utf-8"
+HTML_CONTENT_TYPE = re.compile(
+    r'[ \t]*text/html[ \t]*(?:;[ \t]*charset[ \t]*=[ \t]*(?:"utf-8"|utf-8)[ \t]*)?',
+    re.IGNORECASE | re.ASCII,
+)
 RU_MONTHS = (
     "января",
     "февраля",
@@ -83,6 +90,27 @@ class Response:
 
 
 Fetch = Callable[[str], Response]
+
+
+class MetaCharsetParser(HTMLParser):
+    """Collect real meta charset attributes, excluding comments and script contents."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.charsets: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag == "meta":
+            self.charsets.extend((value or "").lower() for key, value in attrs if key == "charset")
+
+
+def has_early_utf8_meta(body: bytes) -> bool:
+    parser = MetaCharsetParser()
+    # Latin-1 maps bytes one-to-one for parsing ASCII markup at the 1024-byte boundary.
+    # The complete document is separately required to decode as UTF-8 below.
+    parser.feed(body[:1024].decode("latin-1"))
+    parser.close()
+    return parser.charsets == ["utf-8"]
 
 
 def format_date(date: dt.date, language: str) -> str:
@@ -133,9 +161,18 @@ def verify_live(pages: dict[str, bytes], base_url: str, fetch: Fetch) -> tuple[b
         problems = []
         if response.status != 200:
             problems.append(f"HTTP {response.status} (expected 200)")
-        content_type = (response.content_type or "").replace(" ", "").lower()
-        if content_type != CONTENT_TYPE.replace(" ", ""):
-            problems.append(f"Content-Type {response.content_type!r} (expected {CONTENT_TYPE!r})")
+        if not HTML_CONTENT_TYPE.fullmatch(response.content_type or ""):
+            problems.append(
+                f"Content-Type {response.content_type!r} "
+                f"(expected {CONTENT_TYPE!r} or 'text/html' with an early UTF-8 meta declaration)"
+            )
+        if response.status == 200:
+            try:
+                response.body.decode("utf-8")
+            except UnicodeDecodeError:
+                problems.append("body is not valid UTF-8")
+            if not has_early_utf8_meta(response.body):
+                problems.append("expected one UTF-8 meta declaration within the first 1024 bytes")
         if response.status == 200 and response.body != expected:
             problems.append(
                 f"body sha256 {hashlib.sha256(response.body).hexdigest()} is not the rendered "
@@ -144,7 +181,10 @@ def verify_live(pages: dict[str, bytes], base_url: str, fetch: Fetch) -> tuple[b
         passed = passed and not problems
         lines.append(
             f"  [{'FAIL' if problems else 'PASS'}] {url}: "
-            + ("; ".join(problems) or f"200, {CONTENT_TYPE}, identical to the rendered page")
+            + (
+                "; ".join(problems)
+                or f"200, {response.content_type}, UTF-8 meta, identical to the rendered page"
+            )
         )
     return passed, lines
 

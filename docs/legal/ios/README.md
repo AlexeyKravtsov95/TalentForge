@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Статус | **Подготовлена, не опубликована → BLOCKED.** На 2026-10-23 `https://legal.mythweld.com/privacy-ios.html` и `…/privacy-ios-en.html` отвечают **403** (страниц нет). Публикует только владелец |
+| Статус | **Опубликована владельцем 2026-10-24.** На 2026-10-25 обе страницы отвечают **200** и побайтно совпадают с редакцией от 24 октября. Подключение ссылки в iOS About — отдельный PR |
 | Страницы | [`privacy-ios.html`](privacy-ios.html) (RU), [`privacy-ios-en.html`](privacy-ios-en.html) (EN) |
 | Что вписывает владелец | только дату редакции вместо `{{PUBLICATION_DATE}}` (формат опубликованной Android-редакции: «23 октября 2026 года» / «23 October 2026») |
 | Android-политика | не меняется: `privacy.html` / `privacy-en.html` (опубликованы, `Last-Modified: Wed, 21 Oct 2026 20:13:04 GMT`, редакция «22 октября 2026») описывают только Android-приложение |
@@ -36,8 +36,12 @@
 Обновлено в M5.IOS.3: подстановка даты и проверка опубликованных страниц выполняются скриптом
 [`scripts/ios_privacy_pages.py`](../../../scripts/ios_privacy_pages.py), а не вручную. Сам скрипт ничего не загружает.
 
-На 2026-10-24 обе страницы отвечают **403** (`verify-live` → FAIL). Сайт отвечает 403 и на несуществующие объекты
-(например, `index-en.html`), поэтому 403 здесь означает «не опубликовано».
+До публикации страницы отвечали **403**. На 2026-10-25 обе опубликованы с датой 2026-10-24 и заголовком
+`Content-Type: text/html`. Кодировка UTF-8 объявлена в начале самих HTML-документов. Первоначальный валидатор
+ошибочно требовал её повторения в HTTP-заголовке; проверка исправлена согласно
+[HTML Standard §4.2.5.4](https://html.spec.whatwg.org/multipage/semantics.html#charset).
+Вывод исправленного валидатора и SHA-256 опубликованных тел:
+[проверка от 25 октября](../../release/apple-appstore/evidence/m5-ios-3/privacy-pages-verify-live-2026-10-25.txt).
 
 1. **Дата.** Одна дата для RU и EN — день фактической загрузки, в формате `YYYY-MM-DD` (в страницах она станет
    «25 октября 2026 года» / «25 October 2026», как в опубликованной Android-редакции). Если загрузка переносится на
@@ -45,7 +49,7 @@
 2. **Подготовка файлов** (из корня репозитория; каталог `legal-publish/` не в git):
 
    ```bash
-   python3 scripts/ios_privacy_pages.py render --date 2026-10-25 --out legal-publish/ios
+   python3 scripts/ios_privacy_pages.py render --date 2026-10-24 --out legal-publish/ios
    ```
 
    Скрипт проверяет, что в каждой странице ровно одна метка `{{PUBLICATION_DATE}}` и что после подстановки `{{` не
@@ -56,18 +60,21 @@
    | Метаданные | Значение |
    |---|---|
    | Имя объекта | `privacy-ios.html`, `privacy-ios-en.html` (в корне, без каталога) |
-   | `Content-Type` | **`text/html; charset=utf-8`** — точно так; без `charset` проверка шага 4 не пройдёт |
+   | `Content-Type` | `text/html; charset=utf-8` рекомендуется; `text/html` также допустим, поскольку страницы объявляют UTF-8 через `<meta charset="utf-8">` |
    | Доступ | публичное чтение, как у `privacy.html` |
 
    `style.css` уже опубликован; `privacy.html` / `privacy-en.html` (Android) **не трогать**.
 4. **Проверка HTTP 200** — с той же датой, что на шаге 2:
 
    ```bash
-   python3 scripts/ios_privacy_pages.py verify-live --date 2026-10-25
+   python3 scripts/ios_privacy_pages.py verify-live --date 2026-10-24
    ```
 
-   Ожидается `RESULT: PASS`: для каждой страницы `200`, `Content-Type: text/html; charset=utf-8`, тело побайтно равно
-   файлу из шага 2. Та же проверка вручную:
+   Ожидается `RESULT: PASS`: для каждой страницы `200`, MIME-тип `text/html`, опциональный HTTP `charset` только
+   UTF-8, одна настоящая декларация `<meta charset="utf-8">` целиком в первых 1024 байтах, корректные байты UTF-8
+   и тело, побайтно равное файлу из шага 2. Комментарий или строка JavaScript с текстом `<meta>` декларацией
+   не считаются. Отсутствующий MIME-тип, другая кодировка, другая дата и изменённое тело — FAIL. Часть проверки
+   вручную (эти команды показывают только заголовки, без проверки HTML и содержимого):
 
    ```bash
    curl -sI https://legal.mythweld.com/privacy-ios.html
@@ -77,7 +84,7 @@
    curl -sI https://legal.mythweld.com/privacy-ios-en.html
    ```
 
-   Ожидается `HTTP/2 200` и `content-type: text/html; charset=utf-8`. Если кэш ещё отдаёт старый ответ, повторите
+   Ожидается `HTTP/2 200` и `content-type: text/html` с опциональным `charset=utf-8`. Если кэш ещё отдаёт старый ответ, повторите
    проверку через несколько минут; не меняйте файлы, чтобы «пройти» её.
 5. По желанию добавьте ссылку на iOS-редакцию в раздел «Документы» главной страницы `index.html` (единственная главная
    страница сайта; `index-en.html` не существует — 403).
@@ -87,4 +94,6 @@
 7. В App Store Connect укажите Privacy Policy URL: EN-локализация — `https://legal.mythweld.com/privacy-ios-en.html`,
    RU — `https://legal.mythweld.com/privacy-ios.html` (файлы `privacy_url.txt` [пакета отправки](../../release/apple-appstore/submission/README.md)).
 
-До шага 6 статус App Store-готовности по политике — **BLOCKED** ([readiness M5.IOS.3](../../release/apple-appstore/m5-ios-3-readiness.md)).
+Публикация подтверждена; до шага 6 остаётся подключить ссылку в приложении. Исторический статус до публикации —
+[readiness M5.IOS.3](../../release/apple-appstore/m5-ios-3-readiness.md). Выбор App Privacy и подписанный архив
+не входят в эту проверку.
