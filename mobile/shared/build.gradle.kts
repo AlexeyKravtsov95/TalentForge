@@ -28,6 +28,12 @@ kotlin {
     }
 }
 
+// The repository and conformance tests read the canonical repository data directly; without
+// this input a data-only change replays a cached result.
+tasks.named<Test>("jvmTest") {
+    inputs.dir(rootProject.projectDir.parentFile.resolve("data")).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("canonicalData")
+}
+
 android {
     namespace = "io.github.alexeykravtsov95.talentforge.shared"
     compileSdk = libs.versions.android.compileSdk.get().toInt()

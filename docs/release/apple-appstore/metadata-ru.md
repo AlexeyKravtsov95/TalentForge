@@ -135,7 +135,7 @@ TalentForge — планировщик билдов талантов для Worl
 
 | Поле | Значение | Статус |
 |---|---|---|
-| Privacy Policy URL | `https://legal.mythweld.com/privacy-ios-en.html` (EN) и `https://legal.mythweld.com/privacy-ios.html` (RU, в локализации ru) | **BLOCKED** до публикации владельцем: сейчас обе страницы отвечают 403 ([docs/legal/ios](../../legal/ios/README.md)) |
+| Privacy Policy URL | `https://legal.mythweld.com/privacy-ios-en.html` (EN) и `https://legal.mythweld.com/privacy-ios.html` (RU, в локализации ru) | **PASS**: опубликованы владельцем 2026-10-24, `verify-live --date 2026-10-24` → PASS для обеих страниц на 2026-10-25 ([docs/legal/ios](../../legal/ios/README.md)) |
 | Support URL | `https://legal.mythweld.com/` | PASS: страница отвечает 200 и содержит контакт `alexey.kravtsov95@gmail.com` (проверено 2026-10-23) |
 | Marketing URL | не заполнять | — |
 | Primary category | **Reference** | рекомендация; владелец решает |

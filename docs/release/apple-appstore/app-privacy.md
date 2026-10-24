@@ -89,7 +89,7 @@ Apple не выделяет IP-адрес в отдельный тип; журн
 ## 4. Связанные декларации
 
 - **Export compliance:** `ITSAppUsesNonExemptEncryption = false` в `Info.plist`. Приложение использует только шифрование ОС (HTTPS через `NSURLSession`) и проверку подписи (аутентификация данных). Владелец подтверждает этот ответ в App Store Connect при первой загрузке; при сомнении — ответ по [Complying with Encryption Export Regulations](https://developer.apple.com/documentation/security/complying-with-encryption-export-regulations).
-- **Privacy Policy URL:** обязателен; страница iOS-редакции **не опубликована** → BLOCKED ([docs/legal/ios](../../legal/ios/README.md)).
+- **Privacy Policy URL:** обязателен; обе iOS-страницы опубликованы владельцем 2026-10-24, `verify-live --date 2026-10-24` → PASS на 2026-10-25; локализованные адреса подключены в iOS About ([docs/legal/ios](../../legal/ios/README.md)). Выбор декларации App Privacy для OTA ON остаётся отдельным решением OA-1.
 - **Privacy manifest:** [readiness §6.1](readiness.md#61-privacyinfoxcprivacy-и-required-reason-api).
 
 ## 5. Аудит M5.IOS.3 (OTA ON)

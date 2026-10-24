@@ -1335,14 +1335,16 @@ App(storage, …, appVersion)          ← host: Android PackageManager / iOS NS
   true per platform, and since M5.IOS.1 also the deletion paragraph: Android "uninstall the app or
   clear its storage", iOS "delete the app" (`about_privacy_delete_ios`; iOS offers no per-app
   storage clearing). The policy link opens the page published for the platform and the UI
-  language (M5.LEGAL.LINK, the hosting decision of LR-5). The published policy covers the
-  Android app only, so `platformPrivacyPolicy` is `PublishedPrivacyPolicy.Android` on Android
-  (and on the desktop host of the Android UI) and `NotPublished` on iOS.
-  `privacyPolicyUrlOf(platformPrivacyPolicy, appLanguage())` picks
-  `LegalLinks.androidPrivacyPolicyUrlRu` (`legal.mythweld.com/privacy.html`) for a Russian
-  interface and `LegalLinks.androidPrivacyPolicyUrlEn` (`…/privacy-en.html`) for every other,
-  and `null` on iOS: the iOS About screen keeps the in-app summary and shows no link until an
-  iOS policy is published. `LocalUriHandler` hands the URL to the system browser (no WebView, no
+  language (M5.LEGAL.LINK, the hosting decision of LR-5). Android and iOS have separate
+  owner-published policies, so `platformPrivacyPolicy` is `PublishedPrivacyPolicy.Android` on
+  Android (and on the desktop host of the Android UI) and `PublishedPrivacyPolicy.Ios` on iOS
+  (published 2026-10-24, [docs/legal/ios](legal/ios/README.md)).
+  `privacyPolicyUrlOf(platformPrivacyPolicy, appLanguage())` picks the platform's Russian page
+  for a Russian interface and its English page for every other: Android
+  `LegalLinks.androidPrivacyPolicyUrlRu` / `…En` (`legal.mythweld.com/privacy.html` /
+  `…/privacy-en.html`), iOS `LegalLinks.iosPrivacyPolicyUrlRu` / `…En` (`…/privacy-ios.html` /
+  `…/privacy-ios-en.html`). `NotPublished` (`null`, no link, only the in-app summary) stays the
+  fail-closed state for a platform without a published policy. `LocalUriHandler` hands the URL to the system browser (no WebView, no
   `INTERNET` permission — the browser, not the app, loads the page; the release/play manifests
   keep removing INTERNET, NET-1 = B — while production OTA is off; an OTA-enabled build keeps it,
   M5.OTA.PROD.3, [ota/android-production-enablement.md](ota/android-production-enablement.md)).
