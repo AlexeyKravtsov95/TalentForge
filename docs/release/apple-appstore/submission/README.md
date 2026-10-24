@@ -18,7 +18,7 @@
 | `scripts/verify_appstore_metadata.py` | проверка текстов: лимиты Apple, формат файлов, ключевые слова, позиционирование, утверждения OTA ON, URL |
 | `scripts/verify_appstore_screenshots.py` | проверка скриншотов: размеры по классу дисплея, PNG RGB без альфа-канала, целостность, нумерация, паритет локалей, manifest |
 | `scripts/verify_ios_project.py` | проверка `iosApp.xcodeproj` до архива: bundle id, версия, подпись без закоммиченной команды, Release-архив, `Info.plist` |
-| `scripts/verify_ios_archive.py --require-signed` | новый флаг: архив владельца должен быть подписан (`_CodeSignature`, `embedded.mobileprovision`) |
+| `scripts/verify_ios_archive.py --require-signed` | новый флаг: настоящая проверка подписи архива владельца на macOS — `codesign --verify --strict`, identity и Team ID из подписи, профиль через `security cms` (команда, bundle id, срок, сертификат, entitlements), запрет ad-hoc и Ad Hoc/enterprise-конфигураций; без инструментов — BLOCKED (код 2) |
 | `scripts/ios_privacy_pages.py` | подстановка даты в iOS-политику и проверка опубликованных страниц (HTTP 200, `Content-Type`, побайтовое совпадение) |
 
 Проверка всего пакета:

@@ -101,7 +101,7 @@ iPhone 17 Pro и iPhone 18 Pro относятся к одному классу �
 | `iosApp.xcodeproj`: bundle id, 1.0.0 (1), iOS 17.2, iPhone + iPad, Automatic signing без закоммиченной команды/профиля/identity, Release-архив, privacy manifest, `Info.plist` | **PASS** | `verify_ios_project.py` → 14/14 ([вывод](evidence/m5-ios-3/ios-project.txt)) |
 | Build number `1` | **PASS** (проект) / **BLOCKED** (ASC) | в проекте `1`; не использовался ли он в App Store Connect, может проверить только владелец (записи приложения ещё нет) |
 | Unsigned-архив OTA ON (`TALENTFORGE_OTA_IOS_PRODUCTION_ENABLED=true`) | **PASS** локально (Xcode 26.4.1) | `** ARCHIVE SUCCEEDED **`; `verify_ios_archive.py --ota on` → **22/22 PASS**: origin `https://ota.mythweld.com`, ровно `tf-prod-2026a/b`, ATS по умолчанию, privacy ([вывод](evidence/m5-ios-3/archive-ota-on-unsigned-xcode-26.4.1.txt), [json](evidence/m5-ios-3/archive-ota-on-unsigned-xcode-26.4.1.json)) |
-| `--require-signed` отличает подписанный архив | **PASS** | тот же unsigned-архив → `signed` FAIL ([вывод](evidence/m5-ios-3/archive-ota-on-unsigned-require-signed.txt)); подписанный — unit-тест |
+| `--require-signed` проверяет настоящую подпись | **PASS** (инструменты) / **NOT RUN** (подписанный архив) | нативные `codesign --verify --strict --verbose=2`, `codesign -d` (identity, Team ID), `security cms -D` (профиль: команда, bundle id, срок, enterprise), сертификат в профиле, entitlements, запрет ad-hoc и Ad Hoc. На **настоящих** инструментах: unsigned-архив → FAIL ([вывод](evidence/m5-ios-3/archive-ota-on-unsigned-require-signed.txt)); его копия с ad-hoc подписью проходит `codesign --verify`, но получает FAIL по identity/профилю ([вывод](evidence/m5-ios-3/archive-ota-on-adhoc-require-signed.txt)). Ветви development/App Store/Ad Hoc/истёкший профиль/чужая команда/повреждённая подпись/фиктивные файлы/нет инструментов — 27 unit-тестов с мокированными командами. Архив, подписанный командой владельца, агент не проверял: нет Apple credentials |
 | Production-каталог к загрузке | **PASS** (только чтение) | preflight `result: OK`, `expiresAt` 2026-12-05 (41 день). По правилу проекта (≥ 30 дней) — загрузка до 2026-11-05 или сначала re-sign |
 | Owner-runbook (7 шагов) | **PASS** (документ) | [testflight-runbook.md](submission/testflight-runbook.md) |
 | Подписанный архив на Xcode 27.1, загрузка, TestFlight, физический iPhone | **BLOCKED** | только владелец |
@@ -115,7 +115,7 @@ iPhone 17 Pro и iPhone 18 Pro относятся к одному классу �
 | `scripts/verify_appstore_screenshots.py` | новый: скриншоты пакета против спецификаций Apple |
 | `scripts/verify_ios_project.py` | новый: проект Xcode до архива (собственный разбор OpenStep plist, без зависимостей) |
 | `scripts/ios_privacy_pages.py` | новый: дата в iOS-политике и проверка публикации |
-| `scripts/verify_ios_archive.py` | флаг `--require-signed`; без флага поведение не изменилось |
+| `scripts/verify_ios_archive.py` | `--require-signed` (нативная проверка подписи и профиля) и `--expected-team-id`; без флага поведение не изменилось, системные инструменты не вызываются |
 | `tests/unit/` | 4 новых файла + 1 тест в `test_verify_ios_archive.py` |
 | `docs/release/apple-appstore/app-privacy.md` | §5 — аудит OTA ON |
 | `docs/legal/ios/README.md` | §3 — публикация через `ios_privacy_pages.py`, `Content-Type`, HTTP 200 |

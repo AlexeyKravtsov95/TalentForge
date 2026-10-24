@@ -10,6 +10,7 @@ real archive is checked by ``mobile-ci`` (macOS) with Xcode 27.1.
 
 from __future__ import annotations
 
+import datetime as dt
 import importlib.util
 import json
 import plistlib
@@ -524,34 +525,323 @@ def test_cli_writes_a_report_and_exits_by_result(tmp_path: Path, keyring: Path) 
     )
 
 
-def test_a_distribution_archive_must_be_signed_when_required(tmp_path: Path, keyring: Path) -> None:
-    unsigned = make_archive(tmp_path / "unsigned")
-    evaluation, report = run(unsigned, keyring)
-    assert "signed" not in {check.id for check in evaluation.checks}
-    assert report["signed"] is False
-    evaluation, _ = run(unsigned, keyring, require_signed=True)
-    assert "_CodeSignature/CodeResources missing" in failed(evaluation)["signed"]
+# --require-signed: the real signature, checked with codesign / security (mocked here).
+TEAM = "ABCDE12345"
+LEAF_CERT = b"0\x82leaf-certificate-der"
+NOW = dt.datetime(2026, 10, 24, 12, 0, tzinfo=dt.UTC)
+DEVELOPMENT = "Apple Development: Owner Name (QWERTY1234)"
+DISTRIBUTION = "Apple Distribution: Owner Name (ABCDE12345)"
 
-    signature_only = make_archive(
-        tmp_path / "no-profile", extra_files={"_CodeSignature/CodeResources": b"<plist/>"}
-    )
-    evaluation, _ = run(signature_only, keyring, require_signed=True)
-    assert "embedded.mobileprovision missing" in failed(evaluation)["signed"]
 
-    signed = make_archive(
-        tmp_path / "signed",
+def codesign_display(
+    identity: str | None = DEVELOPMENT,
+    team: str = TEAM,
+    identifier: str = "io.github.alexeykravtsov95.talentforge",
+    adhoc: bool = False,
+) -> str:
+    """What ``codesign -d --verbose=4`` prints (on stderr) for a signed or ad-hoc app."""
+    lines = [
+        "Executable=/archive/Products/Applications/iosApp.app/iosApp",
+        f"Identifier={identifier}",
+        "Format=app bundle with Mach-O thin (arm64)",
+        f"CodeDirectory v=20500 size=90911 flags={'0x2(adhoc)' if adhoc else '0x0(none)'} "
+        "hashes=2834+7 location=embedded",
+    ]
+    if adhoc:
+        lines.append("Signature=adhoc")
+    elif identity:
+        lines += [
+            f"Authority={identity}",
+            "Authority=Apple Worldwide Developer Relations Certification Authority",
+            "Authority=Apple Root CA",
+        ]
+    lines.append(f"TeamIdentifier={'not set' if adhoc else team}")
+    return "\n".join(lines) + "\n"
+
+
+def profile(**overrides: Any) -> dict[str, Any]:
+    """A decoded development provisioning profile for the frozen bundle id."""
+    value: dict[str, Any] = {
+        "Name": "iOS Team Provisioning Profile: io.github.alexeykravtsov95.talentforge",
+        "TeamIdentifier": [TEAM],
+        "ApplicationIdentifierPrefix": [TEAM],
+        "CreationDate": dt.datetime(2026, 10, 1),
+        "ExpirationDate": dt.datetime(2027, 10, 1),
+        "ProvisionedDevices": ["00008110-000A1B2C3D4E5F60"],
+        "DeveloperCertificates": [LEAF_CERT],
+        "Entitlements": {
+            "application-identifier": f"{TEAM}.io.github.alexeykravtsov95.talentforge",
+            "com.apple.developer.team-identifier": TEAM,
+            "get-task-allow": True,
+        },
+    }
+    value.update(overrides)
+    return value
+
+
+def app_store_profile(**overrides: Any) -> dict[str, Any]:
+    value = profile(Name="TalentForge App Store", ProvisionedDevices=None)
+    del value["ProvisionedDevices"]
+    value["Entitlements"] = {**value["Entitlements"], "get-task-allow": False}
+    value.update(overrides)
+    return value
+
+
+def tools(
+    *,
+    verify: tuple[int, str] = (0, "iosApp.app: valid on disk\niosApp.app: satisfies its DR\n"),
+    display: tuple[int, str] | None = None,
+    decoded: tuple[int, bytes] | None = None,
+    leaf: bytes | None = LEAF_CERT,
+    entitlements: dict[str, Any] | None = None,
+) -> tuple[Any, list[list[str]]]:
+    """A fake codesign/security runner and the commands it was asked to run."""
+    calls: list[list[str]] = []
+    decoded = decoded if decoded is not None else (0, plistlib.dumps(profile()))
+    display = display if display is not None else (0, codesign_display())
+    signed = entitlements if entitlements is not None else profile()["Entitlements"]
+
+    def run(args: list[str]) -> Any:
+        calls.append(args)
+        if args[:2] == ["codesign", "--verify"]:
+            return v.ToolResult(verify[0], b"", verify[1])
+        if args[:3] == ["codesign", "-d", "--verbose=4"]:
+            return v.ToolResult(display[0], b"", display[1])
+        if args[:3] == ["security", "cms", "-D"]:
+            return v.ToolResult(decoded[0], decoded[1], "")
+        if args[:2] == ["codesign", "-d"] and args[2].startswith("--extract-certificates="):
+            if leaf is None:
+                return v.ToolResult(1, b"", "code object is not signed at all")
+            Path(args[2].split("=", 1)[1] + "0").write_bytes(leaf)
+            return v.ToolResult(0, b"", "")
+        if args[:3] == ["codesign", "-d", "--entitlements"]:
+            return v.ToolResult(0, plistlib.dumps(signed), "")
+        raise AssertionError(f"unexpected command {args}")
+
+    return run, calls
+
+
+def signed_archive(tmp_path: Path) -> Path:
+    """An archive whose app holds a signature directory and a profile file (bytes are dummies:
+    every fact about them comes from the mocked tools, exactly as the real check reads them)."""
+    return make_archive(
+        tmp_path,
         extra_files={
             "_CodeSignature/CodeResources": b"<plist/>",
-            "embedded.mobileprovision": b"profile",
+            "embedded.mobileprovision": b"cms-envelope",
         },
     )
-    evaluation, report = run(signed, keyring, require_signed=True)
+
+
+def run_signed(archive: Path, keyring: Path, runner: Any, **extra: Any) -> tuple[Any, Any]:
+    return run(archive, keyring, require_signed=True, runner=runner, now=NOW, **extra)
+
+
+SIGNING_CHECKS = (
+    "signature-valid",
+    "signature-identity",
+    "provisioning-profile",
+    "profile-certificate",
+    "testflight-signing",
+)
+
+
+def test_a_development_signed_archive_passes(tmp_path: Path, keyring: Path) -> None:
+    runner, calls = tools()
+    evaluation, report = run_signed(signed_archive(tmp_path), keyring, runner)
     assert failed(evaluation) == {}
-    assert report["signed"] is True
-    common = ["--archive", str(signed), "--ota", "off", "--production-keyring", str(keyring)]
-    assert v.main([*common, "--require-signed"]) == v.EXIT_PASS
-    unsigned_cli = ["--archive", str(unsigned), "--ota", "off", "--require-signed"]
-    assert v.main(unsigned_cli) == v.EXIT_FAIL
+    assert {c.id for c in evaluation.checks} >= set(SIGNING_CHECKS)
+    assert report["signing"]["identity"] == DEVELOPMENT
+    assert report["signing"]["teamId"] == TEAM
+    assert "re-signs it with Apple Distribution" in report["signing"]["configuration"]
+    assert calls[0][:4] == ["codesign", "--verify", "--strict", "--verbose=2"]
+
+
+def test_an_app_store_signed_archive_passes(tmp_path: Path, keyring: Path) -> None:
+    runner, _ = tools(
+        display=(0, codesign_display(DISTRIBUTION)),
+        decoded=(0, plistlib.dumps(app_store_profile())),
+        entitlements=app_store_profile()["Entitlements"],
+    )
+    evaluation, report = run_signed(
+        signed_archive(tmp_path), keyring, runner, expected_team_id=TEAM
+    )
+    assert failed(evaluation) == {}
+    assert report["signing"]["configuration"].startswith("App Store")
+
+
+def test_dummy_signature_files_never_pass(tmp_path: Path, keyring: Path) -> None:
+    # What the real tools answer for an app that only has the two files, with dummy bytes.
+    runner, _ = tools(
+        verify=(1, "iosApp.app: code object is not signed at all\nIn architecture: arm64\n"),
+        display=(1, "iosApp.app: code object is not signed at all\n"),
+        decoded=(0, b""),
+        leaf=None,
+        entitlements={},
+    )
+    problems = failed(run_signed(signed_archive(tmp_path), keyring, runner)[0])
+    assert set(SIGNING_CHECKS) <= set(problems)
+    assert "not signed at all" in problems["signature-valid"]
+
+
+def test_a_damaged_signature_fails(tmp_path: Path, keyring: Path) -> None:
+    runner, _ = tools(verify=(1, "iosApp.app: a sealed resource is missing or invalid\n"))
+    problems = failed(run_signed(signed_archive(tmp_path), keyring, runner)[0])
+    assert list(problems) == ["signature-valid"]
+    assert "sealed resource" in problems["signature-valid"]
+
+
+def test_an_adhoc_signature_fails_although_codesign_verify_accepts_it(
+    tmp_path: Path, keyring: Path
+) -> None:
+    runner, _ = tools(display=(0, codesign_display(adhoc=True)))
+    problems = failed(run_signed(signed_archive(tmp_path), keyring, runner)[0])
+    assert "signature-valid" not in problems  # codesign --verify accepts ad-hoc signatures
+    assert "ad-hoc signature" in problems["signature-identity"]
+
+
+@pytest.mark.parametrize(
+    ("display", "problem"),
+    [
+        (codesign_display(identity="Developer ID Application: Owner (ABCDE12345)"), "is not Apple"),
+        (codesign_display(team="SHORT"), "TeamIdentifier='SHORT'"),
+        (codesign_display(identifier="com.example.other"), "Identifier='com.example.other'"),
+    ],
+)
+def test_the_signature_must_name_a_team_identity_for_the_app(
+    tmp_path: Path, keyring: Path, display: str, problem: str
+) -> None:
+    runner, _ = tools(display=(0, display))
+    problems = failed(run_signed(signed_archive(tmp_path), keyring, runner)[0])
+    assert problem in problems["signature-identity"]
+
+
+def test_another_team_than_expected_fails(tmp_path: Path, keyring: Path) -> None:
+    runner, _ = tools()
+    evaluation, _ = run_signed(
+        signed_archive(tmp_path), keyring, runner, expected_team_id="ZZZZZ99999"
+    )
+    assert "not the expected ZZZZZ99999" in failed(evaluation)["signature-identity"]
+
+
+def test_a_profile_of_another_team_fails(tmp_path: Path, keyring: Path) -> None:
+    other = profile(TeamIdentifier=["ZZZZZ99999"])
+    runner, _ = tools(decoded=(0, plistlib.dumps(other)))
+    problems = failed(run_signed(signed_archive(tmp_path), keyring, runner)[0])
+    assert "do not include the signature's ABCDE12345" in problems["provisioning-profile"]
+
+
+@pytest.mark.parametrize(
+    ("overrides", "problem"),
+    [
+        ({"ExpirationDate": dt.datetime(2026, 10, 20)}, "not in force"),
+        ({"CreationDate": dt.datetime(2026, 11, 1)}, "not in force"),
+        ({"ExpirationDate": "never"}, "not in force"),
+        ({"ProvisionsAllDevices": True}, "enterprise"),
+    ],
+)
+def test_an_invalid_profile_fails(
+    tmp_path: Path, keyring: Path, overrides: dict[str, Any], problem: str
+) -> None:
+    runner, _ = tools(decoded=(0, plistlib.dumps(profile(**overrides))))
+    problems = failed(run_signed(signed_archive(tmp_path), keyring, runner)[0])
+    assert problem in problems["provisioning-profile"]
+
+
+@pytest.mark.parametrize(
+    "app_id",
+    [f"{TEAM}.*", f"{TEAM}.com.example.other", "ZZZZZ99999.io.github.alexeykravtsov95.talentforge"],
+)
+def test_the_profile_must_name_exactly_this_app(tmp_path: Path, keyring: Path, app_id: str) -> None:
+    entitlements = {**profile()["Entitlements"], "application-identifier": app_id}
+    runner, _ = tools(decoded=(0, plistlib.dumps(profile(Entitlements=entitlements))))
+    problems = failed(run_signed(signed_archive(tmp_path), keyring, runner)[0])
+    assert "application-identifier" in problems["provisioning-profile"]
+
+
+@pytest.mark.parametrize(
+    "decoded", [(1, b""), (0, b"security: failed to decode message"), (0, b"")]
+)
+def test_an_undecodable_profile_fails(
+    tmp_path: Path, keyring: Path, decoded: tuple[int, bytes]
+) -> None:
+    runner, _ = tools(decoded=decoded)
+    problems = failed(run_signed(signed_archive(tmp_path), keyring, runner)[0])
+    assert "not a CMS-signed provisioning profile" in problems["provisioning-profile"]
+
+
+def test_a_missing_profile_fails(tmp_path: Path, keyring: Path) -> None:
+    archive = make_archive(tmp_path, extra_files={"_CodeSignature/CodeResources": b"<plist/>"})
+    runner, calls = tools()
+    problems = failed(run_signed(archive, keyring, runner)[0])
+    assert "provisioning-profile" in problems
+    assert not any(call[:2] == ["security", "cms"] for call in calls)
+
+
+def test_the_signing_certificate_must_be_in_the_profile(tmp_path: Path, keyring: Path) -> None:
+    runner, _ = tools(leaf=b"0\x82another-certificate")
+    problems = failed(run_signed(signed_archive(tmp_path), keyring, runner)[0])
+    assert list(problems) == ["profile-certificate"]
+
+
+def test_an_ad_hoc_distribution_profile_is_not_for_testflight(
+    tmp_path: Path, keyring: Path
+) -> None:
+    adhoc_profile = profile(Name="TalentForge Ad Hoc")
+    adhoc_profile["Entitlements"] = {**adhoc_profile["Entitlements"], "get-task-allow": False}
+    runner, _ = tools(
+        display=(0, codesign_display(DISTRIBUTION)),
+        decoded=(0, plistlib.dumps(adhoc_profile)),
+        entitlements=adhoc_profile["Entitlements"],
+    )
+    problems = failed(run_signed(signed_archive(tmp_path), keyring, runner)[0])
+    assert "Ad Hoc" in problems["testflight-signing"]
+
+
+def test_a_distribution_identity_with_get_task_allow_fails(tmp_path: Path, keyring: Path) -> None:
+    debuggable = app_store_profile()
+    debuggable["Entitlements"] = {**debuggable["Entitlements"], "get-task-allow": True}
+    runner, _ = tools(
+        display=(0, codesign_display(DISTRIBUTION)),
+        decoded=(0, plistlib.dumps(debuggable)),
+        entitlements=debuggable["Entitlements"],
+    )
+    problems = failed(run_signed(signed_archive(tmp_path), keyring, runner)[0])
+    assert "get-task-allow" in problems["testflight-signing"]
+
+
+def test_signed_entitlements_must_match_the_profile(tmp_path: Path, keyring: Path) -> None:
+    entitlements = {
+        **profile()["Entitlements"],
+        "com.apple.developer.team-identifier": "ZZZZZ99999",
+    }
+    runner, _ = tools(entitlements=entitlements)
+    problems = failed(run_signed(signed_archive(tmp_path), keyring, runner)[0])
+    assert "com.apple.developer.team-identifier" in problems["testflight-signing"]
+
+
+def test_without_the_signing_tools_the_check_is_blocked(
+    tmp_path: Path, keyring: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(v.shutil, "which", lambda tool: None)
+    with pytest.raises(v.ToolError, match="BLOCKED"):
+        run(signed_archive(tmp_path), keyring, require_signed=True)
+    arguments = ["--archive", str(signed_archive(tmp_path / "cli")), "--ota", "off"]
+    assert (
+        v.main([*arguments, "--production-keyring", str(keyring), "--require-signed"])
+        == v.EXIT_ERROR
+    )
+
+
+def test_unsigned_ci_archives_run_no_signing_tool(tmp_path: Path, keyring: Path) -> None:
+    def no_tools(args: list[str]) -> Any:
+        raise AssertionError("no signing tool may run without --require-signed")
+
+    evaluation, report = run(make_archive(tmp_path), keyring, runner=no_tools)
+    assert failed(evaluation) == {}
+    assert report["signed"] is False
+    assert report["signing"] is None
+    assert not {c.id for c in evaluation.checks} & set(SIGNING_CHECKS)
 
 
 def test_the_cli_requires_the_ota_mode(tmp_path: Path) -> None:

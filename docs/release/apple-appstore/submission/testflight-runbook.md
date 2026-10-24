@@ -97,7 +97,7 @@ cd mobile/iosApp && xcodebuild -project iosApp.xcodeproj -scheme iosApp -configu
 Из корня репозитория, тем же архивом:
 
 ```bash
-python3 scripts/verify_ios_archive.py --archive mobile/iosApp/build/TalentForge-1.0.0-1-ota-on.xcarchive --ota on --require-signed --expected-version 1.0.0 --expected-build 1 --expected-sdk iphoneos27.1 --expected-xcode-build 27A9275 --report mobile/iosApp/build/ios-archive-1.0.0-1-report.json
+python3 scripts/verify_ios_archive.py --archive mobile/iosApp/build/TalentForge-1.0.0-1-ota-on.xcarchive --ota on --require-signed --expected-team-id ABCDE12345 --expected-version 1.0.0 --expected-build 1 --expected-sdk iphoneos27.1 --expected-xcode-build 27A9275 --report mobile/iosApp/build/ios-archive-1.0.0-1-report.json
 ```
 
 Для варианта App Privacy B добавьте `--privacy-collected other-diagnostic`.
@@ -106,13 +106,20 @@ python3 scripts/verify_ios_archive.py --archive mobile/iosApp/build/TalentForge-
 
 | Проверка | Значение |
 |---|---|
-| `signed` | `_CodeSignature/CodeResources` и `embedded.mobileprovision` есть (флаг `--require-signed`, M5.IOS.3) |
+| `signature-valid` | `codesign --verify --strict --verbose=2` принимает `.app` (подпись не повреждена) |
+| `signature-identity` | по фактической подписи (`codesign -d --verbose=4`): identity — Apple Development или Apple Distribution, Team ID = `--expected-team-id`, идентификатор — `io.github.alexeykravtsov95.talentforge`; ad-hoc подпись — FAIL |
+| `provisioning-profile` | `security cms -D` декодирует `embedded.mobileprovision`: профиль действует сейчас, той же команды, ровно `<Team ID>.io.github.alexeykravtsov95.talentforge` (без `*`), не enterprise |
+| `profile-certificate` | сертификат подписи (`codesign --extract-certificates`) входит в `DeveloperCertificates` профиля |
+| `testflight-signing` | конфигурация годится для TestFlight: development-подпись архива (Organizer переподпишет её Apple Distribution при Distribute App → App Store Connect) или App Store-профиль с Apple Distribution. Ad Hoc-профиль и `get-task-allow` при distribution — FAIL; entitlements подписи совпадают с профилем |
 | `version`, `toolchain` | `1.0.0` / `1`, `iphoneos27.1`, `27A9275` |
 | `ota-on` | origin `https://ota.mythweld.com`, ровно ключи `tf-prod-2026a`, `tf-prod-2026b` |
 | `ota-no-staging-origin`, `ats-default`, `privacy-*`, `no-secrets` | PASS |
 
-Любой FAIL — архив не загружать. Отчёт (JSON) сохраните: SHA-256 исполняемого файла в нём связывает проверенный
-архив с загруженной сборкой.
+`--expected-team-id` — ваш Team ID (10 символов), только в командной строке; в git его нет. Проверка подписи
+работает только на macOS: без `codesign` или `security` скрипт завершается с кодом 2 (`ERROR: BLOCKED …`), а не PASS.
+
+Любой FAIL — архив не загружать. Отчёт (JSON) сохраните: в `signing` записаны identity, Team ID, профиль и срок его
+действия, а SHA-256 исполняемого файла связывает проверенный архив с загруженной сборкой.
 
 ## 5. Загрузка в TestFlight
 

@@ -21,5 +21,9 @@ iOS archive: TalentForge-ota-on.xcarchive
   [PASS] ota-no-staging-origin: no staging, loopback or emulator origin in the executable
   [PASS] ota-on: origin https://ota.mythweld.com and exactly the pinned keys ['tf-prod-2026a', 'tf-prod-2026b'] (SPKI SHA-256 verified)
   [PASS] no-secrets: no key files or private keys in the bundle
-  [FAIL] signed: _CodeSignature/CodeResources missing, embedded.mobileprovision missing (a distribution archive is signed by the owner's team)
+  [FAIL] signature-valid: codesign --verify --strict: exit 1: <scratch>/build/TalentForge-ota-on.xcarchive/Products/Applications/iosApp.app: code object is not signed at all / In architecture: arm64
+  [FAIL] signature-identity: codesign -d failed (exit 1); signing identity None is not Apple Development/Distribution; TeamIdentifier=None; Identifier=None
+  [FAIL] provisioning-profile: embedded.mobileprovision is missing or not a CMS-signed provisioning profile
+  [FAIL] profile-certificate: the signing certificate is missing or not in the profile
+  [FAIL] testflight-signing: no usable signing identity
 RESULT: FAIL
