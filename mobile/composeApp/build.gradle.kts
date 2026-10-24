@@ -1235,6 +1235,9 @@ androidComponents {
 tasks.named<Test>("desktopTest") {
     dependsOn(verifyOtaSettingsRules)
     dependsOn(verifyReleaseInternetRules)
+    // The drift and baseline tests read the canonical repository data directly; without this
+    // input a data-only change replays a cached result and the drift is never checked.
+    inputs.dir(repositoryRoot.resolve("data")).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("canonicalData")
     System.getProperty("talentforge.m41.screenshots")?.let {
         systemProperty("talentforge.m41.screenshots", it)
     }
