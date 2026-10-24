@@ -7,6 +7,7 @@
 | Инструменты | macOS Tahoe 26.6+, **Xcode 27.1 (27A9275)** stable — не 27.2 RC/beta |
 | Нельзя | коммитить Team ID, сертификаты, профили, ключи App Store Connect API, пароли; загружать сборку, не прошедшую шаг 4; отправлять на ревью до закрытия BLOCKED-пунктов [пакета](README.md#4-статус) |
 | Связанные документы | [пакет отправки](README.md) · [owner-guide OTA ON](../m5-ios-2-owner-guide.md) · [App Privacy](../app-privacy.md) · [iOS-политика](../../../legal/ios/README.md) |
+| До активации членства | необязательная проверка на личном iPhone через бесплатную Personal Team — [§8](#8-необязательно-личный-iphone-через-personal-team-до-активации-членства). Она **не** заменяет шаги 1–6 |
 
 Каждый шаг заканчивается проверкой. Если проверка не прошла — остановитесь, не переходите к следующему шагу.
 
@@ -145,12 +146,14 @@ python3 scripts/verify_ios_archive.py --archive mobile/iosApp/build/TalentForge-
    IPv6/NAT64, переустановка, хранилище).
 2. Основные сценарии [readiness §4.2](../readiness.md#42-сценарии-release-сборка-unsigned-симулятор-ota-off): выбор
    класса, tap выбирает и не тратит, `+`/`−`/`Max`, «Показать», pinch/pan, поворот, переименование, «Поделиться»
-   (системное меню), «Копировать код», импорт с предпросмотром, About (версия 1.0.0, «Проверить обновления»,
+   (системное меню), «Копировать код», импорт с предпросмотром (в том числе «Вставить» после копирования кода в
+   другом приложении, например в Заметках), About (версия 1.0.0, «Проверить обновления»,
    «Политика конфиденциальности» открывает Safari на `https://legal.mythweld.com/privacy-ios.html` в RU-интерфейсе
    и на `https://legal.mythweld.com/privacy-ios-en.html` в EN; приложение не открывает WebView).
 3. RU и EN (Настройки → TalentForge → Язык); VoiceOver — короткий проход по Home и редактору (в симуляторе не
    проверялся).
-4. Если есть iPad — запуск, дерево и панель инспектора, портрет и ландшафт.
+4. Если есть iPad — запуск, дерево и панель инспектора, портрет и ландшафт; при наличии аппаратной клавиатуры —
+   переименование билда с неё (наблюдение O-1 [приёмки на симуляторе](../m5-ios-acceptance.md#4-наблюдения-не-дефекты-проверить-на-устройстве)).
 
 Любой `FAIL` в P-1…P-8 или в основных сценариях — сборку на ревью не отправлять. Результаты занесите в
 [readiness M5.IOS.3 §8](../m5-ios-3-readiness.md#8-физическое-устройство-и-testflight).
@@ -185,3 +188,80 @@ python3 scripts/verify_appstore_screenshots.py
 7. **Add for Review** → **Submit to App Review** — только когда в [README §4](README.md#4-статус) не осталось BLOCKED.
 
 Агент этот шаг не выполняет и приложение не публикует.
+
+## 8. Необязательно: личный iPhone через Personal Team (до активации членства)
+
+Пока Apple Developer Program не одобрен, приложение можно поставить на свой iPhone бесплатной подписью Xcode
+(Personal Team). Это **только проверка на устройстве**: такая подпись не годится для TestFlight и App Store и не
+подтверждает готовность шагов 3–4; `verify_ios_archive.py --require-signed` к ней не применяется. Результаты
+записывайте как в §6, с пометкой «Personal Team».
+
+Правила:
+
+- Apple Account вводит **только владелец** — в Xcode на своём Mac.
+- Release bundle id `io.github.alexeykravtsov95.talentforge` в проекте не меняется и бесплатной командой **не**
+  регистрируется: id, зарегистрированный одной командой, недоступен другой, а освободит ли его Personal Team, Apple
+  не документирует. Поэтому для этой проверки — локальный id с суффиксом `.personal`, только в командной строке.
+  Это отдельное приложение: его билды не перейдут в сборку из TestFlight.
+- Team ID Personal Team, профили и изменения `project.pbxproj` **не коммитятся**; правила проверки подписи
+  (`verify_ios_project.py`, `verify_ios_archive.py --require-signed`) не меняются.
+
+1. **Apple Account.** Xcode → Settings → Accounts → «+» → Apple Account → вход своим Apple ID. В списке команд
+   появится «<имя> (Personal Team)».
+2. **Team ID.** Откройте `mobile/iosApp/iosApp.xcodeproj` → target `iosApp` → Signing & Capabilities → Team →
+   «(Personal Team)». Xcode запишет ID в проект — прочитайте его и сразу откатите проект:
+
+   ```bash
+   git diff mobile/iosApp/iosApp.xcodeproj/project.pbxproj | grep DEVELOPMENT_TEAM
+   ```
+
+   ```bash
+   git checkout -- mobile/iosApp/iosApp.xcodeproj/project.pbxproj
+   ```
+
+   Ошибку Xcode о недоступном bundle id в этом окне не исправляйте: id для проверки передаётся в п. 4.
+3. **iPhone.** Подключите кабелем, разблокируйте, на «Доверять этому компьютеру?» — «Доверять» и код-пароль. На
+   iOS 16+ нужен **Режим разработчика**: Настройки → Конфиденциальность и безопасность → Режим разработчика →
+   включить → перезагрузка → «Включить» (пункт появляется, когда Xcode увидел iPhone). UDID:
+
+   ```bash
+   xcrun devicectl list devices
+   ```
+
+4. **Сборка с OTA ON и установка** — Release, production-канал, как в шаге 3. Все команды п. 4 и 6 выполняются
+   **из корня репозитория** (без `cd`). `ABCDE12345` — Team ID из п. 2, `00008000-XXXXXXXXXXXXXXXX` — UDID из п. 3;
+   значения остаются только в истории терминала. В окружении не должно быть `TALENTFORGE_OTA_ANDROID_*` и
+   staging-настроек:
+
+   ```bash
+   export TALENTFORGE_OTA_IOS_PRODUCTION_ENABLED=true
+   ```
+
+   ```bash
+   xcodebuild -project mobile/iosApp/iosApp.xcodeproj -scheme iosApp -configuration Release -destination 'id=00008000-XXXXXXXXXXXXXXXX' -derivedDataPath mobile/iosApp/build/personal-team -allowProvisioningUpdates DEVELOPMENT_TEAM=ABCDE12345 PRODUCT_BUNDLE_IDENTIFIER=io.github.alexeykravtsov95.talentforge.personal build
+   ```
+
+   ```bash
+   xcrun devicectl device install app --device 00008000-XXXXXXXXXXXXXXXX mobile/iosApp/build/personal-team/Build/Products/Release-iphoneos/iosApp.app
+   ```
+
+   При первом открытии iOS сообщит о ненадёжном разработчике: Настройки → Основные → VPN и управление устройством →
+   «Apple Development: <ваш Apple ID>» → «Доверять» (нужен интернет). Затем откройте TalentForge с экрана «Домой».
+5. **Проверка.** About: версия 1.0.0, раздел «Данные талантов» и кнопка «Проверить обновления» — признак OTA ON.
+   Дальше — сценарии §6 п. 1–3 (авиарежим P-1/P-8, политика в Safari из About и т. д.).
+6. **Срок подписи.** Профиль Personal Team действует **7 дней**, после этого приложение не запускается. Чтобы
+   продолжить, повторите п. 4: установка поверх сохраняет билды, удаление приложения их стирает. После проверки
+   удалите приложение с iPhone и проверьте рабочую копию (из корня репозитория):
+
+   ```bash
+   git status --short -- mobile/iosApp
+   ```
+
+   ```bash
+   python3 scripts/verify_ios_project.py --expected-version 1.0.0 --expected-build 1
+   ```
+
+   Ожидается пустой вывод `git status` и `RESULT: PASS`. Каталог `mobile/iosApp/build/` в `.gitignore`.
+
+После одобрения Developer Program начинайте с шага 1: Personal Team, суффикс `.personal` и её профиль к TestFlight
+отношения не имеют.

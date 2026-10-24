@@ -161,7 +161,8 @@ iPhone 17 Pro и iPhone 18 Pro относятся к одному классу �
 ## 8. Физическое устройство и TestFlight
 
 Заполняет владелец по [runbook §6](submission/testflight-runbook.md#6-проверка-на-физическом-iphone): `PASS` / `FAIL` /
-`NOT RUN`, время (UTC), модель, версия iOS.
+`NOT RUN`, время (UTC), модель, версия iOS. Те же сценарии на симуляторах (Release OTA ON, `c21be4f`, Xcode 26.4.1) —
+[приёмка перед TestFlight](m5-ios-acceptance.md); устройство она не заменяет.
 
 | Шаг | Результат |
 |---|---|
