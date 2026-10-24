@@ -1,0 +1,62 @@
+App Store metadata:
+  copyright.txt: 20 characters, 20 bytes
+  en-US/description.txt: 1907 characters, 1941 bytes
+  en-US/keywords.txt: 98 characters, 98 bytes
+  en-US/name.txt: 11 characters, 11 bytes
+  en-US/privacy_url.txt: 46 characters, 46 bytes
+  en-US/promotional_text.txt: 163 characters, 163 bytes
+  en-US/subtitle.txt: 30 characters, 30 bytes
+  en-US/support_url.txt: 27 characters, 27 bytes
+  primary_category.txt: 9 characters, 9 bytes
+  review_information/notes.txt: 2020 characters, 2032 bytes
+  ru/description.txt: 2073 characters, 3668 bytes
+  ru/keywords.txt: 53 characters, 100 bytes
+  ru/name.txt: 11 characters, 11 bytes
+  ru/privacy_url.txt: 43 characters, 43 bytes
+  ru/promotional_text.txt: 170 characters, 288 bytes
+  ru/subtitle.txt: 27 characters, 40 bytes
+  ru/support_url.txt: 27 characters, 27 bytes
+  secondary_category.txt: 9 characters, 9 bytes
+  [PASS] format:en-US/name.txt: well formed
+  [PASS] format:en-US/subtitle.txt: well formed
+  [PASS] format:en-US/promotional_text.txt: well formed
+  [PASS] format:en-US/description.txt: well formed
+  [PASS] format:en-US/keywords.txt: well formed
+  [PASS] format:en-US/support_url.txt: well formed
+  [PASS] format:en-US/privacy_url.txt: well formed
+  [PASS] limit:en-US/name: 11 characters (allowed 2-30)
+  [PASS] limit:en-US/subtitle: 30 characters (allowed 1-30)
+  [PASS] limit:en-US/promotional_text: 163 characters (allowed 1-170)
+  [PASS] limit:en-US/description: 1907 characters (allowed 1-4000)
+  [PASS] keywords:en-US: 14 keywords, 98 bytes
+  [PASS] name:en-US: name='TalentForge' (expected 'TalentForge')
+  [PASS] positioning:en-US/subtitle: the subtitle must name the game ('WoW: Forever'): 'Talent builds for WoW: Forever'
+  [PASS] positioning:en-US/description: names the game, the unofficial status, the disclaimer and the OTA facts
+  [PASS] urls:en-US: support='https://legal.mythweld.com/', privacy='https://legal.mythweld.com/privacy-ios-en.html' (expected 'https://legal.mythweld.com/', 'https://legal.mythweld.com/privacy-ios-en.html')
+  [PASS] format:ru/name.txt: well formed
+  [PASS] format:ru/subtitle.txt: well formed
+  [PASS] format:ru/promotional_text.txt: well formed
+  [PASS] format:ru/description.txt: well formed
+  [PASS] format:ru/keywords.txt: well formed
+  [PASS] format:ru/support_url.txt: well formed
+  [PASS] format:ru/privacy_url.txt: well formed
+  [PASS] limit:ru/name: 11 characters (allowed 2-30)
+  [PASS] limit:ru/subtitle: 27 characters (allowed 1-30)
+  [PASS] limit:ru/promotional_text: 170 characters (allowed 1-170)
+  [PASS] limit:ru/description: 2073 characters (allowed 1-4000)
+  [PASS] keywords:ru: 7 keywords, 100 bytes
+  [PASS] name:ru: name='TalentForge' (expected 'TalentForge')
+  [PASS] positioning:ru/subtitle: the subtitle must name the game ('WoW: Forever'): 'Билды талантов WoW: Forever'
+  [PASS] positioning:ru/description: names the game, the unofficial status, the disclaimer and the OTA facts
+  [PASS] urls:ru: support='https://legal.mythweld.com/', privacy='https://legal.mythweld.com/privacy-ios.html' (expected 'https://legal.mythweld.com/', 'https://legal.mythweld.com/privacy-ios.html')
+  [PASS] format:review_information/notes.txt: well formed
+  [PASS] limit:review_information/notes: 2032 bytes (limit 4000)
+  [PASS] review-notes: the unofficial status and the OTA mechanism (2.5.2) are explained
+  [PASS] format:copyright.txt: well formed
+  [PASS] copyright: copyright='2026 Alexey Kravtsov' (expected '<year> <owner>')
+  [PASS] format:primary_category.txt: well formed
+  [PASS] format:secondary_category.txt: well formed
+  [PASS] categories: primary='Reference', secondary='Utilities' (two different App Store categories, not Games: TalentForge is a tool, not a game)
+  [PASS] ota-on-claims: no text claims that the app makes no network requests
+  [PASS] other-platforms: no other store or platform is named
+RESULT: PASS

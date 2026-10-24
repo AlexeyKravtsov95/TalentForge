@@ -1,0 +1,4 @@
+iOS privacy pages published on 2026-10-25:
+  [FAIL] https://legal.mythweld.com/privacy-ios.html: HTTP 403 (expected 200)
+  [FAIL] https://legal.mythweld.com/privacy-ios-en.html: HTTP 403 (expected 200)
+RESULT: FAIL
