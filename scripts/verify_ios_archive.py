@@ -44,8 +44,10 @@ anything it cannot establish is a failure, never a pass:
 - no private key, certificate store or key file is bundled.
 
 The report holds public facts only: file names, sizes, SHA-256 digests and plist values.
-Signing is reported (``signed``), not required: the readiness archive is built unsigned; the
-owner signs the distribution archive with their own team.
+Signing is reported (``signed``) and required only with ``--require-signed`` (M5.IOS.3): the CI
+archive is built unsigned; the owner signs the distribution archive with their own team, and
+then the app must hold a code signature (``_CodeSignature/CodeResources``) and an embedded
+provisioning profile (``embedded.mobileprovision``).
 
 Usage::
 
@@ -430,6 +432,7 @@ def evaluate(
     keyring: Path,
     ota: str,
     privacy_collected: str = "none",
+    require_signed: bool = False,
 ) -> tuple[Evaluation, dict[str, Any]]:
     """Run every check on ``archive``; raises ToolError when a check cannot run."""
     if ota not in OTA_MODES:
@@ -642,11 +645,23 @@ def evaluate(
         "; ".join(forbidden) or "no key files or private keys in the bundle",
     )
 
+    signed = (app / "_CodeSignature").is_dir()
+    if require_signed:
+        code_resources = (app / "_CodeSignature" / "CodeResources").is_file()
+        profile = (app / "embedded.mobileprovision").is_file()
+        evaluation.add(
+            "signed",
+            code_resources and profile,
+            f"_CodeSignature/CodeResources {'present' if code_resources else 'missing'}, "
+            f"embedded.mobileprovision {'present' if profile else 'missing'} "
+            "(a distribution archive is signed by the owner's team)",
+        )
+
     report: dict[str, Any] = {
         "schema": REPORT_SCHEMA,
         "archive": archive.name,
         "application": app.name,
-        "signed": (app / "_CodeSignature").is_dir(),
+        "signed": signed,
         "info": {
             key: info.get(key)
             for key in (
@@ -778,6 +793,11 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
         default=str(DEFAULT_PRODUCTION_KEYRING),
         help="the committed production keyring (its fingerprints must be the pinned ones)",
     )
+    parser.add_argument(
+        "--require-signed",
+        action="store_true",
+        help="the archive must be signed (the owner's distribution archive, M5.IOS.3)",
+    )
     parser.add_argument("--report", help="write the JSON report to this file")
     return parser.parse_args(argv)
 
@@ -796,6 +816,7 @@ def main(argv: list[str] | None = None) -> int:
             keyring=Path(args.production_keyring),
             ota=args.ota,
             privacy_collected=args.privacy_collected,
+            require_signed=args.require_signed,
         )
     except ToolError as error:
         print(f"ERROR: {error}", file=sys.stderr)

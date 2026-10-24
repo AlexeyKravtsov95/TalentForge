@@ -198,7 +198,7 @@ def ota_on_tail(
     return b"".join(utf16(text) for text in (origin, *ids, *spkis))
 
 
-def run(archive: Path, keyring: Path, **expected: str | None) -> tuple[Any, dict[str, Any]]:
+def run(archive: Path, keyring: Path, **expected: Any) -> tuple[Any, dict[str, Any]]:
     arguments: dict[str, Any] = {
         "expected_version": "1.0.0",
         "expected_build": "1",
@@ -522,6 +522,36 @@ def test_cli_writes_a_report_and_exits_by_result(tmp_path: Path, keyring: Path) 
     assert (
         v.main(["--archive", str(tmp_path / "missing.xcarchive"), "--ota", "off"]) == v.EXIT_ERROR
     )
+
+
+def test_a_distribution_archive_must_be_signed_when_required(tmp_path: Path, keyring: Path) -> None:
+    unsigned = make_archive(tmp_path / "unsigned")
+    evaluation, report = run(unsigned, keyring)
+    assert "signed" not in {check.id for check in evaluation.checks}
+    assert report["signed"] is False
+    evaluation, _ = run(unsigned, keyring, require_signed=True)
+    assert "_CodeSignature/CodeResources missing" in failed(evaluation)["signed"]
+
+    signature_only = make_archive(
+        tmp_path / "no-profile", extra_files={"_CodeSignature/CodeResources": b"<plist/>"}
+    )
+    evaluation, _ = run(signature_only, keyring, require_signed=True)
+    assert "embedded.mobileprovision missing" in failed(evaluation)["signed"]
+
+    signed = make_archive(
+        tmp_path / "signed",
+        extra_files={
+            "_CodeSignature/CodeResources": b"<plist/>",
+            "embedded.mobileprovision": b"profile",
+        },
+    )
+    evaluation, report = run(signed, keyring, require_signed=True)
+    assert failed(evaluation) == {}
+    assert report["signed"] is True
+    common = ["--archive", str(signed), "--ota", "off", "--production-keyring", str(keyring)]
+    assert v.main([*common, "--require-signed"]) == v.EXIT_PASS
+    unsigned_cli = ["--archive", str(unsigned), "--ota", "off", "--require-signed"]
+    assert v.main(unsigned_cli) == v.EXIT_FAIL
 
 
 def test_the_cli_requires_the_ota_mode(tmp_path: Path) -> None:
