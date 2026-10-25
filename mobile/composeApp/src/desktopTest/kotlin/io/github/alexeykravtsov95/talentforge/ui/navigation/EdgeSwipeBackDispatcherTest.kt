@@ -87,18 +87,42 @@ class EdgeSwipeBackDispatcherTest {
     }
 
     @Test
-    fun aHandlerLeavingMidGestureIsCancelledAndTheGestureEnds() {
+    fun aHandlerLeavingMidGestureIsCancelledAndTheRestOfTheGestureReachesNobody() {
         handler("below")
         val page = handler("page")
         dispatcher.start()
         dispatcher.unregister(page)
         dispatcher.progress(0.5f)
+        // the finger lifts: never an instant Back of the screen that is newest now
+        assertFalse(dispatcher.complete())
         assertEquals(listOf("page:start", "page:cancel"), log, "the gesture ended with the handler")
 
         // the next gesture goes to whoever is newest now
         dispatcher.start()
         dispatcher.complete()
         assertEquals(listOf("page:start", "page:cancel", "below:start", "below:complete"), log)
+    }
+
+    @Test
+    fun aHandlerAppearingAfterAnUntakenStartNeverReceivesThatGesturesRelease() {
+        val page = handler("page", enabled = false)
+        assertFalse(dispatcher.start())
+        page.enabled = true
+        // e.g. the import finished during a held swipe and opened the editor
+        handler("editor")
+        assertFalse(dispatcher.complete())
+        assertEquals(emptyList(), log)
+    }
+
+    @Test
+    fun anInstantBackStillReachesTheNewestHandlerAfterAnOrphanedGesture() {
+        handler("below")
+        val page = handler("page")
+        dispatcher.start()
+        dispatcher.unregister(page)
+        dispatcher.cancel()
+        assertTrue(dispatcher.complete(), "a hardware Esc after the gesture ended")
+        assertEquals(listOf("page:start", "page:cancel", "below:complete"), log)
     }
 
     @Test

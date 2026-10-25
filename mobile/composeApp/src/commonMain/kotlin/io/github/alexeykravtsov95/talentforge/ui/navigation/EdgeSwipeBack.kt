@@ -20,7 +20,9 @@ import androidx.compose.runtime.staticCompositionLocalOf
  *   ENABLED one takes the gesture (the Android/desktop dispatcher rule), so a
  *   sheet, dialog or running operation still closes or holds it first;
  * - the handler that took the gesture's start keeps it until it completes or
- *   is cancelled — one gesture, one handler, at most one completion;
+ *   is cancelled — one gesture, one handler, at most one completion; if that
+ *   handler leaves meanwhile (its screen is gone) the rest of the gesture
+ *   reaches nobody: its release is never another screen's Back;
  * - a completion without a start (a hardware Esc on iPad) goes to the newest
  *   enabled handler, like an instant Back.
  *
@@ -55,6 +57,9 @@ internal class EdgeSwipeBackDispatcher {
     private val handlers = mutableListOf<Handler>()
     private var inProgress: Handler? = null
 
+    /** Between a gesture's start and its end, whether or not a handler still holds it. */
+    private var gestureActive = false
+
     /** Told whenever [hasEnabledHandler] changes: the iOS host enables its recognizer only then. */
     var onHasEnabledHandlerChanged: ((Boolean) -> Unit)? = null
         set(value) {
@@ -84,7 +89,8 @@ internal class EdgeSwipeBackDispatcher {
 
     /** A gesture began: the newest enabled handler takes it; `false` when none wants it. */
     fun start(): Boolean {
-        if (inProgress != null) return true
+        if (gestureActive) return inProgress != null
+        gestureActive = true
         val target = newestEnabled() ?: return false
         inProgress = target
         target.onStarted()
@@ -96,17 +102,26 @@ internal class EdgeSwipeBackDispatcher {
     }
 
     fun cancel() {
-        val target = inProgress ?: return
-        inProgress = null
-        target.onCancelled()
+        val target = inProgress
+        endGesture()
+        target?.onCancelled()
     }
 
-    /** The gesture completed (or an instant Back arrived); `false` when nobody took it. */
+    /**
+     * The gesture completed, or an instant Back arrived; `false` when nobody took it. A
+     * started gesture completes only for the handler that took it — none once it left.
+     */
     fun complete(): Boolean {
-        val target = inProgress ?: newestEnabled() ?: return false
-        inProgress = null
+        val target = if (gestureActive) inProgress else newestEnabled()
+        endGesture()
+        target ?: return false
         target.onCompleted()
         return true
+    }
+
+    private fun endGesture() {
+        inProgress = null
+        gestureActive = false
     }
 
     private fun newestEnabled(): Handler? = handlers.lastOrNull { it.enabled }
