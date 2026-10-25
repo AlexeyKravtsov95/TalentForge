@@ -12,6 +12,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
@@ -166,7 +167,8 @@ class AllBuildsRowLayoutUiTest {
 
     private fun openAllBuilds() {
         awaitText("CONTINUE")
-        composeRule.onNodeWithText("All builds 1").performClick()
+        // TF-UX-01: at the smallest width / 200 % the link is below the fold, under the purpose subtitle
+        composeRule.onNodeWithText("All builds 1").performScrollTo().performClick()
         awaitText("Builds 1")
     }
 

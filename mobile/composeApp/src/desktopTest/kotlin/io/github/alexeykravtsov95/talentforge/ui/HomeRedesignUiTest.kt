@@ -6,6 +6,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -52,11 +53,11 @@ class HomeRedesignUiTest {
 
     private fun repository() = LocalBuildRepository(storage, clock, ids)
 
-    private fun composeApp() {
+    private fun composeApp(widthDp: Int = 360, heightDp: Int = 760, fontScale: Float = 1f) {
         composeRule.setContent {
             TalentForgeTheme {
-                CompositionLocalProvider(LocalDensity provides Density(1f)) {
-                    Box(Modifier.size(360.dp, 760.dp)) {
+                CompositionLocalProvider(LocalDensity provides Density(1f, fontScale)) {
+                    Box(Modifier.size(widthDp.dp, heightDp.dp)) {
                         App(storage = storage, clock = clock, ids = ids)
                     }
                 }
@@ -145,6 +146,64 @@ class HomeRedesignUiTest {
         composeRule.onNodeWithText("New build").performClick()
 
         awaitText("Choose a class")
+    }
+
+    // -------------------------------------------------------- TF-UX-01 purpose subtitle
+
+    /**
+     * The purpose line sits directly under the wordmark, starts at its first
+     * letter, never reaches into the About target, and stays above the
+     * pinned New build / Import build pair, which keep their order.
+     */
+    private fun assertPurposeSubtitleLayout(subtitle: String, about: String, newBuild: String, importBuild: String) {
+        val wordmark = composeRule.onNodeWithText("TalentForge").fetchSemanticsNode().boundsInRoot
+        val line = composeRule.onNodeWithText(subtitle).fetchSemanticsNode().boundsInRoot
+        val aboutTarget = composeRule.onAllNodesWithContentDescription(about).fetchSemanticsNodes().single().boundsInRoot
+        val newBuildButton = composeRule.onNodeWithText(newBuild).fetchSemanticsNode().boundsInRoot
+        val importAction = composeRule.onNodeWithText(importBuild).fetchSemanticsNode().boundsInRoot
+        kotlin.test.assertTrue(line.top >= wordmark.bottom - 0.5f, "subtitle $line must sit under the wordmark $wordmark")
+        kotlin.test.assertTrue(
+            kotlin.math.abs(line.left - wordmark.left) <= 1f,
+            "subtitle $line must start at the wordmark's first letter $wordmark",
+        )
+        kotlin.test.assertTrue(line.right <= aboutTarget.left + 0.5f, "subtitle $line overlaps the About target $aboutTarget")
+        kotlin.test.assertTrue(line.bottom <= newBuildButton.top, "subtitle $line overlaps New build $newBuildButton")
+        kotlin.test.assertTrue(newBuildButton.bottom <= importAction.top, "Import build $importAction must stay under New build $newBuildButton")
+    }
+
+    @Test
+    fun emptyHomeExplainsThePurposeUnderTheWordmark() {
+        composeApp()
+        awaitText("No builds yet")
+
+        assertPurposeSubtitleLayout("Talent build planner for the game WoW\u00A0Forever", "About", "New build", "Import build")
+    }
+
+    @Test
+    fun populatedHomeKeepsThePurposeSubtitle() {
+        persistDraft("WARRIOR")
+        persistDraft("MAGE")
+        composeApp()
+        awaitText("RECENT")
+
+        assertPurposeSubtitleLayout("Talent build planner for the game WoW\u00A0Forever", "About", "New build", "Import build")
+    }
+
+    @Test
+    fun thePurposeSubtitleWrapsWholeOnACompactPhoneAtLargeTextInRussian() {
+        uiLanguage.language = AppLanguage.RUSSIAN
+        composeApp(widthDp = 320, heightDp = 568, fontScale = 2f)
+        awaitText("Пока нет билдов")
+
+        val subtitle = "Планировщик талантов для игры WoW\u00A0Forever"
+        // wraps instead of clipping: more than one line, nothing ellipsized
+        val node = composeRule.onNodeWithText(subtitle).fetchSemanticsNode()
+        val layouts = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+        node.config[androidx.compose.ui.semantics.SemanticsActions.GetTextLayoutResult].action?.invoke(layouts)
+        val layout = layouts.single()
+        kotlin.test.assertTrue(layout.lineCount > 1, "the subtitle wraps at 320 dp @200 % (lines: ${layout.lineCount})")
+        kotlin.test.assertTrue(!layout.hasVisualOverflow, "the subtitle is never clipped")
+        assertPurposeSubtitleLayout(subtitle, "О приложении", "Новый билд", "Импортировать билд")
     }
 
     // ------------------------------------------------------- All Builds reachability

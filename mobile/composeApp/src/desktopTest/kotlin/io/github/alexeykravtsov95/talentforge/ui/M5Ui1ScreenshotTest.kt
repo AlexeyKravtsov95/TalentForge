@@ -12,6 +12,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.alexeykravtsov95.talentforge.allocation.TalentAllocationEngine
@@ -196,7 +197,8 @@ class M5Ui1ScreenshotTest {
 
         composeApp(320, 568, fontScale = 2f)
         awaitText("All builds 4")
-        composeRule.onNodeWithText("All builds 4").performClick()
+        // TF-UX-01: under the purpose subtitle the link scrolls into view here
+        composeRule.onNodeWithText("All builds 4").performScrollTo().performClick()
         awaitText("Builds 4")
         shoot("m5ui1-320x568-font200-all-builds.png")
 
