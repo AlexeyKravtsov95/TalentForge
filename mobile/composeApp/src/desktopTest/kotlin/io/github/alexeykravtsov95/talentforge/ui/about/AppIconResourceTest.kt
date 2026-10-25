@@ -12,9 +12,9 @@ import kotlin.test.assertTrue
 /**
  * The icon in the About header is the APPROVED app-icon artwork, never a redrawn
  * stand-in. Since the owner replaced the iOS icon (2026-10-25) the common resource
- * is a 192 × 192 px downscale of the same source as the iOS AppIcon
- * (docs/release/apple-appstore/assets/TalentForge-AppIcon-source-1254.png), no
- * longer a copy of the Android launcher raster, which keeps its earlier artwork.
+ * is a 192 × 192 px downscale of the same image as the iOS AppIcon (the area inside
+ * the plate frame of docs/release/apple-appstore/assets/TalentForge-AppIcon-source-1254.png),
+ * no longer a copy of the Android launcher raster, which keeps its earlier artwork.
  * Replacing the iOS AppIcon without regenerating the About copy fails here.
  */
 class AppIconResourceTest {
