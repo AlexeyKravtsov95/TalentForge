@@ -197,6 +197,8 @@ class M5Ui1ScreenshotTest {
 
         composeApp(320, 568, fontScale = 2f)
         awaitText("All builds 4")
+        // PR #87 review: the populated Home at 320 dp / 200 % — the wordmark stays whole beside About
+        shoot("m5ui1-320x568-font200.png")
         // TF-UX-01: under the purpose subtitle the link scrolls into view here
         composeRule.onNodeWithText("All builds 4").performScrollTo().performClick()
         awaitText("Builds 4")

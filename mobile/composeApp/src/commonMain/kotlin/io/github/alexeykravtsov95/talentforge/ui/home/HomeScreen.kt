@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -412,8 +413,15 @@ private fun NewUserContent(emptyCopyTopGap: Dp, product: DatasetBundleId) {
  * The temporary brand mark: outlined diamond with an accent core + wordmark
  * (spec B), and (M5.RC.2b) the low-emphasis About entry at the row's end — a
  * drawn ⓘ glyph in a 48 dp target named "About" for accessibility, the only
- * way to the About screen (no persistent chrome). A glyph, not a text link:
- * the wordmark stays one line at 320 dp and 200 % text in every language.
+ * way to the About screen (no persistent chrome). A glyph, not a text link,
+ * so the 48 dp target never competes with the wordmark for width.
+ *
+ * The wordmark is one word and stays one line: it keeps the spec-B size
+ * (scaled by the user's font scale) wherever it fits and, only where the
+ * width beside the mark and the 48 dp About target is too narrow for it (a
+ * compact phone at 200 % text — Linux, Android, iOS and macOS fonts differ
+ * in width), shrinks to the size that fits, as the About screen's name does.
+ * Never broken, cut or pushed into About; the subtitle keeps its full scale.
  *
  * TF-UX-01: under the wordmark, aligned with its first letter, a secondary
  * one-sentence subtitle names what the app is (a talent planner for the
@@ -442,6 +450,8 @@ private fun BrandHeader(onAbout: () -> Unit) {
                 BasicText(
                     "TalentForge",
                     style = HomeBrandStyle.copy(color = colors.textPrimary),
+                    maxLines = 1,
+                    autoSize = TextAutoSize.StepBased(maxFontSize = HomeBrandStyle.fontSize),
                 )
             }
             BasicText(
