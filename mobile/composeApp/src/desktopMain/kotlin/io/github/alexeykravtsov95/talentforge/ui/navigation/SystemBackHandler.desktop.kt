@@ -16,7 +16,7 @@ import androidx.compose.runtime.rememberUpdatedState
  * S6 Back order be exercised (and tested) off Android.
  */
 @Composable
-actual fun PlatformBackHandler(enabled: Boolean, onBack: () -> Unit) {
+internal actual fun SystemBackHandler(enabled: Boolean, onBack: () -> Unit) {
     val currentOnBack by rememberUpdatedState(onBack)
     val handler = remember { DesktopBackDispatcher.Handler(enabled) { currentOnBack() } }
     SideEffect { handler.enabled = enabled }
@@ -26,7 +26,7 @@ actual fun PlatformBackHandler(enabled: Boolean, onBack: () -> Unit) {
     }
 }
 
-/** The desktop host's back stack of [PlatformBackHandler]s (UI thread only). */
+/** The desktop host's back stack of [SystemBackHandler]s (UI thread only). */
 internal object DesktopBackDispatcher {
 
     class Handler(var enabled: Boolean, val onBack: () -> Unit)

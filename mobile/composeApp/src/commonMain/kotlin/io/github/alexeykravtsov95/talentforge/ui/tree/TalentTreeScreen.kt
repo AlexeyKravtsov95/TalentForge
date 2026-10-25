@@ -614,7 +614,10 @@ private fun ReadyTalentTreeScreen(
         // M5.UX.2b.1: only the portrait sheet expands — the landscape side panel
         // is the full detail already, so there Back clears the selection at once
         // (an expansion carried over from portrait is kept for the way back).
-        PlatformBackHandler(enabled = buildActionsOpen || selectedNodeId != null) {
+        // iOS edge swipe: only the open ⋯ sheet takes it — otherwise the swipe
+        // does what the header chevron does and pops the editor (selection and
+        // inspector are never what a swipe back changes).
+        PlatformBackHandler(enabled = buildActionsOpen || selectedNodeId != null, edgeSwipe = buildActionsOpen) {
             val expanded = inspectorExpanded && layoutClass == TalentTreeLayoutClass.PORTRAIT
             when (editorBackStep(expanded, selectedNodeId != null, buildActionsOpen)) {
                 EditorBackStep.CLOSE_BUILD_ACTIONS -> buildActionsOpen = false
