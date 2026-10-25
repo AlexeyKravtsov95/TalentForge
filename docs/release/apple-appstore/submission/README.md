@@ -96,8 +96,8 @@ Keywords 100, App Review Notes 4000. Счёт — `verify_appstore_metadata.py` 
 | B1 | Метаданные EN/RU: лимиты Apple, позиционирование, OTA ON, URL | **PASS** | `verify_appstore_metadata.py` → PASS (§2) |
 | B2 | Утверждение текстов владельцем | **BLOCKED** | владелец |
 | C1 | iOS-политика RU/EN опубликована (HTTP 200, HTML с декларацией UTF-8, байты = файл с датой) | **PASS** | опубликовано 2026-10-24; `verify-live --date 2026-10-24` → PASS для обеих страниц на 2026-10-25; [evidence](../evidence/m5-ios-3/privacy-pages-verify-live-2026-10-25.txt) |
-| C2 | Ссылка на политику в About | **PASS** (код и тесты) | iOS открывает отдельную RU/EN-страницу по языку интерфейса; native-маппинг — `IosAboutFactsTest` (iOS CI), нажатие — desktop `AboutScreenUiTest`; открытие Safari на физическом iPhone — шаг D4, [runbook §6](testflight-runbook.md#6-проверка-на-физическом-iphone) п. 2 |
-| C3 | App Privacy для OTA ON | **BLOCKED** (OA-1) | [app-privacy §5](../app-privacy.md#5-аудит-m5ios3-ota-on) |
+| C2 | Ссылка на политику в About | **PASS** (код, тесты, симулятор) | iOS открывает отдельную RU/EN-страницу по языку интерфейса; native-маппинг — `IosAboutFactsTest` (iOS CI), нажатие — desktop `AboutScreenUiTest`; нажатие в Release OTA ON на симуляторе iPhone (RU и EN) и iPad (EN) открывает Safari на нужной iOS-странице, возврат сохраняет состояние — [приёмка §2.4](../m5-ios-acceptance.md#24-about-политика-конфиденциальности); физический iPhone — шаг D4, [runbook §6](testflight-runbook.md#6-проверка-на-физическом-iphone) п. 2 |
+| C3 | App Privacy для OTA ON | **BLOCKED** (OA-1, решение владельца) | [app-privacy §5](../app-privacy.md#5-аудит-m5ios3-ota-on); сообщение владельца 2026-10-25 о журналах VK Cloud — [OWNER_ACTION_REQUIRED §1.1](../../../legal/ota-on/OWNER_ACTION_REQUIRED.md#11-сообщение-владельца-2026-10-25) |
 | C4 | App Review Notes | **PASS** (текст) | `review_information/notes.txt` |
 | D1 | `iosApp.xcodeproj` пригоден для App Store Connect | **PASS** | `verify_ios_project.py` → 14/14 |
 | D2 | Unsigned-архив OTA ON на текущем `main` | **PASS** (локально, Xcode 26.4.1 / SDK `iphoneos26.4`) | 22/22 ([evidence](../evidence/m5-ios-3/)); Xcode 27.1 — CI `mobile-macos` |
@@ -105,3 +105,4 @@ Keywords 100, App Review Notes 4000. Счёт — `verify_appstore_metadata.py` 
 | D4 | TestFlight, физический iPhone | **BLOCKED** | владелец, [runbook §5–6](testflight-runbook.md#5-загрузка-в-testflight) |
 | D5 | Content Rights, Age Rating, DSA, цена | **BLOCKED** (решения владельца) | §3 |
 | D6 | Загрузка, отправка на ревью, публикация | **NOT RUN** | запрещено условиями задачи; только владелец |
+| E | Пользовательские сценарии Release OTA ON (`c21be4f`) на симуляторах iPhone и iPad | **PASS** (локально, Xcode 26.4.1); первый запуск без сети — **NOT RUN** на симуляторе | [приёмка](../m5-ios-acceptance.md); без сети — на устройстве, [runbook §6](testflight-runbook.md#6-проверка-на-физическом-iphone) или [§8](testflight-runbook.md#8-необязательно-личный-iphone-через-personal-team-до-активации-членства) |
