@@ -5,7 +5,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -316,6 +319,43 @@ class EdgeSwipeBackAppUiTest {
         release(complete = true)
         assertTrue(has("Builds 2"))
         assertFalse(has("CONTINUE"))
+    }
+
+    @Test
+    fun noTapReachesThePreviewBeneathOrTheLeavingPageWhileTheTransitionRuns() {
+        persistDraft("WARRIOR")
+        composeApp(reducedMotion = false)
+        awaitText("Continue editing")
+        // where Home's own button is: the preview beneath the editor draws it at the same place
+        val homeButton = composeRule.onNodeWithText("Continue editing").fetchSemanticsNode().boundsInRoot.center
+        composeRule.onNodeWithText("Continue editing").performClick()
+        composeRule.waitUntil(10_000) { onEditor() }
+
+        // the finger rests mid-screen: Home is composed beneath, its button under the left half
+        swipeTo(0.5f)
+        composeRule.waitUntil(5_000) { hasTag(BACK_SWIPE_BENEATH_TAG) }
+        Thread.sleep(300) // Home loads its builds off the UI thread
+        composeRule.waitForIdle()
+        // a real tap at the button's coordinates while the finger is still down
+        composeRule.onRoot().performTouchInput { click(homeButton) }
+        composeRule.waitForIdle()
+        assertTrue(onEditor() && hasTag(BACK_SWIPE_BENEATH_TAG), "the tap did nothing during the drag")
+
+        // released: the editor slides out — tap Home's button (and the leaving page) again meanwhile
+        composeRule.mainClock.autoAdvance = false
+        composeRule.runOnUiThread { swipe.complete() }
+        repeat(3) { composeRule.mainClock.advanceTimeByFrame() }
+        composeRule.onRoot().performTouchInput { click(homeButton) }
+        composeRule.onRoot().performTouchInput { click(androidx.compose.ui.geometry.Offset(350f, 400f)) }
+        composeRule.mainClock.autoAdvance = true
+        awaitText("CONTINUE")
+        composeRule.waitForIdle()
+        assertFalse(onEditor(), "exactly the one transition happened: Home, no editor reopened by the tap")
+        assertFalse(hasTag(BACK_SWIPE_BENEATH_TAG))
+
+        // and once settled Home takes taps again
+        composeRule.onNodeWithText("Continue editing").performClick()
+        composeRule.waitUntil(10_000) { onEditor() }
     }
 
     // ------------------------------------------------------------------ save failure

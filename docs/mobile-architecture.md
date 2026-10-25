@@ -84,7 +84,9 @@ Compose Multiplatform application/UI host. Depends on `shared`. Contains:
   width) or cancelled — and keeps the recognizer off while no handler is
   enabled (Home). One bridge handler (`EdgeSwipeInput.ios.kt`) feeds them to
   the app's `EdgeSwipeBackDispatcher` (common code: newest enabled handler
-  takes the gesture and keeps it until it ends, one completion per gesture),
+  takes the gesture and keeps it until it ends, one completion per gesture;
+  if that handler leaves mid-gesture, the release reaches nobody — never
+  another screen's Back; an Esc without a gesture is still an instant Back),
   which desktop tests drive with the same events. `PlatformBackHandler`
   registers every handler there too, with an `edgeSwipe` flag (default: when
   enabled): sheets, dialogs and running operations take the swipe first by the
@@ -97,7 +99,10 @@ Compose Multiplatform application/UI host. Depends on `shared`. Contains:
   it stays after the pop); a completed swipe slides out, then runs the same
   one-at-a-time, flush-first pop as the chevron for the level it started on
   (a failed newest save keeps the editor and slides it back), a cancelled one
-  slides back with nothing changed. Reduce Motion: the finger still moves the
+  slides back with nothing changed. Until a transition has finished, the stack
+  keeps its handler on and ignores further gestures (a nested stack can never
+  hand one to the app's stack and skip levels), and an input-blocking layer lies
+  over both the preview beneath and the leaving page. Reduce Motion: the finger still moves the
   screen, the beneath screen does not parallax and the settle is instant. The
   Licenses inner pages use the same stack. When the recognizer takes a touch
   UIKit cancels it, and Compose delivers an already-consumed release: the tree

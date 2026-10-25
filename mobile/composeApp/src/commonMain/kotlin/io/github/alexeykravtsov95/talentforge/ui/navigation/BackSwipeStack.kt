@@ -22,6 +22,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
@@ -52,8 +54,12 @@ const val BACK_SWIPE_BENEATH_TAG = "back-swipe-beneath"
  * state were never left. The page beneath is keyed by its level, so the one
  * that was shown under the finger is the one that stays.
  *
- * One gesture is at most one [onBack]: the handler is off while a swipe
- * settles. With reduced motion the finger still moves the page (direct
+ * One gesture is at most one [onBack], and a transition finishes before the
+ * next one starts: while a swipe is in progress or settles this stack keeps
+ * its handler on and takes every further gesture only to ignore it (so it
+ * can never reach an outer stack and skip levels), and nothing under it takes
+ * input — neither the page beneath (a preview) nor the leaving page. With
+ * reduced motion the finger still moves the page (direct
  * manipulation), but the page beneath does not parallax and the settle jumps
  * to its end state.
  */
@@ -112,10 +118,11 @@ internal fun BackSwipeStack(
     }
 
     EdgeSwipeBackHandler(
-        enabled = enabled && depth > 0 && phase != SwipePhase.Settling,
+        // on for as long as a transition runs, whatever [enabled] says meanwhile: a gesture
+        // started before it ends is held here, never passed to an outer handler
+        enabled = (enabled && depth > 0) || phase != SwipePhase.Idle,
         onStarted = {
-            // the handler is switched off only by the next composition: a gesture that
-            // starts before it, while another one settles, is taken and ignored to its end
+            // a gesture that starts while another one settles is taken and ignored to its end
             if (phase != SwipePhase.Idle) {
                 ignoring = true
                 return@EdgeSwipeBackHandler
@@ -195,6 +202,20 @@ internal fun BackSwipeStack(
                     page(level)
                 }
             }
+        }
+        if (phase != SwipePhase.Idle) {
+            // topmost while a transition runs: no tap reaches the preview beneath or the leaving page
+            Box(
+                Modifier
+                    .matchParentSize()
+                    .pointerInput(Unit) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                awaitPointerEvent(PointerEventPass.Initial).changes.forEach { it.consume() }
+                            }
+                        }
+                    },
+            )
         }
     }
 }
