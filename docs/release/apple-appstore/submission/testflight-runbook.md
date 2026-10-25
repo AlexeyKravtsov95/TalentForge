@@ -21,15 +21,18 @@
    | Поле | Значение |
    |---|---|
    | Platforms | iOS |
-   | Name | `TalentForge` ([name.txt](metadata/en-US/name.txt)). Если имя занято, App Store Connect не даст создать запись: это решение владельца, без нового имени не продолжать |
+   | Name | `TalentForge: WoW Forever` ([name.txt](metadata/en-US/name.txt)) — App Store Connect принял это имя (2026-10-25). Подпись под иконкой на устройстве остаётся `TalentForge` (`CFBundleDisplayName`) |
    | Primary Language | English (U.S.) |
    | Bundle ID | `io.github.alexeykravtsov95.talentforge` (появится в списке после шага 2.1) |
    | SKU | любой внутренний идентификатор, например `talentforge-ios` |
    | User Access | Full Access |
 
-3. Добавьте локализацию **Russian** (App Information → язык рядом с English (U.S.) → Russian).
+3. Добавьте локализацию **Russian** (App Information → язык рядом с English (U.S.) → Russian) и введите в ней Name
+   `TalentForge: WoW Forever` ([ru/name.txt](metadata/ru/name.txt)). Доступность имени в RU-локализации заранее
+   **не проверялась**: если App Store Connect его не примет, остановитесь — другое имя выбирает владелец, и
+   `name.txt` вместе с `APP_NAME` в `scripts/verify_appstore_metadata.py` нужно поменять отдельным PR.
 
-Проверка: запись приложения есть, обе локализации (English (U.S.), Russian) видны.
+Проверка: запись приложения есть, обе локализации (English (U.S.), Russian) видны, в обеих Name — `TalentForge: WoW Forever`.
 
 ## 2. Certificates, Identifiers & Profiles и Team
 

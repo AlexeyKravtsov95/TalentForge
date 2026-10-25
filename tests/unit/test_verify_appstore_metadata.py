@@ -123,8 +123,9 @@ def test_a_missing_field_fails(pack: Path) -> None:
     assert "urls:ru" in problems
 
 
-def test_the_name_is_the_app_name_in_every_locale(pack: Path) -> None:
-    write(pack, "ru/name.txt", "ТалантФорж\n")
+@pytest.mark.parametrize("name", ["ТалантФорж", "TalentForge", "TalentForge: WoW Forever!"])
+def test_the_name_is_the_app_name_in_every_locale(pack: Path, name: str) -> None:
+    write(pack, "ru/name.txt", name + "\n")
     assert "name:ru" in failed(pack)
 
 

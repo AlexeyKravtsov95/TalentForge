@@ -35,11 +35,11 @@ python3 scripts/verify_appstore_screenshots.py
 
 Тексты основаны на черновиках M5.IOS.1/M5.IOS.2 ([metadata-en](../metadata-en.md), [metadata-ru](../metadata-ru.md)) с
 изменениями из §2.1. Лимиты Apple: в символах — Name/Subtitle 30, Promotional Text 170, Description 4000; **в байтах** —
-Keywords 100, App Review Notes 4000. Счёт — `verify_appstore_metadata.py` (2026-10-24):
+Keywords 100, App Review Notes 4000. Счёт — `verify_appstore_metadata.py` (2026-10-24; Name — 2026-10-25):
 
 | Раздел ASC | Поле | Файл EN (en-US) | Файл RU (ru) | EN | RU |
 |---|---|---|---|---|---|
-| App Information | Name | [name](metadata/en-US/name.txt) | [name](metadata/ru/name.txt) | 11 / 30 | 11 / 30 |
+| App Information | Name | [name](metadata/en-US/name.txt) | [name](metadata/ru/name.txt) | 24 / 30 | 24 / 30 |
 | App Information | Subtitle | [subtitle](metadata/en-US/subtitle.txt) | [subtitle](metadata/ru/subtitle.txt) | 30 / 30 | 27 / 30 |
 | App Information | Primary / Secondary Category | [primary](metadata/primary_category.txt) · [secondary](metadata/secondary_category.txt) | — | Reference / Utilities | — |
 | Version 1.0 | Promotional Text | [promotional_text](metadata/en-US/promotional_text.txt) | [promotional_text](metadata/ru/promotional_text.txt) | 163 / 170 | 170 / 170 |
@@ -60,6 +60,7 @@ Keywords 100, App Review Notes 4000. Счёт — `verify_appstore_metadata.py` 
 | Promotional Text EN/RU | + «keep planning offline» / «работайте без сети» | то же |
 | Keywords EN | убраны `talent`, `build`, `forever` (уже в Subtitle); добавлены `paladin`, `shaman`, `warlock` — теперь в ключевых словах все девять классов | Name и Subtitle App Store индексирует сам; ключевые слова не должны повторять название ([Platform version information](https://developer.apple.com/help/app-store-connect/reference/app-information/platform-version-information/)) |
 | Keywords RU | убраны `билд`, `forever` (в Subtitle) и `класс`, `ветка`; добавлены `калькулятор`, `маг`, `жрец`, `друид` | то же; лимит — 100 **байт** (кириллица — 2 байта на символ) |
+| Name EN/RU | `TalentForge` → **`TalentForge: WoW Forever`** (2026-10-25). Внутреннее имя приложения, подпись под иконкой (`CFBundleDisplayName` = `TalentForge`), Bundle ID, SKU и версия не меняются | App Store Connect принял это имя при создании записи (сообщение владельца). Принято ли то же имя в локализации **Russian**, отдельно **не проверено** — см. [runbook §1](testflight-runbook.md#1-apple-developer-program-и-app-store-connect) |
 | What's New | удалён из пакета | у первой версии этого поля нет («Not available for the first version») |
 | App Review Notes | одно поле (EN) вместо двух: в App Store Connect Notes не локализуется. Явно: неофициальный статус и отсутствие лицензии Blizzard, «no demo account is needed», механизм OTA (2.5.2), «every feature can be reviewed offline» | один текст для ревьюера; лимит в байтах |
 
