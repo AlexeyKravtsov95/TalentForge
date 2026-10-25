@@ -18,7 +18,8 @@ Every check must pass; a file that is missing, empty or unreadable is a failure:
   Store Connect has no such field for an app's first version;
 - keywords are comma-separated without blanks around the commas, unique, each longer than two
   characters, and repeat no word of the name or subtitle (App Store search indexes those);
-- the name is ``TalentForge`` in every locale (the app's ``CFBundleDisplayName``);
+- the name is ``TalentForge: WoW Forever`` in every locale (the App Store name accepted by App Store
+  Connect; the home-screen ``CFBundleDisplayName`` stays ``TalentForge``);
 - the positioning is kept: subtitle and description name World of Warcraft: Forever, the
   description says the app is unofficial and carries the Blizzard disclaimer;
 - the texts match the OTA ON build: the description says that only signed game data is
@@ -49,7 +50,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_METADATA = ROOT / "docs/release/apple-appstore/submission/metadata"
 REPORT_SCHEMA = "talentforge.appstore-metadata-report.v1"
-APP_NAME = "TalentForge"
+APP_NAME = "TalentForge: WoW Forever"
 LOCALES = ("en-US", "ru")
 SUPPORT_URL = "https://legal.mythweld.com/"
 PRIVACY_URLS = {

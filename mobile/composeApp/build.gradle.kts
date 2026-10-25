@@ -1238,6 +1238,10 @@ tasks.named<Test>("desktopTest") {
     // The drift and baseline tests read the canonical repository data directly; without this
     // input a data-only change replays a cached result and the drift is never checked.
     inputs.dir(repositoryRoot.resolve("data")).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("canonicalData")
+    // AppIconResourceTest compares the About icon with the iOS AppIcon of the sibling iosApp
+    // project; without this input an iOS-only icon change replays a cached result.
+    inputs.file(repositoryRoot.resolve("mobile/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png"))
+        .withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("iosAppIcon")
     System.getProperty("talentforge.m41.screenshots")?.let {
         systemProperty("talentforge.m41.screenshots", it)
     }
