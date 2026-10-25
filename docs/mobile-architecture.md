@@ -73,9 +73,35 @@ Compose Multiplatform application/UI host. Depends on `shared`. Contains:
   saveable form. No navigation framework for four local screens, no bottom
   navigation; the editor opens by opaque local build id, never by passing
   mutable UI state; navigation state is not the persistence model. Android's
-  system back and the visible chevrons (`PlatformBackHandler` expect/actual)
-  share one pop, and popping an editor flushes the autosave coordinator
-  first;
+  system back and the visible chevrons (`PlatformBackHandler`, over the
+  `SystemBackHandler` expect/actual) share one pop, and popping an editor
+  flushes the autosave coordinator first. **iOS left-edge swipe back**
+  (TestFlight 1.0.0 (1) finding, build 2): iOS has no system Back button, so
+  its system back is the edge swipe, and it must do what the visible chevron
+  does. The Compose host's own screen-edge pan recognizer
+  (`ComposeUIViewController`, CMP 1.10) emits navigation events — started,
+  the finger's progress, completed (fast to the right, or past 30 % of the
+  width) or cancelled — and keeps the recognizer off while no handler is
+  enabled (Home). One bridge handler (`EdgeSwipeInput.ios.kt`) feeds them to
+  the app's `EdgeSwipeBackDispatcher` (common code: newest enabled handler
+  takes the gesture and keeps it until it ends, one completion per gesture),
+  which desktop tests drive with the same events. `PlatformBackHandler`
+  registers every handler there too, with an `edgeSwipe` flag (default: when
+  enabled): sheets, dialogs and running operations take the swipe first by the
+  Android rules, while the editor passes `edgeSwipe = buildActionsOpen` — its
+  inspector-collapse / deselect steps stay Android/desktop-only, so on iOS the
+  swipe pops the editor like its chevron instead of clearing the selection.
+  The page pop itself is `BackSwipeStack`: during the gesture the top screen
+  follows the finger over the screen beneath (composed only after the autosave
+  flush succeeded, dimmed, out of the accessibility tree, keyed by its level so
+  it stays after the pop); a completed swipe slides out, then runs the same
+  one-at-a-time, flush-first pop as the chevron for the level it started on
+  (a failed newest save keeps the editor and slides it back), a cancelled one
+  slides back with nothing changed. Reduce Motion: the finger still moves the
+  screen, the beneath screen does not parallax and the settle is instant. The
+  Licenses inner pages use the same stack. Android Back and desktop Esc are
+  unchanged; a hardware Esc on iPad now reaches the same handlers as an
+  instant Back;
 - `ui/tree` — the **M4.1–M4.3 production Talent Tree screen** (read-only since
   M4.1, interactive since M4.3): a bundled Forever class document (the
   reference-baseline Warrior in the M4-era test fixture) is loaded through
@@ -484,8 +510,10 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
     guard). On Android this is activity-compose `BackHandler`, so the
     predictive Back gesture follows the same order. The desktop actual is now
     a real dispatcher with the same last-enabled-wins rule (`DesktopBackDispatcher`,
-    Esc in the desktop window), which makes the order testable; iOS has no
-    system Back.
+    Esc in the desktop window), which makes the order testable. On iOS only
+    the ⋯ sheet takes the edge swipe (`edgeSwipe = buildActionsOpen`); with a
+    selection or an expanded inspector the swipe pops the editor, as its
+    chevron does.
 
 - **PR #19 motion** (`TalentSectionPaging.kt`, all values implementation-safe).
   It replaces the 1A v2 S4 tab-change entry (180 ms fade + 24 dp shift of the
@@ -691,7 +719,7 @@ Since M5.IOS.1 (App Store readiness, [release/apple-appstore/readiness.md](relea
   Frameworks phase is gone. Embedding it had put a 33 KB stub dylib with a temporary build-path
   install name into `Frameworks/`. The Compose resources (`compose-resources/`, the bundled
   datasets) are synced into the app bundle by the same Gradle task;
-- `MARKETING_VERSION` 1.0.0, `CURRENT_PROJECT_VERSION` 1 (rule in the readiness document),
+- `MARKETING_VERSION` 1.0.0, `CURRENT_PROJECT_VERSION` 2 (1.0.0 (1) was uploaded; rule in the readiness document),
   deployment target 17.2, iPhone + iPad, `en` + `ru`;
 - `Info.plist` is the only source of the scene manifest and the launch screen: the
   `INFOPLIST_KEY_UIApplicationSceneManifest_Generation` and `…UILaunchScreen_Generation`
