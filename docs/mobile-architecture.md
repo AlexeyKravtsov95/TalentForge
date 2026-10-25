@@ -99,9 +99,12 @@ Compose Multiplatform application/UI host. Depends on `shared`. Contains:
   (a failed newest save keeps the editor and slides it back), a cancelled one
   slides back with nothing changed. Reduce Motion: the finger still moves the
   screen, the beneath screen does not parallax and the settle is instant. The
-  Licenses inner pages use the same stack. Android Back and desktop Esc are
-  unchanged; a hardware Esc on iPad now reaches the same handlers as an
-  instant Back;
+  Licenses inner pages use the same stack. When the recognizer takes a touch
+  UIKit cancels it, and Compose delivers an already-consumed release: the tree
+  canvas treats that as neither a tap (an edge touch would otherwise clear the
+  selection) nor a section-switch confirmation. Android Back and desktop Esc
+  are unchanged; a hardware Esc on iPad now reaches the same handlers as an
+  instant Back. Simulator recordings: `docs/screenshots/ios-swipe-back/`;
 - `ui/tree` — the **M4.1–M4.3 production Talent Tree screen** (read-only since
   M4.1, interactive since M4.3): a bundled Forever class document (the
   reference-baseline Warrior in the M4-era test fixture) is loaded through
