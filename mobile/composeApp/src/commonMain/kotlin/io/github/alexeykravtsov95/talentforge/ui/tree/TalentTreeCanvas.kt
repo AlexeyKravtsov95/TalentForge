@@ -634,9 +634,13 @@ private suspend fun PointerInputScope.talentTreeGestures(
                 if (currentPressedIds.size > 1) multiTouchSeen = true
 
                 if (pressedChanges.isEmpty()) {
+                    // A cancelled touch — the platform took it, e.g. the iOS
+                    // left-edge swipe back — ends with an already-consumed
+                    // release: it is no tap and never switches a section.
+                    val cancelled = event.changes.any { it.isConsumed }
                     // Gesture ended: a clean single-pointer tap only (never a tap
                     // after panning or after extra fingers touched the canvas).
-                    if (!passedSlop && !multiTouchSeen && event.changes.size == 1) {
+                    if (!cancelled && !passedSlop && !multiTouchSeen && event.changes.size == 1) {
                         val tapped = hitTest(event.changes.first().position)
                         if (tapped != null) onNodeTap(tapped) else onEmptyTap()
                     }
@@ -651,7 +655,9 @@ private suspend fun PointerInputScope.talentTreeGestures(
                             event.changes.firstOrNull { it.id == down.id }?.let { velocity.addPointerInputChange(it) }
                             velocity.calculateVelocity().x / densityScale
                         }
-                        val direction = if (fitSwipe) {
+                        val direction = if (cancelled) {
+                            0
+                        } else if (fitSwipe) {
                             val total = screenPxToDp(lastSinglePosition - down.position)
                             talentSectionFitSwipeDirection(
                                 totalDxDp = total.x,
