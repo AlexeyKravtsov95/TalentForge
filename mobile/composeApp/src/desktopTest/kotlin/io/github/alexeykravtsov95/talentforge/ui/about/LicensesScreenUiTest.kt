@@ -1,6 +1,7 @@
 package io.github.alexeykravtsov95.talentforge.ui.about
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.ComposeUiTest
@@ -13,8 +14,11 @@ import androidx.compose.ui.test.performScrollTo
 import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
 import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.navigation.DesktopBackDispatcher
+import io.github.alexeykravtsov95.talentforge.ui.navigation.EdgeSwipeBackDispatcher
+import io.github.alexeykravtsov95.talentforge.ui.navigation.LocalEdgeSwipeBackDispatcher
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
@@ -215,6 +219,40 @@ class LicensesScreenUiTest {
             // on the list the screen holds no Back of its own: the app's navigation receives it
             assertEquals(false, runOnIdle { DesktopBackDispatcher.dispatch() })
             assertEquals(0, backs)
+        }
+    }
+
+    @Test
+    fun theIosEdgeSwipeClosesTheInnerPagesLikeTheirChevronAndCanBeCancelled() {
+        val swipe = EdgeSwipeBackDispatcher()
+        var backs = 0
+        val content: @Composable () -> Unit = {
+            CompositionLocalProvider(LocalEdgeSwipeBackDispatcher provides swipe) {
+                LicensesScreen(noticesPath = ANDROID_OSS_NOTICES_PATH, onBack = { backs += 1 })
+            }
+        }
+        fun ComposeUiTest.swipe(complete: Boolean): Boolean {
+            val taken = runOnIdle { swipe.start().also { swipe.progress(0.6f) } }
+            waitForIdle()
+            runOnIdle { if (complete) swipe.complete() else swipe.cancel() }
+            waitForIdle()
+            return taken
+        }
+        onScreen(content = content) {
+            awaitText("COMPONENTS")
+            assertFalse(swipe(complete = true), "on the list the screen holds no swipe: the app's page stack takes it")
+
+            open("open Compose Multiplatform")
+            open("open the text of Apache License 2.0")
+            awaitText("TERMS AND CONDITIONS", substring = true)
+
+            assertTrue(swipe(complete = false))
+            awaitText("TERMS AND CONDITIONS", substring = true)
+            assertTrue(swipe(complete = true), "the licence page takes the swipe")
+            awaitText("LICENSE TEXTS")
+            assertTrue(swipe(complete = true))
+            awaitText("COMPONENTS")
+            assertEquals(0, backs, "the screen itself is left by the app, never by its inner swipe")
         }
     }
 
