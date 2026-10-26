@@ -57,7 +57,7 @@ Guards на каждой release/play сборке:
 
 Перед сборкой:
 
-- [ ] `versionCode` / `versionName` подняты отдельным PR. Этот PR их **не меняет**. Обновление поверх 1.0.0 (`versionCode = 1`) требует большего `versionCode`.
+- [ ] `versionCode` / `versionName` подняты отдельным PR. Этот PR их **не меняет**. Обновление поверх уже загруженной сборки требует большего `versionCode`: код `2` загружен в Google Play с OTA ON, следующий — `3` ([журнал версий](../release/android-versioning.md#3-planned-sequence-and-ledger)).
 - [ ] `ota_production_preflight.py --expect published --keyring docs/ota/keys/production-keyring.json` → OK, `verify-live` → PASS ([production-deployment §10](production-deployment.md)).
 - [ ] До `expiresAt` каталога остаётся не меньше 30 дней.
 - [ ] Privacy policy (RU/EN) обновлена и опубликована по тексту из [privacy и магазины §4](../release/ota-prod3-privacy-and-stores.md), декларации магазинов подготовлены (там же, §5–§7).
