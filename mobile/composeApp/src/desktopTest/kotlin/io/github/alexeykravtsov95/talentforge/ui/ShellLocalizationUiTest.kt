@@ -24,6 +24,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.text.TextLayoutResult
@@ -158,7 +159,7 @@ class ShellLocalizationUiTest {
     private fun ComposeUiTest.assertNoEnglishShellCopy() {
         val english = with(ShellCopy.ENGLISH) {
             setOf(
-                newBuild, newBuildAction, goBack, retry, cancel, save, homeEmptyTitle, continueSection,
+                newBuild, newBuildAction, goBack, retry, cancel, save, homeSubtitle, homeEmptyTitle, continueSection,
                 recentSection, continueEditing, buildsTitle, rename, duplicate, delete, renameTitle,
                 chooseClass, libraryFailedTitle, allBuildsAction, sheetCloseAction, dialogCloseAction,
             ) + classNames.values + unnamedTitles.values
@@ -237,7 +238,14 @@ class ShellLocalizationUiTest {
             storage = FakeBuildLibraryStorage()
             onScreen(language) {
                 awaitText(copy.homeEmptyTitle)
-                assertShows("TalentForge", copy.homeEmptyTitle, copy.homeEmptyBody, copy.homeDataVersion, copy.newBuild)
+                assertShows(
+                    "TalentForge",
+                    copy.homeSubtitle,
+                    copy.homeEmptyTitle,
+                    copy.homeEmptyBody,
+                    copy.homeDataVersion,
+                    copy.newBuild,
+                )
                 assertA11y(copy.newBuildAction)
                 if (language == AppLanguage.RUSSIAN) assertNoEnglishShellCopy()
             }
@@ -253,6 +261,8 @@ class ShellLocalizationUiTest {
                 awaitText(copy.continueSection)
                 val warrior = copy.unnamedTitle("WARRIOR")
                 assertShows(
+                    "TalentForge",
+                    copy.homeSubtitle,
                     copy.continueSection,
                     copy.recentSection,
                     warrior,
@@ -284,7 +294,7 @@ class ShellLocalizationUiTest {
             storage = FakeBuildLibraryStorage(failReads = true)
             onScreen(language) {
                 awaitText(copy.libraryFailedTitle)
-                assertShows(copy.libraryFailedTitle, copy.libraryFailedBody, copy.retry, copy.newBuild)
+                assertShows(copy.homeSubtitle, copy.libraryFailedTitle, copy.libraryFailedBody, copy.retry, copy.newBuild)
                 assertA11y(copy.retry)
                 if (language == AppLanguage.RUSSIAN) assertNoEnglishShellCopy()
                 storage.failReads = false
@@ -703,6 +713,8 @@ class ShellLocalizationUiTest {
                     onScreen(language, width, height, fontScale) {
                         awaitText(copy.continueSection)
                         assertTextsFitAndWrapAtWords("$where Home")
+                        // TF-UX-01: at 320 dp / 200 % the link sits below the fold, under the purpose subtitle
+                        onAllNodesWithText(copy.allBuildsLink(4)).onFirst().performScrollTo()
                         click(copy.allBuildsLink(4))
                         awaitText(copy.buildsTitle(4))
                         assertTextsFitAndWrapAtWords("$where All Builds")

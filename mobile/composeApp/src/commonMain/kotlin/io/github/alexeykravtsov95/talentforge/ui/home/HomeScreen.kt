@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -64,6 +65,7 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.hom
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_empty_title
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_section_continue
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_section_recent
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_subtitle
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.import_build
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.import_build_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_load_failed_body
@@ -411,8 +413,21 @@ private fun NewUserContent(emptyCopyTopGap: Dp, product: DatasetBundleId) {
  * The temporary brand mark: outlined diamond with an accent core + wordmark
  * (spec B), and (M5.RC.2b) the low-emphasis About entry at the row's end — a
  * drawn ⓘ glyph in a 48 dp target named "About" for accessibility, the only
- * way to the About screen (no persistent chrome). A glyph, not a text link:
- * the header stays one line at 320 dp and 200 % text in every language.
+ * way to the About screen (no persistent chrome). A glyph, not a text link,
+ * so the 48 dp target never competes with the wordmark for width.
+ *
+ * The wordmark is one word and stays one line: it keeps the spec-B size
+ * (scaled by the user's font scale) wherever it fits and, only where the
+ * width beside the mark and the 48 dp About target is too narrow for it (a
+ * compact phone at 200 % text — Linux, Android, iOS and macOS fonts differ
+ * in width), shrinks to the size that fits, as the About screen's name does.
+ * Never broken, cut or pushed into About; the subtitle keeps its full scale.
+ *
+ * TF-UX-01: under the wordmark, aligned with its first letter, a secondary
+ * one-sentence subtitle names what the app is (a talent planner for the
+ * game, not a game) in every Home state — empty, populated, loading and
+ * failed. Plain text in the existing secondary style, never a card or
+ * notice; it wraps at words on narrow screens and large text.
  */
 @Composable
 private fun BrandHeader(onAbout: () -> Unit) {
@@ -422,16 +437,29 @@ private fun BrandHeader(onAbout: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
     ) {
-        Box(
-            Modifier
-                .size(20.dp)
-                .drawBehind { drawBrandDiamond(strokeColor = colors.textSecondary, coreColor = colors.focus) },
-        )
-        BasicText(
-            "TalentForge",
-            style = HomeBrandStyle.copy(color = colors.textPrimary),
-        )
-        Spacer(Modifier.weight(1f))
+        Column(Modifier.weight(1f)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
+            ) {
+                Box(
+                    Modifier
+                        .size(BRAND_MARK_SIZE)
+                        .drawBehind { drawBrandDiamond(strokeColor = colors.textSecondary, coreColor = colors.focus) },
+                )
+                BasicText(
+                    "TalentForge",
+                    style = HomeBrandStyle.copy(color = colors.textPrimary),
+                    maxLines = 1,
+                    autoSize = TextAutoSize.StepBased(maxFontSize = HomeBrandStyle.fontSize),
+                )
+            }
+            BasicText(
+                stringResource(Res.string.home_subtitle),
+                style = TalentForgeTypography.bodySmall.copy(color = colors.textSecondary),
+                modifier = Modifier.padding(start = BRAND_MARK_SIZE + TalentForgeSpacing.inline),
+            )
+        }
         val aboutLabel = stringResource(Res.string.home_about)
         Box(
             modifier = Modifier
@@ -701,6 +729,9 @@ private fun recentMetaLine(card: BuildCardModel, clockMillis: () -> Long): Strin
 
 private fun BuildCardModel.pointsText(): String? =
     if (spentPoints != null && pointBudget != null) "$spentPoints / $pointBudget" else null
+
+/** Spec B: the temporary outlined-diamond brand mark before the wordmark. */
+private val BRAND_MARK_SIZE = 20.dp
 
 /** Spec B: "the TalentForge wordmark at 17 sp, 650 weight". */
 private val HomeBrandStyle = TextStyle(

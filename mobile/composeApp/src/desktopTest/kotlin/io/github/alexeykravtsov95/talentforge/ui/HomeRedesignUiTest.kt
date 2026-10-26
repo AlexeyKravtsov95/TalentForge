@@ -3,9 +3,18 @@ package io.github.alexeykravtsov95.talentforge.ui
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.ComposeUiTest
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.runDesktopComposeUiTest
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -20,6 +29,7 @@ import io.github.alexeykravtsov95.talentforge.ui.library.createClassDraft
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
@@ -52,11 +62,11 @@ class HomeRedesignUiTest {
 
     private fun repository() = LocalBuildRepository(storage, clock, ids)
 
-    private fun composeApp() {
+    private fun composeApp(widthDp: Int = 360, heightDp: Int = 760, fontScale: Float = 1f) {
         composeRule.setContent {
             TalentForgeTheme {
-                CompositionLocalProvider(LocalDensity provides Density(1f)) {
-                    Box(Modifier.size(360.dp, 760.dp)) {
+                CompositionLocalProvider(LocalDensity provides Density(1f, fontScale)) {
+                    Box(Modifier.size(widthDp.dp, heightDp.dp)) {
                         App(storage = storage, clock = clock, ids = ids)
                     }
                 }
@@ -147,6 +157,165 @@ class HomeRedesignUiTest {
         awaitText("Choose a class")
     }
 
+    // -------------------------------------------------------- TF-UX-01 purpose subtitle
+
+    /**
+     * The purpose line sits directly under the wordmark, starts at its first
+     * letter, never reaches into the About target, and stays above the
+     * pinned New build / Import build pair, which keep their order.
+     */
+    private fun assertPurposeSubtitleLayout(subtitle: String, about: String, newBuild: String, importBuild: String) {
+        val wordmark = composeRule.onNodeWithText("TalentForge").fetchSemanticsNode().boundsInRoot
+        val line = composeRule.onNodeWithText(subtitle).fetchSemanticsNode().boundsInRoot
+        val aboutTarget = composeRule.onAllNodesWithContentDescription(about).fetchSemanticsNodes().single().boundsInRoot
+        val newBuildButton = composeRule.onNodeWithText(newBuild).fetchSemanticsNode().boundsInRoot
+        val importAction = composeRule.onNodeWithText(importBuild).fetchSemanticsNode().boundsInRoot
+        kotlin.test.assertTrue(line.top >= wordmark.bottom - 0.5f, "subtitle $line must sit under the wordmark $wordmark")
+        kotlin.test.assertTrue(
+            kotlin.math.abs(line.left - wordmark.left) <= 1f,
+            "subtitle $line must start at the wordmark's first letter $wordmark",
+        )
+        kotlin.test.assertTrue(line.right <= aboutTarget.left + 0.5f, "subtitle $line overlaps the About target $aboutTarget")
+        kotlin.test.assertTrue(line.bottom <= newBuildButton.top, "subtitle $line overlaps New build $newBuildButton")
+        kotlin.test.assertTrue(newBuildButton.bottom <= importAction.top, "Import build $importAction must stay under New build $newBuildButton")
+    }
+
+    @Test
+    fun emptyHomeExplainsThePurposeUnderTheWordmark() {
+        composeApp()
+        awaitText("No builds yet")
+
+        assertPurposeSubtitleLayout("Talent build planner for the game WoW\u00A0Forever", "About", "New build", "Import build")
+    }
+
+    @Test
+    fun populatedHomeKeepsThePurposeSubtitle() {
+        persistDraft("WARRIOR")
+        persistDraft("MAGE")
+        composeApp()
+        awaitText("RECENT")
+
+        assertPurposeSubtitleLayout("Talent build planner for the game WoW\u00A0Forever", "About", "New build", "Import build")
+    }
+
+    @Test
+    fun thePurposeSubtitleWrapsWholeOnACompactPhoneAtLargeTextInRussian() {
+        uiLanguage.language = AppLanguage.RUSSIAN
+        composeApp(widthDp = 320, heightDp = 568, fontScale = 2f)
+        awaitText("Пока нет билдов")
+
+        val subtitle = "Планировщик талантов для игры WoW\u00A0Forever"
+        // wraps instead of clipping: more than one line, nothing ellipsized
+        val node = composeRule.onNodeWithText(subtitle).fetchSemanticsNode()
+        val layouts = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+        node.config[androidx.compose.ui.semantics.SemanticsActions.GetTextLayoutResult].action?.invoke(layouts)
+        val layout = layouts.single()
+        kotlin.test.assertTrue(layout.lineCount > 1, "the subtitle wraps at 320 dp @200 % (lines: ${layout.lineCount})")
+        kotlin.test.assertTrue(!layout.hasVisualOverflow, "the subtitle is never clipped")
+        assertPurposeSubtitleLayout(subtitle, "О приложении", "Новый билд", "Импортировать билд")
+    }
+
+    /**
+     * PR #87 review (Linux CI): the wordmark is one word — never broken, cut
+     * or pushed into the About target — and About keeps its 48 dp target, at
+     * every width and font scale in both languages. Linux CI's font is wider
+     * than macOS's, so the matrix goes down to 260 dp at 200 %, where no
+     * platform font fits the full-size word next to the 48 dp About target:
+     * the fit is proven by measurement, not by one font being narrow enough.
+     */
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun theWordmarkStaysOneWholeWordBesideA48DpAboutAtAnyWidthAndFontScale() {
+        for (language in AppLanguage.entries) {
+            uiLanguage.language = language
+            val about = if (language == AppLanguage.RUSSIAN) "О приложении" else "About"
+            for (widthDp in listOf(393, 320, 300, 280, 260)) {
+                for (fontScale in listOf(1f, 2f)) {
+                    val where = "$language $widthDp dp @${(fontScale * 100).toInt()} %"
+                    onHome(widthDp, fontScale) {
+                        val (wordmark, layout) = wordmarkLayout()
+                        assertEquals("TalentForge", layout.layoutInput.text.text, "$where: the wordmark is shown whole")
+                        assertEquals(1, layout.lineCount, "$where: the wordmark breaks across lines")
+                        // the laid-out word, not the paragraph's layout width, must fit the wordmark's box
+                        kotlin.test.assertTrue(
+                            layout.getLineRight(0) <= layout.size.width + 1.5f,
+                            "$where: the wordmark is clipped (${layout.getLineRight(0)} in ${layout.size})",
+                        )
+                        val target = onAllNodesWithContentDescription(about).fetchSemanticsNodes().single()
+                        kotlin.test.assertTrue(
+                            target.size.width >= 48 && target.size.height >= 48,
+                            "$where: About ${target.size} < 48 dp",
+                        )
+                        kotlin.test.assertTrue(
+                            wordmark.positionInRoot.x + layout.size.width <= target.boundsInRoot.left + 0.5f,
+                            "$where: the wordmark runs into About",
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    /** Where the wordmark fits it keeps the frozen 17 sp (scaled by the font scale): it only ever shrinks to fit. */
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun theWordmarkKeepsItsFullSizeWhereItFits() {
+        for (fontScale in listOf(1f, 2f)) {
+            var fullSizeWidth = 0f
+            onHome(widthDp = 393, fontScale = fontScale, reference = {
+                fullSizeWidth = fullSizeWordmarkWidth()
+            }) {
+                val width = wordmarkLayout().second.getLineRight(0)
+                kotlin.test.assertTrue(
+                    kotlin.math.abs(width - fullSizeWidth) < 0.5f,
+                    "393 dp @${(fontScale * 100).toInt()} %: the wordmark shrank although it fits: $width vs $fullSizeWidth",
+                )
+            }
+        }
+        // and where the full-size word does not fit, it is drawn smaller
+        var fullSizeWidth = 0f
+        onHome(widthDp = 260, fontScale = 2f, reference = {
+            fullSizeWidth = fullSizeWordmarkWidth()
+        }) {
+            val width = wordmarkLayout().second.getLineRight(0)
+            kotlin.test.assertTrue(width < fullSizeWidth, "the wordmark kept 17 sp although it does not fit 260 dp at 200 %")
+        }
+    }
+
+    /** The full-size wordmark's laid-out width under the current density and font scale. */
+    @Composable
+    private fun fullSizeWordmarkWidth(): Float =
+        rememberTextMeasurer().measure("TalentForge", HOME_BRAND_REFERENCE_STYLE, softWrap = false).getLineRight(0)
+
+    @OptIn(ExperimentalTestApi::class)
+    private fun onHome(
+        widthDp: Int,
+        fontScale: Float,
+        reference: @Composable () -> Unit = {},
+        block: ComposeUiTest.() -> Unit,
+    ) = runDesktopComposeUiTest(width = widthDp, height = 640) {
+        setContent {
+            TalentForgeTheme {
+                CompositionLocalProvider(LocalDensity provides Density(1f, fontScale)) {
+                    reference()
+                    Box(Modifier.size(widthDp.dp, 640.dp)) {
+                        App(storage = FakeBuildLibraryStorage(), clock = FixedClock(), ids = SequentialIds())
+                    }
+                }
+            }
+        }
+        waitUntil(timeoutMillis = 10_000) { onAllNodesWithText("TalentForge").fetchSemanticsNodes().isNotEmpty() }
+        block()
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    private fun ComposeUiTest.wordmarkLayout(): Pair<androidx.compose.ui.semantics.SemanticsNode, TextLayoutResult> {
+        val node = onAllNodesWithText("TalentForge").onFirst().fetchSemanticsNode()
+        val layouts = mutableListOf<TextLayoutResult>()
+        node.config[SemanticsActions.GetTextLayoutResult].action?.invoke(layouts)
+        return node to layouts.single()
+    }
+
     // ------------------------------------------------------- All Builds reachability
 
     @Test
@@ -229,3 +398,10 @@ class HomeRedesignUiTest {
         composeRule.onNodeWithText("Warrior build").assertExists()
     }
 }
+
+/** Spec B's wordmark style (17 sp / 22 sp, weight 650), mirrored from Home to measure the full-size glyphs. */
+private val HOME_BRAND_REFERENCE_STYLE = androidx.compose.ui.text.TextStyle(
+    fontSize = androidx.compose.ui.unit.TextUnit(17f, androidx.compose.ui.unit.TextUnitType.Sp),
+    lineHeight = androidx.compose.ui.unit.TextUnit(22f, androidx.compose.ui.unit.TextUnitType.Sp),
+    fontWeight = androidx.compose.ui.text.font.FontWeight(650),
+)

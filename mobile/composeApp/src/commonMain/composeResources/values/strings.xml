@@ -65,6 +65,7 @@
     </plurals>
 
     <!-- Home -->
+    <string name="home_subtitle">Talent build planner for the game WoW\u00A0Forever</string>
     <string name="home_section_continue">CONTINUE</string>
     <string name="home_section_recent">RECENT</string>
     <string name="home_continue_editing">Continue editing</string>

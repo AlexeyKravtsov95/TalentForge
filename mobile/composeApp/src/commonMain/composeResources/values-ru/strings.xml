@@ -65,6 +65,7 @@
     </plurals>
 
     <!-- Home -->
+    <string name="home_subtitle">Планировщик талантов для игры WoW\u00A0Forever</string>
     <string name="home_section_continue">ПРОДОЛЖИТЬ</string>
     <string name="home_section_recent">НЕДАВНИЕ</string>
     <string name="home_continue_editing">Продолжить</string>

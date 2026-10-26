@@ -36,6 +36,8 @@ internal data class ShellCopy(
     val libraryLoading: String,
     val libraryFailedTitle: String,
     val libraryFailedBody: String,
+    /** TF-UX-01: the purpose line under the wordmark, in every Home state. */
+    val homeSubtitle: String,
     val homeEmptyTitle: String,
     val homeEmptyBody: String,
     val homeDataVersion: String,
@@ -101,6 +103,7 @@ internal data class ShellCopy(
             libraryLoading = "Loading your builds…",
             libraryFailedTitle = "Couldn't load your builds",
             libraryFailedBody = "The local build library could not be read",
+            homeSubtitle = "Talent build planner for the game WoW\u00A0Forever",
             homeEmptyTitle = "No builds yet",
             homeEmptyBody = "Pick a class and spend points on its talent tree. " +
                 "Builds are stored on this device; no account is needed.",
@@ -163,6 +166,7 @@ internal data class ShellCopy(
             libraryLoading = "Загрузка билдов…",
             libraryFailedTitle = "Не удалось загрузить билды",
             libraryFailedBody = "Не удалось прочитать локальную библиотеку билдов",
+            homeSubtitle = "Планировщик талантов для игры WoW\u00A0Forever",
             homeEmptyTitle = "Пока нет билдов",
             homeEmptyBody = "Выберите класс и распределите очки в его дереве талантов. " +
                 "Билды хранятся на этом устройстве — аккаунт не нужен.",
