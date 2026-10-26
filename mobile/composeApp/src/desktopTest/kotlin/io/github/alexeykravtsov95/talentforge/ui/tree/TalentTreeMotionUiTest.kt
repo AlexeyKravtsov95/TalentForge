@@ -11,6 +11,9 @@ import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.click
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -676,7 +679,7 @@ class TalentTreeMotionUiTest {
     }
 
     @Test
-    fun selectingAnotherTalentOnTheOpenSheetShowsItsStripWithoutAClosingSlide() {
+    fun selectingAnotherTalentOnTheOpenSheetSwapsItsDetailInPlaceWithoutASlide() {
         val warrior = productState("WARRIOR")
         val first = (buildTalentTreeSections(warrior.engine.tree, warrior.model) as TalentTreeSectionsResult.Sectioned)
             .sections.first()
@@ -688,13 +691,16 @@ class TalentTreeMotionUiTest {
             rest()
             onNodeWithContentDescription(EditorCopy.English.expand).performClick()
             rest()
+            // the inspector reading refinement: the open sheet stays and shows the new
+            // talent at once — no closing slide of the other talent's sheet, no strip
             onNodeWithContentDescription(top).performClick()
             advance(16)
-            onNodeWithTag(TALENT_INSPECTOR_SHEET_CLOSING_TAG).assertDoesNotExist() // never the other talent's sheet sliding
-            onNodeWithTag(TALENT_INSPECTOR_SHEET_TAG).assertDoesNotExist()
+            onNodeWithTag(TALENT_INSPECTOR_SHEET_CLOSING_TAG).assertDoesNotExist()
+            onNodeWithTag(TALENT_INSPECTOR_SHEET_TAG).assertExists()
+            onNodeWithTag(TALENT_INSPECTOR_COMPACT_TAG).assertDoesNotExist()
             rest()
             onNodeWithContentDescription(top).assertIsSelected()
-            onNodeWithTag(TALENT_INSPECTOR_COMPACT_TAG).assertExists()
+            onNode(hasText(top) and hasAnyAncestor(hasTestTag(TALENT_INSPECTOR_SHEET_TAG)), useUnmergedTree = true).assertExists()
             assertTrue(session.reported.isEmpty())
         }
     }
