@@ -1,0 +1,854 @@
+name: Store delivery
+
+# Issue #90: the owner delivers one revision of main to the test channels.
+#   Android: signed AAB (upload key) -> the existing Google Play closed test; signed universal
+#            APK (app signing key) -> a verified artifact of this run (RuStore/AppGallery upload
+#            stays manual, a later stage).
+#   iOS:     signed archive -> App Store export (.ipa) -> App Store Connect -> the existing
+#            internal TestFlight group.
+# Production OTA is on in every build; nothing falls back to unsigned, debug or OTA off. A public
+# release stays the owner's separate action in the store consoles. mode=verify (the default)
+# builds, signs and checks everything and uploads nothing.
+#
+# Secrets live only in GitHub Environments restricted to main (docs/release/ci-delivery.md §3):
+# google-play, android-signing, app-store-connect, ios-signing. Pull requests and other refs
+# never reach them. Decisions, store API calls and refusals: scripts/store_delivery.py.
+# Owner guide, recovery and rotation: docs/release/ci-delivery.md
+on:
+  workflow_dispatch:
+    inputs:
+      revision:
+        description: "Full commit SHA on main or release tag vX.Y.Z on main (empty: main's head)"
+        required: false
+        type: string
+        default: ""
+      platforms:
+        description: "Platforms of this release"
+        required: true
+        type: choice
+        options: [both, android, ios]
+        default: both
+      mode:
+        description: "verify: build, sign and check only; deliver: also upload to the test channels"
+        required: true
+        type: choice
+        options: [verify, deliver]
+        default: verify
+
+permissions:
+  contents: read
+
+# One delivery at a time, queued, never cancelled mid-upload. (GitHub keeps one pending run per
+# group: a newer start replaces a waiting one, never a running one.)
+concurrency:
+  group: store-delivery
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    name: Gate (revision, CI of that commit, versions)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read # CI runs of the selected commit
+    outputs:
+      sha: ${{ steps.gate.outputs.sha }}
+      mode: ${{ steps.gate.outputs.mode }}
+      android: ${{ steps.gate.outputs.android }}
+      ios: ${{ steps.gate.outputs.ios }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: tooling
+          fetch-depth: 0 # the revision must be on origin/main; tags are resolved here
+          persist-credentials: false
+      - uses: ./tooling/.github/actions/delivery-python
+        with:
+          tooling: tooling
+      - name: Gate
+        id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_REVISION: ${{ inputs.revision }}
+          INPUT_PLATFORMS: ${{ inputs.platforms }}
+          INPUT_MODE: ${{ inputs.mode }}
+        run: >-
+          "$PY" tooling/scripts/store_delivery.py gate --repo tooling
+          --revision "$INPUT_REVISION" --platforms "$INPUT_PLATFORMS" --mode "$INPUT_MODE"
+          --out delivery/gate.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tf-gate
+          path: delivery/gate.json
+          if-no-files-found: error
+          retention-days: 90
+          overwrite: true
+
+  # ------------------------------------------------------------------------------- Android
+
+  android-store-check:
+    name: Android - Google Play state (read-only)
+    needs: gate
+    if: needs.gate.outputs.android == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: google-play
+    permissions:
+      contents: read
+      actions: read # delivery records of earlier runs
+    outputs:
+      decision: ${{ steps.check.outputs.decision }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: tooling
+          persist-credentials: false
+      - uses: ./tooling/.github/actions/delivery-python
+        with:
+          tooling: tooling
+      - uses: actions/download-artifact@v4
+        with:
+          name: tf-gate
+          path: delivery
+      - name: Google Play state of this versionCode
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          PLAY_TRACK: ${{ vars.PLAY_TRACK }}
+        run: >-
+          "$PY" tooling/scripts/store_delivery.py play-check --gate delivery/gate.json
+          --status delivery/status/android.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tf-status-android
+          path: delivery/status/android.json
+          if-no-files-found: ignore
+          overwrite: true
+
+  android-build:
+    name: Android - signed AAB + APK (OTA on), verified
+    needs: [gate, android-store-check]
+    if: needs.android-store-check.outputs.decision == 'UPLOAD'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    environment: android-signing
+    permissions:
+      contents: read
+    env:
+      SOURCE_SHA: ${{ needs.gate.outputs.sha }}
+      MODE: ${{ needs.gate.outputs.mode }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.gate.outputs.sha }}
+          path: src
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: tooling
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: true # a signing build never writes a cache
+      - uses: ./tooling/.github/actions/delivery-python
+        with:
+          tooling: tooling
+      - uses: actions/download-artifact@v4
+        with:
+          name: tf-gate
+          path: delivery
+
+      - name: The source tree is the gated commit
+        run: |
+          set -euo pipefail
+          test "$(git -C src rev-parse HEAD)" = "$SOURCE_SHA"
+          mkdir -p delivery/android
+          {
+            echo "VERSION_NAME=$(jq -r .android.versionName delivery/gate.json)"
+            echo "VERSION_CODE=$(jq -r .android.versionCode delivery/gate.json)"
+          } >> "$GITHUB_ENV"
+
+      - name: Signing configuration present
+        env:
+          ANDROID_RELEASE_KEYSTORE_BASE64: ${{ secrets.ANDROID_RELEASE_KEYSTORE_BASE64 }}
+          ANDROID_RELEASE_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}
+          ANDROID_RELEASE_KEY_ALIAS: ${{ vars.ANDROID_RELEASE_KEY_ALIAS }}
+          ANDROID_RELEASE_CERT_SHA256: ${{ vars.ANDROID_RELEASE_CERT_SHA256 }}
+          ANDROID_UPLOAD_KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+          ANDROID_UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
+          ANDROID_UPLOAD_KEY_ALIAS: ${{ vars.ANDROID_UPLOAD_KEY_ALIAS }}
+          ANDROID_UPLOAD_CERT_SHA256: ${{ vars.ANDROID_UPLOAD_CERT_SHA256 }}
+        run: >-
+          "$PY" tooling/scripts/store_delivery.py require-env
+          ANDROID_RELEASE_KEYSTORE_BASE64 ANDROID_RELEASE_KEYSTORE_PASSWORD
+          ANDROID_RELEASE_KEY_ALIAS ANDROID_RELEASE_CERT_SHA256
+          ANDROID_UPLOAD_KEYSTORE_BASE64 ANDROID_UPLOAD_KEYSTORE_PASSWORD
+          ANDROID_UPLOAD_KEY_ALIAS ANDROID_UPLOAD_CERT_SHA256
+
+      - name: Production OTA catalog (read-only preflight, at least 30 days of validity)
+        run: >-
+          "$PY" tooling/scripts/ota_production_preflight.py --expect published
+          --keyring src/docs/ota/keys/production-keyring.json --min-validity-days 30
+          --json delivery/android/ota-preflight.json
+
+      - name: Write the keystores (outside the checkout, removed at the end)
+        env:
+          ANDROID_RELEASE_KEYSTORE_BASE64: ${{ secrets.ANDROID_RELEASE_KEYSTORE_BASE64 }}
+          ANDROID_UPLOAD_KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p "$RUNNER_TEMP/tf-android-signing"
+          printf '%s' "$ANDROID_RELEASE_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/tf-android-signing/release.p12"
+          printf '%s' "$ANDROID_UPLOAD_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/tf-android-signing/upload.p12"
+
+      # The Gradle tasks verify and stage each file with scripts/verify_release_apk.py and
+      # scripts/verify_play_bundle.py of the source commit; a failure leaves nothing staged.
+      - name: Build assemblePublishableRelease + bundlePublishablePlay (production OTA on)
+        working-directory: src/mobile
+        env:
+          TALENTFORGE_OTA_ANDROID_PRODUCTION_ENABLED: "true"
+          TALENTFORGE_RELEASE_STORE_FILE: ${{ runner.temp }}/tf-android-signing/release.p12
+          TALENTFORGE_RELEASE_STORE_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}
+          TALENTFORGE_RELEASE_KEY_ALIAS: ${{ vars.ANDROID_RELEASE_KEY_ALIAS }}
+          TALENTFORGE_RELEASE_KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}
+          TALENTFORGE_RELEASE_CERT_SHA256: ${{ vars.ANDROID_RELEASE_CERT_SHA256 }}
+          TALENTFORGE_PLAY_UPLOAD_STORE_FILE: ${{ runner.temp }}/tf-android-signing/upload.p12
+          TALENTFORGE_PLAY_UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
+          TALENTFORGE_PLAY_UPLOAD_KEY_ALIAS: ${{ vars.ANDROID_UPLOAD_KEY_ALIAS }}
+          TALENTFORGE_PLAY_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
+          TALENTFORGE_PLAY_UPLOAD_CERT_SHA256: ${{ vars.ANDROID_UPLOAD_CERT_SHA256 }}
+        run: >-
+          ./gradlew --no-daemon --no-build-cache --console=plain
+          :composeApp:assemblePublishableRelease :composeApp:bundlePublishablePlay
+
+      - name: Collect the staged files
+        run: |
+          set -euo pipefail
+          base="TalentForge-$VERSION_NAME-$VERSION_CODE"
+          out=src/mobile/composeApp/build/outputs
+          mkdir -p delivery/android
+          for file in "$out/publishable/$base.apk" "$out/publishable/$base.apk.report.json" \
+            "$out/publishable-google-play/$base.aab" "$out/publishable-google-play/$base.aab.report.json"; do
+            test -f "$file" || { echo "::error::$file was not staged"; exit 1; }
+            cp "$file" delivery/android/
+          done
+          test "$(find "$out/publishable" "$out/publishable-google-play" -type f | wc -l)" -eq 4
+
+      - name: Re-verify the exact files with the workflow's validators
+        env:
+          RELEASE_CERT: ${{ vars.ANDROID_RELEASE_CERT_SHA256 }}
+          UPLOAD_CERT: ${{ vars.ANDROID_UPLOAD_CERT_SHA256 }}
+        run: |
+          set -euo pipefail
+          base="delivery/android/TalentForge-$VERSION_NAME-$VERSION_CODE"
+          build_tools="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)"
+          "$PY" tooling/scripts/verify_release_apk.py --apk "$base.apk" \
+            --expected-cert-sha256 "$RELEASE_CERT" --must-differ-from-cert-sha256 "$UPLOAD_CERT" \
+            --expected-version-code "$VERSION_CODE" --expected-version-name "$VERSION_NAME" \
+            --allow-permission android.permission.INTERNET --build-tools "$build_tools" \
+            --report delivery/android/apk-report.json
+          "$PY" tooling/scripts/verify_play_bundle.py --aab "$base.aab" \
+            --expected-upload-cert-sha256 "$UPLOAD_CERT" --app-signing-cert-sha256 "$RELEASE_CERT" \
+            --expected-version-code "$VERSION_CODE" --expected-version-name "$VERSION_NAME" \
+            --allow-permission android.permission.INTERNET --report delivery/android/aab-report.json
+
+      - name: APK and AAB are one release of the source commit, production OTA on
+        run: |
+          set -euo pipefail
+          base="delivery/android/TalentForge-$VERSION_NAME-$VERSION_CODE"
+          "$PY" tooling/scripts/store_delivery.py android-check --gate delivery/gate.json \
+            --apk "$base.apk" --apk-report delivery/android/apk-report.json \
+            --aab "$base.aab" --aab-report delivery/android/aab-report.json \
+            --out delivery/android/release-check.json
+          (cd delivery/android && sha256sum ./*.apk ./*.aab > SHA256SUMS && cat SHA256SUMS)
+          cp delivery/gate.json delivery/android/gate.json
+
+      - name: Verify mode result
+        if: env.MODE == 'verify'
+        run: >-
+          "$PY" tooling/scripts/store_delivery.py verified --platform android
+          --gate delivery/gate.json --check delivery/android/release-check.json
+          --status delivery/status/android.json
+
+      # deliver: the signed files are kept (the APK is the RuStore/AppGallery file); verify: only
+      # reports and checksums, so no signed build of this versionCode leaves the runner.
+      - name: Keep the signed release (deliver)
+        if: env.MODE == 'deliver'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release
+          path: delivery/android/
+          if-no-files-found: error
+          retention-days: 90
+          overwrite: true
+      - name: Keep the reports (verify)
+        if: env.MODE == 'verify'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-verify-reports
+          path: |
+            delivery/android/*.json
+            delivery/android/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 30
+          overwrite: true
+      - uses: actions/upload-artifact@v4
+        if: env.MODE == 'verify'
+        with:
+          name: tf-status-android
+          path: delivery/status/android.json
+          if-no-files-found: error
+          overwrite: true
+
+      - name: Remove the signing material
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/tf-android-signing" src/mobile/composeApp/build/outputs
+
+  android-deliver:
+    name: Android - upload to the Google Play closed test
+    needs: [gate, android-store-check, android-build, ios-store-check, ios-build]
+    # every selected platform built and verified first: one failure stops every upload
+    if: >-
+      always() && needs.gate.result == 'success' && needs.gate.outputs.mode == 'deliver'
+      && needs.android-build.result == 'success'
+      && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: google-play
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: tooling
+          persist-credentials: false
+      - uses: ./tooling/.github/actions/delivery-python
+        with:
+          tooling: tooling
+      - uses: actions/download-artifact@v4
+        with:
+          name: tf-gate
+          path: delivery
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-release
+          path: delivery/android
+      - name: The bundle is the verified one
+        id: files
+        run: |
+          set -euo pipefail
+          (cd delivery/android && sha256sum --check --strict SHA256SUMS)
+          aab="$(find delivery/android -maxdepth 1 -name 'TalentForge-*.aab')"
+          test "$(printf '%s\n' "$aab" | wc -l)" -eq 1
+          echo "aab=$aab" >> "$GITHUB_OUTPUT"
+      - name: Upload to Google Play and release on the closed track
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          PLAY_TRACK: ${{ vars.PLAY_TRACK }}
+          PLAY_RELEASE_STATUS: ${{ vars.PLAY_RELEASE_STATUS }}
+          PLAY_CHANGES_NOT_SENT_FOR_REVIEW: ${{ vars.PLAY_CHANGES_NOT_SENT_FOR_REVIEW }}
+          AAB: ${{ steps.files.outputs.aab }}
+        run: >-
+          "$PY" tooling/scripts/store_delivery.py play-deliver --gate delivery/gate.json
+          --aab "$AAB" --status delivery/status/android.json
+      - name: Delivery record name
+        id: record
+        env:
+          AAB: ${{ steps.files.outputs.aab }}
+        run: |
+          set -euo pipefail
+          name="$("$PY" tooling/scripts/store_delivery.py record-name --gate delivery/gate.json \
+            --platform android --phase delivered --artifact "$AAB")"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+      - name: Keep the delivery record
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.record.outputs.name }}
+          path: delivery/status/android.json
+          if-no-files-found: error
+          retention-days: 90
+          overwrite: true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tf-status-android
+          path: delivery/status/android.json
+          if-no-files-found: ignore
+          overwrite: true
+
+  # ------------------------------------------------------------------------------- iOS
+
+  ios-store-check:
+    name: iOS - App Store Connect state (read-only)
+    needs: gate
+    if: needs.gate.outputs.ios == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: app-store-connect
+    permissions:
+      contents: read
+      actions: read # delivery records of earlier runs
+    outputs:
+      decision: ${{ steps.check.outputs.decision }}
+      delivered_sha256: ${{ steps.check.outputs.delivered_sha256 }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: tooling
+          persist-credentials: false
+      - uses: ./tooling/.github/actions/delivery-python
+        with:
+          tooling: tooling
+      - uses: actions/download-artifact@v4
+        with:
+          name: tf-gate
+          path: delivery
+      - name: App Store Connect state of this build number
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+          ASC_API_PRIVATE_KEY: ${{ secrets.ASC_API_PRIVATE_KEY }}
+        run: >-
+          "$PY" tooling/scripts/store_delivery.py asc-check --gate delivery/gate.json
+          --status delivery/status/ios.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tf-status-ios
+          path: delivery/status/ios.json
+          if-no-files-found: ignore
+          overwrite: true
+
+  ios-build:
+    name: iOS - signed archive + App Store export (OTA on), verified
+    needs: [gate, ios-store-check]
+    if: needs.ios-store-check.outputs.decision == 'UPLOAD'
+    # The release toolchain of mobile-ci.yml: Xcode 27.1 (27A9275) on the xcode-27 image, never
+    # macos-latest; a missing Xcode 27.1 fails the job.
+    runs-on: xcode-27
+    timeout-minutes: 150
+    environment: ios-signing
+    permissions:
+      contents: read
+    env:
+      SOURCE_SHA: ${{ needs.gate.outputs.sha }}
+      MODE: ${{ needs.gate.outputs.mode }}
+      ANDROID_HOME: /Users/runner/Library/Android/sdk
+      XCODE_APP: /Applications/Xcode_27.1.app
+      XCODE_BUILD: 27A9275
+      IOS_SDK: iphoneos27.1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.gate.outputs.sha }}
+          path: src
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: tooling
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: true
+      - name: Select Xcode 27.1 and verify the toolchain
+        run: |
+          set -euo pipefail
+          if [ ! -d "$XCODE_APP" ]; then
+            echo "::error::BLOCKED: $XCODE_APP is not installed on this runner image"; exit 1
+          fi
+          sudo xcode-select --switch "$XCODE_APP/Contents/Developer"
+          build=$(xcodebuild -version | awk '/^Build version/ {print $3}')
+          if [ "$build" != "$XCODE_BUILD" ]; then
+            echo "::error::expected Xcode 27.1 build $XCODE_BUILD, found $build"; exit 1
+          fi
+          if ! xcodebuild -showsdks | grep -qE -- "-sdk ${IOS_SDK}( |$)"; then
+            echo "::error::SDK $IOS_SDK is not installed with $XCODE_APP"; exit 1
+          fi
+      - uses: ./tooling/.github/actions/delivery-python
+        with:
+          tooling: tooling
+      - uses: actions/download-artifact@v4
+        with:
+          name: tf-gate
+          path: delivery
+
+      - name: The source tree is the gated commit
+        run: |
+          set -euo pipefail
+          test "$(git -C src rev-parse HEAD)" = "$SOURCE_SHA"
+          mkdir -p delivery/ios
+          {
+            echo "IOS_VERSION=$(jq -r .ios.version delivery/gate.json)"
+            echo "IOS_BUILD=$(jq -r .ios.build delivery/gate.json)"
+          } >> "$GITHUB_ENV"
+
+      - name: Production OTA catalog (read-only preflight, at least 30 days of validity)
+        run: >-
+          "$PY" tooling/scripts/ota_production_preflight.py --expect published
+          --keyring src/docs/ota/keys/production-keyring.json --min-validity-days 30
+          --json delivery/ios/ota-preflight.json
+
+      - name: Project configuration (bundle id, version, Automatic signing with nothing committed)
+        run: >-
+          "$PY" tooling/scripts/verify_ios_project.py --project src/mobile/iosApp/iosApp.xcodeproj
+          --expected-version "$IOS_VERSION" --expected-build "$IOS_BUILD"
+          --report delivery/ios/project-report.json
+
+      - name: Install the temporary distribution signing
+        id: signing
+        env:
+          IOS_DISTRIBUTION_CERT_P12_BASE64: ${{ secrets.IOS_DISTRIBUTION_CERT_P12_BASE64 }}
+          IOS_DISTRIBUTION_CERT_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERT_PASSWORD }}
+          IOS_APPSTORE_PROFILE_BASE64: ${{ secrets.IOS_APPSTORE_PROFILE_BASE64 }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: bash tooling/scripts/ios_delivery_signing.sh install
+
+      # Manual signing exists only on this command line; the committed project keeps Automatic
+      # signing without a team (verify_ios_project.py above).
+      - name: Signed Release archive (production OTA on)
+        working-directory: src/mobile/iosApp
+        env:
+          TALENTFORGE_OTA_IOS_PRODUCTION_ENABLED: "true"
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          PROFILE_UUID: ${{ steps.signing.outputs.profile_uuid }}
+          KEYCHAIN: ${{ steps.signing.outputs.keychain }}
+        run: >-
+          xcodebuild -project iosApp.xcodeproj -scheme iosApp -configuration Release
+          -destination 'generic/platform=iOS'
+          -derivedDataPath "$RUNNER_TEMP/tf-ios-derived"
+          -archivePath "$RUNNER_TEMP/tf-ios-out/TalentForge.xcarchive"
+          CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM="$APPLE_TEAM_ID"
+          CODE_SIGN_IDENTITY="Apple Distribution" PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID"
+          OTHER_CODE_SIGN_FLAGS="--keychain $KEYCHAIN"
+          archive
+
+      - name: Verify the archive (signed, OTA on, version, Xcode 27.1, privacy, no secrets)
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: >-
+          "$PY" tooling/scripts/verify_ios_archive.py
+          --archive "$RUNNER_TEMP/tf-ios-out/TalentForge.xcarchive" --ota on
+          --require-signed --expected-team-id "$APPLE_TEAM_ID"
+          --expected-version "$IOS_VERSION" --expected-build "$IOS_BUILD"
+          --expected-sdk "$IOS_SDK" --expected-xcode-build "$XCODE_BUILD"
+          --report delivery/ios/archive-report.json
+
+      - name: App Store export (.ipa, no version or build number changes)
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          PROFILE_UUID: ${{ steps.signing.outputs.profile_uuid }}
+        run: |
+          set -euo pipefail
+          "$PY" - "$RUNNER_TEMP/tf-ios-out/ExportOptions.plist" <<'PY'
+          import os
+          import plistlib
+          import sys
+
+          options = {
+              "method": "app-store-connect",
+              "destination": "export",
+              "teamID": os.environ["APPLE_TEAM_ID"],
+              "signingStyle": "manual",
+              "signingCertificate": "Apple Distribution",
+              "provisioningProfiles": {
+                  "io.github.alexeykravtsov95.talentforge": os.environ["PROFILE_UUID"]
+              },
+              "manageAppVersionAndBuildNumber": False,
+              "uploadSymbols": True,
+          }
+          with open(sys.argv[1], "wb") as handle:
+              plistlib.dump(options, handle)
+          PY
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/tf-ios-out/TalentForge.xcarchive" \
+            -exportPath "$RUNNER_TEMP/tf-ios-out/export" \
+            -exportOptionsPlist "$RUNNER_TEMP/tf-ios-out/ExportOptions.plist"
+          ipas=("$RUNNER_TEMP"/tf-ios-out/export/*.ipa)
+          test "${#ipas[@]}" -eq 1 && test -f "${ipas[0]}"
+          cp "${ipas[0]}" "delivery/ios/TalentForge-$IOS_VERSION-$IOS_BUILD.ipa"
+
+      - name: Verify the exported package (Apple Distribution, App Store profile, OTA on)
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: >-
+          "$PY" tooling/scripts/verify_ios_archive.py
+          --ipa "delivery/ios/TalentForge-$IOS_VERSION-$IOS_BUILD.ipa" --ota on
+          --expected-team-id "$APPLE_TEAM_ID"
+          --expected-version "$IOS_VERSION" --expected-build "$IOS_BUILD"
+          --expected-sdk "$IOS_SDK" --expected-xcode-build "$XCODE_BUILD"
+          --report delivery/ios/ipa-report.json
+
+      - name: Archive and export are one release of the source commit
+        run: |
+          set -euo pipefail
+          "$PY" tooling/scripts/store_delivery.py ios-check --gate delivery/gate.json \
+            --archive-report delivery/ios/archive-report.json \
+            --ipa "delivery/ios/TalentForge-$IOS_VERSION-$IOS_BUILD.ipa" \
+            --ipa-report delivery/ios/ipa-report.json --out delivery/ios/release-check.json
+          (cd delivery/ios && shasum -a 256 ./*.ipa > SHA256SUMS && cat SHA256SUMS)
+          cp delivery/gate.json delivery/ios/gate.json
+
+      - name: Verify mode result
+        if: env.MODE == 'verify'
+        run: >-
+          "$PY" tooling/scripts/store_delivery.py verified --platform ios
+          --gate delivery/gate.json --check delivery/ios/release-check.json
+          --status delivery/status/ios.json
+
+      - name: Keep the signed release (deliver)
+        if: env.MODE == 'deliver'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-release
+          path: delivery/ios/
+          if-no-files-found: error
+          retention-days: 90
+          overwrite: true
+      - name: Keep the reports (verify)
+        if: env.MODE == 'verify'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-verify-reports
+          path: |
+            delivery/ios/*.json
+            delivery/ios/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 30
+          overwrite: true
+      - uses: actions/upload-artifact@v4
+        if: env.MODE == 'verify'
+        with:
+          name: tf-status-ios
+          path: delivery/status/ios.json
+          if-no-files-found: error
+          overwrite: true
+
+      - name: Remove the signing material
+        if: always()
+        run: |
+          bash tooling/scripts/ios_delivery_signing.sh cleanup
+          rm -rf "$RUNNER_TEMP/tf-ios-out" "$RUNNER_TEMP/tf-ios-derived"
+
+  ios-upload:
+    name: iOS - upload to App Store Connect
+    needs: [gate, android-store-check, android-build, ios-store-check, ios-build]
+    if: >-
+      always() && needs.gate.result == 'success' && needs.gate.outputs.mode == 'deliver'
+      && needs.ios-build.result == 'success'
+      && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    runs-on: xcode-27 # altool ships with Xcode
+    timeout-minutes: 60
+    environment: app-store-connect
+    permissions:
+      contents: read
+      actions: read # this run's own upload record, on a re-run
+    outputs:
+      decision: ${{ steps.check.outputs.decision }}
+      ipa_sha256: ${{ steps.files.outputs.sha256 }}
+    env:
+      XCODE_APP: /Applications/Xcode_27.1.app
+      XCODE_BUILD: 27A9275
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: tooling
+          persist-credentials: false
+      - name: Select Xcode 27.1
+        run: |
+          set -euo pipefail
+          sudo xcode-select --switch "$XCODE_APP/Contents/Developer"
+          build=$(xcodebuild -version | awk '/^Build version/ {print $3}')
+          if [ "$build" != "$XCODE_BUILD" ]; then
+            echo "::error::expected Xcode 27.1 build $XCODE_BUILD, found $build"; exit 1
+          fi
+      - uses: ./tooling/.github/actions/delivery-python
+        with:
+          tooling: tooling
+      - uses: actions/download-artifact@v4
+        with:
+          name: tf-gate
+          path: delivery
+      - uses: actions/download-artifact@v4
+        with:
+          name: ios-release
+          path: delivery/ios
+      - name: The package is the verified one
+        id: files
+        run: |
+          set -euo pipefail
+          (cd delivery/ios && shasum -a 256 --check --strict SHA256SUMS)
+          ipas=(delivery/ios/TalentForge-*.ipa)
+          test "${#ipas[@]}" -eq 1 && test -f "${ipas[0]}"
+          echo "ipa=${ipas[0]}" >> "$GITHUB_OUTPUT"
+          echo "sha256=$(shasum -a 256 "${ipas[0]}" | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+      - name: App Store Connect state right before the upload
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+          ASC_API_PRIVATE_KEY: ${{ secrets.ASC_API_PRIVATE_KEY }}
+          IPA: ${{ steps.files.outputs.ipa }}
+        run: >-
+          "$PY" tooling/scripts/store_delivery.py asc-check --gate delivery/gate.json
+          --ipa "$IPA" --status delivery/status/ios-upload.json
+      - name: Upload record name
+        id: record
+        if: steps.check.outputs.decision == 'UPLOAD'
+        env:
+          IPA: ${{ steps.files.outputs.ipa }}
+        run: |
+          set -euo pipefail
+          name="$("$PY" tooling/scripts/store_delivery.py record-name --gate delivery/gate.json \
+            --platform ios --phase upload-started --artifact "$IPA")"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+      # kept BEFORE the upload: a re-run then recognises a build this run already sent
+      - name: Keep the upload record
+        if: steps.check.outputs.decision == 'UPLOAD'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.record.outputs.name }}
+          path: delivery/ios/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 90
+          overwrite: true
+      - name: Validate and upload with altool
+        if: steps.check.outputs.decision == 'UPLOAD'
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+          ASC_API_PRIVATE_KEY: ${{ secrets.ASC_API_PRIVATE_KEY }}
+          IPA: ${{ steps.files.outputs.ipa }}
+        run: |
+          set -euo pipefail
+          umask 077
+          key="$RUNNER_TEMP/tf-asc/AuthKey_$ASC_API_KEY_ID.p8"
+          "$PY" tooling/scripts/store_delivery.py write-asc-key --out "$key"
+          auth=(--api-key "$ASC_API_KEY_ID" --api-issuer "$ASC_API_ISSUER_ID" --p8-file-path "$key")
+          xcrun altool --validate-app "$IPA" "${auth[@]}" --output-format json
+          xcrun altool --upload-package "$IPA" "${auth[@]}" --output-format json
+      - name: Remove the API key file
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/tf-asc"
+
+  ios-testflight:
+    name: iOS - processing and the internal TestFlight group
+    needs: [gate, android-store-check, android-build, ios-store-check, ios-build, ios-upload]
+    if: >-
+      always() && needs.gate.result == 'success' && needs.gate.outputs.mode == 'deliver'
+      && needs.gate.outputs.ios == 'true'
+      && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+      && (needs.ios-upload.result == 'success'
+          || needs.ios-store-check.outputs.decision == 'ALREADY_UPLOADED')
+    runs-on: ubuntu-24.04 # polling needs no macOS minutes
+    timeout-minutes: 120
+    environment: app-store-connect
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: tooling
+          persist-credentials: false
+      - uses: ./tooling/.github/actions/delivery-python
+        with:
+          tooling: tooling
+      - uses: actions/download-artifact@v4
+        with:
+          name: tf-gate
+          path: delivery
+      - name: Wait for processing, give the build to the internal group
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+          ASC_API_PRIVATE_KEY: ${{ secrets.ASC_API_PRIVATE_KEY }}
+          TESTFLIGHT_INTERNAL_GROUP: ${{ vars.TESTFLIGHT_INTERNAL_GROUP }}
+          IOS_DECISION: ${{ needs.ios-upload.outputs.decision || needs.ios-store-check.outputs.decision }}
+          IOS_DELIVERED_SHA256: ${{ needs.ios-upload.outputs.ipa_sha256 || needs.ios-store-check.outputs.delivered_sha256 }}
+        run: >-
+          "$PY" tooling/scripts/store_delivery.py testflight --gate delivery/gate.json
+          --status delivery/status/ios.json --timeout-minutes 100
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tf-status-ios
+          path: delivery/status/ios.json
+          if-no-files-found: ignore
+          overwrite: true
+
+  # ------------------------------------------------------------------------------- summary
+
+  summary:
+    name: Delivery status per platform
+    needs:
+      - gate
+      - android-store-check
+      - android-build
+      - android-deliver
+      - ios-store-check
+      - ios-build
+      - ios-upload
+      - ios-testflight
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: tooling
+          persist-credentials: false
+      - uses: ./tooling/.github/actions/delivery-python
+        with:
+          tooling: tooling
+      - uses: actions/download-artifact@v4
+        continue-on-error: true # no gate file when the gate failed: reported as BLOCKED
+        with:
+          name: tf-gate
+          path: delivery
+      - uses: actions/download-artifact@v4
+        continue-on-error: true # a platform without a status is reported from its job results
+        with:
+          pattern: tf-status-*
+          path: delivery/status
+          merge-multiple: true
+      - name: Summary (fails unless every selected platform succeeded)
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+          INPUT_PLATFORMS: ${{ inputs.platforms }}
+          INPUT_MODE: ${{ inputs.mode }}
+        run: >-
+          "$PY" tooling/scripts/store_delivery.py summary --gate delivery/gate.json
+          --status-dir delivery/status --platforms "$INPUT_PLATFORMS" --mode "$INPUT_MODE"
+          --out delivery/delivery-report.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: delivery-report
+          path: |
+            delivery/delivery-report.json
+            delivery/gate.json
+          if-no-files-found: warn
+          retention-days: 90
+          overwrite: true
