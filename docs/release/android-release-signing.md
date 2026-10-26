@@ -155,8 +155,9 @@ is never a release artifact.**
 
 - Commit a keystore, a password or a properties file containing one (`*.p12`, `*.jks`,
   `*.keystore` and `*.pk8` are git-ignored as a backstop).
-- Put signing secrets into CI. CI is infrastructure-blocked (TF-RC1-CI), and production signing
-  in CI is not planned in this phase.
+- Put signing secrets into CI anywhere except the protected `android-signing` environment of the
+  owner-started store delivery workflow ([ci-delivery.md](ci-delivery.md), issue #90). No other
+  workflow, branch or pull request may use them.
 - Upload `composeApp-release-unsigned.apk`, `composeApp-debug.apk`, or anything not produced by
   `assemblePublishableRelease` from the release commit.
 - Use a store-generated key (AGC-generated or Google-generated): it breaks cross-store updates
