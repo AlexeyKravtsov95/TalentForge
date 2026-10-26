@@ -82,8 +82,16 @@ REFUSED_PLAY_TRACKS = {
 PLAY_RELEASE_STATUSES = ("completed", "draft")
 GOOGLE_TOKEN_URI = "https://oauth2.googleapis.com/token"
 PLAY_SCOPE = "https://www.googleapis.com/auth/androidpublisher"
-PLAY_API = "https://androidpublisher.googleapis.com/androidpublisher/v3/applications/"
-PLAY_UPLOAD_API = "https://androidpublisher.googleapis.com/upload/androidpublisher/v3/applications/"
+PLAY_HOST = "androidpublisher.googleapis.com"
+PLAY_API = f"https://{PLAY_HOST}/androidpublisher/v3/applications/"
+#: edits.bundles.upload media paths, as the Discovery document of androidpublisher v3 declares
+#: them (mediaUpload.protocols; pinned by tests/fixtures/play_discovery). The upload starts on
+#: the resumable path; the session URI Google returns must be one of the two for the same
+#: package and edit.
+PLAY_RESUMABLE_BUNDLES = (
+    "/resumable/upload/androidpublisher/v3/applications/{package}/edits/{edit}/bundles"
+)
+PLAY_SIMPLE_BUNDLES = "/upload/androidpublisher/v3/applications/{package}/edits/{edit}/bundles"
 ASC_API = "https://api.appstoreconnect.apple.com/v1/"
 ASC_AUDIENCE = "appstoreconnect-v1"
 GITHUB_API = "https://api.github.com/"
@@ -641,16 +649,14 @@ class GooglePlay:
         method: str,
         path: str,
         *,
-        upload: bool = False,
         retry: bool = False,
         headers: Mapping[str, str] | None = None,
         **kwargs: Any,
     ) -> httpx.Response:
-        base = PLAY_UPLOAD_API if upload else PLAY_API
         return send(
             self.client,
             method,
-            f"{base}{self.package}/{path}",
+            f"{PLAY_API}{self.package}/{path}",
             retry=retry,
             service="Google Play",
             sleep=self.sleep,
@@ -677,22 +683,65 @@ class GooglePlay:
             tracks={str(t["track"]): list(t.get("releases", [])) for t in tracks},
         )
 
+    def session_uri(self, edit: str, location: str) -> str:
+        """The resumable session URI Google returned, if it is one for this very upload.
+
+        HTTPS on the API host only (no port, user info or fragment), one of the two media
+        paths of edits.bundles.upload for this package and edit, exactly one non-empty
+        ``upload_id``. The value itself is never printed: it authorises the upload.
+        """
+        try:
+            url = httpx.URL(location)
+        except httpx.InvalidURL:
+            url = None
+        allowed = {
+            template.format(package=self.package, edit=edit)
+            for template in (PLAY_RESUMABLE_BUNDLES, PLAY_SIMPLE_BUNDLES)
+        }
+        problems = []
+        if url is None or not location:
+            problems.append("no valid Location header")
+        else:
+            if url.scheme != "https":
+                problems.append(f"scheme {url.scheme!r}, not https")
+            if url.host != PLAY_HOST or url.port is not None or url.userinfo:
+                problems.append(f"host {url.host!r}, not {PLAY_HOST}")
+            if url.path not in allowed:
+                problems.append("a path other than edits.bundles.upload of this package and edit")
+            if url.fragment:
+                problems.append("a fragment")
+            ids = url.params.get_list("upload_id")
+            if len(ids) != 1:
+                problems.append(f"{len(ids)} upload_id values (expected exactly one)")
+            elif not ids[0]:
+                problems.append("an empty upload_id")
+        if problems:
+            raise DeliveryError(
+                "STORE",
+                "Google Play did not start a resumable upload for this bundle: the session URI "
+                "has " + "; ".join(problems) + ". Nothing was uploaded",
+            )
+        return location
+
     def upload_bundle(self, edit: str, aab: Path) -> tuple[int, str]:
         data = aab.read_bytes()
-        session = self._call(
+        start = PLAY_RESUMABLE_BUNDLES.format(package=self.package, edit=edit)
+        session = send(
+            self.client,
             "POST",
-            f"edits/{edit}/bundles",
-            upload=True,
-            params={"uploadType": "resumable"},
+            f"https://{PLAY_HOST}{start}",
+            retry=False,
+            service="Google Play",
+            sleep=self.sleep,
             headers={
+                **self._headers(),
                 "X-Upload-Content-Type": "application/octet-stream",
                 "X-Upload-Content-Length": str(len(data)),
             },
+            params={"uploadType": "resumable"},
             json={},
         )
-        location = session.headers.get("location", "")
-        if not location.startswith(PLAY_UPLOAD_API):
-            raise DeliveryError("STORE", "Google Play did not start a resumable upload")
+        location = self.session_uri(edit, session.headers.get("location", ""))
         response = send(
             self.client,
             "PUT",

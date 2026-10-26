@@ -475,8 +475,27 @@ def test_right_before_the_upload_only_the_exact_bundle_counts() -> None:
     assert f"this run's verified bundle is {OTHER_SHA}" in message
 
 
+# Google's paths, written out here rather than taken from the implementation: the fake routes
+# by them, so a wrong path in store_delivery.py fails instead of agreeing with itself.
+PACKAGE = "io.github.alexeykravtsov95.talentforge"
+GOOGLE_API = f"/androidpublisher/v3/applications/{PACKAGE}/"
+GOOGLE_RESUMABLE = f"/resumable/upload/androidpublisher/v3/applications/{PACKAGE}/edits/"
+GOOGLE_SIMPLE = f"/upload/androidpublisher/v3/applications/{PACKAGE}/edits/"
+DISCOVERY = json.loads(
+    (ROOT / "tests/fixtures/play_discovery/edits.bundles.upload.json").read_text()
+)
+
+
+def session_location(edit: str, upload_id: str = "ADPycdsS1lfq") -> str:
+    """The session URI Google's resumable protocol returns: the request path + upload_id."""
+    return (
+        f"https://androidpublisher.googleapis.com{GOOGLE_RESUMABLE}{edit}/bundles"
+        f"?uploadType=resumable&upload_id={upload_id}"
+    )
+
+
 class FakePlay:
-    """The Google Play Developer API v3 edits endpoints, in memory."""
+    """The Google Play Developer API v3 edits endpoints, in memory, routed by Google's paths."""
 
     def __init__(self, key: rsa.RSAPrivateKey, *, bundles: dict[int, str] | None = None) -> None:
         self.public_key = key.public_key()
@@ -490,6 +509,8 @@ class FakePlay:
         self.upload_sha_override: str | None = None
         self.commit_error: str | None = None
         self.counter = 0
+        self.location: Callable[[str], str] = session_location
+        self.sessions: dict[str, str] = {}  # upload_id -> edit
 
     def token(self, request: httpx.Request) -> httpx.Response:
         form = dict(x.split("=", 1) for x in request.content.decode().split("&"))
@@ -505,10 +526,15 @@ class FakePlay:
         return httpx.Response(200, json={"access_token": "play-token", "expires_in": 3600})
 
     def handler(self, request: httpx.Request) -> httpx.Response:
-        if str(request.url) == d.GOOGLE_TOKEN_URI:
+        if str(request.url) == "https://oauth2.googleapis.com/token":
             return self.token(request)
+        assert request.url.host == "androidpublisher.googleapis.com"
         assert request.headers["Authorization"] == "Bearer play-token"
-        path = request.url.path.split(f"/applications/{d.APPLICATION_ID}/", 1)[1]
+        full = request.url.path
+        if full.startswith((GOOGLE_RESUMABLE, GOOGLE_SIMPLE)):
+            return self.media(request, full)
+        assert full.startswith(GOOGLE_API), full
+        path = full.removeprefix(GOOGLE_API)
         self.calls.append(f"{request.method} {path}")
         if request.method == "POST" and path == "edits":
             self.counter += 1
@@ -531,6 +557,30 @@ class FakePlay:
             return httpx.Response(200, json={})
         return self.edit_call(request, edit_id, rest)
 
+    def media(self, request: httpx.Request, full: str) -> httpx.Response:
+        """edits.bundles.upload on its media paths: start a session, then take the bytes."""
+        resumable = full.startswith(GOOGLE_RESUMABLE)
+        edit_id, _, rest = full.removeprefix(
+            GOOGLE_RESUMABLE if resumable else GOOGLE_SIMPLE
+        ).partition("/")
+        assert rest == "bundles", full
+        if request.method == "POST":
+            self.calls.append(f"POST {'resumable' if resumable else 'simple'} start {edit_id}")
+            if not resumable or request.url.params.get("uploadType") != "resumable":
+                return httpx.Response(400, json={"error": {"message": "not a resumable start"}})
+            assert edit_id in self.edits
+            assert int(request.headers["X-Upload-Content-Length"]) > 0
+            location = self.location(edit_id)
+            upload_id = httpx.URL(location).params.get("upload_id", "")
+            self.sessions[upload_id] = edit_id
+            return httpx.Response(200, headers={"Location": location})
+        assert request.method == "PUT", request.method
+        self.calls.append(f"PUT session {edit_id}")
+        assert self.sessions.get(request.url.params["upload_id"]) == edit_id
+        sha = self.upload_sha_override or hashlib.sha256(request.content).hexdigest()
+        self.edits[edit_id]["bundles"]["3"] = sha
+        return httpx.Response(200, json={"versionCode": 3, "sha256": sha})
+
     def edit_call(self, request: httpx.Request, edit_id: str, rest: str) -> httpx.Response:
         edit = self.edits[edit_id]
         if rest == "bundles" and request.method == "GET":
@@ -541,15 +591,6 @@ class FakePlay:
         if rest == "tracks":
             tracks = [{"track": t, "releases": r} for t, r in edit["tracks"].items()]
             return httpx.Response(200, json={"tracks": tracks})
-        if rest == "bundles" and request.method == "POST":
-            assert request.url.params["uploadType"] == "resumable"
-            assert int(request.headers["X-Upload-Content-Length"]) > 0
-            location = f"{d.PLAY_UPLOAD_API}{d.APPLICATION_ID}/edits/{edit_id}/bundles?upload_id=1"
-            return httpx.Response(200, headers={"Location": location})
-        if request.method == "PUT" and rest == "bundles":
-            sha = self.upload_sha_override or hashlib.sha256(request.content).hexdigest()
-            edit["bundles"]["3"] = sha
-            return httpx.Response(200, json={"versionCode": 3, "sha256": sha})
         if request.method == "PUT" and rest.startswith("tracks/"):
             body = json.loads(request.content)
             edit["tracks"][rest.removeprefix("tracks/")] = body["releases"]
@@ -593,7 +634,89 @@ def test_the_bundle_is_uploaded_released_on_the_closed_track_and_read_back(
     ]
     assert fake.tracks["production"] == []
     assert "POST edits/e1:commit" in fake.calls
+    assert fake.calls.index("POST resumable start e1") < fake.calls.index("PUT session e1")
     assert fake.edits == {}  # the read-back edit is deleted too
+
+
+def test_the_upload_paths_are_the_ones_google_s_discovery_document_declares() -> None:
+    protocols = DISCOVERY["mediaUpload"]["protocols"]
+    assert DISCOVERY["method"] == "androidpublisher.edits.bundles.upload"
+    placeholders = {"package": "{packageName}", "edit": "{editId}"}
+    assert d.PLAY_RESUMABLE_BUNDLES.format(**placeholders) == protocols["resumable"]["path"]
+    assert d.PLAY_SIMPLE_BUNDLES.format(**placeholders) == protocols["simple"]["path"]
+    assert f"https://{d.PLAY_HOST}/" == DISCOVERY["rootUrl"]
+    assert "application/octet-stream" in DISCOVERY["mediaUpload"]["accept"]
+
+
+@pytest.mark.parametrize(
+    "location",
+    [
+        lambda e: session_location(e),
+        lambda e: session_location(e).replace("/resumable/upload/", "/upload/"),
+    ],
+    ids=["resumable-path", "simple-path"],
+)
+def test_a_session_uri_on_either_declared_media_path_is_accepted(
+    tmp_path: Path, rsa_key: rsa.RSAPrivateKey, location: Callable[[str], str]
+) -> None:
+    fake = FakePlay(rsa_key)
+    fake.location = location
+    assert deliver(fake.client(rsa_key), bundle_file(tmp_path))["status"] == "DELIVERED"
+
+
+@pytest.mark.parametrize(
+    ("location", "problem"),
+    [
+        (lambda e: "", "no valid Location"),
+        (lambda e: session_location(e).replace("https://", "http://"), "not https"),
+        (
+            lambda e: session_location(e).replace(
+                "androidpublisher.googleapis.com", "androidpublisher.googleapis.com.evil.example"
+            ),
+            "host",
+        ),
+        (
+            lambda e: session_location(e).replace("https://", "https://user:pw@"),
+            "host",
+        ),
+        (
+            lambda e: session_location(e).replace(".googleapis.com/", ".googleapis.com:8443/"),
+            "host",
+        ),
+        (lambda e: session_location(e).replace(PACKAGE, "com.example.other"), "a path other"),
+        (lambda e: session_location(e).replace(f"/edits/{e}/", "/edits/other/"), "a path other"),
+        (lambda e: session_location(e).replace("/bundles?", "/apks?"), "a path other"),
+        (lambda e: session_location(e).replace("&upload_id=ADPycdsS1lfq", ""), "0 upload_id"),
+        (lambda e: session_location(e, upload_id=""), "an empty upload_id"),
+        (lambda e: session_location(e) + "&upload_id=second", "2 upload_id"),
+        (lambda e: session_location(e) + "#frag", "a fragment"),
+    ],
+    ids=[
+        "missing",
+        "http",
+        "other-host",
+        "userinfo",
+        "port",
+        "other-package",
+        "other-edit",
+        "other-method",
+        "no-upload-id",
+        "empty-upload-id",
+        "two-upload-ids",
+        "fragment",
+    ],
+)
+def test_a_session_uri_for_anything_else_is_refused_before_the_bytes_leave(
+    tmp_path: Path, rsa_key: rsa.RSAPrivateKey, location: Callable[[str], str], problem: str
+) -> None:
+    fake = FakePlay(rsa_key)
+    fake.location = location
+    message = refused("STORE", lambda: deliver(fake.client(rsa_key), bundle_file(tmp_path)))
+    assert problem in message and "Nothing was uploaded" in message
+    assert "ADPycdsS1lfq" not in message  # the session URI authorises an upload: never printed
+    assert not any(call.startswith("PUT session") for call in fake.calls)
+    assert not any(call.endswith(":commit") for call in fake.calls)
+    assert fake.edits == {}
 
 
 def test_a_re_run_after_a_successful_upload_uploads_nothing(
@@ -603,7 +726,9 @@ def test_a_re_run_after_a_successful_upload_uploads_nothing(
     fake = FakePlay(rsa_key, bundles={1: "0" * 64, 3: d.file_sha256(aab)})
     fake.tracks["alpha"] = [{"versionCodes": ["3"], "status": "completed"}]
     assert deliver(fake.client(rsa_key), aab)["status"] == "ALREADY_DELIVERED"
-    assert not any(c.startswith("PUT") or c.endswith(":commit") for c in fake.calls)
+    assert not any(
+        c.startswith(("POST resumable", "PUT")) or c.endswith(":commit") for c in fake.calls
+    )
     assert fake.edits == {}
 
 
@@ -612,7 +737,7 @@ def test_another_bundle_with_the_same_code_is_never_uploaded(
 ) -> None:
     fake = FakePlay(rsa_key, bundles={3: OTHER_SHA})
     refused("CONFLICT", lambda: deliver(fake.client(rsa_key), bundle_file(tmp_path)))
-    assert not any(call.startswith("PUT") for call in fake.calls)
+    assert not any(call.startswith(("POST resumable", "PUT")) for call in fake.calls)
     assert fake.edits == {}
 
 
@@ -646,7 +771,9 @@ def test_the_read_only_check_deletes_its_edit(rsa_key: rsa.RSAPrivateKey) -> Non
     decision = d.play_check(fake.client(rsa_key), gate=gate(), track="alpha", records=())
     assert decision.kind == "UPLOAD"
     assert fake.edits == {}
-    assert not any(c.startswith("PUT") or c.endswith(":commit") for c in fake.calls)
+    assert not any(
+        c.startswith(("POST resumable", "PUT")) or c.endswith(":commit") for c in fake.calls
+    )
 
 
 # --------------------------------------------------------------------------- App Store Connect
