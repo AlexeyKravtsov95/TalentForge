@@ -67,11 +67,21 @@ then checked with the macOS tools themselves, never by the presence of files alo
 
 Without ``codesign`` or ``security`` (not macOS) the check cannot run: exit 2, never a pass.
 
+``--ipa`` (issue #90) checks the exported App Store package instead of the archive: the one
+that is uploaded. It is unpacked safely (no entry may leave it, symlinks are refused, modes
+are kept), must hold exactly one ``Payload/*.app`` (next to it only ``Symbols``, ``SwiftSupport`` or
+``BCSymbolMaps``), and every check above runs on that application. The signature is always
+verified, and ``testflight-signing`` then accepts only Apple Distribution with an App Store
+profile: a development-signed archive is acceptable because Organizer re-signs it, a
+development-signed export is not. The report names the package and its SHA-256.
+
 Usage::
 
     python3 scripts/verify_ios_archive.py --archive TalentForge.xcarchive --ota off \\
         --expected-version 1.0.0 --expected-build 1 \\
         --expected-sdk iphoneos27.1 --expected-xcode-build 27A9275 --report report.json
+    python3 scripts/verify_ios_archive.py --ipa export/iosApp.ipa --ota on \\
+        --expected-team-id ABCDE12345 --expected-version 1.0.0 --expected-build 4 --report ipa.json
 
 Exit status: 0 = all checks pass, 1 = a check failed, 2 = the check could not run.
 """
@@ -86,13 +96,15 @@ import json
 import plistlib
 import re
 import shutil
+import stat
 import struct
 import subprocess
 import sys
 import tempfile
+import zipfile
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 FROZEN_BUNDLE_ID = "io.github.alexeykravtsov95.talentforge"
@@ -141,6 +153,8 @@ TEAM_ID = re.compile(r"^[A-Z0-9]{10}$")
 TOOL_TIMEOUT_SECONDS = 120
 
 EXIT_PASS, EXIT_FAIL, EXIT_ERROR = 0, 1, 2
+#: what an App Store export may hold next to Payload/ (symbols, Swift support)
+IPA_TOP_LEVEL = frozenset({"Payload", "Symbols", "SwiftSupport", "BCSymbolMaps"})
 
 # Mach-O constants (<mach-o/loader.h>, <mach-o/fat.h>, <mach-o/nlist.h>).
 MH_MAGIC_64 = 0xFEEDFACF
@@ -471,7 +485,6 @@ def evaluate(
         raise ToolError("the archive does not exist or is not a directory")
     record = load_plist(archive / "Info.plist")
     app = find_app(archive)
-    info = load_plist(app / "Info.plist")
     evaluation = Evaluation()
     properties = record.get("ApplicationProperties", {})
 
@@ -482,6 +495,154 @@ def evaluate(
         f"ApplicationPath={properties.get('ApplicationPath')!r}, "
         f"Architectures={properties.get('Architectures')!r}",
     )
+    return _evaluate_app(
+        evaluation,
+        app,
+        identity={"archive": archive.name},
+        expected_version=expected_version,
+        expected_build=expected_build,
+        expected_min_os=expected_min_os,
+        expected_sdk=expected_sdk,
+        expected_xcode_build=expected_xcode_build,
+        keyring=keyring,
+        ota=ota,
+        require_signed=require_signed,
+        require_distribution=False,
+        expected_team_id=expected_team_id,
+        runner=runner,
+        now=now,
+    )
+
+
+def extract_ipa(ipa: Path, into: Path) -> tuple[Path, list[str]]:
+    """Unpack an exported ``.ipa`` (a zip) safely; return its one application and top entries.
+
+    Entries that could leave ``into`` are refused (absolute paths, ``..``, any symlink, a name
+    given twice); file modes are restored, so ``codesign`` sees the bundle as exported.
+    """
+    try:
+        archive = zipfile.ZipFile(ipa)
+    except (OSError, zipfile.BadZipFile) as error:
+        raise ToolError(f"{ipa.name} is not a readable .ipa (zip): {error}") from error
+    root = into.resolve()
+    seen: set[str] = set()
+    with archive:
+        for entry in archive.infolist():
+            parts = PurePosixPath(entry.filename).parts
+            if entry.filename.startswith("/") or ".." in parts or not parts:
+                raise ToolError(f"{ipa.name} has an unsafe entry {entry.filename!r}")
+            target = root.joinpath(*parts)
+            mode = entry.external_attr >> 16
+            if stat.S_ISLNK(mode):
+                # an iOS application bundle holds no symlinks (frameworks are flat); refusing
+                # them outright closes every link-chain escape
+                raise ToolError(f"{ipa.name} holds a symlink, refused: {entry.filename}")
+            if entry.filename.rstrip("/") in seen:
+                raise ToolError(f"{ipa.name} holds {entry.filename!r} twice")
+            seen.add(entry.filename.rstrip("/"))
+            if entry.is_dir():
+                target.mkdir(parents=True, exist_ok=True)
+            else:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                if not target.parent.resolve().is_relative_to(root):
+                    raise ToolError(f"{ipa.name} has an unsafe entry {entry.filename!r}")
+                with archive.open(entry) as source, target.open("wb") as sink:
+                    shutil.copyfileobj(source, sink)
+                if mode & 0o777:
+                    target.chmod(mode & 0o777)
+        top = sorted({PurePosixPath(name).parts[0] for name in archive.namelist()})
+    payload = root / "Payload"
+    apps = (
+        sorted(p for p in payload.iterdir() if p.suffix == ".app" and p.is_dir())
+        if payload.is_dir()
+        else []
+    )
+    if len(apps) != 1:
+        raise ToolError(f"expected exactly one application in Payload/, found {len(apps)}")
+    return apps[0], top
+
+
+def evaluate_ipa(
+    ipa: Path,
+    *,
+    expected_version: str | None,
+    expected_build: str | None,
+    expected_min_os: str,
+    expected_sdk: str | None,
+    expected_xcode_build: str | None,
+    keyring: Path,
+    ota: str,
+    expected_team_id: str | None = None,
+    runner: Runner | None = None,
+    now: dt.datetime | None = None,
+) -> tuple[Evaluation, dict[str, Any]]:
+    """Run every check on the exported App Store package: always signed, always distribution.
+
+    A development-signed archive passes ``evaluate`` because Organizer re-signs it at upload;
+    what is uploaded here is the export itself, so it must already carry Apple Distribution and
+    an App Store profile.
+    """
+    if ota not in OTA_MODES:
+        raise ToolError(f"--ota must be one of {OTA_MODES}, not {ota!r}")
+    if not ipa.is_file():
+        raise ToolError("the .ipa does not exist or is not a file")
+    with tempfile.TemporaryDirectory() as scratch:
+        app, top = extract_ipa(ipa, Path(scratch))
+        evaluation = Evaluation()
+        unexpected = [entry for entry in top if entry not in IPA_TOP_LEVEL]
+        evaluation.add(
+            "ipa-payload",
+            not unexpected,
+            f"Payload/{app.name}; top-level entries {top}"
+            if not unexpected
+            else f"unexpected top-level entries {unexpected} (allowed {sorted(IPA_TOP_LEVEL)})",
+        )
+        return _evaluate_app(
+            evaluation,
+            app,
+            identity={
+                "package": {
+                    "kind": "ipa",
+                    "fileName": ipa.name,
+                    "sizeBytes": ipa.stat().st_size,
+                    "sha256": file_sha256(ipa),
+                }
+            },
+            expected_version=expected_version,
+            expected_build=expected_build,
+            expected_min_os=expected_min_os,
+            expected_sdk=expected_sdk,
+            expected_xcode_build=expected_xcode_build,
+            keyring=keyring,
+            ota=ota,
+            require_signed=True,
+            require_distribution=True,
+            expected_team_id=expected_team_id,
+            runner=runner,
+            now=now,
+        )
+
+
+def _evaluate_app(
+    evaluation: Evaluation,
+    app: Path,
+    *,
+    identity: dict[str, Any],
+    expected_version: str | None,
+    expected_build: str | None,
+    expected_min_os: str,
+    expected_sdk: str | None,
+    expected_xcode_build: str | None,
+    keyring: Path,
+    ota: str,
+    require_signed: bool,
+    require_distribution: bool,
+    expected_team_id: str | None,
+    runner: Runner | None,
+    now: dt.datetime | None,
+) -> tuple[Evaluation, dict[str, Any]]:
+    """The checks of the application bundle itself, for an archive and an export alike."""
+    info = load_plist(app / "Info.plist")
     bundle_id = info.get("CFBundleIdentifier")
     evaluation.add("bundle-id", bundle_id == FROZEN_BUNDLE_ID, f"CFBundleIdentifier={bundle_id!r}")
     version = info.get("CFBundleShortVersionString")
@@ -687,11 +848,12 @@ def evaluate(
             runner=runner,
             expected_team_id=expected_team_id,
             now=now or dt.datetime.now(dt.UTC),
+            require_distribution=require_distribution,
         )
 
     report: dict[str, Any] = {
         "schema": REPORT_SCHEMA,
-        "archive": archive.name,
+        **identity,
         "application": app.name,
         "signed": signed,
         "signing": signing,
@@ -787,8 +949,13 @@ def _signing_checks(
     runner: Runner,
     expected_team_id: str | None,
     now: dt.datetime,
+    require_distribution: bool = False,
 ) -> dict[str, Any]:
-    """The --require-signed checks: the real signature, its identity and its profile."""
+    """The --require-signed checks: the real signature, its identity and its profile.
+
+    ``require_distribution`` (an exported ``.ipa``): only an App Store profile with Apple
+    Distribution passes ``testflight-signing``; development signing is not re-signed any more.
+    """
     verify = runner(["codesign", "--verify", "--strict", "--verbose=2", str(app)])
     evaluation.add(
         "signature-valid",
@@ -904,6 +1071,12 @@ def _signing_checks(
         kind, kind_ok = "distribution identity with get-task-allow: not for TestFlight", False
     elif distribution:
         kind, kind_ok = "App Store (Apple Distribution, no device list)", True
+    elif development and require_distribution:
+        kind, kind_ok = (
+            "development-signed export: the uploaded package must be signed with Apple "
+            "Distribution and an App Store profile",
+            False,
+        )
     elif development:
         kind, kind_ok = (
             "development-signed archive: Organizer re-signs it with Apple Distribution on "
@@ -994,7 +1167,8 @@ def _ota_checks(
 
 
 def format_summary(evaluation: Evaluation, archive: Path) -> str:
-    lines = [f"iOS archive: {archive.name}"]
+    kind = "iOS package" if archive.suffix == ".ipa" else "iOS archive"
+    lines = [f"{kind}: {archive.name}"]
     lines += [f"  [{'PASS' if c.passed else 'FAIL'}] {c.id}: {c.detail}" for c in evaluation.checks]
     lines.append(f"RESULT: {'PASS' if evaluation.passed else 'FAIL'}")
     return "\n".join(lines)
@@ -1002,7 +1176,13 @@ def format_summary(evaluation: Evaluation, archive: Path) -> str:
 
 def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0] if __doc__ else None)
-    parser.add_argument("--archive", required=True, help="the .xcarchive to check")
+    package = parser.add_mutually_exclusive_group(required=True)
+    package.add_argument("--archive", help="the .xcarchive to check")
+    package.add_argument(
+        "--ipa",
+        help="the exported App Store .ipa to check (always --require-signed, and the signature "
+        "must be Apple Distribution with an App Store profile)",
+    )
     parser.add_argument(
         "--ota",
         required=True,
@@ -1036,24 +1216,26 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
-    archive = Path(args.archive)
+    package = Path(args.archive or args.ipa)
+    expected = {
+        "expected_version": args.expected_version,
+        "expected_build": args.expected_build,
+        "expected_min_os": args.expected_min_os,
+        "expected_sdk": args.expected_sdk,
+        "expected_xcode_build": args.expected_xcode_build,
+        "keyring": Path(args.production_keyring),
+        "ota": args.ota,
+        "expected_team_id": args.expected_team_id,
+    }
     try:
-        evaluation, report = evaluate(
-            archive,
-            expected_version=args.expected_version,
-            expected_build=args.expected_build,
-            expected_min_os=args.expected_min_os,
-            expected_sdk=args.expected_sdk,
-            expected_xcode_build=args.expected_xcode_build,
-            keyring=Path(args.production_keyring),
-            ota=args.ota,
-            require_signed=args.require_signed,
-            expected_team_id=args.expected_team_id,
-        )
+        if args.ipa:
+            evaluation, report = evaluate_ipa(package, **expected)
+        else:
+            evaluation, report = evaluate(package, require_signed=args.require_signed, **expected)
     except ToolError as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return EXIT_ERROR
-    print(format_summary(evaluation, archive))
+    print(format_summary(evaluation, package))
     if args.report:
         Path(args.report).write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     return EXIT_PASS if evaluation.passed else EXIT_FAIL

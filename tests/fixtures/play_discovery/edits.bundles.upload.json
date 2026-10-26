@@ -1,0 +1,24 @@
+{
+  "source": "https://androidpublisher.googleapis.com/$discovery/rest?version=v3",
+  "revision": "20261026",
+  "rootUrl": "https://androidpublisher.googleapis.com/",
+  "method": "androidpublisher.edits.bundles.upload",
+  "path": "androidpublisher/v3/applications/{packageName}/edits/{editId}/bundles",
+  "httpMethod": "POST",
+  "mediaUpload": {
+    "maxSize": "53687091200",
+    "accept": [
+      "application/octet-stream"
+    ],
+    "protocols": {
+      "resumable": {
+        "multipart": true,
+        "path": "/resumable/upload/androidpublisher/v3/applications/{packageName}/edits/{editId}/bundles"
+      },
+      "simple": {
+        "multipart": true,
+        "path": "/upload/androidpublisher/v3/applications/{packageName}/edits/{editId}/bundles"
+      }
+    }
+  }
+}

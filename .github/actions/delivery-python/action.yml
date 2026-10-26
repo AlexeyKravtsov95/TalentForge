@@ -1,0 +1,34 @@
+name: Delivery Python
+description: >-
+  Python 3.12 for the store-delivery workflow (issue #90), pinned explicitly: the validators need
+  3.12+, and Gradle runs them as `python3`, so `python3` on PATH must be this interpreter and not
+  whatever the runner image ships. Exports PY (the interpreter's real path) and installs the
+  delivery tooling (httpx, cryptography) from the workflow's own checkout.
+inputs:
+  tooling:
+    description: path of the workflow's own checkout (github.sha)
+    required: true
+runs:
+  using: composite
+  steps:
+    - id: setup
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Pin python3 to Python 3.12 and install the delivery tooling
+      shell: bash
+      env:
+        CONFIGURED: ${{ steps.setup.outputs.python-path }}
+        TOOLING: ${{ inputs.tooling }}
+      run: |
+        set -euo pipefail
+        want="$(realpath "$CONFIGURED")"
+        got="$(realpath "$(command -v python3)")"
+        if [ "$want" != "$got" ]; then
+          echo "::error::python3 on PATH is $got, not the configured $want"
+          exit 1
+        fi
+        python3 -c 'import sys; assert sys.version_info[:2] >= (3, 12), sys.version; print(sys.version)'
+        echo "PY=$want" >> "$GITHUB_ENV"
+        "$want" -m pip install --disable-pip-version-check --quiet "./$TOOLING[ota]"

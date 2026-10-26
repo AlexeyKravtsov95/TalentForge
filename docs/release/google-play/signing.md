@@ -99,8 +99,9 @@ a key upgrade** until its effect on cross-store updates is analysed (residual ri
 ## 4. Creating the keys 🔑
 
 Both keys are created by the owner on the owner's machine, **outside every git checkout**. Nobody
-else creates them, and they are never committed, put into CI, attached to an issue or written
-into a log.
+else creates them, and they are never committed, attached to an issue or written into a log. In
+CI they exist only as secrets of the protected `android-signing` environment of the store
+delivery workflow ([ci-delivery.md](../ci-delivery.md), issue #90).
 
 **App signing key:** the existing procedure in the
 [signing guide §1–§2](../android-release-signing.md#1-create-the-key-once-), including the two
@@ -296,8 +297,8 @@ Without the switch, both publishable tasks refuse the test keys and stage nothin
 `not-selftest`). With the switch, a real key is refused (`selftest-certificate`). The test
 certificates are valid for 2 days and are deleted with their keys.
 
-Production signing secrets are not used in CI. `mobile-ci` runs both self-tests with their
-temporary keys only.
+`mobile-ci` runs both self-tests with their temporary keys only. Production signing secrets are
+used by nothing but the owner-started store delivery workflow ([ci-delivery.md](../ci-delivery.md)).
 
 ## 9. Never
 
@@ -307,7 +308,8 @@ temporary keys only.
   or anything not produced by `bundlePublishablePlay` from the release commit.
 - Upload the APK to Google Play (new apps require bundles), or give RuStore or AppGallery anything
   signed with the upload key.
-- Commit, paste or log a keystore, a password or a PEPK `.zip`; put signing secrets into CI.
+- Commit, paste or log a keystore, a password or a PEPK `.zip`; put signing secrets into CI
+  outside the protected environments of [ci-delivery.md](../ci-delivery.md).
 
 ## 10. Sources
 
