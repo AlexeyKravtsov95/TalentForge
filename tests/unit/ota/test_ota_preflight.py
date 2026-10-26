@@ -376,6 +376,18 @@ def test_a_catalog_close_to_expiry_warns_to_re_sign() -> None:
     assert statuses(report)["catalog.validity"] is Status.WARN
 
 
+def test_a_store_upload_window_fails_below_the_required_days() -> None:
+    # issue #90: the delivery workflow uploads only with >= 30 days of catalog validity left
+    ok = run(FakeOrigin(publication(validity=timedelta(days=45))), min_validity=timedelta(days=30))
+    assert not ok.failed and statuses(ok)["catalog.upload-window"] is Status.PASS
+    short = run(
+        FakeOrigin(publication(validity=timedelta(days=20))), min_validity=timedelta(days=30)
+    )
+    assert short.failed and statuses(short)["catalog.upload-window"] is Status.FAIL
+    assert statuses(short)["catalog.validity"] is Status.PASS  # only the upload window fails
+    assert "catalog.upload-window" not in statuses(run(FakeOrigin(publication())))
+
+
 def test_a_lagging_edge_cache_only_warns() -> None:
     origin = FakeOrigin(publication())
     origin.bucket_overrides[CATALOG] = (200, {}, b"{}")

@@ -379,6 +379,7 @@ def check_catalog(
     keyring: Mapping[str, TrustedKey] | None,
     expect: str,
     now: datetime,
+    min_validity: timedelta | None = None,
 ) -> tuple[OtaCatalog, bytes] | None:
     from talent_data.ota.verify import OtaError, verify_catalog
 
@@ -447,6 +448,16 @@ def check_catalog(
         f"expires {catalog.expires_at:%Y-%m-%dT%H:%M:%SZ} ({left.days} days left; "
         f"re-sign below {RESIGN_WARNING.days})",
     )
+    if min_validity is not None:  # a store upload needs a longer window (issue #90)
+        report.add(
+            "catalog.upload-window",
+            Status.PASS if left >= min_validity else Status.FAIL,
+            f"{left.days} days left, at least {min_validity.days} required before a store "
+            "upload; re-sign the catalog first"
+            if left < min_validity
+            else f"{left.days} days left, at least {min_validity.days} required before a store "
+            "upload",
+        )
     return catalog, identity.body
 
 
@@ -534,6 +545,7 @@ def run(
     bucket_origin: str | None = None,
     expect: str = "any",
     expect_cname_suffix: str | None = None,
+    min_validity: timedelta | None = None,
 ) -> Report:
     parts = urlsplit(origin)
     if parts.scheme != "https" or not parts.hostname or parts.path not in ("", "/"):
@@ -550,7 +562,15 @@ def run(
         report, host, handshake, now
     ):
         check_plain_http(report, client, origin)
-        found = check_catalog(report, client, origin, keyring=keyring, expect=expect, now=now)
+        found = check_catalog(
+            report,
+            client,
+            origin,
+            keyring=keyring,
+            expect=expect,
+            now=now,
+            min_validity=min_validity,
+        )
         if found is None:
             if report.status_of("catalog") is Status.PENDING:  # nothing published (403/404)
                 report.add("releases", Status.SKIP, "no production catalog to follow")
@@ -601,6 +621,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--expect", choices=["any", "empty", "published"], default="any")
     parser.add_argument("--expect-cname-suffix", help="e.g. the CDN host VK Cloud shows")
     parser.add_argument("--json", type=Path, help="also write the report as JSON here")
+    parser.add_argument(
+        "--min-validity-days",
+        type=int,
+        help="fail unless the catalog stays valid at least this long (store uploads: 30)",
+    )
     args = parser.parse_args(argv)
 
     try:
@@ -616,6 +641,9 @@ def main(argv: list[str] | None = None) -> int:
                 bucket_origin=args.bucket_origin or None,
                 expect=args.expect,
                 expect_cname_suffix=args.expect_cname_suffix,
+                min_validity=None
+                if args.min_validity_days is None
+                else timedelta(days=args.min_validity_days),
             )
     except (ValueError, OSError) as exc:
         print(f"error: {exc}", file=sys.stderr)
