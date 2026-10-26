@@ -48,7 +48,7 @@ def project(tmp_path: Path) -> Path:
 
 
 def failed(project: Path, **expected: str | None) -> dict[str, str]:
-    arguments = {"expected_version": "1.0.0", "expected_build": "1", **expected}
+    arguments = {"expected_version": "1.0.0", "expected_build": "2", **expected}
     evaluation, _ = v.evaluate(project, **arguments)
     return {check.id: check.detail for check in evaluation.checks if not check.passed}
 
@@ -72,7 +72,7 @@ def edit_info(project: Path, changes: dict[str, object]) -> None:
 
 
 def test_the_committed_project_passes() -> None:
-    evaluation, report = v.evaluate(PROJECT, expected_version="1.0.0", expected_build="1")
+    evaluation, report = v.evaluate(PROJECT, expected_version="1.0.0", expected_build="2")
     assert {c.id: c.detail for c in evaluation.checks if not c.passed} == {}
     assert report["settings"]["PRODUCT_BUNDLE_IDENTIFIER"] == v.FROZEN_BUNDLE_ID
     assert report["settings"]["archiveConfiguration"] == "Release"
@@ -112,7 +112,7 @@ def test_another_bundle_id_fails(project: Path) -> None:
     ("old", "new"),
     [
         ("MARKETING_VERSION = 1.0.0;", "MARKETING_VERSION = 1.0.1;"),
-        ("CURRENT_PROJECT_VERSION = 1;", "CURRENT_PROJECT_VERSION = 2;"),
+        ("CURRENT_PROJECT_VERSION = 2;", "CURRENT_PROJECT_VERSION = 3;"),
     ],
 )
 def test_debug_and_release_must_agree_on_the_version(project: Path, old: str, new: str) -> None:
@@ -121,11 +121,11 @@ def test_debug_and_release_must_agree_on_the_version(project: Path, old: str, ne
 
 
 def test_the_expected_version_and_build_are_enforced(project: Path) -> None:
-    assert "version" in failed(project, expected_build="2")
+    assert "version" in failed(project, expected_build="3")
     assert "version" in failed(project, expected_version="1.0.1")
-    edit_pbxproj(project, "CURRENT_PROJECT_VERSION = 1;", "CURRENT_PROJECT_VERSION = 2;")
-    assert "version" not in failed(project, expected_build="2")
-    edit_pbxproj(project, "CURRENT_PROJECT_VERSION = 2;", "CURRENT_PROJECT_VERSION = 0;")
+    edit_pbxproj(project, "CURRENT_PROJECT_VERSION = 2;", "CURRENT_PROJECT_VERSION = 3;")
+    assert "version" not in failed(project, expected_build="3")
+    edit_pbxproj(project, "CURRENT_PROJECT_VERSION = 3;", "CURRENT_PROJECT_VERSION = 0;")
     assert "version" in failed(project, expected_build=None)
 
 

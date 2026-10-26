@@ -33,6 +33,7 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.abo
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_version
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_retry
 import io.github.alexeykravtsov95.talentforge.ui.library.InlineNotice
+import io.github.alexeykravtsov95.talentforge.ui.navigation.BackSwipeStack
 import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTypography
@@ -104,28 +105,49 @@ fun LicensesScreen(
 
     // Registered after the app's own handler: while a group is open (a licence opens only from
     // one), the system Back closes the innermost page. It reads the page state when it runs —
-    // never values captured by an earlier composition.
-    PlatformBackHandler(enabled = group != null) {
+    // never values captured by an earlier composition. The iOS edge swipe closes it through
+    // the page stack below instead, following the finger like the app's own screens.
+    PlatformBackHandler(enabled = group != null, edgeSwipe = false) {
         if (openLicense != null) openLicense = null else openGroup = null
     }
 
-    when {
-        ready != null && license != null -> key("license", license.id) {
-            LicensePage(ready, license, onBack = { openLicense = null })
-        }
-        ready != null && group != null -> key("group", openGroup) {
-            GroupPage(ready, group, onBack = { openGroup = null }, onOpenLicense = { openLicense = it })
-        }
-        else -> AboutScaffold(title = stringResource(Res.string.about_licenses_title), onBack = onBack, scrollState = listScroll) {
-            when (shownNotices) {
-                NoticesState.NotIncluded -> AboutBody(stringResource(Res.string.about_licenses_unavailable))
-                NoticesState.Loading -> AboutMeta(stringResource(Res.string.about_licenses_loading))
-                NoticesState.Failed -> InlineNotice(
-                    text = stringResource(Res.string.about_licenses_failed),
-                    actionText = stringResource(Res.string.common_retry),
-                    onAction = { attempt += 1 },
-                )
-                is NoticesState.Ready -> GroupList(shownNotices.notices, onOpenGroup = { openGroup = it })
+    // the pages: 0 the list, 1 a group, 2 a licence text opened from it
+    val depth = when {
+        ready != null && license != null -> 2
+        ready != null && group != null -> 1
+        else -> 0
+    }
+    BackSwipeStack(
+        depth = depth,
+        enabled = true,
+        onPrepareBack = { true },
+        onBack = { level ->
+            when {
+                level == 2 && openLicense != null -> openLicense = null
+                level == 1 && openLicense == null && openGroup != null -> openGroup = null
+                else -> return@BackSwipeStack false
+            }
+            true
+        },
+    ) { level ->
+        when {
+            level == 2 && ready != null && license != null -> key("license", license.id) {
+                LicensePage(ready, license, onBack = { openLicense = null })
+            }
+            level >= 1 && ready != null && group != null -> key("group", openGroup) {
+                GroupPage(ready, group, onBack = { openGroup = null }, onOpenLicense = { openLicense = it })
+            }
+            else -> AboutScaffold(title = stringResource(Res.string.about_licenses_title), onBack = onBack, scrollState = listScroll) {
+                when (shownNotices) {
+                    NoticesState.NotIncluded -> AboutBody(stringResource(Res.string.about_licenses_unavailable))
+                    NoticesState.Loading -> AboutMeta(stringResource(Res.string.about_licenses_loading))
+                    NoticesState.Failed -> InlineNotice(
+                        text = stringResource(Res.string.about_licenses_failed),
+                        actionText = stringResource(Res.string.common_retry),
+                        onAction = { attempt += 1 },
+                    )
+                    is NoticesState.Ready -> GroupList(shownNotices.notices, onOpenGroup = { openGroup = it })
+                }
             }
         }
     }

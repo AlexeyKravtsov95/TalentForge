@@ -68,7 +68,7 @@
 |---|---|---|
 | `PRODUCT_BUNDLE_IDENTIFIER` | `io.github.alexeykravtsov95.talentforge` | PASS (без изменений) |
 | `MARKETING_VERSION` | **1.0.0** (было 0.1.0) | PASS |
-| `CURRENT_PROJECT_VERSION` | **1** | PASS |
+| `CURRENT_PROJECT_VERSION` | **2** (было 1: `1.0.0 (1)` загружена в App Store Connect; поднят вместе со свайпом назад) | PASS |
 | `CODE_SIGN_STYLE` | Automatic; `DEVELOPMENT_TEAM` в репозитории **не задан** (владелец выбирает команду в Xcode) | PASS |
 | `IPHONEOS_DEPLOYMENT_TARGET` | 17.2 | PASS |
 | `TARGETED_DEVICE_FAMILY` | 1,2 (iPhone, iPad) | PASS |
@@ -84,7 +84,7 @@
 
 **Правило номера сборки (`CURRENT_PROJECT_VERSION`).**
 
-1. Первый App Store/TestFlight-билд: `1.0.0 (1)`.
+1. Первый App Store/TestFlight-билд: `1.0.0 (1)` — загружен; следующая загрузка — `1.0.0 (2)`.
 2. Каждая загрузка в App Store Connect (TestFlight, в том числе отклонённая или отозванная) потребляет номер: следующий
    билд — строго больше (`2`, `3`, …), номер никогда не переиспользуется и не уменьшается.
 3. `MARKETING_VERSION` меняется только по решению о новой версии (`1.0.1`, `1.1.0`); `CURRENT_PROJECT_VERSION` не

@@ -46,7 +46,7 @@ talentforge.ota.ios.production.enabled=true
 
 ## 3. Перед сборкой OTA ON
 
-- [ ] `CFBundleShortVersionString` / `CFBundleVersion` подняты отдельным PR, если в App Store Connect уже есть загрузка с этим номером. Этот PR версии **не** меняет (`1.0.0` / `1`).
+- [ ] `CFBundleShortVersionString` / `CFBundleVersion` подняты отдельным PR, если в App Store Connect уже есть загрузка с этим номером. Сейчас в проекте `1.0.0` / `2` (`1.0.0 (1)` уже загружена).
 - [ ] Production preflight (только чтение) → `OK`:
 
   ```bash
@@ -68,7 +68,7 @@ cd mobile/iosApp && xcodebuild -project iosApp.xcodeproj -scheme iosApp -configu
 Проверка архива **до** загрузки (тот же архив затем откроется в Organizer):
 
 ```bash
-python3 scripts/verify_ios_archive.py --archive mobile/iosApp/build/TalentForge-ota-on.xcarchive --ota on --expected-version 1.0.0 --expected-build 1 --expected-sdk iphoneos27.1 --expected-xcode-build 27A9275 --report mobile/iosApp/build/ios-archive-ota-on-report.json
+python3 scripts/verify_ios_archive.py --archive mobile/iosApp/build/TalentForge-ota-on.xcarchive --ota on --expected-version 1.0.0 --expected-build 2 --expected-sdk iphoneos27.1 --expected-xcode-build 27A9275 --report mobile/iosApp/build/ios-archive-ota-on-report.json
 ```
 
 Ожидаемый результат: `RESULT: PASS`, в отчёте `"signed": true`, `ota.embeddedKeys` = `["tf-prod-2026a", "tf-prod-2026b"]`, `ota.productionOrigin` = `true`. Если в App Privacy выбран вариант «Data Collected → Other Diagnostic Data», сначала измените `PrivacyInfo.xcprivacy` ([app-privacy §3.2](app-privacy.md#32-вариант-b-журналы-хранятся)) и добавьте к проверке `--privacy-collected other-diagnostic`.

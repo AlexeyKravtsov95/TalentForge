@@ -1,6 +1,7 @@
 package io.github.alexeykravtsov95.talentforge.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -35,7 +36,11 @@ import io.github.alexeykravtsov95.talentforge.ui.home.HomeScreen
 import io.github.alexeykravtsov95.talentforge.ui.lang.appLanguage
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildAutosaveCoordinator
 import io.github.alexeykravtsov95.talentforge.ui.library.platformBuildClock
+import io.github.alexeykravtsov95.talentforge.ui.navigation.BackSwipeStack
+import io.github.alexeykravtsov95.talentforge.ui.navigation.EdgeSwipeBackDispatcher
+import io.github.alexeykravtsov95.talentforge.ui.navigation.LocalEdgeSwipeBackDispatcher
 import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
+import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformEdgeSwipeInput
 import io.github.alexeykravtsov95.talentforge.ui.ota.DatasetResolution
 import io.github.alexeykravtsov95.talentforge.ui.ota.DatasetLeaseHolder
 import io.github.alexeykravtsov95.talentforge.ui.ota.EditorDatasetAccess
@@ -162,6 +167,13 @@ internal fun decodeDestinations(values: List<String>): List<AppDestination>? {
  * navigation completes only after the newest current BuildState is confirmed
  * persisted — if the newest save failed, navigation visibly stays put with
  * the retryable error notice (the in-memory build never rolls back).
+ *
+ * iOS has no system Back button: its left-edge swipe takes the top screen back
+ * through [BackSwipeStack] — the screen follows the finger over the one
+ * beneath, and a completed swipe performs this same pop (flush first, one at a
+ * time, staying put on a failed save), a cancelled one leaves everything as it
+ * was. Sheets, dialogs and running operations take the swipe first, by the
+ * same rules as Android's Back.
  */
 @Composable
 fun App(
@@ -229,141 +241,167 @@ fun App(
     // never popped, and a fresh composition starts with no pop in flight.
     val popInFlight = remember { mutableStateOf(false) }
 
+    /**
+     * Pops the screen at [level] once the newest save is confirmed; `true` when
+     * it popped. The caller has set [popInFlight], which this clears. Nothing
+     * is popped when the newest build is not on storage (the editor stays, its
+     * save-error notice visible and retryable) or when the stack moved on
+     * while the flush was suspended — Home can never be removed.
+     */
+    suspend fun popAfterFlush(level: Int): Boolean {
+        try {
+            val result = autosave.flush()
+            if (result != null && result.failed) return false
+            if (level < 1 || destinations.lastIndex != level) return false
+            destinations = destinations.dropLast(1)
+            return true
+        } finally {
+            popInFlight.value = false
+        }
+    }
+
     fun navigateUp() {
         if (destinations.size <= 1) return
         if (popInFlight.value) return
         popInFlight.value = true
-        appScope.launch {
-            try {
-                val result = autosave.flush()
-                if (result == null || !result.failed) {
-                    // re-verify after the suspended flush: Home can never be
-                    // removed even if the stack changed while we waited
-                    if (destinations.size > 1) {
-                        destinations = destinations.dropLast(1)
-                    }
-                }
-                // else: the newest build is not on storage — stay on the
-                // editor; its save-error notice stays visible and retryable
-            } finally {
-                popInFlight.value = false
-            }
-        }
+        val level = destinations.lastIndex
+        appScope.launch { popAfterFlush(level) }
     }
 
-    PlatformBackHandler(enabled = destinations.size > 1, onBack = ::navigateUp)
+    /** The iOS edge swipe's pop of the screen it started on: the same guard as [navigateUp]. */
+    suspend fun swipeUp(level: Int): Boolean {
+        if (popInFlight.value || destinations.lastIndex != level) return false
+        popInFlight.value = true
+        return popAfterFlush(level)
+    }
 
-    TalentForgeTheme {
-        val destination = destinations.last()
-        // the screen keeps the session it opened with (client design §4.5): an activation while
-        // it is shown publishes a new snapshot only for screens opened afterwards
-        val session = remember(destination, destinations.size) { latestSession }
-        when (destination) {
-            AppDestination.Home -> HomeScreen(
-                repository = environment.repository,
-                datasets = session.datasets,
-                clockMillis = clock::nowMillis,
-                onOpenBuild = { localId ->
-                    destinations = destinations + AppDestination.Editor(localId, EditorOrigin.FromHome)
-                },
-                onAllBuilds = { destinations = destinations + AppDestination.AllBuilds },
-                onNewBuild = { destinations = destinations + AppDestination.NewBuild },
-                onImportBuild = { destinations = destinations + AppDestination.ImportBuild },
-                onAbout = { destinations = destinations + AppDestination.About },
-                autosave = autosave,
-                sharing = sharing,
-                product = session.product,
-                dataUpdatedTo = otaStatus?.updatedTo,
-                onDismissDataUpdate = { ota?.coordinator?.acknowledgeUpdate() },
-            )
+    val edgeSwipe = LocalEdgeSwipeBackDispatcher.current ?: remember { EdgeSwipeBackDispatcher() }
+    PlatformEdgeSwipeInput(edgeSwipe)
 
-            AppDestination.About -> AboutScreen(
-                appVersion = appVersion,
-                backupStatement = platformBackupStatement,
-                privacyPolicyUrl = privacyPolicyUrlOf(platformPrivacyPolicy, appLanguage()),
-                onBack = ::navigateUp,
-                onOpenLicenses = { destinations = destinations + AppDestination.Licenses },
-                otaStatus = otaStatus,
-                onCheckForUpdates = ota?.let { runtime -> { appScope.launch { runtime.coordinator.checkNow() } } },
-            )
+    CompositionLocalProvider(LocalEdgeSwipeBackDispatcher provides edgeSwipe) {
+        // the edge swipe pops through BackSwipeStack below, which follows the finger
+        PlatformBackHandler(enabled = destinations.size > 1, edgeSwipe = false, onBack = ::navigateUp)
 
-            AppDestination.Licenses -> LicensesScreen(
-                noticesPath = platformOpenSourceNoticesPath,
-                onBack = ::navigateUp,
-            )
+        TalentForgeTheme {
+            BackSwipeStack(
+                depth = destinations.lastIndex,
+                enabled = !popInFlight.value,
+                // the screen beneath is shown only once the newest build is on storage
+                onPrepareBack = { autosave.flush()?.failed != true },
+                onBack = ::swipeUp,
+            ) { level ->
+                val destination = destinations.getOrNull(level) ?: return@BackSwipeStack
+                // the screen keeps the session it opened with (client design §4.5): an activation while
+                // it is shown publishes a new snapshot only for screens opened afterwards
+                val session = remember(destination, level) { latestSession }
+                when (destination) {
+                    AppDestination.Home -> HomeScreen(
+                        repository = environment.repository,
+                        datasets = session.datasets,
+                        clockMillis = clock::nowMillis,
+                        onOpenBuild = { localId ->
+                            destinations = destinations + AppDestination.Editor(localId, EditorOrigin.FromHome)
+                        },
+                        onAllBuilds = { destinations = destinations + AppDestination.AllBuilds },
+                        onNewBuild = { destinations = destinations + AppDestination.NewBuild },
+                        onImportBuild = { destinations = destinations + AppDestination.ImportBuild },
+                        onAbout = { destinations = destinations + AppDestination.About },
+                        autosave = autosave,
+                        sharing = sharing,
+                        product = session.product,
+                        dataUpdatedTo = otaStatus?.updatedTo,
+                        onDismissDataUpdate = { ota?.coordinator?.acknowledgeUpdate() },
+                    )
 
-            AppDestination.NewBuild -> NewBuildScreen(
-                repository = environment.repository,
-                datasets = session.datasets,
-                product = session.product,
-                onBack = ::navigateUp,
-                onDraftCreated = { localId ->
-                    // the tree REPLACES New build (spec 02 §1): pop this screen
-                    // and push the editor, so Back from the new draft → Home
-                    destinations = destinations.dropLast(1) +
-                        AppDestination.Editor(localId, EditorOrigin.CreatedNew)
-                },
-            )
+                    AppDestination.About -> AboutScreen(
+                        appVersion = appVersion,
+                        backupStatement = platformBackupStatement,
+                        privacyPolicyUrl = privacyPolicyUrlOf(platformPrivacyPolicy, appLanguage()),
+                        onBack = ::navigateUp,
+                        onOpenLicenses = { destinations = destinations + AppDestination.Licenses },
+                        otaStatus = otaStatus,
+                        onCheckForUpdates = ota?.let { runtime -> { appScope.launch { runtime.coordinator.checkNow() } } },
+                    )
 
-            AppDestination.AllBuilds -> AllBuildsScreen(
-                repository = environment.repository,
-                datasets = session.datasets,
-                clockMillis = clock::nowMillis,
-                onBack = ::navigateUp,
-                onOpenBuild = { localId ->
-                    destinations = destinations + AppDestination.Editor(localId, EditorOrigin.FromAllBuilds)
-                },
-                onNewBuild = { destinations = destinations + AppDestination.NewBuild },
-                onImportBuild = { destinations = destinations + AppDestination.ImportBuild },
-                sharing = sharing,
-                autosave = autosave,
-            )
+                    AppDestination.Licenses -> LicensesScreen(
+                        noticesPath = platformOpenSourceNoticesPath,
+                        onBack = ::navigateUp,
+                    )
 
-            AppDestination.ImportBuild -> ImportBuildScreen(
-                repository = environment.repository,
-                datasets = session.datasets,
-                sharing = sharing,
-                onBack = ::navigateUp,
-                resolveDataset = ota?.let { runtime ->
-                    // a snapshot downloaded for the preview stays leased while this screen is open
-                    val leases = remember(destination, destinations.size) { DatasetLeaseHolder() }
-                    val resolve: suspend (DatasetBundleId) -> TalentDatasetRepository? = { bundle ->
-                        (runtime.resolver.resolve(bundle) as? DatasetResolution.Available)?.let {
-                            leases.hold(it.lease)
-                            SessionDatasets.of(it.snapshot).datasets
-                        }
+                    AppDestination.NewBuild -> NewBuildScreen(
+                        repository = environment.repository,
+                        datasets = session.datasets,
+                        product = session.product,
+                        onBack = ::navigateUp,
+                        onDraftCreated = { localId ->
+                            // the tree REPLACES New build (spec 02 §1): pop this screen
+                            // and push the editor, so Back from the new draft → Home
+                            destinations = destinations.dropLast(1) +
+                                AppDestination.Editor(localId, EditorOrigin.CreatedNew)
+                        },
+                    )
+
+                    AppDestination.AllBuilds -> AllBuildsScreen(
+                        repository = environment.repository,
+                        datasets = session.datasets,
+                        clockMillis = clock::nowMillis,
+                        onBack = ::navigateUp,
+                        onOpenBuild = { localId ->
+                            destinations = destinations + AppDestination.Editor(localId, EditorOrigin.FromAllBuilds)
+                        },
+                        onNewBuild = { destinations = destinations + AppDestination.NewBuild },
+                        onImportBuild = { destinations = destinations + AppDestination.ImportBuild },
+                        sharing = sharing,
+                        autosave = autosave,
+                    )
+
+                    AppDestination.ImportBuild -> ImportBuildScreen(
+                        repository = environment.repository,
+                        datasets = session.datasets,
+                        sharing = sharing,
+                        onBack = ::navigateUp,
+                        resolveDataset = ota?.let { runtime ->
+                            // a snapshot downloaded for the preview stays leased while this screen is open
+                            val leases = remember(destination, level) { DatasetLeaseHolder() }
+                            val resolve: suspend (DatasetBundleId) -> TalentDatasetRepository? = { bundle ->
+                                (runtime.resolver.resolve(bundle) as? DatasetResolution.Available)?.let {
+                                    leases.hold(it.lease)
+                                    SessionDatasets.of(it.snapshot).datasets
+                                }
+                            }
+                            resolve
+                        },
+                        onImported = { localId ->
+                            // storage has confirmed the record: the editor REPLACES the
+                            // import screen, so Back from it returns to Home or Builds.
+                            // Were the stack to have moved on meanwhile, the record
+                            // simply stays listed in All Builds.
+                            if (destinations.last() == AppDestination.ImportBuild) {
+                                destinations = destinations.dropLast(1) +
+                                    AppDestination.Editor(localId, EditorOrigin.Imported)
+                            }
+                        },
+                    )
+
+                    is AppDestination.Editor -> {
+                        // an open editor leases the releases of the snapshot it actually reads — the one
+                        // it opened with, or the one its build is downloaded into — until it closes (§4.5)
+                        val access = remember(destination, level) { ota?.let { EditorDatasetAccess.open(it, session) } }
+                        val editorSession = access?.session ?: session
+                        TalentTreeBuildScreen(
+                            localId = destination.localId,
+                            repository = environment.repository,
+                            datasets = editorSession.datasets,
+                            autosave = autosave,
+                            onBack = ::navigateUp,
+                            icons = editorSession.icons,
+                            descriptions = editorSession.descriptions,
+                            localization = editorSession.localization,
+                            sharing = sharing,
+                            datasetAccess = access,
+                        )
                     }
-                    resolve
-                },
-                onImported = { localId ->
-                    // storage has confirmed the record: the editor REPLACES the
-                    // import screen, so Back from it returns to Home or Builds.
-                    // Were the stack to have moved on meanwhile, the record
-                    // simply stays listed in All Builds.
-                    if (destinations.last() == AppDestination.ImportBuild) {
-                        destinations = destinations.dropLast(1) +
-                            AppDestination.Editor(localId, EditorOrigin.Imported)
-                    }
-                },
-            )
-
-            is AppDestination.Editor -> {
-                // an open editor leases the releases of the snapshot it actually reads — the one
-                // it opened with, or the one its build is downloaded into — until it closes (§4.5)
-                val access = remember(destination, destinations.size) { ota?.let { EditorDatasetAccess.open(it, session) } }
-                val editorSession = access?.session ?: session
-                TalentTreeBuildScreen(
-                    localId = destination.localId,
-                    repository = environment.repository,
-                    datasets = editorSession.datasets,
-                    autosave = autosave,
-                    onBack = ::navigateUp,
-                    icons = editorSession.icons,
-                    descriptions = editorSession.descriptions,
-                    localization = editorSession.localization,
-                    sharing = sharing,
-                    datasetAccess = access,
-                )
+                }
             }
         }
     }

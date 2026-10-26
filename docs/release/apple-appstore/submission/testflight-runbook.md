@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Для кого | только владелец. У агента нет Apple Developer-команды, сертификатов, физического iPhone и доступа к App Store Connect: ни один шаг ниже агент **не выполнял** |
-| Сборка | TalentForge **1.0.0 (1)**, bundle id `io.github.alexeykravtsov95.talentforge`, iOS 17.2+, iPhone и iPad, **OTA ON** (production `https://ota.mythweld.com`) |
+| Сборка | TalentForge **1.0.0 (2)** (сборка `1.0.0 (1)` уже загружена в App Store Connect и проверена в TestFlight; номер `1` больше не используется), bundle id `io.github.alexeykravtsov95.talentforge`, iOS 17.2+, iPhone и iPad, **OTA ON** (production `https://ota.mythweld.com`) |
 | Инструменты | macOS Tahoe 26.6+, **Xcode 27.1 (27A9275)** stable — не 27.2 RC/beta |
 | Нельзя | коммитить Team ID, сертификаты, профили, ключи App Store Connect API, пароли; загружать сборку, не прошедшую шаг 4; отправлять на ревью до закрытия BLOCKED-пунктов [пакета](README.md#4-статус) |
 | Связанные документы | [пакет отправки](README.md) · [owner-guide OTA ON](../m5-ios-2-owner-guide.md) · [App Privacy](../app-privacy.md) · [iOS-политика](../../../legal/ios/README.md) |
@@ -55,16 +55,16 @@
 Проверка — конфигурация проекта перед сборкой (без сети, только чтение):
 
 ```bash
-python3 scripts/verify_ios_project.py --expected-version 1.0.0 --expected-build 1
+python3 scripts/verify_ios_project.py --expected-version 1.0.0 --expected-build 2
 ```
 
-Ожидается `RESULT: PASS` (14 проверок): bundle id, `1.0.0 (1)` в Debug и Release, iOS 17.2, iPhone + iPad, Automatic
+Ожидается `RESULT: PASS` (14 проверок): bundle id, `1.0.0 (2)` в Debug и Release, iOS 17.2, iPhone + iPad, Automatic
 signing **без** закоммиченных team/profile/identity, архив — Release, `PrivacyInfo.xcprivacy` в ресурсах,
 `ITSAppUsesNonExemptEncryption = false`, ATS по умолчанию, ни одного разрешения, одна сцена, en/ru, 4 ориентации iPad.
 Если вы выбрали Team в Xcode и не откатили `project.pbxproj`, проверка `signing` даст FAIL — так и задумано.
 
-**Build number.** `1` — если в App Store Connect ещё **не было ни одной** загрузки. Любая загрузка (даже отклонённая
-при обработке) расходует номер: следующая сборка — `2`, отдельным PR ([readiness §2](../readiness.md#2-конфигурация-release-сборки)).
+**Build number.** `2`: загрузка `1.0.0 (1)` уже израсходовала номер `1`. Любая загрузка (даже отклонённая при
+обработке) расходует номер: следующая сборка — `3`, отдельным PR ([readiness §2](../readiness.md#2-конфигурация-release-сборки)).
 
 ## 3. Подписанный Archive (OTA ON)
 
@@ -91,7 +91,7 @@ export TALENTFORGE_OTA_IOS_PRODUCTION_ENABLED=true
 ```
 
 ```bash
-cd mobile/iosApp && xcodebuild -project iosApp.xcodeproj -scheme iosApp -configuration Release -destination 'generic/platform=iOS' -archivePath build/TalentForge-1.0.0-1-ota-on.xcarchive -allowProvisioningUpdates DEVELOPMENT_TEAM=ABCDE12345 archive
+cd mobile/iosApp && xcodebuild -project iosApp.xcodeproj -scheme iosApp -configuration Release -destination 'generic/platform=iOS' -archivePath build/TalentForge-1.0.0-2-ota-on.xcarchive -allowProvisioningUpdates DEVELOPMENT_TEAM=ABCDE12345 archive
 ```
 
 Ожидается `** ARCHIVE SUCCEEDED **`. Каталог `mobile/iosApp/build/` в `.gitignore`.
@@ -101,7 +101,7 @@ cd mobile/iosApp && xcodebuild -project iosApp.xcodeproj -scheme iosApp -configu
 Из корня репозитория, тем же архивом:
 
 ```bash
-python3 scripts/verify_ios_archive.py --archive mobile/iosApp/build/TalentForge-1.0.0-1-ota-on.xcarchive --ota on --require-signed --expected-team-id ABCDE12345 --expected-version 1.0.0 --expected-build 1 --expected-sdk iphoneos27.1 --expected-xcode-build 27A9275 --report mobile/iosApp/build/ios-archive-1.0.0-1-report.json
+python3 scripts/verify_ios_archive.py --archive mobile/iosApp/build/TalentForge-1.0.0-2-ota-on.xcarchive --ota on --require-signed --expected-team-id ABCDE12345 --expected-version 1.0.0 --expected-build 2 --expected-sdk iphoneos27.1 --expected-xcode-build 27A9275 --report mobile/iosApp/build/ios-archive-1.0.0-2-report.json
 ```
 
 Для варианта App Privacy B добавьте `--privacy-collected other-diagnostic`.
@@ -115,7 +115,7 @@ python3 scripts/verify_ios_archive.py --archive mobile/iosApp/build/TalentForge-
 | `provisioning-profile` | `security cms -D` декодирует `embedded.mobileprovision`: профиль действует сейчас, той же команды, ровно `<Team ID>.io.github.alexeykravtsov95.talentforge` (без `*`), не enterprise |
 | `profile-certificate` | сертификат подписи (`codesign --extract-certificates`) входит в `DeveloperCertificates` профиля |
 | `testflight-signing` | конфигурация годится для TestFlight: development-подпись архива (Organizer переподпишет её Apple Distribution при Distribute App → App Store Connect) или App Store-профиль с Apple Distribution. Ad Hoc-профиль и `get-task-allow` при distribution — FAIL; entitlements подписи совпадают с профилем |
-| `version`, `toolchain` | `1.0.0` / `1`, `iphoneos27.1`, `27A9275` |
+| `version`, `toolchain` | `1.0.0` / `2`, `iphoneos27.1`, `27A9275` |
 | `ota-on` | origin `https://ota.mythweld.com`, ровно ключи `tf-prod-2026a`, `tf-prod-2026b` |
 | `ota-no-staging-origin`, `ats-default`, `privacy-*`, `no-secrets` | PASS |
 
@@ -133,15 +133,15 @@ python3 scripts/verify_ios_archive.py --archive mobile/iosApp/build/TalentForge-
    появится. Если появится — ответ «None of the algorithms mentioned above» ([app-privacy §4](../app-privacy.md#4-связанные-декларации)).
 3. Дождитесь обработки (App Store Connect → TestFlight → iOS Builds). Если пришло письмо ITMS-9xxxx — остановитесь,
    перешлите текст письма в issue, сборку на ревью не отправляйте.
-4. TestFlight → **Internal Testing** → группа с вашим Apple ID → добавить сборку 1.0.0 (1). Внутреннее тестирование не
+4. TestFlight → **Internal Testing** → группа с вашим Apple ID → добавить сборку 1.0.0 (2). Внутреннее тестирование не
    требует Beta App Review. Внешних тестировщиков в этом релизе не добавлять.
 
-Проверка: сборка `1.0.0 (1)` есть в TestFlight, предупреждений о privacy manifest и Required Reason API
+Проверка: сборка `1.0.0 (2)` есть в TestFlight, предупреждений о privacy manifest и Required Reason API
 (ITMS-91053/91061) нет.
 
 ## 6. Проверка на физическом iPhone
 
-Установите TestFlight на iPhone (iOS 17.2+), примите приглашение, установите 1.0.0 (1). Для каждого шага записывайте
+Установите TestFlight на iPhone (iOS 17.2+), примите приглашение, установите 1.0.0 (2). Для каждого шага записывайте
 `PASS` / `FAIL` / `NOT RUN`, время (UTC), модель и версию iOS.
 
 1. OTA ON на устройстве: **P-1…P-13** из [owner-guide §5](../m5-ios-2-owner-guide.md#5-проверка-на-физическом-iphone-testflight--план)
@@ -157,6 +157,20 @@ python3 scripts/verify_ios_archive.py --archive mobile/iosApp/build/TalentForge-
    проверялся).
 4. Если есть iPad — запуск, дерево и панель инспектора, портрет и ландшафт; при наличии аппаратной клавиатуры —
    переименование билда с неё (наблюдение O-1 [приёмки на симуляторе](../m5-ios-acceptance.md#4-наблюдения-не-дефекты-проверить-на-устройстве)).
+5. Свайп назад от левого края (новое в `1.0.0 (2)`), на iPhone и, если есть, на iPad, в портрете и ландшафте:
+   - на любом вложенном экране (Все билды, Новый билд, Импорт, О приложении, Лицензии и их внутренние страницы,
+     редактор) экран идёт за пальцем, под ним виден предыдущий; отпустить дальше трети ширины или быстрым
+     движением — возврат, вернуть палец назад — экран и его состояние (выбранный талант, раскрытый инспектор)
+     остаются;
+   - на Home свайп ничего не делает;
+   - в редакторе с выбранным талантом свайп возвращает назад (как кнопка «Назад»), а не снимает выделение;
+     потраченные очки после возврата видны на Home и в редакторе после повторного открытия;
+   - открытый лист «⋯», диалог переименования/удаления, «Поделиться» — свайп закрывает только их; во время
+     сохранения или импорта свайп ничего не делает;
+   - drag и pinch дерева, переключение секций свайпом по дереву, прокрутка списков и нажатия работают как раньше;
+     жест, начатый у самого левого края, — это свайп назад (так же, как в системных приложениях iOS);
+   - с Reduce Motion (Настройки → Универсальный доступ → Движение) экран по-прежнему идёт за пальцем, но после
+     отпускания переход завершается без анимации.
 
 Любой `FAIL` в P-1…P-8 или в основных сценариях — сборку на ревью не отправлять. Результаты занесите в
 [readiness M5.IOS.3 §8](../m5-ios-3-readiness.md#8-физическое-устройство-и-testflight).
@@ -184,7 +198,7 @@ python3 scripts/verify_appstore_screenshots.py
    ([app-privacy §3](../app-privacy.md#3-сборка-ota-on-m5ios2)), тот же, что в `PrivacyInfo.xcprivacy` архива.
 4. **Версия 1.0** (iOS App → 1.0 Prepare for Submission), для каждой локализации: скриншоты iPhone 6.3" и iPad 13"
    в порядке номеров файлов, Promotional Text, Description, Keywords, Support URL. Поля What's New у первой версии нет.
-   Build → 1.0.0 (1) из шага 5. Copyright — `copyright.txt`.
+   Build → 1.0.0 (2) из шага 5. Copyright — `copyright.txt`.
 5. **App Review Information**: Sign-in required — **выключено**; Notes — `review_information/notes.txt`; контакт
    (имя, телефон, e-mail) — ваши данные, они вводятся только в App Store Connect.
 6. **Version Release**: «Manually release this version» (рекомендуется: выпуск после одобрения — отдельное решение).
@@ -261,7 +275,7 @@ python3 scripts/verify_appstore_screenshots.py
    ```
 
    ```bash
-   python3 scripts/verify_ios_project.py --expected-version 1.0.0 --expected-build 1
+   python3 scripts/verify_ios_project.py --expected-version 1.0.0 --expected-build 2
    ```
 
    Ожидается пустой вывод `git status` и `RESULT: PASS`. Каталог `mobile/iosApp/build/` в `.gitignore`.
