@@ -63,12 +63,19 @@ with that code yet.
 | `versionCode` | Commit / tag | Purpose | APK SHA-256 | AAB SHA-256 | Uploaded to (date) |
 |---|---|---|---|---|---|
 | 1 | | test | | | |
-| 2 | | public (planned) | | | |
+| 2 | | Google Play upload, OTA ON | | | Google Play (date not recorded) |
+| 3 | | next build (planned) | | | |
+
+Code `2` is consumed (owner, 2026-10-26): it was uploaded to Google Play with OTA ON. Its commit,
+SHA-256 values and upload date are not recorded here. The next build, the APK and the AAB alike,
+is `3` / `1.0.0` (§5).
 
 ## 4. Test build (`versionCode 1`)
 
-The current `main` is already set to `1` / `1.0.0`. No version change is needed. The owner builds
-`assemblePublishableRelease` and `bundlePublishablePlay` from the reviewed release commit
+Historical: this section applied to code `1`. `main` is now at `3` (§3).
+
+At M5.RELEASE.VERSION `main` was already set to `1` / `1.0.0`. No version change was needed. The
+owner builds `assemblePublishableRelease` and `bundlePublishablePlay` from the reviewed release commit
 ([rc3 readiness §7](rc3-readiness.md#7-exact-build-and-verification-commands-owner-machine-release-commit))
 and records both SHA-256 values in §3 before the first upload.
 

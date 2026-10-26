@@ -15,7 +15,7 @@ How to read this checklist:
 - [x] `applicationId` = `io.github.alexeykravtsov95.talentforge` (aapt2 badging, E1-60)
 - [x] `minSdk 26`, `targetSdk 36`, `compileSdk 36` (`libs.versions.toml`, badging)
 - [x] **(gate)** `versionCode` / `versionName` decided for the first public release. Owner decision (2026-10-20, M5.RELEASE.VERSION): test build `1` / `1.0.0` (applied), public build `2` / `1.0.0`, unless testing consumes more codes. One code sequence for all three stores ([android-versioning.md](android-versioning.md)).
-- [ ] **(gate)** `versionCode` raised to the public value (highest consumed code + 1, planned `2`) in a dedicated, reviewed change before the public build; test uploads consume codes, and the AppGallery/RuStore public APK is a new build with a higher code ([procedure](android-versioning.md#5-raising-versioncode-before-the-public-release)).
+- [ ] **(gate)** `versionCode` raised to the public value (highest consumed code + 1; code `2` was consumed by a Google Play upload with OTA ON, so the next code is `3`, [ledger](android-versioning.md#3-planned-sequence-and-ledger)) in a dedicated, reviewed change before the public build; test uploads consume codes, and the AppGallery/RuStore public APK is a new build with a higher code ([procedure](android-versioning.md#5-raising-versioncode-before-the-public-release)).
 - [x] Display name `TalentForge` (`android:label`)
 
 **Manifest and permissions**
