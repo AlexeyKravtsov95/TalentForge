@@ -38,9 +38,12 @@ anything it cannot establish is a failure, never a pass:
     loopback, the Android emulator alias), and the production keyring given is the committed
     one (its fingerprints equal the pinned ones), so a substituted keyring cannot make a
     build pass;
-- ``NSPrivacyCollectedDataTypes`` declares exactly what the caller names
-  (``--privacy-collected``: ``none``, or ``other-diagnostic`` for OTA ON when the owner
-  decides that the CDN's request logs are collection — app-privacy.md §3);
+- ``NSPrivacyCollectedDataTypes`` is exactly the agreed App Privacy declaration
+  (``DECLARED_COLLECTED_DATA``, app-privacy.md §2): Other Diagnostic Data, linked to the user,
+  not used for tracking, for App Functionality only — the request logs the OTA delivery
+  infrastructure may keep. The manifest is one committed file bundled in every archive, so the
+  same declaration is required in both OTA modes; anything else — an empty array, ``Linked``
+  false, another type or purpose — fails;
 - no private key, certificate store or key file is bundled.
 
 The report holds public facts only: file names, sizes, SHA-256 digests and plist values.
@@ -112,19 +115,17 @@ FORBIDDEN_ORIGIN_HOSTS = re.compile(
 # Every P-256 public key as the app pins it: base64 of a 91-byte DER SPKI with this fixed header.
 P256_SPKI = rb"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE[A-Za-z0-9+/]{86}=="
 HTTPS_ORIGIN = rb"https://[A-Za-z0-9.-]+(?::[0-9]{1,5})?"
-PRIVACY_COLLECTED: dict[str, list[dict[str, Any]]] = {
-    "none": [],
-    "other-diagnostic": [
-        {
-            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeOtherDiagnosticData",
-            "NSPrivacyCollectedDataTypeLinked": False,
-            "NSPrivacyCollectedDataTypeTracking": False,
-            "NSPrivacyCollectedDataTypePurposes": [
-                "NSPrivacyCollectedDataTypePurposeAppFunctionality"
-            ],
-        }
-    ],
-}
+# The App Privacy declaration agreed for the App Store (app-privacy.md §2): the technical request
+# logs (IP address, time, URL, User-Agent) the OTA delivery infrastructure may keep after a
+# response. App Store Connect must carry the same answers.
+DECLARED_COLLECTED_DATA: list[dict[str, Any]] = [
+    {
+        "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeOtherDiagnosticData",
+        "NSPrivacyCollectedDataTypeLinked": True,
+        "NSPrivacyCollectedDataTypeTracking": False,
+        "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"],
+    }
+]
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_PRODUCTION_KEYRING = ROOT / "docs/ota/keys/production-keyring.json"
 COMPOSE_RESOURCES = "compose-resources/composeResources"
@@ -458,7 +459,6 @@ def evaluate(
     expected_xcode_build: str | None,
     keyring: Path,
     ota: str,
-    privacy_collected: str = "none",
     require_signed: bool = False,
     expected_team_id: str | None = None,
     runner: Runner | None = None,
@@ -467,10 +467,6 @@ def evaluate(
     """Run every check on ``archive``; raises ToolError when a check cannot run."""
     if ota not in OTA_MODES:
         raise ToolError(f"--ota must be one of {OTA_MODES}, not {ota!r}")
-    if privacy_collected not in PRIVACY_COLLECTED:
-        raise ToolError(f"--privacy-collected must be one of {sorted(PRIVACY_COLLECTED)}")
-    if ota == "off" and privacy_collected != "none":
-        raise ToolError("an OTA OFF build makes no request: it declares no collected data")
     if not archive.is_dir():
         raise ToolError("the archive does not exist or is not a directory")
     record = load_plist(archive / "Info.plist")
@@ -634,12 +630,11 @@ def evaluate(
         )
         used_categories = _required_reason_check(evaluation, manifest, executable, macho)
         collected = manifest.get("NSPrivacyCollectedDataTypes", [])
-        expected_collected = PRIVACY_COLLECTED[privacy_collected]
         evaluation.add(
             "privacy-collected-data",
-            collected == expected_collected,
+            collected == DECLARED_COLLECTED_DATA,
             f"NSPrivacyCollectedDataTypes={collected!r} "
-            f"(expected {privacy_collected}: {expected_collected!r})",
+            f"(expected the App Privacy declaration: {DECLARED_COLLECTED_DATA!r})",
         )
     else:
         evaluation.add(
@@ -1014,12 +1009,6 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
         choices=OTA_MODES,
         help="the OTA mode the archive must have: off (no origin, no key) or on (production)",
     )
-    parser.add_argument(
-        "--privacy-collected",
-        default="none",
-        choices=sorted(PRIVACY_COLLECTED),
-        help="what NSPrivacyCollectedDataTypes must declare (app-privacy.md §3; default none)",
-    )
     parser.add_argument("--expected-version", help="CFBundleShortVersionString, e.g. 1.0.0")
     parser.add_argument("--expected-build", help="CFBundleVersion, e.g. 1")
     parser.add_argument(
@@ -1058,7 +1047,6 @@ def main(argv: list[str] | None = None) -> int:
             expected_xcode_build=args.expected_xcode_build,
             keyring=Path(args.production_keyring),
             ota=args.ota,
-            privacy_collected=args.privacy_collected,
             require_signed=args.require_signed,
             expected_team_id=args.expected_team_id,
         )

@@ -5,7 +5,7 @@
 | Дата | 2026-10-24 |
 | База | `main` @ `d51cbed` (после PR #80) |
 | Итог | Пакет отправки готов к code review: 18 скриншотов EN/RU, тексты EN/RU, ответы анкет, runbook TestFlight, пять проверок. **В App Store Connect ничего не вносилось, сборка не загружалась, приложение не публиковалось.** Отправка заблокирована действиями владельца (§9) |
-| Пакет | [submission/README.md](submission/README.md) · [runbook](submission/testflight-runbook.md) · [App Privacy §5](app-privacy.md#5-аудит-m5ios3-ota-on) · [iOS-политика §3](../../legal/ios/README.md#3-публикация-выполняет-только-владелец) · [evidence](evidence/m5-ios-3/) |
+| Пакет | [submission/README.md](submission/README.md) · [runbook](submission/testflight-runbook.md) · [App Privacy §5](app-privacy.md#8-история-варианты-a-и-b-заменены) · [iOS-политика §3](../../legal/ios/README.md#3-публикация-выполняет-только-владелец) · [evidence](evidence/m5-ios-3/) |
 | Не изменялись | Android, игровой датасет, OTA production-каталог, `PRODUCT_BUNDLE`, код приложения, ссылка на политику в About |
 
 Статусы: **PASS** — выполнено здесь и проверено; **BLOCKED** — нужно действие владельца; **NOT RUN** — не выполнялось
@@ -102,13 +102,13 @@ iPhone 17 Pro и iPhone 18 Pro относятся к одному классу �
 
 | Пункт | Статус | Доказательство |
 |---|---|---|
-| `privacy-ios.html` / `privacy-ios-en.html` соответствуют OTA ON | **PASS** | [app-privacy §5.1](app-privacy.md#51-что-проверено): моменты запросов, их состав, IP у CDN без утверждений о хранении, без идентификаторов и cookies, подпись, бэкап, разрешений нет. Тексты не изменены |
+| `privacy-ios.html` / `privacy-ios-en.html` соответствуют OTA ON | **PASS** | [app-privacy §5.1](app-privacy.md#8-история-варианты-a-и-b-заменены): моменты запросов, их состав, IP у CDN без утверждений о хранении, без идентификаторов и cookies, подпись, бэкап, разрешений нет. Тексты не изменены |
 | Инструкция по публикации (дата, `Content-Type`, HTTP 200) | **PASS** | [legal/ios §3](../../legal/ios/README.md#3-публикация-выполняет-только-владелец) + `scripts/ios_privacy_pages.py render / verify-live` (14 тестов) |
 | Страницы опубликованы | **BLOCKED** | `verify-live` 2026-10-24: обе — **HTTP 403** ([вывод](evidence/m5-ios-3/privacy-pages-verify-live.txt)) |
 | Ссылка в About | **BLOCKED** (не меняется) | меняется отдельным PR только после `verify-live` → PASS |
 | Сетевые запросы, IP-адреса, CDN | **PASS** (факты) / **BLOCKED** (журналы) | `GET` каталога и blobs; заголовки измерены в M5.IOS.2, код с тех пор не менялся; цепочка CDN МегаФон → VK Cloud подтверждена preflight-ом ([вывод](evidence/m5-ios-3/production-preflight.txt)); хранение журналов (OA-1…OA-4) неизвестно |
 | `PrivacyInfo.xcprivacy` | **PASS** | в архиве OTA ON текущего `main`: tracking off, Required Reason API = импорты бинарника, `NSPrivacyCollectedDataTypes = []` |
-| Ответ App Privacy | **BLOCKED** | варианты A/B и их условия — [app-privacy §5.2](app-privacy.md#52-варианты-декларации); агент не выбирает; «Data Not Collected» не заявлен |
+| Ответ App Privacy | **BLOCKED** | варианты A/B и их условия — [app-privacy §5.2](app-privacy.md#8-история-варианты-a-и-b-заменены); агент не выбирает; «Data Not Collected» не заявлен |
 | App Review Notes (неофициальный статус, OTA, 2.5.2) | **PASS** (текст) | [`notes.txt`](submission/metadata/review_information/notes.txt) |
 
 ## 5. Задача D — готовность к TestFlight

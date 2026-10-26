@@ -735,7 +735,10 @@ Since M5.IOS.1 (App Store readiness, [release/apple-appstore/readiness.md](relea
   (TF-RC1-IOS-SCENES: one `App` composition, one writer of the build library) and the launch
   screen is the `LaunchBackground` colour (the spec-G `background` token, #0B0D11) instead of a
   white flash before the dark UI; `ITSAppUsesNonExemptEncryption = false` (OS HTTPS only);
-- `PrivacyInfo.xcprivacy` (TF-RC1-IOS-PRIVACY): no tracking, no collected data, and the
+- `PrivacyInfo.xcprivacy` (TF-RC1-IOS-PRIVACY): no tracking; one collected data type — Other
+  Diagnostic Data, linked, not tracking, App Functionality: the request logs the OTA delivery
+  infrastructure may keep (the App Privacy declaration, `docs/release/apple-appstore/app-privacy.md`,
+  which `verify_ios_archive.py` enforces in every archive) — and the
   required-reason APIs the executable actually imports — User Defaults `CA92.1` (the build
   library), File Timestamp `C617.1` (`stat`/`fstat` in Skia's `SkOSFile` and ICU's `umapfile`,
   for files in the app bundle/container), Disk Space `E174.1` (the OTA store's free-space check).

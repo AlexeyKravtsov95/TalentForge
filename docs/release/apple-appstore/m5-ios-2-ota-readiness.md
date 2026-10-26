@@ -36,7 +36,7 @@
 | 9 | Настоящее приложение на симуляторе: OTA ON (staging) и OTA OFF | **PASS** (локально, 6/6) | §5 |
 | 10 | Production preflight только на чтение, состояние не изменено | **PASS** | §7 |
 | 11 | Privacy manifest, Required Reason API, ATS, фактические запросы | **PASS** | §6 |
-| 12 | App Privacy answers для OTA ON | **BLOCKED** (владелец, OA-1) | §6, [app-privacy §3](app-privacy.md#3-сборка-ota-on-m5ios2) |
+| 12 | App Privacy answers для OTA ON | **BLOCKED** (владелец, OA-1) | §6, [app-privacy §3](app-privacy.md#2-декларация) |
 | 13 | iOS-политика опубликована, ссылка в About | **BLOCKED** (владелец; страницы отвечают 403) | §6 |
 | 14 | App Review Notes и метаданные OTA ON RU/EN | **PASS** (текст готов) | [metadata-en §8](metadata-en.md#8-замены-для-сборки-ota-on-только-после-m5ios2), [metadata-ru §8](metadata-ru.md#8-замены-для-сборки-ota-on-только-после-m5ios2) |
 | 15 | Android regression, shared-тесты, Python | **PASS** | §9 |
@@ -153,7 +153,7 @@ HTTPS-литералы в реальном OTA ON бинарнике: `https://o
 | Фактические запросы OTA ON | только `GET` к `https://<origin>/v1/channels/<channel>/catalog.json` и `/v1/blobs/sha256/<hex>`. Заголовки измерены (§5): `Host`, `User-Agent: TalentForge/<версия>`, `Accept: */*`, `Accept-Encoding`, `Accept-Language: *`, `Connection`. Без cookies, идентификаторов и содержимого билдов | **PASS** |
 | Найдено и исправлено | `NSURLSession` по умолчанию отправлял `Accept-Language: en-US,en;q=0.9` — языки устройства. Этого нет в политике, а серверу язык не нужен. `PlatformBlobFetcher` теперь отправляет фиксированное `Accept-Language: *`; проверка `app-request-headers` это требует | **PASS** |
 | OTA OFF: сеть | в архиве нет origin и ключей; приложение 15 с работает без Internet-сокетов (`lsof`) и без запросов | **PASS** (§5) |
-| App Privacy answers | варианты A и B и точное изменение манифеста для B — в [app-privacy §3](app-privacy.md#3-сборка-ota-on-m5ios2). «Data Not Collected» для OTA ON **не** заявляется без факта о журналах CDN (OA-1) | **BLOCKED** (владелец) |
+| App Privacy answers | варианты A и B и точное изменение манифеста для B — в [app-privacy §3](app-privacy.md#2-декларация). «Data Not Collected» для OTA ON **не** заявляется без факта о журналах CDN (OA-1) | **BLOCKED** (владелец) |
 | iOS-политика RU/EN | текст уже описывает OTA ON и сверен с измеренным поведением: моменты проверок, `User-Agent`, отсутствие cookies и идентификаторов, проверка подписи, исключение из бэкапа. Изменения не нужны. На 2026-10-23 `https://legal.mythweld.com/privacy-ios.html` и `…/privacy-ios-en.html` отвечают **403** | **BLOCKED** (публикует владелец) |
 | Ссылка на политику в About | не включена: страницы нет. Включается отдельным маленьким PR после публикации ([legal/ios §3, шаг 5](../../legal/ios/README.md)) | **BLOCKED** |
 | App Review Notes и описание OTA ON (RU/EN) | готовы и сверены со сборкой: моменты загрузки, только `GET`, подпись ECDSA P-256 и SHA-256, JSON + PNG, без кода, без идентификаторов | **PASS** (текст) |
@@ -225,7 +225,7 @@ HTTPS-литералы в реальном OTA ON бинарнике: `https://o
 
 | # | Действие | Статус |
 |---|---|---|
-| OW-1 | App Privacy для OTA ON по журналам CDN (OA-1); при варианте B — PR с `PrivacyInfo.xcprivacy` ([app-privacy §3](app-privacy.md#3-сборка-ota-on-m5ios2)) | **BLOCKED** |
+| OW-1 | App Privacy для OTA ON по журналам CDN (OA-1); при варианте B — PR с `PrivacyInfo.xcprivacy` ([app-privacy §3](app-privacy.md#2-декларация)) | **BLOCKED** |
 | OW-2 | Публикация iOS-политики RU/EN, затем PR со ссылкой в About | **BLOCKED** |
 | OW-3 | Подписанный архив OTA ON и `verify_ios_archive.py --ota on` ([owner-guide §4](m5-ios-2-owner-guide.md#4-сборка-и-проверка-архива)) | NOT RUN |
 | OW-4 | TestFlight и физический iPhone, P-1…P-13 | NOT RUN |

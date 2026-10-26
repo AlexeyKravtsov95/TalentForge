@@ -129,7 +129,7 @@ Talent data updates (App Review Guideline 2.5.2): after launch, when returning t
 
 Длина Review Notes с этим абзацем ≈ 1 600 символов (лимит App Store Connect — 4 000).
 
-Одновременно обновить App Privacy ([app-privacy.md §3](app-privacy.md#3-сборка-ota-on-m5ios2)) и опубликовать iOS-политику ([docs/legal/ios](../../legal/ios/README.md)).
+Одновременно обновить App Privacy ([app-privacy.md §3](app-privacy.md#2-декларация)) и опубликовать iOS-политику ([docs/legal/ios](../../legal/ios/README.md)).
 
 ## 9. URL и категория (общие для всех языков)
 

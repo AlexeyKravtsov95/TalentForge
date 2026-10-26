@@ -158,6 +158,8 @@ class AboutScreenUiTest {
         clickText("Show details")
         awaitText("from ota.mythweld.com", substring = true)
         awaitText("may process your device's IP address and the time of the request", substring = true)
+        // the iOS paragraph (retained request logs) is not the Android one
+        assertAbsent("technical request logs", substring = true)
         awaitText("when you open a saved or imported build whose data version is not on this device yet", substring = true)
         awaitText("no account or device identifier", substring = true)
         awaitText("Build contents are never sent, but the requested files can indicate which game-data version the app needs.", substring = true)
@@ -366,6 +368,20 @@ class AboutScreenUiTest {
                 assertEquals(listOf(expectedUrl), handler.opened)
                 clickText(if (ru) "Подробнее" else "Show details")
                 awaitText("ota.mythweld.com", substring = true)
+                // iOS states what the App Privacy declaration says: logs may be kept, never for tracking
+                awaitText(
+                    if (ru) {
+                        "могут сохранять эти сведения в технических журналах запросов после ответа"
+                    } else {
+                        "and may keep them in technical request logs after answering"
+                    },
+                    substring = true,
+                )
+                awaitText(
+                    if (ru) "никогда — для рекламы, аналитики или отслеживания" else "never for advertising, analytics or tracking",
+                    substring = true,
+                )
+                assertAbsent(if (ru) "Как и любой сайт" else "As with any website", substring = true)
                 awaitText(if (ru) "Если на устройстве включено резервное копирование" else "If your device's backup (iCloud or a computer) is on", substring = true)
             }
         }

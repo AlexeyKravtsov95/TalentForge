@@ -24,6 +24,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 COMMITTED_KEYRING = ROOT / "docs/ota/keys/production-keyring.json"
+COMMITTED_PRIVACY_MANIFEST = ROOT / "mobile/iosApp/iosApp/PrivacyInfo.xcprivacy"
 _KEYS = {
     key["keyId"]: key["publicKeySpki"] for key in json.loads(COMMITTED_KEYRING.read_text())["keys"]
 }
@@ -88,7 +89,7 @@ def manifest(**overrides: Any) -> dict[str, Any]:
     value: dict[str, Any] = {
         "NSPrivacyTracking": False,
         "NSPrivacyTrackingDomains": [],
-        "NSPrivacyCollectedDataTypes": [],
+        "NSPrivacyCollectedDataTypes": v.DECLARED_COLLECTED_DATA,
         "NSPrivacyAccessedAPITypes": [
             {
                 "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
@@ -473,25 +474,72 @@ def test_app_transport_security_must_keep_the_defaults(
     assert "App Transport Security is changed" in failed(evaluation)["ats-default"]
 
 
-def test_collected_data_must_be_what_the_caller_declares(tmp_path: Path, keyring: Path) -> None:
-    diagnostic = v.PRIVACY_COLLECTED["other-diagnostic"]
-    on = macho(undefined=DEFAULT_SYMBOLS, tail=ota_on_tail())
-    archive = make_archive(
-        tmp_path, executable=on, privacy=manifest(NSPrivacyCollectedDataTypes=diagnostic)
-    )
-    evaluation, _ = run(archive, keyring, ota="on", privacy_collected="other-diagnostic")
+def test_the_committed_privacy_manifest_is_the_app_privacy_declaration() -> None:
+    committed = plistlib.loads(COMMITTED_PRIVACY_MANIFEST.read_bytes())
+    assert committed["NSPrivacyCollectedDataTypes"] == v.DECLARED_COLLECTED_DATA
+    assert committed["NSPrivacyTracking"] is False
+    assert committed["NSPrivacyTrackingDomains"] == []
+
+
+def test_the_declaration_is_linked_untracked_diagnostics_for_app_functionality() -> None:
+    (entry,) = v.DECLARED_COLLECTED_DATA
+    assert entry["NSPrivacyCollectedDataType"] == "NSPrivacyCollectedDataTypeOtherDiagnosticData"
+    assert entry["NSPrivacyCollectedDataTypeLinked"] is True
+    assert entry["NSPrivacyCollectedDataTypeTracking"] is False
+    assert entry["NSPrivacyCollectedDataTypePurposes"] == [
+        "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+    ]
+
+
+@pytest.mark.parametrize("ota", ["on", "off"])
+def test_both_modes_require_the_declaration(tmp_path: Path, keyring: Path, ota: str) -> None:
+    # one committed manifest is bundled in every archive, whatever the OTA mode
+    executable = macho(undefined=DEFAULT_SYMBOLS, tail=ota_on_tail() if ota == "on" else b"")
+    evaluation, _ = run(make_archive(tmp_path, executable=executable), keyring, ota=ota)
     assert failed(evaluation) == {}
-    evaluation, _ = run(archive, keyring, ota="on")
+    empty = manifest(NSPrivacyCollectedDataTypes=[])
+    archive = make_archive(tmp_path / "empty", executable=executable, privacy=empty)
+    evaluation, _ = run(archive, keyring, ota=ota)
+    assert "expected the App Privacy declaration" in failed(evaluation)["privacy-collected-data"]
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        {"NSPrivacyCollectedDataTypeLinked": False},
+        {"NSPrivacyCollectedDataTypeTracking": True},
+        {"NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeCrashData"},
+        {"NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeCoarseLocation"},
+        {"NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAnalytics"]},
+        {
+            "NSPrivacyCollectedDataTypePurposes": [
+                "NSPrivacyCollectedDataTypePurposeAppFunctionality",
+                "NSPrivacyCollectedDataTypePurposeAnalytics",
+            ]
+        },
+    ],
+)
+def test_another_declaration_fails(tmp_path: Path, keyring: Path, change: dict[str, Any]) -> None:
+    collected = [{**v.DECLARED_COLLECTED_DATA[0], **change}]
+    archive = make_archive(tmp_path, privacy=manifest(NSPrivacyCollectedDataTypes=collected))
+    evaluation, _ = run(archive, keyring)
     assert "privacy-collected-data" in failed(evaluation)
-    evaluation, _ = run(
-        make_archive(tmp_path / "none", executable=on),
-        keyring,
-        ota="on",
-        privacy_collected="other-diagnostic",
-    )
+
+
+def test_an_extra_collected_type_fails(tmp_path: Path, keyring: Path) -> None:
+    extra = {
+        **v.DECLARED_COLLECTED_DATA[0],
+        "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeDeviceID",
+    }
+    collected = [*v.DECLARED_COLLECTED_DATA, extra]
+    archive = make_archive(tmp_path, privacy=manifest(NSPrivacyCollectedDataTypes=collected))
+    evaluation, _ = run(archive, keyring)
     assert "privacy-collected-data" in failed(evaluation)
-    with pytest.raises(v.ToolError, match="declares no collected data"):
-        run(make_archive(tmp_path / "off"), keyring, privacy_collected="other-diagnostic")
+
+
+def test_the_cli_has_no_privacy_choice() -> None:
+    with pytest.raises(SystemExit):
+        v.parse_args(["--archive", "x", "--ota", "on", "--privacy-collected", "none"])
 
 
 def test_key_material_in_the_bundle_fails(tmp_path: Path, keyring: Path) -> None:

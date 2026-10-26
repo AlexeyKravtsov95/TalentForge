@@ -109,7 +109,7 @@ URL открытой страницы взят из истории Safari сим
 
 1. **До одобрения (необязательно):** личный iPhone через Personal Team — [runbook §8](submission/testflight-runbook.md#8-необязательно-личный-iphone-через-personal-team-до-активации-членства):
    закрывает «первый запуск без сети» и Safari на устройстве. Готовность подписи для TestFlight это не подтверждает.
-2. **Решить App Privacy** (A или B, [app-privacy §5.2](app-privacy.md#52-варианты-декларации)). Сообщение владельца от
+2. **Решить App Privacy** (A или B, [app-privacy §5.2](app-privacy.md#8-история-варианты-a-и-b-заменены)). Сообщение владельца от
    2026-10-25 о журналах VK Cloud записано ([OWNER_ACTION_REQUIRED §1.1](../../legal/ota-on/OWNER_ACTION_REQUIRED.md#11-сообщение-владельца-2026-10-25));
    журналы CDN МегаФон и внутренние журналы провайдера им не проверены. Для B — сначала отдельный PR с
    `PrivacyInfo.xcprivacy`, до архива.

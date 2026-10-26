@@ -7,7 +7,9 @@ data class AppVersion(val name: String, val code: Long)
 
 /**
  * Which backup statement is true for this platform's build (M5.RC.2b, TF-RC1-ANDROID-CONFIG), and
- * with it how saved builds are removed (M5.IOS.1: Android can clear an app's storage, iOS deletes the app).
+ * with it how saved builds are removed (M5.IOS.1: Android can clear an app's storage, iOS deletes the app)
+ * and which talent data updates paragraph matches the platform's published policy (iOS: the App Privacy
+ * declaration of retained request logs).
  */
 enum class BackupStatement {
     /** Android: `allowBackup="false"` plus data-extraction rules that exclude every domain. */

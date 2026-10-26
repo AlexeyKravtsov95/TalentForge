@@ -35,7 +35,7 @@
 | 10 | **Rollback** (production-откат каталога по runbook) | клиент переходит на предыдущий релиз по правилам контракта |
 | 11 | **Физический iPhone** (TestFlight, owner-signed) | шаги 2–9 на устройстве; нет ATS/сертификатных проблем вне симулятора |
 | 12 | **Production keyring validation** | сборка с `ios.production.enabled=true` пиннит ровно `tf-prod-2026a` + `tf-prod-2026b`; `verify_ios_archive.py` получает режим OTA ON и требует оба SPKI и origin в бинарнике |
-| 13 | **Privacy и магазин** | опубликована iOS-политика; App Privacy выбран по OA-1 ([app-privacy §3](app-privacy.md#3-сборка-ota-on-m5ios2)); `NSPrivacyCollectedDataTypes` соответствует; метаданные заменены ([metadata-en §8](metadata-en.md#8-замены-для-сборки-ota-on-только-после-m5ios2)) |
+| 13 | **Privacy и магазин** | опубликована iOS-политика; App Privacy выбран по OA-1 ([app-privacy §3](app-privacy.md#2-декларация)); `NSPrivacyCollectedDataTypes` соответствует; метаданные заменены ([metadata-en §8](metadata-en.md#8-замены-для-сборки-ota-on-только-после-m5ios2)) |
 | 14 | **OTA OFF как kill switch** | сборка без `ios.production.enabled` (или с `false`) не делает ни одного запроса (проверено прокси/Network Link Conditioner), About без «Проверить обновления»; установленные ранее данные не ломают запуск |
 
 ## 2. Чего не делать
