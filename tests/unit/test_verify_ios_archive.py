@@ -910,3 +910,160 @@ def test_the_verifier_pins_the_same_fingerprints_as_the_gradle_build() -> None:
     gradle = (ROOT / "mobile/composeApp/build.gradle.kts").read_text()
     for key_id, sha in v.PRODUCTION_KEY_SPKI_SHA256.items():
         assert f'"{key_id}" to "{sha}"' in gradle
+
+
+# --ipa (issue #90): the exported App Store package that is uploaded, not the archive.
+def make_ipa(
+    tmp_path: Path, *, extra_entries: dict[str, bytes] | None = None, symlink: str | None = None
+) -> Path:
+    """The app of a signed synthetic archive, zipped as an App Store export (Payload/…)."""
+    import zipfile
+
+    app = signed_archive(tmp_path / "src") / "Products" / "Applications" / "iosApp.app"
+    (tmp_path / "out").mkdir()
+    ipa = tmp_path / "out" / "iosApp.ipa"
+    with zipfile.ZipFile(ipa, "w") as archive:
+        for path in sorted(app.rglob("*")):
+            if path.is_file():
+                info = zipfile.ZipInfo(f"Payload/iosApp.app/{path.relative_to(app).as_posix()}")
+                info.external_attr = (0o100755 if path.name == "iosApp" else 0o100644) << 16
+                archive.writestr(info, path.read_bytes())
+        for name, content in (extra_entries or {}).items():
+            archive.writestr(name, content)
+        if symlink is not None:
+            info = zipfile.ZipInfo("Payload/iosApp.app/link")
+            info.external_attr = 0o120777 << 16
+            archive.writestr(info, symlink)
+    return ipa
+
+
+def run_ipa(ipa: Path, keyring: Path, runner: Any, **expected: Any) -> tuple[Any, dict[str, Any]]:
+    arguments: dict[str, Any] = {
+        "expected_version": "1.0.0",
+        "expected_build": "1",
+        "expected_min_os": "17.2",
+        "expected_sdk": "iphoneos27.1",
+        "expected_xcode_build": "27A9275",
+        "ota": "off",
+        "expected_team_id": TEAM,
+    }
+    arguments.update(expected)
+    return v.evaluate_ipa(ipa, keyring=keyring, runner=runner, now=NOW, **arguments)
+
+
+def distribution_tools() -> tuple[Any, list[list[str]]]:
+    return tools(
+        display=(0, codesign_display(DISTRIBUTION)),
+        decoded=(0, plistlib.dumps(app_store_profile())),
+        entitlements=app_store_profile()["Entitlements"],
+    )
+
+
+def test_an_app_store_signed_export_passes_and_names_the_package(
+    tmp_path: Path, keyring: Path
+) -> None:
+    ipa = make_ipa(tmp_path)
+    runner, calls = distribution_tools()
+    evaluation, report = run_ipa(ipa, keyring, runner)
+    assert failed(evaluation) == {}
+    assert report["package"]["sha256"] == v.file_sha256(ipa)
+    assert report["package"]["fileName"] == "iosApp.ipa"
+    assert "archive" not in report
+    assert report["signing"]["configuration"].startswith("App Store")
+    # the signature of the unpacked application itself is verified
+    assert calls[0][:4] == ["codesign", "--verify", "--strict", "--verbose=2"]
+    assert calls[0][-1].endswith("Payload/iosApp.app")
+
+
+def test_a_development_signed_export_fails_although_such_an_archive_passes(
+    tmp_path: Path, keyring: Path
+) -> None:
+    runner, _ = tools()  # development identity and profile
+    problems = failed(run_ipa(make_ipa(tmp_path), keyring, runner)[0])
+    assert set(problems) == {"testflight-signing"}
+    assert "must be signed with Apple Distribution" in problems["testflight-signing"]
+
+
+def test_an_export_always_verifies_its_signature(tmp_path: Path, keyring: Path) -> None:
+    runner, _ = tools(
+        verify=(1, "iosApp.app: code object is not signed at all\n"),
+        display=(1, "iosApp.app: code object is not signed at all\n"),
+        decoded=(0, b""),
+        leaf=None,
+        entitlements={},
+    )
+    assert set(SIGNING_CHECKS) <= set(failed(run_ipa(make_ipa(tmp_path), keyring, runner)[0]))
+
+
+def test_an_export_with_unexpected_top_level_entries_fails(tmp_path: Path, keyring: Path) -> None:
+    ipa = make_ipa(tmp_path, extra_entries={"Extras/notes.txt": b"x"})
+    runner, _ = distribution_tools()
+    assert set(failed(run_ipa(ipa, keyring, runner)[0])) == {"ipa-payload"}
+
+
+@pytest.mark.parametrize(
+    ("entries", "link"),
+    [
+        ({"../escape.txt": b"x"}, None),
+        ({"/absolute.txt": b"x"}, None),
+        ({}, "../../../outside"),
+        ({}, "Assets.car"),  # even a symlink inside the bundle: link chains can escape
+    ],
+    ids=["dot-dot", "absolute", "symlink-out", "symlink-in"],
+)
+def test_an_export_cannot_write_outside_its_scratch_directory(
+    tmp_path: Path, keyring: Path, entries: dict[str, bytes], link: str | None
+) -> None:
+    ipa = make_ipa(tmp_path, extra_entries=entries, symlink=link)
+    runner, _ = distribution_tools()
+    with pytest.raises(v.ToolError, match=r"unsafe entry|symlink, refused"):
+        run_ipa(ipa, keyring, runner)
+
+
+@pytest.mark.filterwarnings("ignore:Duplicate name")
+def test_a_symlink_chain_cannot_escape_and_duplicates_are_refused(
+    tmp_path: Path, keyring: Path
+) -> None:
+    import zipfile
+
+    escape = tmp_path / "chain.ipa"
+    with zipfile.ZipFile(escape, "w") as archive:
+        for name, link in (("Payload/l1", "l2/.."), ("Payload/l2", "..")):
+            info = zipfile.ZipInfo(name)
+            info.external_attr = 0o120777 << 16
+            archive.writestr(info, link)
+        archive.writestr("Payload/l1/ESCAPED.txt", b"x")
+    runner, _ = distribution_tools()
+    with pytest.raises(v.ToolError, match="symlink, refused"):
+        run_ipa(escape, keyring, runner)
+    assert not (tmp_path / "ESCAPED.txt").exists()
+    twice = tmp_path / "twice.ipa"
+    with zipfile.ZipFile(twice, "w") as archive:
+        archive.writestr("Payload/iosApp.app/Info.plist", b"a")
+        archive.writestr("Payload/iosApp.app/Info.plist", b"b")
+    with pytest.raises(v.ToolError, match="twice"):
+        run_ipa(twice, keyring, runner)
+
+
+def test_an_export_without_exactly_one_application_cannot_be_checked(
+    tmp_path: Path, keyring: Path
+) -> None:
+    import zipfile
+
+    empty = tmp_path / "empty.ipa"
+    with zipfile.ZipFile(empty, "w") as archive:
+        archive.writestr("Payload/readme.txt", b"")
+    runner, _ = distribution_tools()
+    with pytest.raises(v.ToolError, match="exactly one application"):
+        run_ipa(empty, keyring, runner)
+    (tmp_path / "broken.ipa").write_bytes(b"not a zip")
+    with pytest.raises(v.ToolError, match="not a readable"):
+        run_ipa(tmp_path / "broken.ipa", keyring, runner)
+
+
+def test_the_cli_checks_an_ipa_and_refuses_both_package_kinds(tmp_path: Path) -> None:
+    with pytest.raises(SystemExit):
+        v.parse_args(["--archive", "a", "--ipa", "b", "--ota", "on"])
+    with pytest.raises(SystemExit):
+        v.parse_args(["--ota", "on"])
+    assert v.parse_args(["--ipa", "x.ipa", "--ota", "on"]).ipa == "x.ipa"
