@@ -74,7 +74,7 @@
 | `TARGETED_DEVICE_FAMILY` | 1,2 (iPhone, iPad) | PASS |
 | Локализации | `CFBundleLocalizations` en, ru; `knownRegions` + `ru` | PASS |
 | Ориентации | iPhone: portrait, landscape L/R; iPad: все четыре | PASS |
-| `ITSAppUsesNonExemptEncryption` | `false` (добавлено) | PASS (владелец подтверждает в ASC, [app-privacy §4](app-privacy.md#4-связанные-декларации)) |
+| `ITSAppUsesNonExemptEncryption` | `false` (добавлено) | PASS (владелец подтверждает в ASC, [app-privacy §4](app-privacy.md#7-связанные-декларации)) |
 | Сцены | `UIApplicationSupportsMultipleScenes = false` в **собранном** plist (исправлено, §3.3) | PASS |
 | Launch screen | цвет `LaunchBackground` #0B0D11 (исправлено, §3.3) | PASS |
 | KMP framework | статический (`isStatic = true`), Release-конфигурация Xcode → `linkReleaseFramework*`, только arm64 (device) / arm64 (simulator) | PASS |
@@ -213,7 +213,8 @@ UIDeviceFamily [1, 2], en/ru, arm64, `DTSDKName iphoneos26.4`, `DTXcodeBuild 17E
 | System Boot Time | — | `mach_absolute_time`, `systemUptime` **не импортируются** | не объявлено |
 | Active Keyboards | — | `activeInputModes` нет | не объявлено |
 
-`NSPrivacyTracking = false`, `NSPrivacyTrackingDomains = []`, `NSPrivacyCollectedDataTypes = []`. Сторонних SDK с
+`NSPrivacyTracking = false`, `NSPrivacyTrackingDomains = []`. `NSPrivacyCollectedDataTypes` — с 2026-10-26 одна запись,
+Other Diagnostic Data (linked, без отслеживания, App Functionality): декларация App Privacy, [app-privacy §4](app-privacy.md#4-privacyinfoxcprivacy-и-проверка-архива). Сторонних SDK с
 собственными манифестами/подписями ([third-party SDK requirements](https://developer.apple.com/support/third-party-SDK-requirements/))
 нет: Compose Multiplatform/Skiko/Kotlin слинкованы статически в приложение, поэтому их API декларирует манифест
 приложения. Скрипт `verify_ios_archive.py` повторяет анализ на каждом CI-архиве и падает, если появится
@@ -233,7 +234,7 @@ UIDeviceFamily [1, 2], en/ru, arm64, `DTSDKName iphoneos26.4`, `DTXcodeBuild 17E
 Сборка M5.IOS.1 не выполняет сетевых запросов: `GeneratedOtaSettings.iosProduction/iosStaging` — `enabled = false`,
 `baseUrl = null`; в бинарнике нет `ota.mythweld.com` и SPKI production-ключей (проверка `ota-off`, UTF-8 и UTF-16LE).
 Поток OTA ON (`NSURLSession`, HTTPS, `User-Agent: TalentForge/<версия>`, без cookies) и сведения, которые технически
-получает CDN, описаны в [app-privacy §1](app-privacy.md#1-фактические-потоки-данных-проверено-по-коду-и-бинарнику).
+получает CDN, описаны в [app-privacy §1](app-privacy.md#1-модель-и-факты).
 Журналирование CDN/сервера не проверялось (нет доступа; OA-1…OA-4): в политике нет утверждений о журналах, кроме того,
 что верно при любых настройках. Утверждений об аналитике, рекламе или трекинге нет нигде.
 
@@ -245,7 +246,7 @@ UIDeviceFamily [1, 2], en/ru, arm64, `DTSDKName iphoneos26.4`, `DTXcodeBuild 17E
 | Опубликована на `legal.mythweld.com` | **PASS** (обновлено 2026-10-25): опубликована владельцем 2026-10-24, `verify-live --date 2026-10-24` → PASS для обеих страниц ([evidence](evidence/m5-ios-3/privacy-pages-verify-live-2026-10-25.txt)). На 2026-10-23 страницы отвечали 403 |
 | Ссылка в About (iOS) | **PASS** (код и тесты): `platformPrivacyPolicy = Ios`, RU/EN-страница по языку интерфейса (`IosAboutFactsTest`, `AboutScreenUiTest`). Открытие браузера на физическом iPhone — [runbook §6](submission/testflight-runbook.md#6-проверка-на-физическом-iphone) |
 | Ссылка в App Store Connect | разблокирована публикацией; вносит владелец ([metadata §9](metadata-en.md#9-url-и-категория-общие-для-всех-языков), [runbook §7](submission/testflight-runbook.md#7-карточка-app-store-и-отправка-на-ревью)) |
-| App Privacy answers | черновик: OTA OFF — **Data Not Collected** ([app-privacy](app-privacy.md)) |
+| App Privacy answers | согласовано 2026-10-26 для OTA ON: **Data Linked to You: Diagnostics** ([app-privacy §2](app-privacy.md#2-декларация)); вводит владелец |
 
 ## 7. Готовность iOS OTA
 

@@ -54,7 +54,7 @@ talentforge.ota.ios.production.enabled=true
   ```
 
 - [ ] До `expiresAt` production-каталога не меньше 30 дней. На 2026-10-23 осталось 42 дня (до 2026-12-05). При загрузке позже 2026-11-05 сначала выполните re-sign по [production-deployment](../../ota/production-deployment.md): `resign` → внешняя подпись → `attach-signature` → `verify-live`.
-- [ ] iOS-политика опубликована ([docs/legal/ios](../../legal/ios/README.md)), App Privacy выбран ([app-privacy §3](app-privacy.md#3-сборка-ota-on-m5ios2)).
+- [ ] iOS-политика опубликована ([docs/legal/ios](../../legal/ios/README.md)), App Privacy выбран ([app-privacy §3](app-privacy.md#2-декларация)).
 
 ## 4. Сборка и проверка архива
 
@@ -71,7 +71,7 @@ cd mobile/iosApp && xcodebuild -project iosApp.xcodeproj -scheme iosApp -configu
 python3 scripts/verify_ios_archive.py --archive mobile/iosApp/build/TalentForge-ota-on.xcarchive --ota on --expected-version 1.0.0 --expected-build 2 --expected-sdk iphoneos27.1 --expected-xcode-build 27A9275 --report mobile/iosApp/build/ios-archive-ota-on-report.json
 ```
 
-Ожидаемый результат: `RESULT: PASS`, в отчёте `"signed": true`, `ota.embeddedKeys` = `["tf-prod-2026a", "tf-prod-2026b"]`, `ota.productionOrigin` = `true`. Если в App Privacy выбран вариант «Data Collected → Other Diagnostic Data», сначала измените `PrivacyInfo.xcprivacy` ([app-privacy §3.2](app-privacy.md#32-вариант-b-журналы-хранятся)) и добавьте к проверке `--privacy-collected other-diagnostic`.
+Ожидаемый результат: `RESULT: PASS`, в отчёте `"signed": true`, `ota.embeddedKeys` = `["tf-prod-2026a", "tf-prod-2026b"]`, `ota.productionOrigin` = `true`. Проверка `privacy-collected-data` требует согласованную декларацию App Privacy (Other Diagnostic Data, linked, без отслеживания, App Functionality), которая уже есть в `PrivacyInfo.xcprivacy`; флага `--privacy-collected` больше нет ([app-privacy §4](app-privacy.md#4-privacyinfoxcprivacy-и-проверка-архива)). Актуальные номер сборки и команда с `--require-signed` — в [runbook §3–4](submission/testflight-runbook.md#3-подписанный-archive-ota-on).
 
 Затем Xcode → Window → Organizer → архив → **Distribute App** → App Store Connect. Загрузку выполняете только вы.
 
@@ -109,7 +109,7 @@ App Review 2.5.2: загружаются только JSON-данные и PNG-�
 
 | # | Действие | Статус |
 |---|---|---|
-| OW-1 | Решить App Privacy для OTA ON по фактам о журналах CDN (OA-1) — [app-privacy §3](app-privacy.md#3-сборка-ota-on-m5ios2) | **BLOCKED** (владелец) |
+| OW-1 | Решить App Privacy для OTA ON по фактам о журналах CDN (OA-1) — [app-privacy §3](app-privacy.md#2-декларация) | **BLOCKED** (владелец) |
 | OW-2 | Опубликовать iOS-политику RU/EN и сообщить агенту для PR со ссылкой в About | **BLOCKED** (владелец; на 2026-10-23 страницы отвечают 403) |
 | OW-3 | Подписанный архив OTA ON (§4), проверка `--ota on` | NOT RUN |
 | OW-4 | TestFlight и физический iPhone, P-1…P-13 (§5) | NOT RUN |
