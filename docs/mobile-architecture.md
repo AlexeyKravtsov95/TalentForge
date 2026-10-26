@@ -444,6 +444,29 @@ entry is gone; the baseline Warrior loader remains as the tests' fixture.
     At ≥ 175 % text the rank moves under the name, `Max` grows past 68 dp
     instead of clipping and `+ Rank` shows only `+` (its accessibility label
     is unchanged);
+  - reading in sequence (inspector reading refinement; B3 and the UX/UI spec
+    freeze no rule for a new selection while the sheet is open). The FIRST
+    selection — from none — still opens the compact strip (B3 03). After that
+    a new selection keeps the inspector's presentation: an expanded sheet
+    stays expanded and shows the new talent, a compact strip stays compact
+    — including one the reader collapsed (`⌄`, the header swipe down, or
+    Back's collapse step), so a selection never expands on its own. Spend,
+    refund, Max, undo and redo never change it. Clearing the selection (`×`,
+    a tap on empty canvas, a tab change, Back) hides the inspector and resets
+    it, so the next selection is a first one again. Show and the Back chip
+    still collapse to the strip (B3 07 centring) and the next selection keeps
+    that strip. Each talent's detail has its own scroll position
+    (`rememberDetailScrollState`, keyed by the node — in the sheet, the
+    landscape side panel and the tablet panel), so a new talent's description
+    starts at its top and a rank change keeps the reader's place. The
+    presentation is the screen's existing `rememberSaveable` view state: it
+    survives a rotation (landscape shows the side panel; back in portrait the
+    sheet is still expanded) and Android recreation, but nothing stores it —
+    a new launch or a newly opened build starts compact. The canvas gesture
+    loop (`pointerInput` keyed by model and camera) calls the tap callbacks
+    through `rememberUpdatedState`, so a finger tap sees the current selection
+    like the node's semantic click does (it used to keep the first
+    composition's callbacks, where nothing was selected yet);
   - camera integration: the strip and the sheet report their **measured**
     height from the layout pass (a layout modifier capturing the talent it
     shows, so a measurement is never attributed to another talent); that

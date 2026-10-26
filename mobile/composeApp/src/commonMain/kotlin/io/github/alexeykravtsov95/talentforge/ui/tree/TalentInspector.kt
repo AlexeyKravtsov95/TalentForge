@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -30,12 +31,12 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -128,7 +129,10 @@ const val TALENT_INSPECTOR_REASON_TAG: String = "talent-inspector-reason"
 /** Test tag of the expanded sheet's surface (M5.UX.2a). */
 const val TALENT_INSPECTOR_SHEET_TAG: String = "talent-inspector-sheet"
 
-/** Test tag of the expanded sheet's scrolling detail region (M5.UX.2a). */
+/**
+ * Test tag of the scrolling detail region of the expanded sheet (M5.UX.2a),
+ * the landscape side panel and the tablet panel — one inspector is shown at a time.
+ */
 const val TALENT_INSPECTOR_DETAIL_SCROLL_TAG: String = "talent-inspector-detail-scroll"
 
 /** Test tag of the expanded sheet's header — its swipe-down drag area (PR #19). */
@@ -370,7 +374,7 @@ fun TalentInspectorExpandedSheet(
             Column(
                 Modifier
                     .weight(1f, fill = false)
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(rememberDetailScrollState(content.nodeId))
                     .testTag(TALENT_INSPECTOR_DETAIL_SCROLL_TAG)
                     .padding(bottom = TalentForgeSpacing.inline),
             ) {
@@ -463,7 +467,8 @@ fun TalentInspectorSidePanel(
         Column(
             Modifier
                 .weight(1f)
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(rememberDetailScrollState(content.nodeId))
+                .testTag(TALENT_INSPECTOR_DETAIL_SCROLL_TAG),
         ) {
             InspectorDetail(
                 content = content,
@@ -532,7 +537,8 @@ fun TalentInspectorPersistentPanel(
             Column(
                 Modifier
                     .weight(1f)
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(rememberDetailScrollState(content.nodeId))
+                    .testTag(TALENT_INSPECTOR_DETAIL_SCROLL_TAG),
             ) {
                 InspectorDetail(
                     content = content,
@@ -628,6 +634,15 @@ private fun InspectorTalentIcon(icon: ImageBitmap?, size: Dp) {
         filterQuality = FilterQuality.Medium,
     )
 }
+
+/**
+ * The detail's scroll position, one per talent: a newly selected talent's
+ * description starts at its top, while a rank change of the same talent keeps
+ * where the reader is.
+ */
+@Composable
+private fun rememberDetailScrollState(nodeId: Int): ScrollState =
+    rememberSaveable(nodeId, saver = ScrollState.Saver) { ScrollState(0) }
 
 /** The full-detail facts of one selected node — sparse, real, nothing invented. */
 @Composable

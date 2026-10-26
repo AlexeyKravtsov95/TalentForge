@@ -862,7 +862,11 @@ private fun ReadyTalentTreeScreen(
                 /** B3: a plain selection clears any active Show guide (and the Back chip). */
                 val onNodeSelected: (Int) -> Unit = { nodeId ->
                     onShowGuideChange(null)
-                    onInspectorExpandedChange(false)
+                    // Reading in sequence: a new selection keeps the inspector's
+                    // presentation — an expanded sheet stays expanded with the new
+                    // talent, a compact strip (or one the reader collapsed) stays
+                    // compact. Only a first selection (from none) opens compact.
+                    if (selectedNodeId == null) onInspectorExpandedChange(false)
                     sectionReturn = null
                     // B3 05: when the side panel opens it covers 300 dp of the
                     // canvas; the tree pans only if the panel would cover the

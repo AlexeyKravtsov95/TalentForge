@@ -158,6 +158,10 @@ fun TalentTreeCanvas(
 ) {
     val localDensity = LocalDensity.current
     val sectionSwipe by rememberUpdatedState(onSectionSwipe)
+    // the gesture loop outlives recompositions (keyed by model and camera only):
+    // a tap must reach the CURRENT callbacks, which read the current selection
+    val nodeTap by rememberUpdatedState(onNodeSelected)
+    val emptyTap by rememberUpdatedState(onSelectionCleared)
     // Android owns edge swipes (system Back): a swipe that STARTS in the
     // system gesture zone never switches sections (0 on desktop/iOS hosts).
     val gestureInsets = WindowInsets.systemGestures
@@ -256,8 +260,8 @@ fun TalentTreeCanvas(
                             talentTreeGestures(
                                 model = model,
                                 viewportState = viewportState,
-                                onNodeTap = onNodeSelected,
-                                onEmptyTap = onSelectionCleared,
+                                onNodeTap = { nodeTap(it) },
+                                onEmptyTap = { emptyTap() },
                                 sectionSwipe = { sectionSwipe },
                                 inSystemGestureZone = inSystemGestureZone,
                                 isRtl = { rtl },
