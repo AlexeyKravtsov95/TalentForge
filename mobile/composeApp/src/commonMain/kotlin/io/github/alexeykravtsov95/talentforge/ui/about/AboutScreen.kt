@@ -48,6 +48,7 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.abo
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_show_details
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_storage
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_updates
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_privacy_updates_ios
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_section_privacy
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_section_project
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_tagline
@@ -157,7 +158,17 @@ fun AboutScreen(
         AboutBody(stringResource(if (otaEnabled) Res.string.about_privacy_online else Res.string.about_privacy_offline))
         if (privacyDetails) {
             AboutBody(stringResource(Res.string.about_privacy_storage))
-            if (otaEnabled) AboutBody(stringResource(Res.string.about_privacy_updates))
+            if (otaEnabled) {
+                AboutBody(
+                    stringResource(
+                        when (backupStatement) {
+                            BackupStatement.AndroidBackupDisabled -> Res.string.about_privacy_updates
+                            // the iOS paragraph matches the iOS policy and the App Privacy declaration
+                            BackupStatement.IosDeviceBackup -> Res.string.about_privacy_updates_ios
+                        },
+                    ),
+                )
+            }
             AboutBody(
                 stringResource(
                     when (backupStatement) {
