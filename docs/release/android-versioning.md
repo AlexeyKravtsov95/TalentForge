@@ -65,7 +65,8 @@ with that code yet.
 | 1 | | test | | | |
 | 2 | | Google Play upload, OTA ON | | | Google Play (date not recorded) |
 | 3 | | Google Play upload, track `alpha` | | `c24387e66aa1d2b3ee9a9b31f60310dc50648fb588659aa259916a19e293ac01` | Google Play `alpha` (date not recorded) |
-| 4 | | next test build (planned): first [Store delivery](ci-delivery.md) | | | |
+| 4 | `e07d7825d3ddbe5de3a68d5536595dbe8ab9d048` (merge of [#95](https://github.com/AlexeyKravtsov95/TalentForge/pull/95)) | test build, OTA ON: first [Store delivery](ci-delivery.md), track `alpha` | `25febe10c387b04ede5009e471f4a294510a150175b32c4844d465f11ec1db2d` | `66d6da923f261c40e32057b4399f7b458966031799b6cd98ef1d14e852e98f43` | AAB: Google Play `alpha`, `completed` (2026-10-27 UTC, run [40540792139](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/40540792139)). APK: run artifact only, not uploaded to RuStore or AppGallery |
+| 5 | | next test build (planned) | | | |
 
 Code `2` is consumed (owner, 2026-10-26): it was uploaded to Google Play with OTA ON. Its commit,
 SHA-256 values and upload date are not recorded here.
@@ -77,8 +78,30 @@ the `alpha` track that no run of that workflow had delivered, and stopped with `
 SHA-256 above is the value Google Play reported for that bundle. The commit it was built from, its
 APK SHA-256 and its upload date are not recorded here.
 
-The next build, the APK and the AAB alike, is `4` / `1.0.0`: the next test build, for the first
-delivery through Store delivery (§5).
+Code `4` is consumed. Store delivery run
+[40540792139](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/40540792139)
+(`mode=deliver`, 2026-10-27 UTC, source `e07d7825d3ddbe5de3a68d5536595dbe8ab9d048`) built the APK
+and the AAB once from that commit, uploaded the AAB to the `alpha` track with release status
+`completed`, read Google Play back and found the same SHA-256 on that track, and reported
+`DELIVERED`. The SHA-256 values in the row above are those of that run's files. The earlier
+`mode=verify` run
+[40536419554](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/40536419554) of the
+same commit (`VERIFIED`) built separate files that were never uploaded; it consumed nothing and its
+SHA-256 values are not recorded here. The code `4` APK went to no console: it exists only as the
+run artifact `android-release`.
+
+What confirms code `4`:
+
+| Evidence | Source |
+|---|---|
+| Google Play accepted the bundle: same SHA-256 on `alpha`, `completed` | Google Play API, read back by run 40540792139 (`DELIVERED`) |
+| Installed from Google Play after the Google Play check, works | owner, 2026-10-28 |
+| Signing, version `4` / `1.0.0`, OTA ON markers of the delivered files | release validators inside that run |
+| RuStore / AppGallery | not uploaded; nothing confirmed |
+
+The next build, the APK and the AAB alike, is `5` / `1.0.0`. `main` still sets `versionCode = 4`:
+raising it to `5` is a separate PR (§5, step 2) before the next delivery. A Store delivery run of a
+newer `main` commit that still carries `4` stops with `CONFLICT`.
 
 ## 4. Test build (`versionCode 1`)
 
