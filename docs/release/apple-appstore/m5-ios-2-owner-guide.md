@@ -46,7 +46,7 @@ talentforge.ota.ios.production.enabled=true
 
 ## 3. Перед сборкой OTA ON
 
-- [ ] `CFBundleShortVersionString` / `CFBundleVersion` подняты отдельным PR, если в App Store Connect уже есть загрузка с этим номером. Сейчас в проекте `1.0.0` / `2` (`1.0.0 (1)` уже загружена).
+- [ ] `CFBundleShortVersionString` / `CFBundleVersion` подняты отдельным PR, если в App Store Connect уже есть загрузка с этим номером. Сейчас в проекте `1.0.0` / `4` (`1.0.0 (1)` и `1.0.0 (3)` уже загружены, `3` отправлена на App Review; `4` — внутренний TestFlight через [Store delivery](../ci-delivery.md)).
 - [ ] Production preflight (только чтение) → `OK`:
 
   ```bash
