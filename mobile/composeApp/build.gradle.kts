@@ -682,7 +682,7 @@ android {
         applicationId = "io.github.alexeykravtsov95.talentforge"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 3
+        versionCode = 4
         versionName = "1.0.0"
     }
 
