@@ -64,15 +64,25 @@ with that code yet.
 |---|---|---|---|---|---|
 | 1 | | test | | | |
 | 2 | | Google Play upload, OTA ON | | | Google Play (date not recorded) |
-| 3 | | next build (planned) | | | |
+| 3 | | Google Play upload, track `alpha` | | `c24387e66aa1d2b3ee9a9b31f60310dc50648fb588659aa259916a19e293ac01` | Google Play `alpha` (date not recorded) |
+| 4 | | next test build (planned): first [Store delivery](ci-delivery.md) | | | |
 
 Code `2` is consumed (owner, 2026-10-26): it was uploaded to Google Play with OTA ON. Its commit,
-SHA-256 values and upload date are not recorded here. The next build, the APK and the AAB alike,
-is `3` / `1.0.0` (§5).
+SHA-256 values and upload date are not recorded here.
+
+Code `3` is consumed. The read-only Play check of [Store delivery](ci-delivery.md) run
+[40502271588](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/40502271588)
+(2026-10-27, source `31f18b22b0e8fd4840cae6a6aecc341060c62ad1`) found a bundle with code `3` on
+the `alpha` track that no run of that workflow had delivered, and stopped with `CONFLICT`. The AAB
+SHA-256 above is the value Google Play reported for that bundle. The commit it was built from, its
+APK SHA-256 and its upload date are not recorded here.
+
+The next build, the APK and the AAB alike, is `4` / `1.0.0`: the next test build, for the first
+delivery through Store delivery (§5).
 
 ## 4. Test build (`versionCode 1`)
 
-Historical: this section applied to code `1`. `main` is now at `3` (§3).
+Historical: this section applied to code `1`. `main` is now at `4` (§3).
 
 At M5.RELEASE.VERSION `main` was already set to `1` / `1.0.0`. No version change was needed. The
 owner builds `assemblePublishableRelease` and `bundlePublishablePlay` from the reviewed release commit
