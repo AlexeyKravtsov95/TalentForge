@@ -750,7 +750,8 @@ Since M5.IOS.1 (App Store readiness, [release/apple-appstore/readiness.md](relea
   Frameworks phase is gone. Embedding it had put a 33 KB stub dylib with a temporary build-path
   install name into `Frameworks/`. The Compose resources (`compose-resources/`, the bundled
   datasets) are synced into the app bundle by the same Gradle task;
-- `MARKETING_VERSION` 1.0.0, `CURRENT_PROJECT_VERSION` 2 (1.0.0 (1) was uploaded; rule in the readiness document),
+- `MARKETING_VERSION` 1.0.0, `CURRENT_PROJECT_VERSION` 4 (1.0.0 (1) and 1.0.0 (3) were uploaded, 3 is in App
+  Review; 4 is the internal TestFlight build; rule in the readiness document),
   deployment target 17.2, iPhone + iPad, `en` + `ru`;
 - `Info.plist` is the only source of the scene manifest and the launch screen: the
   `INFOPLIST_KEY_UIApplicationSceneManifest_Generation` and `…UILaunchScreen_Generation`

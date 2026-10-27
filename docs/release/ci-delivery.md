@@ -6,7 +6,7 @@
 | Решения и API магазинов | [`scripts/store_delivery.py`](../../scripts/store_delivery.py); временная iOS-подпись — [`scripts/ios_delivery_signing.sh`](../../scripts/ios_delivery_signing.sh); Python 3.12 — [`.github/actions/delivery-python`](../../.github/actions/delivery-python/action.yml) |
 | Что доставляется | Android: подписанный upload-ключом AAB → **существующий закрытый тест Google Play**; подписанный ключом приложения универсальный APK → проверенный артефакт запуска (загрузка в RuStore/AppGallery — следующий этап). iOS: подписанный archive → App Store export (`.ipa`) → App Store Connect → **существующая внутренняя группа TestFlight** |
 | Что не делается никогда | публичный выпуск (production-трек Play, отправка на App Review, «Release»), открытое тестирование, загрузка в RuStore/AppGallery, сборка без подписи, с debug-ключом или с OTA OFF, изменение версий |
-| Статус | Инженерная часть готова и проверена **только с фейковыми API** (`tests/unit/test_store_delivery.py`). Настоящая доставка не запускалась: credentials владельца ещё не добавлены. Первые реальные загрузки и появление сборок в Play Console / TestFlight — финальная проверка владельца (§9) |
+| Статус | Инженерная часть готова и проверена **только с фейковыми API** (`tests/unit/test_store_delivery.py`). Настоящая доставка не запускалась: владелец добавил credentials в GitHub Environments, реальной доставкой они ещё не проверены. Первые реальные загрузки и появление сборок в Play Console / TestFlight — финальная проверка владельца (§9) |
 
 Шаги с 🔑 выполняет только владелец. Значения секретов никогда не пересылаются в чат, issue или PR.
 
@@ -148,7 +148,7 @@ Xcode-managed (облачный) сертификат распространен
 
 Предусловия:
 
-- Номера версий подняты **отдельным PR** и влиты в `main`; этот инфраструктурный PR версии не меняет. На момент PR: Android `1.0.0` / `versionCode 3` (код `2` израсходован загрузкой в Play, `3` — следующий); iOS `1.0.0 (3)` **уже загружен** в App Store Connect, поэтому iOS-ветка ответит `CONFLICT`, пока `CURRENT_PROJECT_VERSION` не поднят до `4` или выше ([readiness §2](apple-appstore/readiness.md#2-конфигурация-release-сборки)). Это ожидаемо: использованный номер не загружается повторно.
+- Номера версий подняты **отдельным PR** и влиты в `main`; workflow версии не меняет. Для первой доставки: Android `1.0.0` / `versionCode 3` (код `2` израсходован загрузкой в Play, `3` — следующий); iOS `1.0.0 (4)` — сборка для внутреннего TestFlight. `1.0.0 (3)` уже загружена в App Store Connect и отправлена на App Review: этот номер не загружается повторно, а запуск SHA с `CURRENT_PROJECT_VERSION` ≤ `3` получит в iOS-ветке `CONFLICT` ([readiness §2](apple-appstore/readiness.md#2-конфигурация-release-сборки)). Доставка сборки `4` не затрагивает версию на App Review: workflow не отправляет на ревью и не меняет выбранную там сборку.
 - `CI` и `mobile-ci` выбранного SHA зелёные. Если `mobile-ci` этого SHA был отменён следующим push (`cancel-in-progress`), перезапустите его: Actions → тот запуск → *Re-run all jobs*.
 - Каталог production OTA действителен ещё ≥ 30 дней; иначе preflight остановит сборку — переподпишите каталог ([production-deployment](../ota/production-deployment.md)).
 - iOS-политика и декларации магазинов — по [app-privacy](apple-appstore/app-privacy.md) и [ota-prod3-privacy-and-stores](ota-prod3-privacy-and-stores.md); workflow их не меняет.
@@ -237,7 +237,7 @@ Android Lint: `lintVitalAnalyzeRelease`/`lintVitalAnalyzePlay` внутри rele
 Остаётся владельцу:
 
 - [ ] Environments, secrets, variables (§3), service account и права в Play (§4.1), ключ App Store Connect (§4.2), сертификат и профиль (§4.3), ruleset для тегов `v*`.
-- [ ] PR с `CURRENT_PROJECT_VERSION ≥ 4` (iOS) до первой iOS-доставки.
+- [x] PR с `CURRENT_PROJECT_VERSION ≥ 4` (iOS) до первой iOS-доставки: `1.0.0 (4)`, ветка `build/ios-build-4-testflight`.
 - [ ] Первый запуск `mode=verify` → summary `OK`.
 - [ ] Первый запуск `mode=deliver` → сборка видна в Play Console (закрытый трек, тот же SHA-256) и в TestFlight (внутренняя группа) → установка тестерами.
 - [ ] Записать коммит и SHA-256 в [журнал версий](android-versioning.md#3-planned-sequence-and-ledger).
