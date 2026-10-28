@@ -261,3 +261,44 @@ def test_tls_is_verified_and_plaintext_is_refused(out: Path, origin: str) -> Non
         except ConnectionResetError:
             answer = b""
         assert not answer.startswith(b"HTTP/")
+
+
+# ------------------------------------------------------------------------ any pair (M5.OTA.AUTO.4)
+
+
+def test_the_default_pair_is_the_historical_replay(report: dict[str, Any]) -> None:
+    assert report["builds"] == {"a": stand.BUILD_A, "b": stand.BUILD_B}
+    assert report["releases"] == {"a": stand.A, "b": stand.B, "bLevel2": stand.B_LEVEL_2}
+
+
+def test_the_stand_publishes_the_pair_it_is_given(tmp_path: Path) -> None:
+    """``--base`` / ``--candidate``: the same four publications, for another committed pair."""
+    base, candidate = "1.60.1.70450", "1.60.1.70532"
+    report = stand.prepare(
+        tmp_path / "pair", commit=None, now=stand.utc(NOW), base=base, candidate=candidate
+    )
+    a, b = f"{base}-r1", f"{candidate}-r1"
+    assert report["builds"] == {"a": base, "b": candidate}
+    assert report["releases"] == {"a": a, "b": b, "bLevel2": f"{candidate}-r2"}
+    listed = {s["name"]: (s["activeReleaseId"], s["releases"]) for s in report["snapshots"]}
+    assert listed == {
+        "1-a-staged": (a, [a]),
+        "2-b-staged": (b, [a, b]),
+        "3-rollback-a": (a, [a, b]),
+        "4-level-2": (f"{candidate}-r2", [a, b, f"{candidate}-r2"]),
+    }
+    assert report["g6"]["releaseId"] == f"{candidate}-r3" and report["g6"]["gates"]["G6"] == "STOP"
+    manifest = json.loads((tmp_path / "pair" / report["manifests"][b]["path"]).read_bytes())
+    assert manifest["clientBuild"] == candidate
+
+
+def test_the_stand_refuses_one_build_as_both_halves(tmp_path: Path) -> None:
+    with pytest.raises(stand.StandError, match="the same build"):
+        stand.prepare(
+            tmp_path / "same",
+            commit=None,
+            now=stand.utc(NOW),
+            base=stand.BUILD_B,
+            candidate=stand.BUILD_B,
+        )
+    assert not (tmp_path / "same").exists()
