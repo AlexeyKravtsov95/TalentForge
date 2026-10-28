@@ -605,8 +605,8 @@ def run(args: argparse.Namespace) -> int:
         "device",
         "Android: emulator and physical device",
         Verdict.NOT_RUN,
-        "not automated: a debug APK with the base as its only bundled build, by the procedure "
-        "of docs/ota/staging-verification.md",
+        "not automated: a debug APK whose product is the base and that does not bundle the "
+        "candidate, by the procedure of docs/ota/staging-verification.md §6",
         automatic=False,
     )
     r.add(
@@ -614,7 +614,8 @@ def run(args: argparse.Namespace) -> int:
         "device",
         "iOS: simulator and physical device",
         Verdict.NOT_RUN,
-        "not automated here (docs/ota/staging-verification.md)",
+        "not automated, no procedure against the local stand yet "
+        "(docs/ota/staging-verification.md §6)",
         automatic=False,
     )
 
