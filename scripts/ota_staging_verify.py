@@ -614,8 +614,8 @@ def run(args: argparse.Namespace) -> int:
         "device",
         "iOS: simulator and physical device",
         Verdict.NOT_RUN,
-        "not automated, no procedure against the local stand yet "
-        "(docs/ota/staging-verification.md §6)",
+        "not run for the candidate: the iOS simulator E2E (scripts/ios_ota_e2e.py) covers the "
+        "historical 70374 -> 70450 pair only (docs/ota/staging-verification.md §6)",
         automatic=False,
     )
 
