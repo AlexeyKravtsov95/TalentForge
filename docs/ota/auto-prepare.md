@@ -1,16 +1,22 @@
-# Automatic OTA data preparation (M5.OTA.AUTO.1)
+# Automatic OTA data preparation (M5.OTA.AUTO.1) and review PR (M5.OTA.AUTO.3)
 
 When wago.tools lists a new **publishable** WoW: Forever build that production does not serve
 yet, `.github/workflows/ota-prepare.yml` prepares its data for a later OTA release with the
 existing pipeline, checks and publisher gates, and keeps the result as a GitHub Actions
-artifact for review.
+artifact. Since M5.OTA.AUTO.3 a `PREPARED` candidate is also proposed for review
+automatically: its candidate commit goes to the branch `ota-candidate/<game>-<build>` and a
+pull request is opened ([below](#the-review-pull-request-m5otaauto3)), so nobody carries the
+artifact over by hand.
 
-It **never publishes**. It does not stage, promote, sign, upload to any bucket, push, commit to
-the repository, open a PR or merge; it does not change `PRODUCT_BUNDLE`, `BUNDLED_BUILDS`,
-`main` or any app build. It holds **no secret**: no production signing key and no S3
-credential exist in CI (the production catalog is read anonymously over HTTPS and verified
-against the committed public keyring). Publication stays the owner's manual procedure
-([publisher-runbook.md](publisher-runbook.md), [production-deployment.md](production-deployment.md)).
+It **never publishes**. It does not stage, promote, sign, upload to any bucket or merge; it
+never writes to `main` and does not change `PRODUCT_BUNDLE`, `BUNDLED_BUILDS` or any app
+build. The only write is the review branch and its PR, made by a separate job (`propose`).
+It holds **no secret**: no production signing key and no S3 credential exist in CI (the
+production catalog is read anonymously over HTTPS and verified against the committed public
+keyring); the `propose` job uses the workflow's own `GITHUB_TOKEN`. Publication stays the
+owner's manual procedure ([publisher-runbook.md](publisher-runbook.md),
+[production-deployment.md](production-deployment.md)); the publication rules and the
+approval gates are unchanged.
 
 ## How it runs
 
@@ -27,12 +33,22 @@ Actions → OTA data preparation → Run workflow (build / base / force)  ──
        disposable clone of main → existing pipeline commands → local candidate commit
        → build_release + gates G1–G8 + review report → bundle checks + offline tests
   5. upload prep/ as  ota-prepare-<game>-<build>-r<n>-from-<base>-main-<sha12>-<STATUS>
-  6. the job ends with the final status (below)
+  6. select the candidate to propose: this run's PREPARED artifact, or the kept PREPARED
+     artifact that made the detection NO_ACTION (so a PR that failed before is retried)
+  7. the job ends with the final status (below)
+
+job propose  (only when step 6 selected a candidate; M5.OTA.AUTO.3)
+  1. checkout main (full history, no persisted credentials), pip install -e .
+  2. download that artifact (this run's or the earlier run's, actions: read)
+  3. scripts/ota_prepare.py propose  → check → branch ota-candidate/<game>-<build> → PR
+  4. upload propose/ as  ota-propose-<run id>-<attempt>;  the final proposal status
 ```
 
-Code: `src/talent_data/prepare/` (`detect.py`, `production.py`, `orchestrate.py`, `runner.py`),
-`scripts/ota_prepare.py`. Permissions: `contents: read`, `actions: read`; `concurrency:
-ota-prepare` (queued, never cancelled); `timeout-minutes: 60`.
+Code: `src/talent_data/prepare/` (`detect.py`, `production.py`, `orchestrate.py`,
+`propose.py`, `runner.py`), `scripts/ota_prepare.py`. Permissions: the workflow default and the
+`prepare` job `contents: read`, `actions: read`; only the `propose` job has `contents: write`,
+`pull-requests: write`, `actions: read`. `concurrency: ota-prepare` (one run at a time, queued,
+never cancelled) covers both jobs; `timeout-minutes` 60 and 15.
 
 ## Detection: what counts as a new build
 
@@ -142,22 +158,115 @@ A run without preparation uploads `ota-prepare-detection-<run id>` (7 days).
 * One run at a time: `concurrency: ota-prepare` queues runs (never cancels one), so a retry
   never overlaps a running preparation.
 * Every run starts from an empty clone and writes only its own artifact: re-running is safe.
+  The `propose` job is repeatable as well: no second PR, no commit when the branch already
+  holds the same files, and a kept `PREPARED` artifact is proposed again until its PR exists
+  ([below](#the-review-pull-request-m5otaauto3)).
 * wago.tools requests keep the existing HTTP client's retries (timeouts, 408/425/429/5xx,
   truncated bodies); what still fails is `UNKNOWN`, never "no new build". A definitive 4xx
   (e.g. a table wago.tools does not have) is source data, i.e. `BLOCKED`.
 
+## The review pull request (M5.OTA.AUTO.3)
+
+The `propose` job runs `scripts/ota_prepare.py propose` (`talent_data.prepare.propose`) on the
+selected artifact. It moves **only the artifact's candidate commit** (`out/candidate.bundle`),
+never a file from a workspace, and only after these checks; any failed check is `REFUSED` and
+nothing is pushed:
+
+* `out/report.json` reads back strictly (`ota-prepare-report` v1: no unknown field, no coerced
+  type, `publishable: false`), says `PREPARED`, has no `BLOCKER` or `UNKNOWN` finding and every
+  step `PASSED`; `out/detection.json` says `PREPARE` for the same game, build, base, `main`
+  commit and preparation key; the artifact name is the one the workflow selected;
+* the bundle verifies and holds exactly the report's candidate commit, made by the
+  preparation's author, with one parent: the preparation's `main` commit, an ancestor of the
+  current `main`;
+* every changed file passes the preparation's own scope guard (`candidate_path_allowed`:
+  `data/{normalized,visuals,tooltips,localization}/<game>/<build>/`, its diff and coverage
+  files), is added or modified (never deleted), a regular file (mode `100644`: no symlink, no
+  executable, no submodule), and their number equals the report's `changedPaths`.
+
+Then:
+
+| case | outcome | job |
+| --- | --- | --- |
+| `main` already carries every file of the candidate (merged by another PR, as `1.60.1.70532` through #80), or the candidate changes nothing | `ALREADY_ON_MAIN`: no branch, no PR, no API call | green |
+| no branch yet | the candidate commit is pushed to `ota-candidate/<game>-<build>`; a PR to `main` is opened | `OPENED`, green |
+| the branch already holds this commit, or an earlier automation commit with byte-identical files (a later preparation from a newer `main`) | nothing pushed; the open PR is reused | `EXISTS`, green |
+| the branch is an automation commit with other files (the data changed) | moved to the new candidate with `--force-with-lease`; the open PR is reused and its description refreshed | `EXISTS`, green |
+| the branch holds any commit the automation did not make (e.g. a reviewer's fix) | never overwritten | `CONFLICT` (exit 3), red |
+| no open PR, but a closed (or merged) PR had exactly the branch's commit | not reopened, no new PR; to propose again delete the branch and run with `force` | `DECLINED`, green |
+| the report is not `PREPARED`, or any check above fails | nothing pushed | `REFUSED` (exit 3), red |
+| git or the GitHub API fails (network, 403, 5xx) | the branch may already be pushed; no PR yet | `FAILED` (exit 1), red; retried |
+
+**Retry after a failure.** The artifact deduplication stays as it was: a kept `PREPARED`
+artifact makes the next detection `NO_ACTION`. The detection then names that artifact
+(`prepared_artifact`), the `prepare` job looks up its run in the artifact listing and the
+`propose` job runs again on it: the branch is found up to date (no new commit) and only the
+PR is opened. **Re-run failed jobs** on the run page retries the same way. At most one PR is
+open per branch: an HTTP 422 on creation (another run was first) is resolved by listing the
+PRs again. Runs are queued by the concurrency group; pushes use `--force-with-lease`.
+
+**The PR description** shows the candidate build and release revision, the base (kind and
+release id), `PRODUCT_BUNDLE`, the source `main` SHA, the candidate commit, a link to the
+preparation run and the artifact name, the production catalog state, the release id and
+manifest SHA-256 built from the candidate commit (not the one to approve), the talent changes
+(aggregate diff totals and every changed class), translation coverage per locale (names,
+descriptions, ranks) and tooltip coverage, every step and gate of the preparation, and the
+remaining conditions before any publication (every `REQUIRED` finding: G1 merge, G7 / G5
+approval record, staging smoke, the owner's production promotion) as unchecked boxes. Its
+title: `data: OTA candidate <game> <build> (diff from <base>)`.
+
+**Diagnostics.** Every proposal uploads `ota-propose-<run id>-<attempt>` (30 days):
+`proposal.json` (`ota-prepare-proposal` v1: outcome, reason, branch, commits, pushed, PR number
+and URL, the error and its HTTP status), `pr-body.md`, `summary.md`, `git.log` (every git
+command with its exit code and stderr; the token never appears) and `crash.txt` after a crash.
+The job summary shows the outcome, the PR link, the branch and any error; a 403 adds the
+setting to check. A failed download of the artifact or a step that died is red with its own
+summary line.
+
+### Token, CI and the owner's settings
+
+The `propose` job uses `GITHUB_TOKEN` with `contents: write` (push the review branch),
+`pull-requests: write` (open the PR, refresh its description) and `actions: read` (download
+the artifact). It has no `workflows` scope, so it cannot push a change to `.github/workflows/`
+(the scope guard never allows one anyway). It cannot push to `main` by design: only the
+branch `ota-candidate/<game>-<build>` is written.
+
+Limits of `GITHUB_TOKEN`, and what the owner does:
+
+1. **Creating PRs must be allowed.** Settings → Actions → General → Workflow permissions →
+   "Allow GitHub Actions to create and approve pull requests". Without it the creation answers
+   HTTP 403 and the proposal is `FAILED` (retried by the next run). State read on 2026-10-28
+   (`GET /repos/…/actions/permissions/workflow`): `can_approve_pull_request_reviews: false`,
+   i.e. **off - the owner must turn it on** before the first PR can be opened. The workflow
+   default `read` does not matter: the job declares its own permissions.
+2. **CI does not start by itself.** Events caused by `GITHUB_TOKEN` (the push and
+   `pull_request: opened`) start no workflow, so `CI` and `Mobile CI` do not run on the
+   candidate PR. Before review the owner starts them by **closing and reopening** the PR
+   (`pull_request: reopened` by the owner), or by pushing a commit to the branch - note that a
+   commit the automation did not make turns later proposals for that build into `CONFLICT`
+   until the branch is merged or deleted. Alternative, not set up here: a fine-grained token
+   or GitHub App installation token (contents and pull requests read/write on this repository
+   only) stored as a secret and used by the `propose` job - PRs it opens do start CI.
+3. Not verified on GitHub: no candidate PR has been opened yet, and the `propose` job has not
+   run there. The latest scheduled run (40496888777, 2026-10-27) prepared `1.60.1.70532`, whose
+   data `main` already carries (#80): its dataset and visuals keep main's bytes and its other
+   outputs carry no timestamp, so such a run is expected to end `ALREADY_ON_MAIN` - expected,
+   not observed. The behaviour above is covered by offline tests only.
+
 ## From PREPARED to a release (manual)
 
-1. Download the artifact (Actions run page, or `gh run download <run-id> -n <artifact name>`),
-   read `summary.md`, `report.json`, the diff and `review-report.txt`.
-2. Turn the candidate into a refresh branch and PR (the bundle needs `main` locally):
+1. Review the candidate PR (Actions → the run → `propose`, or the `ota-candidate/*` PR):
+   `summary.md`, `report.json`, the diff and `review-report.txt` are in the preparation
+   artifact (`gh run download <run-id> -n <artifact name>`).
+2. Review it like any data PR (diff, warnings, allocation compatibility); start CI (above);
+   merge manually. Without the PR (e.g. a `FAILED` proposal), the candidate can still be
+   turned into a branch by hand (the bundle needs `main` locally):
 
    ```bash
    git fetch origin main
    git fetch <dir>/prep/out/candidate.bundle ota-prepare/<build>:data/forever-<build>
    ```
 
-   Review it like any data PR (diff, warnings, allocation compatibility); merge manually.
    Bundling the build into the app (`BUNDLED_BUILDS`, `PRODUCT_BUNDLE`) is a separate decision
    and not needed for an OTA-only release.
 3. Rebuild the release from the merge commit and follow
@@ -175,6 +284,8 @@ A run without preparation uploads `ota-prepare-detection-<run id>` (7 days).
   ```bash
   python scripts/ota_prepare.py detect --output prep/detection.json      # [--build B] [--base B] [--force]
   python scripts/ota_prepare.py prepare --detection prep/detection.json --out prep/out
+  GH_TOKEN=… python scripts/ota_prepare.py propose --artifact prep --out propose \
+      --repository AlexeyKravtsov95/TalentForge                         # pushes and opens a PR
   ```
 
   `prepare` clones the checkout into a temporary directory (or `--workspace DIR`, empty) and
@@ -225,6 +336,16 @@ A run without preparation uploads `ota-prepare-detection-<run id>` (7 days).
   cover them); the 359 icons are byte-identical. Two runs gave the same data apart from
   `generatedAt`.
 
+## Live-build evidence: 1.60.1.70532
+
+* **Source:** the owner's confirmation (2026-10-28) that client build `1.60.1.70532` ran on
+  the game servers. **Period:** the beta. No screenshot or patch note is recorded for it.
+* The data of `1.60.1.70532` is already on `main` (PR #80); it is not created again.
+* This confirmation does **not** establish which build the servers run after the official
+  launch. It is not an approval record: a release of `1.60.1.70532` still needs
+  `docs/ota/releases/<releaseId>.md` (G7, publisher-runbook), whose acceptance - and whether
+  beta-period evidence is enough for it - stays the owner's decision.
+
 ## Testing
 
 `tests/unit/test_ota_prepare.py` (offline): every detection outcome over real freshness
@@ -239,3 +360,15 @@ once the source recovers (then `PREPARED`, then skipped) - plus the CLI's exit c
 workflow's `Final status` script run in `bash` for every outcome (a step that died, a missing
 decision, a contradictory status are red), and the workflow's no-secret / no-publish
 properties.
+
+`tests/unit/test_ota_propose.py` (offline, M5.OTA.AUTO.3): a real preparation in a temporary
+checkout whose `origin` is a local bare repository, proposed with real git and an in-memory
+GitHub API - the PR opened with the expected description; repeated runs (no second PR, no new
+commit, also from a later preparation with identical files); an automation branch moved to
+changed data; a failed creation (403, 500, unreachable) and a failed listing retried by the
+next run without a second push; a creation race (422); data already on `main` and an empty
+candidate (`ALREADY_ON_MAIN`, no API call); a closed PR not reopened; `BLOCKED`, `UNKNOWN` and
+crashed preparations, an inconsistent report and tampered bundles (a stray file, an
+executable, a symlink, a deletion, a foreign author) refused; a reviewer's commit never
+overwritten (`CONFLICT`); the CLI's outputs and diagnostics without the token; the workflow's
+candidate selection and final proposal status for every outcome, and the job permissions.

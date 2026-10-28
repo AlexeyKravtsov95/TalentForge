@@ -10,6 +10,11 @@
 > `INTERNET` в release/play — ровно при включённом канале. По умолчанию OTA выключен, iOS — выключен.
 > Процедура, ручные проверки и откат: [android-production-enablement.md](android-production-enablement.md).
 > Абзац «Состояние» ниже описывает M5.OTA.PROD.1 (исторически).
+>
+> **2026-10-28.** Production-каталог опубликован (`1.60.1.70450-r1`). Доставленные на тестирование
+> сборки Android `1.0.0` / `versionCode 4` (Google Play, трек `alpha`) и iOS `1.0.0 (4)` (TestFlight)
+> собраны с production OTA **ON** и проверены владельцем
+> ([ci-delivery](../release/ci-delivery.md)). Публичного выпуска в магазинах ещё нет.
 
 Состояние на момент M5.OTA.PROD.1:
 

@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Статус | Код и guards готовы (PR M5.OTA.PROD.3). **Ни одна OTA ON сборка не опубликована.** Публикация, подпись и live-проверки выполняет только владелец |
+| Статус | Код и guards готовы (PR M5.OTA.PROD.3). **OTA ON сборки доставлены на тестирование и проверены владельцем:** Android `1.0.0` / `versionCode 4` (Google Play, трек `alpha`) и iOS `1.0.0 (4)` (TestFlight, внутренняя группа) собраны с production OTA ON, доставлены запуском 40540792139 и 2026-10-28 установлены владельцем из магазинов и проверены ([ci-delivery](../release/ci-delivery.md)). Публичного выпуска в магазинах ещё нет. Строки ручных проверок §4 считаются выполненными только после записи в [evidence §4](../release/ota-prod3-evidence/README.md). Публикация, подпись и live-проверки выполняет только владелец |
 | Платформа | Android: `release` (RuStore, AppGallery) и `play` (Google Play). iOS закреплён теми же значениями в M5.IOS.2: [m5-ios-2-owner-guide](../release/apple-appstore/m5-ios-2-owner-guide.md) |
 | Связанные документы | [production-deployment](production-deployment.md) · [client-architecture §8](client-architecture.md) · [test-plan §6](test-plan.md) · [privacy и магазины](../release/ota-prod3-privacy-and-stores.md) · [evidence](../release/ota-prod3-evidence/README.md) · [android-release-signing](../release/android-release-signing.md) · [google-play/signing](../release/google-play/signing.md) |
 
