@@ -115,16 +115,62 @@ jobs:
             !${{ runner.temp }}/staging/stand/work
             !${{ runner.temp }}/staging/subject
 
+      # The regression check of a pull request: the same stand once more, on the Gradle cache
+      # the first run has just warmed - the same output path, builds and commit, every input a
+      # cached desktopTest would match. The client suite must run again and write this run's own
+      # evidence: a suite Gradle replays is BLOCKED, missing evidence too. The first report is
+      # the artifact above; this one is uploaded next to it.
+      - name: Re-run on the warm Gradle cache
+        id: rerun
+        if: github.event_name == 'pull_request' && steps.verify.outputs.exit_code == '0'
+        shell: bash
+        env:
+          REVISION: ${{ inputs.revision }}
+          CANDIDATE: ${{ inputs.candidate || '1.60.1.70532' }}
+          BASE: ${{ inputs.base || '1.60.1.70450' }}
+        run: |
+          mv "$RUNNER_TEMP/staging" "$RUNNER_TEMP/staging-first"
+          set +e
+          python scripts/ota_staging_verify.py run "$RUNNER_TEMP/staging" \
+            --base "$BASE" --candidate "$CANDIDATE" --revision "$REVISION"
+          code=$?
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          grep -E '^> Task :composeApp:desktopTest' "$RUNNER_TEMP/staging/logs/gradle-client.log" || true
+          echo "the re-run on the warm cache exited with $code"
+
+      - name: Upload the re-run report
+        if: always() && steps.rerun.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ota-staging-rerun-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 30
+          if-no-files-found: error
+          path: |
+            ${{ runner.temp }}/staging
+            !${{ runner.temp }}/staging/stand/keys/*.pem
+            !${{ runner.temp }}/staging/stand/tls/server.key
+            !${{ runner.temp }}/staging/stand/stores
+            !${{ runner.temp }}/staging/stand/live
+            !${{ runner.temp }}/staging/stand/work
+            !${{ runner.temp }}/staging/subject
+
       - name: Final status
         if: always()
         shell: bash
         env:
           VERIFY_EXIT: ${{ steps.verify.outputs.exit_code }}
+          EVENT: ${{ github.event_name }}
+          RERUN_EXIT: ${{ steps.rerun.outputs.exit_code }}
         run: |
           case "$VERIFY_EXIT" in
-            0) echo "staging verification: PASS (not a production approval)"; exit 0 ;;
-            1) echo "::error::staging verification: FAIL; see the summary and the artifact" ;;
-            3) echo "::error::staging verification: BLOCKED or NOT RUN; see the summary and the artifact" ;;
-            *) echo "::error::staging verification did not complete (exit '${VERIFY_EXIT:-none}')" ;;
+            0) ;;
+            1) echo "::error::staging verification: FAIL; see the summary and the artifact"; exit 1 ;;
+            3) echo "::error::staging verification: BLOCKED or NOT RUN; see the summary and the artifact"; exit 1 ;;
+            *) echo "::error::staging verification did not complete (exit '${VERIFY_EXIT:-none}')"; exit 1 ;;
           esac
-          exit 1
+          if [ "$EVENT" = pull_request ] && [ "$RERUN_EXIT" != 0 ]; then
+            echo "::error::the re-run on the warm Gradle cache did not pass (exit '${RERUN_EXIT:-none}'): the client must run again with its own evidence; see the re-run artifact"
+            exit 1
+          fi
+          echo "staging verification: PASS (not a production approval)"

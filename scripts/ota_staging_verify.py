@@ -38,6 +38,7 @@ import importlib.util
 import io
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -369,6 +370,19 @@ def run_gradle(argv: list[str], log: Path) -> int:
         ).returncode
 
 
+# The outcomes Gradle prints (--console=plain) for a task it did not execute
+NOT_EXECUTED = re.compile(
+    r"^> Task :composeApp:desktopTest (FROM-CACHE|UP-TO-DATE|SKIPPED|NO-SOURCE)\s*$", re.M
+)
+
+
+def not_executed(log: Path) -> str | None:
+    """How Gradle skipped running the suite, ``None`` when it ran: a replayed task restores an
+    earlier run's JUnit report, never this stand's evidence, so its results count for nothing."""
+    found = NOT_EXECUTED.search(log.read_text(encoding="utf-8", errors="replace"))
+    return None if found is None else found.group(1)
+
+
 def phase_client(r: Run, subject: sv.Subject) -> None:
     (JUNIT_DIR / JUNIT_XML).unlink(missing_ok=True)
     log = r.out / "logs" / "gradle-client.log"
@@ -378,6 +392,8 @@ def phase_client(r: Run, subject: sv.Subject) -> None:
         ":composeApp:desktopTest",
         "--tests",
         f"*{sv.SUITE}",
+        # every stand runs the suite: its evidence is not a task output the cache could restore
+        "--rerun",
         "--console=plain",
         f"-Dtalentforge.ota.candidate={r.out}",
         f"-Dtalentforge.ota.candidate.base={subject.base}",
@@ -391,9 +407,10 @@ def phase_client(r: Run, subject: sv.Subject) -> None:
         client_not_established(r, Verdict.BLOCKED, f"Gradle could not be started: {exc}")
         return
     seconds = round(time.monotonic() - started)
+    replayed = not_executed(log)
     xml = JUNIT_DIR / JUNIT_XML
     reports = []
-    if xml.is_file():
+    if xml.is_file() and replayed is None:
         target = r.out / "junit" / xml.name
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(xml, target)
@@ -410,6 +427,7 @@ def phase_client(r: Run, subject: sv.Subject) -> None:
     }
     r.facts["client"] = {
         "gradleExit": code,
+        "notExecuted": replayed,
         "seconds": seconds,
         "tests": {name: verdict.value for name, verdict in sorted(results.items())},
         "evidence": {
@@ -422,7 +440,16 @@ def phase_client(r: Run, subject: sv.Subject) -> None:
         f"{sum(v is Verdict.PASS for v in results.values())}/{len(expected)} tests PASS; "
         "logs/gradle-client.log"
     )
-    if not results:
+    if replayed is not None:
+        r.add(
+            "K0",
+            "client",
+            CLIENT["K0"],
+            Verdict.BLOCKED,
+            f"desktopTest {replayed}: Gradle did not run the suite on this stand, its report is "
+            f"an earlier run's; {detail}",
+        )
+    elif not results:
         r.add("K0", "client", CLIENT["K0"], Verdict.BLOCKED, f"no test results; {detail}")
     elif missing := sorted(expected - results.keys()):
         r.add("K0", "client", CLIENT["K0"], Verdict.BLOCKED, f"no result for {missing}; {detail}")

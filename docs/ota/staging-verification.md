@@ -159,6 +159,19 @@ upload-шаг исключает их повторно. Также исключ�
 в `:composeApp:desktopTest`. Без Android TLS-стека, `noBackupFilesDir`, жизненного цикла Activity,
 iOS и физических устройств.
 
+**Каждый стенд прогоняет клиента заново.** Evidence (`client/*.json`) пишется вне выходов задачи.
+Поэтому `desktopTest` с любым свойством `talentforge.*` никогда не берётся из build cache и не
+считается UP-TO-DATE (`build.gradle.kts`), а скрипт дополнительно передаёт `--rerun`. Если Gradle
+всё же сообщит `desktopTest FROM-CACHE` / `UP-TO-DATE` / `SKIPPED` / `NO-SOURCE`, отчёт о тестах не
+засчитывается: K0 и все клиентские сценарии получают BLOCKED. Проверка evidence (K1) не
+ослаблена. Так прогон 40707232402 и получил BLOCKED: кэш восстановил отчёт 6/6 без
+`client/theCandidateReplacesTheBaseOverHttps.json`.
+
+**Регрессия на PR.** После первого прогона workflow переносит отчёт в сторону и запускает тот же
+стенд ещё раз — в тот же путь, с теми же сборками и коммитом, на только что прогретом кэше
+(шаг «Re-run on the warm Gradle cache», артефакт `ota-staging-rerun-<run>-<attempt>`). Задача
+зелёная только при PASS обоих прогонов.
+
 **Не автоматизировано, NOT RUN (M1, M2):**
 
 * **Android, эмулятор и физическое устройство.** Для пары 70450 → 70532 исторический APK не

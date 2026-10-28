@@ -360,14 +360,16 @@ def _gradle(
     evidence: Callable[[Path], dict[str, Any]] | None = _evidence,
     exit_code: int = 0,
     seen: list[list[str]] | None = None,
+    task: str = "> Task :composeApp:desktopTest",
 ) -> Gradle:
     """A stand-in for ``./gradlew``: the JUnit XML and the evidence of OtaCandidateStagingTest.
-    ``outcomes``: method -> ``pass`` (default) / ``fail`` / ``skip``; ``None`` writes no XML."""
+    ``outcomes``: method -> ``pass`` (default) / ``fail`` / ``skip``; ``None`` writes no XML.
+    ``task``: the line Gradle prints for desktopTest (an outcome suffix: it did not run)."""
 
     def run(argv: list[str], log: Path) -> int:
         if seen is not None:
             seen.append(argv)
-        log.write_text("stand-in gradle\n", encoding="utf-8")
+        log.write_text(f"stand-in gradle\n{task}\n\nBUILD SUCCESSFUL\n", encoding="utf-8")
         prefix = "-Dtalentforge.ota.candidate="
         out = Path(next(a for a in argv if a.startswith(prefix)).removeprefix(prefix))
         if outcomes is not None:
@@ -422,6 +424,7 @@ def test_a_complete_client_run_passes(
     (argv,) = seen
     main = _git(ROOT, "rev-parse", "origin/main")
     assert argv[:4] == ["./gradlew", ":composeApp:desktopTest", "--tests", f"*{sv.SUITE}"]
+    assert "--rerun" in argv  # never a result the build cache restores
     assert f"-Dtalentforge.ota.candidate.base={BASE}" in argv
     assert f"-Dtalentforge.ota.candidate.build={CANDIDATE}" in argv
     assert f"-Dtalentforge.ota.candidate.revision={main}" in argv
@@ -485,6 +488,36 @@ def test_a_failed_or_skipped_client_test_is_never_a_pass(
     assert set(verdicts.values()) == {"PASS"}
 
 
+@pytest.mark.parametrize(
+    ("outcome", "evidence"),
+    [
+        # run 40707232402: the cache restored a passing report, the evidence was never written
+        ("FROM-CACHE", None),
+        # even beside evidence, a suite Gradle did not run proves nothing about this stand
+        ("UP-TO-DATE", _evidence),
+    ],
+)
+def test_a_client_suite_gradle_did_not_run_is_blocked(
+    monkeypatch: pytest.MonkeyPatch,
+    staged: Path,
+    tmp_path: Path,
+    outcome: str,
+    evidence: Callable[[Path], dict[str, Any]] | None,
+) -> None:
+    gradle = _gradle(
+        tmp_path / "junit",
+        outcomes={},
+        evidence=evidence,
+        task=f"> Task :composeApp:desktopTest {outcome}",
+    )
+    verdicts = _client(monkeypatch, staged, tmp_path, gradle)
+    assert verdicts.pop("K0") == "BLOCKED"
+    assert "PASS" not in {verdicts[s.id] for s in sv.CLIENT_SCENARIOS}
+    if evidence is None:
+        assert set(verdicts.values()) == {"BLOCKED"}
+    assert not (tmp_path / f"out/junit/{script.JUNIT_XML}").exists()  # not kept as this run's
+
+
 def test_a_client_without_results_is_blocked(
     monkeypatch: pytest.MonkeyPatch, staged: Path, tmp_path: Path
 ) -> None:
@@ -546,21 +579,34 @@ def workflow_step_script(name: str) -> str:
 
 
 @pytest.mark.parametrize(
-    ("verify_exit", "job_exit", "message"),
+    ("event", "verify_exit", "rerun_exit", "job_exit", "message"),
     [
-        ("0", 0, "PASS (not a production approval)"),
-        ("1", 1, "FAIL"),
-        ("3", 1, "BLOCKED or NOT RUN"),
-        ("2", 1, "did not complete (exit '2')"),
-        ("", 1, "did not complete (exit 'none')"),  # the step died before recording its exit
+        ("workflow_dispatch", "0", "", 0, "PASS (not a production approval)"),
+        ("workflow_dispatch", "1", "", 1, "FAIL"),
+        ("workflow_dispatch", "3", "", 1, "BLOCKED or NOT RUN"),
+        ("workflow_dispatch", "2", "", 1, "did not complete (exit '2')"),
+        # the step died before recording its exit
+        ("workflow_dispatch", "", "", 1, "did not complete (exit 'none')"),
+        # a pull request also needs the re-run on the warm Gradle cache
+        ("pull_request", "0", "0", 0, "PASS (not a production approval)"),
+        ("pull_request", "0", "3", 1, "re-run on the warm Gradle cache did not pass (exit '3')"),
+        ("pull_request", "0", "", 1, "re-run on the warm Gradle cache did not pass (exit 'none')"),
+        ("pull_request", "1", "", 1, "FAIL"),
     ],
 )
-def test_the_job_is_green_only_for_a_pass(verify_exit: str, job_exit: int, message: str) -> None:
+def test_the_job_is_green_only_for_a_pass(
+    event: str, verify_exit: str, rerun_exit: str, job_exit: int, message: str
+) -> None:
     # GitHub runs ``shell: bash`` as ``bash --noprofile --norc -eo pipefail {0}``
     bash = ["bash", "--noprofile", "--norc", "-eo", "pipefail", "-c"]
     completed = subprocess.run(
         [*bash, workflow_step_script("Final status")],
-        env={"PATH": "/usr/bin:/bin", "VERIFY_EXIT": verify_exit},
+        env={
+            "PATH": "/usr/bin:/bin",
+            "EVENT": event,
+            "VERIFY_EXIT": verify_exit,
+            "RERUN_EXIT": rerun_exit,
+        },
         capture_output=True,
         text=True,
         check=False,
@@ -602,3 +648,42 @@ def test_the_workflow_uploads_the_report_without_private_keys() -> None:
     for excluded in ("stand/keys/*.pem", "stand/tls/server.key", "stand/stores", "stand/work"):
         assert "!${{ runner.temp }}/staging/" + excluded in upload, excluded
     assert "steps.verify.outputs.exit_code" in text.split("      - name: Final status\n", 1)[1]
+
+
+def test_a_pull_request_reruns_the_same_stand_on_the_warm_cache() -> None:
+    """The regression check of a replayed client suite: same output path, builds and commit as
+    the first run (every input a cached desktopTest matches), the first report moved aside so
+    the evidence can only come from the re-run itself, and its own artifact."""
+    text = WORKFLOW.read_text(encoding="utf-8")
+    steps = text.split("      - name: ")
+    names = [step.splitlines()[0] for step in steps[1:]]
+    assert names.index("Re-run on the warm Gradle cache") > names.index(
+        "Upload the verification report"
+    )
+    rerun = next(s for s in steps if s.startswith("Re-run on the warm Gradle cache\n"))
+    verify = next(s for s in steps if s.startswith("Staging verification\n"))
+    assert "if: github.event_name == 'pull_request' && steps.verify.outputs.exit_code == '0'" in (
+        rerun
+    )
+    assert verify.split("env:", 1)[1].split("run: |", 1)[0] in rerun  # the same inputs
+    command = 'python scripts/ota_staging_verify.py run "$RUNNER_TEMP/staging"'
+    assert command in verify and command in rerun
+    assert rerun.index('mv "$RUNNER_TEMP/staging" "$RUNNER_TEMP/staging-first"') < rerun.index(
+        command
+    )
+    upload = next(s for s in steps if s.startswith("Upload the re-run report\n"))
+    assert "ota-staging-rerun-${{ github.run_id }}" in upload
+    for excluded in ("stand/keys/*.pem", "stand/tls/server.key", "stand/stores", "stand/work"):
+        assert "!${{ runner.temp }}/staging/" + excluded in upload, excluded
+    final = next(s for s in steps if s.startswith("Final status\n"))
+    assert "RERUN_EXIT: ${{ steps.rerun.outputs.exit_code }}" in final
+
+
+def test_an_opt_in_desktop_test_run_is_never_cached() -> None:
+    """The client writes its evidence outside desktopTest's outputs: a run carrying any
+    talentforge.* property must execute, never come from the build cache or stay up to date."""
+    gradle = (ROOT / "mobile/composeApp/build.gradle.kts").read_text(encoding="utf-8")
+    block = gradle.split('tasks.named<Test>("desktopTest") {', 1)[1].split("\n}\n", 1)[0]
+    rule = block.split('if (systemProperties.keys.any { it.startsWith("talentforge.") }) {', 1)[1]
+    assert "outputs.upToDateWhen { false }" in rule
+    assert ") { false }" in rule.split("outputs.cacheIf(", 1)[1]
