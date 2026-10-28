@@ -101,6 +101,13 @@ icons, descriptions, translations, the diff, the gate results and a git bundle o
 candidate. It is input for the refresh PR, never a publication: the release is built here
 from the merge commit on `main`.
 
+For production the routine path is the **release package** (M5.OTA.PROD.4,
+[production-release.md](production-release.md)): the "OTA production release package" workflow
+builds the release from one commit on `main`, binds the passed staging verification to its
+files and uploads the exact manifest bytes and blobs; the owner's
+`scripts/ota_production_release.py` runs `promote`, the offline signature, `attach-signature`
+and `verify-live` on it, with every check below unchanged.
+
 Same as §1 with the new build's commit. `promote` appends the release to the catalog
 (append-only: every earlier release stays listed with identical members) and makes it
 active. Re-read `ota report` first — it shows the semantic diff, warning moves, G6

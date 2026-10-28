@@ -27,6 +27,7 @@ app build; the production bucket, hostname and keys did not exist yet
 | M5.OTA.AUTO.3 | a `PREPARED` candidate is pushed to `ota-candidate/<game>-<build>` and proposed as a PR automatically (checked commit, repeatable, retried after failures); never merges or publishes | [runbook](auto-prepare.md#the-review-pull-request-m5otaauto3) |
 | M5.OTA.AUTO.2 | historical patch replay 70374 → 70450 end to end: detection over recorded build indexes, the real preparation, a staging publication with an ephemeral key, the real client as the app before the patch over HTTPS; JVM automated, Android emulator by procedure | [report](M5.OTA.AUTO.2-replay-report.md) |
 | M5.OTA.AUTO.4 | staging verification of a candidate before production (`workflow_dispatch`: revision, candidate, base): one fixed commit, both releases built by the publisher onto the isolated local stand, the real client as the app before the update, PASS / FAIL / BLOCKED / NOT RUN report; JVM automated, devices NOT RUN; first run 70450 → 70532 PASS; never a production approval | [runbook and report](staging-verification.md) |
+| M5.OTA.PROD.4 | production release package in CI (`workflow_dispatch`: build, release revision, source revision, staging run): one fixed commit, the exact manifest bytes and blobs, the staging PASS bound to the files, gates, diff, approval record template; the owner's helper publishes it with an offline signature (dry run by default, safe repetition, ambiguous outcomes surfaced); never publishes from CI | [runbook](production-release.md) |
 
 | Document | What it answers |
 | --- | --- |
@@ -50,6 +51,7 @@ app build; the production bucket, hostname and keys did not exist yet
 | [M5.OTA.3-client-brief.md](M5.OTA.3-client-brief.md) | Implementation brief: KMP client (Opus) |
 | [M5.OTA.4c-retry-remeasurement.md](M5.OTA.4c-retry-remeasurement.md) | M5.OTA.4c: the per-request retry measured against VK staging (read-only), retry vs. the M5.OTA.4b client, real and injected connection loss |
 | [staging-verification.md](staging-verification.md) | M5.OTA.AUTO.4 (Russian): the staging verification workflow of a candidate — inputs, the fixed commit, every check, statuses, the artifact, JVM vs. devices, the 70450 → 70532 run |
+| [production-release.md](production-release.md) | M5.OTA.PROD.4 (Russian, for the owner): the release package workflow, the staging binding, the approval record order, the owner's helper (check / prepare / offline signature / publish / verify), repetition and ambiguous outcomes |
 | [M5.OTA.AUTO.2-replay-report.md](M5.OTA.AUTO.2-replay-report.md) | M5.OTA.AUTO.2 (Russian): the historical replay 70374 → 70450 — entrypoint, what came over the network, signature and integrity, every scenario (PASS / FAIL / BLOCKED / NOT RUN), the emulator procedure |
 
 Integration (M5.OTA.4a): `scripts/ota_integration_check.sh` runs the Python baseline, the staging
