@@ -1334,4 +1334,11 @@ tasks.named<Test>("desktopTest") {
     System.getProperties().stringPropertyNames().filter { it.startsWith("talentforge.ota.retrymeasure") }.forEach {
         systemProperty(it, System.getProperty(it))
     }
+    // An opt-in run writes its evidence (screenshots, measurements, the staging client's
+    // client/*.json) outside the task's outputs: replayed from the build cache or left up to
+    // date, it would report an earlier run's verdicts without this run's evidence. It always runs.
+    if (systemProperties.keys.any { it.startsWith("talentforge.") }) {
+        outputs.upToDateWhen { false }
+        outputs.cacheIf("an opt-in run writes its evidence outside the task's outputs") { false }
+    }
 }

@@ -1,0 +1,139 @@
+name: OTA production release package
+
+# M5.OTA.PROD.4: prepares one production OTA release for the owner and never publishes it.
+# One run fixes one commit on main (source_revision, empty: the HEAD of main), builds the release
+# with the existing publisher (build-release, createdAt fixed once), binds the passed staging
+# verification run of this build to exactly these files, runs the gates and the review diff and
+# uploads a self-contained package: the exact manifest bytes, every blob, the approval record
+# template with the manifest pin, the reports and the conditions still open.
+#
+# No secret and no cloud credential: the production signing key and the S3 key never reach CI,
+# production is neither read nor written, nothing is pushed, merged or approved. Publication -
+# approval record merged into main, blob upload, offline signature, catalog write - is the
+# owner's, with scripts/ota_production_release.py. Runbook: docs/ota/production-release.md
+#
+# A pull request touching the package tooling runs the first delivery (1.60.1.70532 over
+# 1.60.1.70450, staging run 40691815787) as a self-test; that staging artifact is kept 30 days
+# (until 2026-11-27), after which the pull-request default has to name a newer staging run.
+on:
+  workflow_dispatch:
+    inputs:
+      build:
+        description: "Client build released (e.g. 1.60.1.70532)"
+        required: true
+        type: string
+      release_revision:
+        description: "Release revision: the n of <build>-r<n> (1 for a build's first release)"
+        required: true
+        default: "1"
+        type: string
+      source_revision:
+        description: "Commit or ref on main the release is built from (empty: the HEAD of main)"
+        required: false
+        default: ""
+        type: string
+      staging_run:
+        description: "Run id of the passed OTA staging verification of this build"
+        required: true
+        type: string
+      base:
+        description: "The build production clients run now (diff and CI gates compare to it)"
+        required: true
+        default: "1.60.1.70450"
+        type: string
+  pull_request:
+    paths:
+      - "scripts/ota_release_package.py"
+      - "src/talent_data/ota/release_package.py"
+      - ".github/workflows/ota-release-package.yml"
+
+permissions:
+  contents: read
+  actions: read # the staging run's metadata and artifact
+
+concurrency:
+  group: ota-release-package-${{ github.ref }}-${{ inputs.build }}-${{ inputs.release_revision }}
+  cancel-in-progress: false
+
+jobs:
+  package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      # Full history: the source revision is resolved against origin/main, the publisher's G1
+      # and the rebuild need the commit.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: pip install -e ".[dev]"
+
+      # The staging evidence is taken from the run itself: its metadata (workflow, conclusion,
+      # commit) and its artifact. The package script proves it is evidence for these files.
+      - name: Fetch the staging evidence
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STAGING_RUN: ${{ inputs.staging_run || '40691815787' }}
+        run: |
+          case "$STAGING_RUN" in
+            ''|*[!0-9]*) echo "::error::staging_run must be a numeric run id"; exit 1 ;;
+          esac
+          mkdir -p "$RUNNER_TEMP/staging"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$STAGING_RUN" > "$RUNNER_TEMP/staging-run.json"
+          gh run download "$STAGING_RUN" -R "$GITHUB_REPOSITORY" -D "$RUNNER_TEMP/staging"
+
+      # Exits 0 ready for the owner's review, 1 a FAIL, 3 the staging evidence is missing, 2
+      # usage; recorded so the package is uploaded either way, restored by the last step.
+      - name: Build the release package
+        id: package
+        shell: bash
+        env:
+          BUILD: ${{ inputs.build || '1.60.1.70532' }}
+          RELEASE_REVISION: ${{ inputs.release_revision || '1' }}
+          SOURCE_REVISION: ${{ inputs.source_revision }}
+          BASE: ${{ inputs.base || '1.60.1.70450' }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set +e
+          python scripts/ota_release_package.py build "$RUNNER_TEMP/package" \
+            --build "$BUILD" --revision "$RELEASE_REVISION" --source-revision "$SOURCE_REVISION" \
+            --base "$BASE" --staging-run "$RUNNER_TEMP/staging-run.json" \
+            --staging-artifact "$RUNNER_TEMP/staging" --run-url "$RUN_URL"
+          code=$?
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          echo "ota_release_package.py exited with $code"
+
+      # The package: <releaseId>/ (package.json, release.json, blobs/, reports, staging copies,
+      # approval record template) and summary.md. Kept 90 days; the owner keeps a local copy -
+      # its manifest bytes are what the approval record pins.
+      - name: Upload the release package
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ota-release-package-${{ github.run_id }}
+          retention-days: 90
+          if-no-files-found: error
+          path: ${{ runner.temp }}/package
+
+      - name: Final status
+        if: always()
+        shell: bash
+        env:
+          PACKAGE_EXIT: ${{ steps.package.outputs.exit_code }}
+        run: |
+          case "$PACKAGE_EXIT" in
+            0) echo "release package: READY FOR REVIEW (not an approval, not a publication)"; exit 0 ;;
+            1) echo "::error::release package: FAIL; see the summary and report/conditions.md" ;;
+            3) echo "::error::release package: INCOMPLETE (no staging evidence)" ;;
+            *) echo "::error::the release package was not built (exit '${PACKAGE_EXIT:-none}')" ;;
+          esac
+          exit 1

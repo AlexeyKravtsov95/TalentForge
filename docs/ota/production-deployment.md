@@ -400,6 +400,11 @@ talent-data ota promote --manifest $M $P --keyring $K --out artifacts/ota --exec
 
 ## 6. Обновление данных при новом патче
 
+**M5.OTA.PROD.4:** обычный путь — пакет релиза из CI (workflow **OTA production release package**)
+и помощник `scripts/ota_production_release.py` (`check` → `prepare --execute` → офлайн-подпись →
+`publish --execute` → `verify`). Он оборачивает команды ниже и сохраняет их проверки:
+[production-release.md](production-release.md). Ручные команды остаются в силе.
+
 Процедура та же, что в §5, с новым build. `promote` дописывает релиз (append-only) и делает его
 активным. Перед этим:
 
