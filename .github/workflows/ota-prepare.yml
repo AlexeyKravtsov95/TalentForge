@@ -3,9 +3,13 @@ name: OTA data preparation
 # M5.OTA.AUTO.1: when the wago.tools build index lists a new publishable Forever build that
 # the signed production OTA catalog does not, prepare it for a later OTA release with the
 # existing pipeline, checks and publisher gates, and keep everything as a GitHub Actions
-# artifact for review. It never publishes, signs, pushes, commits to the repository, opens
-# PRs or merges, and it holds no secret: no production signing key, no S3 credential (the
-# production catalog is read anonymously and verified against the committed public keyring).
+# artifact for review. The `prepare` job is read-only: it never publishes, signs, pushes or
+# commits to the repository.
+# M5.OTA.AUTO.3: a PREPARED candidate is then proposed for review by the separate `propose`
+# job - its candidate commit (checked: only the candidate's own files) is pushed to the
+# branch ota-candidate/<game>-<build> and a PR is opened. Nothing merges, publishes or signs.
+# No secret is used: no production signing key, no S3 credential (the production catalog is
+# read anonymously and verified against the committed public keyring), only GITHUB_TOKEN.
 # Runbook: docs/ota/auto-prepare.md
 on:
   # after every run of the existing freshness watcher (M5.DATA.WATCH, daily ~06:00 UTC)
@@ -34,13 +38,18 @@ permissions:
   contents: read
   actions: read # list the kept preparation artifacts (idempotency)
 
-# One preparation at a time, queued not cancelled.
+# One preparation (and proposal) at a time, queued not cancelled.
 concurrency:
   group: ota-prepare
   cancel-in-progress: false
 
 jobs:
   prepare:
+    # The PREPARED candidate the `propose` job proposes: this run's, or the kept artifact
+    # that made this detection NO_ACTION (so a failed PR creation is retried). Empty: none.
+    outputs:
+      candidate_artifact: ${{ steps.select.outputs.artifact }}
+      candidate_run_id: ${{ steps.select.outputs.run_id }}
     # Pinned, not ubuntu-latest: the PNG bytes of newly prepared icons depend on the image's
     # Pillow wheel and the zlib it bundles (docs/talent-visuals.md §3, the generation
     # environment); committed builds are compared by pixels, not bytes.
@@ -70,7 +79,8 @@ jobs:
       # Every preparation is kept as an artifact whose name carries its inputs and status;
       # detect skips only a PREPARED one (BLOCKED / UNKNOWN / FAILED are prepared again on the
       # next run). A failed listing only means a repeat; the concurrency group still keeps
-      # one run at a time.
+      # one run at a time. The run ids (newest first) locate a kept PREPARED artifact whose
+      # PR is ensured again.
       - name: List kept preparations
         id: prior
         env:
@@ -79,7 +89,9 @@ jobs:
         run: |
           mkdir -p prep
           if gh api --paginate "repos/${GITHUB_REPOSITORY}/actions/artifacts?per_page=100" \
-              --jq '.artifacts[] | select(.expired == false) | .name' > prep/prior-artifacts.txt; then
+              --jq '.artifacts[] | select(.expired == false) | [.name, (.workflow_run.id | tostring)] | @tsv' \
+              > prep/prior-artifacts.tsv; then
+            cut -f1 prep/prior-artifacts.tsv > prep/prior-artifacts.txt
             echo "listed=true" >> "$GITHUB_OUTPUT"
           else
             echo "::warning::kept artifacts could not be listed; a finished preparation may run again (harmless)"
@@ -130,6 +142,7 @@ jobs:
       # Name: ota-prepare-<game>-<build>-r<n>-from-<base>-main-<sha12>-<STATUS>; the next
       # detection compares it with the inputs it would prepare.
       - name: Upload the preparation
+        id: upload
         if: always() && steps.prepare.outcome != 'skipped'
         uses: actions/upload-artifact@v4
         with:
@@ -148,6 +161,51 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
           overwrite: true
+
+      # The candidate for the `propose` job: this run's preparation when it exited 0, reported
+      # PREPARED and its artifact was uploaded; or, when the detection is NO_ACTION because
+      # these inputs were already PREPARED, that kept artifact (newest run first), so a PR
+      # that could not be opened before is opened now. Anything else proposes nothing.
+      - name: Select the candidate to propose
+        id: select
+        if: always()
+        shell: bash
+        env:
+          DETECT_EXIT: ${{ steps.detect.outputs.exit_code }}
+          DETECT_ACTION: ${{ steps.detect.outputs.action }}
+          PREPARED_ARTIFACT: ${{ steps.detect.outputs.prepared_artifact }}
+          PREPARE_EXIT: ${{ steps.prepare.outputs.exit_code }}
+          PREPARE_STATUS: ${{ steps.prepare.outputs.status }}
+          ARTIFACT_NAME: ${{ steps.prepare.outputs.artifact_name }}
+          UPLOAD_OUTCOME: ${{ steps.upload.outcome }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          artifact=""
+          run=""
+          if [ "$DETECT_EXIT" = "0" ] && [ "$DETECT_ACTION" = "PREPARE" ] \
+              && [ "$PREPARE_EXIT" = "0" ] && [ "$PREPARE_STATUS" = "PREPARED" ] \
+              && [ "$UPLOAD_OUTCOME" = "success" ]; then
+            artifact="$ARTIFACT_NAME"
+            run="$RUN_ID"
+          elif [ "$DETECT_EXIT" = "0" ] && [ "$DETECT_ACTION" = "NO_ACTION" ] \
+              && [ -n "$PREPARED_ARTIFACT" ]; then
+            if [ -f prep/prior-artifacts.tsv ]; then
+              run=$(awk -F '\t' -v name="$PREPARED_ARTIFACT" '$1 == name { print $2; exit }' \
+                prep/prior-artifacts.tsv)
+            fi
+            if [ -n "$run" ]; then
+              artifact="$PREPARED_ARTIFACT"
+            else
+              echo "::warning::the kept artifact $PREPARED_ARTIFACT has no listed run; not proposed"
+            fi
+          fi
+          case "$artifact" in
+            ota-prepare-*-PREPARED) ;;
+            *) artifact="" run="" ;;
+          esac
+          echo "artifact=$artifact" >> "$GITHUB_OUTPUT"
+          echo "run_id=$run" >> "$GITHUB_OUTPUT"
+          echo "candidate to propose: ${artifact:-none}"
 
       # Green only for a clean decision (NO_ACTION) or a preparation that both exited 0 and
       # reported PREPARED. A step that died before recording its result, a detection
@@ -193,3 +251,109 @@ jobs:
             exit 1
           fi
           echo "PREPARED - not publishable: see the job summary and the artifact"
+
+  # M5.OTA.AUTO.3: propose the PREPARED candidate for review. Only this job can write, and only
+  # what scripts/ota_prepare.py propose checks: the artifact's single candidate commit, every
+  # file inside the candidate's own paths, pushed to ota-candidate/<game>-<build>; then one PR
+  # (an open one is reused, a closed one is not reopened). It never merges, publishes, signs
+  # or touches main. A PR opened with GITHUB_TOKEN starts no pull_request workflow (CI):
+  # docs/ota/auto-prepare.md says what the owner does about it.
+  propose:
+    needs: prepare
+    if: needs.prepare.outputs.candidate_artifact != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write # push the review branch ota-candidate/<game>-<build>
+      pull-requests: write # open the PR, refresh its description
+      actions: read # download the preparation artifact (this run's or a kept earlier one)
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      # ota: cryptography, which the publisher modules the proposal reads import.
+      - name: Install
+        run: pip install -e ".[ota]"
+
+      - name: Download the prepared candidate
+        id: download
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.prepare.outputs.candidate_artifact }}
+          run-id: ${{ needs.prepare.outputs.candidate_run_id }}
+          github-token: ${{ github.token }}
+          path: candidate
+
+      # Exits 0 OPENED / EXISTS / ALREADY_ON_MAIN / DECLINED, 3 REFUSED / CONFLICT, 1 FAILED;
+      # recorded, restored at the end. The token reaches git only for fetch/ls-remote/push.
+      - name: Propose
+        id: propose
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT: ${{ needs.prepare.outputs.candidate_artifact }}
+          PREPARATION_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ needs.prepare.outputs.candidate_run_id }}
+        run: |
+          set +e
+          python scripts/ota_prepare.py propose --artifact candidate --artifact-name "$ARTIFACT" \
+            --preparation-url "$PREPARATION_URL" --repository "$GITHUB_REPOSITORY" \
+            --out propose > /dev/null
+          code=$?
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          echo "ota_prepare.py propose exited with $code"
+
+      - name: Upload the proposal
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ota-propose-${{ github.run_id }}-${{ github.run_attempt }}
+          path: propose/
+          if-no-files-found: warn
+          retention-days: 30
+          overwrite: true
+
+      # Green only when the proposal exited 0 with an outcome that needs nothing more
+      # (OPENED, EXISTS, ALREADY_ON_MAIN, DECLINED). A failed download, a step that died, a
+      # REFUSED, CONFLICT or FAILED proposal is red; the next run retries a FAILED one.
+      - name: Final proposal status
+        if: always()
+        shell: bash
+        env:
+          DOWNLOAD_OUTCOME: ${{ steps.download.outcome }}
+          PROPOSE_EXIT: ${{ steps.propose.outputs.exit_code }}
+          PROPOSE_OUTCOME: ${{ steps.propose.outputs.outcome }}
+          ARTIFACT: ${{ needs.prepare.outputs.candidate_artifact }}
+        run: |
+          summary="${GITHUB_STEP_SUMMARY:-/dev/null}"
+          if [ "$DOWNLOAD_OUTCOME" != "success" ]; then
+            echo "::error::the prepared artifact $ARTIFACT could not be downloaded ($DOWNLOAD_OUTCOME)"
+            printf '## OTA candidate pull request: FAILED\n\nThe artifact %s could not be downloaded; no PR was opened. The next run retries.\n' "$ARTIFACT" >> "$summary"
+            exit 1
+          fi
+          if [ -z "$PROPOSE_EXIT" ]; then
+            echo "::error::the proposal did not finish (no exit code recorded)"
+            printf '## OTA candidate pull request: FAILED\n\nThe proposal step did not finish; see the job log.\n' >> "$summary"
+            exit 1
+          fi
+          if [ "$PROPOSE_EXIT" != "0" ]; then
+            echo "::error::proposal exited with $PROPOSE_EXIT ($PROPOSE_OUTCOME): see the job summary"
+            exit "$PROPOSE_EXIT"
+          fi
+          case "$PROPOSE_OUTCOME" in
+            OPENED | EXISTS | ALREADY_ON_MAIN | DECLINED)
+              echo "proposal: $PROPOSE_OUTCOME"
+              ;;
+            *)
+              echo "::error::proposal exited 0 but reported '$PROPOSE_OUTCOME'"
+              exit 1
+              ;;
+          esac
