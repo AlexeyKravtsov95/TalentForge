@@ -1126,7 +1126,8 @@ def test_the_workflow_pins_the_icon_generation_environment() -> None:
     environment in the job log (docs/talent-visuals.md §3)."""
     text = (ROOT / ".github/workflows/ota-prepare.yml").read_text(encoding="utf-8")
     assert [line.strip() for line in text.splitlines() if "runs-on:" in line] == [
-        "runs-on: ubuntu-24.04"
+        "runs-on: ubuntu-24.04",  # prepare
+        "runs-on: ubuntu-24.04",  # propose (M5.OTA.AUTO.3)
     ]
     step = text.split("      - name: Icon generation environment\n", 1)[1].splitlines()[0]
     assert "print(i.converter_description())" in step

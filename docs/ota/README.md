@@ -3,10 +3,17 @@
 Goal: after one app update, new Forever talent trees, icons, descriptions and translations reach
 users without a new APK/AAB or iOS binary.
 
-**Status (M5.OTA.PROD.1): implemented, staging live on VK Cloud, production prepared - disabled in
-every app build.** The production bucket, hostname and keys do not exist yet (the owner creates
-them: [production-deployment.md](production-deployment.md)); nothing was published to production;
-production OTA is off on every platform.
+**Status (2026-10-28): production OTA is on in the delivered app builds.** The signed production
+catalog serves `1.60.1.70450-r1`. Android `1.0.0` / `versionCode 4` (Google Play, track `alpha`)
+and iOS `1.0.0 (4)` (TestFlight, internal group) were built with production OTA **ON**,
+delivered by run 40540792139 and checked by the owner on 2026-10-28 (installed from the stores
+and run: [ci-delivery.md](../release/ci-delivery.md)). Neither is a public store release yet.
+New builds are prepared and proposed for review automatically ([auto-prepare.md](auto-prepare.md));
+publication stays the owner's manual, offline-signed procedure.
+
+*Historical, M5.OTA.PROD.1:* staging live on VK Cloud, production prepared but disabled in every
+app build; the production bucket, hostname and keys did not exist yet
+([production-deployment.md](production-deployment.md)).
 
 | Milestone | What | State |
 | --- | --- | --- |
@@ -17,6 +24,7 @@ production OTA is off on every platform.
 | M5.OTA.4b | VK Cloud remote staging (OD-1): S3 store adapter, real publication, JVM and TECNO E2E over public HTTPS, ADR-0002 accepted (parallelism 8) | merged ([report](M5.OTA.4b-remote-staging-report.md)) |
 | M5.OTA.PROD.1 | production S3 publisher (channel isolation, catalog guard), read-only production preflight, key ceremony helper, VK Cloud templates and owner runbook; no cloud resource created, OTA still disabled | this milestone ([runbook](production-deployment.md)) |
 | M5.OTA.AUTO.1 | automatic preparation of a new publishable build in GitHub Actions: detection against the signed production catalog, the existing pipeline and gates in a disposable clone, artifacts and a machine-readable report; never publishes | [runbook](auto-prepare.md) |
+| M5.OTA.AUTO.3 | a `PREPARED` candidate is pushed to `ota-candidate/<game>-<build>` and proposed as a PR automatically (checked commit, repeatable, retried after failures); never merges or publishes | [runbook](auto-prepare.md#the-review-pull-request-m5otaauto3) |
 | M5.OTA.AUTO.2 | historical patch replay 70374 → 70450 end to end: detection over recorded build indexes, the real preparation, a staging publication with an ephemeral key, the real client as the app before the patch over HTTPS; JVM automated, Android emulator by procedure | [report](M5.OTA.AUTO.2-replay-report.md) |
 
 | Document | What it answers |
@@ -28,7 +36,7 @@ production OTA is off on every platform.
 | [client-performance-report.md](client-performance-report.md) | M5.OTA.3: test-plan §7 measurements of the per-file design |
 | [publisher-and-security.md](publisher-and-security.md) | Publisher pipeline and gates, channels, atomic pointer, rollback, keys, threat model, why `is_bgdl=false` is not "live" |
 | [publisher-runbook.md](publisher-runbook.md) | Operator procedures (M5.OTA.2): first publication, refresh, rollback, re-sign, key loss, hosting change |
-| [auto-prepare.md](auto-prepare.md) | M5.OTA.AUTO.1: when a new build is prepared automatically, statuses (PREPARED / BLOCKED / UNKNOWN), the artifact, idempotency, and the manual path from a prepared candidate to a release |
+| [auto-prepare.md](auto-prepare.md) | M5.OTA.AUTO.1/3: when a new build is prepared automatically, statuses (PREPARED / BLOCKED / UNKNOWN), the artifact, idempotency, the automatic review PR and its GitHub settings, and the path from a prepared candidate to a release |
 | [test-plan.md](test-plan.md) | Test layers, scenarios S1–S14, performance measurements, release gates: common, Android, iOS |
 | [open-decisions.md](open-decisions.md) | OD-1…OD-17, each with a recommended default |
 | [M5.OTA.4a-integration-report.md](M5.OTA.4a-integration-report.md) | M5.OTA.4a: what was verified together (PASSED / FAILED / BLOCKED / NOT RUN), CI status, what the owner must provide |

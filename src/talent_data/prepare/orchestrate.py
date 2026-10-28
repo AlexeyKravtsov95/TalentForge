@@ -15,8 +15,9 @@ it runs from. Everything happens in a **disposable clone** of the repository at 
    coverage files (``PRODUCT_BUNDLE``, the app and every other build stay untouched), and -
    when ``main`` already carries the build (a forced re-run) - that the regenerated dataset
    is identical, after which main's committed bytes are kept;
-3. a **local** candidate commit in the clone (never pushed: the job has no write
-   permission) so the existing publisher can read the data the way it always does:
+3. a **local** candidate commit in the clone (the preparation job has no write permission;
+   a separate proposal job pushes it to a review branch, ``talent_data.prepare.propose``)
+   so the existing publisher can read the data the way it always does:
    ``build_release`` from a commit, then ``validate_release`` (gates G1-G8, production
    channel) and ``render_review_report`` against a mirror of the *verified* production
    catalog. The candidate commit is not on ``main``, so G1's STOP is expected here: the data
@@ -424,7 +425,8 @@ def commit_candidate(
     }
     message = (
         f"data: prepare the {game} {build} dataset for OTA review (diff from {base})\n\n"
-        "Local candidate commit of an M5.OTA.AUTO.1 preparation - never pushed; the data "
+        "Candidate commit of an M5.OTA.AUTO.1 preparation. The preparation never pushes it; "
+        "only the proposal step (M5.OTA.AUTO.3) pushes it to a review branch, and the data "
         "reaches main only through a reviewed refresh PR."
     )
     _git(
