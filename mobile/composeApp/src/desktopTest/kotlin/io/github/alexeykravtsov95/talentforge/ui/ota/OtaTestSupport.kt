@@ -1,11 +1,16 @@
 package io.github.alexeykravtsov95.talentforge.ui.ota
 
+import io.github.alexeykravtsov95.talentforge.allocation.TalentAllocationEngine
+import io.github.alexeykravtsov95.talentforge.allocation.buildFileOf
 import io.github.alexeykravtsov95.talentforge.data.AssetNotFoundException
 import io.github.alexeykravtsov95.talentforge.data.BundledTalentDatasetRepository
 import io.github.alexeykravtsov95.talentforge.data.ClassToken
 import io.github.alexeykravtsov95.talentforge.data.DatasetAssetSource
 import io.github.alexeykravtsov95.talentforge.data.DatasetBundleId
+import io.github.alexeykravtsov95.talentforge.data.DatasetId
+import io.github.alexeykravtsov95.talentforge.data.DatasetOutcome
 import io.github.alexeykravtsov95.talentforge.data.GameId
+import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRecord
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.data.ota.BlobFetcher
@@ -22,6 +27,7 @@ import io.github.alexeykravtsov95.talentforge.data.ota.UtcInstant
 import io.github.alexeykravtsov95.talentforge.data.ota.preAuthenticationEncoding
 import io.github.alexeykravtsov95.talentforge.data.sha256Hex
 import io.github.alexeykravtsov95.talentforge.data.sha256Ref
+import io.github.alexeykravtsov95.talentforge.data.talentdata.TalentDataDocument
 import io.github.alexeykravtsov95.talentforge.ui.FakeBuildLibraryStorage
 import io.github.alexeykravtsov95.talentforge.ui.FixedClock
 import io.github.alexeykravtsov95.talentforge.ui.SequentialIds
@@ -39,6 +45,7 @@ import java.security.spec.ECGenParameterSpec
 import java.security.spec.ECParameterSpec
 import java.security.spec.ECPrivateKeySpec
 import java.util.concurrent.CopyOnWriteArrayList
+import kotlin.test.assertIs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -73,8 +80,8 @@ object OtaTestRepo {
 
     fun fixture(relative: String): ByteArray = fixtures.resolve(relative).readBytes()
 
-    /** A release path's committed file (contract §12). */
-    fun repositoryFile(releasePath: String): File {
+    /** A release path's committed file (contract §12) under [root] (a checkout or an exported commit). */
+    fun repositoryFile(releasePath: String, root: File = this.root): File {
         val head = releasePath.substringBefore('/')
         val directory = when (head) {
             "dataset" -> "data/normalized"
@@ -285,14 +292,17 @@ class FakeBlobServer(private val config: OtaConfig) : BlobFetcher {
     }
 }
 
-/** The app bundle as committed data of [builds] (the bundled resources are byte-identical mirrors of it), with a read log. */
-class RepoBundleSource(private val builds: Set<String>) : DatasetAssetSource {
+/**
+ * The app bundle as committed data of [builds] (the bundled resources are byte-identical mirrors of it), with a read log.
+ * [root] is the checkout, or the data of one commit exported by `scripts/ota_staging_verify.py`.
+ */
+class RepoBundleSource(private val builds: Set<String>, private val root: File = OtaTestRepo.root) : DatasetAssetSource {
     val reads = CopyOnWriteArrayList<String>()
 
     override suspend fun read(path: String): ByteArray {
         val bundle = RoutingDatasetAssetSource.bundleOf(path) ?: throw AssetNotFoundException(path)
         if (bundle.clientBuild !in builds) throw AssetNotFoundException(path)
-        val file = OtaTestRepo.repositoryFile(path)
+        val file = OtaTestRepo.repositoryFile(path, root)
         if (!file.isFile) throw AssetNotFoundException(path)
         reads += path
         return file.readBytes()
@@ -326,12 +336,14 @@ class OtaDevice(
     val storeWrapper: (OtaFileStore) -> OtaFileStore = { it },
     /** Another origin than the in-memory [server] (the publisher interop check serves a real store over HTTP). */
     private val fetcher: BlobFetcher? = null,
+    /** Where the bundle's committed data is read from: the checkout, or one exported commit. */
+    val dataRoot: File = OtaTestRepo.root,
 ) : AutoCloseable {
     val directory: File = Files.createTempDirectory("tf-ota").toFile()
     val server = FakeBlobServer(config)
     val clock = TestOtaClock()
     val library = FakeBuildLibraryStorage()
-    val bundleSource = RepoBundleSource(bundledBuilds)
+    val bundleSource = RepoBundleSource(bundledBuilds, dataRoot)
     private val libraryClock = FixedClock()
     private val ids = SequentialIds()
     val repository = LocalBuildRepository(library, libraryClock, ids)
@@ -382,11 +394,50 @@ class OtaDevice(
 
     /** A saved build of [classToken] on [clientBuild], created with the real engine (reads the repository data). */
     fun saveBuild(clientBuild: String, classToken: String = "WARRIOR"): LocalBuildRecord = runBlocking {
-        val datasets = BundledTalentDatasetRepository(RepoBundleSource(setOf(clientBuild)))
+        val datasets = BundledTalentDatasetRepository(RepoBundleSource(setOf(clientBuild), dataRoot))
         when (val created = createClassDraft(repository, datasets, ClassToken(classToken), DatasetBundleId(GameId("forever"), clientBuild))) {
             is DraftCreation.Created -> created.record
             is DraftCreation.Failed -> error("could not create a $clientBuild build: $created")
         }
+    }
+
+    /**
+     * A saved build of [classToken] on [clientBuild] with [points] talent points spent by the real engine, as the
+     * editor's autosave writes it: a draft, then the spent build saved over it. Nodes are tried in id order, pass
+     * after pass, so a node whose gate opens once earlier points are spent is reached too; a node the engine
+     * refuses (a choice node, a closed gate, an exhausted budget) is simply not bought.
+     */
+    fun saveSpentBuild(clientBuild: String, classToken: String, points: Int): LocalBuildRecord = runBlocking {
+        val datasets = BundledTalentDatasetRepository(RepoBundleSource(setOf(clientBuild), dataRoot))
+        val document = assertIs<DatasetOutcome.Loaded<TalentDataDocument>>(datasets.document(DatasetId(GameId("forever"), clientBuild, ClassToken(classToken)))).value
+        val engine = TalentAllocationEngine(document)
+        var state = engine.emptyState()
+        do {
+            val spentBefore = engine.spentPoints(state)
+            for (node in engine.tree.nodes.sortedBy { it.id }) {
+                while (engine.spentPoints(state) < points) {
+                    val next = engine.spend(state, node.id)
+                    if (!next.decision.allowed) break
+                    state = next.state
+                }
+            }
+        } while (engine.spentPoints(state) in (spentBefore + 1) until points)
+        check(engine.spentPoints(state) > 0 && engine.validate(state).valid) { "no valid $clientBuild $classToken build with points: ${engine.spentPoints(state)}" }
+        val draft = when (val created = createClassDraft(repository, datasets, ClassToken(classToken), DatasetBundleId(GameId("forever"), clientBuild))) {
+            is DraftCreation.Created -> created.record
+            is DraftCreation.Failed -> error("could not create a $clientBuild build: $created")
+        }
+        val build = buildFileOf(state, document.game, document.clientBuild, document.classInfo.token)
+        when (val saved = repository.saveBuild(draft.localId, build)) {
+            is BuildLibraryOutcome.Loaded -> saved.value
+            is BuildLibraryOutcome.Failed -> error("could not save the $clientBuild build: $saved")
+        }
+    }
+
+    /** The saved builds as the library holds them, except `lastOpenedAt` (opening a build touches only that). */
+    fun libraryContent(): List<LocalBuildRecord> = when (val loaded = repository.load()) {
+        is BuildLibraryOutcome.Loaded -> loaded.value.map { it.copy(lastOpenedAt = null) }
+        is BuildLibraryOutcome.Failed -> error("the library does not load: $loaded")
     }
 
     /** Every file under the OTA root, relative, with its bytes' SHA-256 (to compare before/after). */

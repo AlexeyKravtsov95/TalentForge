@@ -274,6 +274,10 @@ Limits of `GITHUB_TOKEN`, and what the owner does:
    (`docs/ota/releases/<releaseId>.md` with live-build evidence for G7, G5 acceptance if
    flagged, the pinned manifest SHA-256 of the **rebuilt** manifest) merged by PR, the staging
    smoke, then the owner's `promote` → offline signing → `attach-signature` → `verify-live`.
+   Before that, **Actions → OTA staging verification** (`candidate` = the build, `base` = the
+   active production build) builds the candidate from `main`, stages it on an isolated local
+   stand and runs the real client as the app before the update
+   ([staging-verification.md](staging-verification.md)). Its PASS approves nothing for production.
 
 ## Run it manually
 

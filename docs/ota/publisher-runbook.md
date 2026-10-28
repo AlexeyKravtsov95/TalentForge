@@ -30,7 +30,11 @@ talent-data ota verify-live --store $STORE --keyring $KEYRING --channel staging
 ```
 
 The staging smoke (test plan §4) happens on staging-channel app builds against exactly
-such a store before any production promotion.
+such a store before any production promotion. The automated part of it for a candidate -
+both releases built from one commit on `main`, staged on an isolated local stand, the real client
+(JVM) as the app before the update - is the **OTA staging verification** workflow
+([staging-verification.md](staging-verification.md)); it never replaces the approval record or
+the owner's promotion, and devices stay a manual step.
 
 ## 1. First publication (production)
 

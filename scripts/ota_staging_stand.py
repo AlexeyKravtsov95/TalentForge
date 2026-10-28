@@ -2,9 +2,10 @@
 
 Three commands:
 
-``prepare <out>``
+``prepare <out> [--base A] [--candidate B]``
     Creates, **outside any git checkout**, everything a staging client needs and nothing a
-    production client could use:
+    production client could use, for a base build A and a candidate build B committed on the
+    commit (default ``1.60.1.70374`` and ``1.60.1.70450``, the historical replay's pair):
 
     * an ephemeral staging signing key ``tf-staging-local-<hex>`` (private PEM, mode 0600)
       and its public keyring - generated here, never committed, refused by production
@@ -259,8 +260,9 @@ def generate_tls(tls: Path, now: dt.datetime) -> dict[str, str]:
 class Publisher:
     """The real ``talent-data ota`` CLI against a local directory store, staging only."""
 
-    def __init__(self, out: Path, *, commit: str, now: dt.datetime) -> None:
+    def __init__(self, out: Path, *, commit: str, now: dt.datetime, candidate: str) -> None:
         self.out = out
+        self.candidate = candidate
         self.store = out / "work" / "store"
         self.artifacts = out / "work" / "artifacts"
         self.commit = commit
@@ -356,16 +358,17 @@ class Publisher:
             ).stdout.strip()
 
         git("checkout", "-q", self.commit)
-        paladin = repo / "data" / "normalized" / GAME / BUILD_B / "paladin.json"
+        paladin = repo / "data" / "normalized" / GAME / self.candidate / "paladin.json"
         paladin.write_bytes(OPEN_UNION_PALADIN.read_bytes())
         git("-c", "user.email=stand@invalid", "-c", "user.name=stand", "commit", "-qam", "G6")
         smuggled = git("rev-parse", "HEAD")
         git("update-ref", "refs/remotes/origin/main", smuggled)
-        release_id = f"{BUILD_B}-r{G6_REVISION}"
+        release_id = f"{self.candidate}-r{G6_REVISION}"
         artifacts = self.out / "work" / "g6"
         self.cli(
-            "build-release", "--game", GAME, "--build", BUILD_B, "--revision", str(G6_REVISION),
-            "--commit", smuggled, "--created-at", self.now, "--out", str(artifacts), repo=repo,
+            "build-release", "--game", GAME, "--build", self.candidate,
+            "--revision", str(G6_REVISION), "--commit", smuggled, "--created-at", self.now,
+            "--out", str(artifacts), repo=repo,
         )  # fmt: skip
         manifest = artifacts / release_id / "release.json"
         before = tree_digest(self.store)
@@ -391,8 +394,18 @@ class Publisher:
         }
 
 
-def prepare(out: Path, *, commit: str | None, now: dt.datetime) -> dict[str, Any]:
+def prepare(
+    out: Path,
+    *,
+    commit: str | None,
+    now: dt.datetime,
+    base: str = BUILD_A,
+    candidate: str = BUILD_B,
+) -> dict[str, Any]:
     out = out.expanduser().resolve()
+    if base == candidate:
+        raise StandError(f"the base and the candidate are the same build {base}")
+    a, b, b_level_2 = f"{base}-r1", f"{candidate}-r1", f"{candidate}-r2"
     if inside_git_checkout(out):
         raise StandError(f"{out} is inside a git checkout; the stand writes private keys")
     if out.exists() and any(out.iterdir()):
@@ -401,23 +414,23 @@ def prepare(out: Path, *, commit: str | None, now: dt.datetime) -> dict[str, Any
     out.mkdir(parents=True, exist_ok=True)
     # transport validity follows the wall clock, whatever publication instant --now names
     tls = generate_tls(out / "tls", utc(None))
-    publisher = Publisher(out, commit=commit, now=now)
+    publisher = Publisher(out, commit=commit, now=now, candidate=candidate)
     snapshots = []
 
-    for build, name in ((BUILD_A, SNAPSHOTS[0]), (BUILD_B, SNAPSHOTS[1])):
+    for build, name in ((base, SNAPSHOTS[0]), (candidate, SNAPSHOTS[1])):
         manifest = publisher.build(build)
         publisher.validate(manifest)
         publisher.stage(manifest)
         publisher.verify_live()
         snapshots.append(publisher.snapshot(name))
 
-    publisher.rollback(A)
+    publisher.rollback(a)
     publisher.verify_live()
     snapshots.append(publisher.snapshot(SNAPSHOTS[2]))
 
     g6 = publisher.g6_attempt()
 
-    level_2 = publisher.build(BUILD_B, revision=2, min_data_level=2)
+    level_2 = publisher.build(candidate, revision=2, min_data_level=2)
     publisher.validate(level_2)
     publisher.stage(level_2)
     publisher.verify_live()
@@ -432,7 +445,7 @@ def prepare(out: Path, *, commit: str | None, now: dt.datetime) -> dict[str, Any
             "path": publisher.manifest_path(release_id).relative_to(out).as_posix(),
             "sha256": _sha256_ref(publisher.manifest_path(release_id).read_bytes()),
         }
-        for release_id in (A, B, B_LEVEL_2)
+        for release_id in (a, b, b_level_2)
     }
     report: dict[str, Any] = {
         "format": "talentforge-ota-staging-stand",
@@ -444,7 +457,8 @@ def prepare(out: Path, *, commit: str | None, now: dt.datetime) -> dict[str, Any
         "keyId": publisher.key_id,
         "keyring": "keys/staging-keyring.json",
         "tls": {"ca": "tls/ca.pem", "chain": "tls/server.pem", "key": "tls/server.key", **tls},
-        "releases": {"a": A, "b": B, "bLevel2": B_LEVEL_2},
+        "builds": {"a": base, "b": candidate},
+        "releases": {"a": a, "b": b, "bLevel2": b_level_2},
         "manifests": manifests,
         "snapshots": snapshots,
         "g6": g6,
@@ -569,6 +583,10 @@ def main(argv: list[str] | None = None) -> int:
     prep.add_argument("out", type=Path)
     prep.add_argument("--commit", help="40-hex commit on origin/main (default: merge-base)")
     prep.add_argument("--now", help="publication instant YYYY-MM-DDTHH:MM:SSZ (default: now)")
+    prep.add_argument("--base", default=BUILD_A, help=f"build A, staged first (default {BUILD_A})")
+    prep.add_argument(
+        "--candidate", default=BUILD_B, help=f"build B, staged second (default {BUILD_B})"
+    )
     act = sub.add_parser("activate", help="switch the served snapshot")
     act.add_argument("out", type=Path)
     act.add_argument("snapshot", choices=SNAPSHOTS)
@@ -580,7 +598,13 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         if args.command == "prepare":
-            report = prepare(args.out, commit=args.commit, now=utc(args.now))
+            report = prepare(
+                args.out,
+                commit=args.commit,
+                now=utc(args.now),
+                base=args.base,
+                candidate=args.candidate,
+            )
             for snapshot in report["snapshots"]:
                 print(
                     f"  {snapshot['name']}: sequence {snapshot['sequence']}, active "
