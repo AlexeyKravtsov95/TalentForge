@@ -6,7 +6,7 @@
 | Решения и API магазинов | [`scripts/store_delivery.py`](../../scripts/store_delivery.py); временная iOS-подпись — [`scripts/ios_delivery_signing.sh`](../../scripts/ios_delivery_signing.sh); Python 3.12 — [`.github/actions/delivery-python`](../../.github/actions/delivery-python/action.yml) |
 | Что доставляется | Android: подписанный upload-ключом AAB → **существующий закрытый тест Google Play**; подписанный ключом приложения универсальный APK → проверенный артефакт запуска (загрузка в RuStore/AppGallery — следующий этап). iOS: подписанный archive → App Store export (`.ipa`) → App Store Connect → **существующая внутренняя группа TestFlight** |
 | Что не делается никогда | публичный выпуск (production-трек Play, отправка на App Review, «Release»), открытое тестирование, загрузка в RuStore/AppGallery, сборка без подписи, с debug-ключом или с OTA OFF, изменение версий |
-| Статус | Инженерная часть готова и проверена **только с фейковыми API** (`tests/unit/test_store_delivery.py`). Настоящая доставка не запускалась: владелец добавил credentials в GitHub Environments, реальной доставкой они ещё не проверены. Первые реальные загрузки и появление сборок в Play Console / TestFlight — финальная проверка владельца (§9) |
+| Статус | **Реальная доставка состоялась** 2026-10-27 UTC: запуск [40540792139](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/40540792139) (`deliver`, исходный SHA `e07d7825d3ddbe5de3a68d5536595dbe8ab9d048`) — Android `1.0.0` / `versionCode 4` на трек `alpha` (`completed`), iOS `1.0.0 (4)` обработана (`VALID`) и доступна внутренней группе `Internal`; обе платформы `DELIVERED`. Владелец 2026-10-28 установил обе сборки из магазинов (iOS — из TestFlight, Android — из Google Play после проверки Google Play) и проверил их. Журнал запусков — §10. Отказы, повторы и восстановление (§7) проверены **только с фейковыми API** (`tests/unit/test_store_delivery.py`) |
 
 Шаги с 🔑 выполняет только владелец. Значения секретов никогда не пересылаются в чат, issue или PR.
 
@@ -148,7 +148,7 @@ Xcode-managed (облачный) сертификат распространен
 
 Предусловия:
 
-- Номера версий подняты **отдельным PR** и влиты в `main`; workflow версии не меняет. Для первой доставки: Android `1.0.0` / `versionCode 4` (коды `2` и `3` израсходованы загрузками в Play: `3` стоит на треке `alpha`, его нашла проверка Play в запуске [40502271588](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/40502271588) и остановила Android-ветку с `CONFLICT`; `4` — следующий тестовый, [журнал](android-versioning.md#3-planned-sequence-and-ledger)); iOS `1.0.0 (4)` — сборка для внутреннего TestFlight. `1.0.0 (3)` уже загружена в App Store Connect и отправлена на App Review: этот номер не загружается повторно, а запуск SHA с `CURRENT_PROJECT_VERSION` ≤ `3` получит в iOS-ветке `CONFLICT` ([readiness §2](apple-appstore/readiness.md#2-конфигурация-release-сборки)). Доставка сборки `4` не затрагивает версию на App Review: workflow не отправляет на ревью и не меняет выбранную там сборку.
+- Номера версий подняты **отдельным PR** и влиты в `main`; workflow версии не меняет. Израсходованы: Android `versionCode` `2`, `3`, `4` (`2` и `3` — ручные загрузки в Play; `3` стоит на треке `alpha`, его нашла проверка Play в запуске [40502271588](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/40502271588) и остановила Android-ветку с `CONFLICT`; `4` доставлен запуском [40540792139](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/40540792139), [журнал](android-versioning.md#3-planned-sequence-and-ledger)); iOS `1.0.0 (1)`, `1.0.0 (3)` (загружена и отправлена на App Review) и `1.0.0 (4)` (доставлена тем же запуском во внутренний TestFlight). **Следующая доставка: Android `versionCode 5`, iOS `CURRENT_PROJECT_VERSION 5`.** В `main` пока оба номера `4`: перед следующей доставкой их поднимают отдельными PR. Запуск нового SHA с `versionCode` ≤ `4` или `CURRENT_PROJECT_VERSION` ≤ `4` получит `CONFLICT` ([readiness §2](apple-appstore/readiness.md#2-конфигурация-release-сборки)). Доставка во внутренний TestFlight не затрагивает версию на App Review: workflow не отправляет на ревью и не меняет выбранную там сборку.
 - `CI` и `mobile-ci` выбранного SHA зелёные. Если `mobile-ci` этого SHA был отменён следующим push (`cancel-in-progress`), перезапустите его: Actions → тот запуск → *Re-run all jobs*.
 - Каталог production OTA действителен ещё ≥ 30 дней; иначе preflight остановит сборку — переподпишите каталог ([production-deployment](../ota/production-deployment.md)).
 - iOS-политика и декларации магазинов — по [app-privacy](apple-appstore/app-privacy.md) и [ota-prod3-privacy-and-stores](ota-prod3-privacy-and-stores.md); workflow их не меняет.
@@ -165,7 +165,7 @@ Xcode-managed (облачный) сертификат распространен
 
 - iOS-сборка и загрузка идут на образе `xcode-27` (Xcode 27.1, macOS 27) — тот же образ, что в `mobile-ci`. Образ в public preview: при его отсутствии или другом билде Xcode job падает (`BLOCKED`), перехода на `macos-latest` или другую версию Xcode нет.
 - Репозиторий публичный: стандартные GitHub-hosted runners, включая macOS, для публичных репозиториев бесплатны. Для приватного репозитория стандартный macOS runner тарифицируется поминутно (с 1 января 2026 — $0.062/мин, Linux значительно дешевле; актуальные цены — [GitHub Actions runner pricing](https://docs.github.com/en/billing/reference/actions-runner-pricing)). Ожидание обработки TestFlight поэтому вынесено на ubuntu.
-- Оценка длительности одной доставки (по `mobile-ci`, на реальной доставке не измерялась): ubuntu ≈ 15–25 мин сборки Android + до 100 мин ожидания обработки TestFlight; macOS ≈ 40–70 мин (Kotlin/Native release-линковка, archive, export) + 5–15 мин загрузки.
+- Оценка длительности одной доставки (по `mobile-ci`): ubuntu ≈ 15–25 мин сборки Android + до 100 мин ожидания обработки TestFlight; macOS ≈ 40–70 мин (Kotlin/Native release-линковка, archive, export) + 5–15 мин загрузки. Фактически (один замер, время запуска от создания до завершения): `verify` [40536419554](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/40536419554) ≈ 14 мин, `deliver` [40540792139](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/40540792139) ≈ 20 мин, из них ожидание обработки в `ios-testflight` ≈ 2 мин. Тайм-аут 100 минут не меняется.
 - Одновременно выполняется только одна доставка (concurrency).
 
 ## 6. Результат и артефакты
@@ -230,15 +230,46 @@ Actions (`actions/*`, `gradle/actions`) закреплены по тегам м�
 
 ## 9. Что проверено и что остаётся владельцу
 
-Проверено в PR без магазинов: тесты оркестрации с фейковыми GitHub/Play/App Store Connect API (отказ gate, CI не того SHA, отсутствие credentials, конфликт версии, повторный запуск, частичный успех, расхождение артефактов, итоговая таблица); тесты `verify_ios_archive.py --ipa` и `ota_production_preflight.py --min-validity-days`; actionlint и shellcheck; проверка OTA ON маркеров `android-check` на настоящих unsigned `assembleRelease`/`bundlePlay` (OTA ON проходит, OTA OFF отклоняется). Это **не** доказательство реальной доставки.
+**Подтверждено настоящими магазинами** (запуски §10, проверка владельца 2026-10-28):
+
+- `gate`, сборка и подпись обеих платформ из одного SHA с production-credentials из GitHub Environments; повторная проверка файлов валидаторами — `verify` 40536419554 и `deliver` 40540792139.
+- Google Play: только чтение трека до загрузки (`UPLOAD`; в 40502271588 — `CONFLICT` на чужом коде `3`), загрузка AAB в одном edit, релиз `completed` на `alpha`, повторное чтение Play с тем же SHA-256.
+- App Store Connect: `altool --validate-app` / `--upload-package`, обработка `VALID`, export compliance, внутренняя группа `Internal`. У этой группы включён доступ ко всем сборкам, поэтому назначение сборки группе workflow на настоящем API **не** выполнял.
+- Установка и запуск: iOS `1.0.0 (4)` из TestFlight и Android `1.0.0` / `4` из Google Play (после проверки Google Play) — владелец, 2026-10-28.
+
+**Проверено только тестами**, без магазинов: тесты оркестрации с фейковыми GitHub/Play/App Store Connect API (отказ gate, CI не того SHA, отсутствие credentials, конфликт версии, повторный запуск и `ALREADY_DELIVERED`/`ALREADY_UPLOADED`, частичный успех, расхождение артефактов, `MISMATCH`, назначение сборки группе без доступа ко всем сборкам, итоговая таблица); тесты `verify_ios_archive.py --ipa` и `ota_production_preflight.py --min-validity-days`; actionlint и shellcheck; проверка OTA ON маркеров `android-check` на настоящих unsigned `assembleRelease`/`bundlePlay` (OTA ON проходит, OTA OFF отклоняется). Сценарии восстановления §7 на настоящих магазинах не воспроизводились.
 
 Android Lint: `lintVitalAnalyzeRelease`/`lintVitalAnalyzePlay` внутри release-сборки печатают «Module was compiled with an incompatible version of Kotlin. The binary version of its metadata is 2.4.0, expected version is 2.2.0» — встроенный в AGP 8.13.2 анализатор lint старше Kotlin 2.4.20 проекта и видит типы KMP-модулей неполностью (так же, как в [TF-RC1-LINT](rc1-defects.md#tf-rc1-lint--composeapplintrelease-fails-on-rememberreturntype)). Задачи `lintVital*` при этом проходят, сборка успешна; lint не отключён и не подавлен, ошибка lint остановит доставку. Полное устранение — обновление AGP/lint отдельной задачей.
 
-Остаётся владельцу:
+Чек-лист владельца:
 
-- [ ] Environments, secrets, variables (§3), service account и права в Play (§4.1), ключ App Store Connect (§4.2), сертификат и профиль (§4.3), ruleset для тегов `v*`.
+- [x] Secrets и variables четырёх окружений (§3.2), service account и права в Play (§4.1), ключ App Store Connect (§4.2), сертификат и профиль (§4.3): работают — без них `verify` и `deliver` остановились бы на `CONFIG` или ошибке магазина.
+- [ ] Защита GitHub (§3.1): правило ветки `main` у всех четырёх окружений, *Secret scanning* и *Push protection*, ruleset для тегов `v*`. Успешные запуски этого не доказывают (запуск с `main` проходит и без правила), а в репозитории состояние этих настроек не записано: **не подтверждено**.
 - [x] PR с `CURRENT_PROJECT_VERSION ≥ 4` (iOS) до первой iOS-доставки: `1.0.0 (4)`, ветка `build/ios-build-4-testflight`.
-- [ ] Первый запуск `mode=verify` → summary `OK`.
-- [ ] Первый запуск `mode=deliver` → сборка видна в Play Console (закрытый трек, тот же SHA-256) и в TestFlight (внутренняя группа) → установка тестерами.
-- [ ] Записать коммит и SHA-256 в [журнал версий](android-versioning.md#3-planned-sequence-and-ledger).
-- [ ] Только после этого закрывать issue #90. RuStore/AppGallery — следующий этап.
+- [x] PR с `versionCode 4` (Android) до первой доставки: [#95](https://github.com/AlexeyKravtsov95/TalentForge/pull/95).
+- [x] Первый запуск `mode=verify` → обе платформы `VERIFIED` ([40536419554](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/40536419554)).
+- [x] Первый запуск `mode=deliver` → обе платформы `DELIVERED` ([40540792139](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/40540792139)): Play `alpha` с тем же SHA-256, TestFlight `VALID` во внутренней группе → владелец установил и проверил обе сборки (2026-10-28).
+- [x] Коммит и SHA-256 записаны в [журнал версий](android-versioning.md#3-planned-sequence-and-ledger) и в §10.
+- [ ] Issue [#90](https://github.com/AlexeyKravtsov95/TalentForge/issues/90) закрывается влитием PR с этой записью. RuStore/AppGallery (ручная загрузка APK) — следующий этап, не часть #90.
+
+## 10. Журнал запусков
+
+Только запуски, затронувшие магазины или номера версий. Время — UTC.
+
+| Дата | Запуск | Режим | Исходный SHA | Android | iOS |
+|---|---|---|---|---|---|
+| 2026-10-27 | [40502271588](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/40502271588) | не записан | `31f18b22b0e8fd4840cae6a6aecc341060c62ad1` | `CONFLICT`: код `3` уже на `alpha`, не из этого workflow; сборка пропущена | проверка ASC и сборка прошли; загрузки не было (запуск остановлен ошибкой Android) |
+| 2026-10-27 | [40536419554](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/40536419554) | `verify` | `e07d7825d3ddbe5de3a68d5536595dbe8ab9d048` | `VERIFIED` `1.0.0` / `4`; ничего не загружено | `VERIFIED` `1.0.0 (4)`; ничего не загружено |
+| 2026-10-27 | [40540792139](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/40540792139) | `deliver` | `e07d7825d3ddbe5de3a68d5536595dbe8ab9d048` | `DELIVERED` `1.0.0` / `4` → `alpha`, `completed` | `DELIVERED` `1.0.0 (4)` → `VALID`, группа `Internal` |
+
+SHA-256 файлов запуска 40540792139 (из его `SHA256SUMS` и `release-check.json`; AAB и IPA — также в summary):
+
+| Файл | SHA-256 | Куда попал |
+|---|---|---|
+| `TalentForge-1.0.0-4.aab` | `66d6da923f261c40e32057b4399f7b458966031799b6cd98ef1d14e852e98f43` | Google Play `alpha` (Play вернул тот же SHA-256) |
+| `TalentForge-1.0.0-4.apk` | `25febe10c387b04ede5009e471f4a294510a150175b32c4844d465f11ec1db2d` | только артефакт `android-release`; в RuStore/AppGallery не загружался |
+| `TalentForge-1.0.0-4.ipa` | `9d625bc4501b3c576c6c0780b7df1fae3820a894f7b7a2ba7f32f7f76302e2c5` | App Store Connect → TestFlight (ASC хэш не отдаёт; идентичность — по записи запуска, §7) |
+
+Проверка владельцем, 2026-10-28: iOS установлена из TestFlight, Android — из Google Play после проверки Google Play; обе сборки работают.
+
+Израсходованные номера: Android `versionCode` `2`, `3`, `4` (`1` — по [журналу версий](android-versioning.md#3-planned-sequence-and-ledger)); iOS `1.0.0 (1)`, `(3)`, `(4)`. Следующая доставка — Android `5`, iOS `5`; в `main` номера пока `4`, их поднимают отдельными PR (§5).
