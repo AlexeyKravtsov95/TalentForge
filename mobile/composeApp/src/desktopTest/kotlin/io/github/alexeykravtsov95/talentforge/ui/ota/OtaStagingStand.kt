@@ -25,6 +25,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.long
 
 const val STAND_CATALOG_PATH = "v1/channels/staging/catalog.json"
 const val STAND_BLOB_PREFIX = "v1/blobs/sha256/"
@@ -33,7 +34,7 @@ private val STAND_BLOB_PATH = Regex("v1/blobs/sha256/[0-9a-f]{64}")
 /**
  * A staging stand made by `scripts/ota_staging_stand.py prepare` (M5.OTA.4a): the real
  * publisher's stores, its ephemeral `tf-staging-local-*` keyring, TLS chain and `report.json`.
- * Shared by [OtaStagingE2ETest] and [OtaHistoricalReplayTest].
+ * Shared by [OtaStagingE2ETest], [OtaHistoricalReplayTest] and [OtaCandidateStagingTest] (through [StagedUpdate]).
  */
 class StagingStand(val dir: File) {
     val report: JsonObject by lazy { Json.parseToJsonElement(dir.resolve("report.json").readText()).jsonObject }
@@ -74,6 +75,14 @@ class StagingStand(val dir: File) {
     )
 
     companion object {
+        /** path → (SHA-256 hex, byte length) of every file of a release manifest. */
+        fun releaseEntries(manifest: ByteArray): Map<String, Pair<String, Long>> =
+            Json.parseToJsonElement(manifest.decodeToString()).jsonObject.getValue("files").jsonArray.associate {
+                val file = it.jsonObject
+                file.getValue("path").jsonPrimitive.content to
+                    (file.getValue("sha256").jsonPrimitive.content.removePrefix("sha256:") to file.getValue("byteLength").jsonPrimitive.long)
+            }
+
         /** path → SHA-256 hex of every file of a release manifest. */
         fun releaseFiles(manifest: ByteArray): Map<String, String> =
             Json.parseToJsonElement(manifest.decodeToString()).jsonObject.getValue("files").jsonArray.associate {

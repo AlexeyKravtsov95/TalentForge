@@ -714,7 +714,7 @@ def render_summary(r: Replay, verdict: Verdict) -> str:
             f"({evidence['downloadedByRole']}) and the manifest; blob requests: "
             f"{evidence['blobRequests']}",
             f"* From the installed 70374 release (the client's cache): "
-            f"{evidence['copiedFromInstalled70374']} files ({evidence['copiedByRole']})",
+            f"{evidence['copiedFromInstalledBase']} files ({evidence['copiedByRole']})",
             f"* From the bundle: {evidence['copiedFromBundle']} files of 70450",
         ]
     lines.append("")
