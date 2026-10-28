@@ -127,6 +127,26 @@ def test_the_reports_leave_every_owner_decision_open(built: tuple[Path, int]) ->
     assert rp.approval_record_problems(filled_record(template), **pins) == []
     other = filled_record(template).replace(loaded.index.manifest_sha256, "sha256:" + "0" * 64)
     assert rp.approval_record_problems(other, **pins)[0].startswith("the record's Manifest SHA-256")
+    # accepted gates: none or only G5/G7, a G7 with its live-build evidence
+    assert rp.approval_record_problems(filled_record(template, accepted=""), **pins) == []
+    assert rp.approval_record_problems(filled_record(template, accepted="G5, G6"), **pins) == [
+        "the record accepts ['G6']: only G5, G7 may be accepted"
+    ]
+    assert rp.approval_record_problems(filled_record(template, accepted="all"), **pins) == [
+        "the record accepts ['all']: only G5, G7 may be accepted"
+    ]
+    no_evidence = "\n".join(
+        line
+        for line in filled_record(template).splitlines()
+        if not line.startswith("- Live-build evidence:")
+    )
+    assert rp.approval_record_problems(no_evidence, **pins) == [
+        "the record accepts G7 without its 'Live-build evidence'"
+    ]
+    no_gates = filled_record(template).replace("- Accepted gates: G5, G7\n", "")
+    assert rp.approval_record_problems(no_gates, **pins) == [
+        "the record has no '- Accepted gates:' line"
+    ]
 
 
 def _flip(path: Path) -> None:

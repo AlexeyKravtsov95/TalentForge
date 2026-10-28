@@ -147,18 +147,26 @@ aws configure --profile talentforge-production   # если ещё не наст
 | `check <пакет>` | ничего | пакет цел и равен `build-release` на его коммите; staging заново привязан; approval record из `origin/main` закрепляет этот манифест; staging base = live-сборка; `ota promote` (dry run) и `ota report` против live |
 | `prepare <пакет>` | ничего | то же и план записи |
 | `prepare <пакет> --execute` | blob'ы в бакет, `publish/` | `ota promote --execute`: загрузка immutable blob'ов с read-back, затем `pending-production.payload.json` (+ `.meta.json`) и **точный PAE-файл** `pending-production.pae.bin`. Каталог не меняется |
-| `publish <пакет> --signature <der> --key-id tf-prod-2026a` | ничего | DER-подпись проверяется по закоммиченному keyring, payload — наследник live; `ota attach-signature` (dry run) |
+| `publish <пакет> --signature <der> --key-id tf-prod-2026a` | ничего | DER-подпись проверяется по закоммиченному keyring, payload — наследник live, approval record заново читается из `origin/main`; `ota attach-signature` (dry run) |
 | `publish … --execute` | `catalog.json` | `ota attach-signature --execute`; затем live перечитывается и исход классифицируется (§6) |
 | `verify <пакет>` | `publish/preflight.json` | `ota verify-live` и `scripts/ota_production_preflight.py --expect published --keyring …` |
 
 Свойства:
 
 * По умолчанию — dry run. Запись в production происходит только с `--execute`.
-* Approval record берётся **из `origin/main`** (`git fetch origin` перед запуском). Локальный
-  незакоммиченный файл production не утверждает.
+* Approval record берётся **из `origin/main`**. Каждая команда сначала сама делает
+  `git fetch origin main`; если fetch не удался, это отказ. Локальный незакоммиченный файл
+  production не утверждает.
 * Запись должна содержать `Release`, `Manifest SHA-256` и `Source commit` этого пакета и ни одной
   незаполненной строки `<OWNER: …>`. Это строже publisher'а, который проверяет пин, только если
-  тот указан. Принять можно только G5/G7 (правило publisher'а).
+  тот указан. Строка `Accepted gates` обязательна: пусто или только G5/G7; G7 — только с
+  `Live-build evidence`.
+* `publish` перечитывает запись из `origin/main` **непосредственно перед активацией** (и в dry
+  run). Если запись удалили или изменили после `prepare`, это отказ, каталог не меняется. Когда
+  на `main` снова окажется одобряющая запись, та же подпись подойдёт, потому что payload не
+  менялся. Копия в `publish/approvals/` только передаёт байты publisher'у и разрешением не
+  является: каждая команда перезаписывает её из `origin/main`. Повторный `publish` уже
+  опубликованного payload записи не требует и ничего не пишет.
 * Приватный ключ помощник не читает. Ключи с id вне `tf-prod-*` для production отклоняются.
 * `--store`, `--keyring`, `--releases-docs`, `--now` — только для локальной репетиции
   (`--store DIR`). С production их сочетать нельзя.
@@ -207,7 +215,6 @@ aws configure --profile talentforge-production   # если ещё не наст
 5. **Проверка против live и подготовка** (после merge):
 
    ```bash
-   git fetch origin
    python scripts/ota_production_release.py check $P              # готовность, diff против live
    python scripts/ota_production_release.py prepare $P --execute  # ≈ 8–9 мин: blob'ы, payload, PAE
    ```

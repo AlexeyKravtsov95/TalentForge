@@ -9,13 +9,16 @@ around them:
 
   check    read-only: the package is intact and is what build-release produces at its commit;
            its staging binding re-proves from the copies inside it; the approval record merged
-           on origin/main pins this manifest; staging started from the build live clients run;
+           on origin/main (fetched first) pins this manifest and accepts at most G5/G7;
+           staging started from the build live clients run;
            `ota promote` (dry run) and `ota report` against live production
   prepare  the same, then with --execute `ota promote --execute`: uploads the immutable blobs
            (verified by read-back; invisible to clients - no catalog references them yet) and
            writes the unsigned payload + the exact PAE bytes to sign offline into publish/
   publish  with --signature <der> --key-id <id>: the DER signature is verified against the
-           committed public keyring, the payload must still succeed the live catalog, then with
+           committed public keyring, the payload must still succeed the live catalog, the
+           approval record is read again from origin/main (a record withdrawn or changed since
+           prepare activates nothing; publish/approvals is never the approval), then with
            --execute `ota attach-signature --execute` writes catalog.json - the activation, the
            only step that makes the release visible to clients - and the outcome is re-read
   verify   `ota verify-live` and the read-only production preflight (published, keyring)
@@ -59,6 +62,7 @@ import datetime as dt
 import fcntl
 import json
 import shutil
+import subprocess
 import sys
 from collections.abc import Iterator
 from dataclasses import dataclass
@@ -337,21 +341,42 @@ def sign_instructions(package: rp.LoadedPackage, pending: Pending) -> str:
 # --------------------------------------------------------------------------- checks
 
 
+def refresh_main(repo: Path) -> None:
+    """origin/main as it is on GitHub now: a record removed or changed there since the last
+    fetch must not keep approving from a stale local ref."""
+    done = subprocess.run(
+        ["git", "-C", str(repo), "fetch", "--quiet", "origin", "main"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if done.returncode != 0:
+        raise Refused(
+            f"cannot refresh {MAIN_REF} (git fetch origin main exited {done.returncode}): "
+            + done.stderr.strip()
+        )
+
+
 def approvals_dir(args: argparse.Namespace, package: rp.LoadedPackage) -> Path:
-    """The approval record - production: as merged on origin/main - proven to pin exactly this
-    package, copied into ``publish/approvals/`` for the publisher."""
+    """The approval record - production: as merged on origin/main, fetched now - proven to pin
+    exactly this package, copied into ``publish/approvals/`` for the publisher.
+
+    Read from its source on every call: the copy in ``publish/approvals/`` only carries those
+    bytes to the publisher and never approves anything by itself (a copy left by an earlier
+    command, or edited since, is overwritten or the command refused)."""
     release_id = package.index.release_id
     if args.releases_docs is not None:
         path = args.releases_docs.expanduser() / f"{release_id}.md"
         record = path.read_bytes() if path.is_file() else None
         source = str(path)
     else:
+        refresh_main(args.repo)
         record = rp.approval_record_at(args.repo, MAIN_REF, release_id)
         source = f"{MAIN_REF}:{rp.APPROVALS_DIR}/{release_id}.md"
     if record is None:
         raise Refused(
-            f"no approval record {source}: fill in {package.root / rp.APPROVAL_TEMPLATE_NAME}, "
-            "merge it into main by PR, then `git fetch origin`"
+            f"no approval record {source}: fill in {package.root / rp.APPROVAL_TEMPLATE_NAME} "
+            "and merge it into main by PR"
         )
     index = package.index
     problems = rp.approval_record_problems(
@@ -366,7 +391,10 @@ def approvals_dir(args: argparse.Namespace, package: rp.LoadedPackage) -> Path:
         )
     directory = package.work / "approvals"
     directory.mkdir(parents=True, exist_ok=True)
-    (directory / f"{release_id}.md").write_bytes(record)
+    copy = directory / f"{release_id}.md"
+    if copy.is_file() and copy.read_bytes() != record:
+        print(f"the copy {copy} differed from {source}: replaced by the source's bytes")
+    copy.write_bytes(record)
     load_approval_record(release_id, directory)  # the publisher's own parser
     print(f"approval record {source} pins {package.index.manifest_sha256}")
     return directory
@@ -585,6 +613,9 @@ def cmd_publish(args: argparse.Namespace, target: Target) -> int:
                 f"{live.sequence}: the live catalog changed. Run prepare --replace --execute "
                 "and sign the new PAE (this signature cannot be reused)"
             )
+        # the approval as it stands now, not as prepare saw it: withdrawn or changed since,
+        # nothing is activated (the signature stays valid once the record approves again)
+        approvals = approvals_dir(args, package)
 
         attach = [
             "attach-signature",
@@ -604,7 +635,7 @@ def cmd_publish(args: argparse.Namespace, target: Target) -> int:
             "--channel",
             "production",
             "--releases-docs",
-            str(package.work / "approvals"),
+            str(approvals),
             *target.clock(),
         ]
         if not args.execute:

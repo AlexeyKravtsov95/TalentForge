@@ -46,6 +46,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
 from talent_data.ota.errors import OtaPublisherError
+from talent_data.ota.gates import FLAGGABLE_GATES
 from talent_data.ota.models import COMMIT_PATTERN, SHA256_PATTERN, OtaReleaseManifest
 from talent_data.ota.release import ReleaseArtifact, build_release
 from talent_data.ota.verify import parse_strict, sha256_ref
@@ -609,12 +610,19 @@ def approval_record_problems(
     """What keeps an approval record from approving exactly this release's manifest bytes.
 
     Stricter than the publisher's parser, which checks the pin only when one is present: the
-    record must pin this manifest, name this release and its source commit, and keep no
-    unfilled ``<OWNER: …>`` line of the template. Which gates it accepts stays the
-    publisher's (and the owner's) business."""
+    record must pin this manifest, name this release and its source commit, keep no unfilled
+    ``<OWNER: …>`` line of the template, and state its accepted gates - none, or only the
+    FLAG-able G5/G7 (a G7 with its live-build evidence). Which of them it accepts is the
+    owner's decision."""
     fields: dict[str, str] = {}
     for line in text.splitlines():
-        for name in ("Release", "Manifest SHA-256", "Source commit"):
+        for name in (
+            "Release",
+            "Manifest SHA-256",
+            "Source commit",
+            "Accepted gates",
+            "Live-build evidence",
+        ):
             prefix = f"- {name}: "
             if line.startswith(prefix) and name not in fields:
                 fields[name] = line.removeprefix(prefix).strip()
@@ -628,6 +636,17 @@ def approval_record_problems(
             problems.append(f"the record has no '- {name}:' line")
         elif fields[name] != expected:
             problems.append(f"the record's {name} {fields[name]!r} != this release's {expected!r}")
+    if "Accepted gates" not in fields:
+        problems.append("the record has no '- Accepted gates:' line")
+    elif OWNER_PLACEHOLDER not in fields["Accepted gates"]:  # unfilled: counted below
+        flaggable = sorted(gate.value for gate in FLAGGABLE_GATES)
+        accepted = [name.strip() for name in fields["Accepted gates"].split(",") if name.strip()]
+        if invalid := [name for name in accepted if name not in flaggable]:
+            problems.append(
+                f"the record accepts {invalid}: only {', '.join(flaggable)} may be accepted"
+            )
+        if "G7" in accepted and not fields.get("Live-build evidence"):
+            problems.append("the record accepts G7 without its 'Live-build evidence'")
     unfilled = [line.strip() for line in text.splitlines() if OWNER_PLACEHOLDER in line]
     if unfilled:
         problems.append(f"the record still has {len(unfilled)} unfilled template line(s)")

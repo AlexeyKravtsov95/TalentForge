@@ -8,7 +8,9 @@ real CI script; every test works on its own copy of it and of the store.
 
 Covered: the whole path (check -> prepare -> offline signature over the PAE file -> publish ->
 verify) and its repetition without a new sequence; a damaged package; an approval record that
-pins other bytes, is missing, unfilled or accepts a STOP gate; a signature by a key outside the
+pins other bytes, is missing, unfilled or accepts a STOP gate; a record withdrawn or changed
+after prepare (on origin/main or the rehearsal's records), and a substituted local copy of it,
+neither of which activates anything; a signature by a key outside the
 keyring, by another key, over other bytes; a payload made stale by another publication, and its
 replacement; a publisher run holding the lock; a competing catalog written while attaching; an
 interrupted blob upload resumed; a write that reports an error although it landed; a live
@@ -139,7 +141,9 @@ class Owner:
         self.keyring = load_keyring_file(self.keyring_path)
         self.helper: ModuleType = load_script("ota_production_release")
 
-    def run(self, command: str, *extra: str, now: str = NOW) -> int:
+    def run(self, command: str, *extra: str, now: str = NOW, docs: bool = True) -> int:
+        """``docs=False``: the approval record comes from origin/main, as in production."""
+        records = ["--releases-docs", str(self.approvals)] if docs else []
         return int(
             self.helper.main(
                 [
@@ -149,8 +153,7 @@ class Owner:
                     str(self.store),
                     "--keyring",
                     str(self.keyring_path),
-                    "--releases-docs",
-                    str(self.approvals),
+                    *records,
                     "--now",
                     now,
                     *extra,
@@ -188,8 +191,12 @@ class Owner:
         path.write_bytes(der)
         return path
 
-    def publish(self, signature: Path, *extra: str, key: str = KEY_A, now: str = NOW) -> int:
-        return self.run("publish", "--signature", str(signature), "--key-id", key, *extra, now=now)
+    def publish(
+        self, signature: Path, *extra: str, key: str = KEY_A, now: str = NOW, docs: bool = True
+    ) -> int:
+        return self.run(
+            "publish", "--signature", str(signature), "--key-id", key, *extra, now=now, docs=docs
+        )
 
     def journal(self) -> list[str]:
         lines = (self.work / "journal.jsonl").read_text(encoding="utf-8").splitlines()
@@ -277,6 +284,132 @@ def test_an_approval_record_that_does_not_approve_these_bytes_is_refused(
     assert owner.run("prepare", "--execute") == 1
     assert owner.snapshot() == before
     assert not (owner.work / PAYLOAD).exists()
+
+
+def _change(record: str, change: str, index: rp.PackageIndex) -> str | None:
+    """The source record after ``change``; ``None``: it was removed."""
+    if change == "removed":
+        return None
+    if change == "other pin":
+        return record.replace(index.manifest_sha256, "sha256:" + "1" * 64)
+    if change == "other source commit":
+        commit = f"- Source commit: {index.source_commit}"
+        return record.replace(commit, "- Source commit: " + "0" * 40)
+    if change == "other release":
+        return record.replace(f"- Release: {RELEASE}", "- Release: 1.60.1.70532-r1")
+    if change == "a placeholder again":
+        return record.replace("- Approved by: pytest", "- Approved by: <OWNER: имя>")
+    if change == "a STOP gate accepted":
+        return record.replace("- Accepted gates: G5, G7", "- Accepted gates: G5, G7, G6")
+    assert change == "G7 without its evidence"
+    lines = [line for line in record.splitlines() if not line.startswith("- Live-build evidence:")]
+    return "\n".join(lines) + "\n"
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        "removed",
+        "other pin",
+        "other source commit",
+        "other release",
+        "a placeholder again",
+        "a STOP gate accepted",
+        "G7 without its evidence",
+    ],
+)
+def test_an_approval_withdrawn_or_changed_after_prepare_activates_nothing(
+    owner: Owner, change: str
+) -> None:
+    assert owner.run("prepare", "--execute") == 0
+    prepared = owner.snapshot()
+    signature = owner.sign()
+    source = owner.approvals / f"{RELEASE}.md"
+    approving = source.read_text(encoding="utf-8")
+    changed = _change(approving, change, rp.load_package(owner.package).index)
+    if changed is None:
+        source.unlink()
+    else:
+        assert changed != approving
+        source.write_text(changed, encoding="utf-8")
+    # prepare's copy in publish/approvals still approves; it is not the approval
+    assert (owner.work / "approvals" / f"{RELEASE}.md").read_text(encoding="utf-8") == approving
+
+    assert owner.publish(signature) == 1  # dry run
+    assert owner.publish(signature, "--execute") == 1
+    assert owner.snapshot() == prepared
+    assert owner.live() == (1, f"{BUILD_A}-r1")
+    assert "write" not in owner.journal()
+
+    # approved again as merged: the same signature over the same payload activates it
+    source.write_text(approving, encoding="utf-8")
+    assert owner.publish(signature, "--execute") == 0
+    assert owner.live() == (2, RELEASE)
+
+
+def test_the_local_copy_of_the_record_never_approves(owner: Owner) -> None:
+    assert owner.run("prepare", "--execute") == 0
+    prepared = owner.snapshot()
+    signature = owner.sign()
+    source = owner.approvals / f"{RELEASE}.md"
+    copy = owner.work / "approvals" / f"{RELEASE}.md"
+    approving = source.read_bytes()
+
+    # the source gone: an approving copy left in publish/approvals is not enough
+    source.unlink()
+    assert copy.read_bytes() == approving
+    assert owner.publish(signature, "--execute") == 1
+    assert owner.snapshot() == prepared
+
+    # a substituted copy (it would accept a STOP gate for other bytes) is replaced by the
+    # source's bytes before the publisher reads it
+    source.write_bytes(approving)
+    copy.write_text(
+        approving.decode("utf-8")
+        .replace("- Accepted gates: G5, G7", "- Accepted gates: G5, G6, G7")
+        .replace(rp.load_package(owner.package).index.manifest_sha256, "sha256:" + "2" * 64),
+        encoding="utf-8",
+    )
+    assert owner.publish(signature, "--execute") == 0
+    assert owner.live() == (2, RELEASE)
+    assert copy.read_bytes() == approving
+
+
+def test_the_record_is_read_again_from_origin_main_before_activation(
+    owner: Owner, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Production's source: origin/main, fetched before every read. A record reverted on main
+    after prepare activates nothing; a repeated publish of the live payload needs no record."""
+    on_main: dict[str, bytes | None] = {"record": (owner.approvals / f"{RELEASE}.md").read_bytes()}
+    fetches: list[Path] = []
+    reads: list[tuple[str, str]] = []
+
+    def record_at(repo: Path, ref: str, release_id: str) -> bytes | None:
+        reads.append((ref, release_id))
+        return on_main["record"]
+
+    monkeypatch.setattr(owner.helper, "refresh_main", fetches.append)
+    monkeypatch.setattr(rp, "approval_record_at", record_at)
+
+    assert owner.run("prepare", "--execute", docs=False) == 0
+    prepared = owner.snapshot()
+    signature = owner.sign()
+    approving, on_main["record"] = on_main["record"], None  # reverted on main
+    assert owner.publish(signature, "--execute", docs=False) == 1
+    assert owner.snapshot() == prepared
+    assert len(fetches) == len(reads) == 2  # prepare, then publish: each fetched first
+    assert set(reads) == {("origin/main", RELEASE)}
+
+    on_main["record"] = approving
+    assert owner.publish(signature, "--execute", docs=False) == 0
+    assert owner.live() == (2, RELEASE)
+    published = owner.snapshot()
+
+    # already published: no record needed, nothing written, no new sequence
+    on_main["record"] = None
+    assert owner.publish(signature, "--execute", docs=False) == 0
+    assert owner.snapshot() == published
+    assert owner.journal() == ["start", "prepared", "write", "published"]
 
 
 def test_a_foreign_signature_is_refused(owner: Owner) -> None:
