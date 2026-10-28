@@ -9,6 +9,10 @@ the JSON and in ``$GITHUB_OUTPUT``), 4 ``UNKNOWN``, 1 the detection itself faile
 ``prepare`` exit codes: 0 ``PREPARED``, 3 ``BLOCKED``, 4 ``UNKNOWN``, 1 the preparation
 could not run (an invalid detection document, an unexpected crash - its traceback is kept in
 ``<out>/crash.txt``). A preparation never makes anything publishable.
+
+``propose`` (M5.OTA.AUTO.3, ``talent_data.prepare.propose``) exit codes: 0 ``OPENED`` /
+``EXISTS`` / ``ALREADY_ON_MAIN`` / ``DECLINED``, 3 ``REFUSED`` / ``CONFLICT``, 1 ``FAILED``
+(git, the GitHub API, a missing token or a crash: retried by the next run).
 """
 
 from __future__ import annotations
@@ -28,7 +32,13 @@ from talent_data.freshness import evaluate_freshness
 from talent_data.games import GameConfig, get_game
 from talent_data.ota.s3_channels import PRODUCTION_PROFILE
 from talent_data.pipeline import PipelineError, check_game_version
-from talent_data.prepare.detect import Action, PriorListing, decide, read_detection
+from talent_data.prepare.detect import (
+    Action,
+    DetectionDocument,
+    PriorListing,
+    decide,
+    read_detection,
+)
 from talent_data.prepare.orchestrate import (
     EXIT_CODES,
     PrepareError,
@@ -89,6 +99,20 @@ def _write_outputs(path: str | None, values: dict[str, str]) -> None:
     _append(path, "".join(f"{name}={value}\n" for name, value in values.items()))
 
 
+def detection_outputs(detection: DetectionDocument) -> dict[str, str]:
+    """The step outputs of ``detect``. ``prepared_artifact`` names the kept ``PREPARED``
+    artifact that made the detection ``NO_ACTION`` (the workflow ensures its PR again);
+    it is empty for every other decision."""
+    return {
+        "action": detection.action.value,
+        "candidate": detection.candidate_build or "",
+        "key": detection.preparation_key or "",
+        "prepared_artifact": (
+            (detection.prior_artifact or "") if detection.action is Action.NO_ACTION else ""
+        ),
+    }
+
+
 def _cmd_detect(args: argparse.Namespace) -> int:
     from talent_data.ota.preflight import production_keyring
 
@@ -145,14 +169,7 @@ def _cmd_detect(args: argparse.Namespace) -> int:
         f"{detection.production.status.value} ({detection.production.reason})\n"
         f"* Build index: {detection.source_status.value} ({detection.source_reason})\n\n",
     )
-    _write_outputs(
-        args.github_output,
-        {
-            "action": detection.action.value,
-            "candidate": detection.candidate_build or "",
-            "key": detection.preparation_key or "",
-        },
-    )
+    _write_outputs(args.github_output, detection_outputs(detection))
     return EXIT_UNKNOWN if detection.action is Action.UNKNOWN else EXIT_DECIDED
 
 
@@ -213,21 +230,68 @@ def _cmd_prepare(args: argparse.Namespace) -> int:
     return EXIT_CODES[report.status]
 
 
+def _cmd_propose(args: argparse.Namespace) -> int:
+    from talent_data.prepare import propose as proposal_module
+    from talent_data.prepare.propose import (
+        Git,
+        GitHub,
+        Outcome,
+        Proposal,
+        git_auth,
+        github_client,
+        propose,
+        render_summary,
+        write_outputs,
+    )
+
+    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    out = args.out.resolve()
+    git = Git(args.repo.resolve(), auth=git_auth(token, args.server_url))
+    proposal: Proposal
+    body: str | None = None
+    if not token:
+        proposal = Proposal(Outcome.FAILED, "no GitHub token (GH_TOKEN or GITHUB_TOKEN)")
+    else:
+        try:
+            with github_client(token, args.api_url) as client:
+                proposal, body = propose(
+                    args.artifact.resolve(),
+                    git=git,
+                    github=GitHub(client, args.repository),
+                    remote=args.remote,
+                    base_branch=args.base_branch,
+                    expected_artifact=args.artifact_name,
+                    preparation_url=args.preparation_url,
+                )
+        except Exception:  # noqa: BLE001 - the crash is recorded, then reported as a failure
+            out.mkdir(parents=True, exist_ok=True)
+            (out / "crash.txt").write_text(traceback.format_exc(), encoding="utf-8")
+            traceback.print_exc()
+            proposal = Proposal(
+                Outcome.FAILED, "the proposal crashed", error=f"see {out / 'crash.txt'}"
+            )
+    write_outputs(out, proposal, body, git.log)
+    summary = render_summary(proposal)
+    sys.stdout.write(summary)
+    _append(args.step_summary, summary)
+    _write_outputs(
+        args.github_output,
+        {
+            "outcome": proposal.outcome.value,
+            "pr_url": proposal.pull_url or "",
+            "branch": proposal.branch or "",
+        },
+    )
+    return proposal_module.EXIT_CODES[proposal.outcome]
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="ota_prepare.py", description="Prepare a new Forever build for OTA review"
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
-    def common(p: argparse.ArgumentParser) -> None:
-        p.add_argument("--repo", type=Path, default=Path.cwd(), help="checkout (default: cwd)")
-        p.add_argument("--production-origin", default=PRODUCTION_PROFILE.public_origin)
-        p.add_argument(
-            "--keyring",
-            type=Path,
-            default=DEFAULT_KEYRING,
-            help="committed production public keyring, relative to --repo",
-        )
+    def outputs(p: argparse.ArgumentParser) -> None:
         p.add_argument(
             "--github-output",
             default=os.environ.get("GITHUB_OUTPUT"),
@@ -238,6 +302,17 @@ def _parser() -> argparse.ArgumentParser:
             default=os.environ.get("GITHUB_STEP_SUMMARY"),
             help="append a markdown summary here (default: $GITHUB_STEP_SUMMARY)",
         )
+
+    def common(p: argparse.ArgumentParser) -> None:
+        p.add_argument("--repo", type=Path, default=Path.cwd(), help="checkout (default: cwd)")
+        p.add_argument("--production-origin", default=PRODUCTION_PROFILE.public_origin)
+        p.add_argument(
+            "--keyring",
+            type=Path,
+            default=DEFAULT_KEYRING,
+            help="committed production public keyring, relative to --repo",
+        )
+        outputs(p)
 
     detect = sub.add_parser("detect", help="decide whether a build needs preparing")
     common(detect)
@@ -267,6 +342,28 @@ def _parser() -> argparse.ArgumentParser:
     prep.add_argument("--out", type=Path, required=True, help="report and artifacts directory")
     prep.add_argument("--workspace", type=Path, help="empty directory for the disposable clone")
     prep.set_defaults(handler=_cmd_prepare)
+
+    prop = sub.add_parser(
+        "propose", help="open a review PR for a PREPARED candidate (never merges or publishes)"
+    )
+    outputs(prop)
+    prop.add_argument("--repo", type=Path, default=Path.cwd(), help="checkout (default: cwd)")
+    prop.add_argument(
+        "--artifact", type=Path, required=True, help="the downloaded preparation (its prep/)"
+    )
+    prop.add_argument("--artifact-name", help="the artifact's name; the report must match it")
+    prop.add_argument("--out", type=Path, required=True, help="proposal diagnostics directory")
+    prop.add_argument("--repository", required=True, help="owner/name on GitHub")
+    prop.add_argument("--remote", default="origin")
+    prop.add_argument("--base-branch", default="main")
+    prop.add_argument("--preparation-url", help="link to the run that prepared the candidate")
+    prop.add_argument(
+        "--api-url", default=os.environ.get("GITHUB_API_URL", "https://api.github.com")
+    )
+    prop.add_argument(
+        "--server-url", default=os.environ.get("GITHUB_SERVER_URL", "https://github.com")
+    )
+    prop.set_defaults(handler=_cmd_propose)
     return parser
 
 
