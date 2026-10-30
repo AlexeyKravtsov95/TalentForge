@@ -929,6 +929,46 @@ def test_the_state_branch_roundtrips_and_rebases_onto_a_racing_producer(
         assert (c / name).is_file(), name
 
 
+def test_upload_survives_a_broken_rebase_machine(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The rebase can fail for reasons of its own (a runner without a git identity, an
+    unrelated-history bootstrap race). The producers write disjoint files, so re-applying
+    the commit's bytes on the fetched tip must still land the same merge."""
+    from talent_data.notify import gitstate
+
+    real_git = gitstate._git
+
+    def broken_rebase(cwd: Path, env: dict[str, str], *args: str) -> subprocess.CompletedProcess:
+        if "rebase" in args and "FETCH_HEAD" in args:
+            return subprocess.CompletedProcess(
+                ["git", *args], 128, "", "fatal: committer identity unknown"
+            )
+        return real_git(cwd, env, *args)
+
+    monkeypatch.setattr(gitstate, "_git", broken_rebase)
+    origin = tmp_path / "origin.git"
+    assert git(tmp_path, "init", "--bare", str(origin)).returncode == 0
+    server, repository = str(tmp_path), "origin"
+
+    a = tmp_path / "a"
+    assert download(a, repository=repository, server_url=server, token="gh") is False
+    save_dedup(a / "freshness.json", initial_freshness(NOW))
+    assert upload(a, token="gh", server_url=server, message="notify: freshness")
+
+    b = tmp_path / "b"
+    assert download(b, repository=repository, server_url=server, token="gh") is True
+    save_dedup(a / "production.json", initial_production(NOW))
+    assert upload(a, token="gh", server_url=server, message="notify: production")
+    save_dedup(b / "candidate.json", initial_candidate(NOW))
+    assert upload(b, token="gh", server_url=server, message="notify: candidate")
+
+    c = tmp_path / "c"
+    assert download(c, repository=repository, server_url=server, token="gh") is True
+    for name in ("freshness.json", "production.json", "candidate.json"):
+        assert (c / name).is_file(), name
+
+
 # ---------------------------------------------------------------------- the workflows
 
 

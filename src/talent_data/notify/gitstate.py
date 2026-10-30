@@ -70,6 +70,9 @@ def download(
     env = git_auth(token, server_url)
     state_dir.mkdir(parents=True, exist_ok=True)
     _ok(state_dir, env, "init", "init", str(state_dir))
+    # The runner has no global git identity, and a rebase re-commits: pin one per repo.
+    _ok(state_dir, env, "identity", "config", "user.name", _AUTHOR_NAME)
+    _ok(state_dir, env, "identity", "config", "user.email", _AUTHOR_EMAIL)
     _ok(state_dir, env, "remote", "remote", "add", "origin", url)
     fetch = _git(state_dir, env, "fetch", "--no-tags", "origin", branch)
     if fetch.returncode == 0:
@@ -102,6 +105,47 @@ def upload(
     _ok(state_dir, env, "add", "add", "-A")
     if _git(state_dir, env, "diff", "--cached", "--quiet").returncode == 0:
         return False
+    _commit(state_dir, env, message)
+    for attempt in range(1, PUSH_ATTEMPTS + 1):
+        push = _git(state_dir, env, "push", "origin", f"HEAD:refs/heads/{branch}")
+        if push.returncode == 0:
+            return True
+        # someone else committed first: move our change on top of the new tip, retry
+        fetch = _git(state_dir, env, "fetch", "--no-tags", "origin", branch)
+        if fetch.returncode != 0:
+            raise GitStateError(
+                f"push attempt {attempt} failed and the new tip could not be fetched: "
+                f"{push.stderr.strip()}; {fetch.stderr.strip()}"
+            )
+        rebase = _git(
+            state_dir,
+            env,
+            "-c",
+            f"user.name={_AUTHOR_NAME}",
+            "-c",
+            f"user.email={_AUTHOR_EMAIL}",
+            "rebase",
+            "FETCH_HEAD",
+        )
+        if rebase.returncode != 0:
+            _git(state_dir, env, "rebase", "--abort")
+            # the rebase machinery itself failed (a runner without a git identity, an
+            # unrelated-history bootstrap race, ...). The producers write disjoint files,
+            # so re-applying this commit's exact file contents on the fetched tip is the
+            # same merge the rebase would have made.
+            try:
+                _reapply_on_fetched_tip(state_dir, env, message)
+            except GitStateError as exc:
+                raise GitStateError(
+                    f"push attempt {attempt} failed; neither the rebase onto the new tip "
+                    f"({rebase.stderr.strip()}) nor the manual re-apply worked: {exc}"
+                ) from exc
+    raise GitStateError(
+        f"the state branch {branch} could not be pushed after {PUSH_ATTEMPTS} attempts"
+    )
+
+
+def _commit(state_dir: Path, env: dict[str, str], message: str) -> None:
     _ok(
         state_dir,
         env,
@@ -116,24 +160,24 @@ def upload(
         "-m",
         message,
     )
-    for attempt in range(1, PUSH_ATTEMPTS + 1):
-        push = _git(state_dir, env, "push", "origin", f"HEAD:refs/heads/{branch}")
-        if push.returncode == 0:
-            return True
-        # someone else committed first: move on top of the new tip and try again
-        fetch = _git(state_dir, env, "fetch", "--no-tags", "origin", branch)
-        if fetch.returncode != 0:
-            raise GitStateError(
-                f"push attempt {attempt} failed and the new tip could not be fetched: "
-                f"{push.stderr.strip()}; {fetch.stderr.strip()}"
-            )
-        rebase = _git(state_dir, env, "rebase", "FETCH_HEAD")
-        if rebase.returncode != 0:
-            _git(state_dir, env, "rebase", "--abort")
-            raise GitStateError(
-                f"push attempt {attempt} failed and the rebase onto the new tip "
-                f"conflicted: {push.stderr.strip()}"
-            )
-    raise GitStateError(
-        f"the state branch {branch} could not be pushed after {PUSH_ATTEMPTS} attempts"
-    )
+
+
+def _reapply_on_fetched_tip(state_dir: Path, env: dict[str, str], message: str) -> None:
+    """Replace the failed rebase: keep this commit's file bytes, reset to FETCH_HEAD,
+    write them back and commit again."""
+    listed = _git(state_dir, env, "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD")
+    if listed.returncode != 0:
+        raise GitStateError(f"git diff-tree HEAD failed: {listed.stderr.strip()}")
+    files = [line.strip() for line in listed.stdout.splitlines() if line.strip()]
+    contents: dict[Path, bytes] = {}
+    for name in files:
+        path = (state_dir / name).resolve()
+        if state_dir.resolve() not in path.parents:
+            raise GitStateError(f"refusing to re-apply a path outside the state repo: {name}")
+        contents[path] = path.read_bytes()
+    _ok(state_dir, env, "reset", "reset", "--hard", "FETCH_HEAD")
+    for path, data in contents.items():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+    _ok(state_dir, env, "add", "add", "-A")
+    _commit(state_dir, env, message)
