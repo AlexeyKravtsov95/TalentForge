@@ -21,6 +21,7 @@ carry the full request URL, and the token is part of that URL's path.
 from __future__ import annotations
 
 import os
+import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import StrEnum
@@ -84,14 +85,16 @@ class TelegramClient:
         *,
         transport: httpx.BaseTransport | None = None,
         api_url: str = os.environ.get("TELEGRAM_API_URL", API_URL),
-        sleeper: Callable[[float], None] = lambda seconds: None,
+        sleeper: Callable[[float], None] | None = None,
         attempts: int = ATTEMPTS,
         max_retry_wait: float = MAX_RETRY_WAIT,
     ) -> None:
         if not token:
             raise ValueError("a Telegram bot token is required")
         self._token = token
-        self._sleeper = sleeper
+        # A real delay by default (a 429 must never turn into a hammering loop); tests
+        # inject their own sleeper to observe the waits without sleeping.
+        self._sleeper = sleeper if sleeper is not None else time.sleep
         self._attempts = attempts
         self._max_retry_wait = max_retry_wait
         self._client = httpx.Client(
@@ -154,9 +157,15 @@ class TelegramClient:
             body = None
         if response.status_code == 200 and _ok(body):
             return body
-        raise TelegramError(f"{method}: HTTP {response.status_code}: {_description_body(body)}")
+        raise TelegramError(
+            self._redact(f"{method}: HTTP {response.status_code}: {_description_body(body)}")
+        )
 
     def _call(self, method: str, payload: dict[str, Any]) -> SendResult:
+        """The retry loop of ``sendMessage``. Every detail that leaves this method -
+        transport errors, rate-limit diagnostics, the API's own ``description`` - goes
+        through :meth:`_redact` first: the API may echo the request URL, and the token
+        is part of that URL's path."""
         for attempt in range(1, self._attempts + 1):
             try:
                 response = self._client.post(f"/bot{self._token}/{method}", json=payload)
@@ -181,8 +190,10 @@ class TelegramClient:
                     budget = f"{self._max_retry_wait:.0f}s"
                     return SendResult(
                         SendStatus.FAILED,
-                        f"{method}: rate limited, retry_after {waited} not waited "
-                        f"(attempts {attempt}/{self._attempts}, budget {budget})",
+                        self._redact(
+                            f"{method}: rate limited, retry_after {waited} not waited "
+                            f"(attempts {attempt}/{self._attempts}, budget {budget})"
+                        ),
                         attempt,
                     )
                 self._sleeper(wait)
@@ -190,7 +201,7 @@ class TelegramClient:
             if _retryable(wrapped) and attempt < self._attempts:
                 self._sleeper(RETRY_PAUSE)
                 continue
-            return SendResult(SendStatus.FAILED, result.detail, attempt)
+            return SendResult(SendStatus.FAILED, self._redact(result.detail), attempt)
         raise AssertionError("unreachable")  # pragma: no cover - the loop always returns
 
     def _redact(self, text: str) -> str:
@@ -198,7 +209,8 @@ class TelegramClient:
 
 
 def _interpret_send(method: str, response: _Response) -> SendResult:
-    """One sendMessage answer: SENT only on HTTP 200 with ``ok: true``."""
+    """One sendMessage answer: SENT only on HTTP 200 with ``ok: true``. The failure
+    detail may carry the API's ``description`` verbatim - the caller redacts it."""
     if response.status == 200 and _ok(response.body):
         return SendResult(SendStatus.SENT, "delivered")
     return SendResult(

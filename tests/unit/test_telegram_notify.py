@@ -49,6 +49,7 @@ from talent_data.notify.state import (
     FreshnessDedup,
     StateError,
     baseline,
+    confirmed_candidate,
     decide_candidate,
     decide_freshness,
     decide_production,
@@ -60,6 +61,7 @@ from talent_data.notify.state import (
 )
 from talent_data.notify.telegram import (
     ATTEMPTS,
+    RETRY_PAUSE,
     SendResult,
     SendStatus,
     TelegramClient,
@@ -222,6 +224,47 @@ def test_transport_exceptions_never_leak_the_token() -> None:
     result = c.send_message("42", "hi")
     assert result.status is SendStatus.FAILED
     assert TOKEN not in result.detail and "***" in result.detail
+
+
+def test_the_api_description_is_redacted_in_every_error_text() -> None:
+    """Telegram (or a proxy in front of it) may echo the request URL - token included -
+    in its own ``description``; no detail that leaves the client may carry it."""
+    echo = (
+        f"Bad Request: chat not found; saw {TOKEN} at "
+        f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+    )
+    with client(Scripted(fail(400, echo))) as c:
+        result = c.send_message("42", "hi")
+    assert result.status is SendStatus.FAILED
+    assert TOKEN not in result.detail and "***" in result.detail
+
+    with client(Scripted(fail(401, echo))) as c, pytest.raises(TelegramError) as raised:
+        c.get_me()
+    assert TOKEN not in str(raised.value) and "***" in str(raised.value)
+
+    with client(Scripted(fail(400, echo))) as c, pytest.raises(TelegramError) as raised:
+        c.get_updates()
+    assert TOKEN not in str(raised.value) and "***" in str(raised.value)
+
+    rate = fail(429, echo, retry_after=300)
+    with client(Scripted(rate)) as c:
+        result = c.send_message("42", "hi")
+    assert TOKEN not in result.detail
+
+
+def test_the_client_sleeps_for_real_without_an_injected_sleeper(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The default sleeper is a real delay (a 429 must not hammer); tests observe it by
+    patching time.sleep, not by injecting their own callable."""
+    from talent_data.notify import telegram as telegram_module
+
+    slept: list[float] = []
+    monkeypatch.setattr(telegram_module.time, "sleep", slept.append)
+    scripted = Scripted(fail(500, "Internal Server Error"), ok())
+    with TelegramClient(TOKEN, transport=httpx.MockTransport(scripted.handler)) as c:
+        assert c.send_message("42", "hi").status is SendStatus.SENT
+    assert slept == [RETRY_PAUSE]
 
 
 def test_get_me_and_get_updates_parse_and_raise_redacted() -> None:
@@ -505,10 +548,43 @@ def test_a_prepared_candidate_notifies_once_per_release_id() -> None:
     assert isinstance(event, CandidatePrepared)
     assert event.release_id == "1.60.1.70532-r1" and event.steps_total == 2
     assert event.gates_passed == ("G2",) and event.gates_required == ("G1", "G7")
-    assert decision.state.notified == ("1.60.1.70532-r1",)
-    repeat = candidate(decision.state)
-    assert repeat.events == () and repeat.state.notified == ("1.60.1.70532-r1",)
+    # delivered only on confirmation: until then the event is the durable pending marker
+    assert decision.state.notified == () and decision.state.pending is not None
+    assert decision.state.pending.release_id == event.release_id
+    confirmed = confirmed_candidate(decision.state, NOW)
+    assert confirmed.notified == ("1.60.1.70532-r1",) and confirmed.pending is None
+    repeat = candidate(confirmed)
+    assert repeat.events == () and repeat.state.pending is None
     assert baseline(decision).events == ()  # a first run records, never announces
+    acknowledged = confirmed_candidate(baseline(decision).state, NOW)  # the first run's baseline
+    assert acknowledged.notified == ("1.60.1.70532-r1",) and acknowledged.pending is None
+
+
+def test_an_undelivered_candidate_is_retried_after_the_run_goes_quiet() -> None:
+    """The sequence the task fixes: Telegram is down when the candidate is PREPARED, the
+    next scheduled run is the quiet NO_ACTION/EXISTS of the kept artifact, Telegram is
+    back - the message is delivered exactly once, and never again."""
+    undelivered = candidate(initial_candidate(NOW)).state  # the PREPARED run, send failed
+    assert undelivered.pending is not None and undelivered.notified == ()
+    retry = candidate(undelivered, outcome="NO_ACTION", report=None, propose_outcome="EXISTS")
+    (event,) = retry.events
+    assert isinstance(event, CandidatePrepared) and event.release_id == "1.60.1.70532-r1"
+    assert retry.state.pending is not None  # still due until a confirmed delivery
+    recovered = confirmed_candidate(retry.state, NOW)
+    assert recovered.notified == ("1.60.1.70532-r1",) and recovered.pending is None
+    quiet = candidate(recovered, outcome="NO_ACTION", report=None, propose_outcome="EXISTS")
+    assert quiet.events == ()  # no second delivery, ever
+
+
+def test_a_fresh_prepared_of_the_same_release_supersedes_the_retry() -> None:
+    undelivered = candidate(initial_candidate(NOW)).state
+    assert undelivered.pending is not None
+    fresh = candidate(
+        undelivered, pr_url="https://github.com/AlexeyKravtsov95/TalentForge/pull/102"
+    )
+    (event,) = fresh.events  # one message, not both the retry and the fresh event
+    assert isinstance(event, CandidatePrepared) and event.pr_url is not None
+    assert fresh.state.pending is not None and fresh.state.pending.pr_url is not None
 
 
 def test_no_action_is_quiet_and_clears_the_detection_failure() -> None:
@@ -876,6 +952,85 @@ def test_the_candidate_cli_reads_the_preparation_report(
     assert len(fake.sent) == 1  # deduplicated
 
 
+def test_the_candidate_cli_retries_an_undelivered_message(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Telegram down at the PREPARED run, up again at the next (quiet NO_ACTION/EXISTS)
+    run: the message is delivered exactly once, and never repeated afterwards."""
+    report_path = tmp_path / "report.json"
+    report_path.write_text(report().model_dump_json(by_alias=True), encoding="utf-8")
+    detection = tmp_path / "detection.json"
+    detection.write_text('{"reason": "new build"}', encoding="utf-8")
+    state = tmp_path / "candidate.json"
+    save_dedup(
+        state,
+        CandidateDedup(
+            state_version=1,
+            kind="notify-candidate-state",
+            notified=("1.60.1.70374-r1",),
+            updated_at=NOW,
+        ),
+    )
+    prepared_args = [
+        "candidate",
+        "--outcome",
+        "PREPARED",
+        "--report",
+        str(report_path),
+        "--detection",
+        str(detection),
+        "--propose-outcome",
+        "OPENED",
+        "--propose-result",
+        "success",
+        "--pr-url",
+        "https://github.com/x/pull/9",
+        "--artifact",
+        "art",
+        "--state-file",
+        str(state),
+        "--run-url",
+        RUN,
+    ]
+    quiet_args = [
+        "candidate",
+        "--outcome",
+        "NO_ACTION",
+        "--report",
+        str(report_path),
+        "--detection",
+        str(detection),
+        "--propose-outcome",
+        "EXISTS",
+        "--propose-result",
+        "success",
+        "--state-file",
+        str(state),
+        "--run-url",
+        RUN,
+    ]
+
+    down = FakeTelegram(SendStatus.FAILED)
+    env = cli_env(tmp_path, down, monkeypatch)
+    assert cli_main(prepared_args, env) == 0  # not the pipeline's failure
+    recorded = load_dedup(CandidateDedup, state)
+    assert recorded is not None and recorded.pending is not None
+    assert recorded.pending.release_id == "1.60.1.70532-r1"
+    assert "1.60.1.70532-r1" not in recorded.notified
+
+    up = FakeTelegram()
+    monkeypatch.setattr(notify_cli, "TelegramClient", lambda token: up)
+    assert cli_main(quiet_args, env) == 0
+    [(_chat, text)] = up.sent
+    assert "1.60.1.70532-r1" in text
+    recorded = load_dedup(CandidateDedup, state)
+    assert recorded is not None and recorded.pending is None
+    assert "1.60.1.70532-r1" in recorded.notified
+
+    assert cli_main(quiet_args, env) == 0
+    assert len(up.sent) == 1  # delivered once, no repeats
+
+
 def test_the_smoke_command_reports_sent_and_failed(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -1140,3 +1295,20 @@ def test_the_state_documents_never_contain_a_token_or_a_chat_id() -> None:
     for state in (initial_freshness(NOW), initial_candidate(NOW), initial_production(NOW)):
         dumped = state.model_dump_json(by_alias=True)
         assert TOKEN not in dumped and "424242" not in dumped
+
+
+def test_the_notification_jobs_install_the_extras_the_cli_actually_imports() -> None:
+    """The CLI's import chain (the strict preparation-report reader lives in
+    talent_data.prepare.propose) needs the `ota` extra (cryptography): a plain
+    ``pip install -e .`` fails to import it, which a clean venv proved the hard way."""
+    for name in (
+        "dataset-freshness.yml",
+        "ota-prepare.yml",
+        "ota-production-watch.yml",
+        "telegram-smoke-test.yml",
+    ):
+        text = workflow_text(name)
+        assert 'run: pip install -e ".[ota]"' in text, name
+    # the local setup instruction of the runbook installs the same set
+    doc = (ROOT / "docs" / "ota" / "telegram-notifications.md").read_text(encoding="utf-8")
+    assert 'pip install -e ".[ota]"' in doc

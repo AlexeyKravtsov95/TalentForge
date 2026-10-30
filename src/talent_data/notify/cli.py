@@ -38,6 +38,7 @@ from talent_data.notify.state import (
     ProductionDedup,
     StateError,
     baseline,
+    confirmed_candidate,
     decide_candidate,
     decide_freshness,
     decide_production,
@@ -225,8 +226,18 @@ def cmd_candidate(
         now=utc_now(),
     )
     if first:
-        decision = baseline(decision)
-    _deliver(decision, path, send, summary, first_run=first)
+        # the first run records the baseline and sends nothing old - including the
+        # candidate of this very run, which is acknowledged as if delivered
+        decision = Decision((), confirmed_candidate(baseline(decision).state, utc_now()))
+    _deliver(
+        decision,
+        path,
+        send,
+        summary,
+        first_run=first,
+        on_sent=lambda confirmed: confirmed_candidate(confirmed, utc_now()),
+        persist_on_failure=True,
+    )
     return EXIT_OK, True
 
 
@@ -265,10 +276,23 @@ def cmd_production(
 
 
 def _deliver(
-    decision: Decision[Any], path: Path, send: Sender, summary: _Summary, *, first_run: bool
+    decision: Decision[Any],
+    path: Path,
+    send: Sender,
+    summary: _Summary,
+    *,
+    first_run: bool,
+    on_sent: Callable[[Any], Any] | None = None,
+    persist_on_failure: bool = False,
 ) -> str:
-    """Send the events, persist the state when they are all delivered (or none were),
-    and report the notification's own status. Never raises for a send failure."""
+    """Send the events, persist the state and report the notification's own status.
+    Never raises for a send failure.
+
+    ``on_sent`` transforms the state after a confirmed delivery (the candidate command
+    moves its pending marker into ``notified``); ``persist_on_failure`` makes a failed
+    send persist the state too - only for producers whose state itself carries the
+    undelivered work as a durable marker, so the usual quiet follow-up run still
+    retries it."""
     note = (
         " (первый запуск: база зафиксирована, старые события не отправлялись)" if first_run else ""
     )
@@ -289,14 +313,24 @@ def _deliver(
             failures.append(result.detail)
             summary.append(f"- НЕ отправлено: {_title(event)} — {result.detail}")
     if failures:
-        summary.append(
-            "## Telegram-уведомления: FAILED",
-            "",
-            "События не доставлены; состояние не записано — следующий запуск повторит "
-            "отправку (возможно повторение уже дошедшего сообщения: доставка не exactly-once).",
-        )
+        if persist_on_failure:
+            save_dedup(path, decision.state)
+            summary.append(
+                "## Telegram-уведомления: FAILED",
+                "",
+                "События не доставлены и остались в состоянии (pending): следующий запуск "
+                "повторит отправку (возможно повторение уже дошедшего сообщения: доставка "
+                "не exactly-once).",
+            )
+        else:
+            summary.append(
+                "## Telegram-уведомления: FAILED",
+                "",
+                "События не доставлены; состояние не записано — следующий запуск повторит "
+                "отправку (возможно повторение уже дошедшего сообщения: доставка не exactly-once).",
+            )
         return "FAILED"
-    save_dedup(path, decision.state)
+    save_dedup(path, on_sent(decision.state) if on_sent is not None else decision.state)
     summary.append(
         f"## Telegram-уведомления: SENT ({len(decision.events)}){note}",
         "",

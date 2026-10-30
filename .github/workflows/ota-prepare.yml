@@ -453,8 +453,10 @@ jobs:
           python-version: "3.12"
           cache: pip
 
+      # The notification CLI reads the preparation report through
+      # talent_data.prepare.propose, whose chain needs the `ota` extra (cryptography).
       - name: Install
-        run: pip install -e .
+        run: pip install -e ".[ota]"
 
       - name: Download this run's preparation
         continue-on-error: true # a missing report is itself a failure event
