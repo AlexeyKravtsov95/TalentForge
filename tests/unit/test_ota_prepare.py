@@ -1110,9 +1110,18 @@ def test_the_prepare_command_refuses_invalid_detections(tmp_path: Path, capsys) 
     assert "nothing to prepare" in capsys.readouterr().err
 
 
-def test_the_workflow_holds_no_secret_and_cannot_publish() -> None:
+def test_the_workflow_holds_no_publishing_secret_and_cannot_publish() -> None:
     text = (ROOT / ".github/workflows/ota-prepare.yml").read_text(encoding="utf-8")
-    assert "secrets." not in text
+    # The only secrets are the owner's personal Telegram pair of the `notify` job
+    # (M5.NOTIFY), gated behind the `notifications` environment; no signing key and no
+    # cloud credential exists anywhere in this workflow.
+    assert sorted(line.strip() for line in text.splitlines() if "secrets." in line) == [
+        "TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}",
+        "TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}",
+    ]
+    notify_job = text.split("  notify:", 1)[1]
+    assert "environment: notifications" in notify_job
+    assert "continue-on-error: true" in notify_job
     for forbidden in ("--execute", "promote", "attach-signature", "aws ", "AWS_", "git push"):
         assert forbidden not in text, forbidden
     assert "permissions:\n  contents: read\n  actions: read" in text
@@ -1128,6 +1137,7 @@ def test_the_workflow_pins_the_icon_generation_environment() -> None:
     assert [line.strip() for line in text.splitlines() if "runs-on:" in line] == [
         "runs-on: ubuntu-24.04",  # prepare
         "runs-on: ubuntu-24.04",  # propose (M5.OTA.AUTO.3)
+        "runs-on: ubuntu-latest",  # notify (M5.NOTIFY; no icon generation)
     ]
     step = text.split("      - name: Icon generation environment\n", 1)[1].splitlines()[0]
     assert "print(i.converter_description())" in step

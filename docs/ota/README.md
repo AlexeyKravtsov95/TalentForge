@@ -39,6 +39,7 @@ app build; the production bucket, hostname and keys did not exist yet
 | [publisher-and-security.md](publisher-and-security.md) | Publisher pipeline and gates, channels, atomic pointer, rollback, keys, threat model, why `is_bgdl=false` is not "live" |
 | [publisher-runbook.md](publisher-runbook.md) | Operator procedures (M5.OTA.2): first publication, refresh, rollback, re-sign, key loss, hosting change |
 | [auto-prepare.md](auto-prepare.md) | M5.OTA.AUTO.1/3: when a new build is prepared automatically, statuses (PREPARED / BLOCKED / UNKNOWN), the artifact, idempotency, the automatic review PR and its GitHub settings, and the path from a prepared candidate to a release |
+| [telegram-notifications.md](telegram-notifications.md) | M5.NOTIFY (Russian, for the owner): the four personal Telegram events (new build / PREPARED candidate / production release / a broken stage), the hourly read-only production watch, durable deduplication on the `telegram-notify-state` branch, and the one-time secrets setup in the `notifications` environment |
 | [test-plan.md](test-plan.md) | Test layers, scenarios S1–S14, performance measurements, release gates: common, Android, iOS |
 | [open-decisions.md](open-decisions.md) | OD-1…OD-17, each with a recommended default |
 | [M5.OTA.4a-integration-report.md](M5.OTA.4a-integration-report.md) | M5.OTA.4a: what was verified together (PASSED / FAILED / BLOCKED / NOT RUN), CI status, what the owner must provide |

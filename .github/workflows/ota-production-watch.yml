@@ -1,0 +1,58 @@
+name: OTA production watch
+
+# M5.NOTIFY: read-only observation of the signed public production catalog, hourly.
+# The owner publishes production from their own machine; this workflow never writes to
+# the origin, signs nothing and publishes nothing. It reads the catalog anonymously and
+# verifies it with the reference verifier against the committed production keyring
+# (tf-prod-* keys only), plus fetches and re-verifies the active release's manifest, then
+# sends the owner a personal Telegram notification when - and only when - the ACTIVE
+# RELEASE changed after that whole check passed. A re-signed catalog or a sequence bump
+# with the same active release is not a release and notifies nothing.
+#
+# Deduplication is durable (the branch telegram-notify-state, committed by the script),
+# never the Actions cache; the first run records the baseline without sending old events.
+# The secrets live in the GitHub Environment `notifications`; schedule and
+# workflow_dispatch run main's code only, so no pull request sees them. A Telegram
+# outage cannot corrupt anything: the observation is read-only, its own status
+# (SENT / SKIPPED / FAILED) is the job summary.
+# Runbook: docs/ota/telegram-notifications.md
+on:
+  schedule:
+    - cron: "23 * * * *" # hourly; GitHub may delay scheduled runs
+  workflow_dispatch:
+
+permissions:
+  contents: read # the committed production keyring
+
+concurrency:
+  group: ota-production-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: notifications
+    permissions:
+      contents: write # push the deduplication state branch telegram-notify-state
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      # The reference verifier needs the `ota` extra (cryptography).
+      - name: Install
+        run: pip install -e ".[ota]"
+
+      - name: Watch and notify
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/telegram_notify.py production --repo . --state-dir "$RUNNER_TEMP/notify-state"
