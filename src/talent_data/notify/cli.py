@@ -252,14 +252,20 @@ def cmd_production(
 
     keyring = production_keyring(args.repo / args.keyring)
     origin = args.production_origin or PRODUCTION_PROFILE.public_origin
+    path = _state_path(args, "production.json")
+    state = load_dedup(ProductionDedup, path)
+    first = state is None
     with httpx.Client(follow_redirects=False, timeout=30.0) as client:
         observation = observe_production(
             client, origin=origin, keyring=keyring, game=GAME, now=_now()
         )
+        if observation.release_id is not None and (
+            first or state is None or observation.release_id != state.notified_release
+        ):
+            observation = observe_production(
+                client, origin=origin, keyring=keyring, game=GAME, now=_now(), verify_files=True
+            )
     summary.append(f"production: {observation.status.value} - {observation.reason}")
-    path = _state_path(args, "production.json")
-    state = load_dedup(ProductionDedup, path)
-    first = state is None
     decision = decide_production(
         state if state is not None else initial_production(utc_now()),
         observation=observation,

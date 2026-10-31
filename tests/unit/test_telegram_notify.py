@@ -1589,3 +1589,206 @@ def test_the_notification_jobs_install_the_extras_the_cli_actually_imports() -> 
     # the local setup instruction of the runbook installs the same set
     doc = (ROOT / "docs" / "ota" / "telegram-notifications.md").read_text(encoding="utf-8")
     assert 'pip install -e ".[ota]"' in doc
+
+
+@pytest.mark.parametrize("fault", ["corrupt", "missing", "race"])
+def test_production_cli_requires_full_files_then_recovers_once(tmp_path, monkeypatch, fault):
+    from talent_data.notify.state import ProductionDedup
+    from talent_data.ota.models import OtaCatalog, SignedEnvelope
+    from talent_data.ota.signing import build_envelope, sign_pae_der
+    from talent_data.ota.store import blob_key
+    from talent_data.ota.verify import parse_strict, strict_b64decode
+    from tests.unit.ota.publisher_testkit import derive_test_key
+    from tests.unit.ota.test_ota_preflight import CATALOG, real_release
+
+    def catalog_of(objects):
+        return parse_strict(
+            OtaCatalog, strict_b64decode(parse_strict(SignedEnvelope, objects[CATALOG]).payload)
+        )
+
+    def resign(objects, catalog):
+        payload = catalog.model_dump_json(by_alias=True).encode()
+        objects[CATALOG] = build_envelope(
+            payload, {"tf-prod-2026a": sign_pae_der(derive_test_key("tf-prod-2026a"), payload)}
+        )
+
+    objects = publication()
+    origin = FakeOrigin(objects)
+    key = blob_key(real_release().manifest.files[0].sha256)
+    catalog = catalog_of(objects)
+    if fault == "corrupt":
+        origin.objects[key] = b"broken"
+    elif fault == "missing":
+        del origin.objects[key]
+    counts = []
+    catalogs = 0
+
+    def handler(request):
+        nonlocal catalogs
+        counts.append(request.url.path)
+        if request.url.path == "/" + CATALOG:
+            catalogs += 1
+            if fault == "race" and catalogs > 1:
+                current = catalog_of(origin.objects)
+                resign(
+                    origin.objects, current.model_copy(update={"sequence": current.sequence + 1})
+                )
+        return origin.handler(request)
+
+    # Preserve the real HTTP client, replacing only network transport.
+    client_type = httpx.Client
+    monkeypatch.setattr(
+        notify_cli.httpx,
+        "Client",
+        lambda **kw: client_type(transport=httpx.MockTransport(handler), **kw),
+    )
+    monkeypatch.setattr(notify_cli, "_now", lambda: SERVED_AT)
+    monkeypatch.setattr("talent_data.ota.preflight.production_keyring", lambda path: KEYRING)
+    fake = FakeTelegram()
+    env = cli_env(tmp_path, fake, monkeypatch)
+    state = tmp_path / "production.json"
+    args = ["production", "--repo", str(ROOT), "--state-file", str(state), "--run-url", RUN]
+    assert notify_cli.main(args, env=env) == 0
+    assert load_dedup(ProductionDedup, state).notified_release is None
+    assert fake.sent == []  # broken first observation is quiet, not a successful baseline
+    fault = "healthy"
+    origin.objects[key] = objects[key]
+    resign(origin.objects, catalog.model_copy(update={"sequence": 10}))
+    assert notify_cli.main(args, env=env) == 0
+    assert load_dedup(ProductionDedup, state).notified_release == catalog.active_release_id
+    assert len(fake.sent) == 1
+    before = len(counts)
+    assert notify_cli.main(args, env=env) == 0
+    assert len(fake.sent) == 1
+    assert "/" + key not in counts[before:]  # no full hourly download without activation
+    resign(origin.objects, catalog.model_copy(update={"sequence": 11}))
+    assert notify_cli.main(args, env=env) == 0
+    assert len(fake.sent) == 1  # resign never counts as a new release
+
+
+def test_lightweight_watch_stops_at_catalog_limit():
+    class Oversized(httpx.SyncByteStream):
+        def __iter__(self):
+            yield b"x" * (1024 * 1024 + 1)
+            raise AssertionError("lightweight hourly catalog read must stop at its limit")
+
+    def handler(request):
+        return httpx.Response(200, stream=Oversized())
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        observed = observe_production(
+            client, origin=ORIGIN, keyring=KEYRING, game="forever", now=SERVED_AT
+        )
+    assert observed.status is ProductionStatus.UNKNOWN
+
+
+@pytest.fixture
+def production_runner(tmp_path, monkeypatch):
+    from talent_data.notify.state import ProductionDedup
+
+    origin = FakeOrigin(publication())
+    paths = []
+
+    def handler(request):
+        paths.append(request.url.path)
+        return origin.handler(request)
+
+    client_type = httpx.Client
+    monkeypatch.setattr(
+        notify_cli.httpx,
+        "Client",
+        lambda **kw: client_type(transport=httpx.MockTransport(handler), **kw),
+    )
+    monkeypatch.setattr(notify_cli, "_now", lambda: SERVED_AT)
+    monkeypatch.setattr("talent_data.ota.preflight.production_keyring", lambda path: KEYRING)
+    fake = FakeTelegram()
+    env = cli_env(tmp_path, fake, monkeypatch)
+    path = tmp_path / "production.json"
+    args = ["production", "--repo", str(ROOT), "--state-file", str(path), "--run-url", RUN]
+
+    def run():
+        assert notify_cli.main(args, env) == 0
+        return load_dedup(ProductionDedup, path)
+
+    return run, origin, fake, paths
+
+
+def activate_next_revision(origin):
+    from talent_data.ota.catalog import catalog_entry
+    from talent_data.ota.release import serialize_manifest
+    from talent_data.ota.store import blob_key
+    from talent_data.ota.verify import sha256_ref
+    from tests.unit.ota.test_automation_public_verify import catalog_of, resign
+    from tests.unit.ota.test_ota_preflight import real_release
+
+    catalog = catalog_of(origin.objects)
+    artifact = real_release()
+    manifest = artifact.manifest.model_copy(
+        update={"release_id": artifact.manifest.client_build + "-r2"}
+    )
+    raw = serialize_manifest(manifest)
+    origin.objects[blob_key(sha256_ref(raw))] = raw
+    entry = catalog_entry(raw, manifest, published_at=SERVED_AT)
+    resign(
+        origin.objects,
+        catalog.model_copy(
+            update={
+                "sequence": 2,
+                "active_release_id": entry.release_id,
+                "releases": [*catalog.releases, entry],
+            }
+        ),
+    )
+    return entry.release_id
+
+
+def test_healthy_first_production_baseline_is_quiet_and_checks_files(production_runner):
+    from talent_data.ota.store import blob_key
+    from tests.unit.ota.test_ota_preflight import real_release
+
+    run, _, fake, paths = production_runner
+    state = run()
+    assert state.notified_release == "1.60.1.70374-r1"
+    assert fake.sent == []
+    assert all("/" + blob_key(f.sha256) in paths for f in real_release().manifest.files)
+    paths.clear()
+    run()
+    assert fake.sent == []
+    assert "/" + blob_key(real_release().manifest.files[0].sha256) not in paths
+
+
+def test_new_activation_with_missing_blob_keeps_previous_success_marker(production_runner):
+    from talent_data.ota.store import blob_key
+    from tests.unit.ota.test_ota_preflight import real_release
+
+    run, origin, fake, _ = production_runner
+    previous = run().notified_release
+    target = activate_next_revision(origin)
+    key = blob_key(real_release().manifest.files[0].sha256)
+    body = origin.objects.pop(key)
+    assert run().notified_release == previous
+    assert len(fake.sent) == 1
+    origin.objects[key] = body
+    assert run().notified_release == target
+    assert len(fake.sent) == 2
+    run()
+    assert len(fake.sent) == 2
+
+
+def test_failed_production_telegram_delivery_rechecks_files_and_retries(production_runner):
+    from talent_data.ota.store import blob_key
+    from tests.unit.ota.test_ota_preflight import real_release
+
+    run, origin, fake, paths = production_runner
+    previous = run().notified_release
+    target = activate_next_revision(origin)
+    fake.outcome = SendStatus.FAILED
+    assert run().notified_release == previous
+    assert len(fake.sent) == 1
+    paths.clear()
+    fake.outcome = SendStatus.SENT
+    assert run().notified_release == target
+    assert all("/" + blob_key(f.sha256) in paths for f in real_release().manifest.files)
+    assert len(fake.sent) == 2
+    run()
+    assert len(fake.sent) == 2

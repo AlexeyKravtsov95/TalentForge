@@ -111,7 +111,7 @@ def read_production(
     from talent_data.ota.verify import OtaError, verify_catalog
 
     origin = origin.rstrip("/")
-    response = fetch(client, f"{origin}/{CATALOG_KEY}")
+    response = fetch(client, f"{origin}/{CATALOG_KEY}", max_bytes=MAX_CATALOG_BYTES)
     if response.status in (403, 404):
         return ProductionState(
             ProductionStatus.ABSENT,

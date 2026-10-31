@@ -60,7 +60,7 @@ STAGE_LABELS = {
     FP_PREPARE_RUN: "ota-prepare: prepare",
     FP_PREPARE_PROPOSE: "ota-prepare: propose (PR кандидата)",
     FP_PRODUCTION_CATALOG: "production watch: публичный production-каталог",
-    FP_PRODUCTION_MANIFEST: "production watch: манифест активного релиза",
+    FP_PRODUCTION_MANIFEST: "production watch: манифесты и файлы релизов",
 }
 
 _NOTIFIED_LIMIT = 20
@@ -459,10 +459,11 @@ def decide_production(
 ) -> Decision[ProductionDedup]:
     """One observation of the public production catalog.
 
-    A release notifies only after the whole check passed (catalog verified *and* the
-    active release's manifest fetched and re-pinned) and only when the *active release id*
+    The CLI supplies a full public verification on baseline or activation change:
+    catalog, every retained manifest/file and a stable catalog re-read. A release
+    notifies only after that check passed and only when the *active release id*
     changed: a re-signed catalog or a new sequence with the same active release is not a
-    release. A verified catalog with a broken manifest notifies the failure instead and
+    release. A verified catalog with broken content notifies the failure instead and
     leaves :attr:`ProductionDedup.notified_release` untouched, so the release change is
     still notified by the run that first sees it healthy. A catalog that disappears after
     a notified release, or that cannot be verified, notifies once per episode."""
