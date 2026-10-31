@@ -1,0 +1,276 @@
+{
+  "node_count": 13017,
+  "unverified_node_count": 0,
+  "raw_edge_count": 47450,
+  "non_object_edges": 0,
+  "missing_endpoint_edges": 0,
+  "dangling_endpoint_edges": 5460,
+  "external_reference_edges": 0,
+  "self_loop_edges": 130,
+  "valid_candidate_edges": 41990,
+  "exact_duplicate_edges": 0,
+  "directed_unique_endpoint_pairs": 39240,
+  "directed_same_endpoint_collapsed_edges": 2750,
+  "undirected_unique_endpoint_pairs": 38836,
+  "undirected_same_endpoint_collapsed_edges": 3154,
+  "same_endpoint_group_count": 2156,
+  "relation_variant_groups": 1571,
+  "source_file_variant_groups": 0,
+  "source_location_variant_groups": 402,
+  "context_variant_groups": 223,
+  "post_build_graph_type": "Graph",
+  "post_build_node_count": 13877,
+  "post_build_edge_count": 44232,
+  "post_build_error": "",
+  "producer_suppression": {
+    "path": "graphify/extract.py",
+    "total_sites": 12,
+    "sites": [
+      {
+        "line": 1830,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids = {n[\"id\"] for n in nodes}"
+      },
+      {
+        "line": 2394,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids = {n[\"id\"] for n in nodes}"
+      },
+      {
+        "line": 2396,
+        "name": "seen_doc_refs",
+        "tuple_arity": 0,
+        "sample": "seen_doc_refs: set[str] = set()"
+      },
+      {
+        "line": 3063,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = {n[\"id\"] for n in nodes}"
+      },
+      {
+        "line": 3210,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids = {n.get(\"id\") for n in nodes}"
+      },
+      {
+        "line": 4351,
+        "name": "seen_keys",
+        "tuple_arity": 0,
+        "sample": "seen_keys: set[tuple] = set()"
+      },
+      {
+        "line": 4537,
+        "name": "seen_keys",
+        "tuple_arity": 0,
+        "sample": "seen_keys: set[tuple] = set()"
+      },
+      {
+        "line": 8005,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 8113,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 8192,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 8717,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 8718,
+        "name": "seen_edges",
+        "tuple_arity": 4,
+        "sample": "seen_edges: set[tuple[str, str, str, str | None]] = set()"
+      }
+    ],
+    "error": ""
+  },
+  "examples": [
+    {
+      "source": "github_workflows_store_delivery_steps_with",
+      "target": "github_workflows_store_delivery_with_path",
+      "edge_count": 29,
+      "relations": [
+        "contains"
+      ],
+      "source_files": [
+        ".github/workflows/store-delivery.yml"
+      ],
+      "source_locations": [
+        "L107",
+        "L115",
+        "L128",
+        "L148",
+        "L153",
+        "L168",
+        "L290",
+        "L299",
+        "L309",
+        "L334",
+        "L342",
+        "L346",
+        "L378",
+        "L386",
+        "L409",
+        "L417",
+        "L431",
+        "L457",
+        "L462",
+        "L491",
+        "L620",
+        "L629",
+        "L639",
+        "L64",
+        "L672",
+        "L688",
+        "L692",
+        "L729",
+        "L84"
+      ],
+      "contexts": [
+        ""
+      ]
+    },
+    {
+      "source": "github_workflows_store_delivery_steps_with",
+      "target": "github_workflows_store_delivery_with_name",
+      "edge_count": 20,
+      "relations": [
+        "contains"
+      ],
+      "source_files": [
+        ".github/workflows/store-delivery.yml"
+      ],
+      "source_locations": [
+        "L114",
+        "L127",
+        "L167",
+        "L289",
+        "L298",
+        "L308",
+        "L341",
+        "L345",
+        "L377",
+        "L385",
+        "L416",
+        "L430",
+        "L490",
+        "L619",
+        "L628",
+        "L638",
+        "L687",
+        "L691",
+        "L728",
+        "L83"
+      ],
+      "contexts": [
+        ""
+      ]
+    },
+    {
+      "source": "github_workflows_mobile_ci_mobile_linux_steps",
+      "target": "github_workflows_mobile_ci_steps_name",
+      "edge_count": 14,
+      "relations": [
+        "contains"
+      ],
+      "source_files": [
+        ".github/workflows/mobile-ci.yml"
+      ],
+      "source_locations": [
+        "L100",
+        "L52",
+        "L58",
+        "L61",
+        "L64",
+        "L67",
+        "L70",
+        "L73",
+        "L76",
+        "L80",
+        "L84",
+        "L88",
+        "L91",
+        "L94"
+      ],
+      "contexts": [
+        ""
+      ]
+    },
+    {
+      "source": "github_workflows_store_delivery_ios_build_steps",
+      "target": "github_workflows_store_delivery_steps_name",
+      "edge_count": 14,
+      "relations": [
+        "contains"
+      ],
+      "source_files": [
+        ".github/workflows/store-delivery.yml"
+      ],
+      "source_locations": [
+        "L471",
+        "L493",
+        "L503",
+        "L509",
+        "L515",
+        "L526",
+        "L543",
+        "L554",
+        "L587",
+        "L598",
+        "L608",
+        "L615",
+        "L624",
+        "L643"
+      ],
+      "contexts": [
+        ""
+      ]
+    },
+    {
+      "source": "github_workflows_mobile_ci_mobile_macos_steps",
+      "target": "github_workflows_mobile_ci_steps_name",
+      "edge_count": 13,
+      "relations": [
+        "contains"
+      ],
+      "source_files": [
+        ".github/workflows/mobile-ci.yml"
+      ],
+      "source_locations": [
+        "L128",
+        "L134",
+        "L137",
+        "L163",
+        "L166",
+        "L172",
+        "L179",
+        "L187",
+        "L196",
+        "L210",
+        "L221",
+        "L240",
+        "L245"
+      ],
+      "contexts": [
+        ""
+      ]
+    }
+  ]
+}

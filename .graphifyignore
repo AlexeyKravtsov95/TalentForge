@@ -1,0 +1,32 @@
+# Scope: source, tests, contracts and architectural documentation.
+# Private NDA material: never traverse this directory.
+/ceremony/
+/data/
+/artifacts/
+/legal-publish/
+/.tf-transfer/
+/.claude/
+/.codex/
+/.zcode/
+/.idea/
+/Claude outputs/
+/docs/release/
+/docs/screenshots/
+/docs/ota/fixtures/
+/docs/ota/releases/
+**/.idea/
+**/build/
+**/generated/
+**/fixtures/
+/mobile/**/*.json
+/mobile/**/*.txt
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.mp4
+*.mov
+*.der
+*.bak.*
+/preflight.json
