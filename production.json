@@ -1,0 +1,9 @@
+{
+  "stateVersion": 1,
+  "kind": "notify-production-state",
+  "notifiedRelease": null,
+  "failuresNotified": [
+    "ota-production-watch/catalog"
+  ],
+  "updatedAt": "2026-10-31T15:47:13Z"
+}
