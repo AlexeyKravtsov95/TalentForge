@@ -791,6 +791,56 @@ def _cmd_promote(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def verify_appended_releases(
+    args: argparse.Namespace,
+    store: BlobStore,
+    live: OtaCatalog | None,
+    catalog: OtaCatalog,
+    now: datetime,
+) -> int:
+    """Shared attach-signature proof, reused by the durable CI publisher."""
+    from talent_data.ota.gates import under_test_from_bytes
+    from talent_data.ota.models import ReleaseFile
+    from talent_data.ota.store import blob_key, read_release_manifest
+    from talent_data.ota.verify import verify_release_files, verify_release_manifest
+
+    channel = catalog.channel
+    # ---- releases the catalog appends: prove them again, from the store + the repo.
+    # The pending meta is editable local state; the gates are not advisory.
+    live_ids = set() if live is None else {entry.release_id for entry in live.releases}
+    appended = [entry for entry in catalog.releases if entry.release_id not in live_ids]
+    for entry in appended:
+        try:
+            manifest_bytes, manifest = read_release_manifest(store, entry)  # pin-verified
+            verify_release_manifest(
+                manifest_bytes,
+                entry,
+                game=catalog.game,
+                supported_data_level=entry.min_data_level,
+            )
+
+            def read_file(file: ReleaseFile) -> bytes:
+                return store.get(blob_key(file.sha256))
+
+            verify_release_files(manifest, read_file)
+            under_test = under_test_from_bytes(
+                manifest_bytes, _repo_root(args), origin=Path(blob_key(entry.manifest_sha256))
+            )
+        except (OtaPublisherError, ValueError) as exc:
+            raise OtaPublisherError(
+                f"appended release {entry.release_id} failed verification: {exc}"
+            ) from exc
+        print(
+            f"  appended release {entry.release_id}: content re-verified from the store; "
+            "re-running gates G1-G8"
+        )
+        refused = _enforce_gates_and_approval(args, under_test, store, live, now, channel=channel)
+        if refused is not None:
+            raise OtaPublisherError("appended release gates refused publication")
+
+    return len(appended)
+
+
 def _cmd_attach_signature(args: argparse.Namespace) -> int:
     """Verify an external signature and write ``catalog.json`` - the last write.
 
@@ -820,20 +870,15 @@ def _cmd_attach_signature(args: argparse.Namespace) -> int:
       final time before the single atomic put.
     """
     from talent_data.ota.catalog import ensure_valid_succession
-    from talent_data.ota.gates import under_test_from_bytes
-    from talent_data.ota.models import Channel, OtaCatalog, ReleaseFile
+    from talent_data.ota.models import Channel, OtaCatalog
     from talent_data.ota.signing import build_envelope, verify_der_signature
     from talent_data.ota.store import (
-        blob_key,
         ensure_catalog_references,
-        read_release_manifest,
         write_catalog,
     )
     from talent_data.ota.verify import (
         parse_strict,
         sha256_ref,
-        verify_release_files,
-        verify_release_manifest,
     )
 
     now = _instant(args.now)
@@ -881,36 +926,10 @@ def _cmd_attach_signature(args: argparse.Namespace) -> int:
     except OtaPublisherError as exc:
         return refuse(str(exc))
 
-    # ---- releases the catalog appends: prove them again, from the store + the repo.
-    # The pending meta is editable local state; the gates are not advisory.
-    live_ids = set() if live is None else {entry.release_id for entry in live.releases}
-    appended = [entry for entry in catalog.releases if entry.release_id not in live_ids]
-    for entry in appended:
-        try:
-            manifest_bytes, manifest = read_release_manifest(store, entry)  # pin-verified
-            verify_release_manifest(
-                manifest_bytes,
-                entry,
-                game=catalog.game,
-                supported_data_level=entry.min_data_level,
-            )
-
-            def read_file(file: ReleaseFile) -> bytes:
-                return store.get(blob_key(file.sha256))
-
-            verify_release_files(manifest, read_file)
-            under_test = under_test_from_bytes(
-                manifest_bytes, _repo_root(args), origin=Path(blob_key(entry.manifest_sha256))
-            )
-        except (OtaPublisherError, ValueError) as exc:
-            return refuse(f"appended release {entry.release_id} failed verification: {exc}")
-        print(
-            f"  appended release {entry.release_id}: content re-verified from the store; "
-            "re-running gates G1-G8"
-        )
-        refused = _enforce_gates_and_approval(args, under_test, store, live, now, channel=channel)
-        if refused is not None:
-            return refused
+    try:
+        appended_count = verify_appended_releases(args, store, live, catalog, now)
+    except OtaPublisherError as exc:
+        return refuse(str(exc))
 
     envelope = build_envelope(payload, {args.key_id: der})
     print(
@@ -919,8 +938,8 @@ def _cmd_attach_signature(args: argparse.Namespace) -> int:
         f"{len(catalog.releases)} release(s), envelope {len(envelope)} bytes; "
         "succession, channel and every referenced object re-checked"
         + (
-            f"; {len(appended)} appended release(s) re-passed G1-G8"
-            if appended
+            f"; {appended_count} appended release(s) re-passed G1-G8"
+            if appended_count
             else "; no release appended (rollback/re-sign)"
         )
     )
