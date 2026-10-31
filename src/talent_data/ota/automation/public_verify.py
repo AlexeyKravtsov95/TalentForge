@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from collections import OrderedDict
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from contextlib import closing
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
+from time import monotonic
 from urllib.parse import urlsplit
 
 import httpx
@@ -49,13 +50,21 @@ def _require(condition: bool, problem: str) -> None:
         raise _PublicFailure(problem)
 
 
-def _fetch(client: httpx.Client, url: str, limit: int) -> bytes:
+def _fetch(
+    client: httpx.Client,
+    url: str,
+    limit: int,
+    *,
+    remaining: Callable[[], float] = lambda: 30.0,
+) -> bytes:
     # Override defaults on even a credentialed/follow-redirects client supplied by a caller.
+    timeout = min(30.0, remaining())
+    _require(timeout > 0, "VERIFY_BUDGET_EXHAUSTED")
     request = httpx.Request(
         "GET",
         url,
         headers={"Accept-Encoding": "identity"},
-        extensions={"timeout": dict.fromkeys(("connect", "read", "write", "pool"), 30.0)},
+        extensions={"timeout": dict.fromkeys(("connect", "read", "write", "pool"), timeout)},
     )
     with closing(client.send(request, auth=None, follow_redirects=False, stream=True)) as response:
         if response.status_code != 200:
@@ -70,6 +79,7 @@ def _fetch(client: httpx.Client, url: str, limit: int) -> bytes:
                 raise _PublicFailure("SIZE_LIMIT: declared body exceeds pin/limit")
         body = bytearray()
         for chunk in response.iter_raw():
+            _require(remaining() > 0, "VERIFY_BUDGET_EXHAUSTED")
             if len(body) + len(chunk) > limit:
                 raise _PublicFailure("SIZE_LIMIT: received body exceeds pin/limit")
             body.extend(chunk)
@@ -85,6 +95,9 @@ def verify_publication(
     keyring: Mapping[str, TrustedKey],
     game: str,
     now: datetime,
+    expected_payload_sha256: str | None = None,
+    deadline: float | None = None,
+    clock: Callable[[], float] = monotonic,
 ) -> PublicVerification:
     """Verify all catalog entries, then re-read the signed payload to detect a race.
 
@@ -92,6 +105,17 @@ def verify_publication(
     maximum release size. Nothing is persisted on failure. Same-build identity is checked
     across retained revisions too.
     """
+    started = clock()
+
+    def remaining() -> float:
+        return 30.0 if deadline is None else deadline - clock()
+
+    def fetch(url: str, limit: int) -> bytes:
+        return _fetch(client, url, limit, remaining=remaining)
+
+    def current_time() -> datetime:
+        return now + timedelta(seconds=max(0.0, clock() - started))
+
     digest = active = None
     sequence = None
     try:
@@ -110,23 +134,25 @@ def verify_publication(
         origin = origin.rstrip("/")
         catalog_url = f"{origin}/{catalog_key(Channel.PRODUCTION)}"
         verified = verify_catalog(
-            _fetch(client, catalog_url, MAX_CATALOG_BYTES),
+            fetch(catalog_url, MAX_CATALOG_BYTES),
             keyring=keyring,
             game=game,
             channel=Channel.PRODUCTION,
-            now=now,
+            now=current_time(),
             last_seen=None,
         )
         digest = verified.payload_sha256
+        _require(
+            expected_payload_sha256 is None or digest == expected_payload_sha256,
+            "EXPECTED_PAYLOAD_MISMATCH: public catalog has not converged",
+        )
         catalog = verified.catalog
         active, sequence = catalog.active_release_id, catalog.sequence
         known: DatasetManifest | None = None
         bodies: OrderedDict[str, bytes] = OrderedDict()
         cached_bytes = 0
         for entry in catalog.releases:
-            raw = _fetch(
-                client, f"{origin}/{blob_key(entry.manifest_sha256)}", entry.manifest_byte_length
-            )
+            raw = fetch(f"{origin}/{blob_key(entry.manifest_sha256)}", entry.manifest_byte_length)
             manifest = verify_release_manifest(
                 raw, entry, game=game, supported_data_level=SUPPORTED_DATA_LEVEL
             )
@@ -135,7 +161,7 @@ def verify_publication(
             def read(file: ReleaseFile) -> bytes:
                 nonlocal cached_bytes, dataset_raw
                 if file.sha256 not in bodies:
-                    body = _fetch(client, f"{origin}/{blob_key(file.sha256)}", file.byte_length)
+                    body = fetch(f"{origin}/{blob_key(file.sha256)}", file.byte_length)
                     bodies[file.sha256] = body
                     cached_bytes += len(body)
                     while cached_bytes > MAX_RELEASE_BYTES:
@@ -154,11 +180,11 @@ def verify_publication(
             assert dataset_raw is not None  # required and verified by reference verifier
             known = parse_strict(DatasetManifest, dataset_raw)
         after = verify_catalog(
-            _fetch(client, catalog_url, MAX_CATALOG_BYTES),
+            fetch(catalog_url, MAX_CATALOG_BYTES),
             keyring=keyring,
             game=game,
             channel=Channel.PRODUCTION,
-            now=now,
+            now=current_time(),
             last_seen=None,
         )
         _require(

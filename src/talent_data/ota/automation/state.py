@@ -45,9 +45,8 @@ def request_digest(request: ReleaseRequest) -> str:
     return sha256_ref(request.model_dump_json(by_alias=True).encode())
 
 
-class PublicationReceipt(_Model):
+class _Receipt(_Model):
     schema_version: Literal[1]
-    request: ReleaseRequest
     request_digest: str = Field(pattern=SHA256_PATTERN)
     base_sequence: int | None = Field(ge=1)
     base_payload_sha256: str | None = Field(pattern=SHA256_PATTERN)
@@ -67,6 +66,7 @@ class PublicationReceipt(_Model):
         "ALREADY_LISTED",
         "INITIAL_RELEASE",
         "CHECK_FAILED",
+        "REQUEST_REMOVED",
         "UPLOAD_FAILED",
         "SIGN_FAILED",
         "NOT_WRITTEN",
@@ -82,8 +82,6 @@ class PublicationReceipt(_Model):
 
     @model_validator(mode="after")
     def identities(self) -> Self:
-        if self.request_digest != request_digest(self.request):
-            raise ValueError("request digest mismatch")
         pins = (
             self.base_sequence,
             self.base_payload_sha256,
@@ -108,6 +106,19 @@ class PublicationReceipt(_Model):
             raise ValueError("state requires exact publication pins")
         return self
 
+    def evolve(self, **changes: object) -> Self:
+        return type(self).model_validate({**self.model_dump(), **changes})
+
+
+class PublicationReceipt(_Receipt):
+    request: ReleaseRequest
+
+    @model_validator(mode="after")
+    def request_identity(self) -> Self:
+        if self.request_digest != request_digest(self.request):
+            raise ValueError("request digest mismatch")
+        return self
+
     @classmethod
     def pending(cls, request: ReleaseRequest, *, run_id: int, attempt: int) -> Self:
         return cls(
@@ -124,8 +135,68 @@ class PublicationReceipt(_Model):
             reason="NEW",
         )
 
-    def evolve(self, **changes: object) -> PublicationReceipt:
-        return PublicationReceipt.model_validate({**self.model_dump(), **changes})
+    @property
+    def game(self) -> str:
+        return self.request.game
+
+
+class RenewalOperation(_Model):
+    kind: Literal["renewal"]
+    base_payload_b64: str
+
+    @property
+    def base_payload(self) -> bytes:
+        return strict_b64decode(self.base_payload_b64)
+
+    @property
+    def catalog(self) -> OtaCatalog:
+        return parse_strict(OtaCatalog, self.base_payload)
+
+    @model_validator(mode="after")
+    def valid_base(self) -> Self:
+        if self.catalog.channel is not Channel.PRODUCTION:
+            raise ValueError("renewal must target production")
+        return self
+
+
+class RenewalReceipt(_Receipt):
+    operation: RenewalOperation
+
+    @property
+    def game(self) -> str:
+        return self.operation.catalog.game
+
+    @model_validator(mode="after")
+    def base_identity(self) -> Self:
+        if self.request_digest != sha256_ref(self.operation.base_payload):
+            raise ValueError("renewal digest mismatch")
+        if self.base_payload_sha256 is not None and (
+            self.base_payload_sha256 != self.request_digest
+            or self.base_sequence != self.operation.catalog.sequence
+        ):
+            raise ValueError("renewal base mismatch")
+        return self
+
+    @classmethod
+    def pending(cls, payload: bytes, *, run_id: int, attempt: int) -> Self:
+        return cls(
+            schema_version=1,
+            operation=RenewalOperation(
+                kind="renewal", base_payload_b64=base64.b64encode(payload).decode()
+            ),
+            request_digest=sha256_ref(payload),
+            base_sequence=None,
+            base_payload_sha256=None,
+            target_sequence=None,
+            payload_sha256=None,
+            run_id=run_id,
+            attempt=attempt,
+            state=RequestState.PENDING,
+            reason="NEW",
+        )
+
+
+Receipt = PublicationReceipt | RenewalReceipt
 
 
 def parse_receipt(raw: bytes) -> PublicationReceipt:
@@ -189,7 +260,7 @@ class PreparedPublication(_Model):
 
 
 class JournalEntry(_Model):
-    receipt: PublicationReceipt
+    receipt: Receipt
     prepared: PreparedPublication | None
 
     @model_validator(mode="after")
@@ -201,12 +272,23 @@ class JournalEntry(_Model):
             catalog = parse_strict(OtaCatalog, p.payload)
             if sha256_ref(p.payload) != r.payload_sha256 or catalog.sequence != r.target_sequence:
                 raise ValueError("receipt does not pin signing work")
-            active = next(x for x in catalog.releases if x.release_id == catalog.active_release_id)
-            if (
-                active.release_id != r.request.release_id
-                or active.manifest_sha256 != r.request.manifest_sha256
-            ):
-                raise ValueError("receipt does not pin active release")
+            if isinstance(r, PublicationReceipt):
+                active = next(
+                    x for x in catalog.releases if x.release_id == catalog.active_release_id
+                )
+                if (
+                    active.release_id != r.request.release_id
+                    or active.manifest_sha256 != r.request.manifest_sha256
+                ):
+                    raise ValueError("receipt does not pin active release")
+            else:
+                base = r.operation.catalog
+                if (
+                    catalog.active_release_id != base.active_release_id
+                    or catalog.releases != base.releases
+                    or catalog.game != base.game
+                ):
+                    raise ValueError("renewal must preserve all release members")
         return self
 
 
@@ -232,7 +314,7 @@ class Journal(Protocol):
     def read_all(self) -> dict[str, JournalEntry]: ...
     def load(self, digest: str) -> JournalEntry | None: ...
     def save(
-        self, receipt: PublicationReceipt, prepared: PreparedPublication | None = None
+        self, receipt: Receipt, prepared: PreparedPublication | None = None
     ) -> JournalEntry: ...
 
 
@@ -255,7 +337,18 @@ class FileJournal:
                 os.fsync(stream.fileno())
         except OSError:
             raise JournalError("journal initialization failed") from None
+        self._sync_directory()
         self.read_all()
+
+    def _sync_directory(self) -> None:
+        try:
+            fd = os.open(self.path.parent, os.O_RDONLY)
+            try:
+                os.fsync(fd)
+            finally:
+                os.close(fd)
+        except OSError:
+            raise JournalError("journal directory durability failed") from None
 
     def _read(self) -> bytes:
         return self.path.read_bytes()
@@ -271,6 +364,7 @@ class FileJournal:
                 stream.flush()
                 os.fsync(stream.fileno())
             temp.replace(self.path)
+            self._sync_directory()
         finally:
             temp.unlink(missing_ok=True)
 
@@ -283,15 +377,25 @@ class FileJournal:
     def load(self, digest: str) -> JournalEntry | None:
         return self.read_all().get(digest)
 
-    def save(
-        self, receipt: PublicationReceipt, prepared: PreparedPublication | None = None
-    ) -> JournalEntry:
+    def save(self, receipt: Receipt, prepared: PreparedPublication | None = None) -> JournalEntry:
         try:
             previous = self._read()
             entries = parse_strict(JournalIndex, previous).entries
             old = entries.get(receipt.request_digest)
             if old is not None:
-                if old.receipt.request != receipt.request:
+                if (
+                    type(old.receipt) is not type(receipt)
+                    or (
+                        isinstance(receipt, PublicationReceipt)
+                        and isinstance(old.receipt, PublicationReceipt)
+                        and old.receipt.request != receipt.request
+                    )
+                    or (
+                        isinstance(receipt, RenewalReceipt)
+                        and isinstance(old.receipt, RenewalReceipt)
+                        and old.receipt.operation != receipt.operation
+                    )
+                ):
                     raise JournalError("request identity changed")
                 if old.receipt.state in TERMINAL and old.receipt != receipt:  # noqa: SIM102
                     # Public verification may only advance the S3-complete receipt.

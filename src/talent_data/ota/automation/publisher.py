@@ -26,10 +26,16 @@ from talent_data.ota.automation.state import (
     JournalError,
     PreparedPublication,
     PublicationReceipt,
+    RenewalReceipt,
     RequestState,
     request_digest,
 )
-from talent_data.ota.catalog import catalog_entry, ensure_valid_succession, next_catalog
+from talent_data.ota.catalog import (
+    catalog_entry,
+    ensure_valid_succession,
+    next_catalog,
+    resign_catalog,
+)
 from talent_data.ota.errors import OtaPublisherError
 from talent_data.ota.gates import under_test_from_bytes
 from talent_data.ota.models import CATALOG_PAYLOAD_TYPE, Channel, OtaCatalog, SignedEnvelope
@@ -109,17 +115,17 @@ def approval_directory(request: ReleaseRequest, repo: Path, directory: Path) -> 
     return directory
 
 
-def recover_outcome(
-    receipt: PublicationReceipt,
+def recover_outcome[R: (PublicationReceipt, RenewalReceipt)](
+    receipt: R,
     prepared: PreparedPublication,
     *,
     store: BlobStore,
     keyring: Mapping[str, TrustedKey],
     now: datetime,
-) -> PublicationReceipt:
+) -> R:
     """Diagnose only. Exact target/base/other; this function never writes to origin."""
     try:
-        live = read_live(store, keyring=keyring, game=receipt.request.game, now=now)
+        live = read_live(store, keyring=keyring, game=receipt.game, now=now)
     except (OtaPublisherError, OtaError, OSError, ValueError):
         return receipt.evolve(state=RequestState.AMBIGUOUS, reason="OUTCOME_UNKNOWN")
     if live.payload == prepared.payload:
@@ -168,6 +174,8 @@ def publish_request(
         raise JournalError("new request must start with an unprepared PENDING receipt")
     prepared = None if retained is None else retained.prepared
     if retained is not None:
+        if not isinstance(retained.receipt, PublicationReceipt):
+            raise JournalError("release identity collides with renewal")
         receipt = retained.receipt
     if receipt.state in TERMINAL:
         return receipt
@@ -335,3 +343,140 @@ def publish_request(
         receipt = recover_outcome(receipt, prepared, store=store, keyring=keyring, now=now)
         journal.save(receipt, prepared)
         return receipt
+
+
+def renew_catalog(
+    *,
+    store: BlobStore,
+    keyring: Mapping[str, TrustedKey],
+    game: str,
+    now: datetime,
+    journal: Journal,
+    signer: Signer,
+    run_id: int,
+    attempt: int,
+    key_id: str = "tf-prod-2026a",
+) -> RenewalReceipt | None:
+    """Renew a verified catalog without a historical request/package or new release.
+
+    Same writer lock as publish_request is required by the caller. Journal barriers
+    and unresolved-write exclusion apply across both operation types.
+    """
+    from talent_data.ota.automation.reconcile import resign_due
+
+    entries = journal.read_all()
+    unfinished = [
+        x
+        for x in entries.values()
+        if isinstance(x.receipt, RenewalReceipt)
+        and x.receipt.game == game
+        and x.receipt.state not in TERMINAL
+    ]
+    if len(unfinished) > 1:
+        raise JournalError("multiple unfinished catalog renewals")
+    retained = unfinished[0] if unfinished else None
+    if retained is not None:
+        prior = retained.receipt
+        assert isinstance(prior, RenewalReceipt)
+        candidate: RenewalReceipt | None = prior.evolve(run_id=run_id, attempt=attempt)
+        prepared = retained.prepared
+        assert candidate is not None
+        if candidate.state in {RequestState.WRITE_STARTED, RequestState.AMBIGUOUS}:
+            if prepared is None:
+                raise JournalError("renewal recovery has no exact signing work")
+            outcome = recover_outcome(candidate, prepared, store=store, keyring=keyring, now=now)
+            journal.save(outcome, prepared)
+            return outcome
+    else:
+        candidate = None
+        prepared = None
+    if any(
+        x.receipt.state in {RequestState.WRITE_STARTED, RequestState.AMBIGUOUS}
+        for x in entries.values()
+    ):
+        raise JournalError("another publication outcome is unresolved")
+    # Signature, lifetime and every pinned reference precede even access to signer.
+    live = read_live(store, keyring=keyring, game=game, now=now)
+    ensure_catalog_references(store, live.catalog)
+    if candidate is None:
+        if not resign_due(live.catalog, now=now):
+            return None
+        candidate = RenewalReceipt.pending(live.payload, run_id=run_id, attempt=attempt)
+        existing = entries.get(candidate.request_digest)
+        if existing is not None:
+            if not isinstance(existing.receipt, RenewalReceipt):
+                raise JournalError("renewal identity collides with release")
+            # A terminal base is never reopened, even after manual rollback.
+            return existing.receipt
+        journal.save(candidate)
+    receipt: RenewalReceipt = candidate
+
+    def save(state: RequestState, reason: str) -> RenewalReceipt:
+        result = receipt.evolve(state=state, reason=reason)
+        journal.save(result, prepared)
+        return result
+
+    if sha256_ref(live.payload) != receipt.request_digest:
+        return save(RequestState.STALE, "LIVE_CHANGED")
+    try:
+        if prepared is None:
+            update = resign_catalog(live.catalog, issued_at=now)
+            ensure_valid_succession(live.catalog, update.catalog)
+            # No signing based on a snapshot that moved during reference checks.
+            fresh = read_live(store, keyring=keyring, game=game, now=now)
+            if fresh.payload != live.payload:
+                return save(RequestState.STALE, "LIVE_CHANGED")
+            if key_id not in keyring:
+                return save(RequestState.BLOCKED, "SIGN_FAILED")
+            try:
+                der = signer.sign(pae(CATALOG_PAYLOAD_TYPE, update.payload))
+                if not verify_der_signature(keyring[key_id].public_key, der, update.payload):
+                    return save(RequestState.BLOCKED, "SIGN_FAILED")
+            except (SecretError, OSError, ValueError):
+                return save(RequestState.BLOCKED, "SIGN_FAILED")
+            prepared = PreparedPublication.create(
+                update.payload,
+                base_sequence=live.catalog.sequence,
+                der=der,
+                key_id=key_id,
+            )
+            receipt = receipt.evolve(
+                base_sequence=live.catalog.sequence,
+                base_payload_sha256=sha256_ref(live.payload),
+                target_sequence=update.catalog.sequence,
+                payload_sha256=sha256_ref(update.payload),
+                state=RequestState.PREPARED,
+                reason="READY",
+            )
+            journal.save(receipt, prepared)
+        receipt = receipt.evolve(state=RequestState.WRITE_STARTED, reason="WRITE_STARTED")
+        journal.save(receipt, prepared)
+        fresh = read_live(store, keyring=keyring, game=game, now=now)
+        if sha256_ref(fresh.payload) != receipt.request_digest:
+            return save(RequestState.STALE, "LIVE_CHANGED")
+        catalog = parse_strict(OtaCatalog, prepared.payload)
+        ensure_valid_succession(fresh.catalog, catalog)
+        ensure_catalog_references(store, catalog)
+        if prepared.key_id not in keyring or not verify_der_signature(
+            keyring[prepared.key_id].public_key,
+            prepared.der,
+            prepared.payload,
+        ):
+            return save(RequestState.BLOCKED, "SIGN_FAILED")
+        envelope = build_envelope(prepared.payload, {prepared.key_id: prepared.der})
+        verify_live_envelope(envelope, Channel.PRODUCTION, keyring=keyring, game=game, now=now)
+    except (OtaPublisherError, OtaError, OSError, ValueError):
+        return save(RequestState.BLOCKED, "CHECK_FAILED")
+    with contextlib.suppress(OtaPublisherError, OSError):
+        write_catalog(
+            store,
+            Channel.PRODUCTION,
+            envelope,
+            base_sequence=receipt.base_sequence,
+            keyring=keyring,
+            game=game,
+            now=now,
+        )
+    outcome = recover_outcome(receipt, prepared, store=store, keyring=keyring, now=now)
+    journal.save(outcome, prepared)
+    return outcome

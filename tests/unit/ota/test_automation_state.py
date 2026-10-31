@@ -82,3 +82,21 @@ def test_git_journal_is_durable_and_missing_branch_never_resets(tmp_path):
     with pytest.raises(JournalError):
         journal.save(item)
     assert git("-C", remote, "for-each-ref", "refs/heads/ota-publication-state").stdout == b""
+
+
+def test_directory_fsync_failure_blocks_journal_save(tmp_path, monkeypatch):
+    import os
+    import stat
+
+    journal = FileJournal(tmp_path / "journal.json")
+    journal.initialize()
+    original = os.fsync
+
+    def fsync(fd):
+        if stat.S_ISDIR(os.fstat(fd).st_mode):
+            raise OSError("TEST directory durability failure")
+        return original(fd)
+
+    monkeypatch.setattr(os, "fsync", fsync)
+    with pytest.raises(JournalError):
+        journal.save(receipt())
