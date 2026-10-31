@@ -65,6 +65,8 @@ STAGE_LABELS = {
 
 _NOTIFIED_LIMIT = 20
 _FAILURES_LIMIT = 50
+#: undelivered candidate events kept for retry (a safety bound; in practice one or two)
+_PENDING_LIMIT = 8
 
 
 class _Strict(BaseModel):
@@ -85,8 +87,9 @@ class FreshnessDedup(_Strict):
 
 class PendingCandidate(_Strict):
     """The durable "due, not yet delivered" marker of one CandidatePrepared event: the
-    exact facts the message is (re-)rendered from. Set when the send failed, cleared by
-    :func:`confirmed_candidate` after a confirmed delivery."""
+    exact facts the message is (re-)rendered from. Every undelivered candidate stays
+    here - a newer one never replaces an older one - and :func:`confirm_candidate_event`
+    removes exactly the entry whose message was delivered."""
 
     release_id: str
     build: str
@@ -105,7 +108,7 @@ class CandidateDedup(_Strict):
     kind: Literal["notify-candidate-state"]
     notified: tuple[str, ...] = ()
     failures_notified: tuple[str, ...] = ()
-    pending: PendingCandidate | None = None
+    pending: tuple[PendingCandidate, ...] = ()
     updated_at: str
 
 
@@ -168,7 +171,9 @@ def _stage_failed(
 ) -> StageFailed | None:
     if already_notified:
         return None
-    return StageFailed(stage=STAGE_LABELS[fingerprint], reason=reason, run_url=run_url)
+    return StageFailed(
+        stage=STAGE_LABELS[fingerprint], reason=reason, run_url=run_url, fingerprint=fingerprint
+    )
 
 
 # ---------------------------------------------------------------------- freshness
@@ -265,6 +270,21 @@ def candidate_reason(outcome: str, report: PreparationReport | None) -> str:
     }.get(outcome, "подготовка не завершилась (артефакт запуска недоступен)")
 
 
+def _pending_event(pending: PendingCandidate) -> CandidatePrepared:
+    return CandidatePrepared(
+        release_id=pending.release_id,
+        build=pending.build,
+        base=pending.base,
+        steps_passed=pending.steps_passed,
+        steps_total=pending.steps_total,
+        gates_passed=tuple(pending.gates_passed),
+        gates_required=tuple(pending.gates_required),
+        pr_url=pending.pr_url,
+        artifact_name=pending.artifact_name,
+        run_url=pending.run_url,
+    )
+
+
 def decide_candidate(
     state: CandidateDedup,
     *,
@@ -280,54 +300,35 @@ def decide_candidate(
 ) -> Decision[CandidateDedup]:
     """One OTA data preparation run (detect + prepare + propose).
 
-    ``PREPARED`` notifies once per release id - and only after a *confirmed* delivery:
-    until then the event sits in :attr:`CandidateDedup.pending` (durable, so the usual
-    next run of a kept candidate is ``NO_ACTION`` and would otherwise never mention it
-    again) and is retried by every following run, with the run's fresher facts when the
-    same release is ``PREPARED`` again. A broken detection or preparation notifies once
-    per episode; ``NO_ACTION`` clears the detection fingerprint, ``PREPARED`` both. The
-    proposal is separate: ``REFUSED`` / ``CONFLICT`` / ``FAILED`` (or a step that died)
-    notify once per episode, a concluded proposal (``OPENED`` / ``EXISTS`` /
-    ``ALREADY_ON_MAIN`` / ``DECLINED``) clears it."""
+    The returned state assumes *nothing was delivered yet*: every event this run emits
+    stays durable - undelivered candidates in :attr:`CandidateDedup.pending` (a newer
+    candidate never replaces an older one; both are retried), failure fingerprints not
+    recorded at all - and :func:`confirm_candidate_event` applies one confirmed delivery
+    at a time. A quiet ``NO_ACTION``/``EXISTS`` run therefore still retries everything
+    undelivered, a repeated broken stage re-alerts until its message actually goes out,
+    and recovery clears fingerprints as before: ``NO_ACTION`` clears the detection one,
+    ``PREPARED`` both, a concluded proposal (``OPENED`` / ``EXISTS`` / ``ALREADY_ON_MAIN``
+    / ``DECLINED``) its own."""
     events: list[Event] = []
     failures = state.failures_notified
     notified = state.notified
-    pending = state.pending
-
-    # the undelivered candidate of an earlier run is retried first (stale markers for a
-    # release that was delivered after all are dropped)
-    retry: CandidatePrepared | None = None
-    if pending is not None:
-        if pending.release_id in notified:
-            pending = None
-        else:
-            retry = CandidatePrepared(
-                release_id=pending.release_id,
-                build=pending.build,
-                base=pending.base,
-                steps_passed=pending.steps_passed,
-                steps_total=pending.steps_total,
-                gates_passed=tuple(pending.gates_passed),
-                gates_required=tuple(pending.gates_required),
-                pr_url=pending.pr_url,
-                artifact_name=pending.artifact_name,
-                run_url=pending.run_url,
-            )
-            events.append(retry)
+    # stale markers for releases that were delivered after all are dropped; the rest are
+    # retried, oldest first, and stay due until their own confirmed delivery
+    pending = tuple(p for p in state.pending if p.release_id not in notified)
+    for due in pending:
+        events.append(_pending_event(due))
 
     if outcome in {"DETECT_UNKNOWN", "DETECT_FAILED"}:
         reason = detection_reason or candidate_reason(outcome, report)
         event = _stage_failed(FP_PREPARE_DETECT, reason, run_url, FP_PREPARE_DETECT in failures)
         if event is not None:
             events.append(event)
-        failures = _add(failures, FP_PREPARE_DETECT)
     elif outcome in {"BLOCKED", "UNKNOWN", "FAILED"}:
         event = _stage_failed(
             FP_PREPARE_RUN, candidate_reason(outcome, report), run_url, FP_PREPARE_RUN in failures
         )
         if event is not None:
             events.append(event)
-        failures = _add(failures, FP_PREPARE_RUN)
         failures = _drop(failures, FP_PREPARE_DETECT)  # the detection itself concluded
     elif outcome == "NO_ACTION":
         failures = _drop(failures, FP_PREPARE_DETECT)
@@ -341,7 +342,6 @@ def decide_candidate(
             )
             if event is not None:
                 events.append(event)
-            failures = _add(failures, FP_PREPARE_RUN)
         else:
             failures = _drop(failures, FP_PREPARE_DETECT, FP_PREPARE_RUN)
             release_id = report.release.release_id if report.release else report.artifact_name
@@ -365,10 +365,7 @@ def decide_candidate(
                     artifact_name=report.artifact_name,
                     run_url=run_url,
                 )
-                if retry is not None and retry.release_id == release_id:
-                    events.remove(retry)  # superseded: retry once, with this run's facts
-                events.append(prepared)
-                pending = PendingCandidate(
+                marker = PendingCandidate(
                     release_id=prepared.release_id,
                     build=prepared.build,
                     base=prepared.base,
@@ -380,6 +377,20 @@ def decide_candidate(
                     artifact_name=prepared.artifact_name,
                     run_url=prepared.run_url,
                 )
+                same = [p for p in pending if p.release_id == release_id]
+                if same:
+                    # the same release prepared again: one message, this run's fresher
+                    # facts (e.g. the PR link); a *different* pending release is never
+                    # replaced - both stay due
+                    events = [
+                        e
+                        for e in events
+                        if not (isinstance(e, CandidatePrepared) and e.release_id == release_id)
+                    ]
+                    pending = tuple(marker if p.release_id == release_id else p for p in pending)
+                else:
+                    pending = (*pending, marker)
+                events.append(prepared)
     # any other outcome word is rejected by the CLI before this function runs
 
     propose_done = {"OPENED", "EXISTS", "ALREADY_ON_MAIN", "DECLINED"}
@@ -391,7 +402,6 @@ def decide_candidate(
         event = _stage_failed(FP_PREPARE_PROPOSE, reason, run_url, FP_PREPARE_PROPOSE in failures)
         if event is not None:
             events.append(event)
-        failures = _add(failures, FP_PREPARE_PROPOSE)
     elif propose_outcome == "FAILED" or (propose_result == "failure" and not propose_outcome):
         reason = (
             "предложение PR не завершилось (git/GitHub API); следующий запуск повторит"
@@ -401,22 +411,35 @@ def decide_candidate(
         event = _stage_failed(FP_PREPARE_PROPOSE, reason, run_url, FP_PREPARE_PROPOSE in failures)
         if event is not None:
             events.append(event)
-        failures = _add(failures, FP_PREPARE_PROPOSE)
     elif propose_outcome in propose_done:
         failures = _drop(failures, FP_PREPARE_PROPOSE)
 
     return Decision(tuple(events), _candidate(notified, failures, now, pending))
 
 
-def confirmed_candidate(state: CandidateDedup, now: str) -> CandidateDedup:
-    """The state after a confirmed delivery: the pending release becomes notified and
-    the marker is cleared. Called by the CLI only for a ``200 ok:true`` send; also used
-    by the first run to acknowledge the baseline without sending anything old."""
-    if state.pending is None:
-        return state
-    return _candidate(
-        (*state.notified, state.pending.release_id), state.failures_notified, now, None
-    )
+def confirm_candidate_event(state: CandidateDedup, event: Event, now: str) -> CandidateDedup:
+    """Apply ONE confirmed delivery to the candidate state: a delivered
+    CandidatePrepared leaves ``pending`` and joins ``notified``; a delivered StageFailed
+    records its fingerprint (until then the same broken stage re-alerts). Events of
+    other kinds do not touch this state."""
+    if isinstance(event, CandidatePrepared):
+        pending = tuple(p for p in state.pending if p.release_id != event.release_id)
+        notified = state.notified
+        if event.release_id not in notified:
+            notified = (*notified, event.release_id)
+        return _candidate(notified, state.failures_notified, now, pending)
+    if isinstance(event, StageFailed) and event.fingerprint:
+        return _candidate(
+            state.notified, _add(state.failures_notified, event.fingerprint), now, state.pending
+        )
+    return _candidate(state.notified, state.failures_notified, now, state.pending)
+
+
+def acknowledge_candidates(state: CandidateDedup, now: str) -> CandidateDedup:
+    """The first run's silent baseline: everything due is recorded as acknowledged,
+    nothing is sent and nothing stays pending."""
+    notified = tuple(dict.fromkeys((*state.notified, *(p.release_id for p in state.pending))))
+    return _candidate(notified, state.failures_notified, now, ())
 
 
 # ---------------------------------------------------------------------- production
@@ -518,14 +541,14 @@ def _candidate(
     notified: tuple[str, ...],
     failures: tuple[str, ...],
     now: str,
-    pending: PendingCandidate | None = None,
+    pending: tuple[PendingCandidate, ...] = (),
 ) -> CandidateDedup:
     return CandidateDedup(
         state_version=1,
         kind="notify-candidate-state",
         notified=notified[-_NOTIFIED_LIMIT:],
         failures_notified=failures[-_FAILURES_LIMIT:],
-        pending=pending,
+        pending=pending[-_PENDING_LIMIT:],
         updated_at=now,
     )
 

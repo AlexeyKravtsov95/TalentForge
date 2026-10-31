@@ -51,11 +51,16 @@ class ProductionUpdated:
 
 @dataclass(frozen=True)
 class StageFailed:
-    """A preparation or check broke; an expected OUTDATED freshness answer never is one."""
+    """A preparation or check broke; an expected OUTDATED freshness answer never is one.
+
+    ``fingerprint`` is the stage's deduplication id: the producer records it only after
+    this very message was delivered, so an undelivered alert is retried by the next run
+    of the same broken stage instead of being suppressed forever."""
 
     stage: str
     reason: str
     run_url: str
+    fingerprint: str = ""
 
 
 Event = BuildDetected | CandidatePrepared | ProductionUpdated | StageFailed

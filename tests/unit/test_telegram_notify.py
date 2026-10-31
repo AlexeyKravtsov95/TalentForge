@@ -45,11 +45,14 @@ from talent_data.notify.state import (
     FP_FRESHNESS_UNKNOWN,
     FP_PREPARE_DETECT,
     FP_PREPARE_PROPOSE,
+    FP_PREPARE_RUN,
     CandidateDedup,
     FreshnessDedup,
+    PendingCandidate,
     StateError,
+    acknowledge_candidates,
     baseline,
-    confirmed_candidate,
+    confirm_candidate_event,
     decide_candidate,
     decide_freshness,
     decide_production,
@@ -471,15 +474,17 @@ def test_unknown_and_check_failures_notify_once_per_episode() -> None:
 # ---------------------------------------------------------------------- candidate state
 
 
-def report(status: Readiness = Readiness.PREPARED) -> PreparationReport:
+def report(
+    status: Readiness = Readiness.PREPARED, build: str = "1.60.1.70532"
+) -> PreparationReport:
     return PreparationReport(
         schema_version=1,
         kind="ota-prepare-report",
         game="forever",
         status=status,
         publishable=False,
-        artifact_name="ota-prepare-forever-1.60.1.70532-r1-from-70450-main-aaaaaaaaaaaa-PREPARED",
-        candidate_build="1.60.1.70532",
+        artifact_name=f"ota-prepare-forever-{build}-r1-from-70450-main-aaaaaaaaaaaa-PREPARED",
+        candidate_build=build,
         base_build="1.60.1.70450",
         base_kind="productionRelease",
         base_release_id="1.60.1.70450-r1",
@@ -490,7 +495,7 @@ def report(status: Readiness = Readiness.PREPARED) -> PreparationReport:
         finished_at=NOW,
         production=None,
         release=ReportRelease(
-            release_id="1.60.1.70532-r1",
+            release_id=f"{build}-r1",
             manifest_sha256="sha256:" + "1" * 64,
             candidate_on_main=False,
         ),
@@ -548,16 +553,16 @@ def test_a_prepared_candidate_notifies_once_per_release_id() -> None:
     assert isinstance(event, CandidatePrepared)
     assert event.release_id == "1.60.1.70532-r1" and event.steps_total == 2
     assert event.gates_passed == ("G2",) and event.gates_required == ("G1", "G7")
-    # delivered only on confirmation: until then the event is the durable pending marker
-    assert decision.state.notified == () and decision.state.pending is not None
-    assert decision.state.pending.release_id == event.release_id
-    confirmed = confirmed_candidate(decision.state, NOW)
-    assert confirmed.notified == ("1.60.1.70532-r1",) and confirmed.pending is None
+    # the decision assumes no delivery: the event is the durable pending marker
+    assert decision.state.notified == () and len(decision.state.pending) == 1
+    assert decision.state.pending[0].release_id == event.release_id
+    confirmed = confirm_candidate_event(decision.state, event, NOW)
+    assert confirmed.notified == ("1.60.1.70532-r1",) and confirmed.pending == ()
     repeat = candidate(confirmed)
-    assert repeat.events == () and repeat.state.pending is None
+    assert repeat.events == () and repeat.state.pending == ()
     assert baseline(decision).events == ()  # a first run records, never announces
-    acknowledged = confirmed_candidate(baseline(decision).state, NOW)  # the first run's baseline
-    assert acknowledged.notified == ("1.60.1.70532-r1",) and acknowledged.pending is None
+    acknowledged = acknowledge_candidates(baseline(decision).state, NOW)  # silent baseline
+    assert acknowledged.notified == ("1.60.1.70532-r1",) and acknowledged.pending == ()
 
 
 def test_an_undelivered_candidate_is_retried_after_the_run_goes_quiet() -> None:
@@ -565,26 +570,42 @@ def test_an_undelivered_candidate_is_retried_after_the_run_goes_quiet() -> None:
     next scheduled run is the quiet NO_ACTION/EXISTS of the kept artifact, Telegram is
     back - the message is delivered exactly once, and never again."""
     undelivered = candidate(initial_candidate(NOW)).state  # the PREPARED run, send failed
-    assert undelivered.pending is not None and undelivered.notified == ()
+    assert len(undelivered.pending) == 1 and undelivered.notified == ()
     retry = candidate(undelivered, outcome="NO_ACTION", report=None, propose_outcome="EXISTS")
     (event,) = retry.events
     assert isinstance(event, CandidatePrepared) and event.release_id == "1.60.1.70532-r1"
-    assert retry.state.pending is not None  # still due until a confirmed delivery
-    recovered = confirmed_candidate(retry.state, NOW)
-    assert recovered.notified == ("1.60.1.70532-r1",) and recovered.pending is None
+    assert len(retry.state.pending) == 1  # still due until its own confirmed delivery
+    recovered = confirm_candidate_event(retry.state, event, NOW)
+    assert recovered.notified == ("1.60.1.70532-r1",) and recovered.pending == ()
     quiet = candidate(recovered, outcome="NO_ACTION", report=None, propose_outcome="EXISTS")
     assert quiet.events == ()  # no second delivery, ever
 
 
 def test_a_fresh_prepared_of_the_same_release_supersedes_the_retry() -> None:
     undelivered = candidate(initial_candidate(NOW)).state
-    assert undelivered.pending is not None
+    assert len(undelivered.pending) == 1
     fresh = candidate(
         undelivered, pr_url="https://github.com/AlexeyKravtsov95/TalentForge/pull/102"
     )
     (event,) = fresh.events  # one message, not both the retry and the fresh event
     assert isinstance(event, CandidatePrepared) and event.pr_url is not None
-    assert fresh.state.pending is not None and fresh.state.pending.pr_url is not None
+    assert len(fresh.state.pending) == 1 and fresh.state.pending[0].pr_url is not None
+
+
+def test_a_undelivered_failure_is_not_suppressed_until_delivered() -> None:
+    """A broken stage re-alerts on every run until its alert was actually delivered -
+    the fingerprint is recorded by the confirmation, not by the decision."""
+    blocked = report(Readiness.BLOCKED)
+    first = candidate(initial_candidate(NOW), outcome="BLOCKED", report=blocked, propose_outcome="")
+    (event,) = first.events
+    assert isinstance(event, StageFailed) and "tooltips" in event.reason
+    assert first.state.failures_notified == ()  # nothing sent yet: no fingerprint
+    again = candidate(first.state, outcome="BLOCKED", report=blocked, propose_outcome="")
+    assert len(again.events) == 1  # the same failure alerts again
+    confirmed = confirm_candidate_event(again.state, again.events[0], NOW)
+    assert confirmed.failures_notified == (event.fingerprint,)
+    quiet = candidate(confirmed, outcome="BLOCKED", report=blocked, propose_outcome="")
+    assert quiet.events == ()  # delivered once: the episode is closed
 
 
 def test_no_action_is_quiet_and_clears_the_detection_failure() -> None:
@@ -603,10 +624,8 @@ def test_a_blocked_preparation_names_its_failed_step_once() -> None:
     )
     (event,) = decision.events
     assert isinstance(event, StageFailed) and "tooltips" in event.reason
-    assert (
-        candidate(decision.state, outcome="BLOCKED", report=blocked, propose_outcome="").events
-        == ()
-    )
+    delivered = confirm_candidate_event(decision.state, event, NOW)
+    assert candidate(delivered, outcome="BLOCKED", report=blocked, propose_outcome="").events == ()
 
 
 def test_prepared_without_a_report_is_a_failure_not_a_crash() -> None:
@@ -630,11 +649,15 @@ def test_proposal_failures_notify_once_and_conclusions_clear_them() -> None:
         propose_result="failure",
     )
     assert any("умер" in e.reason for e in died.events if isinstance(e, StageFailed))
-    state = refused.state
+    # the fingerprint exists only after the alert was delivered
+    assert refused.state.failures_notified == ()
+    delivered = confirm_candidate_event(refused.state, refused.events[0], NOW)
+    assert delivered.failures_notified == (FP_PREPARE_PROPOSE,)
     assert (
-        candidate(state, outcome="NO_ACTION", report=None, propose_outcome="REFUSED").events == ()
+        candidate(delivered, outcome="NO_ACTION", report=None, propose_outcome="REFUSED").events
+        == ()
     )
-    cleared = candidate(state, outcome="NO_ACTION", report=None, propose_outcome="DECLINED")
+    cleared = candidate(delivered, outcome="NO_ACTION", report=None, propose_outcome="DECLINED")
     assert cleared.events == () and FP_PREPARE_PROPOSE not in cleared.state.failures_notified
 
 
@@ -756,8 +779,14 @@ def test_the_watch_only_reads() -> None:
 
 
 class FakeTelegram:
-    def __init__(self, outcome: SendStatus = SendStatus.SENT) -> None:
+    """A fake client: every message SENT (or FAILED), or a per-message ``plan`` of
+    outcomes for partial-delivery scenarios (first message failed, second sent, ...)."""
+
+    def __init__(
+        self, outcome: SendStatus = SendStatus.SENT, plan: list[SendStatus] | None = None
+    ) -> None:
         self.outcome = outcome
+        self.plan = list(plan) if plan is not None else None
         self.sent: list[tuple[str, str]] = []
 
     def __enter__(self) -> FakeTelegram:
@@ -768,7 +797,8 @@ class FakeTelegram:
 
     def send_message(self, chat_id: str, text: str) -> SendResult:
         self.sent.append((chat_id, text))
-        if self.outcome is SendStatus.SENT:
+        status = self.plan.pop(0) if self.plan else self.outcome
+        if status is SendStatus.SENT:
             return SendResult(SendStatus.SENT, "delivered")
         return SendResult(SendStatus.FAILED, "sendMessage: HTTP 400: chat not found")
 
@@ -1014,8 +1044,9 @@ def test_the_candidate_cli_retries_an_undelivered_message(
     env = cli_env(tmp_path, down, monkeypatch)
     assert cli_main(prepared_args, env) == 0  # not the pipeline's failure
     recorded = load_dedup(CandidateDedup, state)
-    assert recorded is not None and recorded.pending is not None
-    assert recorded.pending.release_id == "1.60.1.70532-r1"
+    assert recorded is not None and len(recorded.pending) == 1
+    assert recorded.pending[0].release_id == "1.60.1.70532-r1"
+    assert recorded.failures_notified == ()  # no alert fingerprint without a delivery
     assert "1.60.1.70532-r1" not in recorded.notified
 
     up = FakeTelegram()
@@ -1024,11 +1055,212 @@ def test_the_candidate_cli_retries_an_undelivered_message(
     [(_chat, text)] = up.sent
     assert "1.60.1.70532-r1" in text
     recorded = load_dedup(CandidateDedup, state)
-    assert recorded is not None and recorded.pending is None
+    assert recorded is not None and recorded.pending == ()
     assert "1.60.1.70532-r1" in recorded.notified
 
     assert cli_main(quiet_args, env) == 0
     assert len(up.sent) == 1  # delivered once, no repeats
+
+
+# ------------------------------------------------------- delivery regression scenarios
+
+
+def _pending(release: str, pr_url: str | None = None) -> PendingCandidate:
+    return PendingCandidate(
+        release_id=release,
+        build=release.rsplit("-r", 1)[0],
+        base="1.60.1.70450-r1",
+        steps_passed=18,
+        steps_total=18,
+        gates_passed=("G2",),
+        gates_required=("G1", "G7"),
+        pr_url=pr_url,
+        artifact_name="art",
+        run_url=RUN,
+    )
+
+
+def _seed_candidate(
+    state: Path,
+    *,
+    notified: tuple[str, ...] = ("1.60.1.70374-r1",),
+    pending: tuple[PendingCandidate, ...] = (),
+    failures: tuple[str, ...] = (),
+) -> None:
+    save_dedup(
+        state,
+        CandidateDedup(
+            state_version=1,
+            kind="notify-candidate-state",
+            notified=notified,
+            failures_notified=failures,
+            pending=pending,
+            updated_at=NOW,
+        ),
+    )
+
+
+def _candidate_run(
+    tmp_path: Path,
+    fake: FakeTelegram,
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    outcome: str,
+    build: str = "1.60.1.70532",
+    status: Readiness = Readiness.PREPARED,
+    propose: str = "",
+    propose_result: str = "skipped",
+    pr_url: str = "",
+    summary_name: str = "summary.md",
+) -> tuple[int, dict[str, str], Path]:
+    env = cli_env(tmp_path, fake, monkeypatch)
+    env = env | {"GITHUB_STEP_SUMMARY": str(tmp_path / summary_name)}
+    report_path = tmp_path / f"report-{build}.json"
+    report_path.write_text(
+        report(status, build=build).model_dump_json(by_alias=True), encoding="utf-8"
+    )
+    detection = tmp_path / "detection.json"
+    detection.write_text('{"reason": "new build"}', encoding="utf-8")
+    state = tmp_path / "candidate.json"
+    args = [
+        "candidate",
+        "--outcome",
+        outcome,
+        "--report",
+        str(report_path),
+        "--detection",
+        str(detection),
+        "--propose-outcome",
+        propose,
+        "--propose-result",
+        propose_result,
+        "--pr-url",
+        pr_url,
+        "--artifact",
+        "art",
+        "--state-file",
+        str(state),
+        "--run-url",
+        RUN,
+    ]
+    return cli_main(args, env), env, state
+
+
+def _summary(env: dict[str, str]) -> str:
+    return Path(env["GITHUB_STEP_SUMMARY"]).read_text(encoding="utf-8")
+
+
+def test_a_failed_alert_alerts_again_until_it_is_actually_delivered(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A preparation fails while Telegram is down: nothing is recorded as notified (the
+    old code recorded the fingerprint and suppressed the retry forever); the same
+    failure with Telegram back delivers exactly one alert, and the episode closes."""
+    _seed_candidate(tmp_path / "candidate.json")  # not the first run: no silent baseline
+
+    # 1. the broken preparation, Telegram down
+    down = FakeTelegram(SendStatus.FAILED)
+    code, env, state = _candidate_run(
+        tmp_path, down, monkeypatch, outcome="BLOCKED", status=Readiness.BLOCKED
+    )
+    assert code == 0  # the preparation's own result never depends on Telegram
+    assert "FAILED" in _summary(env)
+    recorded = load_dedup(CandidateDedup, state)
+    assert recorded is not None and recorded.failures_notified == ()  # not suppressed
+
+    # 2. the same failure, Telegram is back: one delivered alert
+    up = FakeTelegram()
+    code, env, state = _candidate_run(
+        tmp_path, up, monkeypatch, outcome="BLOCKED", status=Readiness.BLOCKED, summary_name="s2.md"
+    )
+    assert code == 0
+    [(_chat, text)] = up.sent
+    assert "сбой" in text and "tooltips" in text
+    assert "SENT (1)" in _summary(env)
+    recorded = load_dedup(CandidateDedup, state)
+    assert recorded is not None and recorded.failures_notified == (FP_PREPARE_RUN,)
+
+    # 3. the same failure again: silent, the episode is closed
+    again = FakeTelegram()
+    code, _env, state = _candidate_run(
+        tmp_path,
+        again,
+        monkeypatch,
+        outcome="BLOCKED",
+        status=Readiness.BLOCKED,
+        summary_name="s3.md",
+    )
+    assert code == 0 and again.sent == []
+
+
+def test_a_new_candidate_does_not_replace_the_undelivered_one(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Pending A survives a new PREPARED B: on a partial delivery B is confirmed, A
+    stays pending, and the next quiet run retries exactly A."""
+    state = tmp_path / "candidate.json"
+    _seed_candidate(state, pending=(_pending("1.60.1.70532-r1"),))
+
+    # A's retry is not delivered, B (the fresh candidate) is: one out of two
+    partial = FakeTelegram(plan=[SendStatus.FAILED, SendStatus.SENT])
+    code, env, state = _candidate_run(
+        tmp_path, partial, monkeypatch, outcome="PREPARED", build="1.60.1.70600"
+    )
+    assert code == 0 and len(partial.sent) == 2
+    assert "1 из 2" in _summary(env)
+    recorded = load_dedup(CandidateDedup, state)
+    assert recorded is not None
+    assert [p.release_id for p in recorded.pending] == ["1.60.1.70532-r1"]  # A stayed
+    assert "1.60.1.70600-r1" in recorded.notified  # B confirmed
+
+    # the next quiet run retries only A
+    up = FakeTelegram()
+    code, _env2, state = _candidate_run(
+        tmp_path, up, monkeypatch, outcome="NO_ACTION", summary_name="s2.md"
+    )
+    assert code == 0 and len(up.sent) == 1
+    assert "1.60.1.70532-r1" in up.sent[0][1]
+    assert "1.60.1.70600-r1" not in up.sent[0][1]  # B is not repeated
+    recorded = load_dedup(CandidateDedup, state)
+    assert recorded is not None and recorded.pending == ()
+
+    # and nothing repeats after the confirmation
+    code, _env, _state = _candidate_run(
+        tmp_path, up, monkeypatch, outcome="NO_ACTION", summary_name="s3.md"
+    )
+    assert code == 0 and len(up.sent) == 1
+
+
+def test_two_undelivered_candidates_are_delivered_together(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    state = tmp_path / "candidate.json"
+    _seed_candidate(state, pending=(_pending("1.60.1.70532-r1"),))
+
+    both = FakeTelegram(plan=[SendStatus.FAILED, SendStatus.FAILED])
+    code, _env1, state = _candidate_run(
+        tmp_path, both, monkeypatch, outcome="PREPARED", build="1.60.1.70600"
+    )
+    assert code == 0 and len(both.sent) == 2
+    recorded = load_dedup(CandidateDedup, state)
+    assert recorded is not None
+    assert [p.release_id for p in recorded.pending] == ["1.60.1.70532-r1", "1.60.1.70600-r1"]
+    assert recorded.notified == ("1.60.1.70374-r1",)
+
+    up = FakeTelegram()
+    code, _env2, state = _candidate_run(
+        tmp_path, up, monkeypatch, outcome="NO_ACTION", summary_name="s2.md"
+    )
+    assert code == 0 and len(up.sent) == 2  # both delivered, oldest first
+    assert "1.60.1.70532-r1" in up.sent[0][1] and "1.60.1.70600-r1" in up.sent[1][1]
+    recorded = load_dedup(CandidateDedup, state)
+    assert recorded is not None and recorded.pending == ()
+    assert "1.60.1.70532-r1" in recorded.notified and "1.60.1.70600-r1" in recorded.notified
+
+    code, _env, _state = _candidate_run(
+        tmp_path, up, monkeypatch, outcome="NO_ACTION", summary_name="s3.md"
+    )
+    assert code == 0 and len(up.sent) == 2  # no repeats after the confirmation
 
 
 def test_the_smoke_command_reports_sent_and_failed(

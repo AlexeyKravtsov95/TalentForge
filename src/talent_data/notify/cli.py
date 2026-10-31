@@ -37,8 +37,9 @@ from talent_data.notify.state import (
     FreshnessDedup,
     ProductionDedup,
     StateError,
+    acknowledge_candidates,
     baseline,
-    confirmed_candidate,
+    confirm_candidate_event,
     decide_candidate,
     decide_freshness,
     decide_production,
@@ -226,17 +227,16 @@ def cmd_candidate(
         now=utc_now(),
     )
     if first:
-        # the first run records the baseline and sends nothing old - including the
-        # candidate of this very run, which is acknowledged as if delivered
-        decision = Decision((), confirmed_candidate(baseline(decision).state, utc_now()))
+        # the first run records the baseline and sends nothing old - everything due is
+        # acknowledged as if delivered, so the baseline stays silent forever
+        decision = Decision((), acknowledge_candidates(baseline(decision).state, utc_now()))
     _deliver(
         decision,
         path,
         send,
         summary,
         first_run=first,
-        on_sent=lambda confirmed: confirmed_candidate(confirmed, utc_now()),
-        persist_on_failure=True,
+        confirm=lambda confirmed, event: confirm_candidate_event(confirmed, event, utc_now()),
     )
     return EXIT_OK, True
 
@@ -282,17 +282,18 @@ def _deliver(
     summary: _Summary,
     *,
     first_run: bool,
-    on_sent: Callable[[Any], Any] | None = None,
-    persist_on_failure: bool = False,
+    confirm: Callable[[Any, Event], Any] | None = None,
 ) -> str:
     """Send the events, persist the state and report the notification's own status.
     Never raises for a send failure.
 
-    ``on_sent`` transforms the state after a confirmed delivery (the candidate command
-    moves its pending marker into ``notified``); ``persist_on_failure`` makes a failed
-    send persist the state too - only for producers whose state itself carries the
-    undelivered work as a durable marker, so the usual quiet follow-up run still
-    retries it."""
+    ``confirm(state, event) -> state`` is applied once per *delivered* event, so the
+    persisted state records exactly what went out. Producers whose decision state
+    already assumes a delivery (freshness, production) pass ``confirm=None`` and are
+    persisted only when everything was delivered - their undelivered events simply
+    re-occur on the next run. The candidate producer passes a reducer and is always
+    persisted: undelivered candidates stay in ``pending``, a delivered alert records its
+    fingerprint only now, and a partial success keeps exactly the undelivered part."""
     note = (
         " (первый запуск: база зафиксирована, старые события не отправлялись)" if first_run else ""
     )
@@ -304,39 +305,56 @@ def _deliver(
             f"Состояние дедупликации обновлено: {path.name}.",
         )
         return "QUIET"
-    failures: list[str] = []
+    delivered: list[Event] = []
     for event in decision.events:
         result = send(render(event))
         if result.status is SendStatus.SENT:
+            delivered.append(event)
             summary.append(f"- отправлено: {_title(event)}")
         else:
-            failures.append(result.detail)
             summary.append(f"- НЕ отправлено: {_title(event)} — {result.detail}")
-    if failures:
-        if persist_on_failure:
-            save_dedup(path, decision.state)
+    undelivered = len(decision.events) - len(delivered)
+    # only what actually went out is recorded as delivered (no-op without a reducer)
+    state = decision.state
+    if confirm is not None:
+        for event in delivered:
+            state = confirm(state, event)
+    if undelivered == 0:
+        save_dedup(path, state)
+        summary.append(
+            f"## Telegram-уведомления: SENT ({len(delivered)}){note}",
+            "",
+            f"Состояние дедупликации обновлено: {path.name}.",
+        )
+        return "SENT"
+    if confirm is not None:
+        save_dedup(path, state)
+        if delivered:
             summary.append(
-                "## Telegram-уведомления: FAILED",
+                f"## Telegram-уведомления: SENT ({len(delivered)} из {len(decision.events)})",
                 "",
-                "События не доставлены и остались в состоянии (pending): следующий запуск "
-                "повторит отправку (возможно повторение уже дошедшего сообщения: доставка "
-                "не exactly-once).",
+                "Доставленное подтверждено в состоянии, недоставленное осталось на "
+                "повторе. Следующий запуск повторит только недоставленное (возможно "
+                "повторение уже дошедшего сообщения: доставка не exactly-once).",
+                f"Состояние дедупликации обновлено: {path.name}.",
             )
-        else:
-            summary.append(
-                "## Telegram-уведомления: FAILED",
-                "",
-                "События не доставлены; состояние не записано — следующий запуск повторит "
-                "отправку (возможно повторение уже дошедшего сообщения: доставка не exactly-once).",
-            )
+            return "PARTIAL"
+        summary.append(
+            "## Telegram-уведомления: FAILED",
+            "",
+            "События не доставлены и остались в состоянии (pending, отпечатки сбоев не "
+            "записаны): следующий запуск повторит отправку (возможно повторение уже "
+            "дошедшего сообщения: доставка не exactly-once).",
+            f"Состояние дедупликации обновлено: {path.name}.",
+        )
         return "FAILED"
-    save_dedup(path, on_sent(decision.state) if on_sent is not None else decision.state)
     summary.append(
-        f"## Telegram-уведомления: SENT ({len(decision.events)}){note}",
+        "## Telegram-уведомления: FAILED",
         "",
-        f"Состояние дедупликации обновлено: {path.name}.",
+        "События не доставлены; состояние не записано — следующий запуск повторит "
+        "отправку (возможно повторение уже дошедшего сообщения: доставка не exactly-once).",
     )
-    return "SENT"
+    return "FAILED"
 
 
 def _title(event: Event) -> str:
