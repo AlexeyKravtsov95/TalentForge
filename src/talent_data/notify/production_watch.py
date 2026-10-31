@@ -4,9 +4,10 @@ The owner publishes production from their own machine; nothing of ours writes th
 This module only watches, exactly the way the preparation's detection already does
 (:func:`talent_data.prepare.production.read_production`): an anonymous ``GET`` through the
 preflight fetcher, verified with the reference verifier against the committed production
-keyring (``tf-prod-*`` only) on the wall clock. On top of the catalog it also fetches the
-*active* release's manifest and re-verifies it against the catalog's pin, so "the public
-endpoint serves the release it activates" is checked, not assumed.
+keyring (``tf-prod-*`` only) on the wall clock. The default mode also checks the active
+manifest. Full mode verifies all listed
+manifests and files and re-reads the catalog; the CLI requires it before recording a
+baseline or notifying a changed activation.
 
 Nothing raises and nothing is guessed: :class:`ProductionObservation` carries the three
 possible catalog answers (``PUBLISHED`` / ``ABSENT`` / ``UNKNOWN``) plus, for a verified
@@ -60,8 +61,29 @@ def observe_production(
     keyring: Mapping[str, TrustedKey],
     game: str,
     now: datetime,
+    verify_files: bool = False,
 ) -> ProductionObservation:
-    """Observe the production channel once; never raises."""
+    """Observe production; full mode proves every listed release before success."""
+    if verify_files:
+        from talent_data.ota.automation.public_verify import verify_publication
+
+        result = verify_publication(client, origin=origin, keyring=keyring, game=game, now=now)
+        return ProductionObservation(
+            ProductionStatus.PUBLISHED if result.active_release_id else ProductionStatus.UNKNOWN,
+            origin.rstrip("/"),
+            "full public content verified"
+            if result.ok
+            else f"full public verification failed: {result.problem}",
+            release_id=result.active_release_id,
+            sequence=result.sequence,
+            manifest_problem=result.problem,
+            checked=(
+                "каталог получен, production-подпись проверена; все манифесты и файлы "
+                "прошли reference verifier; каталог повторно прочитан и не изменился"
+                if result.ok
+                else f"полная проверка публичных файлов не пройдена: {result.problem}"
+            ),
+        )
     state: ProductionState = read_production(
         client, origin=origin, keyring=keyring, game=game, now=now
     )
@@ -103,7 +125,9 @@ def _check_active_manifest(
 
     active = state.active
     assert active is not None  # the caller checked
-    response = fetch(client, f"{state.origin}/{blob_key(manifest_sha256)}")
+    response = fetch(
+        client, f"{state.origin}/{blob_key(manifest_sha256)}", max_bytes=active.manifest_byte_length
+    )
     if response.status != 200:
         cause = response.error or f"HTTP {response.status}"
         return f"манифест не получен с публичного endpoint ({cause})"

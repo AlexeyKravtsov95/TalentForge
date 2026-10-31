@@ -255,14 +255,26 @@ class Fetched:
 
 
 def fetch(
-    client: httpx.Client, url: str, *, method: str = "GET", accept_gzip: bool = False
+    client: httpx.Client,
+    url: str,
+    *,
+    method: str = "GET",
+    accept_gzip: bool = False,
+    max_bytes: int | None = None,
 ) -> Fetched:
     if method not in _SAFE_METHODS:  # the preflight never mutates anything
         raise ValueError(f"the preflight sends GET/HEAD only, not {method}")
     headers = {"Accept-Encoding": "gzip" if accept_gzip else "identity"}
     try:
         with client.stream(method, url, headers=headers) as response:
-            wire = b"".join(response.iter_raw())
+            if max_bytes is not None and response.headers.get("content-encoding"):
+                return Fetched(0, {}, b"", error="content encoding on a bounded identity request")
+            chunks = bytearray()
+            for chunk in response.iter_raw():
+                if max_bytes is not None and len(chunks) + len(chunk) > max_bytes:
+                    return Fetched(0, {}, b"", error=f"body exceeds {max_bytes}-byte limit")
+                chunks.extend(chunk)
+            wire = bytes(chunks)
             lowered = {k.lower(): v for k, v in response.headers.items()}
             status = response.status_code
     except httpx.HTTPError as exc:
