@@ -1,4 +1,5 @@
 name: OTA production release package
+run-name: ${{ inputs.automation_key != '' && format('ota-package-{0}', inputs.automation_key) || 'OTA production release package' }}
 
 # M5.OTA.PROD.4: prepares one production OTA release for the owner and never publishes it.
 # One run fixes one commit on main (source_revision, empty: the HEAD of main), builds the release
@@ -18,6 +19,21 @@ name: OTA production release package
 on:
   workflow_dispatch:
     inputs:
+      automation_key:
+        description: "Internal exact source/base correlation (empty for manual packaging)"
+        required: false
+        default: ""
+        type: string
+      staging_attempt:
+        description: "Exact staging attempt (empty: resolve latest once for manual use)"
+        required: false
+        default: ""
+        type: string
+      created_at:
+        description: "Frozen package timestamp for automatic preparation"
+        required: false
+        default: ""
+        type: string
       build:
         description: "Client build released (e.g. 1.60.1.70532)"
         required: true
@@ -64,6 +80,7 @@ jobs:
       # and the rebuild need the commit.
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
 
@@ -82,13 +99,19 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           STAGING_RUN: ${{ inputs.staging_run || '40691815787' }}
+          STAGING_ATTEMPT: ${{ inputs.staging_attempt }}
         run: |
           case "$STAGING_RUN" in
             ''|*[!0-9]*) echo "::error::staging_run must be a numeric run id"; exit 1 ;;
           esac
           mkdir -p "$RUNNER_TEMP/staging"
           gh api "repos/$GITHUB_REPOSITORY/actions/runs/$STAGING_RUN" > "$RUNNER_TEMP/staging-run.json"
-          gh run download "$STAGING_RUN" -R "$GITHUB_REPOSITORY" -D "$RUNNER_TEMP/staging"
+          if [ -z "$STAGING_ATTEMPT" ]; then
+            STAGING_ATTEMPT=$(python -c 'import json,sys; print(json.load(open(sys.argv[1]))["run_attempt"])' "$RUNNER_TEMP/staging-run.json")
+          fi
+          python scripts/ota_release_automation.py fetch-staging \
+            --run-id "$STAGING_RUN" --attempt "$STAGING_ATTEMPT" \
+            --out "$RUNNER_TEMP/staging/ota-staging-verify-$STAGING_RUN-$STAGING_ATTEMPT"
 
       # Exits 0 ready for the owner's review, 1 a FAIL, 3 the staging evidence is missing, 2
       # usage; recorded so the package is uploaded either way, restored by the last step.
@@ -99,13 +122,14 @@ jobs:
           BUILD: ${{ inputs.build || '1.60.1.70532' }}
           RELEASE_REVISION: ${{ inputs.release_revision || '1' }}
           SOURCE_REVISION: ${{ inputs.source_revision }}
+          CREATED_AT: ${{ inputs.created_at }}
           BASE: ${{ inputs.base || '1.60.1.70450' }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set +e
           python scripts/ota_release_package.py build "$RUNNER_TEMP/package" \
             --build "$BUILD" --revision "$RELEASE_REVISION" --source-revision "$SOURCE_REVISION" \
-            --base "$BASE" --staging-run "$RUNNER_TEMP/staging-run.json" \
+            --created-at "$CREATED_AT" --base "$BASE" --staging-run "$RUNNER_TEMP/staging/staging-run.json" \
             --staging-artifact "$RUNNER_TEMP/staging" --run-url "$RUN_URL"
           code=$?
           set -e
@@ -119,7 +143,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ota-release-package-${{ github.run_id }}
+          name: ota-release-package-${{ github.run_id }}-${{ github.run_attempt }}
           retention-days: 90
           if-no-files-found: error
           path: ${{ runner.temp }}/package

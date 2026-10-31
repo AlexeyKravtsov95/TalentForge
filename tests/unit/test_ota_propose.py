@@ -884,12 +884,13 @@ def job(name: str) -> str:
 
 def test_only_the_propose_job_can_write_and_only_what_it_needs() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
-    # The only secrets are the owner's personal Telegram pair of the `notify` job
-    # (M5.NOTIFY), gated behind the `notifications` environment; no signing key and no
-    # cloud credential exists anywhere in this workflow.
+    # App key stays in the main-only proposal job; Telegram stays in notify.
+    # No production signing/S3 credential exists anywhere in this workflow.
     assert sorted(line.strip() for line in text.splitlines() if "secrets." in line) == [
+        "OTA_APP_PRIVATE_KEY: ${{ secrets.OTA_APP_PRIVATE_KEY }}",
         "TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}",
         "TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}",
+        "private-key: ${{ secrets.OTA_APP_PRIVATE_KEY }}",
     ]
     for forbidden in ("--execute", "promote", "attach-signature", "aws ", "AWS_", "git push"):
         assert forbidden not in text, forbidden
@@ -899,8 +900,7 @@ def test_only_the_propose_job_can_write_and_only_what_it_needs() -> None:
     propose_job = job("propose")
     block = propose_job.split("    permissions:\n", 1)[1].split("    steps:\n", 1)[0]
     assert [line.split("#")[0].strip() for line in block.splitlines()] == [
-        "contents: write",
-        "pull-requests: write",
+        "contents: read",
         "actions: read",
     ]
     assert "needs: prepare" in propose_job

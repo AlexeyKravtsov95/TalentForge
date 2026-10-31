@@ -437,11 +437,12 @@ def test_the_workflow_reads_the_staging_run_and_uploads_the_package() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
     fetch = _step(text, "Fetch the staging evidence")
     assert 'gh api "repos/$GITHUB_REPOSITORY/actions/runs/$STAGING_RUN"' in fetch
-    assert 'gh run download "$STAGING_RUN"' in fetch
+    assert "ota_release_automation.py fetch-staging" in fetch
+    assert '--attempt "$STAGING_ATTEMPT"' in fetch
     assert "*[!0-9]*" in fetch  # the run id is a number, nothing else
     build = _step(text, "Build the release package")
     assert '--source-revision "$SOURCE_REVISION"' in build
-    assert '--staging-run "$RUNNER_TEMP/staging-run.json"' in build
+    assert '--staging-run "$RUNNER_TEMP/staging/staging-run.json"' in build
     upload = _step(text, "Upload the release package")
     assert "if: always()" in upload and "if-no-files-found: error" in upload
     assert "retention-days: 90" in upload and "path: ${{ runner.temp }}/package" in upload

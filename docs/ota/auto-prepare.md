@@ -11,9 +11,9 @@ artifact over by hand.
 It **never publishes**. It does not stage, promote, sign, upload to any bucket or merge; it
 never writes to `main` and does not change `PRODUCT_BUNDLE`, `BUNDLED_BUILDS` or any app
 build. The only write is the review branch and its PR, made by a separate job (`propose`).
-It holds **no secret**: no production signing key and no S3 credential exist in CI (the
+It holds **no production signing or S3 secret** (the
 production catalog is read anonymously over HTTPS and verified against the committed public
-keyring); the `propose` job uses the workflow's own `GITHUB_TOKEN`. Publication stays the
+keyring); the isolated `propose` job uses a repository-scoped GitHub App installation token. Publication stays the
 owner's manual procedure ([publisher-runbook.md](publisher-runbook.md),
 [production-deployment.md](production-deployment.md)); the publication rules and the
 approval gates are unchanged.
@@ -225,33 +225,21 @@ summary line.
 
 ### Token, CI and the owner's settings
 
-The `propose` job uses `GITHUB_TOKEN` with `contents: write` (push the review branch),
-`pull-requests: write` (open the PR, refresh its description) and `actions: read` (download
-the artifact). It has no `workflows` scope, so it cannot push a change to `.github/workflows/`
-(the scope guard never allows one anyway). It cannot push to `main` by design: only the
-branch `ota-candidate/<game>-<build>` is written.
+The `propose` job runs in the main-only `ota-preparation` environment. Its GITHUB_TOKEN
+has contents/actions read only; a repository-scoped GitHub App installation token supplies
+contents and pull requests write for the candidate branch/PR. No production signing/S3
+credentials are present. App-created PR events start CI normally, without close/reopen.
 
-Limits of `GITHUB_TOKEN`, and what the owner does:
+One-time owner setup, Client ID/private key environment entries, minimum permissions and
+known verification limits are in [release-preparation.md](release-preparation.md#разовая-настройка-github-app-владельцем).
+Without `OTA_APP_CLIENT_ID` and `OTA_APP_PRIVATE_KEY`, the proposal explicitly reports
+`BLOCKED: APP_CONFIG_MISSING`; the autonomous chain is not ready. The private key is never
+requested in chat or created during development. No App token reaches read-only producer
+jobs or artifacts. Publication remains manual and Tasks 4–6 are not part of this change.
 
-1. **Creating PRs must be allowed.** Settings → Actions → General → Workflow permissions →
-   "Allow GitHub Actions to create and approve pull requests". Without it the creation answers
-   HTTP 403 and the proposal is `FAILED` (retried by the next run). State read on 2026-10-28
-   (`GET /repos/…/actions/permissions/workflow`): `can_approve_pull_request_reviews: false`,
-   i.e. **off - the owner must turn it on** before the first PR can be opened. The workflow
-   default `read` does not matter: the job declares its own permissions.
-2. **CI does not start by itself.** Events caused by `GITHUB_TOKEN` (the push and
-   `pull_request: opened`) start no workflow, so `CI` and `Mobile CI` do not run on the
-   candidate PR. Before review the owner starts them by **closing and reopening** the PR
-   (`pull_request: reopened` by the owner), or by pushing a commit to the branch - note that a
-   commit the automation did not make turns later proposals for that build into `CONFLICT`
-   until the branch is merged or deleted. Alternative, not set up here: a fine-grained token
-   or GitHub App installation token (contents and pull requests read/write on this repository
-   only) stored as a secret and used by the `propose` job - PRs it opens do start CI.
-3. Not verified on GitHub: no candidate PR has been opened yet, and the `propose` job has not
-   run there. The latest scheduled run (40496888777, 2026-10-27) prepared `1.60.1.70532`, whose
-   data `main` already carries (#80): its dataset and visuals keep main's bytes and its other
-   outputs carry no timestamp, so such a run is expected to end `ALREADY_ON_MAIN` - expected,
-   not observed. The behaviour above is covered by offline tests only.
+The scope guard still permits only `ota-candidate/<game>-<build>` and candidate data paths;
+it never authorizes a write to main or workflow files. Real App installation/dispatch/PR CI
+smoke is a post-merge owner setup check; development tests use fakes and TEST keys.
 
 ## From PREPARED to a release (manual)
 
