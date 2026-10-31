@@ -58,6 +58,7 @@ BLOBS_DIR = "blobs/sha256"
 WORK_DIR = "publish"
 APPROVAL_TEMPLATE_NAME = "approval-record.template.md"
 STAGING_BINDING_NAME = "report/staging-binding.json"
+STAGING_BASE_MANIFEST_NAME = "staging/base-release.json"
 APPROVALS_DIR = "docs/ota/releases"
 #: the committed template of an approval record (owner decisions as <OWNER: …> lines)
 APPROVAL_TEMPLATE = Path(__file__).resolve().parents[3] / "docs/ota/release-approval.template.md"

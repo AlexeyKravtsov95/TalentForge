@@ -20,9 +20,16 @@
    `ota-staging-verify.yml` с точными source/base/candidate; затем прежний
    `ota-release-package.yml` с конкретными staging run/attempt. Оба используют только
    локальный staging stand/TEST keys и штатный publisher builder.
-5. Проверяются metadata каждого completed attempt, единственный непосроченный artifact,
+5. Перед первым package dispatch создаётся immutable annotated Git tag
+   `ota-preparation/<correlation-key>` с source/base reservation. После проверки package
+   `ota-package/<correlation-key>` закрепляет полный strict release request независимо от
+   Actions history и будущей release branch. Теги не обновляются и не удаляются.
+   Проверяются metadata каждого completed attempt, единственный непосроченный artifact,
    digest ZIP, closed index, воспроизводимость, staging binding и installed-files evidence.
-   `notExecuted` обязан присутствовать и быть null; все шесть JVM tests и K0/K1/C1–C6/N1–N4
+   Staged base manifest сохраняется в закрытом пакете как `staging/base-release.json`.
+   Его game/build/data level и полный набор path/SHA-256/size сверяются с **подписанным live
+   base manifest**, включая pin из staging report. Timestamps/provenance могут отличаться;
+   файлы отличаться не могут. `notExecuted` обязан присутствовать и быть null; все шесть JVM tests и K0/K1/C1–C6/N1–N4
    должны PASS. Cached, skipped, failed, чужие и неоднозначные результаты — BLOCKED.
 6. Отдельный job в `ota-preparation` повторно получает exact package по id, проверяет
    provenance из PR A и live base, затем App installation token создаёт:
@@ -40,12 +47,15 @@ Diff и CI gates в пакете по-прежнему используют base
 
 Корреляция child runs вычисляется из source SHA, target release и base release/manifest pin.
 GitHub возвращает id нового dispatch (`return_run_details=true`); повтор прежде всего ищет
-сохранённый request/точный package run. Run-name используется только для discovery: доверие
+request в immutable tag или release branch, затем точный package run. Run-name используется только для discovery: доверие
 даёт последующая проверка API metadata, attempt и bytes. Неполный listing — отказ.
 
 Повтор не меняет createdAt или manifest SHA и не обновляет release branch/PR body. Если job
 упал между package upload и открытием PR, следующий запуск использует прежний artifact.
-Просроченный/удалённый artifact — BLOCKED, пересборки под старый approval нет. Ответ на
+Просроченный/удалённый artifact — BLOCKED, пересборки под старый approval нет.
+Если run/history исчезли до сохранения полного request, reservation tag всё равно запрещает
+повторный dispatch. Неопределённый исход первого dispatch требует диагностики владельца;
+такая reservation сама по себе не разрешает «попробовать новый package». Ответ на
 неоднозначный dispatch/неуспешный child run не повторяется автоматически внутри запуска:
 сначала диагностика и проверка сохранившегося run, затем штатный retry.
 
@@ -89,9 +99,13 @@ APP_CONFIG_MISSING`, а не зелёным «PR создан». В разраб
    Чтение artifacts выполняется штатным GITHUB_TOKEN. События App-created PR запускают CI
    без прежнего close/reopen. App token автоматически отзывается в post step action и не
    передаётся staging/package jobs, artifacts или будущему signer.
-5. `GITHUB_TOKEN` нового read-only preparation job имеет `actions: write` только потому,
-   что dispatch existing workflows требует этого permission. App Actions permission не нужен.
-   Остальные jobs имеют contents/actions read; producer workflows не получают App key/token.
+5. `GITHUB_TOKEN` preparation job имеет `actions: write` для dispatch existing workflows
+   и **contents: write для создания двух immutable Git tag markers**. Это единственные
+   repository writes этого job: код не обновляет main, code branches или существующие refs.
+   Независимая от disposable Actions history reservation нужна до первого package dispatch.
+   App Actions permission не нужен; App по-прежнему используется только для PR writes.
+   Остальные jobs имеют contents/actions read; staging/package producer workflows не получают
+   App key/token. Tag refs/objects сохраняют и не удаляют как «истёкшие artifacts».
 6. Проверить первый реальный **следующий** data merge. Текущий 70532 не использовать для
    переиздания. Настоящий GitHub dispatch/App/real JVM stand/cloud origin smoke не выполняется
    при offline unit validation: это отдельная проверка после review/merge и настройки.

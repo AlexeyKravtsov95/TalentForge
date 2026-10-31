@@ -26,6 +26,13 @@ def prepared_inputs(exact_package, tmp_path):  # noqa: F811
     report_path = root / STAGING_FILES["report"]
     report = json.loads(report_path.read_bytes())
     tests = {test: "PASS" for scenario in CLIENT_SCENARIOS for test in scenario.tests}
+    from tests.unit.ota.test_ota_preflight import real_release
+
+    base = real_release()
+    report["facts"]["releases"][base.release_id] = {
+        "manifestSha256": sha256_ref(base.manifest_bytes)
+    }
+    (root / "staging/base-release.json").write_bytes(base.manifest_bytes)
     report["facts"]["client"] = {"gradleExit": 0, "notExecuted": None, "tests": tests}
     report["checks"] = [
         {"id": name, "automatic": True, "verdict": "PASS"}
@@ -35,6 +42,10 @@ def prepared_inputs(exact_package, tmp_path):  # noqa: F811
     report_path.write_bytes(body)
     index_path = root / "package.json"
     index = json.loads(index_path.read_bytes())
+    index["files"]["staging/base-release.json"] = {
+        "sha256": sha256_ref(base.manifest_bytes),
+        "byteLength": len(base.manifest_bytes),
+    }
     index["files"][STAGING_FILES["report"]] = {"sha256": sha256_ref(body), "byteLength": len(body)}
     index_path.write_text(json.dumps(index))
     raw = zip_tree(root)
@@ -55,6 +66,8 @@ class FakeGitHub:
         self.request, self.runs, self.artifact, self.archive, self.package = inputs
         self.origin = FakeOrigin(publication())
         self.branch = None
+        self.tags = {}
+        self.tag_refs = {}
         self.prs = []
         self.commits = {COMMIT: {"sha": COMMIT, "tree": {"sha": "base-tree"}}}
         self.trees = {}
@@ -94,6 +107,17 @@ class FakeGitHub:
                 200,
                 json={"total_count": 1, "repositories": [{"full_name": p.REPOSITORY, "id": 42}]},
             )
+        if route.startswith("/git/ref/tags/"):
+            name = route.removeprefix("/git/ref/tags/")
+            if name not in self.tag_refs:
+                return httpx.Response(404)
+            return httpx.Response(200, json={"object": {"sha": self.tag_refs[name], "type": "tag"}})
+        if route.startswith("/git/tags/"):
+            return httpx.Response(200, json=self.tags[route.rsplit("/", 1)[1]])
+        if route == "/git/tags":
+            sha = "tag-" + str(len(self.tags) + 1)
+            self.tags[sha] = {**data, "object": {"sha": data["object"], "type": data["type"]}}
+            return httpx.Response(201, json={"sha": sha})
         if route == "/git/ref/heads/main":
             return httpx.Response(200, json={"object": {"sha": COMMIT}})
         if route.startswith("/actions/workflows/"):
@@ -194,6 +218,9 @@ class FakeGitHub:
             }
             return httpx.Response(201, json={"sha": "new-commit"})
         if route == "/git/refs":
+            if data["ref"].startswith("refs/tags/"):
+                self.tag_refs[data["ref"].removeprefix("refs/tags/")] = data["sha"]
+                return httpx.Response(201, json={"object": {"sha": data["sha"]}})
             self.branch = data["sha"]
             return httpx.Response(201, json={"object": {"sha": self.branch}})
         if route == "/pulls":
@@ -232,6 +259,11 @@ class FakeGitHub:
                 "update": "client/theCandidateReplacesTheBaseOverHttps.json",
             }.items():
                 archive.writestr(target, self.package.attachment(STAGING_FILES[name]))
+            base = json.loads(self.package.attachment("staging/base-release.json"))
+            archive.writestr(
+                f"releases/{base['releaseId']}/release.json",
+                self.package.attachment("staging/base-release.json"),
+            )
         return out.getvalue()
 
     def stage_artifact(self):
@@ -453,9 +485,19 @@ def test_expired_frozen_package_is_blocked_without_rebuilding(prepared_inputs, t
     assert fake.posts == before
 
 
-def test_ambiguous_prior_package_runs_are_not_silently_chosen(prepared_inputs, tmp_path):
+def test_ambiguous_prior_package_runs_are_not_silently_chosen(
+    prepared_inputs, tmp_path, monkeypatch
+):
     fake = FakeGitHub(prepared_inputs)
-    run_prepare(fake, tmp_path / "one")
+    make = p.make_proposal
+
+    def crash(*args, **kwargs):
+        raise p.PreparationBlocked("CRASH", "before saving the complete request pin")
+
+    monkeypatch.setattr(p, "make_proposal", crash)
+    with pytest.raises(p.PreparationBlocked, match="CRASH"):
+        run_prepare(fake, tmp_path / "one")
+    monkeypatch.setattr(p, "make_proposal", make)
     fake.run_list[p.PACKAGE_WORKFLOW].append(copy.deepcopy(fake.run_list[p.PACKAGE_WORKFLOW][0]))
     before = list(fake.posts)
     with pytest.raises(p.PreparationBlocked, match="RUN_AMBIGUOUS"):
@@ -541,3 +583,135 @@ def test_staging_report_must_prove_client_execution_without_type_fallbacks(prepa
         report["checks"][0]["id"] = []
     with pytest.raises(p.PreparationBlocked, match="STAGING_EXECUTION"):
         p.verify_execution(json.dumps(report).encode(), package.attachment(STAGING_FILES["update"]))
+
+
+def test_deleted_package_history_after_crash_cannot_authorize_a_second_package(
+    prepared_inputs, tmp_path
+):
+    fake = FakeGitHub(prepared_inputs)
+    run_prepare(fake, tmp_path / "one")
+    assert fake.branch is None
+    fake.run_list[p.PACKAGE_WORKFLOW].clear()
+    fake.runs.pop("package")
+    before = list(fake.posts)
+    with pytest.raises((p.PreparationBlocked, p.RequestRejected)):
+        run_prepare(fake, tmp_path / "two")
+    assert fake.posts == before and len(fake.dispatched) == 2
+
+
+def test_deleted_run_between_upload_and_pin_is_blocked_by_reservation(
+    prepared_inputs, tmp_path, monkeypatch
+):
+    fake = FakeGitHub(prepared_inputs)
+    make = p.make_proposal
+
+    def crash(*args, **kwargs):
+        raise p.PreparationBlocked("CRASH", "crash after package upload")
+
+    monkeypatch.setattr(p, "make_proposal", crash)
+    with pytest.raises(p.PreparationBlocked, match="CRASH"):
+        run_prepare(fake, tmp_path / "one")
+    monkeypatch.setattr(p, "make_proposal", make)
+    fake.run_list[p.PACKAGE_WORKFLOW].clear()
+    fake.runs.pop("package")
+    before = list(fake.posts)
+    with pytest.raises(p.PreparationBlocked, match="PACKAGE_HISTORY_MISSING"):
+        run_prepare(fake, tmp_path / "two")
+    assert fake.posts == before and len(fake.dispatched) == 2
+
+
+def test_staged_base_must_equal_all_verified_live_base_files(prepared_inputs, tmp_path):
+    from talent_data.ota.release import serialize_manifest
+    from tests.unit.ota.test_ota_preflight import real_release
+
+    fake = FakeGitHub(prepared_inputs)
+    original_stage_zip = fake.stage_zip
+
+    def archive_with_wrong_base():
+        raw = original_stage_zip()
+        output = io.BytesIO()
+        base = real_release().manifest
+        files = [base.files[0].model_copy(update={"sha256": "sha256:" + "0" * 64}), *base.files[1:]]
+        changed = serialize_manifest(base.model_copy(update={"files": files}))
+        base_name = f"releases/{base.release_id}/release.json"
+        with zipfile.ZipFile(io.BytesIO(raw)) as source, zipfile.ZipFile(output, "w") as archive:
+            for item in source.infolist():
+                if item.filename == base_name:
+                    continue
+                body = source.read(item)
+                if item.filename == "staging-report.json":
+                    report = json.loads(body)
+                    report["facts"]["releases"][base.release_id]["manifestSha256"] = sha256_ref(
+                        changed
+                    )
+                    body = json.dumps(report).encode()
+                archive.writestr(item.filename, body)
+            archive.writestr(base_name, changed)
+        return output.getvalue()
+
+    fake.stage_zip = archive_with_wrong_base
+    with pytest.raises(p.PreparationBlocked, match="STAGING_BASE"):
+        run_prepare(fake, tmp_path / "out")
+    assert len(fake.dispatched) == 1 and fake.prs == []
+
+
+def test_complete_frozen_pin_does_not_select_an_unrelated_newer_run(prepared_inputs, tmp_path):
+    fake = FakeGitHub(prepared_inputs)
+    first = run_prepare(fake, tmp_path / "one")
+    foreign = {**fake.run_list[p.PACKAGE_WORKFLOW][0], "id": 9999}
+    fake.run_list[p.PACKAGE_WORKFLOW].append(foreign)
+    repeat = run_prepare(fake, tmp_path / "two")
+    assert repeat.request == first.request
+    assert repeat.request.package_run.run_id == 9000
+    assert repeat.request.artifact.artifact_id == 1234
+    assert len(fake.dispatched) == 2
+
+
+def test_real_package_builder_keeps_staged_base_as_indexed_evidence(tmp_path, monkeypatch):
+    from tests.unit.ota import release_package_testkit as kit
+    from tests.unit.ota.test_ota_preflight import real_release
+
+    base = real_release()
+    write = kit.write_staging_artifact
+
+    def with_base(root, evidence=None):
+        run, artifact = write(root, evidence)
+        stage = artifact / f"ota-staging-verify-{kit.STAGING_RUN_ID}-1"
+        target = stage / "releases" / base.release_id / "release.json"
+        target.parent.mkdir(parents=True)
+        target.write_bytes(base.manifest_bytes)
+        report_path = stage / "staging-report.json"
+        report = json.loads(report_path.read_bytes())
+        report["facts"]["releases"][base.release_id] = {
+            "manifestSha256": sha256_ref(base.manifest_bytes)
+        }
+        report_path.write_text(json.dumps(report))
+        return run, artifact
+
+    monkeypatch.setattr(kit, "write_staging_artifact", with_base)
+    assert kit.build_package(tmp_path / "out", tmp_path / "scratch") == 0
+    package = load_package(tmp_path / "out" / kit.RELEASE)
+    assert package.attachment("staging/base-release.json") == base.manifest_bytes
+    assert package.index.files["staging/base-release.json"].sha256 == sha256_ref(
+        base.manifest_bytes
+    )
+
+
+@pytest.mark.parametrize("fault", ["extra", "detail-type"])
+def test_gate_report_wire_does_not_ignore_fields_or_coerce_types(prepared_inputs, fault):
+    request, _, _, _, package = prepared_inputs
+    path = package.root / "report/gates.json"
+    gates = json.loads(path.read_bytes())
+    if fault == "extra":
+        gates[0]["override"] = "PASS"
+    else:
+        gates[0]["detail"] = 1
+    path.write_text(json.dumps(gates))
+    with pytest.raises(p.PreparationBlocked, match="GATES_INVALID"):
+        p.make_proposal(
+            package,
+            staging_run=request.staging_run,
+            package_run=request.package_run,
+            artifact=request.artifact,
+            base_manifest_sha256=request.base_manifest_sha256,
+        )

@@ -1,6 +1,7 @@
 name: OTA release preparation
 
-# Task 3 only: read production, dispatch the two existing read-only verifiers,
+# Task 3 only: read production, reserve exact packages with immutable Git tags,
+# dispatch the two existing read-only verifiers,
 # then propose a draft. No signer, S3 credentials, blob uploads or catalog writes.
 on:
   workflow_run:
@@ -38,7 +39,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 180
     permissions:
-      contents: read
+      contents: write # immutable reservation/request tags only; never code/main/PR updates
       actions: write # dispatch only the existing staging/package workflows
     outputs:
       has_request: ${{ steps.prepare.outputs.has_request }}
@@ -53,7 +54,7 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
-      - name: Install read-only preparation tools
+      - name: Install release preparation tools
         run: pip install -e ".[ota]"
       - name: Prepare exact request
         id: prepare

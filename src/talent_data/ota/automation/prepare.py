@@ -37,21 +37,31 @@ from talent_data.ota.automation.provenance import (
     extract_verified_archive,
     verify_package_origin,
 )
-from talent_data.ota.automation.public_verify import verify_publication
+from talent_data.ota.automation.public_verify import _fetch, verify_publication
 from talent_data.ota.automation.requests import ArtifactPin, ReleaseRequest, RunPin, parse_request
-from talent_data.ota.models import COMMIT_PATTERN, OtaCatalog
+from talent_data.ota.catalog import catalog_entry
+from talent_data.ota.models import COMMIT_PATTERN, OtaCatalog, OtaReleaseManifest
 from talent_data.ota.preflight import production_keyring
 from talent_data.ota.release_package import (
     APPROVAL_TEMPLATE_NAME,
+    STAGING_BASE_MANIFEST_NAME,
     STAGING_FILES,
     STAGING_WORKFLOW,
     LoadedPackage,
     bind_staging,
     load_package,
+    manifest_files,
     run_record,
 )
 from talent_data.ota.s3_channels import PRODUCTION_PROFILE
-from talent_data.ota.verify import TrustedKey, parse_strict, sha256_ref, strict_json
+from talent_data.ota.store import blob_key
+from talent_data.ota.verify import (
+    TrustedKey,
+    parse_strict,
+    sha256_ref,
+    strict_json,
+    verify_release_manifest,
+)
 from talent_data.prepare.production import ProductionStatus, read_production
 from talent_data.prepare.staging_verify import CLIENT_SCENARIOS
 from talent_data.versions import ClientVersion
@@ -345,7 +355,13 @@ def correlation_key(source: str, release: str, base: str, base_sha: str) -> str:
 
 
 def completed_run(
-    api: GitHub, workflow: str, key: str, inputs: dict[str, str], *, sleep: Callable[[float], None]
+    api: GitHub,
+    workflow: str,
+    key: str,
+    inputs: dict[str, str],
+    *,
+    sleep: Callable[[float], None],
+    allow_dispatch: bool = True,
 ) -> dict[str, Any]:
     label = "ota-" + ("staging" if workflow == STAGING_WORKFLOW else "package") + "-" + key
     path = f"/actions/workflows/{Path(workflow).name}"
@@ -365,6 +381,11 @@ def completed_run(
     dispatched_head: str | None = None
     require(len(found) <= 1, "RUN_AMBIGUOUS", "multiple correlated workflow runs")
     if not found:
+        require(
+            allow_dispatch,
+            "PACKAGE_HISTORY_MISSING",
+            "reserved package run disappeared; no rebuild authorized",
+        )
         dispatched_head = str(
             obj(obj(api.repo("GET", "/git/ref/heads/main")).get("object")).get("sha")
         )
@@ -509,6 +530,15 @@ def make_proposal(
     require(isinstance(gates, list) and len(gates) == 8, "GATES_INVALID", "expected G1-G8")
     rows = [obj(row) for row in gates]
     require(
+        all(
+            set(row) == {"gate", "status", "detail"}
+            and all(isinstance(row[field], str) for field in ("gate", "status", "detail"))
+            for row in rows
+        ),
+        "GATES_INVALID",
+        "unknown gate fields or wrong wire types",
+    )
+    require(
         all(isinstance(row.get("gate"), str) for row in rows), "GATES_INVALID", "malformed gate id"
     )
     require(
@@ -636,6 +666,79 @@ def load_proposal(api: GitHub, request: ReleaseRequest, *, destination: Path) ->
     )
 
 
+def read_tag(api: GitHub, name: str, source: str) -> bytes | None:
+    ref = api.repo("GET", "/git/ref/tags/" + name, missing_ok=True)
+    if ref is None:
+        return None
+    target = obj(obj(ref).get("object"))
+    same(target.get("type"), "tag", "RESERVATION_INVALID", "annotated tag type")
+    tag = obj(api.repo("GET", f"/git/tags/{target['sha']}"))
+    same(tag.get("tag"), name, "RESERVATION_INVALID", "tag name")
+    same(obj(tag.get("object")).get("type"), "commit", "RESERVATION_INVALID", "target type")
+    same(obj(tag.get("object")).get("sha"), source, "RESERVATION_INVALID", "source commit")
+    require(isinstance(tag.get("message"), str), "RESERVATION_INVALID", "missing tag message")
+    return str(tag["message"]).encode().rstrip(b"\n") + b"\n"
+
+
+def write_tag(api: GitHub, name: str, source: str, message: bytes, date: str) -> None:
+    """Create an immutable preparation marker, never update/delete refs or main."""
+    message = message.rstrip(b"\n") + b"\n"
+    require(
+        name.startswith(("ota-preparation/", "ota-package/")),
+        "RESERVATION_NAMESPACE",
+        "unexpected tag namespace",
+    )
+    existing = read_tag(api, name, source)
+    if existing is not None:
+        same(existing, message, "RESERVATION_CONFLICT", "frozen marker")
+        return
+    tag = obj(
+        api.repo(
+            "POST",
+            "/git/tags",
+            data={
+                "tag": name,
+                "message": message.decode(),
+                "object": source,
+                "type": "commit",
+                "tagger": {**BOT, "date": date},
+            },
+        )
+    )
+    api.repo("POST", "/git/refs", data={"ref": "refs/tags/" + name, "sha": tag["sha"]})
+    same(read_tag(api, name, source), message, "RESERVATION_CONFLICT", "marker read-back")
+
+
+def verify_staged_base(
+    client: httpx.Client, catalog: OtaCatalog, staged: bytes, report_bytes: bytes
+) -> None:
+    """Staging may change timestamps/provenance, but must start with live's exact files."""
+    active = next(r for r in catalog.releases if r.release_id == catalog.active_release_id)
+    live_bytes = _fetch(
+        client,
+        f"{PRODUCTION_PROFILE.public_origin}/{blob_key(active.manifest_sha256)}",
+        active.manifest_byte_length,
+    )
+    live = verify_release_manifest(live_bytes, active, game="forever", supported_data_level=1)
+    manifest = parse_strict(OtaReleaseManifest, staged)
+    verify_release_manifest(
+        staged,
+        catalog_entry(staged, manifest, published_at=manifest.created_at),
+        game="forever",
+        supported_data_level=1,
+    )
+    report = obj(strict_json(report_bytes))
+    recorded = obj(obj(obj(report.get("facts")).get("releases")).get(manifest.release_id))
+    require(
+        recorded.get("manifestSha256") == sha256_ref(staged)
+        and manifest.client_build == live.client_build
+        and manifest.min_data_level == live.min_data_level
+        and manifest_files(staged) == manifest_files(live_bytes),
+        "STAGING_BASE",
+        "staged base does not match the verified live base files",
+    )
+
+
 def prepare_request(
     client: httpx.Client,
     *,
@@ -660,14 +763,21 @@ def prepare_request(
     require(catalog == verified_catalog, "BASE_CHANGED", "production changed before staging")
     release = f"{candidate}-r1"
     active = next(r for r in catalog.releases if r.release_id == catalog.active_release_id)
+    key = correlation_key(source, release, active.release_id, active.manifest_sha256)
+    frozen = read_tag(api, "ota-package/" + key, source)
     kept = api.content(f"{REQUEST_DIR}/{release}.json", f"ota-release/{release}")
+    if kept is not None and frozen is not None:
+        same(
+            parse_request(kept), parse_request(frozen), "REQUEST_CONFLICT", "branch/frozen request"
+        )
+    kept = kept if kept is not None else frozen
     if kept is not None:
         request = parse_request(kept)
         same(request.source_commit, source, "SOURCE_CHANGED", "frozen source")
         check_base(catalog, request)
         proposal = load_proposal(api, request, destination=destination)
     else:
-        key = correlation_key(source, release, active.release_id, active.manifest_sha256)
+        reservation = read_tag(api, "ota-preparation/" + key, source)
         # Discover a frozen package before any new staging or package dispatch.
         existing = [
             r
@@ -679,6 +789,12 @@ def prepare_request(
             if r.get("display_title") == f"ota-package-{key}"
         ]
         require(len(existing) <= 1, "RUN_AMBIGUOUS", "multiple package runs for one identity")
+        require(
+            bool(existing) or reservation is None,
+            "PACKAGE_HISTORY_MISSING",
+            "reserved package disappeared before request persistence; no replacement authorized",
+        )
+        reserved_now = False
         if not existing:
             staging = completed_run(
                 api,
@@ -715,6 +831,25 @@ def prepare_request(
                     "staging verified different inputs",
                 )
                 verify_execution(report, update)
+                base_path = root / "releases" / f"{active.client_build}-r1" / "release.json"
+                require(
+                    base_path.is_file(), "STAGING_BASE", "staging artifact holds no base manifest"
+                )
+                verify_staged_base(client, catalog, base_path.read_bytes(), report)
+            reservation_message = json.dumps(
+                {
+                    "format": "ota-package-reservation-v1",
+                    "sourceCommit": source,
+                    "releaseId": release,
+                    "baseReleaseId": active.release_id,
+                    "baseManifestSha256": active.manifest_sha256,
+                },
+                sort_keys=True,
+            ).encode()
+            write_tag(
+                api, "ota-preparation/" + key, source, reservation_message, str(ci["created_at"])
+            )
+            reserved_now = True
         package_run = completed_run(
             api,
             PACKAGE_WORKFLOW,
@@ -729,6 +864,7 @@ def prepare_request(
                 "created_at": str(ci["created_at"]),
             },
             sleep=sleep,
+            allow_dispatch=reserved_now,
         )
         artifact = artifact_for(
             api,
@@ -772,7 +908,29 @@ def prepare_request(
             archive_bytes=archive,
             package=package,
         )
+    # Independently persist the exact request even if the App job never starts.
+    write_tag(
+        api,
+        "ota-package/" + key,
+        source,
+        request_text(proposal).encode(),
+        proposal.request.created_at,
+    )
     check_base(read_live(client, keyring, now), proposal.request)
+    verified_root = (
+        destination if (destination / "package.json").is_file() else destination / release
+    )
+    require(
+        (verified_root / STAGING_BASE_MANIFEST_NAME).is_file(),
+        "STAGING_BASE",
+        "package lacks staged base evidence",
+    )
+    verify_staged_base(
+        client,
+        catalog,
+        (verified_root / STAGING_BASE_MANIFEST_NAME).read_bytes(),
+        (verified_root / STAGING_FILES["report"]).read_bytes(),
+    )
     return proposal
 
 
@@ -976,8 +1134,23 @@ def main(argv: list[str] | None = None) -> int:
                 same(request.source_commit, ci_source, "CI_SOURCE", "request source")
                 check_base(read_live(client, keyring, now), request)
                 with tempfile.TemporaryDirectory(prefix="ota-proposal-") as scratch:
-                    proposal = load_proposal(
-                        api, request, destination=Path(scratch).resolve() / "package"
+                    package_destination = Path(scratch).resolve() / "package"
+                    proposal = load_proposal(api, request, destination=package_destination)
+                    root = (
+                        package_destination
+                        if (package_destination / "package.json").is_file()
+                        else package_destination / request.release_id
+                    )
+                    require(
+                        (root / STAGING_BASE_MANIFEST_NAME).is_file(),
+                        "STAGING_BASE",
+                        "package lacks staged base evidence",
+                    )
+                    verify_staged_base(
+                        client,
+                        read_live(client, keyring, now),
+                        (root / STAGING_BASE_MANIFEST_NAME).read_bytes(),
+                        (root / STAGING_FILES["report"]).read_bytes(),
                     )
                 check_base(read_live(client, keyring, now), request)
                 url = ensure_release_pr(
