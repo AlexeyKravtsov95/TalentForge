@@ -278,6 +278,33 @@ def cmd_production(
     return EXIT_OK, True
 
 
+def cmd_production_status(
+    args: argparse.Namespace, env: Mapping[str, str], send: Sender, summary: _Summary
+) -> tuple[int, bool]:
+    from talent_data.notify.automation import notify_status
+    from talent_data.ota.automation.cli import read_status
+    from talent_data.ota.automation.provenance import TRUSTED_REPO
+    from talent_data.ota.preflight import production_keyring
+
+    try:
+        document = read_status(args.status_file.read_bytes())
+        keys = production_keyring(TRUSTED_REPO / "docs/ota/keys/production-keyring.json")
+    except (ValueError, OSError):
+        raise StateError("publication status or committed keyring is invalid") from None
+    with httpx.Client(follow_redirects=False, timeout=30) as client:
+        notify_status(
+            document,
+            state=_state_path(args, "production.json"),
+            client=client,
+            keyring=keys,
+            now=_now(),
+            send=send,
+            summary=summary,
+            run_url=args.run_url or _run_url(env),
+        )
+    return EXIT_OK, True
+
+
 # ---------------------------------------------------------------------- delivery
 
 
@@ -461,6 +488,12 @@ def _parser() -> argparse.ArgumentParser:
     )
     common(prod, "production.json")
 
+    outcome = sub.add_parser(
+        "production-status", help="verify and notify a strict publication outcome"
+    )
+    outcome.add_argument("--status-file", type=Path, required=True)
+    common(outcome, "production.json")
+
     sub.add_parser("smoke", help="verify the token and the chosen chat (manual)")
     return parser
 
@@ -489,6 +522,7 @@ def main(argv: list[str] | None = None, env: Mapping[str, str] | None = None) ->
         "freshness": cmd_freshness,
         "candidate": cmd_candidate,
         "production": cmd_production,
+        "production-status": cmd_production_status,
     }
     handler = handlers[args.command]
 

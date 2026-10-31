@@ -148,10 +148,9 @@ def verify_invocation(
         "TRIGGER_REPOSITORY",
         "event repository",
     )
-    if "sender" in payload:
-        same(obj(payload["sender"]).get("login"), actor, "TRIGGER_ACTOR", "event sender")
     if event == "workflow_dispatch":
         require("sender" in payload, "TRIGGER_ACTOR", "manual sender missing")
+        same(obj(payload["sender"]).get("login"), actor, "TRIGGER_ACTOR", "event sender")
         permission = obj(api.repo("GET", f"/collaborators/{actor}/permission"))
         require(
             permission.get("permission") in ("admin", "maintain", "write"),
@@ -159,9 +158,16 @@ def verify_invocation(
             "actor cannot write repository",
         )
     if event == "workflow_run":
+        same(payload.get("action"), "completed", "TRIGGER_CI", "action")
         trigger = obj(payload.get("workflow_run"))
         ci_id, ci_attempt = positive(trigger.get("id")), positive(trigger.get("run_attempt"))
         ci = api.run(ci_id, ci_attempt)
         same(ci.get("id"), ci_id, "TRIGGER_CI", "id")
         same(ci.get("run_attempt"), ci_attempt, "TRIGGER_CI", "attempt")
         same(ci.get("head_sha"), trigger.get("head_sha"), "TRIGGER_CI", "head SHA")
+        verify_ci(
+            ci,
+            api.pages(f"/actions/runs/{ci_id}/attempts/{ci_attempt}/jobs", "jobs"),
+            run_id=ci_id,
+            attempt=ci_attempt,
+        )

@@ -182,3 +182,160 @@ def test_workflow_configuration_check_refuses_missing_app_credentials():
         text=True,
     )
     assert run.returncode == 3 and "BLOCKED" in run.stdout
+
+
+def test_request_introduced_on_feature_branch_is_authorized_by_merge_commit(
+    request_history, monkeypatch
+):
+    from talent_data.ota.automation import prepare
+    from talent_data.ota.automation.authorization import authorize_request, request_change_commit
+
+    repo, request, _, path = request_history
+    monkeypatch.setattr(prepare, "_main_commit", lambda _: None)
+    path.unlink()
+    git(repo, "add", "-u")
+    git(repo, "commit", "-qm", "base without request")
+    git(repo, "checkout", "-qb", "release")
+    path.write_text(request.model_dump_json(by_alias=True) + "\n")
+    git(repo, "add", ".")
+    git(repo, "commit", "-qm", "request on branch")
+    feature = git(repo, "rev-parse", "HEAD").decode().strip()
+    git(repo, "checkout", "main")
+    (repo / "unrelated").write_text("main work")
+    git(repo, "add", ".")
+    git(repo, "commit", "-qm", "advance main")
+    git(repo, "merge", "--no-ff", "release", "-m", "release merge")
+    merged = git(repo, "rev-parse", "HEAD").decode().strip()
+    git(repo, "update-ref", "refs/remotes/origin/main", merged)
+    assert request_change_commit(repo, request) == merged
+    assert authorize_request(API(merged), repo, request, ci_run_id=9, ci_attempt=2) == merged
+    with pytest.raises(PreparationBlocked):
+        authorize_request(API(feature), repo, request, ci_run_id=9, ci_attempt=2)
+
+
+@pytest.mark.parametrize(
+    "fault",
+    ["path", "repository", "event", "conclusion", "checks", "attempt", "action"],
+)
+def test_workflow_run_proves_entire_source_ci_before_any_request_selection(
+    request_history, monkeypatch, fault
+):
+    from talent_data.ota.automation import prepare
+    from talent_data.ota.automation.authorization import verify_invocation
+
+    repo, _, commit, _ = request_history
+    monkeypatch.setattr(prepare, "_main_commit", lambda _: None)
+    environment = {
+        "GITHUB_REPOSITORY": "AlexeyKravtsov95/TalentForge",
+        "GITHUB_RUN_ID": "11",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "GITHUB_EVENT_NAME": "workflow_run",
+        "GITHUB_REF": "refs/heads/main",
+        "GITHUB_SHA": commit,
+        "GITHUB_ACTOR": "operator",
+    }
+    payload = {
+        "action": "completed",
+        "repository": {"full_name": "AlexeyKravtsov95/TalentForge"},
+        "workflow_run": {"id": 9, "run_attempt": 2, "head_sha": commit},
+    }
+
+    class InvocationAPI(API):
+        def run(self, run_id, attempt):
+            run = super().run(run_id, attempt)
+            if run_id == 11:
+                run.update(
+                    path=".github/workflows/ota-production-publish.yml",
+                    event="workflow_run",
+                    actor={"login": "operator"},
+                )
+                return run
+            if fault == "attempt":
+                run["run_attempt"] = 1
+            elif fault in ("path", "repository", "event", "conclusion"):
+                run[fault] = {
+                    "path": ".github/workflows/evil.yml",
+                    "repository": {"full_name": "attacker/fork"},
+                    "event": "pull_request",
+                    "conclusion": "failure",
+                }[fault]
+            return run
+
+        def pages(self, path, member, **kwargs):
+            if fault == "checks":
+                return [{"name": "checks", "status": "completed", "conclusion": "failure"}]
+            return super().pages(path, member, **kwargs)
+
+    if fault == "action":
+        payload["action"] = "requested"
+    with pytest.raises(PreparationBlocked):
+        verify_invocation(InvocationAPI(commit), repo, environment, payload)
+
+
+def test_automatic_webhook_sender_can_differ_from_api_run_actor(request_history, monkeypatch):
+    from talent_data.ota.automation import prepare
+    from talent_data.ota.automation.authorization import verify_invocation
+
+    repo, _, commit, _ = request_history
+    monkeypatch.setattr(prepare, "_main_commit", lambda _: None)
+
+    class InvocationAPI(API):
+        def run(self, run_id, attempt):
+            run = super().run(run_id, attempt)
+            if run_id == 11:
+                run.update(
+                    path=".github/workflows/ota-production-publish.yml",
+                    event="workflow_run",
+                    actor={"login": "operator"},
+                )
+            return run
+
+    verify_invocation(
+        InvocationAPI(commit),
+        repo,
+        {
+            "GITHUB_REPOSITORY": "AlexeyKravtsov95/TalentForge",
+            "GITHUB_RUN_ID": "11",
+            "GITHUB_RUN_ATTEMPT": "1",
+            "GITHUB_EVENT_NAME": "workflow_run",
+            "GITHUB_REF": "refs/heads/main",
+            "GITHUB_SHA": commit,
+            "GITHUB_ACTOR": "operator",
+        },
+        {
+            "action": "completed",
+            "repository": {"full_name": "AlexeyKravtsov95/TalentForge"},
+            "sender": {"login": "github-actions[bot]"},
+            "workflow_run": {"id": 9, "run_attempt": 2, "head_sha": commit},
+        },
+    )
+
+
+def test_production_wrapper_disabled_and_missing_configuration_are_explicit(tmp_path):
+    import os
+    import sys
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[3]
+    environment = {
+        k: v
+        for k, v in os.environ.items()
+        if not k.startswith("OTA_PRODUCTION_") and k != "GITHUB_TOKEN"
+    }
+    environment["PYTHONPATH"] = str(root / "src")
+    status = tmp_path / "status.json"
+    command = [
+        sys.executable,
+        str(root / "scripts/ota_release_automation.py"),
+        "preflight",
+        "--status-file",
+        str(status),
+    ]
+    disabled = subprocess.run(command, env=environment, capture_output=True, text=True)
+    assert disabled.returncode == 0
+    assert json.loads(status.read_bytes())["outcome"] == "DISABLED"
+    environment["OTA_PRODUCTION_AUTOMATION_ENABLED"] = "true"
+    blocked = subprocess.run(command, env=environment, capture_output=True, text=True)
+    assert blocked.returncode == 1
+    assert json.loads(status.read_bytes())["outcome"] == "BLOCKED"
+    assert not disabled.stderr and not blocked.stderr

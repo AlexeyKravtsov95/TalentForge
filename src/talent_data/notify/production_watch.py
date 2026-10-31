@@ -1,6 +1,6 @@
 """Read-only observation of the public production OTA catalog for notifications.
 
-The owner publishes production from their own machine; nothing of ours writes there.
+The protected production workflow publishes owner-approved exact release requests.
 This module only watches, exactly the way the preparation's detection already does
 (:func:`talent_data.prepare.production.read_production`): an anonymous ``GET`` through the
 preflight fetcher, verified with the reference verifier against the committed production

@@ -98,8 +98,9 @@ def render(event: Event) -> str:
             f"{link}"
             f"Артефакт: {event.run_url} ({event.artifact_name})\n"
             "\n"
-            "PREPARED — не разрешение на production-публикацию: публикация остаётся "
-            "ручной процедурой владельца (approval record, promote, подпись)."
+            "PREPARED — не разрешение на production-публикацию: владелец проверяет "
+            "и вливает точный release request и approval record; затем защищённый CI "
+            "повторяет проверки, подписывает и публикует."
         )
     if isinstance(event, ProductionUpdated):
         return (
