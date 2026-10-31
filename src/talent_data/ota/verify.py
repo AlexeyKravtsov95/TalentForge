@@ -143,7 +143,12 @@ def strict_json(data: bytes) -> Any:
     if data.startswith(b"\xef\xbb\xbf"):
         raise ValueError("UTF-8 byte order mark")
     text = data.decode("utf-8")
-    return json.loads(text, object_pairs_hook=_reject_duplicates, parse_constant=_reject_constant)
+    try:
+        return json.loads(
+            text, object_pairs_hook=_reject_duplicates, parse_constant=_reject_constant
+        )
+    except RecursionError as exc:
+        raise ValueError("JSON nesting exceeds the parser limit") from exc
 
 
 def _unknown_keys(raw: Any, dumped: Any, where: str = "$") -> list[str]:

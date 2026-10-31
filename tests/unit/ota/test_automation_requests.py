@@ -60,6 +60,8 @@ def test_request_roundtrips_and_is_frozen() -> None:
         ("manifestSha256", "b" * 64),
         ("createdAt", "2026-10-17T23:00:00"),
         ("createdAt", 1),
+        ("createdAt", "2026-W42-6T23:00:00Z"),
+        ("createdAt", "2026-10-17T23:00:00+0000"),
         ("releaseId", "1.60.1.70450-r2"),
         ("baseReleaseId", "1.60.1.70450-r1"),
     ],

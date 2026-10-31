@@ -10,9 +10,11 @@ from __future__ import annotations
 
 import io
 import stat
+import struct
 import subprocess
 import tempfile
 import zipfile
+import zlib
 from datetime import datetime, timedelta
 from pathlib import Path, PurePosixPath
 
@@ -43,6 +45,7 @@ MAX_ARCHIVE_BYTES = 256 * 1024 * 1024
 MAX_ARCHIVE_FILE_BYTES = 32 * 1024 * 1024
 MAX_ARCHIVE_EXPANDED_BYTES = 512 * 1024 * 1024
 MAX_ARCHIVE_ENTRIES = 10000
+MAX_ARCHIVE_DIRECTORY_BYTES = 8 * 1024 * 1024
 
 
 class RequestRejected(Exception):
@@ -99,6 +102,47 @@ def _run(metadata: object, pin: RunPin, workflow: str) -> dict[str, object]:
     return run
 
 
+def _check_zip_directory(raw: bytes) -> None:
+    """Bound actual classic ZIP central records before ZipFile allocates ZipInfos.
+
+    Workflow packages fit ordinary single-disk ZIP; ZIP64/multi-disk inputs are refused.
+    Do not trust the declared record count: walk the bounded directory independently.
+    """
+    end = raw.rfind(b"PK\x05\x06", max(0, len(raw) - 65557))
+    _require(end >= 0 and end + 22 <= len(raw), "ARCHIVE_DIRECTORY", "missing ZIP end record")
+    _, disk, directory_disk, disk_count, count, size, offset, comment = struct.unpack_from(
+        "<4s4H2LH", raw, end
+    )
+    _require(
+        disk == directory_disk == 0 and disk_count == count and count != 65535,
+        "ARCHIVE_DIRECTORY",
+        "expected single-disk classic ZIP",
+    )
+    _require(
+        count <= MAX_ARCHIVE_ENTRIES and size <= MAX_ARCHIVE_DIRECTORY_BYTES,
+        "ARCHIVE_SIZE",
+        "central directory too large",
+    )
+    _require(
+        end + 22 + comment == len(raw) and offset + size == end,
+        "ARCHIVE_DIRECTORY",
+        "invalid central directory bounds",
+    )
+    cursor, actual = offset, 0
+    while cursor < end:
+        _require(
+            cursor + 46 <= end and raw[cursor : cursor + 4] == b"PK\x01\x02",
+            "ARCHIVE_DIRECTORY",
+            "invalid central record",
+        )
+        name, extra, note = struct.unpack_from("<HHH", raw, cursor + 28)
+        cursor += 46 + name + extra + note
+        actual += 1
+        _require(actual <= MAX_ARCHIVE_ENTRIES, "ARCHIVE_SIZE", "too many central records")
+        _require(cursor <= end, "ARCHIVE_DIRECTORY", "central record exceeds bounds")
+    _require(actual == count, "ARCHIVE_DIRECTORY", "declared entry count differs")
+
+
 def extract_verified_archive(archive_bytes: bytes, destination: Path) -> Path:
     """Extract a bounded ZIP into a fresh directory and run the closed package verifier.
 
@@ -118,12 +162,18 @@ def extract_verified_archive(archive_bytes: bytes, destination: Path) -> Path:
         "destination must be fresh",
     )
     try:
+        _check_zip_directory(archive_bytes)
         with zipfile.ZipFile(io.BytesIO(archive_bytes)) as archive:
             entries = archive.infolist()
             _require(len(entries) <= MAX_ARCHIVE_ENTRIES, "ARCHIVE_SIZE", "too many entries")
             paths: set[str] = set()
             total = 0
             for entry in entries:
+                _require(
+                    entry.compress_type in (zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED),
+                    "ARCHIVE_TYPE",
+                    "unsupported ZIP compression",
+                )
                 name = entry.filename.rstrip("/")
                 parts = name.split("/")
                 _require(
@@ -198,7 +248,14 @@ def extract_verified_archive(archive_bytes: bytes, destination: Path) -> Path:
             root = destination / str(prefix)
             load_package(root)
             return root
-    except (OSError, ValueError, zipfile.BadZipFile, NotImplementedError, OtaPublisherError) as exc:
+    except (
+        OSError,
+        ValueError,
+        zipfile.BadZipFile,
+        zlib.error,
+        NotImplementedError,
+        OtaPublisherError,
+    ) as exc:
         raise RequestRejected("ARCHIVE_INVALID", "invalid or non-closed package archive") from exc
 
 
@@ -267,6 +324,14 @@ def verify_package_origin(
     try:
         # Do not rely on a previously loaded object or an independently supplied package.
         current = load_package(package.root)
+        _require(
+            package.index == current.index
+            and package.manifest == current.manifest
+            and package.manifest_bytes == current.manifest_bytes
+            and package.blobs == current.blobs,
+            "PACKAGE_SNAPSHOT",
+            "supplied loaded snapshot differs from verified disk contents",
+        )
         with tempfile.TemporaryDirectory(prefix="ota-package-") as temp:
             archived = load_package(
                 extract_verified_archive(archive_bytes, Path(temp).resolve() / "unpacked")
@@ -300,11 +365,24 @@ def verify_package_origin(
             strict_json(current.attachment(name))
         recorded = strict_json(current.attachment(STAGING_FILES["run"]))
         _require(
-            recorded == run_record(staging_run),
+            isinstance(recorded, dict)
+            and recorded.keys() == run_record(staging_run).keys()
+            and all(
+                type(recorded[k]) is type(v) and recorded[k] == v
+                for k, v in run_record(staging_run).items()
+            ),
             "STAGING_RUN",
             "copied run differs from API evidence",
         )
+        report = _object(strict_json(current.attachment(STAGING_FILES["report"])), "STAGING_REPORT")
+        _same(report.get("formatVersion"), 1, "STAGING_REPORT", "formatVersion")
         binding = rebind_staging(current, REPOSITORY)
+        _same(
+            binding.staging_base,
+            request.base_release_id.rsplit("-r", 1)[0],
+            "STAGING_BASE",
+            "staging base",
+        )
         _require(
             binding.status == "PASS" and binding == index.staging,
             "STAGING_BINDING",

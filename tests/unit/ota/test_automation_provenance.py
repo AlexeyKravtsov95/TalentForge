@@ -297,3 +297,112 @@ def test_indexed_artifact_code_is_never_executed(exact_package, tmp_path):
     )
     verify((request, runs, {**artifact, "digest": digest}, raw, load_package(root)))
     assert not marker.exists()
+
+
+@pytest.mark.parametrize("field", ["index", "manifest", "manifest_bytes", "blobs"])
+def test_supplied_loaded_snapshot_must_itself_match_approved_archive(exact_package, field):
+    from dataclasses import replace
+
+    request, runs, artifact, raw, package = exact_package
+    changed = {
+        "index": package.index.model_copy(update={"source_commit": "b" * 40}),
+        "manifest": package.manifest.model_copy(update={"release_id": "1.60.1.70450-r2"}),
+        "manifest_bytes": b"stale manifest bytes",
+        "blobs": {},
+    }
+    stale = replace(package, **{field: changed[field]})
+    with pytest.raises(p.RequestRejected, match="PACKAGE_SNAPSHOT"):
+        verify((request, runs, artifact, raw, stale))
+
+
+def test_staging_base_must_match_request_independently_of_diff_base(exact_package, tmp_path):
+    from talent_data.ota.release_package import STAGING_BINDING_NAME, STAGING_FILES
+
+    request, runs, artifact, raw, _ = exact_package
+    root = p.extract_verified_archive(raw, tmp_path / "unpacked")
+    other_base = "1.60.1.70000"
+    report_path = root / STAGING_FILES["report"]
+    report = json.loads(report_path.read_bytes())
+    report["baseBuild"] = other_base
+    report_path.write_text(json.dumps(report))
+    update_path = root / STAGING_FILES["update"]
+    update = json.loads(update_path.read_bytes())
+    update["base"] = update["requested"]["base"] = other_base
+    update_path.write_text(json.dumps(update))
+    binding_path = root / STAGING_BINDING_NAME
+    binding = json.loads(binding_path.read_bytes())
+    binding["stagingBase"] = other_base
+    binding_path.write_text(json.dumps(binding))
+    index_path = root / "package.json"
+    index = json.loads(index_path.read_bytes())
+    index["staging"] = binding
+    for name in index["files"]:
+        body = (root / name).read_bytes()
+        index["files"][name] = {"sha256": sha256_ref(body), "byteLength": len(body)}
+    index_path.write_text(json.dumps(index))
+    raw = zip_tree(root)
+    digest = sha256_ref(raw)
+    request = request.model_copy(
+        update={"artifact": request.artifact.model_copy(update={"archive_sha256": digest})}
+    )
+    with pytest.raises(p.RequestRejected, match="STAGING_BASE"):
+        verify((request, runs, {**artifact, "digest": digest}, raw, load_package(root)))
+
+
+@pytest.mark.parametrize("field", ["attempt", "formatVersion"])
+def test_copied_staging_evidence_never_coerces_boolean_to_integer(exact_package, tmp_path, field):
+    from talent_data.ota.release_package import STAGING_FILES
+
+    request, runs, artifact, raw, _ = exact_package
+    root = p.extract_verified_archive(raw, tmp_path / "unpacked")
+    name = STAGING_FILES["run" if field == "attempt" else "report"]
+    doc = json.loads((root / name).read_bytes())
+    doc[field] = True
+    body = json.dumps(doc).encode()
+    (root / name).write_bytes(body)
+    index_path = root / "package.json"
+    index = json.loads(index_path.read_bytes())
+    index["files"][name] = {"sha256": sha256_ref(body), "byteLength": len(body)}
+    index_path.write_text(json.dumps(index))
+    raw = zip_tree(root)
+    digest = sha256_ref(raw)
+    request = request.model_copy(
+        update={"artifact": request.artifact.model_copy(update={"archive_sha256": digest})}
+    )
+    with pytest.raises(p.RequestRejected, match="STAGING"):
+        verify((request, runs, {**artifact, "digest": digest}, raw, load_package(root)))
+
+
+def test_bad_deflate_is_a_typed_archive_rejection(tmp_path):
+    import struct
+
+    out = io.BytesIO()
+    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("package.json", b"example index data")
+    data = bytearray(out.getvalue())
+    name_length, extra_length = struct.unpack_from("<HH", data, 26)
+    data[30 + name_length + extra_length] = 0x07
+    with pytest.raises(p.RequestRejected, match="ARCHIVE"):
+        p.extract_verified_archive(bytes(data), tmp_path / "out")
+
+
+def test_forged_central_directory_count_is_rejected_before_zipfile_allocation(
+    tmp_path, monkeypatch
+):
+    import struct
+
+    out = io.BytesIO()
+    with zipfile.ZipFile(out, "w") as archive:
+        for name in ("package.json", "one", "two"):
+            archive.writestr(name, b"x")
+    data = bytearray(out.getvalue())
+    eocd = data.rfind(b"PK\x05\x06")
+    struct.pack_into("<HH", data, eocd + 8, 1, 1)  # lie about actual central record count
+    monkeypatch.setattr(p, "MAX_ARCHIVE_ENTRIES", 2)
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("entry limit must apply before allocating ZipInfo records")
+
+    monkeypatch.setattr(p.zipfile, "ZipFile", forbidden)
+    with pytest.raises(p.RequestRejected, match="ARCHIVE"):
+        p.extract_verified_archive(bytes(data), tmp_path / "out")

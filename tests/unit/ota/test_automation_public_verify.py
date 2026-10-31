@@ -214,3 +214,34 @@ def test_invalid_or_duplicate_catalog_is_rejected():
         b'"payloadType":', b'"payloadType": "wrong", "payloadType":', 1
     )
     assert not check(FakeOrigin(objects)).ok
+
+
+def test_public_fetch_does_not_inherit_default_client_params_or_headers():
+    origin = FakeOrigin(publication())
+
+    def handler(request):
+        assert request.url.query == b""
+        assert "x-api-key" not in request.headers
+        assert "cookie" not in request.headers and "authorization" not in request.headers
+        return origin.handler(request)
+
+    with httpx.Client(
+        transport=httpx.MockTransport(handler),
+        params={"token": "synthetic"},
+        headers={"X-API-Key": "synthetic"},
+        cookies={"session": "synthetic"},
+        auth=("user", "synthetic"),
+    ) as client:
+        result = verify_publication(client, origin=ORIGIN, keyring=KEYRING, game=GAME, now=NOW)
+    assert result.ok
+
+
+def test_excessive_json_nesting_is_a_failure_for_full_and_lightweight_watch():
+    from talent_data.notify.production_watch import observe_production
+    from talent_data.prepare.production import ProductionStatus
+
+    origin = FakeOrigin({CATALOG: b"[" * 16000 + b"]" * 16000})
+    assert not check(origin).ok
+    with httpx.Client(transport=httpx.MockTransport(origin.handler)) as client:
+        result = observe_production(client, origin=ORIGIN, keyring=KEYRING, game=GAME, now=NOW)
+    assert result.status is ProductionStatus.UNKNOWN

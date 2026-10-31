@@ -51,11 +51,12 @@ def _require(condition: bool, problem: str) -> None:
 
 def _fetch(client: httpx.Client, url: str, limit: int) -> bytes:
     # Override defaults on even a credentialed/follow-redirects client supplied by a caller.
-    request = client.build_request(
-        "GET", url, headers={"Accept-Encoding": "identity"}, timeout=30.0
+    request = httpx.Request(
+        "GET",
+        url,
+        headers={"Accept-Encoding": "identity"},
+        extensions={"timeout": dict.fromkeys(("connect", "read", "write", "pool"), 30.0)},
     )
-    for header in ("authorization", "proxy-authorization", "cookie"):
-        request.headers.pop(header, None)
     with closing(client.send(request, auth=None, follow_redirects=False, stream=True)) as response:
         if response.status_code != 200:
             raise _PublicFailure(f"HTTP_STATUS: {response.status_code}")

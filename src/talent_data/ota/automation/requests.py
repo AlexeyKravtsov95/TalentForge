@@ -46,7 +46,9 @@ class ReleaseRequest(_Model):
     release_id: str = Field(pattern=RELEASE_ID_PATTERN)
     source_commit: str = Field(pattern=COMMIT_PATTERN)
     # Preserve the spelling as well as the instant: no new timestamp under old approval.
-    created_at: str
+    created_at: str = Field(
+        pattern=r"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{1,6})?(?:Z|\+00:00)$"
+    )
     manifest_sha256: str = Field(pattern=SHA256_PATTERN)
     base_release_id: str = Field(pattern=RELEASE_ID_PATTERN)
     base_manifest_sha256: str = Field(pattern=SHA256_PATTERN)
