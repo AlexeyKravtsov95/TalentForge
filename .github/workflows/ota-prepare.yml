@@ -10,7 +10,7 @@ name: OTA data preparation
 # branch ota-candidate/<game>-<build> and a PR is opened. Nothing merges, publishes or signs.
 # No publishing secret is used: no production signing key, no S3 credential (the
 # production catalog is read anonymously and verified against the committed public
-# keyring), only GITHUB_TOKEN. The `notify` job (M5.NOTIFY) additionally reads the
+# keyring). An App installation token is used for proposal writes. The `notify` job (M5.NOTIFY) additionally reads the
 # owner's personal TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID from the GitHub Environment
 # `notifications` - never a signing key or cloud credential, and unreachable for
 # pull-request code (this workflow runs main's code only).
@@ -319,8 +319,8 @@ jobs:
   # what scripts/ota_prepare.py propose checks: the artifact's single candidate commit, every
   # file inside the candidate's own paths, pushed to ota-candidate/<game>-<build>; then one PR
   # (an open one is reused, a closed one is not reopened). It never merges, publishes, signs
-  # or touches main. A PR opened with GITHUB_TOKEN starts no pull_request workflow (CI):
-  # docs/ota/auto-prepare.md says what the owner does about it.
+  # or touches main. App-created PRs trigger CI normally; App secrets are isolated
+  # to this main-only proposal job in ota-preparation.
   propose:
     needs: prepare
     if: needs.prepare.outputs.candidate_artifact != ''
@@ -328,20 +328,20 @@ jobs:
       # M5.NOTIFY: the proposal's own typed outcome and the PR link it produced.
       outcome: ${{ steps.propose.outputs.outcome }}
       pr_url: ${{ steps.propose.outputs.pr_url }}
+    environment: ota-preparation
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
-      contents: write # push the review branch ota-candidate/<game>-<build>
-      pull-requests: write # open the PR, refresh its description
+      contents: read # writes use only the repository-scoped App installation token
       actions: read # download the preparation artifact (this run's or a kept earlier one)
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: main
+          ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
           cache: pip
@@ -350,9 +350,25 @@ jobs:
       - name: Install
         run: pip install -e ".[ota]"
 
+      - name: Check App configuration
+        env:
+          OTA_APP_CLIENT_ID: ${{ vars.OTA_APP_CLIENT_ID }}
+          OTA_APP_PRIVATE_KEY: ${{ secrets.OTA_APP_PRIVATE_KEY }}
+        run: python scripts/ota_release_automation.py check-app
+
+      - uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        id: app-token
+        with:
+          client-id: ${{ vars.OTA_APP_CLIENT_ID }}
+          private-key: ${{ secrets.OTA_APP_PRIVATE_KEY }}
+          owner: AlexeyKravtsov95
+          repositories: TalentForge
+          permission-contents: write
+          permission-pull-requests: write
+
       - name: Download the prepared candidate
         id: download
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: ${{ needs.prepare.outputs.candidate_artifact }}
           run-id: ${{ needs.prepare.outputs.candidate_run_id }}
@@ -365,7 +381,7 @@ jobs:
         id: propose
         shell: bash
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
           ARTIFACT: ${{ needs.prepare.outputs.candidate_artifact }}
           PREPARATION_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ needs.prepare.outputs.candidate_run_id }}
         run: |
@@ -380,7 +396,7 @@ jobs:
 
       - name: Upload the proposal
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ota-propose-${{ github.run_id }}-${{ github.run_attempt }}
           path: propose/

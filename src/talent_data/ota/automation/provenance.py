@@ -143,7 +143,7 @@ def _check_zip_directory(raw: bytes) -> None:
     _require(actual == count, "ARCHIVE_DIRECTORY", "declared entry count differs")
 
 
-def extract_verified_archive(archive_bytes: bytes, destination: Path) -> Path:
+def _extract_archive(archive_bytes: bytes, destination: Path, *, package_layout: bool) -> Path:
     """Extract a bounded ZIP into a fresh directory and run the closed package verifier.
 
     Accept the workflow's ``<releaseId>/`` plus optional outer ``summary.md``, or a
@@ -217,20 +217,24 @@ def extract_verified_archive(archive_bytes: bytes, destination: Path) -> Path:
                 "ARCHIVE_PATH",
                 "file/directory collision",
             )
-            indexes = [PurePosixPath(n) for n in files if PurePosixPath(n).name == "package.json"]
-            _require(len(indexes) == 1, "ARCHIVE_PACKAGE", "expected one package index")
-            prefix = indexes[0].parent
-            _require(len(prefix.parts) <= 1, "ARCHIVE_PACKAGE", "unexpected package nesting")
-            for name in files:
-                path = PurePosixPath(name)
-                if prefix != PurePosixPath(".") and path == PurePosixPath("summary.md"):
-                    continue
-                _require(path.is_relative_to(prefix), "ARCHIVE_PACKAGE", "file outside package")
-                _require(
-                    path.relative_to(prefix).parts[0] != "publish",
-                    "ARCHIVE_PACKAGE",
-                    "mutable publish work is not a package input",
-                )
+            prefix = PurePosixPath(".")
+            if package_layout:
+                indexes = [
+                    PurePosixPath(n) for n in files if PurePosixPath(n).name == "package.json"
+                ]
+                _require(len(indexes) == 1, "ARCHIVE_PACKAGE", "expected one package index")
+                prefix = indexes[0].parent
+                _require(len(prefix.parts) <= 1, "ARCHIVE_PACKAGE", "unexpected package nesting")
+                for name in files:
+                    path = PurePosixPath(name)
+                    if prefix != PurePosixPath(".") and path == PurePosixPath("summary.md"):
+                        continue
+                    _require(path.is_relative_to(prefix), "ARCHIVE_PACKAGE", "file outside package")
+                    _require(
+                        path.relative_to(prefix).parts[0] != "publish",
+                        "ARCHIVE_PACKAGE",
+                        "mutable publish work is not a package input",
+                    )
             destination.mkdir(parents=True, exist_ok=True)
             for entry in entries:
                 target = destination / entry.filename
@@ -246,7 +250,8 @@ def extract_verified_archive(archive_bytes: bytes, destination: Path) -> Path:
                         output.write(chunk)
                     _require(remaining == 0, "ARCHIVE_SIZE", "truncated entry")
             root = destination / str(prefix)
-            load_package(root)
+            if package_layout:
+                load_package(root)
             return root
     except (
         OSError,
@@ -257,6 +262,16 @@ def extract_verified_archive(archive_bytes: bytes, destination: Path) -> Path:
         OtaPublisherError,
     ) as exc:
         raise RequestRejected("ARCHIVE_INVALID", "invalid or non-closed package archive") from exc
+
+
+def extract_verified_archive(archive_bytes: bytes, destination: Path) -> Path:
+    """Safely extract and verify a closed exact package; never execute its contents."""
+    return _extract_archive(archive_bytes, destination, package_layout=True)
+
+
+def extract_data_archive(archive_bytes: bytes, destination: Path) -> Path:
+    """Apply the same path/type/size bounds to staging evidence (not a package index)."""
+    return _extract_archive(archive_bytes, destination, package_layout=False)
 
 
 def verify_package_origin(

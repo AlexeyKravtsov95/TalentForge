@@ -1112,12 +1112,13 @@ def test_the_prepare_command_refuses_invalid_detections(tmp_path: Path, capsys) 
 
 def test_the_workflow_holds_no_publishing_secret_and_cannot_publish() -> None:
     text = (ROOT / ".github/workflows/ota-prepare.yml").read_text(encoding="utf-8")
-    # The only secrets are the owner's personal Telegram pair of the `notify` job
-    # (M5.NOTIFY), gated behind the `notifications` environment; no signing key and no
-    # cloud credential exists anywhere in this workflow.
+    # App key is isolated to proposal; Telegram is isolated to notify.
+    # No production signing key or cloud credential exists in this workflow.
     assert sorted(line.strip() for line in text.splitlines() if "secrets." in line) == [
+        "OTA_APP_PRIVATE_KEY: ${{ secrets.OTA_APP_PRIVATE_KEY }}",
         "TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}",
         "TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}",
+        "private-key: ${{ secrets.OTA_APP_PRIVATE_KEY }}",
     ]
     notify_job = text.split("  notify:", 1)[1]
     assert "environment: notifications" in notify_job

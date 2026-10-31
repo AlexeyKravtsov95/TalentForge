@@ -33,6 +33,7 @@ import argparse
 import datetime as dt
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -54,7 +55,7 @@ from talent_data.ota.gates import (  # noqa: E402
     under_test_from_bytes,
     validate_release,
 )
-from talent_data.ota.models import Channel  # noqa: E402
+from talent_data.ota.models import BUILD_PATTERN, Channel  # noqa: E402
 from talent_data.ota.release import ReleaseArtifact, build_release  # noqa: E402
 from talent_data.ota.report import render_review_report  # noqa: E402
 from talent_data.ota.store import LocalDirectoryStore, upload_blobs  # noqa: E402
@@ -84,12 +85,20 @@ def staging_inputs(artifact: Path, run: dict[str, Any]) -> dict[str, bytes]:
     if root.name != name:
         raise OtaPublisherError(f"{artifact} holds no artifact {name} of the staging run")
     report = (root / "staging-report.json").read_bytes()
-    candidate = json.loads(report).get("candidateBuild")
-    return {
+    document = json.loads(report)
+    candidate, base = document.get("candidateBuild"), document.get("baseBuild")
+    for build in (candidate, base):
+        if not isinstance(build, str) or re.fullmatch(BUILD_PATTERN, build) is None:
+            raise OtaPublisherError("invalid staging build identity")
+    inputs = {
         "report": report,
         "manifest": (root / "releases" / f"{candidate}-r1" / "release.json").read_bytes(),
         "update": (root / "client" / f"{rp.STAGING_UPDATE_TEST}.json").read_bytes(),
     }
+    base_path = root / "releases" / f"{base}-r1" / "release.json"
+    if base_path.is_file():
+        inputs["base"] = base_path.read_bytes()
+    return inputs
 
 
 def bind(
@@ -121,7 +130,10 @@ def bind(
         run=run,
         repository=args.repository,
     )
-    copies = {rp.STAGING_FILES[key]: data for key, data in inputs.items()}
+    copies = {
+        rp.STAGING_BASE_MANIFEST_NAME if key == "base" else rp.STAGING_FILES[key]: data
+        for key, data in inputs.items()
+    }
     copies[rp.STAGING_FILES["run"]] = (json.dumps(run, indent=2) + "\n").encode()
     return staging, copies
 

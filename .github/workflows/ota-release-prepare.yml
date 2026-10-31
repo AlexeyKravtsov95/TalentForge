@@ -1,0 +1,132 @@
+name: OTA release preparation
+
+# Task 3 only: read production, reserve exact packages with immutable Git tags,
+# dispatch the two existing read-only verifiers,
+# then propose a draft. No signer, S3 credentials, blob uploads or catalog writes.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      ci_run_id:
+        description: "Retry the successful main/push CI run with this exact id"
+        type: string
+        required: true
+      ci_attempt:
+        description: "Exact successful CI attempt"
+        type: string
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+
+# Serialize discovery/dispatch and release branch creation. Do not cancel an exact package.
+concurrency:
+  group: ota-release-preparation
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    if: >-
+      github.repository == 'AlexeyKravtsov95/TalentForge' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.head_repository.full_name == github.repository))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    permissions:
+      contents: write # immutable reservation/request tags only; never code/main/PR updates
+      actions: write # dispatch only the existing staging/package workflows
+    outputs:
+      has_request: ${{ steps.prepare.outputs.has_request }}
+      ci_run_id: ${{ github.event.workflow_run.id || inputs.ci_run_id }}
+      ci_attempt: ${{ github.event.workflow_run.run_attempt || inputs.ci_attempt }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }} # trusted default-branch tooling, never a triggering artifact/ref
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Install release preparation tools
+        run: pip install -e ".[ota]"
+      - name: Prepare exact request
+        id: prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CI_RUN_ID: ${{ github.event.workflow_run.id || inputs.ci_run_id }}
+          CI_ATTEMPT: ${{ github.event.workflow_run.run_attempt || inputs.ci_attempt }}
+        run: |
+          python scripts/ota_release_automation.py prepare-request \
+            --ci-run-id "$CI_RUN_ID" --ci-attempt "$CI_ATTEMPT" \
+            --out "$RUNNER_TEMP/release-proposal"
+          if [ -f "$RUNNER_TEMP/release-proposal/release-request.json" ]; then
+            echo "has_request=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_request=false" >> "$GITHUB_OUTPUT"
+            echo "NO_ACTION: no newer unlisted committed data. App configuration is still required for proposals." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      # Only a small strict request crosses jobs. Proposal re-fetches and verifies the
+      # exact package/attempt and live base, not code or reports from this artifact.
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: steps.prepare.outputs.has_request == 'true'
+        with:
+          name: ota-release-request-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/release-proposal/release-request.json
+          if-no-files-found: error
+          retention-days: 7
+
+  propose:
+    needs: prepare
+    if: needs.prepare.outputs.has_request == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: ota-preparation
+    permissions:
+      contents: read
+      actions: read # package verification uses GITHUB_TOKEN, not the App token
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -e ".[ota]"
+      - name: Check App configuration
+        env:
+          OTA_APP_CLIENT_ID: ${{ vars.OTA_APP_CLIENT_ID }}
+          OTA_APP_PRIVATE_KEY: ${{ secrets.OTA_APP_PRIVATE_KEY }}
+        run: python scripts/ota_release_automation.py check-app
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ota-release-request-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/request
+      - uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        id: app-token
+        with:
+          client-id: ${{ vars.OTA_APP_CLIENT_ID }}
+          private-key: ${{ secrets.OTA_APP_PRIVATE_KEY }}
+          owner: AlexeyKravtsov95
+          repositories: TalentForge
+          permission-contents: write
+          permission-pull-requests: write
+      - name: Propose verified draft release PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OTA_APP_TOKEN: ${{ steps.app-token.outputs.token }}
+          CI_RUN_ID: ${{ needs.prepare.outputs.ci_run_id }}
+          CI_ATTEMPT: ${{ needs.prepare.outputs.ci_attempt }}
+        run: |
+          python scripts/ota_release_automation.py propose-request \
+            --request "$RUNNER_TEMP/request/release-request.json" \
+            --ci-run-id "$CI_RUN_ID" --ci-attempt "$CI_ATTEMPT"
