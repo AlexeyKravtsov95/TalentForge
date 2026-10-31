@@ -42,6 +42,11 @@ def exact_package(tmp_path_factory: pytest.TempPathFactory):
             )
             == 0
         )
+    index_path = root / "out" / kit.RELEASE / "package.json"
+    index = json.loads(index_path.read_bytes())
+    # Model a historical trusted-main run, independently of this unmerged test branch.
+    index["toolingCommit"] = COMMIT
+    index_path.write_text(json.dumps(index))
     package = load_package(root / "out" / kit.RELEASE)
     raw = zip_tree(package.root)
     wire = request_wire()
@@ -229,3 +234,66 @@ def test_hostile_archive_is_refused(exact_package, tmp_path, monkeypatch, kind):
         destination.symlink_to(tmp_path / "target", target_is_directory=True)
     with pytest.raises(p.RequestRejected):
         p.extract_verified_archive(out.getvalue(), destination)
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("id", 8999),
+        ("repository_id", 99),
+        ("head_repository_id", 99),
+        ("head_branch", "feature"),
+        ("head_sha", "f" * 40),
+    ],
+)
+def test_artifact_must_belong_to_pinned_run(exact_package, field, value):
+    request, runs, artifact, raw, package = exact_package
+    artifact = copy.deepcopy(artifact)
+    artifact["workflow_run"][field] = value
+    with pytest.raises(p.RequestRejected, match="ARTIFACT_RUN"):
+        verify((request, runs, artifact, raw, package))
+
+
+def test_matching_head_pin_and_metadata_still_require_trusted_main(exact_package):
+    request, runs, artifact, raw, _ = exact_package
+    runs = copy.deepcopy(runs)
+    runs["package"]["head_sha"] = "5" * 40
+    request = request.model_copy(
+        update={"package_run": request.package_run.model_copy(update={"head_sha": "5" * 40})}
+    )
+    with pytest.raises(p.RequestRejected, match="RUN_MAIN"):
+        verify((request, runs, artifact, raw, None))
+
+
+def test_supplied_package_cannot_be_swapped_under_verified_archive(exact_package, tmp_path):
+    request, runs, artifact, raw, _ = exact_package
+    root = p.extract_verified_archive(raw, tmp_path / "unpacked")
+    index_path = root / "package.json"
+    index = json.loads(index_path.read_bytes())
+    # Self-consistent closed index, but not the exact archived package.
+    changed = b"other report bytes"
+    (root / "extra-report.txt").write_bytes(changed)
+    index["files"]["extra-report.txt"] = {"sha256": sha256_ref(changed), "byteLength": len(changed)}
+    index_path.write_text(json.dumps(index))
+    package = load_package(root)
+    with pytest.raises(p.RequestRejected, match="PACKAGE_ARCHIVE"):
+        verify((request, runs, artifact, raw, package))
+
+
+def test_indexed_artifact_code_is_never_executed(exact_package, tmp_path):
+    request, runs, artifact, raw, _ = exact_package
+    root = p.extract_verified_archive(raw, tmp_path / "unpacked")
+    index_path = root / "package.json"
+    index = json.loads(index_path.read_bytes())
+    marker = tmp_path / "executed"
+    script = f"from pathlib import Path\nPath({str(marker)!r}).touch()\n".encode()
+    (root / "report.py").write_bytes(script)
+    index["files"]["report.py"] = {"sha256": sha256_ref(script), "byteLength": len(script)}
+    index_path.write_text(json.dumps(index))
+    raw = zip_tree(root)
+    digest = sha256_ref(raw)
+    request = request.model_copy(
+        update={"artifact": request.artifact.model_copy(update={"archive_sha256": digest})}
+    )
+    verify((request, runs, {**artifact, "digest": digest}, raw, load_package(root)))
+    assert not marker.exists()
