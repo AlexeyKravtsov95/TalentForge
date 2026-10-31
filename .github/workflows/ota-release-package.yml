@@ -60,7 +60,9 @@ on:
   pull_request:
     paths:
       - "scripts/ota_release_package.py"
+      - "scripts/ota_release_automation.py"
       - "src/talent_data/ota/release_package.py"
+      - "src/talent_data/ota/automation/**"
       - ".github/workflows/ota-release-package.yml"
 
 permissions:

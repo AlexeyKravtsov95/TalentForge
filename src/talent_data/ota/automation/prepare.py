@@ -190,7 +190,10 @@ class GitHub:
             request = httpx.Request(
                 "GET",
                 url,
-                headers={"Authorization": f"Bearer {self.token}"},
+                headers={
+                    "Authorization": f"Bearer {self.token}",
+                    "User-Agent": "TalentForge-ota-release-preparation",
+                },
                 extensions={"timeout": dict.fromkeys(("connect", "read", "write", "pool"), 30.0)},
             )
             response = self.client.send(request, stream=True, auth=None, follow_redirects=False)

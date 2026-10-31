@@ -715,3 +715,55 @@ def test_gate_report_wire_does_not_ignore_fields_or_coerce_types(prepared_inputs
             artifact=request.artifact,
             base_manifest_sha256=request.base_manifest_sha256,
         )
+
+
+@pytest.mark.parametrize("fault", [None, "digest", "size"])
+def test_archive_supplies_github_user_agent_and_redirects_without_credentials(monkeypatch, fault):
+    import hashlib
+
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        archive.writestr("evidence.json", b'{"verified":true}')
+    raw = buffer.getvalue()
+    metadata = {"id": 1234, "digest": "sha256:" + hashlib.sha256(raw).hexdigest()}
+    if fault == "digest":
+        metadata["digest"] = "sha256:" + "0" * 64
+    elif fault == "size":
+        monkeypatch.setattr(p, "MAX_ARCHIVE_BYTES", len(raw) - 1)
+    requests = []
+
+    def handler(request):
+        requests.append(request)
+        if request.url.host == "api.github.com":
+            # GitHub rejects bare httpx.Request: it has no inherited client User-Agent.
+            if not request.headers.get("user-agent", "").strip():
+                return httpx.Response(403, json={"message": "User-Agent required"})
+            assert (
+                request.url.path == "/repos/AlexeyKravtsov95/TalentForge/actions/artifacts/1234/zip"
+            )
+            assert request.headers["authorization"] == "Bearer github-test-token"
+            return httpx.Response(
+                302,
+                headers={"location": "https://storage.example.test/artifact.zip?signed=synthetic"},
+            )
+        assert request.url.host == "storage.example.test"
+        assert "authorization" not in request.headers
+        assert "cookie" not in request.headers
+        assert request.url.query == b"signed=synthetic"
+        return httpx.Response(200, stream=httpx.ByteStream(raw))
+
+    with httpx.Client(
+        transport=httpx.MockTransport(handler),
+        auth=("default", "secret"),
+        headers={"User-Agent": "client-default", "Authorization": "client-default-secret"},
+        cookies={"session": "client-default-secret"},
+        follow_redirects=True,
+    ) as client:
+        api = p.GitHub(client, "github-test-token")
+        if fault is None:
+            assert api.archive(metadata) == raw
+        else:
+            code = "ARTIFACT_DIGEST" if fault == "digest" else "ARTIFACT_SIZE"
+            with pytest.raises(p.PreparationBlocked, match=code):
+                api.archive(metadata)
+    assert [request.url.host for request in requests] == ["api.github.com", "storage.example.test"]
