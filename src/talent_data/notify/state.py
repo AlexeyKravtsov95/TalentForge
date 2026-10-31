@@ -65,8 +65,9 @@ STAGE_LABELS = {
 
 _NOTIFIED_LIMIT = 20
 _FAILURES_LIMIT = 50
-#: undelivered candidate events kept for retry (a safety bound; in practice one or two)
-_PENDING_LIMIT = 8
+# Pending candidates are never truncated: every undelivered event stays queued until
+# its own confirmed delivery, however many pile up (Telegram's own limits are handled
+# by the client's bounded retries, not by dropping work).
 
 
 class _Strict(BaseModel):
@@ -548,7 +549,8 @@ def _candidate(
         kind="notify-candidate-state",
         notified=notified[-_NOTIFIED_LIMIT:],
         failures_notified=failures[-_FAILURES_LIMIT:],
-        pending=pending[-_PENDING_LIMIT:],
+        # pending is kept in full: dropping undelivered work silently would lose events
+        pending=pending,
         updated_at=now,
     )
 

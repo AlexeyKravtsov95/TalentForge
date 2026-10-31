@@ -1263,6 +1263,51 @@ def test_two_undelivered_candidates_are_delivered_together(
     assert code == 0 and len(up.sent) == 2  # no repeats after the confirmation
 
 
+def test_nine_undelivered_candidates_are_all_kept_and_all_delivered(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """No silent truncation of the pending queue: nine different PREPARED runs while
+    Telegram is down queue nine events (a `pending[-N:]` bound would have dropped the
+    oldest), the recovered quiet run delivers all nine, and the next one is silent."""
+    builds = [f"1.60.1.{70540 + i}" for i in range(9)]
+    releases = [f"{build}-r1" for build in builds]
+    state = tmp_path / "candidate.json"
+    _seed_candidate(state)  # not the first run
+
+    down = FakeTelegram(SendStatus.FAILED)
+    for index, build in enumerate(builds):
+        code, _env, state = _candidate_run(
+            tmp_path,
+            down,
+            monkeypatch,
+            outcome="PREPARED",
+            build=build,
+            summary_name=f"down-{index}.md",
+        )
+        assert code == 0
+    recorded = load_dedup(CandidateDedup, state)
+    assert recorded is not None
+    assert [p.release_id for p in recorded.pending] == releases  # nothing dropped
+
+    up = FakeTelegram()
+    code, env, state = _candidate_run(
+        tmp_path, up, monkeypatch, outcome="NO_ACTION", summary_name="recovered.md"
+    )
+    assert code == 0 and len(up.sent) == 9  # all nine, oldest first
+    assert "SENT (9)" in _summary(env)
+    for release, (_chat, text) in zip(releases, up.sent, strict=True):
+        assert release in text
+    recorded = load_dedup(CandidateDedup, state)
+    assert recorded is not None and recorded.pending == ()
+    assert set(releases) <= set(recorded.notified)
+
+    quiet = FakeTelegram()
+    code, _env, _state = _candidate_run(
+        tmp_path, quiet, monkeypatch, outcome="NO_ACTION", summary_name="quiet.md"
+    )
+    assert code == 0 and quiet.sent == []  # and then silence
+
+
 def test_the_smoke_command_reports_sent_and_failed(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
