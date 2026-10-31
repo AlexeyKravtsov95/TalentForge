@@ -8,8 +8,12 @@ name: OTA data preparation
 # M5.OTA.AUTO.3: a PREPARED candidate is then proposed for review by the separate `propose`
 # job - its candidate commit (checked: only the candidate's own files) is pushed to the
 # branch ota-candidate/<game>-<build> and a PR is opened. Nothing merges, publishes or signs.
-# No secret is used: no production signing key, no S3 credential (the production catalog is
-# read anonymously and verified against the committed public keyring), only GITHUB_TOKEN.
+# No publishing secret is used: no production signing key, no S3 credential (the
+# production catalog is read anonymously and verified against the committed public
+# keyring), only GITHUB_TOKEN. The `notify` job (M5.NOTIFY) additionally reads the
+# owner's personal TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID from the GitHub Environment
+# `notifications` - never a signing key or cloud credential, and unreachable for
+# pull-request code (this workflow runs main's code only).
 # Runbook: docs/ota/auto-prepare.md
 on:
   # after every run of the existing freshness watcher (M5.DATA.WATCH, daily ~06:00 UTC)
@@ -50,6 +54,10 @@ jobs:
     outputs:
       candidate_artifact: ${{ steps.select.outputs.artifact }}
       candidate_run_id: ${{ steps.select.outputs.run_id }}
+      # M5.NOTIFY: what this run concluded, for the `notify` job (the same words the
+      # "Record the outcome" step writes).
+      outcome: ${{ steps.outcome.outputs.outcome }}
+      uploaded_artifact: ${{ steps.prepare.outcome != 'skipped' && steps.artifact.outputs.name || format('ota-prepare-detection-{0}', github.run_id) }}
     # Pinned, not ubuntu-latest: the PNG bytes of newly prepared icons depend on the image's
     # Pillow wheel and the zlib it bundles (docs/talent-visuals.md §3, the generation
     # environment); committed builds are compared by pixels, not bytes.
@@ -162,6 +170,61 @@ jobs:
           retention-days: 7
           overwrite: true
 
+      # The name this run's artifact was uploaded under (the prepare artifact when the
+      # preparation ran, otherwise the detection-only upload is named by its own step);
+      # the `notify` job downloads it by this name.
+      - name: Name this run's artifact
+        id: artifact
+        if: always() && steps.prepare.outcome != 'skipped'
+        shell: bash
+        env:
+          PREPARE_ARTIFACT: ${{ steps.prepare.outputs.artifact_name }}
+          DETECT_KEY: ${{ steps.detect.outputs.key }}
+        run: |
+          name="${PREPARE_ARTIFACT:-}"
+          if [ -z "$name" ]; then
+            name="ota-prepare-${DETECT_KEY}-FAILED"
+          fi
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+
+      # M5.NOTIFY: one word for the owner's notification - PREPARED / NO_ACTION / a
+      # failure of the detection (DETECT_UNKNOWN / DETECT_FAILED) or of the preparation
+      # (BLOCKED / UNKNOWN / FAILED). Mirrors what "Final status" enforces below.
+      - name: Record the outcome
+        id: outcome
+        if: always()
+        shell: bash
+        env:
+          DETECT_EXIT: ${{ steps.detect.outputs.exit_code }}
+          DETECT_ACTION: ${{ steps.detect.outputs.action }}
+          PREPARE_EXIT: ${{ steps.prepare.outputs.exit_code }}
+          PREPARE_STATUS: ${{ steps.prepare.outputs.status }}
+        run: |
+          outcome=DETECT_FAILED
+          if [ -n "$DETECT_EXIT" ]; then
+            if [ "$DETECT_EXIT" = "4" ]; then
+              outcome=DETECT_UNKNOWN
+            elif [ "$DETECT_EXIT" = "0" ]; then
+              case "$DETECT_ACTION" in
+                NO_ACTION) outcome=NO_ACTION ;;
+                PREPARE)
+                  outcome=FAILED
+                  if [ -n "$PREPARE_EXIT" ]; then
+                    if [ "$PREPARE_EXIT" = "0" ]; then
+                      if [ "$PREPARE_STATUS" = "PREPARED" ]; then outcome=PREPARED; fi
+                    elif [ "$PREPARE_EXIT" = "3" ]; then
+                      outcome=BLOCKED
+                    elif [ "$PREPARE_EXIT" = "4" ]; then
+                      outcome=UNKNOWN
+                    fi
+                  fi
+                  ;;
+              esac
+            fi
+          fi
+          echo "outcome=$outcome" >> "$GITHUB_OUTPUT"
+          echo "recorded outcome: $outcome"
+
       # The candidate for the `propose` job: this run's preparation when it exited 0, reported
       # PREPARED and its artifact was uploaded; or, when the detection is NO_ACTION because
       # these inputs were already PREPARED, that kept artifact (newest run first), so a PR
@@ -261,6 +324,10 @@ jobs:
   propose:
     needs: prepare
     if: needs.prepare.outputs.candidate_artifact != ''
+    outputs:
+      # M5.NOTIFY: the proposal's own typed outcome and the PR link it produced.
+      outcome: ${{ steps.propose.outputs.outcome }}
+      pr_url: ${{ steps.propose.outputs.pr_url }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
@@ -357,3 +424,66 @@ jobs:
               exit 1
               ;;
           esac
+
+  # M5.NOTIFY: the owner's personal Telegram copy of this run (a PREPARED candidate with
+  # its PR link, or the stage that broke). It reads the artifacts this run uploaded and
+  # deduplicates per release id on the branch telegram-notify-state, so a candidate
+  # notifies once. Its own status (SENT / SKIPPED / FAILED) is the job summary only:
+  # continue-on-error keeps a Telegram outage from ever changing this workflow's result.
+  # The secrets live in the GitHub Environment `notifications`; this workflow runs
+  # main's code only (workflow_run / workflow_dispatch), so no pull request sees them.
+  notify:
+    needs: [prepare, propose]
+    if: always()
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: notifications
+    permissions:
+      contents: write # push the deduplication state branch telegram-notify-state
+      actions: read # download this run's preparation artifact
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      # The notification CLI reads the preparation report through
+      # talent_data.prepare.propose, whose chain needs the `ota` extra (cryptography).
+      - name: Install
+        run: pip install -e ".[ota]"
+
+      - name: Download this run's preparation
+        continue-on-error: true # a missing report is itself a failure event
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.prepare.outputs.uploaded_artifact }}
+          path: prep
+          github-token: ${{ github.token }}
+          run-id: ${{ github.run_id }}
+
+      - name: Notify
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          OUTCOME: ${{ needs.prepare.outputs.outcome }}
+          PROPOSE_OUTCOME: ${{ needs.propose.outputs.outcome }}
+          PROPOSE_RESULT: ${{ needs.propose.result }}
+          PR_URL: ${{ needs.propose.outputs.pr_url }}
+          ARTIFACT: ${{ needs.prepare.outputs.uploaded_artifact }}
+        run: |
+          python scripts/telegram_notify.py candidate \
+            --outcome "${OUTCOME:-DETECT_FAILED}" \
+            --report prep/out/report.json \
+            --detection prep/detection.json \
+            --propose-outcome "$PROPOSE_OUTCOME" \
+            --propose-result "$PROPOSE_RESULT" \
+            --pr-url "$PR_URL" \
+            --artifact "$ARTIFACT" \
+            --state-dir "$RUNNER_TEMP/notify-state"

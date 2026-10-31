@@ -63,6 +63,14 @@ ignore = [
     "TRY003", # long exception messages are intentional: errors must be self-explanatory
 ]
 
+[tool.ruff.lint.per-file-ignores]
+# The Telegram notification texts are Russian by requirement: their Cyrillic letters that
+# look Latin (с, Н, Е, ...) are intentional, not confusables to fix.
+"src/talent_data/notify/*" = ["RUF001"]
+"scripts/telegram_setup.py" = ["RUF001"]
+"tests/unit/test_telegram_notify.py" = ["RUF001"]
+"tests/unit/test_telegram_setup.py" = ["RUF001"]
+
 [tool.mypy]
 strict = true
 python_version = "3.12"

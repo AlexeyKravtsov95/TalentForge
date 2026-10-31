@@ -877,13 +877,20 @@ def test_the_proposal_status_is_green_only_for_a_finished_proposal(
 def job(name: str) -> str:
     text = WORKFLOW.read_text(encoding="utf-8")
     start = text.index(f"\n  {name}:\n")
-    following = [text.find(f"\n  {other}:\n", start + 1) for other in ("prepare", "propose")]
+    others = ("prepare", "propose", "notify")
+    following = [text.find(f"\n  {other}:\n", start + 1) for other in others]
     return text[start : min([i for i in following if i > start] or [len(text)])]
 
 
 def test_only_the_propose_job_can_write_and_only_what_it_needs() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
-    assert "secrets." not in text
+    # The only secrets are the owner's personal Telegram pair of the `notify` job
+    # (M5.NOTIFY), gated behind the `notifications` environment; no signing key and no
+    # cloud credential exists anywhere in this workflow.
+    assert sorted(line.strip() for line in text.splitlines() if "secrets." in line) == [
+        "TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}",
+        "TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}",
+    ]
     for forbidden in ("--execute", "promote", "attach-signature", "aws ", "AWS_", "git push"):
         assert forbidden not in text, forbidden
     assert "permissions:\n  contents: read\n  actions: read" in text  # the default

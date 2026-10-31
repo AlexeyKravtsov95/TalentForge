@@ -1,0 +1,40 @@
+name: Telegram smoke test
+
+# M5.NOTIFY: manual, one real message to the chat chosen in setup
+# (TELEGRAM_CHAT_ID of the GitHub Environment `notifications`). Verifies the bot token
+# (getMe) and the delivery (sendMessage) end to end. workflow_dispatch only: never a
+# pull request, never a schedule; it touches no state and no pipeline. Without the two
+# secrets the run is an explicit SKIPPED in the summary, not a failure.
+# Runbook: docs/ota/telegram-notifications.md
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: notifications
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      # Same dependency set as the other notification jobs: the CLI's import chain
+      # (the strict report reader) needs the `ota` extra (cryptography).
+      - name: Install
+        run: pip install -e ".[ota]"
+
+      - name: Send the test message
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/telegram_notify.py smoke

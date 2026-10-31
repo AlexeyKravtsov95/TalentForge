@@ -23,6 +23,8 @@ jobs:
   freshness:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    outputs:
+      check_exit_code: ${{ steps.check.outputs.exit_code }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -75,3 +77,70 @@ jobs:
           python scripts/dataset_freshness_watch.py
           --report freshness/freshness.json
           --check-exit-code "$CHECK_EXIT_CODE"
+
+  # M5.NOTIFY: the owner's personal Telegram copy of this answer. Runs after the tracking
+  # issue exists (its URL goes into the message). Read-only about the pipeline: its own
+  # status (SENT / SKIPPED / FAILED) lives in the job summary, and continue-on-error keeps
+  # a Telegram outage from ever changing this workflow's result. The secrets live in the
+  # GitHub Environment `notifications`; this workflow only ever runs main's code
+  # (schedule / workflow_dispatch), so no pull request sees them. Durable per-event
+  # deduplication (the same OUTDATED build must not re-notify daily) is committed to the
+  # branch telegram-notify-state by the script itself.
+  notify:
+    needs: freshness
+    if: always() && needs.freshness.result != 'skipped'
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: notifications
+    permissions:
+      contents: write # push the deduplication state branch telegram-notify-state
+      actions: read # download this run's freshness-report artifact
+      issues: read # find the open tracking issue for the link
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      # The notification CLI reads the freshness/preparation contracts through
+      # talent_data.prepare.propose, whose chain needs the `ota` extra (cryptography).
+      - name: Install
+        run: pip install -e ".[ota]"
+
+      - name: Download the freshness report
+        continue-on-error: true # a missing report is itself a check failure event
+        uses: actions/download-artifact@v4
+        with:
+          name: freshness-report
+          path: freshness
+
+      - name: Find the tracking issue
+        id: issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          url=$(gh api --paginate "repos/${GITHUB_REPOSITORY}/issues?state=open&per_page=100" \
+            --jq '.[] | select((.body // "") | contains("<!-- talentforge:forever-dataset-freshness -->")) | .html_url' \
+            | head -n 1) || true
+          echo "url=${url:-}" >> "$GITHUB_OUTPUT"
+
+      - name: Notify
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          CHECK_EXIT_CODE: ${{ needs.freshness.outputs.check_exit_code }}
+          ISSUE_URL: ${{ steps.issue.outputs.url }}
+        run: |
+          python scripts/telegram_notify.py freshness \
+            --report-dir freshness \
+            --check-exit-code "$CHECK_EXIT_CODE" \
+            --issue-url "$ISSUE_URL" \
+            --state-dir "$RUNNER_TEMP/notify-state"
