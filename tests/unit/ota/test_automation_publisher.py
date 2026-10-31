@@ -105,7 +105,7 @@ def env(prepared_inputs, world, tmp_path):  # noqa: F811
     result.store = LocalDirectoryStore(owner.store)
     result.evidence = evidence
     result.owner, result.signer, result.journal, result.receipt = owner, signer, journal, receipt
-    result.remote, result.approval = remote, approval
+    result.remote, result.approval, result.repo = remote, approval, repo
     return result
 
 
@@ -431,5 +431,24 @@ def test_same_build_different_staged_base_files_never_signs(env):
     )
     before = env.owner.snapshot()
     assert env.run().state is RequestState.BLOCKED
+    assert env.signer.calls == 0
+    assert env.owner.snapshot() == before
+
+
+def test_preflight_assessment_reuses_publisher_checks_without_writes(env, tmp_path):
+    from talent_data.ota.automation.publisher import assess_request
+
+    before = env.owner.snapshot()
+    live, _ = assess_request(
+        env.receipt.request,
+        package=env.package,
+        repo=env.repo,
+        store=env.store,
+        keyring=env.owner.keyring,
+        now=datetime.fromisoformat(NOW),
+        provenance=lambda: env.evidence,
+        directory=tmp_path,
+    )
+    assert live.catalog.active_release_id == env.receipt.request.base_release_id
     assert env.signer.calls == 0
     assert env.owner.snapshot() == before

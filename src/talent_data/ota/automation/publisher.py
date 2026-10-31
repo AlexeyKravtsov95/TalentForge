@@ -142,6 +142,49 @@ def recover_outcome[R: (PublicationReceipt, RenewalReceipt)](
     return receipt.evolve(state=RequestState.AMBIGUOUS, reason="OUTCOME_UNKNOWN")
 
 
+def assess_request(
+    request: ReleaseRequest,
+    *,
+    package: LoadedPackage,
+    repo: Path,
+    store: BlobStore,
+    keyring: Mapping[str, TrustedKey],
+    now: datetime,
+    provenance: Callable[[], ProvenanceEvidence],
+    directory: Path,
+) -> tuple[LiveSnapshot, argparse.Namespace]:
+    """Perform the publisher's read-only authorization and gate assessment."""
+    approvals = approval_directory(request, repo, directory)
+    evidence = provenance()
+    verify_package_origin(
+        request,
+        run_metadata=evidence.run_metadata,
+        artifact_metadata=evidence.artifact_metadata,
+        archive_bytes=evidence.archive_bytes,
+        package=package,
+    )
+    live = read_live(store, keyring=keyring, game=request.game, now=now)
+    active = next(
+        r for r in live.catalog.releases if r.release_id == live.catalog.active_release_id
+    )
+    verify_staged_base_bytes(
+        live.catalog,
+        store.get(blob_key(active.manifest_sha256)),
+        package.attachment(STAGING_BASE_MANIFEST_NAME),
+        package.attachment(STAGING_FILES["report"]),
+    )
+    args = argparse.Namespace(repo=repo, releases_docs=approvals, main_ref="origin/main")
+    under_test = under_test_from_bytes(package.manifest_bytes, repo)
+    if (
+        _enforce_gates_and_approval(
+            args, under_test, store, live.catalog, now, channel=Channel.PRODUCTION
+        )
+        is not None
+    ):
+        raise OtaPublisherError("publication gates refused")
+    return live, args
+
+
 def publish_request(
     request: ReleaseRequest,
     *,
@@ -206,35 +249,17 @@ def publish_request(
         return save(RequestState.BLOCKED, "CHECK_FAILED")
 
     def assess(directory: Path) -> tuple[LiveSnapshot, argparse.Namespace]:
-        approvals = approval_directory(request, repo, directory)
-        evidence = provenance()
-        verify_package_origin(
+        assert provenance is not None
+        return assess_request(
             request,
-            run_metadata=evidence.run_metadata,
-            artifact_metadata=evidence.artifact_metadata,
-            archive_bytes=evidence.archive_bytes,
             package=package,
+            repo=repo,
+            store=store,
+            keyring=keyring,
+            now=now,
+            provenance=provenance,
+            directory=directory,
         )
-        live = read_live(store, keyring=keyring, game=request.game, now=now)
-        active = next(
-            r for r in live.catalog.releases if r.release_id == live.catalog.active_release_id
-        )
-        verify_staged_base_bytes(
-            live.catalog,
-            store.get(blob_key(active.manifest_sha256)),
-            package.attachment(STAGING_BASE_MANIFEST_NAME),
-            package.attachment(STAGING_FILES["report"]),
-        )
-        args = argparse.Namespace(repo=repo, releases_docs=approvals, main_ref="origin/main")
-        under_test = under_test_from_bytes(package.manifest_bytes, repo)
-        if (
-            _enforce_gates_and_approval(
-                args, under_test, store, live.catalog, now, channel=Channel.PRODUCTION
-            )
-            is not None
-        ):
-            raise OtaPublisherError("publication gates refused")
-        return live, args
 
     def base_matches(live: LiveSnapshot) -> bool:
         active = next(
