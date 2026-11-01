@@ -2,7 +2,9 @@
   "stateVersion": 1,
   "kind": "notify-candidate-state",
   "notified": [],
-  "failuresNotified": [],
+  "failuresNotified": [
+    "ota-prepare/prepare"
+  ],
   "pending": [],
-  "updatedAt": "2026-10-31T11:39:05Z"
+  "updatedAt": "2026-11-01T12:47:14Z"
 }
