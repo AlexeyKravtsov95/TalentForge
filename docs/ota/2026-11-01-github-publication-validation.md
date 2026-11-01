@@ -244,3 +244,103 @@ Android emulator/device, iOS simulator/device and physical devices: **NOT RUN**.
 No actual production delivery, key import, owner environment restriction, IAM scope, credential
 revocation or Telegram send is proven by local code/tests. Those remain owner setup/first-next-release
 verification, not placeholders for unfinished workflow implementation.
+
+## PR #105 follow-up: journal loss after PUT and request-independent renewal
+
+Two owner-reproduced failures were corrected relative to `144594ce9642db411a9ca2c0ecb481c6d8cc6308`.
+All new scenarios use the existing offline rehearsal: real CLI, exact package/provenance,
+approval gates, TEST signatures, local Git/journal/store and public reference verification.
+Telegram delivery is an in-process TEST sender only.
+
+### Post-PUT journal outage
+
+The fixture makes `journal._read` unavailable only after a successful real
+`store.put(CATALOG, ...)`. Each publish/resign case checks that the catalog actually changed
+and exactly one catalog PUT occurred **before** asserting the CLI result. A typed
+`OutcomeJournalError` now carries the diagnosed receipt out of the publisher; the CLI retains
+known outcomes independently of another journal read. This is reporting evidence only and
+cannot authorize a write or replace the durable WRITE_STARTED barrier.
+
+- Exact private S3 read-back plus all referenced objects: `PUBLISHED_NOT_VERIFIED`, exit 3.
+- Unavailable private catalog read-back: `AMBIGUOUS`, exit 3.
+- Both include the pinned operation and `JOURNAL / JOURNAL_FAILED` in status/summary. The
+  notification path reports the failure once and does not advance the activation marker.
+- Once the journal returns, the retained WRITE_STARTED work is diagnosed and publicly
+  verified without another catalog PUT, signing-key read, package download or sequence bump.
+  Further runs are NO_ACTION; publish notifies the verified activation once, resign is quiet.
+- A journal failure at the WRITE_STARTED save **before** PUT still refuses the write.
+
+### Renewal isolation
+
+Resign planning now returns after strict journal/unresolved-outcome checks and full signed
+public catalog/reference verification, before reading or reconciling release requests.
+The rehearsal commits the malformed bytes `{"schemaVersion"}` to main, refreshes its checkout
+and metadata SHA, and advances its clock 30 days while the catalog remains valid. Both
+`preflight --operation resign` and the writer succeed; renewal keeps active/releases,
+increments sequence once and extends expiry. Publication still rejects that malformed
+request without another writer/secret read. A valid-request renewal is the positive control.
+No provenance, exact-package, G1–G8 or reference-verification requirement was relaxed.
+
+### Behavioral RED → GREEN
+
+Regression selection:
+
+```bash
+PYTHONPATH=src /Users/alexeykravtsov/Desktop/workspace/TalentForge/.venv/bin/pytest \
+  -q tests/unit/ota/test_automation_e2e.py \
+  -k 'journal_outage or due_resign_preflight'
+```
+
+The final baseline replay used the **same final tests** and original `cli.py`/`publisher.py`
+source from `144594c`, loaded with their original module filenames to preserve the rehearsal's
+repository/fixture paths. It did not edit HEAD, the index or working source:
+**5 failed, 3 passed, 43 deselected in 72.42s**. Failures were exactly the four post-PUT
+publish/resign × exact/unknown cases and malformed-request resign preflight. The two
+pre-PUT refusal controls and the valid-request renewal passed. Each post-PUT RED had already
+asserted a changed catalog and one PUT, then observed the erroneous BLOCKED result.
+
+Initial fixed-source GREEN: **8 passed, 43 deselected in 69.39s**. Definitive current-source
+whole-suite results, including these eight scenarios, are recorded below. An intermediate
+broader OTA subset was interrupted to run the mandatory whole suite instead; no complete
+subset result is claimed. An attempted isolated source-directory replay failed fixture path
+setup and is not counted as behavioral RED evidence.
+
+Independent read-only review found no Critical/Important/Minor issue in the correction.
+It covered the three edited Python files, not the full original PR or live infrastructure.
+
+### Definitive follow-up checks
+
+Tested source commit: `60cbfeec6647fd7efda485554b847f887587026e`. The following documentation-only commit records these
+results; no Python/workflow behavior changed after the successful whole-suite run.
+
+| Command | Actual result |
+| --- | --- |
+| `ruff check .` | All checks passed, exit 0 |
+| `ruff format --check .` | 405 files already formatted, exit 0 |
+| `mypy` | No issues in 116 source files, exit 0 |
+| `pytest` (offline) | **2533 passed, 11 deselected in 692.55s (0:11:32)**, exit 0 |
+| `actionlint .github/workflows/ota-production-publish.yml .github/workflows/ota-production-watch.yml` | Actual actionlint 1.7.12, exit 0 |
+| `git diff --check`, staged check and `git diff origin/main --check` | exit 0 |
+
+Commands used the existing project virtualenv at
+`/Users/alexeykravtsov/Desktop/workspace/TalentForge/.venv/bin`; mypy/pytest used
+`PYTHONPATH=src`. The whole pytest process removed `AWS_`, `OTA_`, `S3_`, `TELEGRAM_`,
+`GITHUB_` and `GH_` environment variables. Its 11 integration tests were excluded by the
+repository configuration. The whole run passed all 51 automation rehearsal E2E cases,
+including the eight new cases, and the existing provenance/publisher/reconciliation tests.
+The clean behavioral RED log and successful full log are retained locally as
+`/tmp/talentforge-pr105-followup-red-final.txt` and
+`/tmp/talentforge-pr105-followup-pytest.txt`.
+
+Required AST-only Graphify refresh: **14,625 nodes / 46,661 edges / 465 communities**.
+It retained the same three existing Kotlin partial-extraction and seven no-symbol warnings;
+the full generated graph rewrite is included. Diff inspection confirms the correction
+changes only automation CLI/publisher, their regressions, this record and Graphify output.
+Mobile, data, schemas, keyring, PRODUCT_BUNDLE, G1–G8 and workflows are unchanged.
+
+No new JVM/staging-device run was performed for this Python-only correction. The prior JVM
+rehearsal above remains historical evidence for its stated tooling/data SHAs; it is not a
+new production-delivery claim. Production was neither read nor published, the repository
+enable flag was not changed, real keys were neither requested nor created, and no real
+Telegram message was sent. RuStore/AppGallery work is absent. Owner review/merge is required;
+no merge was performed.
