@@ -26,6 +26,7 @@ from talent_data.ota.automation.state import (
     JournalError,
     PreparedPublication,
     PublicationReceipt,
+    Receipt,
     RenewalReceipt,
     RequestState,
     request_digest,
@@ -78,6 +79,23 @@ class LiveSnapshot:
     envelope: bytes
     payload: bytes
     catalog: OtaCatalog
+
+
+class OutcomeJournalError(JournalError):
+    """A diagnosed write outcome could not be persisted; retain the known pins."""
+
+    def __init__(self, receipt: Receipt):
+        super().__init__("write outcome journal save failed")
+        self.receipt = receipt
+
+
+def persist_outcome[R: Receipt](journal: Journal, receipt: R, prepared: PreparedPublication) -> R:
+    """Preserve the private diagnosis across journal failure, never authorize a PUT."""
+    try:
+        journal.save(receipt, prepared)
+    except (JournalError, OSError):
+        raise OutcomeJournalError(receipt) from None
+    return receipt
 
 
 def read_live(
@@ -243,8 +261,7 @@ def publish_request(
         if prepared is None:
             raise JournalError("recovery has no exact signing work")
         outcome = recover_outcome(receipt, prepared, store=store, keyring=keyring, now=now)
-        journal.save(outcome, prepared)
-        return outcome  # diagnostic turn only; never blind retry
+        return persist_outcome(journal, outcome, prepared)  # diagnostic turn only
     if any(
         k != receipt.request_digest
         and v.receipt.state in {RequestState.WRITE_STARTED, RequestState.AMBIGUOUS}
@@ -388,8 +405,7 @@ def publish_request(
                 now=now,
             )
         receipt = recover_outcome(receipt, prepared, store=store, keyring=keyring, now=now)
-        journal.save(receipt, prepared)
-        return receipt
+        return persist_outcome(journal, receipt, prepared)
 
 
 def renew_catalog(
@@ -432,8 +448,7 @@ def renew_catalog(
             if prepared is None:
                 raise JournalError("renewal recovery has no exact signing work")
             outcome = recover_outcome(candidate, prepared, store=store, keyring=keyring, now=now)
-            journal.save(outcome, prepared)
-            return outcome
+            return persist_outcome(journal, outcome, prepared)
     else:
         candidate = None
         prepared = None
@@ -525,5 +540,4 @@ def renew_catalog(
             now=now,
         )
     outcome = recover_outcome(receipt, prepared, store=store, keyring=keyring, now=now)
-    journal.save(outcome, prepared)
-    return outcome
+    return persist_outcome(journal, outcome, prepared)

@@ -1269,3 +1269,191 @@ def test_ambiguous_diagnosis_still_retries_other_retained_public_verification(re
     assert "/" + CATALOG in public_reads
     assert r.journal.load(first.request_digest).receipt.state is RequestState.PUBLISHED_NOT_VERIFIED
     assert r.journal.load(unknown.request_digest).receipt.state is RequestState.AMBIGUOUS
+
+
+@pytest.mark.parametrize("command", ["publish", "resign"])
+@pytest.mark.parametrize("readback", [True, False], ids=["exact", "unknown"])
+def test_journal_outage_after_put_preserves_outcome_and_recovers_without_rewrite(
+    rehearsal, monkeypatch, tmp_path, command, readback
+):
+    from talent_data.notify.automation import notify_status
+    from talent_data.notify.cli import _Summary
+    from talent_data.notify.telegram import SendResult, SendStatus
+    from talent_data.ota.errors import OtaPublisherError
+
+    r = rehearsal
+    if command == "resign":
+        r.clock[0] += timedelta(days=30)
+    before = cli.read_live(r.store, keyring=r.owner.keyring, game="forever", now=r.clock[0])
+    state, sent = tmp_path / "notify/production.json", []
+
+    def send(text):
+        sent.append(text)
+        return SendResult(SendStatus.SENT, "TEST delivered")
+
+    def notify(status):
+        return notify_status(
+            status,
+            state=state,
+            client=r.dependencies.client,
+            keyring=r.owner.keyring,
+            now=r.clock[0],
+            send=send,
+            summary=_Summary(None),
+            run_url="https://github.com/TEST/actions/runs/55",
+        )
+
+    notify(r.command("verify")[1])  # quiet, fully verified public baseline
+    summary = Path(r.environment["GITHUB_STEP_SUMMARY"])
+    summary.write_text("")
+    original_put, original_get, original_read = r.store.put, r.store.get, r.journal._read
+    landed, down, puts = [False], [False], []
+
+    def journal_read():
+        if down[0]:
+            raise OSError("TEST journal unavailable")
+        return original_read()
+
+    def put(key, raw, *, cache_control):
+        original_put(key, raw, cache_control=cache_control)
+        if key == CATALOG:
+            puts.append(raw)
+            landed[0] = down[0] = True
+
+    def get(key):
+        if landed[0] and down[0] and not readback and key == CATALOG:
+            raise OtaPublisherError("TEST private read unavailable")
+        return original_get(key)
+
+    monkeypatch.setattr(r.store, "put", put)
+    monkeypatch.setattr(r.store, "get", get)
+    monkeypatch.setattr(r.journal, "_read", journal_read)
+    code, status = r.command(command)
+    assert landed[0] and len(puts) == 1
+    assert original_get(CATALOG) != before.envelope
+    expected = "PUBLISHED_NOT_VERIFIED" if readback else "AMBIGUOUS"
+    assert code == 3 and status.outcome == expected
+    assert (status.stage, status.reason) == ("JOURNAL", "JOURNAL_FAILED")
+    kind = "release" if command == "publish" else "renewal"
+    operations = [x for x in status.operations if x.kind == kind]
+    assert len(operations) == 1
+    operation = operations[0]
+    assert operation.state.value == expected
+    assert operation.payload_sha256 is not None
+    assert f"OTA production: {expected}" in summary.read_text()
+    assert "PACKAGE_PROVENANCE_FAILED" not in summary.read_text()
+    notify(status)
+    notify(status)
+    assert len(sent) == 1 and expected in sent[0]
+    assert json.loads(state.read_bytes())["notifiedRelease"] != r.receipt.request.release_id
+
+    down[0] = False
+    assert r.journal.load(operation.digest).receipt.state is RequestState.WRITE_STARTED
+    r.reads.clear()
+    r.api_calls.clear()
+    after_put = original_get(CATALOG)
+    code, recovered = r.command(command)
+    assert code == 0 and recovered.outcome == "VERIFIED"
+    assert r.journal.load(operation.digest).receipt.state is RequestState.VERIFIED
+    assert "OTA_PRODUCTION_PRIVATE_KEY_PEM" not in r.reads
+    assert not any(call[0] == "archive" for call in r.api_calls)
+    assert len(puts) == 1 and original_get(CATALOG) == after_put
+    after = cli.read_live(r.store, keyring=r.owner.keyring, game="forever", now=r.clock[0])
+    assert after.catalog.sequence == before.catalog.sequence + 1
+    notify(recovered)
+    notify(recovered)
+    assert len(sent) == (2 if command == "publish" else 1)
+    assert r.command(command)[1].outcome == "NO_ACTION"
+    assert len(puts) == 1 and original_get(CATALOG) == after_put
+
+
+@pytest.mark.parametrize("command", ["publish", "resign"])
+def test_journal_outage_before_put_still_prohibits_write(rehearsal, monkeypatch, command):
+    r = rehearsal
+    if command == "resign":
+        r.clock[0] += timedelta(days=30)
+    before, puts = r.store.get(CATALOG), []
+    original_save, original_put = r.journal.save, r.store.put
+
+    def save(receipt, prepared=None):
+        if receipt.state is RequestState.WRITE_STARTED:
+
+            def unavailable():
+                raise OSError("TEST journal unavailable before PUT")
+
+            monkeypatch.setattr(r.journal, "_read", unavailable)
+        return original_save(receipt, prepared)
+
+    def put(key, raw, *, cache_control):
+        puts.append(key)
+        return original_put(key, raw, cache_control=cache_control)
+
+    monkeypatch.setattr(r.journal, "save", save)
+    monkeypatch.setattr(r.store, "put", put)
+    code, status = r.command(command)
+    assert code == 1 and status.outcome == "BLOCKED"
+    assert CATALOG not in puts and r.store.get(CATALOG) == before
+
+
+@pytest.mark.parametrize("malformed", [True, False], ids=["broken-request", "control"])
+def test_due_resign_preflight_and_writer_do_not_parse_release_requests(
+    rehearsal, monkeypatch, malformed
+):
+    r = rehearsal
+    if malformed:
+        path = r.remote / "docs/ota/release-requests" / f"{r.receipt.request.release_id}.json"
+        path.write_text('{"schemaVersion"}')
+        git(r.remote, "add", ".")
+        git(
+            r.remote,
+            "-c",
+            "user.name=TEST",
+            "-c",
+            "user.email=test@example.invalid",
+            "-c",
+            "core.hooksPath=/dev/null",
+            "commit",
+            "-qm",
+            "TEST malformed request",
+        )
+        git(r.repo, "fetch", "origin", "main")
+        git(r.repo, "reset", "--hard", "origin/main")
+        r.environment["GITHUB_SHA"] = git(r.repo, "rev-parse", "HEAD").decode().strip()
+    r.payload.clear()
+    r.payload["repository"] = {"full_name": r.receipt.request.repository}
+    r.environment["GITHUB_EVENT_NAME"] = "schedule"
+    r.clock[0] += timedelta(days=30)
+    before = cli.read_live(r.store, keyring=r.owner.keyring, game="forever", now=r.clock[0])
+    original_put, puts = r.store.put, []
+
+    def put(key, raw, *, cache_control):
+        if key == CATALOG:
+            puts.append(raw)
+        return original_put(key, raw, cache_control=cache_control)
+
+    monkeypatch.setattr(r.store, "put", put)
+    initial_entries = r.journal.read_all()
+    code, planned = r.command("preflight", arguments=("--operation", "resign"))
+    assert code == 0 and planned.outcome == "READY" and planned.writer_needed
+    assert not r.reads and not r.writers and not puts
+    if malformed:
+        assert r.journal.read_all() == initial_entries
+    code, status = r.command("resign")
+    assert code == 0 and status.outcome == "VERIFIED"
+    after = cli.read_live(r.store, keyring=r.owner.keyring, game="forever", now=r.clock[0])
+    assert after.catalog.sequence == before.catalog.sequence + 1
+    assert after.catalog.releases == before.catalog.releases
+    assert after.catalog.active_release_id == before.catalog.active_release_id
+    assert after.catalog.expires_at > before.catalog.expires_at
+    assert len(puts) == 1
+    assert not any(call[0] == "archive" for call in r.api_calls)
+    assert [x.kind for x in status.operations].count("renewal") == 1
+    if malformed:
+        assert all(r.journal.load(k) == v for k, v in initial_entries.items())
+    assert r.command("resign")[1].outcome == "NO_ACTION"
+    assert len(puts) == 1
+    if malformed:
+        reads, writers = len(r.reads), len(r.writers)
+        code, refused = r.command("publish")
+        assert code == 1 and refused.outcome == "BLOCKED"
+        assert len(puts) == 1 and len(r.reads) == reads and len(r.writers) == writers

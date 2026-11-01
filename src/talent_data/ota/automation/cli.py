@@ -48,8 +48,10 @@ from talent_data.ota.automation.provenance import (
 from talent_data.ota.automation.public_verify import _fetch, _PublicFailure, verify_publication
 from talent_data.ota.automation.publisher import (
     LiveSnapshot,
+    OutcomeJournalError,
     ProvenanceEvidence,
     assess_request,
+    persist_outcome,
     publish_request,
     read_live,
     recover_outcome,
@@ -278,6 +280,7 @@ class _Run:
         self.archives: dict[str, bytes] = {}
         self.current_bytes: dict[str, bytes] = {}
         self.recovered: set[str] = set()
+        self.known_outcomes: dict[str, Receipt] = {}
         self.failure: tuple[Stage, Reason] | None = None
         self.ci_pin: tuple[int, int] | None = None
         self.ci_sha: str | None = None
@@ -285,12 +288,28 @@ class _Run:
         self.attempt = int(env.get("GITHUB_RUN_ATTEMPT", "0"))
 
     def status(
-        self, outcome: Outcome, stage: Stage, reason: Reason, *, writer: bool = False
+        self,
+        outcome: Outcome,
+        stage: Stage,
+        reason: Reason,
+        *,
+        writer: bool = False,
+        fallback: bool = False,
     ) -> StatusDocument:
         operations = []
         if self.operation not in {"init-journal", "signer-smoke"}:
-            for entry in self.d.journal.read_all().values():
-                receipt = entry.receipt
+            try:
+                receipts = {k: v.receipt for k, v in self.d.journal.read_all().items()}
+            except (JournalError, OSError):
+                if not fallback or not self.known_outcomes:
+                    raise
+                receipts = {}
+            if fallback:
+                for digest, known in self.known_outcomes.items():
+                    retained = receipts.get(digest)
+                    if retained is None or retained.state is not RequestState.VERIFIED:
+                        receipts[digest] = known
+            for receipt in receipts.values():
                 operations.append(
                     OperationStatus(
                         digest=receipt.request_digest,
@@ -438,6 +457,10 @@ class _Run:
             return (), True
         live = self.public_live()
         self.stage, self.reason = "PLANNING", "NO_WORK"
+        # Renewal depends on the verified live catalog and journal, never release
+        # request parsing/reconciliation (including unrelated malformed requests).
+        if self.operation == "resign":
+            return (), resign_due(live.catalog, now=self.d.now())
         requests = committed_requests(self.d.repo)
         receipts = {
             k: v.receipt for k, v in entries.items() if isinstance(v.receipt, PublicationReceipt)
@@ -453,8 +476,6 @@ class _Run:
         else:
             selected = select_requests(requests, receipts, live=live.catalog)
         eligible = []
-        if self.operation == "resign":
-            selected = ()
         for request in selected:
             digest = request_digest(request)
             if digest in self.recovered:
@@ -492,8 +513,6 @@ class _Run:
         due = self.operation in {"resign", "reconcile"} and resign_due(
             live.catalog, now=self.d.now()
         )
-        if self.operation == "resign":
-            eligible = []
         return tuple(eligible), due
 
     def final(self, *, changed: bool) -> StatusDocument:
@@ -630,7 +649,8 @@ class _Run:
                                 keyring=self.d.keyring,
                                 now=self.d.now(),
                             )
-                        self.d.journal.save(result, entry.prepared)
+                        self.known_outcomes[digest] = result
+                        persist_outcome(self.d.journal, result, entry.prepared)
                         self.recovered.add(digest)
                 if self.recovered:
                     # A recovery turn only diagnoses retained exact work. It never
@@ -663,6 +683,7 @@ class _Run:
                         journal=self.d.journal,
                         provenance=partial(self.evidence, request),
                     )
+                    self.known_outcomes[result.request_digest] = result
                     if result.state is RequestState.BLOCKED:
                         self.failure = (
                             ("SIGNER", "SIGNER_FAILED")
@@ -682,6 +703,8 @@ class _Run:
                         run_id=self.run_id,
                         attempt=self.attempt,
                     )
+                    if renewal is not None:
+                        self.known_outcomes[renewal.request_digest] = renewal
                     if renewal is not None and renewal.state is RequestState.BLOCKED:
                         self.failure = (
                             ("SIGNER", "SIGNER_FAILED")
@@ -836,7 +859,11 @@ def main(
                     )
                 run = _Run(args, env, dependencies)
                 document = run.run()
-        except (*_FAILURES, InvalidSignature, KeyError, TypeError):
+        except (*_FAILURES, InvalidSignature, KeyError, TypeError) as exc:
+            if run is not None and isinstance(exc, JournalError):
+                run.stage, run.reason = "JOURNAL", "JOURNAL_FAILED"
+            if run is not None and isinstance(exc, OutcomeJournalError):
+                run.known_outcomes[exc.receipt.request_digest] = exc.receipt
             document = _empty(
                 args,
                 "BLOCKED",
@@ -845,13 +872,21 @@ def main(
             )
             if run is not None:
                 with contextlib.suppress(*_FAILURES):
-                    document = run.status("BLOCKED", run.stage, run.reason)
+                    document = run.status("BLOCKED", run.stage, run.reason, fallback=True)
                     if any(x.state in _UNRESOLVED for x in document.operations):
-                        document = run.status("AMBIGUOUS", "RECOVERY", "OUTCOME_UNKNOWN")
+                        document = document.model_copy(
+                            update={
+                                "outcome": "AMBIGUOUS",
+                                "stage": run.stage if run.stage == "JOURNAL" else "RECOVERY",
+                                "reason": run.reason
+                                if run.stage == "JOURNAL"
+                                else "OUTCOME_UNKNOWN",
+                            }
+                        )
                     elif any(
                         x.state is RequestState.PUBLISHED_NOT_VERIFIED for x in document.operations
                     ):
-                        document = run.status("PUBLISHED_NOT_VERIFIED", run.stage, run.reason)
+                        document = document.model_copy(update={"outcome": "PUBLISHED_NOT_VERIFIED"})
     return _emit(document, args.status_file, env)
 
 
