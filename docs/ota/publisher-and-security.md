@@ -1,6 +1,6 @@
 # OTA publisher and security — design for M5.OTA.2
 
-Status: **proposed** (M5.OTA.1). Contract: [ota-contract-v1.md](ota-contract-v1.md).
+Status: publisher implemented; guarded GitHub publication added 2026-11-01, deployment disabled until owner setup. Contract: [ota-contract-v1.md](ota-contract-v1.md).
 Implementation brief: [M5.OTA.2-publisher-brief.md](M5.OTA.2-publisher-brief.md).
 
 ## 1. Principles
@@ -8,9 +8,10 @@ Implementation brief: [M5.OTA.2-publisher-brief.md](M5.OTA.2-publisher-brief.md)
 1. **Only reviewed data is published.** Input is the committed `data/` at a commit on `main`
    (merged by PR, CI green). Never a working tree, never an unmerged branch, never the output
    of the freshness watcher.
-2. **Humans decide; tools prepare.** The publisher builds, validates, diffs and signs; every
-   change that reaches production users is started by the owner by hand. Nothing publishes on a
-   schedule or a webhook.
+2. **Humans approve exact bytes; guarded tools publish.** The owner reviews and merges the
+   pinned request/approval. Successful CI for that exact main merge may publish; daily
+   reconciliation recovers missed events and independently renews the same active catalog.
+   Freshness, staging PASS or an arbitrary historical approval alone never authorize a release.
 3. **Immutable artifacts, one mutable pointer.** Blobs are written once. The catalog is the only
    object ever replaced, and it is replaced last.
 4. **Nothing is deleted** that a listed release references. Rollback changes a pointer.
@@ -41,7 +42,7 @@ Implementation brief: [M5.OTA.2-publisher-brief.md](M5.OTA.2-publisher-brief.md)
           │          (test plan §4)
           │
   7. promote         new production catalog: sequence+1, release appended, active = release,
-          │          signed offline by the owner with the PRODUCTION key, uploaded last
+          │          signed by the guarded external CI signer (or isolated owner recovery), uploaded last
           │
   8. verify-live     fetch the live production catalog through the CDN, verify it with the
                      committed production public keys, fetch and verify every blob of every
@@ -154,22 +155,26 @@ The pipeline never automates this judgement and is never triggered by the freshn
 
 | Key | Purpose | Private key location | Pinned by |
 | --- | --- | --- | --- |
-| `tf-prod-<yyyy>a` (primary) | signs production catalogs | offline, under the owner's control: a hardware token / non-exportable OS keychain key, or an encrypted file on offline media ([OD-2](open-decisions.md)) | production apps |
+| `tf-prod-<yyyy>a` (primary) | signs production catalogs | existing `tf-prod-2026a` PEM in main-only `ota-production` Environment Secrets; optional password; owner-controlled recovery copy ([OD-2](open-decisions.md)) | production apps |
 | `tf-prod-<yyyy>b` (backup) | recovery when the primary is lost | generated with the primary; kept on two separate offline media (e.g. encrypted USB in a safe + a paper/QR copy); never used day to day | production apps |
 | `tf-staging-<yyyy>` | signs staging catalogs | CI secret or the owner's machine | staging app builds only |
 | `test-*` | fixtures | public seeds in this repository | never an app |
 
 Public keys are committed and compiled into the app. Private keys are **never** committed,
-logged, uploaded as CI artifacts or sent to any service.
+logged or uploaded as artifacts/cache. The primary is deliberately entrusted to GitHub Environment Secrets under OD-2; the backup is never loaded into CI.
 
 ### 5.2 Procedures
 
 * **Generation:** on an offline machine. Record in the repository the key id, base64 SPKI,
   SHA-256 fingerprint of the SPKI and creation date. Test-sign and verify a dummy catalog with
   both production keys before any app pins them.
-* **Signing:** `promote` writes the unsigned payload and prints the SHA-256 of the PAE it expects
-  to be signed; the owner signs offline; the tool verifies the signature with the committed public
-  key before uploading.
+* **Signing:** the production CLI re-proves invocation, exact request/artifact/staging, approval,
+  live base and G1–G8 before reading credentials. `CiPemSigner` accepts only the pinned primary
+  P-256 key, signs verified PAE through the external signer boundary and verifies the DER against
+  the committed public key. The staging/test inline signer still refuses production keys.
+  PEM and temporary `talentforge-production` AWS profile have restricted permissions and cleanup
+  on success/failure; secrets are never command arguments. Manual external signing remains an
+  isolated owner recovery procedure after CI stop/drain and credential revocation.
 * **Primary key lost:** sign with the backup key (apps already pin it). Generate a new backup;
   ship an app update pinning {backup as the new primary, the new backup}; then retire the lost key
   id. No user loses data at any point.
@@ -191,7 +196,9 @@ logged, uploaded as CI artifacts or sent to any service.
 | Threat | Mitigation | Residual risk |
 | --- | --- | --- |
 | Corrupt or truncated download | per-file size and SHA-256; strict envelope parsing incl. duplicate member names | none (attempt fails, verified files kept, retried) |
-| Compromised CDN / bucket / DNS | offline-key signature over the catalog; all else hash-pinned; base URL compiled in | denial of updates (fail-safe) |
+| Compromised CDN / bucket / DNS without signer | pinned-key signature over the catalog; all else hash-pinned; base URL compiled in | denial of updates (fail-safe) |
+| Compromised trusted main / runner / installed dependencies | branch protection, review, main-only environment, full-SHA Actions, no artifact code execution, separate preparation/notification secrets | a job with primary PEM and S3 access can extract both and publish malicious signed data; branch restrictions do not defend against already-merged malicious code; revoke CI access and ship an app update dropping the pinned key |
+| Concurrent local writer / lost event / interrupted PUT | revoke ordinary local write before enabling CI; shared job lock plus durable journal barriers and exact live read-back | GitHub lock cannot lock arbitrary local processes and VK ignores CAS; unknown writes remain AMBIGUOUS until diagnosis, never blind retry/automatic rollback |
 | Replay of an older catalog | persisted `sequence`; an equal sequence must be byte-identical | a device that never saw a newer catalog can be held on an older valid one until it expires |
 | Freeze (same old catalog forever) | `expiresAt` ≤ 180 days | up to the validity window |
 | Staging data reaching production | signed `channel`; separate keys | none |
@@ -210,3 +217,28 @@ logged, uploaded as CI artifacts or sent to any service.
 OTA is enabled per platform. Android ships with OTA when the common gate and the Android gate of
 [test-plan.md §6](test-plan.md#6-release-readiness-criteria-ota-public-release-gates) pass; iOS
 needs the common gate and the iOS gate. The iOS gate never blocks an Android release.
+
+## 8. GitHub publication trust boundaries
+
+`ota-release-prepare.yml` prepares a draft through a repository-scoped GitHub App in
+`ota-preparation`; its installation token has contents/PR write only and never reaches the
+production signer. The package/staging workflows remain read-only verifiers.
+`ota-production-publish.yml` uses trusted main SHA, full history and no persisted checkout
+credentials. API metadata proves repository/workflow path/event/attempt/SHA and successful
+main/push checks; manual invocation additionally requires repository write/maintain/admin.
+
+Secret-free preflights may write only the durable GitHub journal. They and every protected
+writer share `ota-production-writer`, cancel-in-progress false, with explicit sequential
+job dependencies. Daily same-active renewal still runs if candidate reconciliation refuses.
+Dropped pending runs are recovered from committed requests; concurrency is not a FIFO queue.
+The protected job repeats gates before the lazy credential reader. Init binds no production
+secrets; synthetic domain-separated signer smoke binds PEM/password only and cannot PUT.
+All secret loading and journal mutation require literal enable flag `true` plus `--execute`.
+
+The separate `notifications` job has only Telegram secrets and shares `ota-production-watch`
+with the hourly observer, using `telegram-notify-state/production.json`. A status artifact is
+strict data, never public proof: success rechecks every public manifest/file and stable signed
+payload. First baseline and same-active renewal are quiet. Candidate/renewal failures stay
+separate; unrelated healthy observation cannot clear their markers. Missing writer status after
+possible PUT means unknown/AMBIGUOUS; journal/live diagnosis is authoritative. Telegram failure
+cannot change a publication receipt. See [operator setup/recovery](publisher-runbook.md#github-production-automation-owner-setup).

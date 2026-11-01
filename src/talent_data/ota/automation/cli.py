@@ -117,6 +117,7 @@ Stage = Literal[
     "PUBLISH",
     "RENEWAL",
     "SIGNER",
+    "CLEANUP",
 ]
 Reason = Literal[
     "AUTOMATION_DISABLED",
@@ -139,6 +140,7 @@ Reason = Literal[
     "SIGNER_VERIFIED",
     "SIGNER_FAILED",
     "JOURNAL_INITIALIZED",
+    "CLEANUP_FAILED",
 ]
 
 
@@ -666,6 +668,9 @@ class _Run:
                     changed |= (
                         renewal is not None and renewal.state is RequestState.PUBLISHED_NOT_VERIFIED
                     )
+                # A resource cleanup error after PUT must not erase durable evidence
+                # that the target was written but has not yet had its public proof.
+                self.stage, self.reason = "CLEANUP", "CLEANUP_FAILED"
             self.pending_verification()
             return self.final(changed=changed)
 
@@ -794,6 +799,10 @@ def main(
                 document = run.status("BLOCKED", run.stage, run.reason)
                 if any(x.state in _UNRESOLVED for x in document.operations):
                     document = run.status("AMBIGUOUS", "RECOVERY", "OUTCOME_UNKNOWN")
+                elif any(
+                    x.state is RequestState.PUBLISHED_NOT_VERIFIED for x in document.operations
+                ):
+                    document = run.status("PUBLISHED_NOT_VERIFIED", run.stage, run.reason)
     return _emit(document, args.status_file, env)
 
 

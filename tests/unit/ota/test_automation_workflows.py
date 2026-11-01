@@ -2,12 +2,178 @@
 
 import json
 import subprocess
+from pathlib import Path
 
 import pytest
 
 from talent_data.ota.automation.prepare import PreparationBlocked
 from talent_data.ota.automation.requests import parse_request
 from tests.unit.ota.test_automation_requests import request_wire
+
+ROOT = Path(__file__).resolve().parents[3]
+
+
+def workflow_jobs(name="ota-production-publish.yml"):
+    """Read job boundaries by YAML indentation; actionlint validates the full grammar."""
+    import re
+
+    text = (ROOT / ".github/workflows" / name).read_text()
+    jobs = dict(
+        re.findall(
+            r"^  ([\w-]+):\n(.*?)(?=^  [\w-]+:|\Z)", text.split("jobs:\n", 1)[1], re.M | re.S
+        )
+    )
+    return text, jobs
+
+
+def test_production_job_topology_serializes_preflights_and_independent_renewal():
+    text, jobs = workflow_jobs()
+    assert set(jobs) == {"preflight", "writer", "renewal-preflight", "renewal-writer", "notify"}
+    assert "concurrency:" not in text.split("jobs:\n", 1)[0]
+    for name in ("preflight", "writer", "renewal-preflight", "renewal-writer"):
+        assert "group: ota-production-writer" in jobs[name]
+        assert "cancel-in-progress: false" in jobs[name]
+        assert "contents: write" in jobs[name]
+        assert "actions: read" in jobs[name]
+    assert "needs: preflight" in jobs["writer"]
+    assert "needs: [preflight, writer]" in jobs["renewal-preflight"]
+    assert "always()" in jobs["renewal-preflight"]
+    assert "github.event_name == 'schedule'" in jobs["renewal-preflight"]
+    assert "needs.writer.result == 'success'" not in jobs["renewal-preflight"]
+    assert "needs.preflight.result == 'success'" not in jobs["renewal-preflight"]
+    assert "OPERATION: resign" in jobs["renewal-preflight"]
+    assert '--operation "$OPERATION"' in jobs["renewal-preflight"]
+    assert "needs: renewal-preflight" in jobs["renewal-writer"]
+    assert (
+        "always() && !cancelled() && needs.renewal-preflight.result == 'success'"
+        in jobs["renewal-writer"]
+    )
+    assert "group: ota-production-watch" in jobs["notify"]
+    watch, _ = workflow_jobs("ota-production-watch.yml")
+    assert "group: ota-production-watch" in watch
+
+
+def test_production_secrets_artifacts_and_trusted_checkout_boundaries():
+    import re
+
+    text, jobs = workflow_jobs()
+    assert "pull_request:" not in text and "pull_request_target:" not in text
+    assert "default: false" in text
+    assert "github.event.workflow_run.head_repository.full_name == github.repository" in text
+    for name in ("preflight", "renewal-preflight"):
+        assert "secrets." not in jobs[name] and "environment:" not in jobs[name]
+    for name in ("writer", "renewal-writer"):
+        job = jobs[name]
+        assert "environment: ota-production" in job
+        assert "!cancelled()" in job
+        assert "OTA_PRODUCTION_AUTOMATION_ENABLED == 'true'" in job
+        assert ".outputs.execute == 'true'" in job
+        assert ".outputs.writer_needed == 'true'" in job
+        assert ".outputs.outcome == 'READY'" in job
+        assert "TELEGRAM_" not in job and "OTA_APP_" not in job
+    assert "environment: notifications" in jobs["notify"]
+    assert "continue-on-error: true" in jobs["notify"]
+    assert "OTA_PRODUCTION_PRIVATE_KEY_PEM" not in jobs["notify"]
+    assert "production-status --status-file" in jobs["notify"]
+    assert 'WRITER_RESULT" = cancelled' in jobs["notify"]
+    assert 'outcome="AMBIGUOUS"' in jobs["notify"]
+    assert "candidate-status.json" in jobs["notify"] and "renewal-status.json" in jobs["notify"]
+    # Each command downloads the same state branch into a fresh repository; reusing
+    # one directory makes the second git remote-add fail before renewal notification.
+    assert '--state-dir "$RUNNER_TEMP/candidate-notify-state"' in jobs["notify"]
+    assert '--state-dir "$RUNNER_TEMP/renewal-notify-state"' in jobs["notify"]
+    for step in re.split(r"^      - ", jobs["writer"], flags=re.M):
+        if "name: Signer smoke" in step:
+            assert "OTA_PRODUCTION_PRIVATE_KEY_PEM" in step
+            assert "S3_" not in step
+        if "name: Initialize journal" in step:
+            assert "secrets." not in step
+    artifact_names = re.findall(r"^          name: (ota-production-\S+)", text, re.M)
+    assert len(set(artifact_names)) == 4  # preflight and writer artifacts never overwrite
+    assert "path: ${{ runner.temp }}\n" not in text and "cache:" not in text
+    for workflow in (text, workflow_jobs("ota-production-watch.yml")[0]):
+        for action in re.findall(r"uses: (\S+)", workflow):
+            assert re.fullmatch(r"[\w/-]+@[0-9a-f]{40}", action), action
+        for checkout in workflow.split("uses: actions/checkout@")[1:]:
+            settings = checkout.split("      - ", 1)[0]
+            assert "ref: ${{ github.sha }}" in settings
+            assert "fetch-depth: 0" in settings
+            assert "persist-credentials: false" in settings
+
+
+@pytest.mark.parametrize(
+    ("event", "mode", "execute", "expected", "write"),
+    [
+        ("workflow_run", "", "", "publish", "true"),
+        ("schedule", "", "", "reconcile", "true"),
+        ("workflow_dispatch", "reconcile", "false", "reconcile", "false"),
+        ("workflow_dispatch", "signer-smoke", "true", "signer-smoke", "true"),
+        ("workflow_dispatch", "init-journal", "true", "init-journal", "true"),
+        ("workflow_dispatch", "arbitrary", "true", None, None),
+    ],
+)
+def test_real_workflow_mode_selection_is_closed_and_manual_is_dry_run(
+    tmp_path, event, mode, execute, expected, write
+):
+    import os
+
+    from tests.unit.test_telegram_notify import workflow_step_script
+
+    output = tmp_path / "output"
+    run = subprocess.run(
+        [
+            "bash",
+            "-e",
+            "-c",
+            workflow_step_script("ota-production-publish.yml", "Select operation"),
+        ],
+        env={
+            **os.environ,
+            "EVENT": event,
+            "MODE": mode,
+            "EXECUTE": execute,
+            "GITHUB_OUTPUT": str(output),
+        },
+        capture_output=True,
+    )
+    if expected is None:
+        assert run.returncode != 0
+    else:
+        assert run.returncode == 0
+        assert output.read_text().splitlines() == [f"operation={expected}", f"execute={write}"]
+
+
+def test_interrupted_workflow_never_claims_no_write_and_preserves_existing_status(tmp_path):
+    import os
+    import sys
+
+    from talent_data.ota.automation.cli import read_status
+    from tests.unit.test_telegram_notify import workflow_step_script
+
+    status = tmp_path / "status.json"
+    script = workflow_step_script(
+        "ota-production-publish.yml", "Preserve unknown interrupted outcome"
+    )
+    environment = {
+        **os.environ,
+        "PATH": str(Path(sys.executable).parent) + os.pathsep + os.environ["PATH"],
+        "STATUS_FILE": str(status),
+        "OPERATION": "publish",
+    }
+    first = subprocess.run(["bash", "-e", "-c", script], env=environment, capture_output=True)
+    assert first.returncode == 0, first.stderr
+    document = read_status(status.read_bytes())
+    assert document.outcome == "AMBIGUOUS" and document.exit_code == 3
+    assert document.reason == "OUTCOME_UNKNOWN" and not document.writer_needed
+    status.write_bytes(b'{"outcome":')  # interrupted emit can leave a partial file
+    truncated = subprocess.run(["bash", "-e", "-c", script], env=environment, capture_output=True)
+    assert truncated.returncode == 0, truncated.stderr
+    assert read_status(status.read_bytes()).outcome == "AMBIGUOUS"
+    original = document.model_copy(update={"outcome": "VERIFIED", "reason": "PUBLIC_VERIFIED"})
+    status.write_text(original.model_dump_json(by_alias=True))
+    second = subprocess.run(["bash", "-e", "-c", script], env=environment, capture_output=True)
+    assert second.returncode == 0, second.stderr
+    assert read_status(status.read_bytes()) == original
 
 
 def git(repo, *args):

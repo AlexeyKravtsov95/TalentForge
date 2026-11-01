@@ -1,7 +1,7 @@
 name: OTA production watch
 
 # M5.NOTIFY: read-only observation of the signed public production catalog, hourly.
-# The owner publishes production from their own machine; this workflow never writes to
+# Protected publication runs separately; this observer never writes to
 # the origin, signs nothing and publishes nothing. It reads the catalog anonymously and
 # verifies it with the reference verifier against the committed production keyring
 # (tf-prod-* keys only), plus fetches and re-verifies the active release's manifest, then
@@ -30,21 +30,22 @@ concurrency:
 
 jobs:
   watch:
+    if: github.repository == 'AlexeyKravtsov95/TalentForge' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: notifications
     permissions:
       contents: write # push the deduplication state branch telegram-notify-state
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: main
+          ref: ${{ github.sha }}
+          fetch-depth: 0
           persist-credentials: false
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
-          cache: pip
 
       # The reference verifier needs the `ota` extra (cryptography).
       - name: Install

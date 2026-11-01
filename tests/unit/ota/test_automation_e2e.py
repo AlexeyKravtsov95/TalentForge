@@ -568,6 +568,41 @@ def test_default_dry_run_and_smoke_have_no_catalog_capability(rehearsal):
     assert not any("S3_" in name for name in r.reads)
 
 
+@pytest.mark.parametrize("boundary", ["profile", "writer"])
+def test_cleanup_failure_after_put_preserves_published_outcome_and_verify_only_retry(
+    rehearsal, monkeypatch, capsys, boundary
+):
+    from talent_data.ota.automation.ci_signer import SecretError
+
+    r = rehearsal
+    original = cli.temporary_aws_profile if boundary == "profile" else r.dependencies.writer
+
+    @contextmanager
+    def fail_cleanup(*args, **kwargs):
+        with original(*args, **kwargs) as value:
+            yield value
+        raise SecretError(
+            "TEST external cleanup failure " + r.secrets["OTA_PRODUCTION_KEY_PASSWORD"]
+        )
+
+    if boundary == "profile":
+        monkeypatch.setattr(cli, "temporary_aws_profile", fail_cleanup)
+    else:
+        r.dependencies.writer = fail_cleanup
+    code, status = r.command()
+    assert code == 3 and status.outcome == "PUBLISHED_NOT_VERIFIED"
+    assert status.stage == "CLEANUP" and status.reason == "CLEANUP_FAILED"
+    assert {x.state for x in status.operations} == {RequestState.PUBLISHED_NOT_VERIFIED}
+    assert not list(r.temporary.iterdir())
+    output = capsys.readouterr()
+    for secret in r.secrets.values():
+        assert secret not in output.out + output.err + r.status.read_text()
+    snapshot, reads, writers = r.owner.snapshot(), len(r.reads), len(r.writers)
+    code, verified = r.command("verify")
+    assert code == 0 and verified.outcome == "VERIFIED"
+    assert r.owner.snapshot() == snapshot and len(r.reads) == reads and len(r.writers) == writers
+
+
 def test_status_wire_is_closed_and_cannot_smuggle_a_reason_or_url():
     wire = {
         "schemaVersion": 1,
@@ -630,6 +665,25 @@ def test_notification_reverifies_success_and_failure_delivery_retries(rehearsal,
     assert "PROVENANCE" in sent[0] and "PACKAGE_PROVENANCE_FAILED" in sent[0]
     notify(blocked)
     assert len(sent) == 1
+    # Healthy hourly observation and independent daily renewal cannot acknowledge a
+    # broken candidate stage. Only that same operation's successful run recovers it.
+    from talent_data.notify.production_watch import observe_production
+    from talent_data.notify.state import ProductionDedup, decide_production, load_dedup, save_dedup
+
+    observed = observe_production(
+        r.dependencies.client,
+        origin="https://ota.mythweld.com",
+        keyring=r.owner.keyring,
+        game="forever",
+        now=r.clock[0],
+        verify_files=True,
+    )
+    previous = load_dedup(ProductionDedup, state)
+    hourly = decide_production(previous, observation=observed, run_url="TEST", now=NOW)
+    save_dedup(state, hourly.state)
+    notify(baseline.model_copy(update={"operation": "resign"}))
+    notify(blocked)
+    assert len(sent) == 1
     r.dependencies.api.corrupt = None
     verified = r.command()[1]
     assert verified.outcome == "VERIFIED"
@@ -670,6 +724,9 @@ def test_explicit_one_time_journal_setup_is_manual_and_never_reads_production_se
     r.payload["sender"] = {"login": "operator"}
     code, status = r.command("init-journal", execute=False, GITHUB_EVENT_NAME="workflow_dispatch")
     assert code == 0 and status.outcome == "DRY_RUN" and not journal.path.exists()
+    code, preflight = r.command("preflight", arguments=("--operation", "init-journal"))
+    assert code == 0 and preflight.outcome == "READY" and preflight.writer_needed
+    assert not journal.path.exists() and not r.reads and not r.writers
     assert r.command("init-journal")[1].reason == "JOURNAL_INITIALIZED"
     assert journal.read_all() == {}
     assert r.command("init-journal")[0] == 1

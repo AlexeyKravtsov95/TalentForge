@@ -1,36 +1,47 @@
-# Production OTA-релиз: пакет из CI и публикация владельцем (M5.OTA.PROD.4)
+# Production OTA-релиз: exact approval и защищённая GitHub-публикация
 
-Документ для **владельца проекта**. Он описывает, как выпустить новые данные в существующий
-production OTA без пересборки Android и iOS. Установленные приложения `1.0.0 (4)` уже работают с
-production OTA ON и сейчас получают `1.60.1.70450-r1`.
+Документ для владельца: новые данные доставляются существующим Android/iOS-клиентам
+через подписанный production OTA, без новой сборки приложения. Текущий опубликованный
+`1.60.1.70532-r1` не переиздаётся для smoke и не требует нового G7.
 
-Процесс разделён на две части:
+Обычный путь теперь реализован в `ota-release-prepare.yml` и `ota-production-publish.yml`.
+Он **выключен**, пока владелец после review/merge не выполнит
+[настройку окружений и отзыв local write](publisher-runbook.md#github-production-automation-owner-setup).
+Ни готовность кода, ни тесты с TEST-ключами не доказывают реальную production-доставку.
 
-* **CI готовит пакет релиза.** Workflow **OTA production release package** собирает релиз
-  существующим publisher, привязывает к нему пройденную staging-проверку и выкладывает
-  самодостаточный пакет как артефакт. Production signing key и S3-ключа в CI нет. CI ничего не
-  публикует, production не читает и не пишет, approval не оформляет.
-* **Владелец публикует пакет.** Помощник `scripts/ota_production_release.py` оборачивает команды
-  publisher'а (`promote`, `attach-signature`, `verify-live`), не отключая ни одной их проверки.
-  Он работает с AWS-профилем `talentforge-production`, а подпись делает владелец офлайн, как
-  раньше ([production-deployment.md](production-deployment.md) §4–§5).
+## 1. Обычный выпуск: exact package → review/merge → защищённая публикация
 
-**Автоматической публикации нет.** Её не запускают ни freshness-сигнал, ни merge, ни успешный
-staging, ни готовый пакет. Каждая запись в production — отдельная команда владельца с
-`--execute`.
-
----
-
-## 1. Порядок: собрать manifest → approval → merge → публикация
-
-| шаг | кто | что меняется |
+| шаг | кто / workflow | результат |
 | --- | --- | --- |
-| 1. Пакет релиза | CI (`workflow_dispatch`) | ничего: артефакт с точными байтами `release.json` и всеми blob'ами |
-| 2. Approval record | владелец, PR в `main` | только `docs/ota/releases/<releaseId>.md` |
-| 3. `check`, `prepare --execute` | владелец | в бакет загружаются **immutable blob'ы**; каталог не меняется, клиенты ничего не видят |
-| 4. Офлайн-подпись | владелец, офлайн-машина | ничего: `.der` над PAE-файлом |
-| 5. `publish --execute` | владелец | `catalog.json`: **активация**, после неё клиенты видят релиз |
-| 6. `verify` | владелец | ничего: проверка live и preflight |
+| 1. Данные в main, успешный exact CI | владелец / CI | read-only подготовка определяет новый кандидат относительно проверенного live base |
+| 2. Staging и один exact package | существующие workflows | закреплённые source SHA, run/attempt, artifact id/digest, manifest bytes; пакет не пересобирается под approval |
+| 3. Draft release PR | GitHub App в `ota-preparation` | строгий `docs/ota/release-requests/<releaseId>.json`, approval template, отчёты; OWNER-поля бот не заполняет |
+| 4. Review / merge | владелец | G5/G7 и exact pins, STOP не обходится; успешный CI именно merge-коммита разрешает эту запись |
+| 5. Secret-free preflight | `ota-production-publish.yml` | API/provenance/staging/approval/live/G1–G8; журнал может записать явный отказ без PEM/S3 |
+| 6. Protected writer | main-only `ota-production` | повторные проверки, immutable blobs/read-back, pinned-primary external signer, durable WRITE_STARTED, catalog PUT последним |
+| 7. Public proof / notify | reference verifier / `notifications` | expected payload + все manifests/files + stable reread; общий с watcher marker, без повторного success |
+
+Требуются **строго** `OTA_PRODUCTION_AUTOMATION_ENABLED=true` и явный `--execute`. Ручной
+workflow по умолчанию dry run; CI/webhook сам по себе не заменяет точный merged request.
+Preflight не получает production secrets. Writer подписывает только existing `tf-prod-2026a`;
+backup остаётся офлайн. Секреты App и Telegram живут в отдельных environments.
+
+Ежедневно восстанавливаются пропущенные committed requests и отдельно проверяется resign:
+при <=15 днях остаются прежние active/entries, sequence+1, срок 45 дней. BLOCKED candidate
+не мешает этой независимой проверке, старый пакет/G7 не нужен. Переподпись не новый выпуск.
+Все writers и journal preflights сериализованы `ota-production-writer`, cancel false;
+нормальный local writer перед включением отозван, поскольку S3 CAS провайдер игнорирует.
+
+Потерянный ответ PUT — сначала exact recovery, AMBIGUOUS запрещает новый PUT/rollback.
+S3 success с CDN lag — PUBLISHED_NOT_VERIFIED, повторяется только verification. Terminal
+receipts сохраняются даже после настоящего rollback с более высоким sequence. Refusal и
+renewal имеют отдельные status artifacts; успех renewal не стирает отказ кандидата.
+Ручной retry (`publish/reconcile/resign/verify`) и bootstrap (`init-journal/signer-smoke`)
+проходят те же main/API/flag/execute guards; smoke без S3 и catalog PUT.
+
+Следующие разделы описывают read-only package и **legacy owner recovery helper**. Локальные
+mutating команды допустимы только после stop/drain CI и отзыва CI write по runbook, а не
+параллельно обычной автоматике. Пример 70532 в §5 — историческая инструкция, не новый выпуск.
 
 **Почему merge approval record не меняет утверждённый хеш.** Манифест закрепляет коммит данных
 (`provenance.repositoryCommit`), а не HEAD `main`. После merge документации коммит данных
@@ -74,9 +85,10 @@ staging, ни готовый пакет. Каждая запись в production
    должны быть закоммичены данные `build` и `base`.
 2. **Собирает релиз** командой `build-release` с этим SHA и одним `createdAt` (время запуска).
    Точные байты `release.json` и все blob'ы попадают в пакет.
-3. **Гейты G1–G8 и diff.** Production-канал, сравнение с `base`, собранным из того же SHA. CI не
+3. **Гейты G1–G8 и diff.** Production-канал, сравнение с `base`, собранным из того же SHA. Этот read-only package job не
    читает production, поэтому это заменитель live-релиза. Окончательный прогон против live
-   выполняет `check` владельца (§4). Approval record из `origin/main` учитывается, только если он
+   выполняет guarded preflight/writer (или `check` владельца при recovery, §4).
+   Approval record из `origin/main` учитывается, только если он
    закрепляет **именно эти** байты.
 4. **Привязывает staging** (§3).
 5. **Пишет пакет и перепроверяет его:** каждый файл в `package.json` с SHA-256 и размером. Пакет
@@ -268,7 +280,9 @@ aws configure --profile talentforge-production   # если ещё не наст
 
 **Один publisher за раз.** Блокировка действует только на одной машине. VK Cloud игнорирует
 условные записи, поэтому межмашинное правило остаётся организационным
-([publisher-runbook.md](publisher-runbook.md) §6.3): публикует только владелец, с одной машины.
+([publisher-runbook.md](publisher-runbook.md#github-production-automation-owner-setup)): штатно
+пишет только защищённый CI, local write отозван. Для owner recovery сначала stop/drain CI,
+отзыв CI write и временные отдельные credentials.
 Остальную защиту дают перечитывание live-sequence непосредственно перед `PUT` (publisher) и
 read-back после него (publisher и помощник).
 

@@ -55,7 +55,7 @@ def notify_status(
     )
     decision = decide_production(current, observation=observation, run_url=run_url, now=timestamp)
     if document.outcome in {"BLOCKED", "AMBIGUOUS", "PUBLISHED_NOT_VERIFIED"}:
-        fingerprint = "ota-production/" + document.stage
+        fingerprint = "ota-production/" + document.operation + "/" + document.stage
         events = []
         failures = current.failures_notified
         if fingerprint not in failures:
@@ -86,7 +86,7 @@ def notify_status(
                     "failures_notified": tuple(
                         x
                         for x in decision.state.failures_notified
-                        if not x.startswith("ota-production/")
+                        if not x.startswith("ota-production/" + document.operation + "/")
                     ),
                 }
             ),

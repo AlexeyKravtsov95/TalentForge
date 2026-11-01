@@ -2,9 +2,10 @@
 
 Персональные уведомления владельцу TalentForge о новых игровых данных и ходе OTA — через
 Telegram Bot API, из существующих workflows. Отдельный постоянно работающий сервер не
-нужен: всё исполняется в GitHub Actions, публикация production остаётся ручной
-процедурой владельца ([publisher-runbook.md](publisher-runbook.md)) — этот документ её
-не меняет.
+нужен: всё исполняется в GitHub Actions. Guarded production publication использует
+отдельный main-only environment после exact release review/merge
+([publisher-runbook.md](publisher-runbook.md#github-production-automation-owner-setup));
+Telegram credentials остаются только в `notifications`.
 
 ## Четыре события
 
@@ -12,8 +13,8 @@ Telegram Bot API, из существующих workflows. Отдельный п
 | --- | --- | --- | --- | --- |
 | 1 | Обнаружен новый игровой билд | `Dataset freshness` (ежедневно, job `notify`) | версия, источник (`is_bgdl=false`), `PRODUCT_BUNDLE`, ссылка на tracking issue | один раз на версию билда (`freshness.json`) |
 | 2 | Кандидат OTA подготовлен | `OTA data preparation` (job `notify`) | releaseId, база, итог проверок (шаги, гейты, требуемые шаги), ссылка на PR или артефакт | один раз на releaseId (`candidate.json`) |
-| 3 | Production OTA обновился | `OTA production watch` (ежечасно) | активный releaseId, sequence, результат проверки публичного endpoint | один раз на активный releaseId (`production.json`) |
-| 4 | Подготовка или проверка сломалась | все три выше | этап, короткая причина, ссылка на запуск | один раз на эпизод сбоя этапа |
+| 3 | Production OTA обновился | `OTA production watch` (ежечасно) и direct publication status | активный releaseId, sequence, результат проверки публичного endpoint | один раз на активный releaseId (`production.json`) |
+| 4 | Подготовка или проверка сломалась | все выше, включая publisher/reconciliation/renewal | этап, короткая причина, ссылка на запуск | один раз на эпизод сбоя этапа |
 
 Два обязательных дисклеймера всегда в тексте: наличие билда в индексе wago.tools — не
 подтверждение версии игровых серверов (событие 1), и `PREPARED` — не разрешение на
@@ -42,7 +43,19 @@ production-публикацию (событие 2). Ожидаемый `OUTDATED
   проверки изменился **активный releaseId**; переподпись каталога или новый sequence с тем
   же активным релизом — не выпуск. Каталог `UNKNOWN` (не читается/не проверяется) или
   исчезнувший после публикации — событие 4.
-* `telegram-smoke-test.yml` — ручной smoke-test (ниже).
+* `ota-production-publish.yml`, job `notify` — отдельный `notifications` environment,
+  `continue-on-error`, тот же concurrency `ota-production-watch` и ветка/`production.json`.
+  Два последовательных outcome-шага используют разные локальные state checkout directories,
+  читая и коммитя один и тот же актуальный remote marker под общей блокировкой.
+  `python scripts/telegram_notify.py production-status --status-file PATH --state-dir PATH`
+  строго читает несекретный status, затем заново проверяет публичный каталог и **все** файлы;
+  status artifact никогда не доказательство success. Если writer пропущен, сохраняется
+  preflight refusal; candidate и independent resign идут отдельными документами/шагами.
+  BLOCKED/AMBIGUOUS/PUBLISHED_NOT_VERIFIED сообщают безопасные stage/reason, не произвольный
+  текст внешней ошибки. Прерванный writer без status означает unknown/AMBIGUOUS; не success
+  и не «ничего не опубликовано». Journal/live recovery — источник истины. Подпись и S3
+  credentials в notify не передаются; Actions закреплены full SHA, cache нет.
+* `telegram-smoke-test.yml` — ручной Telegram smoke-test (ниже), отличный от production signer-smoke.
 
 ## Долговечная дедупликация
 
@@ -66,7 +79,9 @@ production-публикацию (событие 2). Ожидаемый `OUTDATED
   обновляет факты (ссылку на PR), не удваивая сообщение.
 * **Сбои** дедуплицируются на этап (`freshness/check`, `ota-prepare/prepare`, …):
   повторяющийся ежедневно сбой молчит, пока этап не восстановится (успешный запуск
-  снимает отпечаток) — новый эпизод сообщится снова.
+  снимает свой отпечаток) — новый эпизод сообщится снова. Publication fingerprints включают
+  operation и stage: здоровый hourly watcher или успешный resign не сбрасывают отказ
+  candidate reconciliation, поэтому один и тот же ежедневный отказ не спамит.
 * **Доставка at-least-once, не exactly-once**: событие считается отправленным только
   после HTTP 200 `ok:true`; при неоднозначном сетевом ответе (таймаут после повторов)
   состояние не записывается, и следующий запуск может прислать сообщение повторно —
@@ -81,7 +96,7 @@ production-публикацию (событие 2). Ожидаемый `OUTDATED
 
 ## Сбой Telegram — не сбой подготовки
 
-Job `notify` в `dataset-freshness.yml` и `ota-prepare.yml` — `continue-on-error`: исход
+Job `notify` в `dataset-freshness.yml`, `ota-prepare.yml` и `ota-production-publish.yml` — `continue-on-error`: исход
 проверки/подготовки/публикации он изменить не может. Своё состояние отправки он показывает
 в summary запуска: `SENT (n)` / `нет событий` / `FAILED` / `SKIPPED`. Ограниченные
 повторы: до 3 попыток; HTTP 429 уважается через `parameters.retry_after` (сон не дольше

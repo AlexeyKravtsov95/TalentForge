@@ -1,0 +1,562 @@
+name: OTA production publication
+
+# Disabled unless the repository variable is literal true. Release approval stays in
+# the merged exact request/approval; the production environment has no second review.
+# All journal preflights and catalog writers share a job-level lock, in dependency
+# order. No workflow-level lock (which would deadlock nested same-key jobs).
+# GitHub may replace pending runs: committed requests + durable journal + daily
+# reconciliation recover lost events. Do not assume FIFO or provider S3 CAS.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+  schedule:
+    - cron: "41 3 * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Controlled retry or one-time owner setup"
+        type: choice
+        options: [publish, reconcile, resign, verify, signer-smoke, init-journal]
+        default: reconcile
+      execute:
+        description: "Explicitly allow journal mutation / protected operation (also needs enable flag)"
+        type: boolean
+        default: false
+      ci_run_id:
+        description: "Optional exact successful main/push CI id (paired with attempt)"
+        type: string
+      ci_attempt:
+        description: "Optional exact successful CI attempt"
+        type: string
+      release_id:
+        description: "Optional narrowing to an already-authorized committed request"
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  OTA_PRODUCTION_AUTOMATION_ENABLED: ${{ vars.OTA_PRODUCTION_AUTOMATION_ENABLED }}
+  OTA_PRODUCTION_KEY_ID: ${{ vars.OTA_PRODUCTION_KEY_ID }}
+
+jobs:
+  preflight:
+    if: >-
+      github.repository == 'AlexeyKravtsov95/TalentForge' &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' ||
+       (github.event_name == 'workflow_run' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.head_repository.full_name == github.repository))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    concurrency:
+      group: ota-production-writer
+      cancel-in-progress: false
+    permissions:
+      contents: write # GitHub journal only; no production secret binding
+      actions: read
+    outputs:
+      outcome: ${{ steps.preflight.outputs.outcome }}
+      writer_needed: ${{ steps.preflight.outputs.writer_needed }}
+      artifact: ${{ steps.status-artifact.outcome == 'success' }}
+      operation: ${{ steps.select.outputs.operation }}
+      execute: ${{ steps.select.outputs.execute }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }} # trusted main invocation; CLI also proves current API metadata
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -e ".[ota,s3]"
+      - name: Select operation
+        id: select
+        env:
+          EVENT: ${{ github.event_name }}
+          MODE: ${{ inputs.mode }}
+          EXECUTE: ${{ inputs.execute }}
+        run: |
+          case "$EVENT" in
+            workflow_run) operation=publish; execute=true ;;
+            schedule) operation=reconcile; execute=true ;;
+            workflow_dispatch)
+              case "$MODE" in
+                publish|reconcile|resign|verify|signer-smoke|init-journal) operation="$MODE" ;;
+                *) exit 1 ;;
+              esac
+              execute=false
+              if [ "$EXECUTE" = true ]; then execute=true; fi
+              ;;
+            *) exit 1 ;;
+          esac
+          echo "operation=$operation" >> "$GITHUB_OUTPUT"
+          echo "execute=$execute" >> "$GITHUB_OUTPUT"
+      - name: Secret-free preflight
+        id: preflight
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CI_RUN_ID: ${{ github.event.workflow_run.id || inputs.ci_run_id }}
+          CI_ATTEMPT: ${{ github.event.workflow_run.run_attempt || inputs.ci_attempt }}
+          RELEASE_ID: ${{ inputs.release_id }}
+          OPERATION: ${{ steps.select.outputs.operation }}
+          EXECUTE: ${{ steps.select.outputs.execute }}
+        run: |
+          args=()
+          if [ -n "$CI_RUN_ID" ] || [ -n "$CI_ATTEMPT" ]; then
+            args+=(--ci-run-id "$CI_RUN_ID" --ci-attempt "$CI_ATTEMPT")
+          fi
+          if [ -n "$RELEASE_ID" ]; then args+=(--release-id "$RELEASE_ID"); fi
+          if [ "$EXECUTE" = true ]; then args+=(--execute); fi
+          python scripts/ota_release_automation.py preflight --operation "$OPERATION" \
+            --status-file "$RUNNER_TEMP/preflight.json" "${args[@]}"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        id: status-artifact
+        if: always()
+        with:
+          name: ota-production-preflight-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/preflight.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Report preflight result
+        if: always()
+        env:
+          EXIT_CODE: ${{ steps.preflight.outputs.exit_code }}
+        run: exit "${EXIT_CODE:-1}"
+
+  writer:
+    needs: preflight
+    if: >-
+      always() && !cancelled() && needs.preflight.result == 'success' &&
+      needs.preflight.outputs.outcome == 'READY' &&
+      needs.preflight.outputs.writer_needed == 'true' &&
+      needs.preflight.outputs.execute == 'true' &&
+      vars.OTA_PRODUCTION_AUTOMATION_ENABLED == 'true' &&
+      github.repository == 'AlexeyKravtsov95/TalentForge' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    environment: ota-production
+    concurrency:
+      group: ota-production-writer
+      cancel-in-progress: false
+    permissions:
+      contents: write # journal; no App token, PR write or Telegram token
+      actions: read
+    env:
+      OPERATION: ${{ needs.preflight.outputs.operation }}
+      EXECUTE: "true"
+    outputs:
+      artifact: ${{ steps.status-artifact.outcome == 'success' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }} # trusted main invocation; CLI also proves current API metadata
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -e ".[ota,s3]"
+      # Protected CLI repeats current-main/API/provenance/approval/live gates before
+      # reading credentials. Never execute code from a downloaded release artifact.
+      - name: Publish or renew
+        id: publish
+        if: env.OPERATION != 'signer-smoke' && env.OPERATION != 'init-journal'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CI_RUN_ID: ${{ github.event.workflow_run.id || inputs.ci_run_id }}
+          CI_ATTEMPT: ${{ github.event.workflow_run.run_attempt || inputs.ci_attempt }}
+          RELEASE_ID: ${{ inputs.release_id }}
+          OTA_PRODUCTION_PRIVATE_KEY_PEM: ${{ secrets.OTA_PRODUCTION_PRIVATE_KEY_PEM }}
+          OTA_PRODUCTION_KEY_PASSWORD: ${{ secrets.OTA_PRODUCTION_KEY_PASSWORD }}
+          OTA_PRODUCTION_S3_ACCESS_KEY_ID: ${{ secrets.OTA_PRODUCTION_S3_ACCESS_KEY_ID }}
+          OTA_PRODUCTION_S3_SECRET_ACCESS_KEY: ${{ secrets.OTA_PRODUCTION_S3_SECRET_ACCESS_KEY }}
+        run: |
+          args=()
+          if [ -n "$CI_RUN_ID" ] || [ -n "$CI_ATTEMPT" ]; then
+            args+=(--ci-run-id "$CI_RUN_ID" --ci-attempt "$CI_ATTEMPT")
+          fi
+          if [ -n "$RELEASE_ID" ]; then args+=(--release-id "$RELEASE_ID"); fi
+          if [ "$EXECUTE" = true ]; then args+=(--execute); fi
+          python scripts/ota_release_automation.py "$OPERATION" \
+            --status-file "$RUNNER_TEMP/candidate-status.json" "${args[@]}"
+      - name: Signer smoke
+        id: smoke
+        if: env.OPERATION == 'signer-smoke'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CI_RUN_ID: ${{ github.event.workflow_run.id || inputs.ci_run_id }}
+          CI_ATTEMPT: ${{ github.event.workflow_run.run_attempt || inputs.ci_attempt }}
+          RELEASE_ID: ${{ inputs.release_id }}
+          OTA_PRODUCTION_PRIVATE_KEY_PEM: ${{ secrets.OTA_PRODUCTION_PRIVATE_KEY_PEM }}
+          OTA_PRODUCTION_KEY_PASSWORD: ${{ secrets.OTA_PRODUCTION_KEY_PASSWORD }}
+        run: |
+          args=()
+          if [ -n "$CI_RUN_ID" ] || [ -n "$CI_ATTEMPT" ]; then
+            args+=(--ci-run-id "$CI_RUN_ID" --ci-attempt "$CI_ATTEMPT")
+          fi
+          if [ -n "$RELEASE_ID" ]; then args+=(--release-id "$RELEASE_ID"); fi
+          if [ "$EXECUTE" = true ]; then args+=(--execute); fi
+          python scripts/ota_release_automation.py signer-smoke \
+            --status-file "$RUNNER_TEMP/candidate-status.json" "${args[@]}"
+      - name: Initialize journal
+        id: initialize
+        if: env.OPERATION == 'init-journal'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CI_RUN_ID: ${{ github.event.workflow_run.id || inputs.ci_run_id }}
+          CI_ATTEMPT: ${{ github.event.workflow_run.run_attempt || inputs.ci_attempt }}
+          RELEASE_ID: ${{ inputs.release_id }}
+        run: |
+          args=()
+          if [ -n "$CI_RUN_ID" ] || [ -n "$CI_ATTEMPT" ]; then
+            args+=(--ci-run-id "$CI_RUN_ID" --ci-attempt "$CI_ATTEMPT")
+          fi
+          if [ -n "$RELEASE_ID" ]; then args+=(--release-id "$RELEASE_ID"); fi
+          if [ "$EXECUTE" = true ]; then args+=(--execute); fi
+          python scripts/ota_release_automation.py init-journal \
+            --status-file "$RUNNER_TEMP/candidate-status.json" "${args[@]}"
+      - name: Preserve unknown interrupted outcome
+        if: always()
+        env:
+          STATUS_FILE: ${{ runner.temp }}/candidate-status.json
+        run: |
+          python - <<'PYTHON'
+          import os
+          from pathlib import Path
+          from talent_data.ota.automation.cli import StatusDocument, read_status
+          path = Path(os.environ["STATUS_FILE"])
+          try:
+              read_status(path.read_bytes())
+          except (OSError, ValueError):
+              document = StatusDocument(
+                  schema_version=1, kind="ota-production-status",
+                  command=os.environ["OPERATION"], operation=os.environ["OPERATION"],
+                  outcome="AMBIGUOUS", stage="RECOVERY", reason="OUTCOME_UNKNOWN",
+                  writer_needed=False, operations=(),
+              )
+              path.write_text(document.model_dump_json(by_alias=True))
+          PYTHON
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        id: status-artifact
+        if: always()
+        with:
+          name: ota-production-writer-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/candidate-status.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Report protected result
+        if: always()
+        env:
+          STATUS_FILE: ${{ runner.temp }}/candidate-status.json
+        run: |
+          python - <<'PYTHON'
+          import os
+          from pathlib import Path
+          from talent_data.ota.automation.cli import read_status
+          raise SystemExit(read_status(Path(os.environ["STATUS_FILE"]).read_bytes()).exit_code)
+          PYTHON
+
+  renewal-preflight:
+    needs: [preflight, writer]
+    if: >-
+      always() && !cancelled() && github.event_name == 'schedule' &&
+      github.repository == 'AlexeyKravtsov95/TalentForge' &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' ||
+       (github.event_name == 'workflow_run' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.head_repository.full_name == github.repository))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    concurrency:
+      group: ota-production-writer
+      cancel-in-progress: false
+    permissions:
+      contents: write # GitHub journal only; no production secret binding
+      actions: read
+    outputs:
+      outcome: ${{ steps.preflight.outputs.outcome }}
+      writer_needed: ${{ steps.preflight.outputs.writer_needed }}
+      artifact: ${{ steps.status-artifact.outcome == 'success' }}
+      operation: resign
+      execute: "true"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }} # trusted main invocation; CLI also proves current API metadata
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -e ".[ota,s3]"
+      - name: Secret-free preflight
+        id: preflight
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CI_RUN_ID: ${{ github.event.workflow_run.id || inputs.ci_run_id }}
+          CI_ATTEMPT: ${{ github.event.workflow_run.run_attempt || inputs.ci_attempt }}
+          RELEASE_ID: ${{ inputs.release_id }}
+          OPERATION: resign
+          EXECUTE: "true"
+        run: |
+          args=()
+          if [ -n "$CI_RUN_ID" ] || [ -n "$CI_ATTEMPT" ]; then
+            args+=(--ci-run-id "$CI_RUN_ID" --ci-attempt "$CI_ATTEMPT")
+          fi
+          if [ -n "$RELEASE_ID" ]; then args+=(--release-id "$RELEASE_ID"); fi
+          if [ "$EXECUTE" = true ]; then args+=(--execute); fi
+          python scripts/ota_release_automation.py preflight --operation "$OPERATION" \
+            --status-file "$RUNNER_TEMP/renewal-preflight.json" "${args[@]}"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        id: status-artifact
+        if: always()
+        with:
+          name: ota-production-renewal-preflight-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/renewal-preflight.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Report preflight result
+        if: always()
+        env:
+          EXIT_CODE: ${{ steps.preflight.outputs.exit_code }}
+        run: exit "${EXIT_CODE:-1}"
+
+  renewal-writer:
+    needs: renewal-preflight
+    if: >-
+      always() && !cancelled() && needs.renewal-preflight.result == 'success' &&
+      needs.renewal-preflight.outputs.outcome == 'READY' &&
+      needs.renewal-preflight.outputs.writer_needed == 'true' &&
+      needs.renewal-preflight.outputs.execute == 'true' &&
+      vars.OTA_PRODUCTION_AUTOMATION_ENABLED == 'true' &&
+      github.repository == 'AlexeyKravtsov95/TalentForge' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    environment: ota-production
+    concurrency:
+      group: ota-production-writer
+      cancel-in-progress: false
+    permissions:
+      contents: write # journal; no App token, PR write or Telegram token
+      actions: read
+    env:
+      OPERATION: ${{ needs.renewal-preflight.outputs.operation }}
+      EXECUTE: "true"
+    outputs:
+      artifact: ${{ steps.status-artifact.outcome == 'success' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }} # trusted main invocation; CLI also proves current API metadata
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -e ".[ota,s3]"
+      # Protected CLI repeats current-main/API/provenance/approval/live gates before
+      # reading credentials. Never execute code from a downloaded release artifact.
+      - name: Publish or renew
+        id: publish
+        if: env.OPERATION != 'signer-smoke' && env.OPERATION != 'init-journal'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CI_RUN_ID: ${{ github.event.workflow_run.id || inputs.ci_run_id }}
+          CI_ATTEMPT: ${{ github.event.workflow_run.run_attempt || inputs.ci_attempt }}
+          RELEASE_ID: ${{ inputs.release_id }}
+          OTA_PRODUCTION_PRIVATE_KEY_PEM: ${{ secrets.OTA_PRODUCTION_PRIVATE_KEY_PEM }}
+          OTA_PRODUCTION_KEY_PASSWORD: ${{ secrets.OTA_PRODUCTION_KEY_PASSWORD }}
+          OTA_PRODUCTION_S3_ACCESS_KEY_ID: ${{ secrets.OTA_PRODUCTION_S3_ACCESS_KEY_ID }}
+          OTA_PRODUCTION_S3_SECRET_ACCESS_KEY: ${{ secrets.OTA_PRODUCTION_S3_SECRET_ACCESS_KEY }}
+        run: |
+          args=()
+          if [ -n "$CI_RUN_ID" ] || [ -n "$CI_ATTEMPT" ]; then
+            args+=(--ci-run-id "$CI_RUN_ID" --ci-attempt "$CI_ATTEMPT")
+          fi
+          if [ -n "$RELEASE_ID" ]; then args+=(--release-id "$RELEASE_ID"); fi
+          if [ "$EXECUTE" = true ]; then args+=(--execute); fi
+          python scripts/ota_release_automation.py "$OPERATION" \
+            --status-file "$RUNNER_TEMP/renewal-status.json" "${args[@]}"
+      - name: Preserve unknown interrupted outcome
+        if: always()
+        env:
+          STATUS_FILE: ${{ runner.temp }}/renewal-status.json
+        run: |
+          python - <<'PYTHON'
+          import os
+          from pathlib import Path
+          from talent_data.ota.automation.cli import StatusDocument, read_status
+          path = Path(os.environ["STATUS_FILE"])
+          try:
+              read_status(path.read_bytes())
+          except (OSError, ValueError):
+              document = StatusDocument(
+                  schema_version=1, kind="ota-production-status",
+                  command=os.environ["OPERATION"], operation=os.environ["OPERATION"],
+                  outcome="AMBIGUOUS", stage="RECOVERY", reason="OUTCOME_UNKNOWN",
+                  writer_needed=False, operations=(),
+              )
+              path.write_text(document.model_dump_json(by_alias=True))
+          PYTHON
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        id: status-artifact
+        if: always()
+        with:
+          name: ota-production-renewal-writer-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/renewal-status.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Report protected result
+        if: always()
+        env:
+          STATUS_FILE: ${{ runner.temp }}/renewal-status.json
+        run: |
+          python - <<'PYTHON'
+          import os
+          from pathlib import Path
+          from talent_data.ota.automation.cli import read_status
+          raise SystemExit(read_status(Path(os.environ["STATUS_FILE"]).read_bytes()).exit_code)
+          PYTHON
+
+  notify:
+    needs: [preflight, writer, renewal-preflight, renewal-writer]
+    if: >-
+      always() && github.repository == 'AlexeyKravtsov95/TalentForge' &&
+      github.ref == 'refs/heads/main' &&
+      (needs.preflight.outputs.artifact == 'true' || needs.writer.result == 'failure' ||
+       needs.writer.result == 'cancelled' || needs.renewal-preflight.outputs.artifact == 'true')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: notifications
+    continue-on-error: true
+    concurrency:
+      group: ota-production-watch # same lock and production.json marker as hourly watcher
+      cancel-in-progress: false
+    permissions:
+      contents: write # telegram-notify-state only
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }} # trusted main invocation; CLI also proves current API metadata
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -e ".[ota]"
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        continue-on-error: true
+        if: needs.preflight.outputs.artifact == 'true'
+        with:
+          name: ota-production-preflight-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/candidate-preflight
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        continue-on-error: true
+        if: needs.writer.outputs.artifact == 'true'
+        with:
+          name: ota-production-writer-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/candidate-writer
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        continue-on-error: true
+        if: needs.renewal-preflight.outputs.artifact == 'true'
+        with:
+          name: ota-production-renewal-preflight-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/renewal-preflight
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        continue-on-error: true
+        if: needs.renewal-writer.outputs.artifact == 'true'
+        with:
+          name: ota-production-renewal-writer-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/renewal-writer
+      - name: Notify candidate outcome
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          WRITER_RESULT: ${{ needs.writer.result }}
+          OPERATION: ${{ needs.preflight.outputs.operation }}
+        run: |
+          status="$RUNNER_TEMP/candidate-writer/candidate-status.json"
+          if [ ! -f "$status" ]; then
+            if [ "$WRITER_RESULT" = failure ] || [ "$WRITER_RESULT" = cancelled ]; then
+              # Missing writer status after a possible PUT is UNKNOWN, never success
+              # or 'nothing published'. Daily journal/live recovery is authoritative.
+              export STATUS_FILE="$RUNNER_TEMP/candidate-status.json"
+              python - <<'PYTHON'
+          import os
+          from pathlib import Path
+          from talent_data.ota.automation.cli import StatusDocument
+          document = StatusDocument(
+              schema_version=1, kind="ota-production-status",
+              command=os.environ["OPERATION"], operation=os.environ["OPERATION"],
+              outcome="AMBIGUOUS", stage="RECOVERY", reason="OUTCOME_UNKNOWN",
+              writer_needed=False, operations=(),
+          )
+          Path(os.environ["STATUS_FILE"]).write_text(document.model_dump_json(by_alias=True))
+          PYTHON
+              status="$STATUS_FILE"
+            else
+              status="$RUNNER_TEMP/candidate-preflight/preflight.json"
+            fi
+          fi
+          if [ -f "$status" ]; then
+            python scripts/telegram_notify.py production-status --status-file "$status" \
+              --state-dir "$RUNNER_TEMP/candidate-notify-state"
+          fi
+      - name: Notify renewal outcome
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          WRITER_RESULT: ${{ needs.renewal-writer.result }}
+          OPERATION: resign
+        run: |
+          status="$RUNNER_TEMP/renewal-writer/renewal-status.json"
+          if [ ! -f "$status" ]; then
+            if [ "$WRITER_RESULT" = failure ] || [ "$WRITER_RESULT" = cancelled ]; then
+              # Missing writer status after a possible PUT is UNKNOWN, never success
+              # or 'nothing published'. Daily journal/live recovery is authoritative.
+              export STATUS_FILE="$RUNNER_TEMP/renewal-status.json"
+              python - <<'PYTHON'
+          import os
+          from pathlib import Path
+          from talent_data.ota.automation.cli import StatusDocument
+          document = StatusDocument(
+              schema_version=1, kind="ota-production-status",
+              command=os.environ["OPERATION"], operation=os.environ["OPERATION"],
+              outcome="AMBIGUOUS", stage="RECOVERY", reason="OUTCOME_UNKNOWN",
+              writer_needed=False, operations=(),
+          )
+          Path(os.environ["STATUS_FILE"]).write_text(document.model_dump_json(by_alias=True))
+          PYTHON
+              status="$STATUS_FILE"
+            else
+              status="$RUNNER_TEMP/renewal-preflight/renewal-preflight.json"
+            fi
+          fi
+          if [ -f "$status" ]; then
+            python scripts/telegram_notify.py production-status --status-file "$status" \
+              --state-dir "$RUNNER_TEMP/renewal-notify-state"
+          fi
