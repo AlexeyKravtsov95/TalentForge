@@ -106,15 +106,49 @@ def test_canceled_pending_run_is_reconciled_from_committed_request(env):
     assert reconcile_requests([request], journal=env.journal, live=live, run_id=12, attempt=1) == ()
 
 
-def test_stale_committed_request_is_explicitly_recorded(env):
+@pytest.mark.parametrize("reason", ["LIVE_CHANGED", "ALREADY_LISTED"])
+def test_public_catalog_mismatch_is_retryable_without_resetting_terminal_receipts(env, reason):
     request = env.receipt.request
     live = read_live(env.store, keyring=env.owner.keyring, game=GAME, now=NOW).catalog
-    other = live.model_copy(update={"active_release_id": "different-r1"})
+    other = (
+        live.model_copy(update={"active_release_id": "different-r1"})
+        if reason == "LIVE_CHANGED"
+        else live.model_copy(
+            update={
+                "releases": [
+                    *live.releases,
+                    live.releases[0].model_copy(update={"release_id": request.release_id}),
+                ]
+            }
+        )
+    )
     assert (
         reconcile_requests([request], journal=env.journal, live=other, run_id=11, attempt=1) == ()
     )
     receipt = env.journal.load(env.receipt.request_digest).receipt
-    assert (receipt.state, receipt.reason) == (RequestState.STALE, "LIVE_CHANGED")
+    assert (receipt.state, receipt.reason) == (RequestState.BLOCKED, reason)
+    assert reconcile_requests([request], journal=env.journal, live=live, run_id=12, attempt=1) == (
+        request,
+    )
+    # Reconciliation must preserve an already terminal authoritative decision.
+    terminal = receipt.evolve(state=RequestState.STALE, reason="LIVE_CHANGED")
+    env.journal.save(terminal)
+    assert reconcile_requests([request], journal=env.journal, live=live, run_id=13, attempt=1) == ()
+    assert env.journal.load(receipt.request_digest).receipt == terminal
+
+
+def test_initial_release_exclusion_remains_terminal_without_private_live_proof(env):
+    from talent_data.ota.automation.state import request_digest
+
+    request = env.receipt.request.model_copy(
+        update={"release_id": "1.60.1.70532-r1", "build": "1.60.1.70532"}
+    )
+    live = read_live(env.store, keyring=env.owner.keyring, game=GAME, now=NOW).catalog
+    assert reconcile_requests([request], journal=env.journal, live=live, run_id=11, attempt=1) == ()
+    receipt = env.journal.load(request_digest(request)).receipt
+    assert (receipt.state, receipt.reason) == (RequestState.STALE, "INITIAL_RELEASE")
+    reconcile_requests([request], journal=env.journal, live=live, run_id=12, attempt=1)
+    assert env.journal.load(request_digest(request)).receipt == receipt
 
 
 def test_conflicting_committed_requests_are_blocked(env):

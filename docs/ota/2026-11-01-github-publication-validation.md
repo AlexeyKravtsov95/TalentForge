@@ -110,10 +110,11 @@ The controller's prior whole-suite run at `2b7bd01` was **1 failed, 2506 passed,
 `test_automation_prepare.py::test_retry_before_pr_creation_discovers_existing_exact_package`:
 the fake staging artifact was regenerated with wall-clock ZIP headers between metadata and
 download. The deterministic clock regression above reproduces and fixes that fixture defect;
-it does not weaken the production verifier. Controller final whole-suite and review after
-these integration fixes remain **PENDING**.
+it does not weaken the production verifier. The controller's rerun at `e91e710` passed
+**2517 tests, 11 deselected in 561.29s**. This is **PRE-final-fix** whole-suite evidence;
+it predates the two final-review corrections below and does not validate their final state.
 
-The final current-source focused command was:
+The review-round-1 focused command was:
 
 ```bash
 PYTHONPATH=src /Users/alexeykravtsov/Desktop/workspace/TalentForge/.venv/bin/pytest \
@@ -124,7 +125,7 @@ PYTHONPATH=src /Users/alexeykravtsov/Desktop/workspace/TalentForge/.venv/bin/pyt
   tests/unit/test_telegram_notify.py -q
 ```
 
-Result: **239 passed in 416.07s (0:06:56)**. This includes the authenticated Git journal,
+Result at `e91e710`: **239 passed in 416.07s (0:06:56)**. This includes the authenticated Git journal,
 both snapshot race directions, real renewal/status/notification, unavailable-public-content
 recovery, remaining PNV retries, fixed ZIP clock boundary and prior cleanup/serialization/
 notification regressions. An intermediate broad run before the final recovery/fixture
@@ -136,6 +137,61 @@ production workflows was repeated, exit 0. No workflow source changed in this co
 Graphify AST update: **14,590 nodes / 46,555 edges / 442 communities**, with the same unchanged
 three Kotlin partial-extraction and seven no-symbol warnings. No full suite or Gradle was
 run by the fix phase; controller final full validation and independent re-review remain pending.
+
+## Consolidated final-review correction
+
+The final review identified two enabled-path defects at `e91e710`. Both were reproduced
+before changing implementation code:
+
+| Regression | Genuine RED | Corrected boundary |
+| --- | --- | --- |
+| Approval or request removed during the last reference/appended-release object reads | four failures within **6 failed in 89.75s**; each incorrectly reached VERIFIED | after all expensive checks, fetch main again and require the exact full-assessment SHA before entering the short live-sequence-read/PUT path; observed revocation is BLOCKED with zero catalog PUT |
+| Valid signed older public catalog versus newer authoritative S3 base, through preflight and publish | two failures in the same six-test RED; both recorded irreversible STALE and reported NO_ACTION | public-only mismatch becomes retryable BLOCKED; no PEM/profile/writer readers are loaded for that failed preflight |
+| Public LIVE_CHANGED and ALREADY_LISTED with later convergence | **2 failed in 72.88s** | both remain retryable; confirmed terminal receipts remain unchanged |
+
+The exact eight regression cases then passed **8 tests in 137.72s**. The CDN regression
+constructs a signed metadata-only `70374-r2` base and a newer signed rollback to `70374-r1`,
+retaining both entries. CDN initially serves the older active `r2`; the untouched committed
+request correctly targets authoritative `r1` for the genuinely unpublished `70450-r1`
+candidate. After public convergence, daily reconciliation publishes that candidate once,
+verifies it and deduplicates notification/retry. No manual journal alteration, request change,
+repack or createdAt change is used. Real package/provenance/gate/signature/reference checks
+execute; only transports and TEST keys are synthetic.
+
+No core store API, staging/mobile runtime, contracts, keyring, product/data or G1–G8 change
+was needed. Durable WRITE_STARTED/readback, private base/succession/signature checks and
+lost-PUT recovery are retained. Public-only refusals do not reset STALE/VERIFIED/PNV receipts;
+current 70532 and trusted-main request removal still provide independent terminal proof.
+
+GitHub fetch → the short private live-sequence read → S3 PUT cannot be an atomic cross-service
+transaction. Revocation after the final fetch can still race that minimal window. The
+runbook/threat model now say this explicitly and require stop/drain plus credential revocation
+when immediate cessation is necessary. No production setup or delivery is inferred from TEST.
+
+The expanded focused run added `tests/unit/ota/test_automation_provenance.py` to the nine-file
+review-round-1 command above: **1 failed, 316 passed in 431.97s**. The sole failure was the
+new 70532 exclusion test fixture: it changed releaseId without changing build, and strict
+ReleaseRequest validation correctly refused the inconsistent identity before reconciliation.
+The fixture now supplies both fields. This is a fixture error, separate from the genuine
+behavior REDs above; production source was unchanged after the expanded run.
+
+Corrected current-tree module command:
+
+```bash
+PYTHONPATH=src /Users/alexeykravtsov/Desktop/workspace/TalentForge/.venv/bin/pytest tests/unit/ota/test_automation_reconcile.py -q
+```
+
+Result: **24 passed in 33.99s**. This rechecks both retryable mismatch reasons, preserved
+terminal/removed/70532 guards, private renewal/recovery, full public proof and verification-only
+CDN retry. The other focused files and both actual defect regression families passed in the
+expanded run; a definitive whole-suite on the final commit remains controller-owned.
+
+Final checks: Ruff **All checks passed**; format **405 files already formatted**; mypy
+**116 source files, no issues**; actual actionlint **1.7.12**, exit 0 on both production
+workflows (unchanged); diff checks exit 0. Final Graphify AST update: **14,603 nodes /
+46,604 edges / 451 communities**, with the same three Kotlin partial-extraction and seven
+no-symbol warnings. Its required full graph rewrite is committed. Logs are retained in the
+local final-fix report bundle; no full-suite or Gradle run is claimed by this correction.
 
 ## Real JVM staging rehearsal (controller)
 
@@ -154,7 +210,9 @@ runtime is unchanged, to establish the scope of that tooling rehearsal.
 
 ## Final review boundary
 
-Controller final whole-Python suite and final whole-branch review: **PENDING** at this record.
+Controller whole-Python suite at `e91e710`: **2517 passed, 11 deselected in 561.29s**, explicitly
+**PRE-final-fix** evidence. The definitive whole-Python suite and scoped re-review after the
+final correction commit remain **PENDING** and controller-owned.
 The JVM runs above are completed evidence, not a claim about a later unexamined runtime diff.
 Android emulator/device, iOS simulator/device and physical devices: **NOT RUN**.
 No actual production delivery, key import, owner environment restriction, IAM scope, credential

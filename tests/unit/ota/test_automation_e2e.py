@@ -902,6 +902,187 @@ def test_assessment_uses_one_stable_main_snapshot(rehearsal, monkeypatch, barrie
         assert "OTA_PRODUCTION_PRIVATE_KEY_PEM" not in r.reads
 
 
+@pytest.mark.parametrize("check", ["references", "appended"])
+@pytest.mark.parametrize("revoked", ["approval", "request"])
+def test_revocation_during_last_object_checks_prevents_catalog_put(
+    rehearsal, monkeypatch, check, revoked
+):
+    from talent_data.ota.automation import publisher
+
+    r = rehearsal
+    original_save, original_get, original_put = r.journal.save, r.store.get, r.store.put
+    armed, phase, changed, puts = [False], [None], [False], []
+
+    def save(receipt, prepared=None):
+        result = original_save(receipt, prepared)
+        if receipt.state is RequestState.WRITE_STARTED:
+            armed[0] = True
+        return result
+
+    def checking(name, function):
+        def run(*args, **kwargs):
+            phase[0] = name
+            try:
+                return function(*args, **kwargs)
+            finally:
+                phase[0] = None
+
+        return run
+
+    def get(key):
+        if armed[0] and phase[0] == check and key != CATALOG and not changed[0]:
+            changed[0] = True
+            path = (
+                r.approval
+                if revoked == "approval"
+                else r.remote / "docs/ota/release-requests" / f"{r.receipt.request.release_id}.json"
+            )
+            path.unlink()
+            git(r.remote, "add", "-u")
+            git(
+                r.remote,
+                "-c",
+                "user.name=TEST",
+                "-c",
+                "user.email=test@example.invalid",
+                "-c",
+                "core.hooksPath=/dev/null",
+                "commit",
+                "-qm",
+                "TEST revoke during final object read",
+            )
+        return original_get(key)
+
+    def put(key, raw, *, cache_control):
+        puts.append(key)
+        return original_put(key, raw, cache_control=cache_control)
+
+    monkeypatch.setattr(r.journal, "save", save)
+    monkeypatch.setattr(r.store, "get", get)
+    monkeypatch.setattr(r.store, "put", put)
+    monkeypatch.setattr(
+        publisher,
+        "ensure_catalog_references",
+        checking("references", publisher.ensure_catalog_references),
+    )
+    monkeypatch.setattr(
+        publisher,
+        "verify_appended_releases",
+        checking("appended", publisher.verify_appended_releases),
+    )
+    code, status = r.command()
+    assert changed[0] and armed[0]
+    assert code == 1 and status.outcome == "BLOCKED"
+    entry = r.journal.load(r.receipt.request_digest)
+    assert entry.receipt.state is RequestState.BLOCKED
+    assert entry.receipt.reason == "CHECK_FAILED" and entry.prepared is not None
+    assert CATALOG not in puts
+
+
+@pytest.mark.parametrize("first_command", ["preflight", "publish"])
+def test_old_public_base_is_retryable_until_authoritative_catalog_converges(
+    rehearsal, monkeypatch, tmp_path, first_command
+):
+    from talent_data.notify.automation import notify_status
+    from talent_data.notify.cli import _Summary
+    from talent_data.notify.telegram import SendResult, SendStatus
+    from talent_data.ota.catalog import catalog_entry
+    from talent_data.ota.models import OtaReleaseManifest
+    from talent_data.ota.release import serialize_manifest
+    from talent_data.ota.store import blob_key
+    from talent_data.ota.verify import parse_strict, sha256_ref
+
+    r = rehearsal
+    before = cli.read_live(r.store, keyring=r.owner.keyring, game="forever", now=r.clock[0])
+    base = next(
+        x for x in before.catalog.releases if x.release_id == before.catalog.active_release_id
+    )
+    manifest = parse_strict(OtaReleaseManifest, r.store.get(blob_key(base.manifest_sha256)))
+    # A real metadata-only base revision, followed by an authoritative rollback to
+    # the exact request's base. Both signed catalogs retain all prior entries.
+    revision = manifest.model_copy(
+        update={"release_id": manifest.release_id.rsplit("-r", 1)[0] + "-r2"}
+    )
+    raw = serialize_manifest(revision)
+    r.store.put(blob_key(sha256_ref(raw)), raw, cache_control="public")
+    old = next_catalog(
+        before.catalog,
+        game="forever",
+        channel=Channel.PRODUCTION,
+        active_release_id=revision.release_id,
+        append=catalog_entry(raw, revision, published_at=r.clock[0]),
+        issued_at=r.clock[0],
+    )
+    authoritative = next_catalog(
+        old.catalog,
+        game="forever",
+        channel=Channel.PRODUCTION,
+        active_release_id=manifest.release_id,
+        issued_at=r.clock[0],
+    )
+
+    def signed(payload):
+        return build_envelope(payload, {r.key_id: sign_pae_der(derive_test_key(r.key_id), payload)})
+
+    r.store.put(CATALOG, signed(authoritative.payload), cache_control=CATALOG_CACHE_CONTROL)
+    r.public_old[0] = signed(old.payload)
+    original_request = git(
+        r.repo, "show", f"origin/main:docs/ota/release-requests/{r.receipt.request.release_id}.json"
+    )
+    archive, created_at = r.evidence.archive_bytes, r.package.manifest.created_at
+    original_put, puts, sent = r.store.put, [], []
+
+    def put(key, data, *, cache_control):
+        if key == CATALOG:
+            puts.append(data)
+        return original_put(key, data, cache_control=cache_control)
+
+    def send(text):
+        sent.append(text)
+        return SendResult(SendStatus.SENT, "TEST delivered")
+
+    def notify(status):
+        return notify_status(
+            status,
+            state=tmp_path / "notify/production.json",
+            client=r.dependencies.client,
+            keyring=r.owner.keyring,
+            now=r.clock[0],
+            send=send,
+            summary=_Summary(None),
+            run_url="https://github.com/TEST/actions/runs/55",
+        )
+
+    monkeypatch.setattr(r.store, "put", put)
+    notify(r.command("verify")[1])  # quiet public baseline
+    code, status = r.command(first_command)
+    entry = r.journal.load(r.receipt.request_digest)
+    assert code == 1 and status.outcome == "BLOCKED"
+    assert (entry.receipt.state, entry.receipt.reason) == (RequestState.BLOCKED, "LIVE_CHANGED")
+    assert not r.reads and not r.writers and not puts
+    r.public_old[0] = None
+    r.payload.clear()
+    r.payload["repository"] = {"full_name": r.receipt.request.repository}
+    code, status = r.command("reconcile", GITHUB_EVENT_NAME="schedule")
+    assert code == 0 and status.outcome == "VERIFIED"
+    assert r.journal.load(r.receipt.request_digest).receipt.state is RequestState.VERIFIED
+    assert len(puts) == 1
+    notify(status)
+    assert len(sent) == 1 and r.receipt.request.release_id in sent[0]
+    assert r.command("reconcile")[1].outcome == "NO_ACTION"
+    notify(status)
+    assert len(puts) == 1 and len(sent) == 1
+    assert (
+        git(
+            r.repo,
+            "show",
+            f"origin/main:docs/ota/release-requests/{r.receipt.request.release_id}.json",
+        )
+        == original_request
+    )
+    assert r.evidence.archive_bytes == archive and r.package.manifest.created_at == created_at
+
+
 def test_blocked_candidate_does_not_turn_verified_due_renewal_into_failure(rehearsal, tmp_path):
     from talent_data.notify.automation import notify_status
     from talent_data.notify.cli import _Summary

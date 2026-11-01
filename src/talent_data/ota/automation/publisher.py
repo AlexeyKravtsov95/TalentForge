@@ -361,6 +361,12 @@ def publish_request(
             ensure_valid_succession(fresh.catalog, catalog)
             ensure_catalog_references(store, catalog)
             verify_appended_releases(args, store, fresh.catalog, catalog, now)
+            # Reference/gate reads can take minutes. The final assessment proved
+            # request, approval and provenance at args.main_ref; any observed main
+            # movement since then invalidates that authorization before PUT.
+            refresh_main(repo)
+            if git(repo, "rev-parse", "origin/main").strip().decode("ascii") != args.main_ref:
+                return save(RequestState.BLOCKED, "CHECK_FAILED")
         except (
             PreparationBlocked,
             RequestRejected,

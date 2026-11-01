@@ -393,7 +393,12 @@ Outside the guarded workflow this is not authorization for a normal local writer
 journal-changing preflight and writer mode uses `ota-production-writer`, cancel false,
 with job dependencies to serialize within a daily run. Daily reconciliation discovers complete
 committed requests despite lost webhook/pending jobs; a separate independent resign path runs
-even after BLOCKED candidates. Failed/expired artifacts stay BLOCKED, stale requests STALE.
+even after BLOCKED candidates. Failed/expired artifacts stay BLOCKED. A signed public
+catalog can lag private S3: a public-only base mismatch or already-listed release stays
+retryable BLOCKED until convergence, without loading production secrets just to diagnose
+that mismatch. Only authoritative private publication checks may classify live-dependent
+work STALE. Current 70532 exclusion and a request removed from trusted main are independent
+terminal proofs. Never clear an existing terminal receipt to retry after rollback.
 Terminal receipts stay retained across a legitimate higher-sequence rollback and never reactivate.
 
 | Strict status / exit | Meaning and next action |
@@ -415,6 +420,14 @@ WRITE_STARTED/AMBIGUOUS exact work without fetching a
 historical package. PUBLISHED_NOT_VERIFIED retries expected full public proof independently
 of removed requests/expired artifacts. Telegram re-verifies public bytes; it cannot promote a
 status artifact to proof or change receipts. First baseline and same-active resign stay quiet.
+
+After durable WRITE_STARTED and the final full assessment, the publisher verifies references
+and appended releases, then fetches main again and requires the same SHA that bound the exact
+request, approval and provenance. A moved snapshot refuses before catalog PUT and records
+BLOCKED, rather than claiming a lost/ambiguous write. The remaining main fetch → short live
+sequence read → S3 PUT spans two services and is not an atomic transaction. Approval/request
+removal alone cannot cancel an already in-flight PUT in that minimal window; use the stop/drain
+and credential-revocation procedure below when immediate cessation is required.
 
 ### Break-glass recovery and rollback
 

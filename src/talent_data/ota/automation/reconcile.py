@@ -94,10 +94,12 @@ def reconcile_requests(
     run_id: int,
     attempt: int,
 ) -> tuple[ReleaseRequest, ...]:
-    """Record discovery/STALE/BLOCKED independently of webhooks or package availability.
+    """Record discovery/refusals independently of webhooks or package availability.
 
     Input is the complete set of committed requests from trusted main (Task6 discovers
     git paths and proves CI authorization); no artifact lookup is needed here.
+    Live may be a valid lagging public snapshot: its mismatches are retryable, never
+    terminal proof. The private publisher owns authoritative live STALE decisions.
     """
     receipts = {
         k: v.receipt
@@ -136,7 +138,10 @@ def reconcile_requests(
         if counts[request.release_id] > 1:
             receipt = receipt.evolve(state=RequestState.BLOCKED, reason="CHECK_FAILED")
         elif reason is not None:
-            receipt = receipt.evolve(state=RequestState.STALE, reason=reason)
+            receipt = receipt.evolve(
+                state=(RequestState.STALE if reason == "INITIAL_RELEASE" else RequestState.BLOCKED),
+                reason=reason,
+            )
         journal.save(receipt)
     return selected
 
