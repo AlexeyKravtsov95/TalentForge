@@ -136,7 +136,7 @@ Final Ruff check: All checks passed; format check: **405 files already formatted
 production workflows was repeated, exit 0. No workflow source changed in this correction.
 Graphify AST update: **14,590 nodes / 46,555 edges / 442 communities**, with the same unchanged
 three Kotlin partial-extraction and seven no-symbol warnings. No full suite or Gradle was
-run by the fix phase; controller final full validation and independent re-review remain pending.
+run by the fix phase; controller validation and independent re-review were completed later below.
 
 ## Consolidated final-review correction
 
@@ -184,7 +184,7 @@ PYTHONPATH=src /Users/alexeykravtsov/Desktop/workspace/TalentForge/.venv/bin/pyt
 Result: **24 passed in 33.99s**. This rechecks both retryable mismatch reasons, preserved
 terminal/removed/70532 guards, private renewal/recovery, full public proof and verification-only
 CDN retry. The other focused files and both actual defect regression families passed in the
-expanded run; a definitive whole-suite on the final commit remains controller-owned.
+expanded run; the definitive controller whole-suite result is recorded below.
 
 Final checks: Ruff **All checks passed**; format **405 files already formatted**; mypy
 **116 source files, no issues**; actual actionlint **1.7.12**, exit 0 on both production
@@ -205,15 +205,41 @@ cloud credentials. Actual client tests ran (no cached/skipped JUnit substituted 
 
 PR-tooling run: 2026-11-01T00:31:54Z → 00:35:23Z; guard G1 (unchanged checkout/product/keyring)
 and G2 (temporary keys scrubbed) PASS. Production was neither read nor written. Workflow/docs
-integration changes after `f86227d` require the controller's final assertion that staging/mobile
-runtime is unchanged, to establish the scope of that tooling rehearsal.
+integration changes after `f86227d` were compared by the controller: staging/mobile and core
+runtime paths are unchanged through `c1f573f`. The later changes affect automation, tests,
+workflow, documentation and the required generated graph, establishing the rehearsal's scope.
 
 ## Final review boundary
 
 Controller whole-Python suite at `e91e710`: **2517 passed, 11 deselected in 561.29s**, explicitly
-**PRE-final-fix** evidence. The definitive whole-Python suite and scoped re-review after the
-final correction commit remain **PENDING** and controller-owned.
-The JVM runs above are completed evidence, not a claim about a later unexamined runtime diff.
+**PRE-final-fix** evidence. Final whole-branch review identified two Important findings; both
+were fixed in `c1f573f` and independently scoped re-reviewed as ADDRESSED, with no new
+Critical/Important breakage. All code-review findings are closed. The definitive final checks
+on `c1f573f723e13157eefc54dd65e9106ec29bbaf4` are:
+
+| Command | Actual result |
+| --- | --- |
+| `ruff check .` | All checks passed, exit 0 |
+| `ruff format --check .` | 405 files already formatted, exit 0 |
+| `mypy` | No issues in 116 source files, exit 0 |
+| `pytest` | **2525 passed, 11 deselected in 641.05s (0:10:41)**, exit 0 |
+| `actionlint .github/workflows/ota-production-publish.yml .github/workflows/ota-production-watch.yml` | Actual actionlint 1.7.12, exit 0 |
+| `git diff e4e83fd..HEAD --check` | exit 0 |
+
+The pytest process used the existing project virtualenv and `PYTHONPATH=src`; production,
+AWS/S3, GitHub and Telegram credential environment variables were removed. The repository's
+pytest configuration excludes integration tests. A cold, sanitized real CLI invocation of
+`preflight --status-file <temporary path>` also returned explicit DISABLED, exit 0,
+`writerNeeded=false`, with no operations. No production dependency was initialized.
+
+Controller diff assertions confirm no changes to mobile, data, public schemas, production
+keyring or PRODUCT_BUNDLE, and no staging/core runtime change after the PR-tooling JVM run.
+The following documentation/graph-only commit records these results; Python/workflow logic
+has not changed since the tested code commit. The worktree is retained for owner review.
+
+The final full pytest log, scoped re-review and sanitized rehearsal reports were retained in
+the local evidence bundle. The JVM runs above are completed evidence with the runtime scope
+explicitly checked, not a claim of production deployment.
 Android emulator/device, iOS simulator/device and physical devices: **NOT RUN**.
 No actual production delivery, key import, owner environment restriction, IAM scope, credential
 revocation or Telegram send is proven by local code/tests. Those remain owner setup/first-next-release
