@@ -82,6 +82,61 @@ Only status files cross jobs in four distinct immutable V4 artifacts. Missing or
 after possible PUT is AMBIGUOUS. Notifications share `ota-production-watch` and
 `telegram-notify-state/production.json`; Telegram failure never changes a publication receipt.
 
+## Task 6 integration review fixes
+
+The first whole-branch review of `2b7bd01` found four real integration defects. The
+following regressions reproduced them before correction using TEST keys, local Git pack
+transport and local storage only:
+
+| Regression | Genuine RED | Corrected behavior |
+| --- | --- | --- |
+| Clean checkout with an authentication-required journal remote | one of 7 failures in 79.57s | `git_auth` supplies URL-scoped GitHub authorization only in the guarded command environment; no persisted checkout credentials, token argument/config/file, and inherited variables restored on success/refusal |
+| Approval revoked between extraction and provenance refresh; inverse request race | four of the same 7 failures, covering upload and WRITE_STARTED barriers | approval, request/provenance and G1 bind one fresh main SHA; a refetch or final check observing a different SHA refuses the assessment |
+| Blocked candidate followed by actual due renewal | one of the same 7 failures | successful fully verified resign reports VERIFIED independently, retains the blocked candidate and its notification failure marker, and repeats quietly |
+| Lost PUT with public files unavailable | one of the same 7 failures | retained unknown work is privately diagnosed before CDN convergence; exact landed bytes become PUBLISHED_NOT_VERIFIED, with no signing/re-PUT; public proof alone advances VERIFIED |
+| Other PUBLISHED_NOT_VERIFIED work while an operation remains AMBIGUOUS | 1 failed in 30.30s after the initial recovery-order correction | private diagnosis remains first, then all retained public-verification retries run; global ambiguity still forbids writes |
+| Fake staging ZIP changes at a two-second clock boundary | 2 failed in 78.56s, deterministic mocked clock, no sleep | fixed ZipInfo metadata for normal staging artifacts and the wrong-base variant; production archive digest enforcement unchanged |
+
+The first four fixes passed their exact seven regressions: **7 passed in 58.69s**.
+The entire preparation test file plus the two recovery follow-ups then passed **42 tests in
+48.72s**. These checks use real signature/package/gate/reference verification; only GitHub,
+public HTTP and the local authentication-required SSH boundary are synthetic. The Git test
+runs real fetch/push/pack operations and records a durable BLOCKED receipt through the CLI.
+It checks that neither the TEST token nor its Basic encoding appears in stdout/stderr,
+command arguments, status/summary/output, journal or repository configuration.
+
+The controller's prior whole-suite run at `2b7bd01` was **1 failed, 2506 passed,
+11 deselected in 505.24s**. Its failure was
+`test_automation_prepare.py::test_retry_before_pr_creation_discovers_existing_exact_package`:
+the fake staging artifact was regenerated with wall-clock ZIP headers between metadata and
+download. The deterministic clock regression above reproduces and fixes that fixture defect;
+it does not weaken the production verifier. Controller final whole-suite and review after
+these integration fixes remain **PENDING**.
+
+The final current-source focused command was:
+
+```bash
+PYTHONPATH=src /Users/alexeykravtsov/Desktop/workspace/TalentForge/.venv/bin/pytest \
+  tests/unit/ota/test_automation_e2e.py tests/unit/ota/test_automation_workflows.py \
+  tests/unit/ota/test_automation_publisher.py tests/unit/ota/test_automation_reconcile.py \
+  tests/unit/ota/test_automation_state.py tests/unit/ota/test_automation_signer.py \
+  tests/unit/ota/test_automation_public_verify.py tests/unit/ota/test_automation_prepare.py \
+  tests/unit/test_telegram_notify.py -q
+```
+
+Result: **239 passed in 416.07s (0:06:56)**. This includes the authenticated Git journal,
+both snapshot race directions, real renewal/status/notification, unavailable-public-content
+recovery, remaining PNV retries, fixed ZIP clock boundary and prior cleanup/serialization/
+notification regressions. An intermediate broad run before the final recovery/fixture
+follow-ups passed 236 tests in 370.02s and is not substituted for this final result.
+
+Final Ruff check: All checks passed; format check: **405 files already formatted**; mypy:
+**116 source files, no issues**; working/staged diff checks: exit 0. Actual actionlint on both
+production workflows was repeated, exit 0. No workflow source changed in this correction.
+Graphify AST update: **14,590 nodes / 46,555 edges / 442 communities**, with the same unchanged
+three Kotlin partial-extraction and seven no-symbol warnings. No full suite or Gradle was
+run by the fix phase; controller final full validation and independent re-review remain pending.
+
 ## Real JVM staging rehearsal (controller)
 
 Both runs used the isolated local HTTPS TEST stand for `1.60.1.70450 → 1.60.1.70532`, without

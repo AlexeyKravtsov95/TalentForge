@@ -17,7 +17,7 @@ from pathlib import Path
 
 from talent_data.cli.ota import _enforce_gates_and_approval, verify_appended_releases
 from talent_data.ota.automation.ci_signer import SecretError, Signer
-from talent_data.ota.automation.prepare import PreparationBlocked, verify_staged_base_bytes
+from talent_data.ota.automation.prepare import PreparationBlocked, git, verify_staged_base_bytes
 from talent_data.ota.automation.provenance import RequestRejected, verify_package_origin
 from talent_data.ota.automation.requests import ReleaseRequest
 from talent_data.ota.automation.state import (
@@ -101,9 +101,13 @@ def refresh_main(repo: Path) -> None:
         raise OtaPublisherError("current origin/main could not be read")
 
 
-def approval_directory(request: ReleaseRequest, repo: Path, directory: Path) -> Path:
-    refresh_main(repo)
-    record = approval_record_at(repo, "origin/main", request.release_id)
+def approval_directory(
+    request: ReleaseRequest, repo: Path, directory: Path, *, main_ref: str | None = None
+) -> Path:
+    if main_ref is None:
+        refresh_main(repo)
+        main_ref = "origin/main"
+    record = approval_record_at(repo, main_ref, request.release_id)
     if record is None or approval_record_problems(
         record.decode("utf-8", "strict"),
         release_id=request.release_id,
@@ -153,9 +157,18 @@ def assess_request(
     provenance: Callable[[], ProvenanceEvidence],
     directory: Path,
 ) -> tuple[LiveSnapshot, argparse.Namespace]:
-    """Perform the publisher's read-only authorization and gate assessment."""
-    approvals = approval_directory(request, repo, directory)
+    """Assess one stable fresh main commit; reject any refetch that moves it.
+
+    Provenance callbacks re-fetch main to authorize the exact current request. The
+    copied approval and G1 must belong to that same commit, including when a refetch
+    observes a revocation between extraction, callback, gates and the final barrier.
+    """
+    refresh_main(repo)
+    main = git(repo, "rev-parse", "origin/main").strip()
+    approvals = approval_directory(request, repo, directory, main_ref=main.decode("ascii"))
     evidence = provenance()
+    if git(repo, "rev-parse", "origin/main").strip() != main:
+        raise OtaPublisherError("current main changed during assessment")
     verify_package_origin(
         request,
         run_metadata=evidence.run_metadata,
@@ -173,7 +186,7 @@ def assess_request(
         package.attachment(STAGING_BASE_MANIFEST_NAME),
         package.attachment(STAGING_FILES["report"]),
     )
-    args = argparse.Namespace(repo=repo, releases_docs=approvals, main_ref="origin/main")
+    args = argparse.Namespace(repo=repo, releases_docs=approvals, main_ref=main.decode("ascii"))
     under_test = under_test_from_bytes(package.manifest_bytes, repo)
     if (
         _enforce_gates_and_approval(
@@ -182,6 +195,9 @@ def assess_request(
         is not None
     ):
         raise OtaPublisherError("publication gates refused")
+    refresh_main(repo)
+    if git(repo, "rev-parse", "origin/main").strip() != main:
+        raise OtaPublisherError("current main changed during assessment")
     return live, args
 
 

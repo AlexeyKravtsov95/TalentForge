@@ -71,6 +71,7 @@ from talent_data.ota.automation.state import (
     JournalError,
     PublicationReceipt,
     Receipt,
+    RenewalReceipt,
     RequestState,
     request_digest,
 )
@@ -88,6 +89,7 @@ from talent_data.ota.s3_channels import PRODUCTION_PROFILE
 from talent_data.ota.s3_store import ProductionCatalogGuard, S3Location, connect
 from talent_data.ota.store import BLOB_PREFIX, BlobStore, catalog_key
 from talent_data.ota.verify import OtaError, TrustedKey, pae, parse_strict, sha256_ref, strict_json
+from talent_data.prepare.propose import git_auth
 
 ENABLE_FLAG = "OTA_PRODUCTION_AUTOMATION_ENABLED"
 PRIMARY_KEY = "tf-prod-2026a"
@@ -428,11 +430,13 @@ class _Run:
             confirm_publication(self.d.journal, digest, result)
 
     def plan(self, root: Path, *, mutate: bool) -> tuple[tuple[ReleaseRequest, ...], bool]:
-        live = self.public_live()
+        # An unknown private PUT must be diagnosed before CDN convergence is required.
+        # This branch authorizes a diagnostic turn only, never signing or a catalog PUT.
         self.stage, self.reason = "JOURNAL", "JOURNAL_FAILED"
         entries = self.d.journal.read_all()
         if any(x.receipt.state in _UNRESOLVED for x in entries.values()):
             return (), True
+        live = self.public_live()
         self.stage, self.reason = "PLANNING", "NO_WORK"
         requests = committed_requests(self.d.repo)
         receipts = {
@@ -493,13 +497,27 @@ class _Run:
         return tuple(eligible), due
 
     def final(self, *, changed: bool) -> StatusDocument:
-        states = {x.receipt.state for x in self.d.journal.read_all().values()}
+        entries = self.d.journal.read_all().values()
+        states = {x.receipt.state for x in entries}
         if states & _UNRESOLVED:
             return self.status("AMBIGUOUS", "RECOVERY", "OUTCOME_UNKNOWN")
         if RequestState.PUBLISHED_NOT_VERIFIED in states:
             return self.status("PUBLISHED_NOT_VERIFIED", "PUBLIC_VERIFY", "PUBLIC_NOT_VERIFIED")
-        if RequestState.BLOCKED in states:
-            stage, reason = self.failure or ("PUBLISH", "PUBLICATION_BLOCKED")
+        blocked = any(
+            entry.receipt.state is RequestState.BLOCKED
+            and (
+                self.operation == "reconcile"
+                or (self.operation == "publish" and isinstance(entry.receipt, PublicationReceipt))
+                or (self.operation == "resign" and isinstance(entry.receipt, RenewalReceipt))
+            )
+            for entry in entries
+        )
+        if blocked:
+            stage, reason = self.failure or (
+                ("RENEWAL", "RENEWAL_BLOCKED")
+                if self.operation == "resign"
+                else ("PUBLISH", "PUBLICATION_BLOCKED")
+            )
             return self.status("BLOCKED", stage, reason)
         return self.status(
             "VERIFIED" if changed else "NO_ACTION",
@@ -556,7 +574,9 @@ class _Run:
             return self.final(changed=True)
         with tempfile.TemporaryDirectory(prefix="ota-publication-") as temporary:
             root = Path(temporary).resolve()
-            if execute:
+            if execute and not any(
+                entry.receipt.state in _UNRESOLVED for entry in self.d.journal.read_all().values()
+            ):
                 self.pending_verification()
             # Pure preflight is also used inside the protected writer before credentials.
             selected, due_or_recovery = self.plan(root, mutate=execute)
@@ -612,17 +632,20 @@ class _Run:
                             )
                         self.d.journal.save(result, entry.prepared)
                         self.recovered.add(digest)
-                if any(x.receipt.state in _UNRESOLVED for x in self.d.journal.read_all().values()):
-                    return self.final(changed=False)
-                if unresolved:
-                    # Only after every retained unknown operation has been diagnosed.
-                    selected, due_or_recovery = self.plan(root, mutate=True)
+                if self.recovered:
+                    # A recovery turn only diagnoses retained exact work. It never
+                    # selects a fresh write, even if public convergence is unavailable.
+                    selected = ()
                 signer = CiPemSigner(
                     self.d.keyring,
                     read_secret=self.d.read_secret,
                     temporary_root=self.d.temporary_root,
                 )
-                changed = False
+                changed = any(
+                    entry.receipt.state is RequestState.PUBLISHED_NOT_VERIFIED
+                    for digest, entry in self.d.journal.read_all().items()
+                    if digest in self.recovered
+                )
                 for request in selected:
                     retained = self.d.journal.load(request_digest(request))
                     assert retained is not None and isinstance(retained.receipt, PublicationReceipt)
@@ -744,6 +767,26 @@ def _empty(
     )
 
 
+@contextlib.contextmanager
+def _git_authentication(token: str | None) -> Iterator[None]:
+    """URL-scoped GitHub auth in subprocess environment, never config/argv/files.
+
+    Checkout deliberately persists no credentials. Reuse the existing preparation
+    adapter and restore every inherited variable after success, refusal or cleanup.
+    """
+    authentication = git_auth(token, "https://github.com")
+    previous = {name: os.environ.get(name) for name in authentication}
+    try:
+        os.environ.update(authentication)
+        yield
+    finally:
+        for name, value in previous.items():
+            if value is None:
+                os.environ.pop(name, None)
+            else:
+                os.environ[name] = value
+
+
 def main(
     argv: list[str] | None = None,
     *,
@@ -761,48 +804,54 @@ def main(
         return _emit(
             _empty(args, "DISABLED", "CONFIG", "AUTOMATION_DISABLED"), args.status_file, env
         )
-    run = None
-    try:
-        with contextlib.ExitStack() as stack:
-            if dependencies is None:
-                client = stack.enter_context(httpx.Client(follow_redirects=False, timeout=30))
-                keys = production_keyring(TRUSTED_REPO / "docs/ota/keys/production-keyring.json")
-                api = GitHub(client, env.get("GITHUB_TOKEN", ""))
-
-                @contextlib.contextmanager
-                def writer() -> Iterator[BlobStore]:
-                    profile = PRODUCTION_PROFILE
-                    yield connect(
-                        S3Location(
-                            bucket=profile.bucket,
-                            endpoint_url=profile.endpoint_url,
-                            region=profile.region,
-                            profile=profile.aws_profile,
-                            channel=Channel.PRODUCTION,
-                        ),
-                        writable=True,
-                        allow_delete=False,
-                        catalog_guard=ProductionCatalogGuard(keys, game=GAME),
+    with _git_authentication(env.get("GITHUB_TOKEN")):
+        run = None
+        try:
+            with contextlib.ExitStack() as stack:
+                if dependencies is None:
+                    client = stack.enter_context(httpx.Client(follow_redirects=False, timeout=30))
+                    keys = production_keyring(
+                        TRUSTED_REPO / "docs/ota/keys/production-keyring.json"
                     )
+                    api = GitHub(client, env.get("GITHUB_TOKEN", ""))
 
-                dependencies = Dependencies(
-                    TRUSTED_REPO, api, client, GitJournal(TRUSTED_REPO), keys, writer
-                )
-            run = _Run(args, env, dependencies)
-            document = run.run()
-    except (*_FAILURES, InvalidSignature, KeyError, TypeError):
-        document = _empty(
-            args, "BLOCKED", run.stage if run else "CONFIG", run.reason if run else "CONFIG_MISSING"
-        )
-        if run is not None:
-            with contextlib.suppress(*_FAILURES):
-                document = run.status("BLOCKED", run.stage, run.reason)
-                if any(x.state in _UNRESOLVED for x in document.operations):
-                    document = run.status("AMBIGUOUS", "RECOVERY", "OUTCOME_UNKNOWN")
-                elif any(
-                    x.state is RequestState.PUBLISHED_NOT_VERIFIED for x in document.operations
-                ):
-                    document = run.status("PUBLISHED_NOT_VERIFIED", run.stage, run.reason)
+                    @contextlib.contextmanager
+                    def writer() -> Iterator[BlobStore]:
+                        profile = PRODUCTION_PROFILE
+                        yield connect(
+                            S3Location(
+                                bucket=profile.bucket,
+                                endpoint_url=profile.endpoint_url,
+                                region=profile.region,
+                                profile=profile.aws_profile,
+                                channel=Channel.PRODUCTION,
+                            ),
+                            writable=True,
+                            allow_delete=False,
+                            catalog_guard=ProductionCatalogGuard(keys, game=GAME),
+                        )
+
+                    dependencies = Dependencies(
+                        TRUSTED_REPO, api, client, GitJournal(TRUSTED_REPO), keys, writer
+                    )
+                run = _Run(args, env, dependencies)
+                document = run.run()
+        except (*_FAILURES, InvalidSignature, KeyError, TypeError):
+            document = _empty(
+                args,
+                "BLOCKED",
+                run.stage if run else "CONFIG",
+                run.reason if run else "CONFIG_MISSING",
+            )
+            if run is not None:
+                with contextlib.suppress(*_FAILURES):
+                    document = run.status("BLOCKED", run.stage, run.reason)
+                    if any(x.state in _UNRESOLVED for x in document.operations):
+                        document = run.status("AMBIGUOUS", "RECOVERY", "OUTCOME_UNKNOWN")
+                    elif any(
+                        x.state is RequestState.PUBLISHED_NOT_VERIFIED for x in document.operations
+                    ):
+                        document = run.status("PUBLISHED_NOT_VERIFIED", run.stage, run.reason)
     return _emit(document, args.status_file, env)
 
 

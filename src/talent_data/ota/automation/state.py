@@ -450,7 +450,8 @@ class GitJournal(FileJournal):
     """Remote branch is authoritative. Push is non-force and every save fetches it back.
 
     ``remote`` is a trusted Git remote name/path, never an artifact-supplied URL.
-    Credentials belong to Git's environment, not arguments or the journal.
+    The guarded CLI supplies URL-scoped authentication in Git's ephemeral environment;
+    credentials are never persisted by checkout, this adapter or the journal.
     """
 
     branch = "ota-publication-state"
@@ -472,8 +473,8 @@ class GitJournal(FileJournal):
 
     def _commit(self, raw: bytes, *, previous: bytes | None) -> None:
         # Plumbing writes a closed tree without touching checkout/index. Running in
-        # the trusted repo preserves Git's configured auth without reading secrets
-        # or copying them into another checkout, environment file or arguments.
+        # the trusted repo uses the caller's ephemeral Git auth without copying
+        # credentials into another checkout, a config/environment file or arguments.
         parents: list[str] = []
         if previous is not None:
             if self._read() != previous:

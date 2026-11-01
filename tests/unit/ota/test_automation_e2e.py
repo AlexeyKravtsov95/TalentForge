@@ -741,3 +741,350 @@ def test_enable_flag_is_exact_without_constructing_any_dependencies(tmp_path, fl
     )
     assert code == 0
     assert cli.read_status((tmp_path / "status.json").read_bytes()).outcome == "DISABLED"
+
+
+def test_clean_checkout_authenticates_git_journal_without_persisting_token(
+    rehearsal, tmp_path, monkeypatch, capsys
+):
+    import base64
+    import sys
+
+    from talent_data.ota.automation.state import GitJournal, JournalIndex
+    from talent_data.ota.verify import parse_strict
+
+    r = rehearsal
+    protected = tmp_path / "auth-required.git"
+    git(r.remote, "clone", "--bare", str(r.remote), str(protected))
+    git(r.repo, "remote", "set-url", "origin", "ssh://git@github.com" + str(protected))
+    # Real Git pack transport; only this local SSH boundary is synthetic. It refuses
+    # every remote read/write unless the ephemeral HTTP authorization is supplied.
+    shim = tmp_path / "auth-required-ssh"
+    shim.write_text(
+        f"#!{sys.executable}\n"
+        "import os, shlex, sys\n"
+        "expected = os.environ.get('TEST_EXPECTED_GIT_AUTH')\n"
+        "if not expected or os.environ.get('GIT_CONFIG_VALUE_0') != expected:\n"
+        "    sys.exit(71)\n"
+        "if os.environ.get('GIT_CONFIG_KEY_0') != 'http.https://github.com/.extraheader':\n"
+        "    sys.exit(72)\n"
+        "command = shlex.split(sys.argv[-1])\n"
+        "os.execvp(command[0], command)\n"
+    )
+    shim.chmod(0o700)
+    token = "TEST-GITHUB-JOURNAL-TOKEN-NOT-PERSISTED"
+    encoded = base64.b64encode(("x-access-token:" + token).encode()).decode()
+    monkeypatch.setenv("GIT_SSH_COMMAND", str(shim))
+    monkeypatch.setenv("GIT_SSH_VARIANT", "ssh")
+    monkeypatch.setenv("TEST_EXPECTED_GIT_AUTH", "AUTHORIZATION: basic " + encoded)
+    for key in ("GIT_CONFIG_COUNT", "GIT_CONFIG_KEY_0", "GIT_CONFIG_VALUE_0"):
+        monkeypatch.delenv(key, raising=False)
+    denied = subprocess.run(["git", "-C", str(r.repo), "ls-remote", "origin"], capture_output=True)
+    assert denied.returncode != 0
+    r.dependencies.journal = GitJournal(r.repo)
+    r.payload["sender"] = {"login": "operator"}
+    r.environment["GITHUB_TOKEN"] = token
+    argv = []
+    original_run = subprocess.run
+
+    def record(command, **kwargs):
+        argv.extend(map(str, command))
+        return original_run(command, **kwargs)
+
+    monkeypatch.setattr(subprocess, "run", record)
+    code, status = r.command("init-journal", GITHUB_EVENT_NAME="workflow_dispatch")
+    assert code == 0 and status.reason == "JOURNAL_INITIALIZED"
+    r.dependencies.api.corrupt = "artifact"
+    code, status = r.command("preflight")
+    assert code == 1 and status.outcome == "BLOCKED"
+    raw = git(protected, "show", "refs/heads/ota-publication-state:journal.json")
+    index = parse_strict(JournalIndex, raw)
+    assert next(iter(index.entries.values())).receipt.state is RequestState.BLOCKED
+    # An explicit setup refusal also restores authentication after the failing command.
+    assert r.command("init-journal")[0] == 1
+    assert not r.reads and not r.writers
+    assert all(
+        key not in os.environ
+        for key in ("GIT_CONFIG_COUNT", "GIT_CONFIG_KEY_0", "GIT_CONFIG_VALUE_0")
+    )
+    inherited = {
+        "GIT_CONFIG_COUNT": "1",
+        "GIT_CONFIG_KEY_0": "http.https://prior.invalid/.extraheader",
+        "GIT_CONFIG_VALUE_0": "TEST-inherited-auth",
+        "GIT_TERMINAL_PROMPT": "1",
+    }
+    for name, value in inherited.items():
+        monkeypatch.setenv(name, value)
+    assert r.command("init-journal")[0] == 1
+    assert all(os.environ[name] == value for name, value in inherited.items())
+    captured = capsys.readouterr()
+    surfaces = captured.out + captured.err + "\n".join(argv) + raw.decode()
+    for path in (
+        r.repo / ".git/config",
+        r.status,
+        Path(r.environment["GITHUB_STEP_SUMMARY"]),
+        Path(r.environment["GITHUB_OUTPUT"]),
+        shim,
+    ):
+        surfaces += path.read_text()
+    assert token not in surfaces and encoded not in surfaces
+    assert "extraheader" not in (r.repo / ".git/config").read_text()
+
+
+@pytest.mark.parametrize("barrier", ["upload", "journal"])
+@pytest.mark.parametrize("race", ["approval_before_callback", "request_after_callback"])
+def test_assessment_uses_one_stable_main_snapshot(rehearsal, monkeypatch, barrier, race):
+    from talent_data.ota.automation import publisher
+
+    r = rehearsal
+    original_approval = publisher.approval_directory
+    original_evidence = cli._Run.evidence
+    original_put, original_save = r.store.put, r.journal.save
+    armed, changed, puts = [False], [False], []
+
+    def change_main():
+        if changed[0] or not armed[0]:
+            return
+        changed[0] = True
+        if race == "approval_before_callback":
+            r.approval.unlink()
+        else:
+            (
+                r.remote / "docs/ota/release-requests" / f"{r.receipt.request.release_id}.json"
+            ).unlink()
+        git(r.remote, "add", "-u")
+        git(
+            r.remote,
+            "-c",
+            "user.name=TEST",
+            "-c",
+            "user.email=test@example.invalid",
+            "-c",
+            "core.hooksPath=/dev/null",
+            "commit",
+            "-qm",
+            "TEST revoke during assessment",
+        )
+
+    def approval(*args, **kwargs):
+        result = original_approval(*args, **kwargs)
+        if race == "approval_before_callback":
+            change_main()
+        return result
+
+    def evidence(run, request):
+        result = original_evidence(run, request)
+        if race == "request_after_callback" and armed[0]:
+            change_main()
+            publisher.refresh_main(r.repo)
+        return result
+
+    def put(key, raw, *, cache_control):
+        original_put(key, raw, cache_control=cache_control)
+        puts.append(key)
+        if barrier == "upload":
+            armed[0] = True
+
+    def save(receipt, prepared=None):
+        result = original_save(receipt, prepared)
+        if barrier == "journal" and receipt.state is RequestState.WRITE_STARTED:
+            armed[0] = True
+        return result
+
+    monkeypatch.setattr(publisher, "approval_directory", approval)
+    monkeypatch.setattr(cli._Run, "evidence", evidence)
+    monkeypatch.setattr(r.store, "put", put)
+    monkeypatch.setattr(r.journal, "save", save)
+    code, status = r.command()
+    assert changed[0]
+    assert code == 1 and status.outcome == "BLOCKED"
+    assert CATALOG not in puts
+    if barrier == "upload":
+        assert "OTA_PRODUCTION_PRIVATE_KEY_PEM" not in r.reads
+
+
+def test_blocked_candidate_does_not_turn_verified_due_renewal_into_failure(rehearsal, tmp_path):
+    from talent_data.notify.automation import notify_status
+    from talent_data.notify.cli import _Summary
+    from talent_data.notify.telegram import SendResult, SendStatus
+
+    r = rehearsal
+    state, sent = tmp_path / "notify/production.json", []
+
+    def send(text):
+        sent.append(text)
+        return SendResult(SendStatus.SENT, "TEST delivered")
+
+    def notify(status):
+        return notify_status(
+            status,
+            state=state,
+            client=r.dependencies.client,
+            keyring=r.owner.keyring,
+            now=r.clock[0],
+            send=send,
+            summary=_Summary(None),
+            run_url="https://github.com/TEST/actions/runs/55",
+        )
+
+    notify(r.command("verify")[1])
+    r.dependencies.api.corrupt = "artifact"
+    r.payload.clear()
+    r.payload["repository"] = {"full_name": r.receipt.request.repository}
+    blocked = r.command("reconcile", GITHUB_EVENT_NAME="schedule")[1]
+    assert blocked.outcome == "BLOCKED"
+    notify(blocked)
+    before_marker = json.loads(state.read_bytes())["failuresNotified"]
+    candidate = next(iter(r.journal.read_all().values())).receipt
+    r.clock[0] += timedelta(days=30)
+    before = cli.read_live(r.store, keyring=r.owner.keyring, game="forever", now=r.clock[0])
+    code, renewed = r.command("resign")
+    assert code == 0 and renewed.outcome == "VERIFIED"
+    assert r.journal.load(candidate.request_digest).receipt == candidate
+    after = cli.read_live(r.store, keyring=r.owner.keyring, game="forever", now=r.clock[0])
+    assert after.catalog.sequence == before.catalog.sequence + 1
+    assert after.catalog.releases == before.catalog.releases
+    assert after.catalog.active_release_id == before.catalog.active_release_id
+    count = len(sent)
+    assert notify(renewed) == "QUIET"
+    assert (
+        len(sent) == count and json.loads(state.read_bytes())["failuresNotified"] == before_marker
+    )
+    assert r.command("resign")[1].outcome == "NO_ACTION"
+    notify(blocked)
+    assert len(sent) == count
+
+
+def test_unknown_put_is_privately_diagnosed_while_public_files_are_unavailable(
+    rehearsal, monkeypatch
+):
+    from talent_data.ota.errors import OtaPublisherError
+    from talent_data.ota.store import blob_key
+
+    r = rehearsal
+    original_put, original_get = r.store.put, r.store.get
+    landed, private_down, puts = [False], [False], []
+
+    def put(key, raw, *, cache_control):
+        original_put(key, raw, cache_control=cache_control)
+        puts.append(key)
+        if key == CATALOG:
+            landed[0] = True
+            private_down[0] = True
+            raise OtaPublisherError("TEST lost PUT response")
+
+    def get(key):
+        if private_down[0] and key == CATALOG:
+            raise OtaPublisherError("TEST private read unavailable")
+        return original_get(key)
+
+    monkeypatch.setattr(r.store, "put", put)
+    monkeypatch.setattr(r.store, "get", get)
+    assert r.command()[1].outcome == "AMBIGUOUS"
+    assert landed[0] and puts.count(CATALOG) == 1
+    private_down[0] = False
+    sha = next(iter(r.package.blobs))
+    public_path = "/" + blob_key(sha)
+    healthy_client = r.dependencies.client
+    healthy_transport = healthy_client._transport
+
+    def unavailable(request):
+        if request.url.path == public_path:
+            return httpx.Response(503, stream=httpx.ByteStream(b""))
+        return healthy_transport.handle_request(request)
+
+    client = httpx.Client(transport=httpx.MockTransport(unavailable))
+    r.dependencies.client = client
+    r.reads.clear()
+    r.api_calls.clear()
+    before = list(puts)
+    try:
+        code, diagnosed = r.command()
+        assert code == 3 and diagnosed.outcome == "PUBLISHED_NOT_VERIFIED"
+        retained = next(iter(r.journal.read_all().values())).receipt
+        assert retained.state is RequestState.PUBLISHED_NOT_VERIFIED
+        assert "OTA_PRODUCTION_PRIVATE_KEY_PEM" not in r.reads
+        assert not any(call[0] == "archive" for call in r.api_calls)
+        assert puts == before
+        r.reads.clear()
+        writers = len(r.writers)
+        assert r.command()[1].outcome == "PUBLISHED_NOT_VERIFIED"
+        assert not r.reads and len(r.writers) == writers and puts == before
+    finally:
+        r.dependencies.client = healthy_client
+        client.close()
+    assert r.command()[0] == 0
+    assert all(
+        entry.receipt.state is RequestState.VERIFIED for entry in r.journal.read_all().values()
+    )
+    assert puts == before and not r.reads
+
+
+def test_ambiguous_diagnosis_still_retries_other_retained_public_verification(rehearsal):
+    from talent_data.ota.automation.publisher import renew_catalog
+    from talent_data.ota.errors import OtaPublisherError
+
+    r = rehearsal
+    first = r.run()  # real release write; deliberately leave public confirmation pending
+    assert first.state is RequestState.PUBLISHED_NOT_VERIFIED
+    r.clock[0] += timedelta(days=30)
+    get, put = r.store.get, r.store.put
+    down = [False]
+
+    def lost_put(key, raw, *, cache_control):
+        put(key, raw, cache_control=cache_control)
+        if key == CATALOG:
+            down[0] = True
+            raise OtaPublisherError("TEST lost renewal response")
+
+    def unavailable(key):
+        if down[0] and key == CATALOG:
+            raise OtaPublisherError("TEST lost renewal read")
+        return get(key)
+
+    r.store.put, r.store.get = lost_put, unavailable
+    unknown = renew_catalog(
+        store=r.store,
+        keyring=r.owner.keyring,
+        game="forever",
+        now=r.clock[0],
+        journal=r.journal,
+        signer=r.signer,
+        run_id=77,
+        attempt=1,
+        key_id=r.key_id,
+    )
+    assert unknown.state is RequestState.AMBIGUOUS
+    down[0] = False
+    r.store.put, r.store.get = put, get
+    live = cli.read_live(r.store, keyring=r.owner.keyring, game="forever", now=r.clock[0])
+    other = next_catalog(
+        live.catalog,
+        game="forever",
+        channel=Channel.PRODUCTION,
+        active_release_id=live.catalog.active_release_id,
+        issued_at=r.clock[0],
+    )
+    put(
+        CATALOG,
+        build_envelope(
+            other.payload, {r.key_id: sign_pae_der(derive_test_key(r.key_id), other.payload)}
+        ),
+        cache_control=CATALOG_CACHE_CONTROL,
+    )
+    r.payload.clear()
+    r.payload["repository"] = {"full_name": r.receipt.request.repository}
+    healthy_client, public_reads = r.dependencies.client, []
+
+    def observe(request):
+        public_reads.append(request.url.path)
+        return healthy_client._transport.handle_request(request)
+
+    with httpx.Client(transport=httpx.MockTransport(observe)) as client:
+        r.dependencies.client = client
+        try:
+            assert r.command("reconcile", GITHUB_EVENT_NAME="schedule")[1].outcome == "AMBIGUOUS"
+        finally:
+            r.dependencies.client = healthy_client
+    assert "/" + CATALOG in public_reads
+    assert r.journal.load(first.request_digest).receipt.state is RequestState.PUBLISHED_NOT_VERIFIED
+    assert r.journal.load(unknown.request_digest).receipt.state is RequestState.AMBIGUOUS
