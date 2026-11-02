@@ -1,7 +1,7 @@
 {
   "stateVersion": 1,
   "kind": "notify-production-state",
-  "notifiedRelease": "1.60.1.70532-r1",
+  "notifiedRelease": "1.60.1.70707-r1",
   "failuresNotified": [],
-  "updatedAt": "2026-11-02T14:18:00Z"
+  "updatedAt": "2026-11-02T17:23:35+00:00"
 }
