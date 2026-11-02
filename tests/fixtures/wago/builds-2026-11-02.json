@@ -1,0 +1,33 @@
+{
+  "wowf": [
+    {
+      "product": "wowf",
+      "version": "1.60.1.70707",
+      "created_at": "2026-10-30 03:20:13",
+      "build_config": "7feb61f3c994bcb168526b8db521514a",
+      "product_config": "2ced73c17301c297ca062bc7c3583420",
+      "cdn_config": "2a6e419be5b7d7d896f7bc40395256dd",
+      "is_bgdl": false
+    },
+    {
+      "product": "wowf",
+      "version": "1.60.1.70532",
+      "created_at": "2026-10-21 16:45:08",
+      "build_config": "2582289d81e380163c7a13472df4cb81",
+      "product_config": "2ced73c17301c297ca062bc7c3583420",
+      "cdn_config": "6bff2e685995b214c2ff5d08f3344542",
+      "is_bgdl": false
+    }
+  ],
+  "wow_classic_beta": [
+    {
+      "product": "wow_classic_beta",
+      "version": "1.60.1.70532",
+      "created_at": "2026-10-22 19:09:04",
+      "build_config": "ad1802f4455e427ed8b7769aab25b0c0",
+      "product_config": "fcfd1bc39031f5921d00aee2d869adb5",
+      "cdn_config": "ccc89ec4bcc03f6cc1cc1c7861d9ed0f",
+      "is_bgdl": false
+    }
+  ]
+}
