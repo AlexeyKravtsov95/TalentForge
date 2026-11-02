@@ -3,9 +3,8 @@
   "kind": "notify-candidate-state",
   "notified": [],
   "failuresNotified": [
-    "ota-prepare/prepare",
-    "ota-prepare/detect"
+    "ota-prepare/prepare"
   ],
   "pending": [],
-  "updatedAt": "2026-11-02T05:56:19Z"
+  "updatedAt": "2026-11-02T07:58:24Z"
 }
