@@ -427,18 +427,31 @@ def test_truncated_listing_is_not_permission_to_dispatch_again():
         )
 
 
-def test_current_70532_release_is_never_proposed_again(prepared_inputs):
+@pytest.mark.parametrize(
+    "source,active_build,candidate",
+    [
+        ("849d2a79944a66514d16518db4b1aa9b69b2bfa8", "1.60.1.70532", None),
+        ("849d2a79944a66514d16518db4b1aa9b69b2bfa8", "1.60.1.70450", None),
+        ("f7c377ee8a5edd16e8e25a4e57e6c3a3345df524", "1.60.1.70532", "1.60.1.70707"),
+        ("f7c377ee8a5edd16e8e25a4e57e6c3a3345df524", "1.60.1.70450", "1.60.1.70707"),
+        ("f7c377ee8a5edd16e8e25a4e57e6c3a3345df524", "1.60.1.70707", None),
+    ],
+)
+def test_candidate_selection_never_reissues_70532_and_detects_new_committed_data(
+    source, active_build, candidate
+):
     from tests.unit.ota.test_automation_public_verify import catalog_of
 
     catalog = catalog_of(publication())
     entry = catalog.releases[0].model_copy(
-        update={"client_build": "1.60.1.70532", "release_id": "1.60.1.70532-r1"}
+        update={"client_build": active_build, "release_id": f"{active_build}-r1"}
     )
     catalog = catalog.model_copy(
         update={"active_release_id": entry.release_id, "releases": [entry]}
     )
-    source = p.git(ROOT, "rev-parse", "origin/main").decode().strip()
-    assert p.select_candidate(ROOT, source, catalog) is None
+    # Immutable repository snapshots: before and after the reviewed 70707 data merge.
+    # A moving origin/main makes the historical no-candidate case invalid as data arrives.
+    assert p.select_candidate(ROOT, source, catalog) == candidate
 
 
 def test_base_change_after_an_existing_draft_requires_new_review(prepared_inputs, tmp_path):
