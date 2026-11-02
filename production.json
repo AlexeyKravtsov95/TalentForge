@@ -3,7 +3,8 @@
   "kind": "notify-production-state",
   "notifiedRelease": null,
   "failuresNotified": [
-    "ota-production-watch/manifest"
+    "ota-production-watch/manifest",
+    "ota-production/signer-smoke/SIGNER"
   ],
-  "updatedAt": "2026-11-02T07:35:27+00:00"
+  "updatedAt": "2026-11-02T10:46:07+00:00"
 }
