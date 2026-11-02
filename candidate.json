@@ -1,10 +1,12 @@
 {
   "stateVersion": 1,
   "kind": "notify-candidate-state",
-  "notified": [],
+  "notified": [
+    "1.60.1.70707-r1"
+  ],
   "failuresNotified": [
-    "ota-prepare/prepare"
+    "ota-prepare/propose"
   ],
   "pending": [],
-  "updatedAt": "2026-11-02T07:58:24Z"
+  "updatedAt": "2026-11-02T13:34:30Z"
 }
