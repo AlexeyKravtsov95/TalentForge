@@ -196,7 +196,7 @@ def test_fetch_stops_reading_oversized_body_and_strips_client_credentials():
     def handler(request):
         assert request.method == "GET"
         assert "authorization" not in request.headers and "cookie" not in request.headers
-        assert request.headers["accept-encoding"] == "identity"
+        assert request.headers["accept-encoding"] == "gzip"
         return httpx.Response(200, stream=TooLarge())
 
     with httpx.Client(
@@ -245,3 +245,20 @@ def test_excessive_json_nesting_is_a_failure_for_full_and_lightweight_watch():
     with httpx.Client(transport=httpx.MockTransport(origin.handler)) as client:
         result = observe_production(client, origin=ORIGIN, keyring=KEYRING, game=GAME, now=NOW)
     assert result.status is ProductionStatus.UNKNOWN
+
+
+def test_lightweight_watch_negotiates_gzip_for_catalog_and_active_manifest():
+    from talent_data.notify.production_watch import observe_production
+
+    origin = FakeOrigin(publication())
+    paths = []
+
+    def handler(request):
+        assert request.headers["accept-encoding"] == "gzip"
+        paths.append(request.url.path)
+        return origin.handler(request)
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        observed = observe_production(client, origin=ORIGIN, keyring=KEYRING, game=GAME, now=NOW)
+    assert observed.release_id is not None and observed.manifest_problem is None
+    assert len(paths) == 2

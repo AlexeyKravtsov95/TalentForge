@@ -46,6 +46,7 @@ from urllib.parse import urlsplit
 
 import httpx
 
+from talent_data.ota.http_body import BoundedBodyError, read_bounded_body
 from talent_data.ota.models import MAX_CATALOG_BYTES, Channel
 from talent_data.ota.s3_channels import PRODUCTION_PROFILE, STAGING_PROFILE
 from talent_data.ota.store import BLOB_CACHE_CONTROL, CATALOG_CACHE_CONTROL, blob_key, catalog_key
@@ -267,20 +268,22 @@ def fetch(
     headers = {"Accept-Encoding": "gzip" if accept_gzip else "identity"}
     try:
         with client.stream(method, url, headers=headers) as response:
-            if max_bytes is not None and response.headers.get("content-encoding"):
+            if (
+                max_bytes is not None
+                and not accept_gzip
+                and response.headers.get("content-encoding")
+            ):
                 return Fetched(0, {}, b"", error="content encoding on a bounded identity request")
-            chunks = bytearray()
-            for chunk in response.iter_raw():
-                if max_bytes is not None and len(chunks) + len(chunk) > max_bytes:
-                    return Fetched(0, {}, b"", error=f"body exceeds {max_bytes}-byte limit")
-                chunks.extend(chunk)
-            wire = bytes(chunks)
+            if max_bytes is not None:
+                wire = read_bounded_body(response, max_bytes)
+            else:
+                wire = b"".join(response.iter_raw())
             lowered = {k.lower(): v for k, v in response.headers.items()}
             status = response.status_code
-    except httpx.HTTPError as exc:
+    except (httpx.HTTPError, BoundedBodyError) as exc:
         return Fetched(0, {}, b"", error=f"{type(exc).__name__}: {exc}")
     body = wire
-    if method == "GET" and lowered.get("content-encoding") == "gzip":
+    if max_bytes is None and method == "GET" and lowered.get("content-encoding") == "gzip":
         try:
             body = gzip.decompress(wire)
         except (OSError, EOFError) as exc:

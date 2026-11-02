@@ -13,6 +13,7 @@ from urllib.parse import urlsplit
 import httpx
 
 from talent_data.models.manifest import DatasetManifest
+from talent_data.ota.http_body import BoundedBodyError, read_bounded_body
 from talent_data.ota.models import (
     MAX_CATALOG_BYTES,
     MAX_RELEASE_BYTES,
@@ -63,29 +64,16 @@ def _fetch(
     request = httpx.Request(
         "GET",
         url,
-        headers={"Accept-Encoding": "identity"},
+        headers={"Accept-Encoding": "gzip"},
         extensions={"timeout": dict.fromkeys(("connect", "read", "write", "pool"), timeout)},
     )
     with closing(client.send(request, auth=None, follow_redirects=False, stream=True)) as response:
         if response.status_code != 200:
             raise _PublicFailure(f"HTTP_STATUS: {response.status_code}")
-        if response.headers.get("content-encoding"):
-            raise _PublicFailure("CONTENT_ENCODING: expected identity")
-        declared = response.headers.get("content-length")
-        if declared is not None:
-            if not declared.isascii() or not declared.isdecimal():
-                raise _PublicFailure("CONTENT_LENGTH: invalid length")
-            if int(declared) > limit:
-                raise _PublicFailure("SIZE_LIMIT: declared body exceeds pin/limit")
-        body = bytearray()
-        for chunk in response.iter_raw():
-            _require(remaining() > 0, "VERIFY_BUDGET_EXHAUSTED")
-            if len(body) + len(chunk) > limit:
-                raise _PublicFailure("SIZE_LIMIT: received body exceeds pin/limit")
-            body.extend(chunk)
-        if declared is not None and int(declared) != len(body):
-            raise _PublicFailure("CONTENT_LENGTH: truncated body")
-        return bytes(body)
+        try:
+            return read_bounded_body(response, limit, remaining=remaining)
+        except BoundedBodyError as exc:
+            raise _PublicFailure(str(exc)) from exc
 
 
 def verify_publication(
