@@ -1,0 +1,1164 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 8,
+    "token": "MAGE",
+    "name": "Mage"
+  },
+  "fromBuild": "1.60.1.70532",
+  "toBuild": "1.60.1.70707",
+  "fromContentHash": "sha256:2179890fd1e6476d02721b291987d0224dd4a20ad3c92b7f96956ed00e7b766f",
+  "toContentHash": "sha256:b44bc4265aaec6a8399fefd88758f4d1e249543616ab90ce3c1838f75ddcf3ec",
+  "summary": {
+    "added": 0,
+    "removed": 2,
+    "changed": 26,
+    "changesByKind": {
+      "descriptionChanged": 8,
+      "effectAdded": 5,
+      "effectBasePointsChanged": 3,
+      "effectRankValueChanged": 13,
+      "effectRemoved": 1,
+      "maxRankChanged": 3,
+      "positionChanged": 7,
+      "renamed": 2,
+      "spellReplaced": 2,
+      "unlockRequirementsChanged": 12
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [
+    {
+      "nodeId": 105773,
+      "treeId": 1112,
+      "name": "Piercing Ice",
+      "spellId": 11151,
+      "sectionIndex": 2,
+      "position": {
+        "x": 9080,
+        "y": 3330,
+        "row": 2,
+        "column": 0
+      },
+      "maxRank": 3,
+      "relatedNodeId": null
+    },
+    {
+      "nodeId": 105814,
+      "treeId": 1112,
+      "name": "Arcane Focus",
+      "spellId": 11222,
+      "sectionIndex": 0,
+      "position": {
+        "x": 1620,
+        "y": 2130,
+        "row": 0,
+        "column": 1
+      },
+      "maxRank": 5,
+      "relatedNodeId": null
+    }
+  ],
+  "changed": [
+    {
+      "nodeId": 105762,
+      "treeId": 1112,
+      "name": "Ice Barrier",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130491,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Instantly shields you, absorbing $s1 damage. Lasts $d. While the shield holds, your spellcasts will not be interrupted or delayed from taking damage.\r\n",
+          "new": "Shield yourself, absorbing ${$s1+($SPFR*0.1)*($11189s3/100+1)} damage and increasing your Frost damage by $1326891s1% for $d. While shielded, your Frost damage is increased by an additional $s2% and you do not lose casting time when you take damage."
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 130491,
+          "effectIndex": 1,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 1,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 3,
+            "unresolvedReason": null
+          }
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 130491,
+          "effectIndex": 2,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 2,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 3,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 105763,
+      "treeId": 1112,
+      "name": "Winter's Chill",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130492,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Gives your Frost damage spells a $m2% chance to apply the Winter's Chill effect, which increases the damage done by your Cone of Cold spell to the target by $12579s1%, stacking up to $s1 times.",
+          "new": "Gives your Frostbolt, Frost Blast, and Fingers of Frost empowered Ice Lance spells a $m2% chance to apply Winter's Chill, increasing the target's damage taken from your next Cone of Cold by $12579s1% and it gains an additional $s3% of your spell damage, stacking up to $s1 times."
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 130492,
+          "effectIndex": 2,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 2,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 7,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 105771,
+      "treeId": 1112,
+      "name": "Improved Blizzard",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 10880,
+            "y": 3330,
+            "row": 2,
+            "column": 3
+          },
+          "new": {
+            "x": 9680,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 105772,
+      "treeId": 1112,
+      "name": "Frost Channeling",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 9680,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "new": {
+            "x": 9080,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 105774,
+      "treeId": 1112,
+      "name": "Frostbite",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 10880,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          },
+          "new": {
+            "x": 9680,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 105776,
+      "treeId": 1112,
+      "name": "Permafrost",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 9680,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          },
+          "new": {
+            "x": 10880,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 105778,
+      "treeId": 1112,
+      "name": "Precision",
+      "changes": [
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 5,
+          "new": 3
+        },
+        {
+          "kind": "renamed",
+          "entryId": 130507,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Elemental Precision",
+          "new": "Precision"
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130507,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Improves your chance to hit with Frost and Fire spells by $s1%.",
+          "new": "Improves your chance to hit with all spells by $s1%."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130507,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 1,
+          "new": 2
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130507,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 2,
+          "new": 4
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130507,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 3,
+          "new": 6
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130507,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": 4,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130507,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": 5,
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 105780,
+      "treeId": 1112,
+      "name": "Frost Warding",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130509,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases the Armor and resistance given by your Frost Armor and Ice Armor spells by $s1%. In addition, gives your Frost Ward a $s2% chance to reflect Frost spells and effects while active.",
+          "new": "Increases the Armor and resistances granted by your Frost Armor and Ice Armor spells by $s1%, gives your Frost Ward a $s2% chance to negate the warded damage spell, and increases the amount absorbed by your Ice Barrier and Frost Ward by $s3%."
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130509,
+          "effectIndex": 1,
+          "rank": null,
+          "old": 10,
+          "new": 0
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 130509,
+          "effectIndex": 2,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 2,
+            "perRank": [
+              {
+                "rank": 1,
+                "value": 10
+              },
+              {
+                "rank": 2,
+                "value": 20
+              }
+            ],
+            "perRankStatus": "resolved",
+            "basePoints": 0,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 105784,
+      "treeId": 1112,
+      "name": "Critical Mass",
+      "changes": [
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 5,
+          "new": 3
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130513,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": 8,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130513,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": 10,
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 105789,
+      "treeId": 1112,
+      "name": "Burning Soul",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105792,
+                105793,
+                105794,
+                105795,
+                105796,
+                105797
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105792,
+                105793,
+                105794,
+                105795,
+                105796
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105790,
+      "treeId": 1112,
+      "name": "Pyroblast",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105792,
+                105793,
+                105794,
+                105795,
+                105796,
+                105797
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105792,
+                105793,
+                105794,
+                105795,
+                105796
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105791,
+      "treeId": 1112,
+      "name": "Improved Flamestrike",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105792,
+                105793,
+                105794,
+                105795,
+                105796,
+                105797
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105792,
+                105793,
+                105794,
+                105795,
+                105796
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105792,
+      "treeId": 1112,
+      "name": "Impact",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105795,
+                105796,
+                105797
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105795,
+                105796
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105793,
+      "treeId": 1112,
+      "name": "Flame Throwing",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105795,
+                105796,
+                105797
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105795,
+                105796
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105794,
+      "treeId": 1112,
+      "name": "Ignite",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105795,
+                105796,
+                105797
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105795,
+                105796
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105795,
+      "treeId": 1112,
+      "name": "Accelerant",
+      "changes": [
+        {
+          "kind": "renamed",
+          "entryId": 130524,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Improved Fireball",
+          "new": "Accelerant"
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130524,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Reduces the casting time of your Fireball and Frostfire Bolt spells by $/1000;S1 sec.",
+          "new": "Reduces the casting time of your Fireball, Frostfire Bolt, and Arcane Wrath spells by $/1000;S1 sec."
+        }
+      ]
+    },
+    {
+      "nodeId": 105796,
+      "treeId": 1112,
+      "name": "Incineration",
+      "changes": [
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 3,
+          "new": 5
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130525,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": null,
+          "new": 8
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130525,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": null,
+          "new": 10
+        }
+      ]
+    },
+    {
+      "nodeId": 105797,
+      "treeId": 1112,
+      "name": "Improved Fire Blast",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 5020,
+            "y": 2130,
+            "row": 0,
+            "column": 0
+          },
+          "new": {
+            "x": 6820,
+            "y": 3330,
+            "row": 2,
+            "column": 3
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105792,
+                105793,
+                105794,
+                105795,
+                105796
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105798,
+      "treeId": 1112,
+      "name": "Arcane Power",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105798,
+                105799,
+                105800,
+                105801,
+                105802,
+                105803,
+                105804,
+                105805,
+                105806,
+                105807,
+                105808,
+                105809,
+                105810,
+                105811,
+                105812,
+                105813,
+                105814,
+                105815
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105798,
+                105799,
+                105800,
+                105801,
+                105802,
+                105803,
+                105804,
+                105805,
+                105806,
+                105807,
+                105808,
+                105809,
+                105810,
+                105811,
+                105812,
+                105813,
+                105815,
+                113627
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105799,
+      "treeId": 1112,
+      "name": "Arcane Instability",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105800,
+                105801,
+                105802,
+                105803,
+                105804,
+                105805,
+                105806,
+                105807,
+                105808,
+                105809,
+                105810,
+                105811,
+                105812,
+                105813,
+                105814,
+                105815
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105800,
+                105801,
+                105802,
+                105803,
+                105804,
+                105805,
+                105806,
+                105807,
+                105808,
+                105809,
+                105810,
+                105811,
+                105812,
+                105813,
+                105815,
+                113627
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105800,
+      "treeId": 1112,
+      "name": "Arcane Mind",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105802,
+                105803,
+                105804,
+                105805,
+                105806,
+                105807,
+                105808,
+                105809,
+                105810,
+                105811,
+                105812,
+                105813,
+                105814,
+                105815
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105802,
+                105803,
+                105804,
+                105805,
+                105806,
+                105807,
+                105808,
+                105809,
+                105810,
+                105811,
+                105812,
+                105813,
+                105815,
+                113627
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105801,
+      "treeId": 1112,
+      "name": "Presence of Mind",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105802,
+                105803,
+                105804,
+                105805,
+                105806,
+                105807,
+                105808,
+                105809,
+                105810,
+                105811,
+                105812,
+                105813,
+                105814,
+                105815
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105802,
+                105803,
+                105804,
+                105805,
+                105806,
+                105807,
+                105808,
+                105809,
+                105810,
+                105811,
+                105812,
+                105813,
+                105815,
+                113627
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105802,
+      "treeId": 1112,
+      "name": "Arcane Resilience",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 2820,
+            "y": 2130,
+            "row": 0,
+            "column": 3
+          },
+          "new": {
+            "x": 2220,
+            "y": 2130,
+            "row": 0,
+            "column": 2
+          }
+        },
+        {
+          "kind": "spellReplaced",
+          "entryId": 130531,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 400588,
+            "name": "Missile Barrage"
+          },
+          "new": {
+            "spellId": 28574,
+            "name": "Arcane Resilience"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130531,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Gives your Arcane Blast spell a $m1% chance, your Arcane Missile hits a ${$m1/4}% chance, and your Arcane Wrath, Fireball, Frostbolt, and Frostfire Bolt spells a ${$m1/2}% chance to reduce the channeled duration of your next Arcane Missiles spell by $400589s1%, reduce the Mana cost by $400589s3%, and missiles fire every ${$m2/10}.1 sec.",
+          "new": "Increases your Armor by an amount equal to $s1% of your Intellect."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130531,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 20,
+          "new": 25
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130531,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 40,
+          "new": 50
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130531,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 40,
+          "new": 50
+        },
+        {
+          "kind": "effectRemoved",
+          "entryId": 130531,
+          "effectIndex": 1,
+          "rank": null,
+          "old": {
+            "index": 1,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 5,
+            "unresolvedReason": null
+          },
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 105809,
+      "treeId": 1112,
+      "name": "Missile Barrage",
+      "changes": [
+        {
+          "kind": "spellReplaced",
+          "entryId": 130538,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 28574,
+            "name": "Arcane Resilience"
+          },
+          "new": {
+            "spellId": 400588,
+            "name": "Missile Barrage"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130538,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases your Armor by an amount equal to $s1% of your Intellect.",
+          "new": "Gives your Arcane Blast spell a $m1% chance, and your Arcane Wrath, Fireball, Frostbolt, Frost Blast, and Frostfire Bolt spells a ${$m1/2}% chance to reduce the channeled duration of your next Arcane Missiles spell by $400589s1%, reduce the Mana cost by $400589s3%, and missiles fire every ${$m2/10}.1 sec."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130538,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 25,
+          "new": 20
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130538,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 50,
+          "new": 40
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130538,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 50,
+          "new": 40
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 130538,
+          "effectIndex": 1,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 1,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 5,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 105813,
+      "treeId": 1112,
+      "name": "Improved Channeling",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 2220,
+            "y": 2130,
+            "row": 0,
+            "column": 2
+          },
+          "new": {
+            "x": 1620,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130542,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Gives you a $m1% chance to avoid interruption caused by damage while channeling Arcane Missiles and a $m2% chance while casting Arcane Blast or Arcane Wrath.",
+          "new": "Gives your Arcane Missiles spell a $m1% chance and your Arcane Blast and Arcane Wrath spells a $m2% chance to not lose casting time when you take damage."
+        }
+      ]
+    },
+    {
+      "nodeId": 113627,
+      "treeId": 1112,
+      "name": "Arcane Wrath",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105802,
+                105806,
+                105807,
+                105808,
+                105809,
+                105810,
+                105811,
+                105812,
+                105813,
+                105815
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,368 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 5,
+    "token": "PRIEST",
+    "name": "Priest"
+  },
+  "fromBuild": "1.60.1.70532",
+  "toBuild": "1.60.1.70707",
+  "fromContentHash": "sha256:c26748a94c00c54db44fc5b49f40bde24775f9a125d43ff6acc63e6f89780064",
+  "toContentHash": "sha256:807e696a4084c31c2346d548be38f3c7734054436f3ad9aa282d763587aacb70",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 8,
+    "changesByKind": {
+      "descriptionChanged": 1,
+      "unlockRequirementsChanged": 7
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 105838,
+      "treeId": 1114,
+      "name": "Improved Mana Burn",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105842,
+                105843,
+                105844,
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105837,
+                105842,
+                105843,
+                105844,
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105839,
+      "treeId": 1114,
+      "name": "Soul Warding",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105842,
+                105843,
+                105844,
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105837,
+                105842,
+                105843,
+                105844,
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105841,
+      "treeId": 1114,
+      "name": "Improved Inner Fire",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105842,
+                105843,
+                105844,
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105837,
+                105842,
+                105843,
+                105844,
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105842,
+      "treeId": 1114,
+      "name": "Mental Agility",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105837,
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105843,
+      "treeId": 1114,
+      "name": "Meditation",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105837,
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105844,
+      "treeId": 1114,
+      "name": "Inner Focus",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105837,
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105846,
+      "treeId": 1114,
+      "name": "Improved Power Word: Shield",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105837,
+                105845,
+                105846,
+                105848,
+                105849,
+                105850,
+                110852,
+                110853
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105867,
+      "treeId": 1114,
+      "name": "Twilight Focus",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130596,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Gives you a $s1% chance to avoid interruption caused by damage while casting any spell.",
+          "new": "Gives your spells a $s1% chance to not lose casting time when you take damage."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 3,
+    "token": "HUNTER",
+    "name": "Hunter"
+  },
+  "fromBuild": "1.60.1.70532",
+  "toBuild": "1.60.1.70707",
+  "fromContentHash": "sha256:8e4a1ab7a382fbd5edb7e9597f9f9628faff848fb6f0d4d8f0a46ae31562e0fd",
+  "toContentHash": "sha256:9c86189b08f40f7ee3646e5e01545876dabf6b481f775f4f0f1d99f91bcc4c47",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 2,
+    "changesByKind": {
+      "effectBasePointsChanged": 1,
+      "effectRankValueChanged": 3,
+      "effectStatusChanged": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 104987,
+      "treeId": 1091,
+      "name": "Surefooted",
+      "changes": [
+        {
+          "kind": "effectStatusChanged",
+          "entryId": 129651,
+          "effectIndex": 3,
+          "rank": null,
+          "old": "none",
+          "new": "resolved"
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129651,
+          "effectIndex": 3,
+          "rank": 1,
+          "old": null,
+          "new": 1
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129651,
+          "effectIndex": 3,
+          "rank": 2,
+          "old": null,
+          "new": 2
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129651,
+          "effectIndex": 3,
+          "rank": 3,
+          "old": null,
+          "new": 3
+        }
+      ]
+    },
+    {
+      "nodeId": 105004,
+      "treeId": 1091,
+      "name": "Trueshot Aura",
+      "changes": [
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 129668,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 30,
+          "new": 15
+        }
+      ]
+    }
+  ]
+}
