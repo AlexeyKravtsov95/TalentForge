@@ -126,7 +126,10 @@ def _check_active_manifest(
     active = state.active
     assert active is not None  # the caller checked
     response = fetch(
-        client, f"{state.origin}/{blob_key(manifest_sha256)}", max_bytes=active.manifest_byte_length
+        client,
+        f"{state.origin}/{blob_key(manifest_sha256)}",
+        accept_gzip=True,
+        max_bytes=active.manifest_byte_length,
     )
     if response.status != 200:
         cause = response.error or f"HTTP {response.status}"

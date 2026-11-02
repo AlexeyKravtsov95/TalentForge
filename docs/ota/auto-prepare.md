@@ -18,6 +18,14 @@ owner's manual procedure ([publisher-runbook.md](publisher-runbook.md),
 [production-deployment.md](production-deployment.md)); the publication rules and the
 approval gates are unchanged.
 
+Production reads explicitly negotiate `Accept-Encoding: gzip`. Both received wire bytes
+and decoded bytes are capped by the existing catalog limit or exact manifest/file size
+pin. The reader accepts identity or one complete gzip member, checks CRC and rejects
+unsupported encodings, truncation, trailing data and concatenated members. Signature,
+SHA-256, strict JSON and schema verification run on the decoded original bytes unchanged.
+The strict identity requests in delivery preflight remain a separate configuration check;
+accepting negotiated gzip does not mark an identity/CDN configuration failure as repaired.
+
 ## How it runs
 
 ```

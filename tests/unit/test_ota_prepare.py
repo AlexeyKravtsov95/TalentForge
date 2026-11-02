@@ -385,10 +385,20 @@ def test_the_mirror_holds_exactly_what_production_serves(tmp_path: Path) -> None
     bad = FakeOrigin(tampered)
     with (
         httpx.Client(transport=httpx.MockTransport(bad.handler)) as client,
-        pytest.raises(OtaPublisherError, match="did not verify"),
+        pytest.raises(OtaPublisherError, match="SIZE_LIMIT"),
     ):
         mirror_production(
             client, read(bad, SERVED_AT), LocalDirectoryStore(tmp_path / "bad"), game="forever"
+        )
+    # A same-size mutation still reaches and fails the unchanged SHA-256 verifier.
+    tampered[victim] = bytes([objects[victim][0] ^ 1]) + objects[victim][1:]
+    bad = FakeOrigin(tampered)
+    with (
+        httpx.Client(transport=httpx.MockTransport(bad.handler)) as client,
+        pytest.raises(OtaPublisherError, match="did not verify"),
+    ):
+        mirror_production(
+            client, read(bad, SERVED_AT), LocalDirectoryStore(tmp_path / "bad-hash"), game="forever"
         )
     with httpx.Client() as client, pytest.raises(OtaPublisherError, match="nothing to mirror"):
         mirror_production(client, ABSENT, store, game="forever")

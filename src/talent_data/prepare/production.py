@@ -111,7 +111,9 @@ def read_production(
     from talent_data.ota.verify import OtaError, verify_catalog
 
     origin = origin.rstrip("/")
-    response = fetch(client, f"{origin}/{CATALOG_KEY}", max_bytes=MAX_CATALOG_BYTES)
+    response = fetch(
+        client, f"{origin}/{CATALOG_KEY}", accept_gzip=True, max_bytes=MAX_CATALOG_BYTES
+    )
     if response.status in (403, 404):
         return ProductionState(
             ProductionStatus.ABSENT,
@@ -176,10 +178,10 @@ def mirror_production(
         raise OtaPublisherError(f"nothing to mirror: production is {state.status.value}")
     bodies: dict[str, bytes] = {}
 
-    def blob(sha_ref: str) -> bytes:
+    def blob(sha_ref: str, limit: int) -> bytes:
         if sha_ref not in bodies:
             key = blob_key(sha_ref)
-            response = fetch(client, f"{state.origin}/{key}")
+            response = fetch(client, f"{state.origin}/{key}", accept_gzip=True, max_bytes=limit)
             if response.status != 200:
                 cause = response.error or f"HTTP {response.status}"
                 raise OtaPublisherError(f"production object {key} could not be read: {cause}")
@@ -189,12 +191,12 @@ def mirror_production(
     for entry in state.catalog.releases:
         try:
             manifest = verify_release_manifest(
-                blob(entry.manifest_sha256),
+                blob(entry.manifest_sha256, entry.manifest_byte_length),
                 entry,
                 game=game,
                 supported_data_level=entry.min_data_level,
             )
-            verify_release_files(manifest, lambda file: blob(file.sha256))
+            verify_release_files(manifest, lambda file: blob(file.sha256, file.byte_length))
         except OtaError as exc:
             raise OtaPublisherError(
                 f"production release {entry.release_id} did not verify: "
