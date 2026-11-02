@@ -1,9 +1,7 @@
 {
   "stateVersion": 1,
   "kind": "notify-production-state",
-  "notifiedRelease": null,
-  "failuresNotified": [
-    "ota-production-watch/manifest"
-  ],
-  "updatedAt": "2026-11-02T11:29:26Z"
+  "notifiedRelease": "1.60.1.70532-r1",
+  "failuresNotified": [],
+  "updatedAt": "2026-11-02T14:18:00Z"
 }
