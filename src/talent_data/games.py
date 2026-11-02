@@ -30,8 +30,9 @@ GAMES: dict[str, GameConfig] = {
     "forever": GameConfig(
         key="forever",
         display_name="Forever",
-        # WoW: Forever beta currently ships through the Classic beta product.
-        products=("wow_classic_beta",),
+        # Forever release builds (including 70707) are listed under wowf; keep the
+        # beta product for historical builds. Both still require the 1.60 branch.
+        products=("wow_classic_beta", "wowf"),
         version_branch="1.60",
         dataset_class_tokens=(
             "WARRIOR",

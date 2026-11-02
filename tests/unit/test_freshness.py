@@ -147,11 +147,8 @@ def test_the_m5_data_3_index_is_current_for_70374() -> None:
     assert report.newer_unpublishable == ()
 
 
-def test_the_wowf_product_is_outside_the_game_s_products() -> None:
-    """``wowf`` (first seen in the 2026-10-14 index, carrying 1.60.1.70245) is not one of
-    the products Forever is mapped to, so it is never a candidate - an explicit, documented
-    scope limit (docs/dataset-freshness-watch.md), not a judgement about that product."""
-    assert GAME.products == ("wow_classic_beta",)
+def test_historical_wowf_build_does_not_replace_the_newer_beta_build() -> None:
+    """The old release-product entry does not displace newer publishable beta data."""
     assert [e["version"] for e in payload_70374()["wowf"]] == [V70245]
     report = check(serving(payload_70374()), V70374)
     assert report.latest_publishable is not None
@@ -404,3 +401,27 @@ def test_script_checks_the_app_s_product_bundle(
     result = json.loads(capsys.readouterr().out)
     # the app declares the build this index names as the latest publishable one
     assert (result["productBuild"], result["status"], code) == (declared, "CURRENT", 0)
+
+
+def test_release_product_70707_is_detected_after_beta_70532() -> None:
+    """The real 2026-11-02 index moved new Forever builds to wowf."""
+    index = json.loads((ROOT / "tests/fixtures/wago/builds-2026-11-02.json").read_text())
+    report = check(serving(index), "1.60.1.70532")
+    assert report.status is FreshnessStatus.OUTDATED
+    assert latest_publishable(report) == "1.60.1.70707"
+    assert report.latest_publishable is not None
+    assert report.latest_publishable.info.product == "wowf"
+    assert report.latest_publishable.background_download is False
+
+
+@pytest.mark.parametrize("flag", [True, None])
+def test_release_product_without_publishable_flag_does_not_replace_beta(flag: bool | None) -> None:
+    index = json.loads((ROOT / "tests/fixtures/wago/builds-2026-11-02.json").read_text())
+    entry = index["wowf"][0]
+    if flag is None:
+        entry.pop("is_bgdl")
+    else:
+        entry["is_bgdl"] = flag
+    report = check(serving(index), "1.60.1.70532")
+    assert latest_publishable(report) == "1.60.1.70532"
+    assert report.status is (FreshnessStatus.UNKNOWN if flag is None else FreshnessStatus.CURRENT)

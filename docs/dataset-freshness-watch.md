@@ -237,7 +237,7 @@ for product, builds in json.load(sys.stdin).items():
             print(product, b["version"], b["created_at"], "is_bgdl=%r" % b.get("is_bgdl"))' | sort -k2 -V
 ```
 
-Only `wow_classic_beta` rows count for the product today (see the `wowf` gap below); an
+Both `wow_classic_beta` and `wowf` rows on branch `1.60` count (see the product mapping below); an
 `is_bgdl` that is not a JSON `false` does not make a build publishable.
 
 ### Backup monitoring that does not depend on GitHub Actions
@@ -276,11 +276,24 @@ Schedule it daily with `launchd` (a `LaunchAgent` with `StartCalendarInterval`) 
 is still not `CURRENT`: the release preflight above is the gate, the backup only shortens the
 time to notice. It never fetches datasets, edits files, commits, pushes or opens PRs.
 
-### Known gap: the `wowf` product
+### Product mapping: `wowf` and the historical beta
+
+On 2026-11-02 the owner requested OTA preparation of `1.60.1.70707`. The live
+`https://wago.tools/api/builds` index lists it under `wowf`, created
+`2026-10-30 03:20:13`, with `is_bgdl=false`, build config
+`7feb61f3c994bcb168526b8db521514a` and CDN config `2a6e419be5b7d7d896f7bc40395256dd`.
+The recorded subset is `tests/fixtures/wago/builds-2026-11-02.json`.
+Forever now accepts `wowf` and `wow_classic_beta`, still restricted to branch `1.60`.
+This fixes detection of 70707; strict `is_bgdl` classification and G7 are unchanged.
+The index is publishability evidence, never proof that game servers run this build.
+The existing version-addressed DB2 export limitation below remains: this change does not
+claim product-specific exports for a version shared by both products.
+
+Historical investigation (before this mapping change):
 
 On 2026-10-14 wago.tools listed a new product, `wowf`, with one build: `1.60.1.70245`
-(created 2026-10-13, `is_bgdl=false`) - older than the beta's 70374. Forever is mapped to
-`wow_classic_beta` only (`talent_data/games.py`), so neither the check nor the watcher looks
+(created 2026-10-13, `is_bgdl=false`) - older than the beta's 70374. Forever was mapped to
+`wow_classic_beta` only (`talent_data/games.py`), so neither the check nor the watcher looked
 at `wowf`. What `wowf` is (for example, the product of the launched game) is not established
 in the repository. Until it is, list it by hand (the `curl` above shows it) whenever a release
 is prepared, and treat a `wowf` build that differs from `PRODUCT_BUNDLE` as a question for a
@@ -291,7 +304,7 @@ Re-checked by M5.DATA.4 on 2026-10-17 (18:40 UTC): the index still listed only
 than the beta's product build 70450. The beta's own 70245 has a different `build_config`
 (`0bf141260c698dfc9cb3b5b7947b78c3`), yet wago.tools' table export is addressed by version
 string alone (`?build=1.60.1.70245`), so the pipeline's source cannot tell the two 70245
-builds apart. The product mapping is unchanged
+builds apart. At that time the product mapping remained unchanged
 ([forever-dataset.md](forever-dataset.md#product-dataset-160170450-m5data4)).
 
 ## Testing
