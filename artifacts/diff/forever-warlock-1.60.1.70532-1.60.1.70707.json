@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 9,
+    "token": "WARLOCK",
+    "name": "Warlock"
+  },
+  "fromBuild": "1.60.1.70532",
+  "toBuild": "1.60.1.70707",
+  "fromContentHash": "sha256:5b779d9bcb693ba5f2a6cf1ef47c2f5c368db3d9203542755b231fc4ae334045",
+  "toContentHash": "sha256:35b6353fb5261c5e7b7d559d727506b19b5f76b483740a96843e4ffd0dd2029f",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 3,
+    "changesByKind": {
+      "descriptionChanged": 2,
+      "effectAdded": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 105882,
+      "treeId": 1116,
+      "name": "Intensity",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130612,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Gives you a $s1% chance to resist interruption caused by damage while casting or channeling any Destruction spell.",
+          "new": "Gives your Destruction spells a $s1% chance to not lose casting time when you take damage."
+        }
+      ]
+    },
+    {
+      "nodeId": 105916,
+      "treeId": 1116,
+      "name": "Amplify Curse",
+      "changes": [
+        {
+          "kind": "effectAdded",
+          "entryId": 130646,
+          "effectIndex": 1,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 1,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": -20,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 105918,
+      "treeId": 1116,
+      "name": "Fel Concentration",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130648,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Gives you a $s1% chance to avoid interruption caused by damage while channeling or casting your Drain Life, Drain Mana, Drain Soul, or Wrack spells.",
+          "new": "Gives your Drain Life, Drain Mana, Drain Soul, and Wrack spells a $s1% chance to not lose casting time when you take damage."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 2,
+    "token": "PALADIN",
+    "name": "Paladin"
+  },
+  "fromBuild": "1.60.1.70532",
+  "toBuild": "1.60.1.70707",
+  "fromContentHash": "sha256:fb1bb5102e2f848f2eae171784c56b6d28326a3e5b6d96711a2a1613c9e99003",
+  "toContentHash": "sha256:a18ce4f3e32c6b5683e106d82765aa973fab4e75d4408e35676f1cbfd640e361",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 1,
+    "changesByKind": {
+      "effectRankValueChanged": 3
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 110882,
+      "treeId": 1100,
+      "name": "Champion of the Light",
+      "changes": [
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137880,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 10,
+          "new": 20
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137880,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 20,
+          "new": 40
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137880,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 30,
+          "new": 60
+        }
+      ]
+    }
+  ]
+}

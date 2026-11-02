@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 7,
+    "token": "SHAMAN",
+    "name": "Shaman"
+  },
+  "fromBuild": "1.60.1.70532",
+  "toBuild": "1.60.1.70707",
+  "fromContentHash": "sha256:24e731604b66dcf04b6f6cfbec1660218169eede40b156e069c071f3b6751004",
+  "toContentHash": "sha256:6b691069b85801428327b40fb9f8e67d34787bb60516477f2db77776cec4bad6",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 3,
+    "changesByKind": {
+      "descriptionChanged": 3,
+      "effectBasePointsChanged": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 104733,
+      "treeId": 1082,
+      "name": "Healing Focus",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129393,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Gives you a $m1% chance to avoid interruption caused by damage while casting any healing spell.",
+          "new": "Gives your healing spells a $m1% chance to not lose casting time when you take damage."
+        }
+      ]
+    },
+    {
+      "nodeId": 104763,
+      "treeId": 1082,
+      "name": "Eye of the Storm",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129423,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Reduces the pushback suffered from damaging attacks while casting Lightning Bolt, Chain Lightning, and Lava Burst by $m1%.",
+          "new": "Gives your Lightning Bolt, Chain Lightning, and Lava Burst spells a $m1% chance to not lose casting time when you take damage."
+        }
+      ]
+    },
+    {
+      "nodeId": 104768,
+      "treeId": 1082,
+      "name": "Elemental Focus",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129428,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Gives you a $h% chance to enter a Clearcasting state after casting any Fire, Frost, or Nature damage spell.  The Clearcasting state reduces the mana cost of your next damage spell by $16246s1%.",
+          "new": "Gives you a $s1% chance to enter a Clearcasting state after casting any Fire, Frost, or Nature damage spell.  The Clearcasting state reduces the mana cost of your next damage spell by $16246s1%."
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 129428,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 0,
+          "new": 10
+        }
+      ]
+    }
+  ]
+}
