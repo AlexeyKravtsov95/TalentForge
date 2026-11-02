@@ -45,8 +45,11 @@ def env(prepared_inputs, world, tmp_path):  # noqa: F811
     package = load_package(owner.package)
     remote = tmp_path / "main"
     git(ROOT, "clone", "--quiet", "--shared", str(ROOT), str(remote))
-    git(remote, "checkout", "-B", "main")
+    # The stand starts at its package's immutable source, without real release
+    # requests from the developer/PR checkout leaking into offline discovery.
+    git(remote, "checkout", "-B", "main", request.source_commit)
     approval = remote / "docs/ota/releases" / f"{request.release_id}.md"
+    approval.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(owner.approvals / approval.name, approval)
     git(remote, "add", str(approval))
     git(

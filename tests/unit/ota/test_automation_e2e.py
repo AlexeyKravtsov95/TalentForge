@@ -222,6 +222,22 @@ def rehearsal(env, tmp_path, monkeypatch):
     client.close()
 
 
+def test_rehearsal_main_contains_only_its_test_request(rehearsal):
+    paths = (
+        git(
+            rehearsal.repo,
+            "ls-tree",
+            "-r",
+            "--name-only",
+            "HEAD",
+            "docs/ota/release-requests",
+        )
+        .decode()
+        .splitlines()
+    )
+    assert paths == [f"docs/ota/release-requests/{rehearsal.receipt.request.release_id}.json"]
+
+
 def test_approved_request_to_verified_publication_and_one_notification(rehearsal, tmp_path):
     r = rehearsal
     from talent_data.notify.automation import notify_status
