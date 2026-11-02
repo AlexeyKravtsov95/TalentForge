@@ -3,7 +3,7 @@
   "kind": "notify-production-state",
   "notifiedRelease": null,
   "failuresNotified": [
-    "ota-production-watch/catalog"
+    "ota-production-watch/manifest"
   ],
-  "updatedAt": "2026-11-02T02:36:07Z"
+  "updatedAt": "2026-11-02T07:35:27+00:00"
 }
