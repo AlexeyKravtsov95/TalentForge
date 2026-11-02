@@ -34,9 +34,9 @@ such a store before any production promotion. The automated part of it for a can
 both releases built from one commit on `main`, staged on an isolated local stand, the real client
 (JVM) as the app before the update - is the **OTA staging verification** workflow
 ([staging-verification.md](staging-verification.md)); it never replaces the approval record or
-the owner's promotion, and devices stay a manual step.
+the owner's exact release approval, and devices stay a manual step.
 
-## 1. First publication (production)
+## 1. Manual first-publication / owner recovery reference (production)
 
 Preconditions: merged `main` commit with the build's data (G1); approval record not
 needed unless G5/G7 flagged; production keys generated per publisher design §5 and the
@@ -101,19 +101,17 @@ icons, descriptions, translations, the diff, the gate results and a git bundle o
 candidate. It is input for the refresh PR, never a publication: the release is built here
 from the merge commit on `main`.
 
-For production the routine path is the **release package** (M5.OTA.PROD.4,
-[production-release.md](production-release.md)): the "OTA production release package" workflow
-builds the release from one commit on `main`, binds the passed staging verification to its
-files and uploads the exact manifest bytes and blobs; the owner's
-`scripts/ota_production_release.py` runs `promote`, the offline signature, `attach-signature`
-and `verify-live` on it, with every check below unchanged.
+For production the routine path is the guarded GitHub release workflow described in
+[production-release.md](production-release.md). It binds the exact package/staging bytes,
+opens a draft release PR, and only after owner review/merge plus successful exact main CI
+runs the protected writer. No extra manual signing command is part of an ordinary release.
+The legacy local helper below remains available only for owner recovery after the stop/drain
+procedure in [GitHub setup/recovery](#github-production-automation-owner-setup).
 
-Same as §1 with the new build's commit. `promote` appends the release to the catalog
-(append-only: every earlier release stays listed with identical members) and makes it
-active. Re-read `ota report` first — it shows the semantic diff, warning moves, G6
-findings and the bytes a device will download.
+`promote` appends the release and preserves every earlier entry; review the semantic diff,
+G1–G8, G5/G7 evidence and download volume in the release PR.
 
-## 3. Rollback
+## 3. Manual rollback (after CI stop/drain)
 
 ```bash
 talent-data ota rollback --active <older releaseId> \
@@ -128,7 +126,7 @@ A rollback is a **new** catalog with a higher `sequence` whose `activeReleaseId`
 an older listed release. Releases are never unlisted (OD-7); the bundled product is the
 client-side floor (`KEEP_BUNDLED_FLOOR`).
 
-## 4. Re-sign (before expiry — and after it)
+## 4. Re-sign and expired-catalog recovery
 
 Catalogs expire (`issuedAt + 45 days`, OD-13). Re-issue at ~30 days, or with any change:
 
@@ -137,9 +135,12 @@ talent-data ota resign --store <store> --keyring <public keyring> --out artifact
 # sign + attach-signature + verify-live as in §3
 ```
 
-Schedule the reminder at half the validity window (test plan §6A.9).
+The enabled daily workflow renews at <=15 days remaining with 45-day validity. It never
+needs a historical package or new G7. The local commands above are the owner recovery path
+after CI stop/drain, not a second routine writer.
 
-**If the window has already lapsed**, `resign` (and `rollback`) are still the recovery
+**If the window has already lapsed**, automated renewal refuses it. Owner-only local
+`resign` (and `rollback`), after CI stop/drain, are still the recovery
 path: the live catalog's signature, structure, identity and integrity are verified as
 always, and only the expired window is forgiven *for the issuer of the next catalog* —
 which then ships a fresh `sequence` and validity window. Clients keep rejecting the
@@ -156,9 +157,9 @@ deliberately stays strict: recover with `resign` first, then promote the new rel
 * **Both lost:** apps keep working on their last activated data and stop updating.
   Recovery is an app update with new keys.
 
-The tool itself can neither load a production private key (`ota sign` refuses every
-non-`test-`/`tf-staging-` key id) nor read one from the repository or CI: production
-signing is the external steps 5–6 of §1, always.
+The generic `ota sign` / staging inline signer still refuse production key ids. The separate
+protected `CiPemSigner` deliberately reads only the existing pinned primary in CI (OD-2);
+backup signing remains the offline owner recovery route. Never store private keys in git.
 
 ## 6. Remote store: VK Cloud staging (OD-1, M5.OTA.4b)
 
@@ -243,7 +244,8 @@ VK Cloud **ignores conditional writes** (`If-None-Match: *` and `If-Match` both 
 `sequence` re-read immediately before the catalog put (`write_catalog`), the read-back of the
 catalog right after it, and this procedure:
 
-1. Only one operator publishes to staging at a time; no CI job holds the S3 key.
+1. Only one operator publishes to staging at a time. Production has a separate protected CI
+   writer and separate credentials; revoke ordinary local production write before enabling it.
 2. Before a publication, `verify-live --channel staging` and note the sequence.
 3. After it, `verify-live` again: the sequence must be exactly the one `stage`/`attach-signature`
    printed. If not, stop: two publications raced. Clients never accept a lower sequence and reject
@@ -324,3 +326,123 @@ Both channels' live catalogs are signature-verified first, and every release man
 is verified against its catalog pin (hash and length) before its file list is trusted:
 on any mismatch gc aborts without deleting anything (fail closed — an unverifiable or
 corrupted catalog must never drive deletions).
+
+## GitHub production automation: owner setup
+
+This is a post-review/merge owner procedure. Implementation validation does not prove
+production delivery. No App, environment, secret, IAM policy, variable, remote state branch or
+catalog was configured by this change. Do not reissue `1.60.1.70532-r1` or request a new G7 for it.
+
+1. Keep repository variable `OTA_PRODUCTION_AUTOMATION_ENABLED` unset or `false`. Protect
+   main and review the workflow/source and [validation record](2026-11-01-github-publication-validation.md).
+2. Create/install the GitHub App only in TalentForge, contents and pull requests read/write.
+   In main-only environment `ota-preparation`, set variable `OTA_APP_CLIENT_ID` and secret
+   `OTA_APP_PRIVATE_KEY`. Its short-lived installation token proposes release PRs so normal
+   CI can trigger; no close/reopen workaround. No App credential belongs in production.
+3. Create environment `ota-production`, Deployment branches/tags restricted to `main`, no
+   second required reviewer (the exact release PR is the approval). Set repository variable
+   `OTA_PRODUCTION_KEY_ID=tf-prod-2026a` (preflight also needs it). Import the owner's existing
+   primary as environment secret `OTA_PRODUCTION_PRIVATE_KEY_PEM`; optional
+   `OTA_PRODUCTION_KEY_PASSWORD`. Never generate/request a replacement key for setup; verify
+   P-256 and the pinned public key. `tf-prod-2026b` remains offline. Do not put keys in chat,
+   shell arguments, artifacts, logs, caches or exports.
+4. **Withhold both CI S3 secrets during bootstrap.** Temporarily set enable flag to literal
+   `true`; manually dispatch `init-journal` on main with `execute=true`, then `signer-smoke`
+   with `execute=true`. Init uses GitHub token only to initialize `ota-publication-state`;
+   normal missing/corrupt journal is a refusal, never auto-reinitialized. Smoke signs a
+   synthetic domain-separated PAE and verifies the pinned public key, never a catalog PUT;
+   its step receives PEM/password only. Require explicit successful status. Set flag back to
+   `false` while completing setup. Even init/smoke require flag true **and** explicit execute;
+   there is no disabled maintenance exception. Withheld S3 prevents automatic runs obtaining
+   catalog-write capability during this temporary enable window.
+5. Issue dedicated production S3 credentials: read/get/head/list limited to production bucket
+   `talentforge-ota-production` / `v1/`, PUT only `v1/blobs/sha256/*` and
+   `v1/channels/production/catalog.json`. Scope list to the needed prefixes. No DeleteObject,
+   ACL/policy changes, staging access or any other bucket. Endpoint/origin/region/profile and
+   keyring are committed (`s3_channels.PRODUCTION_PROFILE`); there are no CLI overrides.
+   Store only `OTA_PRODUCTION_S3_ACCESS_KEY_ID` and `OTA_PRODUCTION_S3_SECRET_ACCESS_KEY`
+   in `ota-production`. PEM/AWS profile exist only in restricted temporary directories,
+   cleaned on success/failure. These four production secrets never enter preflight/notifications.
+6. Revoke ordinary local publisher **write** credentials and confirm no local publisher is
+   active before final enabling. VK ignores conditional PUT, and GitHub concurrency cannot
+   lock a local process. A local file lock does not solve inter-machine races.
+7. Keep only `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` in main-only `notifications` environment;
+   no production/App secrets. The hourly observer and direct outcome notification share one
+   lock/state marker. Missing Telegram secrets are explicit SKIPPED, never delivery evidence.
+8. Only after these checks, final-enable literal `true`. The next genuinely new release follows
+   data merge → exact staging/package → draft release PR → owner G5/G7 review/merge → exact
+   main/push CI → secret-free preflight → protected writer → full public proof → Telegram.
+   First real delivery remains to be observed; do not exercise it by reissuing current 70532.
+
+### Controlled runs, statuses and failure diagnosis
+
+Actions → **OTA production publication** on main: choose `publish`, `reconcile`, `resign`,
+`verify`, `init-journal` or `signer-smoke`. Manual `execute` defaults false; reads/dry runs
+never load production secrets or mutate journal. Explicit `execute=true` still requires the
+literal flag. Optional CI id/attempt must be paired and match event inputs; optional release id
+only narrows already-authorized committed requests. No free ref, endpoint, keyring or clock input.
+
+The corresponding concrete CLI is:
+
+```bash
+python scripts/ota_release_automation.py preflight --operation reconcile --status-file out/preflight.json
+python scripts/ota_release_automation.py reconcile --status-file out/status.json --execute
+```
+
+Outside the guarded workflow this is not authorization for a normal local writer. Every
+journal-changing preflight and writer mode uses `ota-production-writer`, cancel false,
+with job dependencies to serialize within a daily run. Daily reconciliation discovers complete
+committed requests despite lost webhook/pending jobs; a separate independent resign path runs
+even after BLOCKED candidates. Failed/expired artifacts stay BLOCKED. A signed public
+catalog can lag private S3: a public-only base mismatch or already-listed release stays
+retryable BLOCKED until convergence, without loading production secrets just to diagnose
+that mismatch. Only authoritative private publication checks may classify live-dependent
+work STALE. Current 70532 exclusion and a request removed from trusted main are independent
+terminal proofs. Never clear an existing terminal receipt to retry after rollback.
+Terminal receipts stay retained across a legitimate higher-sequence rollback and never reactivate.
+
+| Strict status / exit | Meaning and next action |
+| --- | --- |
+| DISABLED / 0 | flag is not exactly true; no dependency/secret loading or mutation |
+| DRY_RUN, READY / 0 | plan only; READY asks for a guarded writer, not publication proof |
+| NO_ACTION, VERIFIED / 0 | no due work, or full applicable proof; inspect stage (smoke/init are not releases) |
+| BLOCKED / 1 | refusal with safe stage/reason; correct request/config/evidence through review |
+| PUBLISHED_NOT_VERIFIED / 3 | S3 target written but public expected payload/files not yet proven; retry verification only, no PUT/sequence bump |
+| AMBIGUOUS / 3 | possible write unknown; freeze new writes and diagnose retained exact journal/live state |
+
+Preflight refusal artifacts survive skipped writer jobs. Candidate and renewal statuses use
+separate immutable V4 artifacts; renewal success never replaces candidate failure. If a writer
+is interrupted before complete status, treat it as unknown/AMBIGUOUS, not 'nothing published' or success.
+A cleanup failure after a durable successful PUT remains PUBLISHED_NOT_VERIFIED with
+safe `CLEANUP` / `CLEANUP_FAILED`, never downgraded to BLOCKED; subsequent verification
+loads no writer credentials and performs no PUT. The next daily run diagnoses retained
+WRITE_STARTED/AMBIGUOUS exact work without fetching a
+historical package. PUBLISHED_NOT_VERIFIED retries expected full public proof independently
+of removed requests/expired artifacts. Telegram re-verifies public bytes; it cannot promote a
+status artifact to proof or change receipts. First baseline and same-active resign stay quiet.
+
+After durable WRITE_STARTED and the final full assessment, the publisher verifies references
+and appended releases, then fetches main again and requires the same SHA that bound the exact
+request, approval and provenance. A moved snapshot refuses before catalog PUT and records
+BLOCKED, rather than claiming a lost/ambiguous write. The remaining main fetch → short live
+sequence read → S3 PUT spans two services and is not an atomic transaction. Approval/request
+removal alone cannot cancel an already in-flight PUT in that minimal window; use the stop/drain
+and credential-revocation procedure below when immediate cessation is required.
+
+### Break-glass recovery and rollback
+
+1. Set enable flag false, disable workflow triggers, cancel queued jobs and stop/drain active
+   writers. A flag change alone cannot stop credentials already loaded in an in-flight process.
+2. Revoke CI S3 write credentials; verify no job/local process can still write. Preserve the
+   durable `ota-publication-state` branch, exact prepared bytes/signature and terminal receipts.
+3. Diagnose the exact signed live S3/catalog and public payload against retained journal work.
+   Determine target/base/other/unreadable before any write. Do not blindly retry, reset journal,
+   auto-rollback, delete receipts, manufacture approvals or re-sign around ambiguity.
+4. Only after isolation, grant temporary owner recovery credentials. Use the existing manual
+   helper/rollback/resign procedures (§1–§5 and production-deployment §9) with fresh live proof.
+   A real rollback is a new higher sequence retaining every listed release, never replaying an
+   old envelope. Retain terminal release receipts so recovery cannot re-execute old requests.
+5. Verify every public manifest/file and stable catalog, revoke temporary owner write, restore
+   dedicated CI credentials, inspect journal/config and re-enable only when the single-writer
+   condition holds. Compromised primary/main/runner additionally requires custody response;
+   backup stays offline and revoking a pinned key on installed apps requires an app update.

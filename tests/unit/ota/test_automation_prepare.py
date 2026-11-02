@@ -61,6 +61,13 @@ def prepared_inputs(exact_package, tmp_path):  # noqa: F811
     return request, copy.deepcopy(runs), metadata, raw, package
 
 
+def staging_zip_info(name: str) -> zipfile.ZipInfo:
+    # One synthetic immutable artifact must keep its exact bytes across API calls.
+    info = zipfile.ZipInfo(name, date_time=(2026, 10, 17, 23, 0, 0))
+    info.compress_type = zipfile.ZIP_DEFLATED
+    return info
+
+
 class FakeGitHub:
     def __init__(self, inputs):
         self.request, self.runs, self.artifact, self.archive, self.package = inputs
@@ -258,10 +265,12 @@ class FakeGitHub:
                 "manifest": f"releases/{self.request.release_id}/release.json",
                 "update": "client/theCandidateReplacesTheBaseOverHttps.json",
             }.items():
-                archive.writestr(target, self.package.attachment(STAGING_FILES[name]))
+                archive.writestr(
+                    staging_zip_info(target), self.package.attachment(STAGING_FILES[name])
+                )
             base = json.loads(self.package.attachment("staging/base-release.json"))
             archive.writestr(
-                f"releases/{base['releaseId']}/release.json",
+                staging_zip_info(f"releases/{base['releaseId']}/release.json"),
                 self.package.attachment("staging/base-release.json"),
             )
         return out.getvalue()
@@ -620,39 +629,55 @@ def test_deleted_run_between_upload_and_pin_is_blocked_by_reservation(
     assert fake.posts == before and len(fake.dispatched) == 2
 
 
-def test_staged_base_must_equal_all_verified_live_base_files(prepared_inputs, tmp_path):
+def stage_zip_with_wrong_base(fake):
     from talent_data.ota.release import serialize_manifest
     from tests.unit.ota.test_ota_preflight import real_release
 
+    raw = FakeGitHub.stage_zip(fake)
+    output = io.BytesIO()
+    base = real_release().manifest
+    files = [base.files[0].model_copy(update={"sha256": "sha256:" + "0" * 64}), *base.files[1:]]
+    changed = serialize_manifest(base.model_copy(update={"files": files}))
+    base_name = f"releases/{base.release_id}/release.json"
+    with zipfile.ZipFile(io.BytesIO(raw)) as source, zipfile.ZipFile(output, "w") as archive:
+        for item in source.infolist():
+            if item.filename == base_name:
+                continue
+            body = source.read(item)
+            if item.filename == "staging-report.json":
+                report = json.loads(body)
+                report["facts"]["releases"][base.release_id]["manifestSha256"] = sha256_ref(changed)
+                body = json.dumps(report).encode()
+            archive.writestr(item, body)
+        archive.writestr(source.getinfo(base_name), changed)
+    return output.getvalue()
+
+
+def test_staged_base_must_equal_all_verified_live_base_files(prepared_inputs, tmp_path):
     fake = FakeGitHub(prepared_inputs)
-    original_stage_zip = fake.stage_zip
-
-    def archive_with_wrong_base():
-        raw = original_stage_zip()
-        output = io.BytesIO()
-        base = real_release().manifest
-        files = [base.files[0].model_copy(update={"sha256": "sha256:" + "0" * 64}), *base.files[1:]]
-        changed = serialize_manifest(base.model_copy(update={"files": files}))
-        base_name = f"releases/{base.release_id}/release.json"
-        with zipfile.ZipFile(io.BytesIO(raw)) as source, zipfile.ZipFile(output, "w") as archive:
-            for item in source.infolist():
-                if item.filename == base_name:
-                    continue
-                body = source.read(item)
-                if item.filename == "staging-report.json":
-                    report = json.loads(body)
-                    report["facts"]["releases"][base.release_id]["manifestSha256"] = sha256_ref(
-                        changed
-                    )
-                    body = json.dumps(report).encode()
-                archive.writestr(item.filename, body)
-            archive.writestr(base_name, changed)
-        return output.getvalue()
-
-    fake.stage_zip = archive_with_wrong_base
+    fake.stage_zip = lambda: stage_zip_with_wrong_base(fake)
     with pytest.raises(p.PreparationBlocked, match="STAGING_BASE"):
         run_prepare(fake, tmp_path / "out")
     assert len(fake.dispatched) == 1 and fake.prs == []
+
+
+@pytest.mark.parametrize("wrong_base", [False, True])
+def test_fake_staging_artifact_is_exact_across_zip_clock_boundary(
+    prepared_inputs, monkeypatch, wrong_base
+):
+    fake = FakeGitHub(prepared_inputs)
+    if wrong_base:
+        fake.stage_zip = lambda: stage_zip_with_wrong_base(fake)
+    seconds = [0]
+    monkeypatch.setattr(
+        zipfile.time, "localtime", lambda *_: (2026, 11, 1, 0, 0, seconds[0], 6, 305, 0)
+    )
+    artifact = fake.stage_artifact()
+    seconds[0] = 2  # deterministic ZIP timestamp boundary; no sleep or wall-clock race
+    with httpx.Client(transport=httpx.MockTransport(fake.handler)) as client:
+        raw = p.GitHub(client, "TEST-token").archive(artifact)
+    assert sha256_ref(raw) == artifact["digest"]
+    assert raw == fake.stage_zip()
 
 
 def test_complete_frozen_pin_does_not_select_an_unrelated_newer_run(prepared_inputs, tmp_path):

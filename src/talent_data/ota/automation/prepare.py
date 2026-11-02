@@ -722,6 +722,14 @@ def verify_staged_base(
         f"{PRODUCTION_PROFILE.public_origin}/{blob_key(active.manifest_sha256)}",
         active.manifest_byte_length,
     )
+    verify_staged_base_bytes(catalog, live_bytes, staged, report_bytes)
+
+
+def verify_staged_base_bytes(
+    catalog: OtaCatalog, live_bytes: bytes, staged: bytes, report_bytes: bytes
+) -> None:
+    """Shared exact staged-base proof for proposal/preflight and final store activation."""
+    active = next(r for r in catalog.releases if r.release_id == catalog.active_release_id)
     live = verify_release_manifest(live_bytes, active, game="forever", supported_data_level=1)
     manifest = parse_strict(OtaReleaseManifest, staged)
     verify_release_manifest(
