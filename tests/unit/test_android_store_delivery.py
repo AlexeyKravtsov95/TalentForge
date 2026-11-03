@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import base64
+import hashlib
 import importlib.util
 import json
+import ssl
 import sys
 import zipfile
 from pathlib import Path
@@ -14,6 +16,7 @@ import httpx
 import pytest
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
+from httpx import _client
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -102,6 +105,64 @@ def test_service_account_signs_ps256_without_token_exchange() -> None:
         padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=32),
         hashes.SHA256(),
     )
+
+
+@pytest.mark.parametrize(
+    ("updates", "field"),
+    [
+        ({"project_id": "private-project-value"}, "project_id"),
+        ({"project_id": None}, "project_id"),
+        ({"token_uri": "https://private-audience.example"}, "token_uri"),
+    ],
+)
+def test_huawei_config_failure_names_field_without_exposing_value(
+    updates: dict[str, Any], field: str
+) -> None:
+    account = {"project_id": "", "token_uri": d.HUAWEI_AUDIENCE, **updates}
+    with pytest.raises(d.DeliveryError) as error:
+        d.huawei_jwt(json.dumps(account))
+    assert error.value.code == "CONFIG"
+    assert field in error.value.message
+    assert "private-project-value" not in error.value.message
+    assert "private-audience" not in error.value.message
+
+
+def test_additional_ca_is_used_only_for_exact_rustore_host(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Catch global trust expansion or loss of verification when fixing RuStore TLS."""
+
+    class TrustProbe(httpx.BaseTransport):
+        def __init__(self, *, verify: Any = True, **kwargs: Any) -> None:
+            self.verify = verify
+
+        def handle_request(self, request: httpx.Request) -> httpx.Response:
+            context = self.verify
+            assert context is True or isinstance(context, ssl.SSLContext)
+            if isinstance(context, ssl.SSLContext):
+                assert context.verify_mode == ssl.CERT_REQUIRED
+                assert context.check_hostname
+                roots = context.get_ca_certs(binary_form=True)
+                additional = any(
+                    hashlib.sha256(root).hexdigest()
+                    == "d26d2d0231b7c39f92cc738512ba54103519e4405d68b5bd703e9788ca8ecf31"
+                    for root in roots
+                )
+            else:
+                additional = False
+            return httpx.Response(200, json={"additionalCa": additional})
+
+    monkeypatch.setattr(httpx, "HTTPTransport", TrustProbe)
+    monkeypatch.setattr(_client, "HTTPTransport", TrustProbe)
+    with d.delivery_client() as client:
+        for host, expected in (
+            ("public-api-m.rustore.ru", True),
+            ("public-api-m.rustore.ru.evil.example", False),
+            ("other.rustore.ru", False),
+            ("api.github.com", False),
+            ("connect-api.cloud.huawei.com", False),
+        ):
+            assert client.get(f"https://{host}/").json() == {"additionalCa": expected}
 
 
 def test_huawei_wire_types_and_all_package_pages() -> None:

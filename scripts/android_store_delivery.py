@@ -13,6 +13,7 @@ import hashlib
 import json
 import os
 import re
+import ssl
 import sys
 import time
 from collections.abc import Callable, Sequence
@@ -143,6 +144,16 @@ class Release:
             raise DeliveryError("MISMATCH", "APK differs from approved bytes")
 
 
+def delivery_client() -> httpx.Client:
+    """Keep the additional RuStore CA out of GitHub/Huawei and system trust."""
+    context = ssl.create_default_context()
+    context.load_verify_locations(cafile=Path(__file__).parent / "certs" / "rustore-ca.pem")
+    return httpx.Client(
+        timeout=60,
+        mounts={"https://public-api-m.rustore.ru": httpx.HTTPTransport(verify=context)},
+    )
+
+
 def request(
     client: httpx.Client, method: str, url: str, *, accept_redirect: bool = False, **kwargs: Any
 ) -> httpx.Response:
@@ -179,10 +190,12 @@ def json_body(response: httpx.Response) -> dict[str, Any]:
 def huawei_jwt(raw: str, *, now: int | None = None) -> str:
     try:
         account = obj(json.loads(raw))
-        if account.get("project_id") != "" or account.get("token_uri") != HUAWEI_AUDIENCE:
+        if account.get("project_id") != "":
             raise DeliveryError(
-                "CONFIG", "Huawei requires Developer-level credentials and pinned audience"
+                "CONFIG", "Huawei project_id must be an empty string (Developer-level account)"
             )
+        if account.get("token_uri") != HUAWEI_AUDIENCE:
+            raise DeliveryError("CONFIG", "Huawei token_uri differs from the pinned audience")
         kid, subject = string(account.get("key_id")), string(account.get("sub_account"))
         key = serialization.load_pem_private_key(string(account.get("private_key")).encode(), None)
         if not isinstance(key, rsa.RSAPrivateKey) or key.key_size < 2048:
@@ -1362,7 +1375,7 @@ def run(args: argparse.Namespace) -> int:
         raise DeliveryError("GATE", "public store tools run only from main")
     repository = string(os.environ.get("GITHUB_REPOSITORY"))
     token = string(os.environ.get("GH_TOKEN"))
-    with httpx.Client(timeout=60) as client:
+    with delivery_client() as client:
         github = GitHub(client, repository, token)
         if args.command == "audit":
             gate = core.read_json_object(args.gate)

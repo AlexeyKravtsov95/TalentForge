@@ -91,6 +91,15 @@ Changing any of these requires a fresh release decision; do not edit journal ass
 
 ## Status and recovery
 
+The `public-api-m.rustore.ru` API uses the trust chain documented in
+[RuStore's server preparation guide](https://www.rustore.ru/help/developers/monetization/payment-callback/Preparing-the-server-for-RuStore%20API).
+Delivery's committed [CA bundle](../../scripts/certs/README.md) is scoped to that
+exact host; it does not alter system/mobile trust or disable TLS verification.
+For Huawei `CONFIG`, diagnostics name `project_id` or `token_uri` without printing
+their values. Check the original Developer-level Service Account JSON in the
+owner's environment; do not edit credentials to bypass the check or send them
+to chat.
+
 | Status | Meaning / action |
 |---|---|
 | `PUBLISHED` | RuStore ACTIVE at 100% with the bound version/package receipt; Huawei onShelfVersionCode **and** onShelfVersionId identify the package whose shaCode matches the approved APK. Publication is proven at `observedAt`; later reports explicitly mark retained proof as `previouslyConfirmed`. This is delivery evidence, not indefinite availability monitoring. |
@@ -167,3 +176,28 @@ published at full rollout. The combined report's `complete` must be true.
 Fill the actual release identity and publication readbacks in this record and
 [android-versioning](android-versioning.md) once confirmed. The pending entries
 are deliberate; no publication has been claimed from offline tests.
+
+### First live verify attempt, 2026-11-03
+
+[Run 41609862530](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/41609862530)
+used source/tooling `9e9d9e188c5a0a10c2e573640b0e0d171f9eebf5`, Android
+`1.0.0 (5)`, `apk_stores=both`, `include_play=false`, `mode=verify`.
+The gate confirmed successful CI runs `41601978874` and `41601978959` for that
+exact SHA. The read-only store audit stopped before the APK build:
+
+- RuStore: `UNKNOWN: POST transport failure (ConnectError)` at authentication.
+  An unauthenticated local probe with the same default Python/httpx trust
+  reproduced `CERTIFICATE_VERIFY_FAILED: unable to get local issuer certificate`.
+  Loading the official CA chain for this host allowed verified TLS (HTTP 403 for
+  the unauthenticated probe). The original CI error does not expose its nested
+  cause; the local reproduction identifies the missing-trust prerequisite.
+- AppGallery: `CONFIG: Huawei requires Developer-level credentials and pinned audience`.
+  This local guard runs before the API call. It means `project_id` is not an
+  explicitly empty string, or `token_uri` differs from the pinned audience;
+  the original combined diagnostic cannot distinguish them. No secret was read
+  locally. The owner must check the original Service Account export/settings.
+
+No APK, public approval, journal, upload or submission was created by this run.
+Do not run `deliver` until the same source revision passes a fresh `verify`
+with corrected tooling/configuration. A tooling fix on `main` can retain this
+source SHA; its distinct workflow SHA must be recorded in the eventual manifest.
