@@ -190,10 +190,10 @@ def json_body(response: httpx.Response) -> dict[str, Any]:
 def huawei_jwt(raw: str, *, now: int | None = None) -> str:
     try:
         account = obj(json.loads(raw))
-        if account.get("project_id") != "":
-            raise DeliveryError(
-                "CONFIG", "Huawei project_id must be an empty string (Developer-level account)"
-            )
+        # The guide shows an empty example, not a normative emptiness constraint.
+        # API authorization is established by the read-only store audit, not this metadata.
+        if not isinstance(account.get("project_id"), str):
+            raise DeliveryError("CONFIG", "Huawei project_id must be a string")
         if account.get("token_uri") != HUAWEI_AUDIENCE:
             raise DeliveryError("CONFIG", "Huawei token_uri differs from the pinned audience")
         kid, subject = string(account.get("key_id")), string(account.get("sub_account"))

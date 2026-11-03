@@ -41,6 +41,16 @@ workflow uses its PS256 JWT directly in Authorization. It does not create a lega
 API client, exchange credentials with another service, or use OAuth consent.
 [Official setup](https://developer.huawei.com/consumer/en/doc/AppGallery-connect-Guides/agcapi-getstarted-0000001111845114).
 
+The guide explicitly requires Developer-level credentials for Connect API. Its
+sample export has an empty `project_id`, but it does not specify an emptiness
+constraint for that field. Preserve the original console export. Delivery checks
+that `project_id` is a required string, accepts empty or populated strings, and
+does not infer the account type or permissions from it. JWT signing uses the
+documented key, subject and pinned audience; the read-only package/app audit
+must succeed for the configured App ID before any APK build or store write.
+An authorization refusal remains an error and must be investigated in the
+account's actual Type/roles rather than bypassed by editing its JSON.
+
 Creating/revoking store credentials is the owner's action. If a store requires a
 new legal agreement or interactive security step, complete it in that store.
 
@@ -95,10 +105,10 @@ The `public-api-m.rustore.ru` API uses the trust chain documented in
 [RuStore's server preparation guide](https://www.rustore.ru/help/developers/monetization/payment-callback/Preparing-the-server-for-RuStore%20API).
 Delivery's committed [CA bundle](../../scripts/certs/README.md) is scoped to that
 exact host; it does not alter system/mobile trust or disable TLS verification.
-For Huawei `CONFIG`, diagnostics name `project_id` or `token_uri` without printing
-their values. Check the original Developer-level Service Account JSON in the
-owner's environment; do not edit credentials to bypass the check or send them
-to chat.
+For Huawei `CONFIG`, diagnostics name an invalid `project_id` wire type or
+`token_uri` without printing their values. Check the original Service Account
+JSON in the owner's environment; do not edit credentials to bypass a refusal
+or send them to chat. A populated string `project_id` alone is not a refusal.
 
 | Status | Meaning / action |
 |---|---|
@@ -201,3 +211,19 @@ No APK, public approval, journal, upload or submission was created by this run.
 Do not run `deliver` until the same source revision passes a fresh `verify`
 with corrected tooling/configuration. A tooling fix on `main` can retain this
 source SHA; its distinct workflow SHA must be recorded in the eventual manifest.
+
+### Verify after the TLS fix, 2026-11-03
+
+[Run 41634394482](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/41634394482)
+kept source `9e9d9e188c5a0a10c2e573640b0e0d171f9eebf5` and used tooling
+`4738998f1990c9fdc505cde1e2e12a157328dc6f` (merged PR #113).
+RuStore authentication and audit succeeded: `AVAILABLE`, highest consumed code
+`1`, published version ID `2064900758`, `ACTIVE`, 100% rollout.
+The code still rejected Huawei locally because `project_id` was populated;
+no Huawei API authorization request, APK build or store write occurred.
+The owner confirmed this was the original console export and supplied a console
+screenshot showing the Service Account and App administrator role. Account Type
+was not visible in that screenshot. Subsequent review of the official guide
+distinguished its Developer-level requirement from the empty JSON example;
+the local emptiness guard was an unsupported inference and is corrected as
+described above. Store-side authorization still needs a successful fresh audit.
