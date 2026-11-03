@@ -3,11 +3,12 @@ name: Store delivery
 # Issue #90: the owner delivers one revision of main to the test channels.
 #   Android: signed AAB (upload key) -> the existing Google Play closed test; signed universal
 #            APK (app signing key) -> a verified artifact of this run (RuStore/AppGallery upload
-#            stays manual, a later stage).
+#            can also be approved once for RuStore/AppGallery production delivery).
 #   iOS:     signed archive -> App Store export (.ipa) -> App Store Connect -> the existing
 #            internal TestFlight group.
 # Production OTA is on in every build; nothing falls back to unsigned, debug or OTA off. A public
-# release stays the owner's separate action in the store consoles. mode=verify (the default)
+# Play/iOS production remains separate. APK-store production uses one protected approval.
+# mode=verify (the default)
 # builds, signs and checks everything and uploads nothing.
 #
 # Secrets live only in GitHub Environments restricted to main (docs/release/ci-delivery.md §3):
@@ -29,11 +30,22 @@ on:
         options: [both, android, ios]
         default: both
       mode:
-        description: "verify: build, sign and check only; deliver: also upload to the test channels"
+        description: "verify: no uploads; deliver: selected test channels / approved APK stores"
         required: true
         type: choice
         options: [verify, deliver]
         default: verify
+      apk_stores:
+        description: "Independent Android public stores (selecting these limits this run to Android)"
+        required: true
+        type: choice
+        options: [none, both, rustore, appgallery]
+        default: none
+      include_play:
+        description: "Also deliver Play closed test with APK stores (legacy runs keep Play)"
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -57,6 +69,7 @@ jobs:
       mode: ${{ steps.gate.outputs.mode }}
       android: ${{ steps.gate.outputs.android }}
       ios: ${{ steps.gate.outputs.ios }}
+      play: ${{ inputs.apk_stores == 'none' || inputs.include_play }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -72,7 +85,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           INPUT_REVISION: ${{ inputs.revision }}
-          INPUT_PLATFORMS: ${{ inputs.platforms }}
+          INPUT_PLATFORMS: ${{ inputs.apk_stores != 'none' && 'android' || inputs.platforms }}
           INPUT_MODE: ${{ inputs.mode }}
         run: >-
           "$PY" tooling/scripts/store_delivery.py gate --repo tooling
@@ -91,7 +104,7 @@ jobs:
   android-store-check:
     name: Android - Google Play state (read-only)
     needs: gate
-    if: needs.gate.outputs.android == 'true'
+    if: needs.gate.outputs.android == 'true' && needs.gate.outputs.play == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     environment: google-play
@@ -129,18 +142,69 @@ jobs:
           if-no-files-found: ignore
           overwrite: true
 
+  apk-store-check:
+    name: Android public store versions (read-only)
+    needs: gate
+    if: inputs.apk_stores != 'none'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: android-stores
+    permissions:
+      contents: read
+    outputs:
+      app_id: ${{ steps.audit.outputs.appgallery_app_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: tooling
+          persist-credentials: false
+      - uses: ./tooling/.github/actions/delivery-python
+        with:
+          tooling: tooling
+      - uses: actions/download-artifact@v4
+        with:
+          name: tf-gate
+          path: delivery
+      - name: Audit all consumed codes of selected APK stores
+        id: audit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUSTORE_KEY_ID: ${{ vars.RUSTORE_KEY_ID }}
+          RUSTORE_PRIVATE_KEY_BASE64: ${{ secrets.RUSTORE_PRIVATE_KEY_BASE64 }}
+          APPGALLERY_SERVICE_ACCOUNT_JSON: ${{ secrets.APPGALLERY_SERVICE_ACCOUNT_JSON }}
+          APPGALLERY_APP_ID: ${{ vars.APPGALLERY_APP_ID }}
+          SELECTED: ${{ inputs.apk_stores }}
+        run: >-
+          "$PY" tooling/scripts/android_store_delivery.py audit --gate delivery/gate.json
+          --stores "$SELECTED" --out delivery/store-audit.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-store-audit
+          path: delivery/store-audit.json
+          if-no-files-found: error
+
   android-build:
-    name: Android - signed AAB + APK (OTA on), verified
-    needs: [gate, android-store-check]
-    if: needs.android-store-check.outputs.decision == 'UPLOAD'
+    name: Android - signed selected artifacts (OTA on), verified
+    needs: [gate, android-store-check, apk-store-check]
+    if: >-
+      always() && needs.gate.result == 'success'
+      && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+      && (needs.android-store-check.outputs.decision == 'UPLOAD' || needs.apk-store-check.result == 'success')
     runs-on: ubuntu-24.04
     timeout-minutes: 75
     environment: android-signing
+    outputs:
+      manifest_sha256: ${{ steps.manifest.outputs.manifest_sha256 }}
     permissions:
       contents: read
     env:
       SOURCE_SHA: ${{ needs.gate.outputs.sha }}
       MODE: ${{ needs.gate.outputs.mode }}
+      PLAY_SELECTED: ${{ needs.gate.outputs.play }}
+      APK_STORES: ${{ inputs.apk_stores }}
+      APPGALLERY_APP_ID: ${{ needs.apk-store-check.outputs.app_id }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -187,12 +251,14 @@ jobs:
           ANDROID_UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
           ANDROID_UPLOAD_KEY_ALIAS: ${{ vars.ANDROID_UPLOAD_KEY_ALIAS }}
           ANDROID_UPLOAD_CERT_SHA256: ${{ vars.ANDROID_UPLOAD_CERT_SHA256 }}
-        run: >-
-          "$PY" tooling/scripts/store_delivery.py require-env
-          ANDROID_RELEASE_KEYSTORE_BASE64 ANDROID_RELEASE_KEYSTORE_PASSWORD
-          ANDROID_RELEASE_KEY_ALIAS ANDROID_RELEASE_CERT_SHA256
-          ANDROID_UPLOAD_KEYSTORE_BASE64 ANDROID_UPLOAD_KEYSTORE_PASSWORD
-          ANDROID_UPLOAD_KEY_ALIAS ANDROID_UPLOAD_CERT_SHA256
+        run: |
+          set -euo pipefail
+          names=(ANDROID_RELEASE_KEYSTORE_BASE64 ANDROID_RELEASE_KEYSTORE_PASSWORD
+            ANDROID_RELEASE_KEY_ALIAS ANDROID_RELEASE_CERT_SHA256 ANDROID_UPLOAD_CERT_SHA256)
+          if [ "$PLAY_SELECTED" = true ]; then
+            names+=(ANDROID_UPLOAD_KEYSTORE_BASE64 ANDROID_UPLOAD_KEYSTORE_PASSWORD ANDROID_UPLOAD_KEY_ALIAS)
+          fi
+          "$PY" tooling/scripts/store_delivery.py require-env "${names[@]}"
 
       - name: Production OTA catalog (read-only preflight, at least 30 days of validity)
         run: >-
@@ -209,7 +275,9 @@ jobs:
           umask 077
           mkdir -p "$RUNNER_TEMP/tf-android-signing"
           printf '%s' "$ANDROID_RELEASE_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/tf-android-signing/release.p12"
-          printf '%s' "$ANDROID_UPLOAD_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/tf-android-signing/upload.p12"
+          if [ "$PLAY_SELECTED" = true ]; then
+            printf '%s' "$ANDROID_UPLOAD_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/tf-android-signing/upload.p12"
+          fi
 
       # The Gradle tasks verify and stage each file with scripts/verify_release_apk.py and
       # scripts/verify_play_bundle.py of the source commit; a failure leaves nothing staged.
@@ -227,9 +295,11 @@ jobs:
           TALENTFORGE_PLAY_UPLOAD_KEY_ALIAS: ${{ vars.ANDROID_UPLOAD_KEY_ALIAS }}
           TALENTFORGE_PLAY_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
           TALENTFORGE_PLAY_UPLOAD_CERT_SHA256: ${{ vars.ANDROID_UPLOAD_CERT_SHA256 }}
-        run: >-
-          ./gradlew --no-daemon --no-build-cache --console=plain
-          :composeApp:assemblePublishableRelease :composeApp:bundlePublishablePlay
+        run: |
+          set -euo pipefail
+          tasks=(:composeApp:assemblePublishableRelease)
+          if [ "$PLAY_SELECTED" = true ]; then tasks+=(:composeApp:bundlePublishablePlay); fi
+          ./gradlew --no-daemon --no-build-cache --console=plain "${tasks[@]}"
 
       - name: Collect the staged files
         run: |
@@ -237,12 +307,15 @@ jobs:
           base="TalentForge-$VERSION_NAME-$VERSION_CODE"
           out=src/mobile/composeApp/build/outputs
           mkdir -p delivery/android
-          for file in "$out/publishable/$base.apk" "$out/publishable/$base.apk.report.json" \
-            "$out/publishable-google-play/$base.aab" "$out/publishable-google-play/$base.aab.report.json"; do
+          files=("$out/publishable/$base.apk" "$out/publishable/$base.apk.report.json")
+          if [ "$PLAY_SELECTED" = true ]; then
+            files+=("$out/publishable-google-play/$base.aab" "$out/publishable-google-play/$base.aab.report.json")
+          fi
+          for file in "${files[@]}"; do
             test -f "$file" || { echo "::error::$file was not staged"; exit 1; }
             cp "$file" delivery/android/
           done
-          test "$(find "$out/publishable" "$out/publishable-google-play" -type f | wc -l)" -eq 4
+          test "$(find delivery/android -type f \( -name '*.apk' -o -name '*.aab' -o -name '*.report.json' \) | wc -l)" -eq "${#files[@]}"
 
       - name: Re-verify the exact files with the workflow's validators
         env:
@@ -257,21 +330,37 @@ jobs:
             --expected-version-code "$VERSION_CODE" --expected-version-name "$VERSION_NAME" \
             --allow-permission android.permission.INTERNET --build-tools "$build_tools" \
             --report delivery/android/apk-report.json
-          "$PY" tooling/scripts/verify_play_bundle.py --aab "$base.aab" \
-            --expected-upload-cert-sha256 "$UPLOAD_CERT" --app-signing-cert-sha256 "$RELEASE_CERT" \
-            --expected-version-code "$VERSION_CODE" --expected-version-name "$VERSION_NAME" \
-            --allow-permission android.permission.INTERNET --report delivery/android/aab-report.json
+          if [ "$PLAY_SELECTED" = true ]; then
+            "$PY" tooling/scripts/verify_play_bundle.py --aab "$base.aab" \
+              --expected-upload-cert-sha256 "$UPLOAD_CERT" --app-signing-cert-sha256 "$RELEASE_CERT" \
+              --expected-version-code "$VERSION_CODE" --expected-version-name "$VERSION_NAME" \
+              --allow-permission android.permission.INTERNET --report delivery/android/aab-report.json
+          fi
 
       - name: APK and AAB are one release of the source commit, production OTA on
         run: |
           set -euo pipefail
           base="delivery/android/TalentForge-$VERSION_NAME-$VERSION_CODE"
+          bundle_args=()
+          if [ "$PLAY_SELECTED" = true ]; then bundle_args=(--aab "$base.aab" --aab-report delivery/android/aab-report.json); fi
           "$PY" tooling/scripts/store_delivery.py android-check --gate delivery/gate.json \
             --apk "$base.apk" --apk-report delivery/android/apk-report.json \
-            --aab "$base.aab" --aab-report delivery/android/aab-report.json \
+            "${bundle_args[@]}" \
             --out delivery/android/release-check.json
-          (cd delivery/android && sha256sum ./*.apk ./*.aab > SHA256SUMS && cat SHA256SUMS)
+          (cd delivery/android && shopt -s nullglob && files=(*.apk *.aab) && sha256sum "${files[@]}" > SHA256SUMS && cat SHA256SUMS)
           cp delivery/gate.json delivery/android/gate.json
+
+      - name: Exact APK identity and stores for one public release approval
+        id: manifest
+        if: inputs.apk_stores != 'none'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          "$PY" tooling/scripts/android_store_delivery.py manifest --gate delivery/gate.json
+          --apk "delivery/android/TalentForge-$VERSION_NAME-$VERSION_CODE.apk"
+          --apk-report delivery/android/apk-report.json --stores "$APK_STORES"
+          --notes tooling/docs/release/android-store-notes.txt
+          --out delivery/android/manifest.json
 
       - name: Verify mode result
         if: env.MODE == 'verify'
@@ -320,7 +409,7 @@ jobs:
     # every selected platform built and verified first: one failure stops every upload
     if: >-
       always() && needs.gate.result == 'success' && needs.gate.outputs.mode == 'deliver'
-      && needs.android-build.result == 'success'
+      && needs.android-build.result == 'success' && needs.gate.outputs.play == 'true'
       && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -386,6 +475,170 @@ jobs:
           path: delivery/status/android.json
           if-no-files-found: ignore
           overwrite: true
+
+  # One approval names the APK digest. Store credentials are in android-stores;
+  # moderation reconciliation never enters this Environment again.
+  public-approval:
+    name: Approve Android public release (${{ needs.android-build.outputs.manifest_sha256 }})
+    needs: [gate, android-build]
+    if: inputs.apk_stores != 'none' && needs.gate.outputs.mode == 'deliver'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: android-public-release
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: tooling
+          persist-credentials: false
+      - uses: ./tooling/.github/actions/delivery-python
+        with:
+          tooling: tooling
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-release
+          path: delivery/android
+      - name: Bind protected approval to exact signed APK
+        id: approve
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(find delivery/android -maxdepth 1 -name '*.apk')
+          test "${#files[@]}" -eq 1
+          "$PY" tooling/scripts/android_store_delivery.py approval \
+            --manifest delivery/android/manifest.json --apk "${files[0]}" \
+            --out delivery/approval.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tf-approved-apk-${{ steps.approve.outputs.manifest_sha256 }}
+          path: delivery/android/manifest.json
+          if-no-files-found: error
+          retention-days: 90
+          # Create only: a rerun cannot replace an approval's artifact.
+
+  public-journal:
+    name: Preserve approved APK and durable release journal
+    needs: [gate, public-approval]
+    if: inputs.apk_stores != 'none' && needs.gate.outputs.mode == 'deliver'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      actions: read
+    outputs:
+      release_id: ${{ steps.journal.outputs.release_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: tooling
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./tooling/.github/actions/delivery-python
+        with:
+          tooling: tooling
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-release
+          path: delivery/android
+      - name: Verify approval origin and persist bytes before store writes
+        id: journal
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(find delivery/android -maxdepth 1 -name '*.apk')
+          test "${#files[@]}" -eq 1
+          "$PY" tooling/scripts/android_store_delivery.py initialize --repo tooling \
+            --manifest delivery/android/manifest.json --apk "${files[0]}" \
+            --out delivery/journal.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-public-journal
+          path: delivery/journal.json
+          if-no-files-found: ignore
+
+  public-deliver:
+    name: Deliver approved APK independently to public stores
+    needs: [gate, public-journal]
+    if: inputs.apk_stores != 'none' && needs.gate.outputs.mode == 'deliver'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: android-stores
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: tooling
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./tooling/.github/actions/delivery-python
+        with:
+          tooling: tooling
+      - name: Read back, upload once, submit for automatic full publication
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_ID: ${{ needs.public-journal.outputs.release_id }}
+          RUSTORE_KEY_ID: ${{ vars.RUSTORE_KEY_ID }}
+          RUSTORE_PRIVATE_KEY_BASE64: ${{ secrets.RUSTORE_PRIVATE_KEY_BASE64 }}
+          APPGALLERY_SERVICE_ACCOUNT_JSON: ${{ secrets.APPGALLERY_SERVICE_ACCOUNT_JSON }}
+        run: >-
+          "$PY" tooling/scripts/android_store_delivery.py reconcile --repo tooling
+          --release-id "$RELEASE_ID" --out delivery/public/report.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-store-report
+          path: delivery/public/report.json
+          if-no-files-found: error
+          retention-days: 90
+
+  public-notify:
+    name: Telegram public store status
+    needs: [public-journal, public-deliver]
+    if: always() && needs.public-journal.result == 'success' && needs.public-deliver.result != 'skipped'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: notifications
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: tooling
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./tooling/.github/actions/delivery-python
+        with:
+          tooling: tooling
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-store-report
+          path: delivery/public
+      - name: Notify changed statuses only
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: >-
+          "$PY" tooling/scripts/android_store_delivery.py notify --repo tooling
+          --reports delivery/public/report.json --out delivery/telegram.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-store-notifications
+          path: delivery/telegram.json
+          if-no-files-found: ignore
 
   # ------------------------------------------------------------------------------- iOS
 
@@ -808,7 +1061,7 @@ jobs:
       - ios-build
       - ios-upload
       - ios-testflight
-    if: always()
+    if: always() && (inputs.apk_stores == 'none' || inputs.include_play)
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:

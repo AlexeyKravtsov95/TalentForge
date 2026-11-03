@@ -1,0 +1,9 @@
+Исправления интерфейса TalentForge:
+• На главном экране уточнено назначение приложения — планировщик талантов для WoW Forever.
+• При последовательном выборе талантов раскрытый инспектор остаётся открытым; новое описание начинается сверху.
+• Улучшено отображение крупного текста; отменённое касание дерева не считается выбором.
+
+TalentForge interface fixes:
+• Home explains that the app is a talent build planner for WoW Forever.
+• The expanded inspector stays open when selecting another talent, with its description scrolled to the top.
+• Improved large-text layout and cancelled-touch handling.

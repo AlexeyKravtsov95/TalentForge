@@ -1,5 +1,12 @@
 # CI/CD доставки сборок в тестовые каналы (issue #90) 🔑
 
+**Расширение RuStore/AppGallery:** независимая доставка одного одобренного APK,
+модерация, автоматическая публикация и Telegram описаны в
+[android-public-stores.md](android-public-stores.md). Таблицы ниже сохраняют
+исторический режим `apk_stores=none` (Play closed test / TestFlight); их запрет
+публичной доставки относится к этому прежнему режиму. Для нового APK-режима
+используйте отдельный runbook и одно одобрение `android-public-release`.
+
 | | |
 |---|---|
 | Workflow | [`.github/workflows/store-delivery.yml`](../../.github/workflows/store-delivery.yml) («Store delivery»), только `workflow_dispatch` |

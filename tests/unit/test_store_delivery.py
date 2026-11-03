@@ -1265,7 +1265,14 @@ def test_the_workflow_is_owner_started_serialised_and_keeps_secrets_in_environme
         assert event not in triggers
     assert "group: store-delivery\n  cancel-in-progress: false" in text
     jobs = workflow_jobs(text)
-    assert set(jobs) == {*JOBS, "summary"}
+    public_jobs = {
+        "apk-store-check",
+        "public-approval",
+        "public-journal",
+        "public-deliver",
+        "public-notify",
+    }
+    assert set(jobs) == {*JOBS, "summary", *public_jobs}
     environments = {
         "android-store-check": "google-play",
         "android-build": "android-signing",
@@ -1274,10 +1281,15 @@ def test_the_workflow_is_owner_started_serialised_and_keeps_secrets_in_environme
         "ios-build": "ios-signing",
         "ios-upload": "app-store-connect",
         "ios-testflight": "app-store-connect",
+        "apk-store-check": "android-stores",
+        "public-deliver": "android-stores",
+        "public-notify": "notifications",
     }
     for job, body in jobs.items():
         if "secrets." in body:
             assert f"environment: {environments[job]}" in body, job
+        elif job == "public-approval":
+            assert "environment: android-public-release" in body
         else:
             assert "environment:" not in body, job
     for job in ("android-deliver", "ios-upload", "ios-testflight"):
@@ -1293,3 +1305,9 @@ def test_the_workflow_is_owner_started_serialised_and_keeps_secrets_in_environme
         "CODE_SIGNING_ALLOWED=NO" not in text
         and 'OTA_ANDROID_PRODUCTION_ENABLED: "false"' not in text
     )
+    assert "needs.gate.outputs.play == 'true'" in jobs["android-store-check"]
+    assert "needs.gate.outputs.play == 'true'" in jobs["android-deliver"]
+    assert "apk_stores:" in triggers and "include_play:" in triggers
+    assert "needs: [gate, android-build]" in jobs["public-approval"]
+    assert "needs: [gate, public-approval]" in jobs["public-journal"]
+    assert "--release-id" in jobs["public-deliver"]
