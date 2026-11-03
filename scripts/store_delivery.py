@@ -1322,16 +1322,18 @@ def check_android_release(
     gate: Mapping[str, Any],
     apk: Path,
     apk_report: Mapping[str, Any],
-    aab: Path,
-    aab_report: Mapping[str, Any],
+    aab: Path | None,
+    aab_report: Mapping[str, Any] | None,
 ) -> dict[str, Any]:
-    """The APK and the bundle are one release: same version, PASS, production OTA on."""
+    """APK (and selected Play bundle) match source version, PASS and production OTA."""
     problems: list[str] = []
     code, name = int(gate["android"]["versionCode"]), str(gate["android"]["versionName"])
-    for label, path, report, file_key, prefix in (
-        ("APK", apk, apk_report, "apk", ""),
-        ("AAB", aab, aab_report, "bundle", "base/dex/"),
-    ):
+    artifacts = [("APK", apk, apk_report, "apk", "")]
+    if (aab is None) != (aab_report is None):
+        raise DeliveryError("CONFIG", "AAB and its report must be selected together")
+    if aab is not None and aab_report is not None:
+        artifacts.append(("AAB", aab, aab_report, "bundle", "base/dex/"))
+    for label, path, report, file_key, prefix in artifacts:
         package = report.get("package") or {}
         if report.get("result") != "PASS":
             problems.append(f"{label} report result is {report.get('result')!r}, not PASS")
@@ -1363,7 +1365,7 @@ def check_android_release(
         "versionName": name,
         "versionCode": code,
         "apkSha256": file_sha256(apk),
-        "aabSha256": file_sha256(aab),
+        "aabSha256": file_sha256(aab) if aab is not None else None,
         "otaProduction": True,
         "sourceSha": gate["sourceSha"],
     }
@@ -1585,11 +1587,13 @@ def parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     asc = command("asc-check", "read App Store Connect's state", "gate", "status")
     asc.add_argument("--ipa", type=Path, help="right before the upload: this run's .ipa")
     command("play-deliver", "upload the bundle to the closed track", "gate", "aab", "status")
-    command(
+    android_check = command(
         "android-check",
-        "the APK and the AAB are one OTA ON release",
-        *("gate", "apk", "apk-report", "aab", "aab-report", "out"),
+        "the APK and optional Play bundle are one OTA ON release",
+        *("gate", "apk", "apk-report", "out"),
     )
+    android_check.add_argument("--aab", type=Path)
+    android_check.add_argument("--aab-report", type=Path)
     command(
         "ios-check",
         "the archive and the .ipa are one OTA ON release",
@@ -1644,7 +1648,7 @@ def run(args: argparse.Namespace, environ: Mapping[str, str]) -> int:
             apk=args.apk,
             apk_report=read_json_object(args.apk_report),
             aab=args.aab,
-            aab_report=read_json_object(args.aab_report),
+            aab_report=read_json_object(args.aab_report) if args.aab_report else None,
         )
         write_json(args.out, result)
         print(json.dumps(result, indent=2))
