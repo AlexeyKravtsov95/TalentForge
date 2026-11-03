@@ -1094,6 +1094,172 @@ def load_journal(github: GitHub, remote: dict[str, Any], repo: Path) -> ReleaseJ
     return ReleaseJournal(github, release, rid)
 
 
+def url_authority(raw: str) -> dict[str, Any]:
+    """Diagnostic metadata only: never retain paths, signed queries or user info."""
+    url = parse_service_url(raw)
+    return {
+        "scheme": url.scheme,
+        "host": url.host,
+        "port": url.port,
+        "hasUserInfo": bool(url.username or url.password),
+    }
+
+
+def inspect_store(
+    api: RuStore | AppGallery, release: Release, apk: Path, journal: Journal
+) -> dict[str, Any]:
+    """GET-only observations; never advance a store or repair an immutable receipt."""
+    if isinstance(api, RuStore):
+        created = journal.get("rustore-create-done")
+        result: dict[str, Any] = {
+            "status": "OBSERVED",
+            "journal": {
+                "createDone": created is not None,
+                "uploadIntent": journal.get("rustore-upload-intent") is not None,
+                "uploadDone": journal.get("rustore-upload-done") is not None,
+                "submitIntent": journal.get("rustore-submit-intent") is not None,
+                "submitDone": journal.get("rustore-submit-done") is not None,
+            },
+        }
+        if created is None:
+            return result
+        vid = integer(created.get("versionId"), minimum=1)
+        detail = api.detail(vid)
+        if detail.get("versionId") != vid:
+            raise DeliveryError("MISMATCH", "inspection version ID differs from journal")
+        observed = {
+            k: detail[k]
+            for k in (
+                "versionId",
+                "versionStatus",
+                "versionCode",
+                "versionName",
+                "publishType",
+                "partialValue",
+            )
+            if k in detail
+        }
+        # Preserve absence/null/type differences for diagnosis, never coerce them.
+        for field in ("packages", "fileUids"):
+            observed[field + "Present"] = field in detail
+            if field not in detail:
+                continue
+            value = detail[field]
+            if not isinstance(value, list):
+                observed[field + "WireType"] = type(value).__name__
+                continue
+            rows = []
+            for entry in items(value):
+                keys = (
+                    ("apkUid", "verCode", "verName", "size", "isMainApk", "servicesType")
+                    if field == "packages"
+                    else ("fileUid", "type")
+                )
+                row = {k: entry[k] for k in keys if k in entry}
+                if field == "fileUids" and "fileUrl" in entry:
+                    raw_url = entry["fileUrl"]
+                    row["url"] = (
+                        url_authority(raw_url)
+                        if isinstance(raw_url, str) and raw_url
+                        else {"wireType": type(raw_url).__name__}
+                    )
+                rows.append(row)
+            observed[field] = rows
+        result["detail"] = observed
+        return result
+
+    packages, info = api.packages(), api.info()
+    result = {
+        "status": "OBSERVED",
+        "packages": [
+            {k: p[k] for k in ("pkgVersion", "versionCode", "packageSize", "shaCode") if k in p}
+            for p in packages
+        ],
+        "appInfo": {
+            k: info[k]
+            for k in (
+                "releaseState",
+                "versionCode",
+                "versionId",
+                "onShelfVersionCode",
+                "onShelfVersionId",
+            )
+            if k in info
+        },
+    }
+    if any(p["versionCode"] == release.code for p in packages):
+        return result
+    upload = obj(
+        api.call(
+            "GET",
+            "upload-url/for-obs",
+            params={
+                "fileName": apk.name,
+                "sha256": release.apk_hash,
+                "contentLength": release.value["apkSize"],
+                "releaseType": 1,
+                "chineseMainlandFlag": 0,
+            },
+        ).get("urlInfo")
+    )
+    raw_url = string(upload.get("url"))
+    authority = url_authority(raw_url)
+    headers = obj(upload.get("headers"))
+    if any(not isinstance(k, str) or not isinstance(v, str) for k, v in headers.items()):
+        raise DeliveryError("CONTRACT", "Huawei upload headers have wrong wire types")
+    normalized = {k.lower(): v for k, v in headers.items()}
+    if len(normalized) != len(headers):
+        raise DeliveryError("CONTRACT", "Huawei upload has duplicate header names")
+    try:
+        huawei_upload_url(raw_url)
+        allowed = True
+    except core.DeliveryError:
+        allowed = False
+    result["upload"] = {
+        "method": string(upload.get("method")),
+        "url": authority,
+        "passesCurrentUrlGuard": allowed,
+        "headerHostMatches": normalized.get("host", "").lower()
+        in {authority["host"], str(authority["host"]) + ":443"},
+        "sha256Matches": normalized.get("x-amz-content-sha256") == release.apk_hash,
+    }
+    return result
+
+
+def load_approved_apk(journal: ReleaseJournal, directory: Path) -> Path:
+    directory.mkdir(parents=True, exist_ok=True)
+    release = journal.release
+    apk = directory / f"TalentForge-{release.value['versionName']}-{release.code}.apk"
+    asset = journal.assets().get("approved.apk")
+    if asset is None:
+        raise DeliveryError("GATE", "approved APK asset missing")
+    apk.write_bytes(journal.github.asset_bytes(asset))
+    release.verify_apk(apk)
+    return apk
+
+
+def inspect_journal(journal: ReleaseJournal, directory: Path) -> dict[str, Any]:
+    apk = load_approved_apk(journal, directory)
+    release = journal.release
+    return {
+        "schema": "talentforge-android-store-inspection/1",
+        "readOnly": True,
+        "releaseId": journal.release_id,
+        "manifestSha256": release.digest,
+        "manifest": release.value,
+        "at": core.iso_now(),
+        "stores": each_store(
+            release.value["stores"],
+            lambda store: inspect_store(
+                store_api(journal.github.client, store, release.value["appgalleryAppId"]),
+                release,
+                apk,
+                journal,
+            ),
+        ),
+    }
+
+
 def advance_with_proof(
     journal: Journal, store: str, advance: Callable[[], dict[str, Any]]
 ) -> dict[str, Any]:
@@ -1146,13 +1312,7 @@ def record_transition(journal: Journal, store: str, state: dict[str, Any]) -> di
 
 def reconcile_journal(journal: ReleaseJournal, directory: Path) -> dict[str, Any]:
     release = journal.release
-    directory.mkdir(parents=True, exist_ok=True)
-    apk = directory / f"TalentForge-{release.value['versionName']}-{release.code}.apk"
-    asset = journal.assets().get("approved.apk")
-    if asset is None:
-        raise DeliveryError("GATE", "approved APK asset missing")
-    apk.write_bytes(journal.github.asset_bytes(asset))
-    release.verify_apk(apk)
+    apk = load_approved_apk(journal, directory)
 
     def advance(store: str) -> dict[str, Any]:
         def perform() -> dict[str, Any]:
@@ -1355,7 +1515,8 @@ def summary(report: dict[str, Any]) -> None:
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "command", choices=("audit", "manifest", "approval", "initialize", "reconcile", "notify")
+        "command",
+        choices=("audit", "manifest", "approval", "initialize", "inspect", "reconcile", "notify"),
     )
     parser.add_argument("--repo", type=Path, default=Path())
     parser.add_argument("--gate", type=Path)
@@ -1373,6 +1534,8 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 def run(args: argparse.Namespace) -> int:
     if os.environ.get("GITHUB_REF") != core.MAIN_REF:
         raise DeliveryError("GATE", "public store tools run only from main")
+    if args.command == "inspect" and (args.release_id is None or args.release_id < 1):
+        raise DeliveryError("CONFIG", "inspection requires an explicit positive release ID")
     repository = string(os.environ.get("GITHUB_REPOSITORY"))
     token = string(os.environ.get("GH_TOKEN"))
     with delivery_client() as client:
@@ -1421,6 +1584,13 @@ def run(args: argparse.Namespace) -> int:
                 core.set_outputs({"release_id": str(journal.release_id)}, os.environ)
             core.write_json(args.out, result)
             return 0
+        if args.command == "inspect":
+            remote = obj(github.call("GET", f"releases/{args.release_id}"))
+            journal = load_journal(github, remote, args.repo)
+            result = inspect_journal(journal, args.out.parent / "inspection-files")
+            core.write_json(args.out, result)
+            summary(result)
+            return int(any(s["status"] != "OBSERVED" for s in result["stores"].values()))
         if args.command == "reconcile":
             remotes = (
                 [obj(github.call("GET", f"releases/{args.release_id}"))]

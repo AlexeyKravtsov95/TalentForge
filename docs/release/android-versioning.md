@@ -66,7 +66,7 @@ with that code yet.
 | 2 | | Google Play upload, OTA ON | | | Google Play (date not recorded) |
 | 3 | | Google Play upload, track `alpha` | | `c24387e66aa1d2b3ee9a9b31f60310dc50648fb588659aa259916a19e293ac01` | Google Play `alpha` (date not recorded) |
 | 4 | `e07d7825d3ddbe5de3a68d5536595dbe8ab9d048` (merge of [#95](https://github.com/AlexeyKravtsov95/TalentForge/pull/95)) | test build, OTA ON: first [Store delivery](ci-delivery.md), track `alpha` | `25febe10c387b04ede5009e471f4a294510a150175b32c4844d465f11ec1db2d` | `66d6da923f261c40e32057b4399f7b458966031799b6cd98ef1d14e852e98f43` | AAB: Google Play `alpha`, `completed` (2026-10-27 UTC, run [40540792139](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/40540792139)). APK: run artifact only, not uploaded to RuStore or AppGallery |
-| 5 | version PR (2026-11-03) | next RuStore/AppGallery public UX update; not built or uploaded | | | |
+| 5 | `9e9d9e188c5a0a10c2e573640b0e0d171f9eebf5` | approved public UX APK, OTA ON; delivery incomplete, retain these exact bytes | `ec2d62fe461d688cfc2c7aa674bfc44d4ef6deac4d6c35480984170d45fa0526` | not selected | 2026-11-03 UTC: RuStore draft `2064929703`, upload intent without receipt; AppGallery stopped before upload. Neither store confirmed PUBLISHED. [Run 41696390880](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/41696390880), durable journal ID `433118574` |
 
 Code `2` is consumed (owner, 2026-10-26): it was uploaded to Google Play with OTA ON. Its commit,
 SHA-256 values and upload date are not recorded here.
@@ -126,7 +126,11 @@ Code `5` exceeds the highest observed consumed code (`4`). Before uploading,
 re-read all statuses/packages: drafts and testing consume numbers too. If another
 upload consumes `5` first, stop and prepare a new version PR. Record the actual
 source SHA, APK/certificate SHA-256 and each store's publication result after delivery.
-No new APK hash or publication result exists at the time of this version PR.
+No new APK hash or publication result existed at the time of that version PR.
+The later approved build and incomplete delivery are recorded in the ledger above
+and [the public-store recovery record](android-public-stores.md#approved-delivery-failure-and-read-only-inspection-2026-11-03-utc).
+Code 5 is held for this approved APK while its upload is unresolved; do not rebuild
+or reuse it, and do not infer publication from a successful approval or upload.
 
 ## 4. Test build (`versionCode 1`)
 

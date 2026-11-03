@@ -177,11 +177,11 @@ published at full rollout. The combined report's `complete` must be true.
 | Live published versions before update | RuStore `1.0.0 (1)`, 100%; AppGallery `1.0.0 (3)`; Play Alpha `1.0.0 (4)` |
 | Separate version PR | [#111](https://github.com/AlexeyKravtsov95/TalentForge/pull/111), Android `1.0.0 (5)`; not yet a built/published APK |
 | Expected existing app certificate SHA-256 (GitHub variable) | `03bd4ad1a3a52aaef112ccb94323b508c6eb03c162033c2002d49db9a7401c1e` |
-| Actual source / tooling SHA | pending merged release build |
-| Actual APK / certificate SHA-256 | pending signed APK verification |
-| RuStore version ID / published result | pending |
-| AppGallery package ID / published result | pending |
-| Telegram result | pending |
+| Actual source / tooling SHA | source `9e9d9e188c5a0a10c2e573640b0e0d171f9eebf5`; build workflow `9b463cb23e7d15fce54ecdae6bc567cdd97fc24c` |
+| Actual APK / certificate SHA-256 | approved APK `ec2d62fe461d688cfc2c7aa674bfc44d4ef6deac4d6c35480984170d45fa0526` (19,883,006 bytes); certificate `03bd4ad1a3a52aaef112ccb94323b508c6eb03c162033c2002d49db9a7401c1e` |
+| RuStore version ID / published result | draft `2064929703` created; upload receipt unresolved; not confirmed published |
+| AppGallery package ID / published result | stopped at local upload-URL guard before upload; not confirmed published |
+| Telegram result | both initial error transitions have durable `SENT` receipts; publication notification pending |
 
 Fill the actual release identity and publication readbacks in this record and
 [android-versioning](android-versioning.md) once confirmed. The pending entries
@@ -256,3 +256,53 @@ See [GitHub dependency/status rules](https://docs.github.com/en/actions/referenc
 These offline condition tests do not prove live approval scheduling; confirm the
 single protected approval in the next corrected main workflow run. Do not rerun
 the unchanged old workflow or treat the green build as a store delivery.
+
+### Approved delivery failure and read-only inspection, 2026-11-03 UTC
+
+[Run 41696390880](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/41696390880)
+passed verify/build checks and the owner's protected approval. Its canonical
+manifest digest is `47a982f71fb8aee29cdcf4bb2d34fca9542e34f92dceaf922631ba9716b593b9`.
+The approved bytes and manifest are retained in journal release ID `433118574`,
+tag `android-store-5`. [Delivery job 126147623306](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/41696390880/job/126147623306)
+then failed; [report artifact](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/41696390880/artifacts/13264635787)
+has `complete=false`:
+
+- RuStore: `rustore-create-done` binds version ID `2064929703`.
+  `rustore-upload-intent` exists but `rustore-upload-done` does not.
+  The saved error is `CONFLICT: RuStore must have exactly one universal APK`.
+  In this workflow's control flow, that post-upload check follows a successful
+  upload API response; the package array cardinality/UID was not saved. This is
+  not proof of a rejected upload or proof that retrying is safe. Do not upload
+  again, replace the APK, rebuild code 5, or manufacture the missing receipt.
+- AppGallery: `CONFIG: untrusted Huawei file-server URL`. The failure is in the
+  local authority guard after obtaining upload information, before an upload
+  intent or PUT. No upload/attach/submit receipt exists. The old report does not
+  retain the returned authority, so its exact mismatch needs a safe readback.
+- Both error transitions have `telegram-*-000001-done` receipts with `SENT`.
+  Those are operational alerts, not publication confirmations.
+
+The live RuStore console shows the same API draft, without a downloadable APK.
+[RuStore documents](https://www.rustore.ru/help/work-with-rustore-api/api-upload-publication-app/apk-file-upload/file-upload-apk)
+that API-uploaded files appear in the web interface only after submission for
+moderation. An empty console file panel therefore does not prove that an upload
+was absent. Do not submit merely to make a file visible.
+
+For diagnosis, dispatch the existing **Android public store reconciliation**
+workflow on trusted `main` with `release_id=433118574`, `inspect_only=true`.
+Inspection requires one explicit journal ID, proves its original approval and
+checks its approved APK bytes before using store credentials. It reads the
+RuStore version bound by the create receipt, preserving absent/null/wrong-type
+package metadata. For Huawei it reads package/app state and, if this code is
+absent, requests upload information solely to report scheme, host, port and
+guard/header/hash comparison booleans. It never follows that URL, stores signed
+paths/queries or authorization headers, uploads, attaches, submits, repairs a
+receipt, changes journal assets or sends Telegram. RuStore authentication still
+uses its normal token request. The artifact is **android-store-inspection**;
+`OBSERVED` means a read succeeded and does not mean publication.
+
+Inspection uses the existing concurrency lock and has a separate report schema.
+Scheduled runs retain normal reconciliation behavior. Resume a writer only after
+the observed refusal is understood and a safe recovery is established; use this
+same journal/approved APK. No new build or protected approval is needed for
+read-only inspection. The upload authority guard and missing-receipt refusal
+remain in force; this diagnostic change does not itself repair either refusal.
