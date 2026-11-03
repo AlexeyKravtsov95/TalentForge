@@ -227,3 +227,32 @@ was not visible in that screenshot. Subsequent review of the official guide
 distinguished its Developer-level requirement from the empty JSON example;
 the local emptiness guard was an unsupported inference and is corrected as
 described above. Store-side authorization still needs a successful fresh audit.
+
+### Verified APK, skipped approval chain, 2026-11-03
+
+[Verify 41679817702, attempt 2](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/41679817702/attempts/2)
+passed both store audits, all three production OTA releases, both APK validators,
+the source/OTA release check and checksums. Source remained
+`9e9d9e188c5a0a10c2e573640b0e0d171f9eebf5`, tooling was
+`3054f094fc1f9827cef7f54a6bb367230a51d8fc`. The owner had corrected Huawei
+credentials and the CDN origin request's `Accept-Encoding: identity`, then purged
+the blob cache. Attempt 1 had one CDN HTTP 504; a read-only origin probe confirmed
+the exact expected object bytes before the single retry. Attempt 2 verified 3/3
+OTA releases without changing the validation requirements.
+
+[Deliver 41683811384](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/41683811384)
+also passed both audits, OTA and the signed build. Its APK SHA-256 is
+`478569a791c771c7f4d199239c983aaa8f8927533cce3ad246f9f65bf36e45c6`,
+size 19,883,006 bytes. It was **not approved or uploaded**: GitHub skipped
+`public-approval`, `public-journal`, `public-deliver` and `public-notify`, despite
+the run's green conclusion. There were no pending deployments or release journal.
+
+The unselected Play ancestor was skipped. GitHub's default status condition
+propagates skips through the dependency chain, including jobs after the successful
+Android build. The public chain now uses explicit `!cancelled()` conditions and
+requires its gate and immediate predecessor to succeed. A failed/skipped build,
+unapproved APK, missing journal, cancellation or verify mode still blocks writes.
+See [GitHub dependency/status rules](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idneeds).
+These offline condition tests do not prove live approval scheduling; confirm the
+single protected approval in the next corrected main workflow run. Do not rerun
+the unchanged old workflow or treat the green build as a store delivery.

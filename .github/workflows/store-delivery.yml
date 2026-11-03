@@ -481,7 +481,11 @@ jobs:
   public-approval:
     name: Approve Android public release (${{ needs.android-build.outputs.manifest_sha256 }})
     needs: [gate, android-build]
-    if: inputs.apk_stores != 'none' && needs.gate.outputs.mode == 'deliver'
+    # Play/iOS ancestors can be intentionally skipped. Override implicit success()
+    # while still requiring the exact-source gate and fully verified APK.
+    if: >-
+      !cancelled() && inputs.apk_stores != 'none' && needs.gate.outputs.mode == 'deliver'
+      && needs.gate.result == 'success' && needs.android-build.result == 'success'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     environment: android-public-release
@@ -523,7 +527,9 @@ jobs:
   public-journal:
     name: Preserve approved APK and durable release journal
     needs: [gate, public-approval]
-    if: inputs.apk_stores != 'none' && needs.gate.outputs.mode == 'deliver'
+    if: >-
+      !cancelled() && inputs.apk_stores != 'none' && needs.gate.outputs.mode == 'deliver'
+      && needs.gate.result == 'success' && needs.public-approval.result == 'success'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
@@ -566,7 +572,9 @@ jobs:
   public-deliver:
     name: Deliver approved APK independently to public stores
     needs: [gate, public-journal]
-    if: inputs.apk_stores != 'none' && needs.gate.outputs.mode == 'deliver'
+    if: >-
+      !cancelled() && inputs.apk_stores != 'none' && needs.gate.outputs.mode == 'deliver'
+      && needs.gate.result == 'success' && needs.public-journal.result == 'success'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     environment: android-stores
