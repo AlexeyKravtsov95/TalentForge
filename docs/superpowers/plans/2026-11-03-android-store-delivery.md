@@ -25,16 +25,16 @@ PR. Store credentials only in GitHub. Do not change iOS/OTA automation.
 
 ## Tasks
 
-- [ ] Audit live histories, approved UX ancestry and source CI; choose version only
+- [x] Audit live histories, approved UX ancestry and source CI; choose version only
   after both histories are known and open a separate version PR if needed.
-- [ ] Implement strict API adapters and a durable release journal in
+- [x] Implement strict API adapters and a durable release journal in
   scripts/android_store_delivery.py; test PS256 auth, pagination, upload intent,
   conflicting/unknown/missing hashes, automatic publication and partial success in
   tests/unit/test_android_store_delivery.py using httpx.MockTransport.
-- [ ] Extend .github/workflows/store-delivery.yml and its gate/build selection for
+- [x] Extend .github/workflows/store-delivery.yml and its gate/build selection for
   independent APK stores while preserving legacy paths; add one approval after
   verified APK and durable evidence before store writes.
-- [ ] Add .github/workflows/android-store-reconcile.yml for bounded scheduled/manual
+- [x] Add .github/workflows/android-store-reconcile.yml for bounded scheduled/manual
   polling and status-change Telegram reports. Test recovery from earlier intents,
   source artifact replacement and already-published state without another upload.
 - [ ] Document exact setup/runbook and evidence. Run ruff, format, mypy, pytest,

@@ -522,6 +522,7 @@ class HuaweiStore:
                     "url": "https://tf.obs.ru-northwest-2.myhuaweicloud.com/apk",
                     "objectId": "object.apk",
                     "headers": {
+                        "Host": "tf.obs.ru-northwest-2.myhuaweicloud.com",
                         "Authorization": "OBS signature",
                         "x-amz-content-sha256": self.release.apk_hash,
                         "Content-Type": "application/octet-stream",
@@ -762,6 +763,8 @@ def test_telegram_unchanged_state_is_quiet_and_lost_response_is_not_resent() -> 
         "runUrl": "https://github.com/owner/repo/actions/runs/1",
         "stores": {"rustore": {"status": "IN_REVIEW"}, "appgallery": {"status": "PUBLISHED"}},
     }
+    for store, state in report["stores"].items():
+        state["transitionId"] = d.record_transition(j, store, state)["sequence"]
     for _ in range(2):
         assert all(
             x["status"] == "SENT" for x in d.notify_report(j, report, "token", "owner").values()
@@ -775,6 +778,9 @@ def test_telegram_unchanged_state_is_quiet_and_lost_response_is_not_resent() -> 
 
     j.github.client = httpx.Client(transport=httpx.MockTransport(lost))
     report["stores"] = {"rustore": {"status": "PUBLISHED"}}
+    report["stores"]["rustore"]["transitionId"] = d.record_transition(
+        j, "rustore", {"status": "PUBLISHED"}
+    )["sequence"]
     for _ in range(2):
         assert d.notify_report(j, report, "token", "owner")["rustore"]["status"] == "UNKNOWN"
     assert len(calls) == 3
@@ -797,3 +803,188 @@ def test_manual_github_release_cannot_supply_store_journal() -> None:
     github = d.GitHub(httpx.Client(transport=httpx.MockTransport(handler)), "owner/repo", "token")
     with pytest.raises(d.DeliveryError, match="GATE"):
         d.load_journal(github, {"id": 9, "author": {"login": "owner"}}, Path())
+
+
+@pytest.mark.parametrize("extra", [True, False])
+def test_release_approval_accepts_only_the_owner_user(
+    monkeypatch: pytest.MonkeyPatch, extra: bool
+) -> None:
+    api = d.GitHub(httpx.Client(), "owner/repo", "token")
+    reviewers = [{"type": "User" if extra else "Team", "reviewer": {"login": "owner"}}]
+    if extra:
+        reviewers.append({"type": "User", "reviewer": {"login": "someone-else"}})
+    monkeypatch.setattr(
+        api,
+        "call",
+        lambda *_: {
+            "can_admins_bypass": False,
+            "protection_rules": [{"type": "required_reviewers", "reviewers": reviewers}],
+        },
+    )
+    monkeypatch.setattr(api, "pages", lambda *_: [{"name": "main", "type": "branch"}])
+    with pytest.raises(d.DeliveryError, match="CONFIG"):
+        api.require_protected_approval()
+
+
+def test_one_broken_journal_does_not_block_or_discard_other_releases(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from types import SimpleNamespace
+
+    def load(_api: Any, remote: dict[str, Any], _repo: Path) -> Any:
+        if remote["id"] == 1:
+            raise d.DeliveryError("GATE", "incomplete first journal")
+        return SimpleNamespace(release_id=remote["id"], get=lambda _: None)
+
+    monkeypatch.setattr(d, "load_journal", load)
+    monkeypatch.setattr(
+        d,
+        "reconcile_journal",
+        lambda j, _: {"releaseId": j.release_id, "stores": {"rustore": {"status": "PUBLISHED"}}},
+    )
+    out = tmp_path / "report.json"
+    result = d.reconcile_releases(None, [{"id": 1}, {"id": 2}], tmp_path, out)
+    assert result["releases"][0]["releaseId"] == 2
+    assert result["errors"][0]["releaseId"] == 1
+    assert json.loads(out.read_text()) == result
+
+
+def test_store_publication_proof_survives_later_store_changes() -> None:
+    j = d.MemoryJournal()
+    first = d.advance_with_proof(j, "rustore", lambda: {"status": "PUBLISHED", "versionId": 9})
+    assert first["status"] == "PUBLISHED" and first["observedAt"]
+    second = d.advance_with_proof(j, "rustore", lambda: pytest.fail("must preserve proven success"))
+    assert second["status"] == "PUBLISHED" and second["previouslyConfirmed"] is True
+    assert second["observedAt"] == first["observedAt"]
+
+
+def test_unchanged_polls_do_not_exhaust_release_assets() -> None:
+    j = d.MemoryJournal()
+    for _ in range(1100):
+        event = d.record_transition(j, "rustore", {"status": "IN_REVIEW", "rawState": "MODERATION"})
+        assert event["sequence"] == 1
+    assert len(j.records) == 1
+    assert d.record_transition(j, "rustore", {"status": "STORE"})["sequence"] == 2
+    assert (
+        d.record_transition(j, "rustore", {"status": "IN_REVIEW", "rawState": "MODERATION"})[
+            "sequence"
+        ]
+        == 3
+    )
+
+
+def test_github_asset_timeout_is_typed_redacted_and_bounded() -> None:
+    calls = []
+
+    def fail(req: httpx.Request) -> httpx.Response:
+        calls.append(req)
+        raise httpx.ReadTimeout("secret signed URL", request=req)
+
+    github = d.GitHub(httpx.Client(transport=httpx.MockTransport(fail)), "owner/repo", "token")
+    with pytest.raises(d.DeliveryError) as error:
+        github.asset_bytes({"id": 1, "uploader": {"login": "github-actions[bot]"}})
+    assert error.value.code == "STORE" and "secret" not in str(error.value)
+    assert len(calls) == 3
+
+
+def test_telegram_reports_a_return_to_a_previous_error_status() -> None:
+    from types import SimpleNamespace
+
+    calls = []
+
+    def send(req: httpx.Request) -> httpx.Response:
+        calls.append(req)
+        return httpx.Response(200, json={"ok": True})
+
+    r, j = d.Release.parse(manifest()), d.MemoryJournal()
+    j.release, j.release_id = r, 9
+    j.github = SimpleNamespace(client=httpx.Client(transport=httpx.MockTransport(send)))
+    for sequence, status in enumerate(["STORE", "IN_REVIEW", "STORE"], 1):
+        j.put_once(
+            f"state-rustore-{sequence:06d}",
+            {
+                "sequence": sequence,
+                "store": "rustore",
+                "state": {"status": status},
+                "observedAt": "2026-11-03T00:00:00Z",
+                "runUrl": "https://github.com/owner/repo/actions/runs/1",
+            },
+        )
+        report = {
+            "releaseId": 9,
+            "manifestSha256": r.digest,
+            "runUrl": "https://github.com/owner/repo/actions/runs/1",
+            "stores": {"rustore": {"status": status, "transitionId": sequence}},
+        }
+        d.notify_report(j, report, "token", "owner")
+    assert len(calls) == 3
+
+
+@pytest.mark.parametrize(
+    "host_headers",
+    [
+        {},
+        {"Host": "evil.example"},
+        {"Host": "tf.obs.ru-northwest-2.myhuaweicloud.com", "hOsT": "evil.example"},
+    ],
+)
+def test_huawei_upload_host_is_verified_before_intent(
+    tmp_path: Path, host_headers: dict[str, str]
+) -> None:
+    r, apk = release_file(tmp_path)
+    store, j = HuaweiStore(r), d.MemoryJournal()
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        response = store.handler(req)
+        if req.url.path.endswith("upload-url/for-obs"):
+            body = response.json()
+            headers = body["urlInfo"]["headers"]
+            headers.pop("Host", None)
+            headers.update(host_headers)
+            return httpx.Response(200, json=body)
+        return response
+
+    api = d.AppGallery(httpx.Client(transport=httpx.MockTransport(handler)), "119465493", "jwt")
+    with pytest.raises(d.DeliveryError):
+        d.advance_appgallery(api, r, apk, j, now=1000)
+    assert store.uploads == 0 and j.get("appgallery-upload-intent") is None
+
+
+def test_huawei_parsing_interval_starts_when_upload_finishes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    r, apk = release_file(tmp_path)
+    store, j, clock = HuaweiStore(r), d.MemoryJournal(), [1000]
+    monkeypatch.setattr(d.time, "time", lambda: clock[0])
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        response = store.handler(req)
+        if req.url.host != "connect-api.cloud.huawei.com":
+            clock[0] = 1120
+        return response
+
+    api = d.AppGallery(httpx.Client(transport=httpx.MockTransport(handler)), "119465493", "jwt")
+    d.advance_appgallery(api, r, apk, j)
+    assert j.get("appgallery-upload-done")["at"] == 1120
+    clock[0] = 1130
+    assert d.advance_appgallery(api, r, apk, j)["status"] == "PROCESSING"
+    assert store.submissions == 0
+
+
+def test_malformed_provider_url_is_a_redacted_typed_error() -> None:
+    with pytest.raises(d.DeliveryError) as error:
+        d.huawei_upload_url("https://x.myhuaweicloud.com:secret-signature/file")
+    assert "secret-signature" not in str(error.value)
+
+    def redirect(_req: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            302,
+            headers={
+                "location": "https://release-assets.githubusercontent.com:secret-signature/file"
+            },
+        )
+
+    github = d.GitHub(httpx.Client(transport=httpx.MockTransport(redirect)), "owner/repo", "token")
+    with pytest.raises(d.DeliveryError) as error:
+        github.asset_bytes({"id": 1, "uploader": {"login": "github-actions[bot]"}})
+    assert "secret-signature" not in str(error.value)

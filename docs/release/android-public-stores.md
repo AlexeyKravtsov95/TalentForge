@@ -14,7 +14,7 @@ in GitHub → Settings → Environments → `android-stores`.
 | Environment | Protection | Values |
 |---|---|---|
 | `android-stores` | selected branch `main`, no additional reviewer | secrets `RUSTORE_PRIVATE_KEY_BASE64`, `APPGALLERY_SERVICE_ACCOUNT_JSON`; variables `RUSTORE_KEY_ID`, `APPGALLERY_APP_ID` |
-| `android-public-release` | selected branch `main`; required reviewer AlexeyKravtsov95; admin bypass disabled | no secrets; one approval after the concrete APK identity is displayed |
+| `android-public-release` | selected branch `main`; sole required reviewer AlexeyKravtsov95 (User); admin bypass disabled | no secrets; one approval after the concrete APK identity is displayed |
 | existing `android-signing` | keep existing main restriction | existing app keystore/password/alias/fingerprint; existing upload certificate remains a public comparison pin; Play upload keystore is needed only when Play is selected |
 | existing `notifications` | keep existing main restriction | existing `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` |
 
@@ -93,7 +93,7 @@ Changing any of these requires a fresh release decision; do not edit journal ass
 
 | Status | Meaning / action |
 |---|---|
-| `PUBLISHED` | RuStore ACTIVE at 100% with the bound version/package receipt; Huawei onShelfVersionCode **and** onShelfVersionId identify the package whose shaCode matches the approved APK. This store is confirmed available. |
+| `PUBLISHED` | RuStore ACTIVE at 100% with the bound version/package receipt; Huawei onShelfVersionCode **and** onShelfVersionId identify the package whose shaCode matches the approved APK. Publication is proven at `observedAt`; later reports explicitly mark retained proof as `previouslyConfirmed`. This is delivery evidence, not indefinite availability monitoring. |
 | `SUBMITTED`, `IN_REVIEW` | Submission/review, not availability. Let reconciliation continue. |
 | `PROCESSING` | Huawei attachment/parsing or release transition; not publication. |
 | `REJECTED` | Store review rejected the update; inspect the store's review comments and prepare the correction. No automatic resubmission. |
@@ -121,7 +121,12 @@ receipt is lost before a UID can be saved, a versionCode alone is insufficient:
 the store stays UNKNOWN and needs owner recovery with store-side byte evidence.
 The automation never invents a store-reported hash or blindly reuploads it.
 
-Reports live in Actions (`android-store-report`) and immutable journal assets.
+Every poll report lives in Actions (`android-store-report`). Only state transitions,
+write receipts and publication proofs consume immutable journal assets; unchanged
+polls add none. Telegram receipts are keyed by transition sequence, so a return to
+an earlier error state is reported again. Each store keeps its own terminal proof,
+so a confirmed partial success is retained while the other finishes review. A broken
+journal is reported independently and does not block later journals or notifications.
 The draft release keeps the approved APK and evidence beyond Actions artifact
 retention. Deleting the original run/approval job or altering journal assets breaks
 provenance and stops that release. Do not delete active journals/runs.

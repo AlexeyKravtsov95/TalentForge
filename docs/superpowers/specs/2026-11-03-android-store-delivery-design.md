@@ -135,7 +135,7 @@ GitHub Actions green/upload complete is not this criterion.
 3. Existing `android-signing`: keep release key/password/alias/fingerprint.
    Existing `notifications`: keep TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID. Neither
    needs another per-release review. No secrets are read into chat or local files.
-4. Enable scheduled reconciliation after the workflow PR is owner-merged. Review
+4. Scheduled reconciliation starts after the workflow PR is owner-merged. Review
    existing country/region availability and absence of another pending store edit.
 5. Owner merges the separate version PR and implementation PR; then approves one
    concrete release after its hash is available. Never change signing service/key,

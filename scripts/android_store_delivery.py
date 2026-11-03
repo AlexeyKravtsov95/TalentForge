@@ -143,7 +143,9 @@ class Release:
             raise DeliveryError("MISMATCH", "APK differs from approved bytes")
 
 
-def request(client: httpx.Client, method: str, url: str, **kwargs: Any) -> httpx.Response:
+def request(
+    client: httpx.Client, method: str, url: str, *, accept_redirect: bool = False, **kwargs: Any
+) -> httpx.Response:
     """Bounded retries for reads only. Never report bodies, headers or signed URLs."""
     for attempt in range(3 if method == "GET" else 1):
         try:
@@ -155,7 +157,9 @@ def request(client: httpx.Client, method: str, url: str, **kwargs: Any) -> httpx
                 "STORE" if method == "GET" else "UNKNOWN",
                 f"{method} transport failure ({type(error).__name__})",
             ) from None
-        if 200 <= response.status_code < 300:
+        if 200 <= response.status_code < 300 or (
+            accept_redirect and response.status_code in (301, 302, 303, 307, 308)
+        ):
             return response
         if method == "GET" and response.status_code in core.RETRY_STATUSES and attempt < 2:
             continue
@@ -199,8 +203,15 @@ def huawei_jwt(raw: str, *, now: int | None = None) -> str:
     return data.decode() + "." + core.b64url(sig)
 
 
+def parse_service_url(raw: str) -> httpx.URL:
+    try:
+        return httpx.URL(raw)
+    except httpx.InvalidURL:
+        raise DeliveryError("CONFIG", "malformed service URL") from None
+
+
 def huawei_upload_url(raw: str) -> str:
-    url = httpx.URL(raw)
+    url = parse_service_url(raw)
     if (
         url.scheme != "https"
         or url.username
@@ -218,6 +229,7 @@ def huawei_upload_url(raw: str) -> str:
 class Journal(Protocol):
     def get(self, name: str) -> dict[str, Any] | None: ...
     def put_once(self, name: str, value: dict[str, Any]) -> None: ...
+    def entries(self, prefix: str) -> list[tuple[str, dict[str, Any]]]: ...
 
 
 class MemoryJournal:
@@ -234,6 +246,11 @@ class MemoryJournal:
         if old is not None and old != value:
             raise DeliveryError("MISMATCH", "journal checkpoint differs")
         self.records[name] = dict(value)
+
+    def entries(self, prefix: str) -> list[tuple[str, dict[str, Any]]]:
+        return sorted(
+            (name, value) for name, value in self.records.items() if name.startswith(prefix + "-")
+        )
 
 
 def write_once(
@@ -352,6 +369,7 @@ def huawei_observation(
 def advance_appgallery(
     api: AppGallery, release: Release, apk: Path, journal: Journal, *, now: int | None = None
 ) -> dict[str, Any]:
+    fixed_now = now
     now = int(time.time()) if now is None else now
     packages, state = api.packages(), api.info()
     observed = huawei_observation(release, state, packages)
@@ -391,8 +409,15 @@ def advance_appgallery(
                 raise DeliveryError("CONTRACT", "Huawei upload must use PUT")
             url = huawei_upload_url(string(info.get("url")))
             headers = obj(info.get("headers"))
-            if any(not isinstance(v, str) for v in headers.values()):
+            if any(not isinstance(k, str) or not isinstance(v, str) for k, v in headers.items()):
                 raise DeliveryError("CONTRACT", "Huawei upload headers have wrong wire types")
+            normalized = {k.lower(): v for k, v in headers.items()}
+            if len(normalized) != len(headers):
+                raise DeliveryError("CONTRACT", "Huawei upload has duplicate header names")
+            authority = httpx.URL(url).host.lower()
+            if normalized.get("host", "").lower() not in {authority, authority + ":443"}:
+                raise DeliveryError("CONFIG", "Huawei upload Host differs from approved authority")
+            headers = normalized
             if headers.get("x-amz-content-sha256") != release.apk_hash:
                 raise DeliveryError("MISMATCH", "Huawei upload does not bind APK hash")
             object_id = string(info.get("objectId"))
@@ -400,7 +425,8 @@ def advance_appgallery(
             def upload() -> dict[str, Any]:
                 with apk.open("rb") as stream:
                     request(api.client, "PUT", url, headers=headers, content=stream, timeout=600)
-                return {"objectId": object_id, "at": now}
+                finished = int(time.time()) if fixed_now is None else now
+                return {"objectId": object_id, "at": finished}
 
             uploaded = write_once(
                 journal,
@@ -753,7 +779,11 @@ class GitHub:
             if rule.get("type") == "required_reviewers"
             for r in items(rule.get("reviewers"))
         ]
-        if not any(obj(r.get("reviewer")).get("login", "").lower() == owner for r in reviewers):
+        if not (
+            len(reviewers) == 1
+            and reviewers[0].get("type") == "User"
+            and obj(reviewers[0].get("reviewer")).get("login", "").lower() == owner
+        ):
             raise DeliveryError(
                 "CONFIG", "android-public-release must require repository owner's review"
             )
@@ -771,13 +801,15 @@ class GitHub:
         if obj(asset.get("uploader")).get("login") != "github-actions[bot]":
             raise DeliveryError("GATE", "release asset was not uploaded by Actions")
         aid = integer(asset.get("id"), minimum=1)
-        response = self.client.get(
+        response = request(
+            self.client,
+            "GET",
             self.base + f"releases/assets/{aid}",
             headers={**self.headers, "Accept": "application/octet-stream"},
-            follow_redirects=False,
+            accept_redirect=True,
         )
         if response.status_code in (301, 302, 303, 307, 308):
-            url = httpx.URL(response.headers.get("location", ""))
+            url = parse_service_url(response.headers.get("location", ""))
             if (
                 url.scheme != "https"
                 or url.host
@@ -830,6 +862,19 @@ class ReleaseJournal:
         ):
             raise DeliveryError("MISMATCH", "journal checkpoint not bound to approval")
         return obj(value["value"])
+
+    def entries(self, prefix: str) -> list[tuple[str, dict[str, Any]]]:
+        result = []
+        for name in sorted(self.assets()):
+            if not name.startswith(prefix + "-"):
+                continue
+            if not re.fullmatch(re.escape(prefix) + r"-[0-9]{6}\.json", name):
+                raise DeliveryError("CONTRACT", "unexpected transition asset name")
+            value = self.get(name[:-5])
+            if value is None:
+                raise DeliveryError("STORE", "transition disappeared while reading")
+            result.append((name[:-5], value))
+        return result
 
     def put_once(self, name: str, value: dict[str, Any]) -> None:
         if not re.fullmatch(r"[a-z0-9-]+", name):
@@ -1017,6 +1062,56 @@ def load_journal(github: GitHub, remote: dict[str, Any], repo: Path) -> ReleaseJ
     return ReleaseJournal(github, release, rid)
 
 
+def advance_with_proof(
+    journal: Journal, store: str, advance: Callable[[], dict[str, Any]]
+) -> dict[str, Any]:
+    proof = journal.get("published-" + store)
+    if proof is not None:
+        state = obj(proof.get("state"))
+        if state.get("status") != "PUBLISHED":
+            raise DeliveryError("MISMATCH", "invalid publication proof")
+        return {**state, "observedAt": string(proof.get("observedAt")), "previouslyConfirmed": True}
+    state = advance()
+    if state.get("status") == "PUBLISHED":
+        observed = core.iso_now()
+        journal.put_once("published-" + store, {"state": state, "observedAt": observed})
+        return {**state, "observedAt": observed}
+    return state
+
+
+def state_identity(state: dict[str, Any]) -> dict[str, Any]:
+    return {
+        k: v
+        for k, v in state.items()
+        if k not in {"observedAt", "previouslyConfirmed", "transitionId"}
+    }
+
+
+def record_transition(journal: Journal, store: str, state: dict[str, Any]) -> dict[str, Any]:
+    prefix = "state-" + store
+    records = journal.entries(prefix)
+    for sequence, (name, value) in enumerate(records, 1):
+        if (
+            name != f"{prefix}-{sequence:06d}"
+            or value.get("sequence") != sequence
+            or value.get("store") != store
+        ):
+            raise DeliveryError("MISMATCH", "transition journal has a gap or wrong identity")
+    identity = state_identity(state)
+    if records and state_identity(obj(records[-1][1].get("state"))) == identity:
+        return records[-1][1]
+    sequence = len(records) + 1
+    event = {
+        "sequence": sequence,
+        "store": store,
+        "state": identity,
+        "observedAt": core.iso_now(),
+        "runUrl": run_url(),
+    }
+    journal.put_once(f"{prefix}-{sequence:06d}", event)
+    return event
+
+
 def reconcile_journal(journal: ReleaseJournal, directory: Path) -> dict[str, Any]:
     release = journal.release
     directory.mkdir(parents=True, exist_ok=True)
@@ -1028,14 +1123,20 @@ def reconcile_journal(journal: ReleaseJournal, directory: Path) -> dict[str, Any
     release.verify_apk(apk)
 
     def advance(store: str) -> dict[str, Any]:
-        api = store_api(journal.github.client, store, release.value["appgalleryAppId"])
-        return (
-            advance_rustore(api, release, apk, journal)
-            if isinstance(api, RuStore)
-            else advance_appgallery(api, release, apk, journal)
-        )
+        def perform() -> dict[str, Any]:
+            api = store_api(journal.github.client, store, release.value["appgalleryAppId"])
+            return (
+                advance_rustore(api, release, apk, journal)
+                if isinstance(api, RuStore)
+                else advance_appgallery(api, release, apk, journal)
+            )
+
+        return advance_with_proof(journal, store, perform)
 
     states = each_store(release.value["stores"], advance)
+    for store, state in states.items():
+        event = record_transition(journal, store, state)
+        state["transitionId"] = event["sequence"]
     report = {
         "schema": "talentforge-android-store-report/1",
         "releaseId": journal.release_id,
@@ -1046,12 +1147,8 @@ def reconcile_journal(journal: ReleaseJournal, directory: Path) -> dict[str, Any
         "stores": states,
         "complete": all(v["status"] == "PUBLISHED" for v in states.values()),
     }
-    run_id = os.environ.get("GITHUB_RUN_ID", "local")
-    attempt = os.environ.get("GITHUB_RUN_ATTEMPT", "1")
-    key = f"observed-{run_id}-{attempt}"
-    # A rerun that has already saved a report must not overwrite it. Its next attempt
-    # gets its own name and independently re-reads the stores.
-    journal.put_once(key, report)
+    # Routine poll reports are Actions artifacts. Only actual transitions/proofs
+    # consume durable release assets, avoiding GitHub's per-release asset limit.
     if report["complete"] and journal.get("publication-complete") is None:
         journal.put_once("publication-complete", report)
     return report
@@ -1078,7 +1175,16 @@ def notify_report(
         status = string(obj(state).get("status"))
         if not re.fullmatch(r"[A-Z_]+", status):
             raise DeliveryError("CONTRACT", "invalid notification status")
-        step = f"telegram-{store}-{status.lower().replace('_', '-')}"
+        sequence = integer(state.get("transitionId"), minimum=1)
+        event = journal.get(f"state-{store}-{sequence:06d}")
+        if (
+            event is None
+            or event.get("store") != store
+            or event.get("sequence") != sequence
+            or obj(event.get("state")) != state_identity(state)
+        ):
+            raise DeliveryError("MISMATCH", "notification transition is not recorded")
+        step = f"telegram-{store}-{sequence:06d}"
         text = (
             f"TalentForge {release.value['versionName']} ({release.code})\n{store}: {status}\n"
             f"source: {release.value['sourceSha']}\nAPK SHA-256: {release.apk_hash}\n"
@@ -1100,11 +1206,62 @@ def notify_report(
 
         try:
             results[store] = write_once(
-                journal, step, {"status": status, "store": store}, send_message
+                journal,
+                step,
+                {"status": status, "store": store, "transition": sequence},
+                send_message,
             )
         except core.DeliveryError as error:
             results[store] = {"status": error.code, "detail": error.message}
     return results
+
+
+def reconcile_releases(
+    github: GitHub, remotes: list[dict[str, Any]], repo: Path, out: Path
+) -> dict[str, Any]:
+    result: dict[str, Any] = {"releases": [], "errors": []}
+    core.write_json(out, result)
+    for remote in remotes:
+        try:
+            journal = load_journal(github, remote, repo)
+            complete = journal.get("publication-complete")
+            report = (
+                complete
+                if complete is not None
+                else reconcile_journal(journal, out.parent / str(journal.release_id))
+            )
+            result["releases"].append(report)
+        except core.DeliveryError as error:
+            result["errors"].append(
+                {"releaseId": remote.get("id"), "status": error.code, "detail": error.message}
+            )
+        # Preserve results even when a later journal is incomplete or invalid.
+        core.write_json(out, result)
+    return result
+
+
+def notify_releases(
+    github: GitHub, reports: list[dict[str, Any]], repo: Path, out: Path, token: str, chat_id: str
+) -> dict[str, Any]:
+    result: dict[str, Any] = {"notifications": [], "errors": []}
+    core.write_json(out, result)
+    for report in reports:
+        try:
+            rid = integer(report.get("releaseId"), minimum=1)
+            journal = load_journal(github, obj(github.call("GET", f"releases/{rid}")), repo)
+            result["notifications"].append(
+                {"releaseId": rid, "stores": notify_report(journal, report, token, chat_id)}
+            )
+        except core.DeliveryError as error:
+            result["errors"].append(
+                {
+                    "releaseId": report.get("releaseId"),
+                    "status": error.code,
+                    "detail": error.message,
+                }
+            )
+        core.write_json(out, result)
+    return result
 
 
 def summary(report: dict[str, Any]) -> None:
@@ -1198,41 +1355,32 @@ def run(args: argparse.Namespace) -> int:
                     if re.fullmatch(r"android-store-[1-9][0-9]*", str(r.get("tag_name", "")))
                 ]
             )
-            reports = []
-            for remote in remotes:
-                journal = load_journal(github, remote, args.repo)
-                complete = journal.get("publication-complete")
-                if complete is not None:
-                    # Include final result for notification retries, but do not touch stores.
-                    reports.append(complete)
-                    continue
-                reports.append(
-                    reconcile_journal(journal, args.out.parent / str(journal.release_id))
-                )
-            result = {"releases": reports}
-            core.write_json(args.out, result)
+            result = reconcile_releases(github, remotes, args.repo, args.out)
             summary(result)
             pending = {"PUBLISHED", "IN_REVIEW", "PROCESSING", "SUBMITTED", "READY_TO_SUBMIT"}
             return int(
-                any(s["status"] not in pending for r in reports for s in r["stores"].values())
+                bool(result["errors"])
+                or any(
+                    s["status"] not in pending
+                    for r in result["releases"]
+                    for s in r["stores"].values()
+                )
             )
         config = core.require_env(os.environ, ["TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"])
-        notifications = []
-        for report in items(core.read_json_object(args.reports).get("releases")):
-            remote = obj(
-                github.call("GET", f"releases/{integer(report.get('releaseId'), minimum=1)}")
+        result = notify_releases(
+            github,
+            items(core.read_json_object(args.reports).get("releases")),
+            args.repo,
+            args.out,
+            config["TELEGRAM_BOT_TOKEN"],
+            config["TELEGRAM_CHAT_ID"],
+        )
+        return int(
+            bool(result["errors"])
+            or any(
+                s["status"] != "SENT" for n in result["notifications"] for s in n["stores"].values()
             )
-            journal = load_journal(github, remote, args.repo)
-            notifications.append(
-                {
-                    "releaseId": journal.release_id,
-                    "stores": notify_report(
-                        journal, report, config["TELEGRAM_BOT_TOKEN"], config["TELEGRAM_CHAT_ID"]
-                    ),
-                }
-            )
-        core.write_json(args.out, {"notifications": notifications})
-        return int(any(s["status"] != "SENT" for n in notifications for s in n["stores"].values()))
+        )
 
 
 def main(argv: Sequence[str] | None = None) -> int:
