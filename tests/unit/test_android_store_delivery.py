@@ -70,7 +70,8 @@ def test_manifest_refuses_unapproved_identity(updates: dict[str, Any]) -> None:
         d.Release.parse(manifest(**updates))
 
 
-def test_service_account_signs_ps256_without_token_exchange() -> None:
+@pytest.mark.parametrize("project_id", ["", "project-from-console"])
+def test_service_account_signs_ps256_without_token_exchange(project_id: str) -> None:
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     pem = key.private_bytes(
         serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8, serialization.NoEncryption()
@@ -81,7 +82,7 @@ def test_service_account_signs_ps256_without_token_exchange() -> None:
                 "key_id": "kid",
                 "sub_account": "subject",
                 "private_key": pem,
-                "project_id": "",
+                "project_id": project_id,
                 "token_uri": d.HUAWEI_AUDIENCE,
             }
         ),
@@ -110,8 +111,11 @@ def test_service_account_signs_ps256_without_token_exchange() -> None:
 @pytest.mark.parametrize(
     ("updates", "field"),
     [
-        ({"project_id": "private-project-value"}, "project_id"),
         ({"project_id": None}, "project_id"),
+        ({"project_id": 123}, "project_id"),
+        ({"project_id": True}, "project_id"),
+        ({"project_id": []}, "project_id"),
+        ({"project_id": {}}, "project_id"),
         ({"token_uri": "https://private-audience.example"}, "token_uri"),
     ],
 )
@@ -125,6 +129,34 @@ def test_huawei_config_failure_names_field_without_exposing_value(
     assert field in error.value.message
     assert "private-project-value" not in error.value.message
     assert "private-audience" not in error.value.message
+
+
+def test_huawei_audit_defers_permissions_to_api_and_stops_on_forbidden(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    account = {
+        "project_id": "original-console-project",
+        "key_id": "kid",
+        "sub_account": "subject",
+        "private_key": key.private_bytes(
+            serialization.Encoding.PEM,
+            serialization.PrivateFormat.PKCS8,
+            serialization.NoEncryption(),
+        ).decode(),
+        "token_uri": d.HUAWEI_AUDIENCE,
+    }
+    monkeypatch.setenv("APPGALLERY_SERVICE_ACCOUNT_JSON", json.dumps(account))
+    calls = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls.append((request.method, request.url.host, request.url.params["appId"]))
+        return httpx.Response(403, text="private API error detail")
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        result = d.audit_stores(client, ["appgallery"], "119465493", 5)
+    assert result == {"appgallery": {"status": "STORE", "detail": "STORE: GET HTTP 403"}}
+    assert calls == [("GET", "connect-api.cloud.huawei.com", "119465493")]
 
 
 def test_additional_ca_is_used_only_for_exact_rustore_host(
