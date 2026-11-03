@@ -1204,12 +1204,6 @@ def inspect_store(
     )
     raw_url = string(upload.get("url"))
     authority = url_authority(raw_url)
-    headers = obj(upload.get("headers"))
-    if any(not isinstance(k, str) or not isinstance(v, str) for k, v in headers.items()):
-        raise DeliveryError("CONTRACT", "Huawei upload headers have wrong wire types")
-    normalized = {k.lower(): v for k, v in headers.items()}
-    if len(normalized) != len(headers):
-        raise DeliveryError("CONTRACT", "Huawei upload has duplicate header names")
     try:
         huawei_upload_url(raw_url)
         allowed = True
@@ -1219,10 +1213,23 @@ def inspect_store(
         "method": string(upload.get("method")),
         "url": authority,
         "passesCurrentUrlGuard": allowed,
-        "headerHostMatches": normalized.get("host", "").lower()
-        in {authority["host"], str(authority["host"]) + ":443"},
-        "sha256Matches": normalized.get("x-amz-content-sha256") == release.apk_hash,
     }
+    try:
+        headers = obj(upload.get("headers"))
+        if any(not isinstance(k, str) or not isinstance(v, str) for k, v in headers.items()):
+            raise DeliveryError("CONTRACT", "Huawei upload headers have wrong wire types")
+        normalized = {k.lower(): v for k, v in headers.items()}
+        if len(normalized) != len(headers):
+            raise DeliveryError("CONTRACT", "Huawei upload has duplicate header names")
+    except core.DeliveryError as error:
+        # Preserve the sanitized authority even when optional headers are absent
+        # or malformed. The typed refusal remains a non-successful inspection.
+        return {**result, "status": error.code, "detail": error.message}
+    result["upload"].update(
+        headerHostMatches=normalized.get("host", "").lower()
+        in {authority["host"], str(authority["host"]) + ":443"},
+        sha256Matches=normalized.get("x-amz-content-sha256") == release.apk_hash,
+    )
     return result
 
 

@@ -1260,6 +1260,30 @@ def test_inspection_reads_existing_rustore_draft_without_repeating_ambiguous_upl
     assert journal.records == before and len(calls) == 1
 
 
+@pytest.mark.parametrize("headers", [None, {"Authorization": ["secret-header"]}])
+def test_inspection_keeps_safe_huawei_authority_when_headers_are_missing_or_malformed(
+    tmp_path: Path, headers: Any
+) -> None:
+    r, apk = release_file(tmp_path)
+    store, journal = HuaweiStore(r), d.MemoryJournal()
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        assert req.method == "GET"
+        response = store.handler(req)
+        if req.url.path.endswith("upload-url/for-obs"):
+            body = response.json()
+            body["urlInfo"].update(url="https://unknown.example/file?secret-query", headers=headers)
+            return httpx.Response(200, json=body)
+        return response
+
+    api = d.AppGallery(httpx.Client(transport=httpx.MockTransport(handler)), "119465493", "jwt")
+    result = d.inspect_store(api, r, apk, journal)
+    assert result["status"] == "CONTRACT"
+    assert result["upload"]["url"]["host"] == "unknown.example"
+    assert "secret-" not in json.dumps(result)
+    assert not journal.records and store.uploads == store.attachments == store.submissions == 0
+
+
 def test_inspect_cli_checks_approval_and_redacts_huawei_url_without_any_store_write(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

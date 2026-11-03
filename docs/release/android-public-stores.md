@@ -299,6 +299,9 @@ paths/queries or authorization headers, uploads, attaches, submits, repairs a
 receipt, changes journal assets or sends Telegram. RuStore authentication still
 uses its normal token request. The artifact is **android-store-inspection**;
 `OBSERVED` means a read succeeded and does not mean publication.
+If optional Huawei upload headers are absent or malformed, the sanitized
+authority is retained alongside the typed refusal; inspection does not turn that
+response into permission to upload.
 
 Inspection uses the existing concurrency lock and has a separate report schema.
 Scheduled runs retain normal reconciliation behavior. Resume a writer only after
