@@ -384,8 +384,16 @@ def advance_appgallery(
             raise DeliveryError("CONFLICT", "Huawei has a foreign candidate")
         attached = journal.get("appgallery-attach-intent")
         if attached is not None:
-            # A lost attach response may be followed by asynchronous parsing. Keep polling,
-            # never associate or upload another package while acceptance is indeterminate.
+            failure = journal.get("appgallery-attach-error")
+            if failure is not None:
+                status = string(failure.get("status"))
+                if set(failure) != {"status", "detail"} or status not in DeliveryError.CODES:
+                    raise DeliveryError("CONTRACT", "invalid Huawei attachment error receipt")
+                return {"status": status, "detail": string(failure["detail"])}
+            # Parsing is healthy only after a confirmed attach response. An intent alone
+            # cannot distinguish a lost response, rejection or interrupted error checkpoint.
+            if journal.get("appgallery-attach-done") is None:
+                raise DeliveryError("UNKNOWN", "Huawei attachment acceptance is uncertain")
             return {"status": "PROCESSING", "detail": "Awaiting package-list reconciliation"}
         uploaded = journal.get("appgallery-upload-done")
         if uploaded is None:
@@ -437,15 +445,24 @@ def advance_appgallery(
         object_id = string(uploaded.get("objectId"))
 
         def attach() -> dict[str, Any]:
-            result = api.call(
-                "PUT",
-                "app-file-info",
-                params={"releaseType": 1},
-                json={"fileType": 5, "files": [{"fileName": apk.name, "fileDestUrl": object_id}]},
-            )
-            ids = result.get("pkgVersion")
-            if not isinstance(ids, list) or any(not isinstance(i, str) for i in ids):
-                raise DeliveryError("CONTRACT", "Huawei attachment package IDs malformed")
+            try:
+                result = api.call(
+                    "PUT",
+                    "app-file-info",
+                    params={"releaseType": 1},
+                    json={
+                        "fileType": 5,
+                        "files": [{"fileName": apk.name, "fileDestUrl": object_id}],
+                    },
+                )
+                ids = result.get("pkgVersion")
+                if not isinstance(ids, list) or any(not isinstance(i, str) for i in ids):
+                    raise DeliveryError("CONTRACT", "Huawei attachment package IDs malformed")
+            except core.DeliveryError as error:
+                journal.put_once(
+                    "appgallery-attach-error", {"status": error.code, "detail": error.message}
+                )
+                raise
             return {"packageIds": ids, "at": now}
 
         write_once(
@@ -830,15 +847,15 @@ class GitHub:
         return data
 
 
-class ReleaseJournal:
+class AssetJournal:
     """Create-only assets. All writers share workflow-level store-delivery concurrency.
 
     Never replace assets or mutate a checkpoint. If an asset write is uncertain, a
     later read must return the exact intended bytes before any store mutation.
     """
 
-    def __init__(self, github: GitHub, release: Release, release_id: int) -> None:
-        self.github, self.release, self.release_id = github, release, release_id
+    def __init__(self, github: GitHub, release_id: int, identity: dict[str, Any]) -> None:
+        self.github, self.release_id, self.identity = github, release_id, identity
 
     def assets(self) -> dict[str, dict[str, Any]]:
         assets = self.github.pages(f"releases/{self.release_id}/assets")
@@ -855,12 +872,10 @@ class ReleaseJournal:
             value = obj(json.loads(self.github.asset_bytes(asset)))
         except ValueError:
             raise DeliveryError("CONTRACT", "invalid journal JSON") from None
-        if (
-            set(value) != {"schema", "manifest", "value"}
-            or value["schema"] != "talentforge-store-checkpoint/1"
-            or value["manifest"] != self.release.digest
+        if set(value) != set(self.identity) | {"value"} or any(
+            value[k] != v for k, v in self.identity.items()
         ):
-            raise DeliveryError("MISMATCH", "journal checkpoint not bound to approval")
+            raise DeliveryError("MISMATCH", "journal checkpoint identity differs")
         return obj(value["value"])
 
     def entries(self, prefix: str) -> list[tuple[str, dict[str, Any]]]:
@@ -879,13 +894,7 @@ class ReleaseJournal:
     def put_once(self, name: str, value: dict[str, Any]) -> None:
         if not re.fullmatch(r"[a-z0-9-]+", name):
             raise DeliveryError("CONTRACT", "invalid checkpoint name")
-        data = canonical(
-            {
-                "schema": "talentforge-store-checkpoint/1",
-                "manifest": self.release.digest,
-                "value": value,
-            }
-        )
+        data = canonical({**self.identity, "value": value})
         self.put_asset(name + ".json", data, "application/json")
 
     def put_asset(self, name: str, data: bytes, content_type: str) -> None:
@@ -910,6 +919,16 @@ class ReleaseJournal:
             asset = self.assets().get(name)
             if asset is None or self.github.asset_bytes(asset) != data:
                 raise
+
+
+class ReleaseJournal(AssetJournal):
+    def __init__(self, github: GitHub, release: Release, release_id: int) -> None:
+        super().__init__(
+            github,
+            release_id,
+            {"schema": "talentforge-store-checkpoint/1", "manifest": release.digest},
+        )
+        self.release = release
 
 
 def initialize_journal(github: GitHub, release: Release, apk: Path, repo: Path) -> ReleaseJournal:
@@ -1159,6 +1178,20 @@ def run_url() -> str:
     return f"https://github.com/{repository}/actions/runs/{os.environ.get('GITHUB_RUN_ID', '')}"
 
 
+def send_telegram(client: httpx.Client, token: str, chat_id: str, text: str) -> dict[str, Any]:
+    response = json_body(
+        request(
+            client,
+            "POST",
+            f"https://api.telegram.org/bot{token}/sendMessage",
+            json={"chat_id": chat_id, "text": text, "disable_web_page_preview": True},
+        )
+    )
+    if response.get("ok") is not True:
+        raise DeliveryError("STORE", "Telegram refused status notification")
+    return {"status": "SENT"}
+
+
 def notify_report(
     journal: ReleaseJournal, report: dict[str, Any], token: str, chat_id: str
 ) -> dict[str, Any]:
@@ -1191,25 +1224,12 @@ def notify_report(
             f"{report['runUrl']}"
         )
 
-        def send_message(text: str = text) -> dict[str, Any]:
-            response = json_body(
-                request(
-                    journal.github.client,
-                    "POST",
-                    f"https://api.telegram.org/bot{token}/sendMessage",
-                    json={"chat_id": chat_id, "text": text, "disable_web_page_preview": True},
-                )
-            )
-            if response.get("ok") is not True:
-                raise DeliveryError("STORE", "Telegram refused status notification")
-            return {"status": "SENT"}
-
         try:
             results[store] = write_once(
                 journal,
                 step,
                 {"status": status, "store": store, "transition": sequence},
-                send_message,
+                lambda text=text: send_telegram(journal.github.client, token, chat_id, text),
             )
         except core.DeliveryError as error:
             results[store] = {"status": error.code, "detail": error.message}
@@ -1241,24 +1261,67 @@ def reconcile_releases(
 
 
 def notify_releases(
-    github: GitHub, reports: list[dict[str, Any]], repo: Path, out: Path, token: str, chat_id: str
+    github: GitHub, reports: dict[str, Any], repo: Path, out: Path, token: str, chat_id: str
 ) -> dict[str, Any]:
-    result: dict[str, Any] = {"notifications": [], "errors": []}
+    if set(reports) != {"releases", "errors"}:
+        raise DeliveryError("CONTRACT", "notification requires the complete reconciliation report")
+    errors = items(reports["errors"])
+    failures = {}
+    for error in errors:
+        rid = integer(error.get("releaseId"), minimum=1)
+        status = string(error.get("status"))
+        if set(error) != {"releaseId", "status", "detail"} or status not in DeliveryError.CODES:
+            raise DeliveryError("CONTRACT", "invalid journal error report")
+        string(error["detail"])
+        if rid in failures:
+            raise DeliveryError("CONTRACT", "duplicate journal error report")
+        failures[rid] = error
+    result: dict[str, Any] = {"notifications": [], "journalAlerts": [], "errors": list(errors)}
     core.write_json(out, result)
-    for report in reports:
+    checked = set()
+    for report in items(reports["releases"]):
+        rid = integer(report.get("releaseId"), minimum=1)
+        if rid in failures or rid in checked:
+            raise DeliveryError("CONTRACT", "duplicate reconciliation release")
+        checked.add(rid)
         try:
-            rid = integer(report.get("releaseId"), minimum=1)
             journal = load_journal(github, obj(github.call("GET", f"releases/{rid}")), repo)
             result["notifications"].append(
                 {"releaseId": rid, "stores": notify_report(journal, report, token, chat_id)}
             )
         except core.DeliveryError as error:
-            result["errors"].append(
-                {
-                    "releaseId": report.get("releaseId"),
-                    "status": error.code,
-                    "detail": error.message,
-                }
+            failure = {"releaseId": rid, "status": error.code, "detail": error.message}
+            result["errors"].append(failure)
+            failures[rid] = failure
+        core.write_json(out, result)
+    for rid in sorted(checked | failures.keys()):
+        try:
+            # Operational alerts must work even when manifest/approval loading fails.
+            # Their separate identity never authorizes store writes or publication claims.
+            alerts = AssetJournal(
+                github, rid, {"schema": "talentforge-store-journal-alert/1", "releaseId": rid}
+            )
+            failure = failures.get(rid)
+            if failure is None:
+                if alerts.entries("state-journal-alert"):
+                    record_transition(alerts, "journal-alert", {"status": "HEALTHY"})
+            else:
+                state = {"status": failure["status"], "detail": failure["detail"]}
+                sequence = record_transition(alerts, "journal-alert", state)["sequence"]
+                text = (
+                    f"TalentForge: journal error (release {rid})\n"
+                    f"{state['status']}: {state['detail']}\n{run_url()}"
+                )
+                receipt = write_once(
+                    alerts,
+                    f"telegram-journal-alert-{sequence:06d}",
+                    {"releaseId": rid, "transition": sequence, "state": state},
+                    lambda text=text: send_telegram(github.client, token, chat_id, text),
+                )
+                result["journalAlerts"].append({"releaseId": rid, **receipt})
+        except core.DeliveryError as error:
+            result["journalAlerts"].append(
+                {"releaseId": rid, "status": error.code, "detail": error.message}
             )
         core.write_json(out, result)
     return result
@@ -1369,7 +1432,7 @@ def run(args: argparse.Namespace) -> int:
         config = core.require_env(os.environ, ["TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"])
         result = notify_releases(
             github,
-            items(core.read_json_object(args.reports).get("releases")),
+            core.read_json_object(args.reports),
             args.repo,
             args.out,
             config["TELEGRAM_BOT_TOKEN"],
@@ -1377,6 +1440,7 @@ def run(args: argparse.Namespace) -> int:
         )
         return int(
             bool(result["errors"])
+            or any(a["status"] != "SENT" for a in result["journalAlerts"])
             or any(
                 s["status"] != "SENT" for n in result["notifications"] for s in n["stores"].values()
             )

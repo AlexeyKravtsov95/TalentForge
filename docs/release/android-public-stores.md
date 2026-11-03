@@ -95,7 +95,7 @@ Changing any of these requires a fresh release decision; do not edit journal ass
 |---|---|
 | `PUBLISHED` | RuStore ACTIVE at 100% with the bound version/package receipt; Huawei onShelfVersionCode **and** onShelfVersionId identify the package whose shaCode matches the approved APK. Publication is proven at `observedAt`; later reports explicitly mark retained proof as `previouslyConfirmed`. This is delivery evidence, not indefinite availability monitoring. |
 | `SUBMITTED`, `IN_REVIEW` | Submission/review, not availability. Let reconciliation continue. |
-| `PROCESSING` | Huawei attachment/parsing or release transition; not publication. |
+| `PROCESSING` | Huawei attachment/parsing after a confirmed attach response, or release transition; not publication. An attach intent without a receipt stays UNKNOWN, not healthy processing. |
 | `REJECTED` | Store review rejected the update; inspect the store's review comments and prepare the correction. No automatic resubmission. |
 | `CONFLICT`, `MISMATCH` | A version/package/hash/candidate or publication setting differs. Stop for that store; inspect the durable evidence. Do not overwrite a console edit. |
 | `UNKNOWN` | A write may already have succeeded. Readback cannot prove enough identity to safely repeat it. Investigate in the console/API; never erase the intent or rerun a fresh upload blindly. |
@@ -113,6 +113,11 @@ workflow with the same journal ID. Do not start a new build of a consumed code.
 One store's successful result is retained if the other fails. Huawei package-list
 SHA-256 can reconcile a lost attachment response. Its current candidate is reread
 immediately before app-submit so another console package is not submitted.
+An explicit `app-file-info` refusal is stored as `appgallery-attach-error` and
+remains an error on later polls while the approved package is absent. A transport
+or response-contract error is retained too. Only package-list readback proving the
+approved hash, size and candidate identity can resolve that failure. No automatic
+upload or attachment retry is performed; intents and failure evidence remain intact.
 
 RuStore does **not** document a package SHA-256 in its detail API. A normal upload
 is bound by the upload response, exact local bytes, version ID and stored apkUid;
@@ -127,6 +132,16 @@ polls add none. Telegram receipts are keyed by transition sequence, so a return 
 an earlier error state is reported again. Each store keeps its own terminal proof,
 so a confirmed partial success is retained while the other finishes review. A broken
 journal is reported independently and does not block later journals or notifications.
+The notifier consumes both `releases` and `errors`. A journal-level error (including
+a missing approved APK or manifest) sends a separate operational Telegram alert
+with release ID, typed error and run URL; it does not claim a verified store state.
+Alert transitions/receipts use a separate envelope bound to the repository's
+release ID, so a broken approval manifest does not suppress the alert. Repeated
+polls stay quiet; a confirmed healthy reconciliation resets the transition so the
+same error returning is reported again. A lost Telegram response stays UNKNOWN
+without a blind resend. The original journal errors remain in notification output
+and keep its exit code nonzero even when the alert was delivered. If GitHub cannot
+read/write alert checkpoints, notification fails closed and its output stays red.
 The draft release keeps the approved APK and evidence beyond Actions artifact
 retention. Deleting the original run/approval job or altering journal assets breaks
 provenance and stops that release. Do not delete active journals/runs.

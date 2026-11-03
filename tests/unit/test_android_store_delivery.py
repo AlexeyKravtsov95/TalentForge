@@ -600,6 +600,71 @@ def test_huawei_ambiguous_writes_do_not_reupload(tmp_path: Path, lost: str) -> N
     assert store.uploads == 1
 
 
+@pytest.mark.parametrize(
+    ("response", "expected"),
+    [("refused", "STORE"), ("lost", "UNKNOWN"), ("malformed", "CONTRACT")],
+)
+def test_huawei_failed_attachment_stays_an_error_until_matching_package_is_observed(
+    tmp_path: Path, response: str, expected: str
+) -> None:
+    r, apk = release_file(tmp_path)
+    store, journal = HuaweiStore(r), d.MemoryJournal()
+    attempts = 0
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        nonlocal attempts
+        if req.url.path.endswith("app-file-info"):
+            attempts += 1
+            if response == "lost":
+                raise httpx.ReadTimeout("uncertain attachment", request=req)
+            return httpx.Response(
+                200,
+                json={"ret": {"code": 1}}
+                if response == "refused"
+                else {"ret": {"code": 0}, "pkgVersion": None},
+            )
+        return store.handler(req)
+
+    api = d.AppGallery(httpx.Client(transport=httpx.MockTransport(handler)), "119465493", "jwt")
+    states = []
+    for now in (1000, 1200, 1400):
+        state = d.each_store(
+            ["appgallery"],
+            lambda _, now=now, journal=journal: d.advance_appgallery(api, r, apk, journal, now=now),
+        )["appgallery"]
+        states.append(state)
+        assert d.record_transition(journal, "appgallery", state)["sequence"] == 1
+        # Reload persisted JSON as a later workflow invocation would.
+        records = json.loads(json.dumps(journal.records))
+        journal = d.MemoryJournal()
+        journal.records.update(records)
+    assert [state["status"] for state in states] == [expected, expected, expected]
+    assert states[0] == states[1] == states[2]
+    assert (store.uploads, attempts, store.submissions) == (1, 1, 0)
+    assert store.packages == []
+
+    # A real package with the approved hash, size and candidate ID resolves the error.
+    store.packages = [
+        {"pkgVersion": "p5", "versionCode": 5, "shaCode": r.apk_hash, "packageSize": 12}
+    ]
+    store.state.update(releaseState=4, versionCode=5, versionId="p5")
+    assert d.advance_appgallery(api, r, apk, journal, now=1600)["status"] == "IN_REVIEW"
+    assert (store.uploads, attempts, store.submissions) == (1, 1, 0)
+
+
+def test_huawei_attachment_intent_without_receipt_is_not_healthy_processing(tmp_path: Path) -> None:
+    r, apk = release_file(tmp_path)
+    store, journal = HuaweiStore(r), d.MemoryJournal()
+    journal.put_once("appgallery-attach-intent", {"manifest": r.digest, "objectId": "object.apk"})
+    api = d.AppGallery(
+        httpx.Client(transport=httpx.MockTransport(store.handler)), "119465493", "jwt"
+    )
+    for _ in range(3):
+        with pytest.raises(d.DeliveryError, match="UNKNOWN"):
+            d.advance_appgallery(api, r, apk, journal, now=1200)
+    assert store.uploads == store.attachments == 0
+
+
 class RussianStore:
     def __init__(self, *, lose_upload: bool = False) -> None:
         self.created = False
@@ -988,3 +1053,132 @@ def test_malformed_provider_url_is_a_redacted_typed_error() -> None:
     with pytest.raises(d.DeliveryError) as error:
         github.asset_bytes({"id": 1, "uploader": {"login": "github-actions[bot]"}})
     assert "secret-signature" not in str(error.value)
+
+
+class ReleaseAssetServer:
+    """HTTP boundary for corrupt journals and durable operational notifications."""
+
+    def __init__(self, release: Any, apk: bytes) -> None:
+        self.release = release
+        self.remote = {
+            "id": 9,
+            "author": {"login": "github-actions[bot]"},
+            "tag_name": "android-store-5",
+            "body": release.digest,
+            "target_commitish": release.value["sourceSha"],
+        }
+        self.assets: dict[str, tuple[int, bytes]] = {}
+        self.next_id = 1
+        self.messages: list[str] = []
+        self.lose_notification = False
+        self.add("manifest.json", d.canonical(release.value))
+        self.add("approved.apk", apk)
+        self.huawei = HuaweiStore(release)
+        self.huawei.packages = [
+            {"pkgVersion": "p5", "versionCode": 5, "shaCode": release.apk_hash, "packageSize": 12}
+        ]
+        self.huawei.state.update(releaseState=4, versionCode=5, versionId="p5")
+
+    def add(self, name: str, data: bytes) -> None:
+        assert name not in self.assets
+        self.assets[name] = (self.next_id, data)
+        self.next_id += 1
+
+    def handler(self, req: httpx.Request) -> httpx.Response:
+        if req.url.host == "api.telegram.org":
+            assert req.method == "POST"
+            message = json.loads(req.content)
+            assert message["chat_id"] == "owner"
+            self.messages.append(message["text"])
+            if self.lose_notification:
+                raise httpx.ReadTimeout("notification response lost", request=req)
+            return httpx.Response(200, json={"ok": True})
+        if req.url.host == "connect-api.cloud.huawei.com":
+            return self.huawei.handler(req)
+        path = req.url.path.removeprefix("/repos/owner/repo/")
+        if req.method == "POST" and req.url.host == "uploads.github.com":
+            assert path == "releases/9/assets"
+            self.add(req.url.params["name"], req.content)
+            return httpx.Response(201, json={})
+        assert req.method == "GET" and req.url.host == "api.github.com"
+        if path == "releases/9":
+            return httpx.Response(200, json=self.remote)
+        if path == "releases/9/assets":
+            return httpx.Response(
+                200,
+                json=[
+                    {
+                        "id": aid,
+                        "name": name,
+                        "size": len(data),
+                        "uploader": {"login": "github-actions[bot]"},
+                    }
+                    for name, (aid, data) in self.assets.items()
+                ],
+            )
+        if path.startswith("releases/assets/"):
+            aid = int(path.split("/")[-1])
+            return httpx.Response(200, content=next(b for i, b in self.assets.values() if i == aid))
+        pytest.fail(f"unexpected journal HTTP request: {req.method} {path}")
+
+
+@pytest.mark.parametrize("missing", ["approved.apk", "manifest.json"])
+@pytest.mark.parametrize("lost_notification", [False, True])
+def test_notify_cli_reports_journal_errors_without_silence_or_blind_resends(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, missing: str, lost_notification: bool
+) -> None:
+    r, apk = release_file(tmp_path)
+    r = d.Release.parse({**r.value, "stores": ["appgallery"]})
+    server = ReleaseAssetServer(r, apk.read_bytes())
+    _, missing_bytes = server.assets.pop(missing)
+    server.lose_notification = lost_notification
+    real_client = httpx.Client
+
+    def client(**kwargs: Any) -> httpx.Client:
+        return real_client(transport=httpx.MockTransport(server.handler), **kwargs)
+
+    monkeypatch.setattr(d.httpx, "Client", client)
+    # Provenance itself has dedicated tests; journal parsing and HTTP remain real here.
+    monkeypatch.setattr(d.GitHub, "prove", lambda *_: None)
+    monkeypatch.setattr(d, "store_api", lambda c, *_: d.AppGallery(c, "119465493", "jwt"))
+    for name, value in {
+        "GITHUB_REF": "refs/heads/main",
+        "GITHUB_REPOSITORY": "owner/repo",
+        "GITHUB_RUN_ID": "123",
+        "GH_TOKEN": "test",
+        "TELEGRAM_BOT_TOKEN": "test-token",
+        "TELEGRAM_CHAT_ID": "owner",
+    }.items():
+        monkeypatch.setenv(name, value)
+    reports, notifications = tmp_path / "reports.json", tmp_path / "notifications.json"
+    github = d.GitHub(client(), "owner/repo", "test")
+
+    def poll_and_notify() -> tuple[dict[str, Any], int]:
+        report = d.reconcile_releases(github, [server.remote], tmp_path, reports)
+        code = d.main(["notify", "--reports", str(reports), "--out", str(notifications)])
+        return report, code
+
+    for _ in range(3):
+        report, code = poll_and_notify()
+        assert report["errors"][0]["status"] == "GATE"
+        assert len(server.messages) == 1
+        assert code == 1  # A journal failure must not be turned into a green run.
+        result = json.loads(notifications.read_text())
+        assert result["errors"] == report["errors"]
+        assert result["journalAlerts"][0]["status"] == ("UNKNOWN" if lost_notification else "SENT")
+    assert "9" in server.messages[0] and "GATE" in server.messages[0]
+    assert missing.split(".")[0] in server.messages[0].lower()
+
+    # Repaired journal: store notification is delivered and the operational error clears.
+    server.lose_notification = False
+    server.add(missing, missing_bytes)
+    report, code = poll_and_notify()
+    assert code == 0 and report["errors"] == []
+    assert len(server.messages) == 2 and "IN_REVIEW" in server.messages[1]
+
+    # The same failure returning after recovery earns a new operational alert.
+    server.assets.pop(missing)
+    report, code = poll_and_notify()
+    assert code == 1 and report["errors"]
+    assert len(server.messages) == 3 and "GATE" in server.messages[2]
+    assert server.huawei.uploads == server.huawei.attachments == server.huawei.submissions == 0

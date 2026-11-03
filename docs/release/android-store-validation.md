@@ -17,7 +17,7 @@ Authorized real store API calls, uploads, moderation and publication have **not*
 been exercised: those must run from owner-merged main with the protected settings.
 No new production APK, production APK hash or successful publication is claimed.
 
-## Local checks
+## Initial implementation checks
 
 - `ruff check .`: passed.
 - `ruff format --check .`: 414 files already formatted.
@@ -26,8 +26,9 @@ No new production APK, production APK hash or successful publication is claimed.
   **143 passed** after the final URL-error regression.
 - Full Python baseline: **2597 passed, 11 deselected**, 11m54s. This run was
   collected before the last malformed-URL regression was added; all **143**
-  delivery tests were then rerun against the final URL handling. GitHub CI will
-  check the final branch snapshot including that additional regression.
+  delivery tests were then rerun against the final URL handling. GitHub CI for
+  `b0fc924` subsequently passed **2598 tests, 11 deselected**, Ruff (415 files)
+  and mypy: [run 41569861672](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/41569861672).
 - Earlier full baseline also passed: **2572 passed, 11 deselected**.
 - `actionlint -ignore 'label "xcode-27" is unknown' .github/workflows/store-delivery.yml .github/workflows/android-store-reconcile.yml`:
   exit 0. Without the filter the local actionlint reports only the pre-existing
@@ -74,7 +75,27 @@ provider URL parse errors are typed/redacted as well. Both were observed failing
 before their fixes and passed afterward.
 
 All store tests use `httpx.MockTransport`; they are not evidence of real API access
-or successful publication. No deferred review findings remain.
+or successful publication. The later owner review found the two P2 paths below.
+
+## Owner P2 follow-up on b0fc924
+
+Eight new regression cases were first observed failing on the old behavior:
+
+- Explicit Huawei attach rejection reproduced `STORE → PROCESSING → PROCESSING`;
+  lost and malformed responses had the same false recovery. All three now retain
+  the original typed error across three polls and JSON journal reloads, with one
+  upload/attach attempt. A matching package readback resolves the failure.
+- An attach intent with no response/error receipt stays UNKNOWN on later polls.
+- The real `notify` CLI previously sent no Telegram message for missing
+  `approved.apk` or `manifest.json`. Both cases now send a durable operational
+  alert, retain the original report error and return nonzero. Three repeated
+  polls, lost Telegram responses, journal repair and recurrence are exercised
+  through HTTP fixtures and the actual report/notifier path.
+
+The final targeted delivery run passed **151 tests**. Ruff, format, mypy and
+`git diff --check` are rerun for this follow-up. A new full Python baseline and
+GitHub CI validate the updated snapshot; results are recorded in PR #112.
+The PR remains Draft for review of these corrections; it has not been merged.
 
 `graphify update .` ran without LLM/API work. It retains the existing three Kotlin
 parser warnings (BuildManagementUiTest, LicensesScreenUiTest, OtaSessionTest);
