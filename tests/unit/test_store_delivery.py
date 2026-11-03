@@ -15,6 +15,7 @@ import base64
 import hashlib
 import importlib.util
 import json
+import re
 import subprocess
 import sys
 import zipfile
@@ -1255,6 +1256,78 @@ def workflow_jobs(text: str) -> dict[str, str]:
         elif current is not None:
             jobs[current] += line + "\n"
     return jobs
+
+
+def public_job_selected(
+    job: str,
+    results: dict[str, str],
+    *,
+    mode: str = "deliver",
+    stores: str = "both",
+    cancelled: bool = False,
+) -> bool:
+    """Evaluate the public job's real condition, including Actions' implicit success().
+
+    Optional Play/iOS ancestors are intentionally skipped in APK-only delivery.
+    GitHub applies that skip throughout the dependency chain unless the condition
+    contains a status function. This models that documented rule, not a runner.
+    """
+    body = workflow_jobs((ROOT / d.WORKFLOW_FILE).read_text())[job]
+    match = re.search(r"^    if: (.*(?:\n      .*)*)", body, re.MULTILINE)
+    assert match is not None
+    expression = match[1].removeprefix(">-").strip()
+    if not re.search(r"\b(?:always|cancelled|success|failure)\(\)", expression) and any(
+        result != "success" for result in results.values()
+    ):
+        return False
+    values = {f"needs.{key}.result": value for key, value in results.items()}
+    values.update({"needs.gate.outputs.mode": mode, "inputs.apk_stores": stores})
+    expression = re.sub(
+        r"needs\.[\w-]+\.(?:result|outputs\.mode)|inputs\.apk_stores",
+        lambda m: repr(values[m[0]]),
+        expression,
+    )
+    expression = re.sub(r"!(?!=)", "not ", expression).replace("&&", " and ")
+    return bool(
+        eval(
+            " ".join(expression.split()),
+            {"__builtins__": {}},
+            {"cancelled": lambda: cancelled, "always": lambda: True},
+        )
+    )
+
+
+@pytest.mark.parametrize(
+    ("job", "required"),
+    [
+        ("public-approval", "android-build"),
+        ("public-journal", "public-approval"),
+        ("public-deliver", "public-journal"),
+    ],
+)
+def test_apk_only_public_delivery_survives_optional_skips_but_requires_its_gate(
+    job: str, required: str
+) -> None:
+    # The shape of live run 41683811384: Play and iOS are unselected, but the
+    # exact-source gate, store audit and signed APK have all succeeded.
+    results = {
+        "gate": "success",
+        "android-store-check": "skipped",
+        "apk-store-check": "success",
+        "android-build": "success",
+        "ios-store-check": "skipped",
+        "ios-build": "skipped",
+        "public-approval": "success",
+        "public-journal": "success",
+    }
+    for stores in ("both", "rustore", "appgallery"):
+        assert public_job_selected(job, results, stores=stores)
+    assert not public_job_selected(job, results, mode="verify")
+    assert not public_job_selected(job, results, stores="none")
+    assert not public_job_selected(job, results, cancelled=True)
+    for status in ("failure", "skipped", "cancelled"):
+        assert not public_job_selected(job, {**results, "gate": status})
+        assert not public_job_selected(job, {**results, required: status})
 
 
 def test_the_workflow_is_owner_started_serialised_and_keeps_secrets_in_environments() -> None:
