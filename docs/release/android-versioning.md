@@ -66,7 +66,7 @@ with that code yet.
 | 2 | | Google Play upload, OTA ON | | | Google Play (date not recorded) |
 | 3 | | Google Play upload, track `alpha` | | `c24387e66aa1d2b3ee9a9b31f60310dc50648fb588659aa259916a19e293ac01` | Google Play `alpha` (date not recorded) |
 | 4 | `e07d7825d3ddbe5de3a68d5536595dbe8ab9d048` (merge of [#95](https://github.com/AlexeyKravtsov95/TalentForge/pull/95)) | test build, OTA ON: first [Store delivery](ci-delivery.md), track `alpha` | `25febe10c387b04ede5009e471f4a294510a150175b32c4844d465f11ec1db2d` | `66d6da923f261c40e32057b4399f7b458966031799b6cd98ef1d14e852e98f43` | AAB: Google Play `alpha`, `completed` (2026-10-27 UTC, run [40540792139](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/40540792139)). APK: run artifact only, not uploaded to RuStore or AppGallery |
-| 5 | | next test build (planned) | | | |
+| 5 | version PR (2026-11-03) | next RuStore/AppGallery public UX update; not built or uploaded | | | |
 
 Code `2` is consumed (owner, 2026-10-26): it was uploaded to Google Play with OTA ON. Its commit,
 SHA-256 values and upload date are not recorded here.
@@ -99,9 +99,34 @@ What confirms code `4`:
 | Signing, version `4` / `1.0.0`, OTA ON markers of the delivered files | release validators inside that run |
 | RuStore / AppGallery | not uploaded; nothing confirmed |
 
-The next build, the APK and the AAB alike, is `5` / `1.0.0`. `main` still sets `versionCode = 4`:
-raising it to `5` is a separate PR (§5, step 2) before the next delivery. A Store delivery run of a
-newer `main` commit that still carries `4` stops with `CONFLICT`.
+The next build, the APK and the AAB alike, is `5` / `1.0.0`. This separate version PR
+sets Android `versionCode = 5`; `versionName` remains `1.0.0`. The number is not
+evidence that a build exists or has been uploaded. A newer source must never rebuild
+the consumed code `4`.
+
+### Live store audit, 2026-11-03
+
+The next code was checked against live consoles, rather than inferred from the
+historical planned sequence above:
+
+| Store | Observed state | Evidence |
+|---|---|---|
+| RuStore | `1.0.0 (1)`, published, 100%, publication shown as 2026-10-30 17:16 | [Versions, app 2063774012](https://console.rustore.ru/apps/2063774012/versions) |
+| AppGallery | app `119465493`, published `TalentForge-1.0.0-3.apk`, `1.0.0 (3)`, uploaded 2026-10-26 15:37:22; publication 2026-10-28; two version-history entries, second has no package | [Published version](https://developer.huawei.com/consumer/ru/service/josp/agc/index.html#/myApp/119465493/v2069664394475761152) |
+| Google Play | active Alpha `1.0.0 (4)`, source label `e07d7825d3dd`; uploaded bundles listed as `4`, `3`, `2`, `1` | [Releases and bundles](https://play.google.com/console/u/0/developers/6007616263389785027/app/4975719483802550626/releases/overview) |
+
+Audit source was `b114dd97c8437960af7927772c5dd6a33fb2ce8d` (`1.0.0 (4)`).
+It includes Home purpose/large-font fixes (#87), cancelled tree touch handling
+(`75876d8`), sequential inspector reading (#92), About simplification (`d00d178`)
+and rank-chip scaling (`bde2dd7`), confirmed by commit ancestry. Exact-source CI
+runs `41482006038` / `41482005987` were successful. This is not fresh device
+acceptance or proof of the bytes of a currently published APK.
+
+Code `5` exceeds the highest observed consumed code (`4`). Before uploading,
+re-read all statuses/packages: drafts and testing consume numbers too. If another
+upload consumes `5` first, stop and prepare a new version PR. Record the actual
+source SHA, APK/certificate SHA-256 and each store's publication result after delivery.
+No new APK hash or publication result exists at the time of this version PR.
 
 ## 4. Test build (`versionCode 1`)
 
