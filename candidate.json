@@ -3,9 +3,10 @@
   "kind": "notify-candidate-state",
   "notified": [
     "1.60.1.70707-r1",
-    "1.60.1.70753-r1"
+    "1.60.1.70753-r1",
+    "1.60.1.70755-r1"
   ],
   "failuresNotified": [],
   "pending": [],
-  "updatedAt": "2026-11-03T13:51:24Z"
+  "updatedAt": "2026-11-04T14:09:32Z"
 }
