@@ -1215,6 +1215,179 @@ class ReleaseAssetServer:
         pytest.fail(f"unexpected journal HTTP request: {req.method} {path}")
 
 
+def test_inspection_reads_existing_rustore_draft_without_repeating_ambiguous_upload(
+    tmp_path: Path,
+) -> None:
+    r, _ = release_file(tmp_path)
+    journal = d.MemoryJournal()
+    journal.put_once("rustore-create-done", {"versionId": 9})
+    journal.put_once("rustore-upload-intent", {"manifest": r.digest, "versionId": 9})
+    before = dict(journal.records)
+    calls = []
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        calls.append((req.method, req.url.path))
+        assert req.method == "GET" and req.url.path.endswith("/version/9")
+        return httpx.Response(
+            200,
+            json={
+                "code": "OK",
+                "body": {
+                    "versionId": 9,
+                    "versionStatus": "DRAFT",
+                    "versionCode": None,
+                    "packages": [],
+                    "fileUids": [
+                        {
+                            "fileUid": "uid5",
+                            "type": "APK",
+                            "fileUrl": "https://static.rustore.ru/file?signature=secret-download",
+                        }
+                    ],
+                },
+            },
+        )
+
+    api = d.RuStore(httpx.Client(transport=httpx.MockTransport(handler)), "token")
+    result = d.inspect_store(api, r, tmp_path / "app.apk", journal)
+    assert result["status"] == "OBSERVED"
+    assert result["detail"]["packages"] == []
+    assert result["detail"]["versionCode"] is None
+    assert result["journal"]["uploadIntent"] is True
+    assert result["journal"]["uploadDone"] is False
+    assert result["detail"]["fileUids"][0]["url"]["host"] == "static.rustore.ru"
+    assert "secret-download" not in json.dumps(result)
+    assert journal.records == before and len(calls) == 1
+
+
+@pytest.mark.parametrize("headers", [None, {"Authorization": ["secret-header"]}])
+def test_inspection_keeps_safe_huawei_authority_when_headers_are_missing_or_malformed(
+    tmp_path: Path, headers: Any
+) -> None:
+    r, apk = release_file(tmp_path)
+    store, journal = HuaweiStore(r), d.MemoryJournal()
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        assert req.method == "GET"
+        response = store.handler(req)
+        if req.url.path.endswith("upload-url/for-obs"):
+            body = response.json()
+            body["urlInfo"].update(url="https://unknown.example/file?secret-query", headers=headers)
+            return httpx.Response(200, json=body)
+        return response
+
+    api = d.AppGallery(httpx.Client(transport=httpx.MockTransport(handler)), "119465493", "jwt")
+    result = d.inspect_store(api, r, apk, journal)
+    assert result["status"] == "CONTRACT"
+    assert result["upload"]["url"]["host"] == "unknown.example"
+    assert "secret-" not in json.dumps(result)
+    assert not journal.records and store.uploads == store.attachments == store.submissions == 0
+
+
+def test_inspect_cli_checks_approval_and_redacts_huawei_url_without_any_store_write(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    r, apk = release_file(tmp_path)
+    r = d.Release.parse({**r.value, "stores": ["appgallery"]})
+    server = ReleaseAssetServer(r, apk.read_bytes())
+    server.huawei.packages = []
+    server.huawei.state.update(versionCode=1, versionId="old", releaseState=0)
+    before = dict(server.assets)
+    events = []
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        assert req.method == "GET", "inspection must not write to GitHub or stores"
+        events.append(req.url.host)
+        response = server.handler(req)
+        if req.url.path.endswith("upload-url/for-obs"):
+            body = response.json()
+            body["urlInfo"].update(
+                url="https://unknown.example/object?signature=secret-query#secret-fragment",
+                objectId="secret-object-id",
+                headers={
+                    "Host": "unknown.example",
+                    "Authorization": "secret-upload-token",
+                    "x-amz-content-sha256": r.apk_hash,
+                },
+            )
+            return httpx.Response(200, json=body)
+        return response
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    monkeypatch.setattr(d, "delivery_client", lambda: client)
+    monkeypatch.setattr(d.GitHub, "prove", lambda *_: events.append("approval-proved"))
+    monkeypatch.setattr(d, "store_api", lambda c, *_: d.AppGallery(c, "119465493", "jwt"))
+    for name, value in {
+        "GITHUB_REF": "refs/heads/main",
+        "GITHUB_REPOSITORY": "owner/repo",
+        "GH_TOKEN": "test",
+    }.items():
+        monkeypatch.setenv(name, value)
+    out = tmp_path / "inspection.json"
+    assert d.main(["inspect", "--release-id", "9", "--out", str(out)]) == 0
+    result = json.loads(out.read_text())
+    observed = result["stores"]["appgallery"]
+    assert result["schema"] == "talentforge-android-store-inspection/1"
+    assert result["manifestSha256"] == r.digest and result["readOnly"] is True
+    assert observed["upload"]["url"]["host"] == "unknown.example"
+    assert observed["upload"]["passesCurrentUrlGuard"] is False
+    assert observed["upload"]["headerHostMatches"] is True
+    assert observed["upload"]["sha256Matches"] is True
+    assert "secret-" not in out.read_text()
+    assert "unknown.example" not in events  # Inspect, never follow the returned URL.
+    assert events.index("approval-proved") < events.index("connect-api.cloud.huawei.com")
+    assert server.assets == before and server.messages == []
+    assert server.huawei.uploads == server.huawei.attachments == server.huawei.submissions == 0
+
+
+def test_inspect_requires_an_explicit_journal_id(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("GITHUB_REF", "refs/heads/main")
+    monkeypatch.setenv("GITHUB_REPOSITORY", "owner/repo")
+    monkeypatch.setenv("GH_TOKEN", "test")
+    out = tmp_path / "inspection.json"
+    assert d.main(["inspect", "--out", str(out)]) == 1
+    assert json.loads(out.read_text())["status"] == "CONFIG"
+
+
+@pytest.mark.parametrize("invalid", ["approval", "apk"])
+def test_inspection_refuses_unproven_or_changed_approved_bytes_before_store_access(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, invalid: str
+) -> None:
+    r, apk = release_file(tmp_path)
+    r = d.Release.parse({**r.value, "stores": ["appgallery"]})
+    server = ReleaseAssetServer(r, apk.read_bytes())
+    if invalid == "apk":
+        aid, _ = server.assets["approved.apk"]
+        server.assets["approved.apk"] = (aid, b"different-apk")
+    before = dict(server.assets)
+    client = httpx.Client(transport=httpx.MockTransport(server.handler))
+    monkeypatch.setattr(d, "delivery_client", lambda: client)
+
+    def prove(*_: Any) -> None:
+        if invalid == "approval":
+            raise d.DeliveryError("GATE", "protected approval did not succeed")
+
+    def no_store(*_: Any) -> None:
+        pytest.fail("unproven bytes must never reach store authentication or API")
+
+    monkeypatch.setattr(d.GitHub, "prove", prove)
+    monkeypatch.setattr(d, "store_api", no_store)
+    for name, value in {
+        "GITHUB_REF": "refs/heads/main",
+        "GITHUB_REPOSITORY": "owner/repo",
+        "GH_TOKEN": "test",
+    }.items():
+        monkeypatch.setenv(name, value)
+    out = tmp_path / "inspection.json"
+    assert d.main(["inspect", "--release-id", "9", "--out", str(out)]) == 1
+    assert json.loads(out.read_text())["status"] == (
+        "GATE" if invalid == "approval" else "MISMATCH"
+    )
+    assert server.assets == before and server.messages == []
+
+
 @pytest.mark.parametrize("missing", ["approved.apk", "manifest.json"])
 @pytest.mark.parametrize("lost_notification", [False, True])
 def test_notify_cli_reports_journal_errors_without_silence_or_blind_resends(

@@ -12,6 +12,11 @@ on:
         required: false
         type: string
         default: ""
+      inspect_only:
+        description: "Read-only diagnostics for one release ID; no store/journal writes or Telegram"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -40,26 +45,26 @@ jobs:
       - uses: ./tooling/.github/actions/delivery-python
         with:
           tooling: tooling
-      - name: Reconcile from durable intent and store state
+      - name: Inspect or reconcile from durable intent and store state
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_ID: ${{ inputs.release_id }}
           RUSTORE_KEY_ID: ${{ vars.RUSTORE_KEY_ID }}
           RUSTORE_PRIVATE_KEY_BASE64: ${{ secrets.RUSTORE_PRIVATE_KEY_BASE64 }}
           APPGALLERY_SERVICE_ACCOUNT_JSON: ${{ secrets.APPGALLERY_SERVICE_ACCOUNT_JSON }}
+          DELIVERY_COMMAND: ${{ inputs.inspect_only && 'inspect' || 'reconcile' }}
         run: |
           set -euo pipefail
-          args=()
+          args=("$DELIVERY_COMMAND" --repo tooling --out delivery/public/report.json)
           if [ -n "$RELEASE_ID" ]; then
             [[ "$RELEASE_ID" =~ ^[1-9][0-9]*$ ]] || { echo 'Invalid release ID'; exit 1; }
-            args=(--release-id "$RELEASE_ID")
+            args+=(--release-id "$RELEASE_ID")
           fi
-          "$PY" tooling/scripts/android_store_delivery.py reconcile --repo tooling \
-            "${args[@]}" --out delivery/public/report.json
+          "$PY" tooling/scripts/android_store_delivery.py "${args[@]}"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: android-store-report
+          name: android-store-${{ inputs.inspect_only && 'inspection' || 'report' }}
           path: delivery/public/report.json
           if-no-files-found: error
           retention-days: 90
@@ -67,7 +72,9 @@ jobs:
   notify:
     name: Telegram store status transitions
     needs: reconcile
-    if: always() && github.ref == 'refs/heads/main' && needs.reconcile.result != 'skipped'
+    if: >-
+      always() && !inputs.inspect_only && github.ref == 'refs/heads/main'
+      && needs.reconcile.result != 'skipped'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     environment: notifications

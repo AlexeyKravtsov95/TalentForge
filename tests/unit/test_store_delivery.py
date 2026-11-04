@@ -1384,3 +1384,54 @@ def test_the_workflow_is_owner_started_serialised_and_keeps_secrets_in_environme
     assert "needs: [gate, android-build]" in jobs["public-approval"]
     assert "needs: [gate, public-approval]" in jobs["public-journal"]
     assert "--release-id" in jobs["public-deliver"]
+
+
+@pytest.mark.parametrize(("inspect", "release_id"), [(True, "9"), (False, "9"), (False, "")])
+def test_reconciliation_workflow_routes_read_only_inspection_without_telegram(
+    tmp_path: Path, inspect: bool, release_id: str
+) -> None:
+    text = (ROOT / ".github/workflows/android-store-reconcile.yml").read_text()
+    jobs = workflow_jobs(text)
+    command = re.search(r"DELIVERY_COMMAND: \$\{\{ (.+) \}\}", jobs["reconcile"])
+    assert command is not None
+    selected = eval(
+        command[1]
+        .replace("inputs.inspect_only", str(inspect))
+        .replace("&&", " and ")
+        .replace("||", " or "),
+        {"__builtins__": {}},
+    )
+    assert selected == ("inspect" if inspect else "reconcile")
+    lines = jobs["reconcile"].split("        run: |\n", 1)[1].splitlines()
+    script = []
+    for line in lines:
+        if line and not line.startswith("          "):
+            break
+        script.append(line[10:])
+    spy, output = tmp_path / "python-spy", tmp_path / "argv"
+    spy.write_text('#!/bin/sh\nprintf "%s\\n" "$@" > "$SPY_OUT"\n')
+    spy.chmod(0o700)
+    result = subprocess.run(
+        ["bash", "-c", "\n".join(script)],
+        env={
+            "PY": str(spy),
+            "SPY_OUT": str(output),
+            "RELEASE_ID": release_id,
+            "DELIVERY_COMMAND": selected,
+        },
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    args = output.read_text().splitlines()
+    assert args[:4] == ["tooling/scripts/android_store_delivery.py", selected, "--repo", "tooling"]
+    assert ("--release-id" in args) == bool(release_id)
+    condition = re.search(r"^    if: (.*(?:\n      .*)*)", jobs["notify"], re.MULTILINE)
+    assert condition is not None
+    expression = condition[1].removeprefix(">-").strip()
+    expression = expression.replace("always()", "True").replace("inputs.inspect_only", str(inspect))
+    expression = expression.replace("github.ref", repr("refs/heads/main")).replace(
+        "needs.reconcile.result", repr("success")
+    )
+    expression = re.sub(r"!(?!=)", "not ", expression).replace("&&", " and ")
+    assert eval(" ".join(expression.split()), {"__builtins__": {}}) is (not inspect)
