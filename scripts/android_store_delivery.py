@@ -223,6 +223,12 @@ def parse_service_url(raw: str) -> httpx.URL:
         raise DeliveryError("CONFIG", "malformed service URL") from None
 
 
+def sha256_hex(value: Any) -> str:
+    if not isinstance(value, str) or re.fullmatch(r"[0-9a-fA-F]{64}", value) is None:
+        raise DeliveryError("CONTRACT", "expected SHA-256 hex string")
+    return value.lower()
+
+
 def huawei_upload_url(raw: str) -> str:
     url = parse_service_url(raw)
     if (
@@ -230,9 +236,19 @@ def huawei_upload_url(raw: str) -> str:
         or url.username
         or url.password
         or url.port not in (None, 443)
-        or not any(
-            url.host.endswith("." + host)
-            for host in ("huaweicloud.com", "myhuaweicloud.com", "hicloud.com", "dbankcloud.com")
+        or not (
+            # Authenticated for-obs readback, independently verified Huawei OV TLS
+            # certificate. Pin this observed bucket, not the entire new suffix.
+            url.host == "nsp-appgallery-agcfs-drru.obs.ru-northwest-2.myhuaweicloud.ru"
+            or any(
+                url.host.endswith("." + host)
+                for host in (
+                    "huaweicloud.com",
+                    "myhuaweicloud.com",
+                    "hicloud.com",
+                    "dbankcloud.com",
+                )
+            )
         )
     ):
         raise DeliveryError("CONFIG", "untrusted Huawei file-server URL")
@@ -348,7 +364,7 @@ def huawei_observation(
         return {"status": "ABSENT", "rawState": raw}
     package = matches[0]
     if (
-        package.get("shaCode") != release.apk_hash
+        sha256_hex(package.get("shaCode")) != release.apk_hash
         or package.get("packageSize") != release.value["apkSize"]
     ):
         raise DeliveryError("MISMATCH", "Huawei package hash/size does not prove approved APK")
@@ -627,6 +643,74 @@ def rustore_package(release: Release, detail: dict[str, Any]) -> dict[str, Any]:
     return p
 
 
+LEGACY_RUSTORE_MANIFEST = "47a982f71fb8aee29cdcf4bb2d34fca9542e34f92dceaf922631ba9716b593b9"
+LEGACY_RUSTORE_WORKFLOW = "9b463cb23e7d15fce54ecdae6bc567cdd97fc24c"
+LEGACY_RUSTORE_RUN = 41696390880
+LEGACY_RUSTORE_VERSION = 2064929703
+LEGACY_RUSTORE_RELEASE = 433118574
+
+
+def legacy_rustore_ack(release: Release, vid: int) -> dict[str, Any]:
+    """One audited postcondition failure, not a rule for transport ambiguities.
+
+    That pinned adapter could emit this saved cardinality error without an upload
+    receipt only after POST /apk returned 2xx + code=OK. See the runbook proof.
+    This records an inference, never a fabricated raw response, UID or store hash.
+    """
+    if (
+        release.digest != LEGACY_RUSTORE_MANIFEST
+        or release.value["workflowSha"] != LEGACY_RUSTORE_WORKFLOW
+        or release.value["buildRunId"] != LEGACY_RUSTORE_RUN
+        or vid != LEGACY_RUSTORE_VERSION
+    ):
+        raise DeliveryError("UNKNOWN", "no audited RuStore acknowledgement recovery")
+    return {
+        "schema": "talentforge-rustore-upload-ack-recovery/1",
+        "manifest": release.digest,
+        "versionId": vid,
+        "sha256": release.apk_hash,
+        "proof": "trusted-upload-OK-postcondition-failure",
+        "workflowSha": LEGACY_RUSTORE_WORKFLOW,
+        "buildRunId": LEGACY_RUSTORE_RUN,
+        "scriptSha256": "0e630dc962ca6ae44949ed397ad31785f3557dbd432a913bb29f03477a092f9b",
+        "stateAsset": "state-rustore-000001.json",
+    }
+
+
+def recover_rustore_ack(journal: ReleaseJournal) -> None:
+    """Append evidence only for the exact already-proven Actions journal."""
+    release = journal.release
+    if release.digest != LEGACY_RUSTORE_MANIFEST:
+        return
+    if (
+        journal.release_id != LEGACY_RUSTORE_RELEASE
+        or journal.github.repository != "AlexeyKravtsov95/TalentForge"
+    ):
+        raise DeliveryError("GATE", "RuStore recovery journal provenance differs")
+    if journal.get("rustore-upload-done") is not None:
+        return
+    vid = LEGACY_RUSTORE_VERSION
+    proof = legacy_rustore_ack(release, vid)
+    if (
+        journal.get("rustore-create-intent") != {"manifest": release.digest}
+        or journal.get("rustore-create-done") != {"versionId": vid}
+        or journal.get("rustore-upload-intent") != {"manifest": release.digest, "versionId": vid}
+        or journal.get("state-rustore-000001")
+        != {
+            "observedAt": "2026-11-03T19:20:45Z",
+            "runUrl": f"https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/{LEGACY_RUSTORE_RUN}",
+            "sequence": 1,
+            "store": "rustore",
+            "state": {
+                "detail": "CONFLICT: RuStore must have exactly one universal APK",
+                "status": "CONFLICT",
+            },
+        }
+    ):
+        raise DeliveryError("UNKNOWN", "RuStore original upload evidence differs")
+    journal.put_once("rustore-upload-ack-recovered", proof)
+
+
 def advance_rustore(api: RuStore, release: Release, apk: Path, journal: Journal) -> dict[str, Any]:
     versions = api.versions()
     matches = [v for v in versions if v["versionCode"] == release.code]
@@ -653,14 +737,23 @@ def advance_rustore(api: RuStore, release: Release, apk: Path, journal: Journal)
 
         created = write_once(journal, "rustore-create", {"manifest": release.digest}, create)
     vid = integer(created.get("versionId"), minimum=1)
+    if any(v["versionId"] != vid for v in matches):
+        raise DeliveryError("CONFLICT", "RuStore approved code belongs to another version")
+    if any(v["versionCode"] > release.code for v in versions):
+        raise DeliveryError("CONFLICT", "RuStore has a higher consumed code")
     detail = api.detail(vid)
     if integer(detail.get("versionId"), minimum=1) != vid:
         raise DeliveryError("MISMATCH", "RuStore version ID differs")
+    if any(v["versionStatus"] == "DRAFT" and v["versionId"] != vid for v in versions):
+        raise DeliveryError("CONFLICT", "RuStore has a foreign draft")
     uploaded = journal.get("rustore-upload-done")
+    recovered = journal.get("rustore-upload-ack-recovered")
+    if uploaded is None and recovered is not None:
+        if recovered != legacy_rustore_ack(release, vid):
+            raise DeliveryError("MISMATCH", "RuStore recovered acknowledgement differs")
+        uploaded = {"versionId": vid, "sha256": release.apk_hash, "responseCode": "OK"}
     if uploaded is None:
         if detail.get("packages") or journal.get("rustore-upload-intent") is not None:
-            # API does not return APK SHA-256. A lost upload receipt cannot be proven by
-            # versionCode alone; retain the intent and require explicit recovery.
             raise DeliveryError(
                 "UNKNOWN", "RuStore APK acceptance needs byte/receipt reconciliation"
             )
@@ -675,46 +768,91 @@ def advance_rustore(api: RuStore, release: Release, apk: Path, journal: Journal)
                     files={"file": (apk.name, stream, "application/vnd.android.package-archive")},
                     timeout=600,
                 )
-            p = rustore_package(release, api.detail(vid))
-            return {"versionId": vid, "apkUid": p["apkUid"], "sha256": release.apk_hash}
+            # Persist the actual OK before any fallible readback. RuStore stages
+            # APKs until commit; its upload response does not contain an apkUid.
+            return {"versionId": vid, "sha256": release.apk_hash, "responseCode": "OK"}
 
         uploaded = write_once(
             journal, "rustore-upload", {"manifest": release.digest, "versionId": vid}, upload
         )
         detail = api.detail(vid)
-    p = rustore_package(release, detail)
-    if uploaded != {"versionId": vid, "apkUid": p["apkUid"], "sha256": release.apk_hash}:
-        raise DeliveryError("MISMATCH", "RuStore package differs from accepted upload receipt")
-    # Prefer the version list's mandatory fields (detail makes these optional).
+        if integer(detail.get("versionId"), minimum=1) != vid:
+            raise DeliveryError("MISMATCH", "RuStore version ID differs")
+    if journal.get("rustore-upload-intent") != {"manifest": release.digest, "versionId": vid}:
+        raise DeliveryError("MISMATCH", "RuStore upload acknowledgement has no matching intent")
+    expected = {"versionId": vid, "sha256": release.apk_hash}
+    if uploaded != {**expected, "responseCode": "OK"}:
+        # Preserve receipts written by the older adapter when metadata was visible.
+        if set(uploaded) != {*expected, "apkUid"} or any(
+            uploaded[k] != v for k, v in expected.items()
+        ):
+            raise DeliveryError("MISMATCH", "RuStore upload receipt differs")
+        string(uploaded.get("apkUid"))
     current = next((v for v in api.versions() if v["versionId"] == vid), None)
+    observed = detail if current is None else current
+    raw = observed.get("versionStatus")
+    partial = observed.get("partialValue")
+    # The documented readback sentinel -1 means 100%. No other negative or wire
+    # type is accepted; the draft creation request continues to send integer 100.
+    if (
+        observed.get("publishType") != "INSTANTLY"
+        or type(partial) is not int
+        or partial not in (-1, 100)
+    ):
+        raise DeliveryError("CONFLICT", "RuStore automatic full publication changed")
+    package = None
+    if detail.get("packages"):
+        package = rustore_package(release, detail)
+        receipt = {**expected, "apkUid": package["apkUid"]}
+        if "apkUid" in uploaded and uploaded != receipt:
+            raise DeliveryError("MISMATCH", "RuStore package differs from accepted upload receipt")
+        journal.put_once("rustore-package-done", receipt)
+    elif "packages" in detail and detail["packages"] != []:
+        # Optional means absent; explicit null or a wrong JSON wire type is not [].
+        raise DeliveryError("CONTRACT", "invalid RuStore packages wire type")
+    if raw == "DRAFT":
+        if any(
+            observed.get(k) not in (None, v)
+            for k, v in (
+                ("versionCode", release.code),
+                ("versionName", release.value["versionName"]),
+            )
+        ):
+            raise DeliveryError("MISMATCH", "RuStore draft identifies another APK")
+        intent = {"manifest": release.digest, "versionId": vid, "sha256": release.apk_hash}
+        old_intent = journal.get("rustore-submit-intent")
+        if old_intent is not None and package is not None:
+            legacy = {"manifest": release.digest, "versionId": vid, "apkUid": package["apkUid"]}
+            if old_intent == legacy:
+                intent = legacy
+        write_once(
+            journal,
+            "rustore-submit",
+            intent,
+            lambda: api.call("POST", f"/{vid}/commit") and {"versionId": vid},
+        )
+        return {"status": "SUBMITTED", "rawState": raw, "versionId": vid}
     if (
         current is None
         or current["versionCode"] != release.code
         or current.get("versionName") != release.value["versionName"]
+        or package is None
     ):
-        raise DeliveryError("MISMATCH", "RuStore has not confirmed the approved version")
-    raw = current["versionStatus"]
-    if raw == "ACTIVE" and integer(current.get("partialValue")) == 100:
-        return {"status": "PUBLISHED", "rawState": raw, "versionId": vid, "packageId": p["apkUid"]}
-    if current.get("publishType") != "INSTANTLY" or integer(current.get("partialValue")) != 100:
-        raise DeliveryError("CONFLICT", "RuStore automatic full publication changed")
+        raise DeliveryError("MISMATCH", "RuStore has not confirmed the approved version/package")
+    if raw == "ACTIVE":
+        return {
+            "status": "PUBLISHED",
+            "rawState": raw,
+            "versionId": vid,
+            "packageId": package["apkUid"],
+        }
     if raw in {"TAKEN_FOR_MODERATION", "MODERATION", "AUTO_CHECK"}:
         return {"status": "IN_REVIEW", "rawState": raw, "versionId": vid}
     if raw == "READY_FOR_PUBLICATION":
         return {"status": "PROCESSING", "rawState": raw, "versionId": vid}
     if raw in {"REJECTED_BY_MODERATOR", "REJECTED_BY_SECURITY", "AUTO_CHECK_FAILED"}:
         return {"status": "REJECTED", "rawState": raw, "versionId": vid}
-    if raw != "DRAFT":
-        raise DeliveryError("CONFLICT", "RuStore is not in an allowed publication state")
-    write_once(
-        journal,
-        "rustore-submit",
-        {"manifest": release.digest, "versionId": vid, "apkUid": p["apkUid"]},
-        lambda: api.call("POST", f"/{vid}/commit") and {"versionId": vid},
-    )
-    # A successful commit response is only submission. Subsequent polling proves review
-    # and publication, rather than manufacturing a PUBLISHED state here.
-    return {"status": "SUBMITTED", "rawState": raw, "versionId": vid}
+    raise DeliveryError("CONFLICT", "RuStore is not in an allowed publication state")
 
 
 def each_store(
@@ -1324,6 +1462,8 @@ def reconcile_journal(journal: ReleaseJournal, directory: Path) -> dict[str, Any
     def advance(store: str) -> dict[str, Any]:
         def perform() -> dict[str, Any]:
             api = store_api(journal.github.client, store, release.value["appgalleryAppId"])
+            if isinstance(api, RuStore):
+                recover_rustore_ack(journal)
             return (
                 advance_rustore(api, release, apk, journal)
                 if isinstance(api, RuStore)

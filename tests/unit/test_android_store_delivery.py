@@ -1448,3 +1448,293 @@ def test_notify_cli_reports_journal_errors_without_silence_or_blind_resends(
     assert code == 1 and report["errors"]
     assert len(server.messages) == 3 and "GATE" in server.messages[2]
     assert server.huawei.uploads == server.huawei.attachments == server.huawei.submissions == 0
+
+
+class DeferredRussianStore(RussianStore):
+    """RuStore documents that staged APKs appear only after commit."""
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.staged: list[dict[str, Any]] = []
+        self.partial: Any = -1
+
+    def handler(self, req: httpx.Request) -> httpx.Response:
+        if req.url.path.endswith("/apk"):
+            response = super().handler(req)
+            self.staged, self.packages = self.packages, []
+            return response
+        if req.url.path.endswith("/commit"):
+            self.packages = self.staged
+        response = super().handler(req)
+        result = response.json()
+        if req.url.path.endswith("/9"):
+            result["body"].update(
+                versionStatus=self.raw,
+                publishType="INSTANTLY",
+                partialValue=self.partial,
+                versionName=None if self.raw == "DRAFT" else "1.0.0",
+            )
+        if req.url.path.endswith("/version") and req.method == "GET":
+            result["body"]["content"] = [
+                v for v in result["body"]["content"] if v["versionId"] != 9 or self.raw != "DRAFT"
+            ]
+            result["body"]["totalElements"] = len(result["body"]["content"])
+            for v in result["body"]["content"]:
+                v["partialValue"] = self.partial
+        return httpx.Response(200, json=result)
+
+
+def test_rustore_commits_acknowledged_staged_apk_and_binds_uid_after_commit(tmp_path: Path) -> None:
+    r, apk = release_file(tmp_path)
+    store, j = DeferredRussianStore(), d.MemoryJournal()
+    api = d.RuStore(httpx.Client(transport=httpx.MockTransport(store.handler)), "token")
+    assert d.advance_rustore(api, r, apk, j)["status"] == "SUBMITTED"
+    assert j.get("rustore-upload-done") == {
+        "versionId": 9,
+        "sha256": r.apk_hash,
+        "responseCode": "OK",
+    }
+    assert d.advance_rustore(api, r, apk, j)["status"] == "IN_REVIEW"
+    assert j.get("rustore-package-done")["apkUid"] == "uid5"
+    store.raw = "ACTIVE"
+    assert d.advance_rustore(api, r, apk, j)["status"] == "PUBLISHED"
+    assert (store.uploads, store.submissions) == (1, 1)
+
+
+@pytest.mark.parametrize("partial", [-2, 0, 50, 101, "-1", True, None])
+def test_rustore_invalid_rollout_cannot_submit_staged_apk(tmp_path: Path, partial: Any) -> None:
+    r, apk = release_file(tmp_path)
+    store, j = DeferredRussianStore(), d.MemoryJournal()
+    store.partial = partial
+    api = d.RuStore(httpx.Client(transport=httpx.MockTransport(store.handler)), "token")
+    with pytest.raises(d.DeliveryError):
+        d.advance_rustore(api, r, apk, j)
+    assert store.submissions == 0
+
+
+def test_rustore_staged_upload_transport_loss_never_commits_or_reuploads(tmp_path: Path) -> None:
+    r, apk = release_file(tmp_path)
+    store, j = DeferredRussianStore(lose_upload=True), d.MemoryJournal()
+    api = d.RuStore(httpx.Client(transport=httpx.MockTransport(store.handler)), "token")
+    for _ in range(2):
+        with pytest.raises(d.DeliveryError, match="UNKNOWN"):
+            d.advance_rustore(api, r, apk, j)
+    assert (store.uploads, store.submissions) == (1, 0)
+
+
+@pytest.mark.parametrize("sha", ["C" * 64, "c" * 64])
+def test_huawei_digest_hex_case_does_not_change_approved_bytes(sha: str) -> None:
+    r = d.Release.parse(manifest())
+    assert (
+        d.huawei_observation(
+            r,
+            {"releaseState": 0, "onShelfVersionCode": 5, "onShelfVersionId": "p"},
+            [{"pkgVersion": "p", "versionCode": 5, "packageSize": 10, "shaCode": sha}],
+        )["status"]
+        == "PUBLISHED"
+    )
+
+
+@pytest.mark.parametrize("sha", [None, 123, "c" * 63, "g" * 64, " c" * 32])
+def test_huawei_digest_requires_exact_hex_wire_string(sha: Any) -> None:
+    r = d.Release.parse(manifest())
+    with pytest.raises(d.DeliveryError, match="CONTRACT"):
+        d.huawei_observation(
+            r,
+            {"releaseState": 0},
+            [{"pkgVersion": "p", "versionCode": 5, "packageSize": 10, "shaCode": sha}],
+        )
+
+
+def test_huawei_observed_russian_bucket_is_pinned_without_trusting_entire_suffix() -> None:
+    host = "nsp-appgallery-agcfs-drru.obs.ru-northwest-2.myhuaweicloud.ru"
+    assert d.huawei_upload_url("https://" + host + "/object") == "https://" + host + "/object"
+    for bad in (
+        "https://other.obs.ru-northwest-2.myhuaweicloud.ru/object",
+        "https://" + host + ".evil.example/object",
+        "https://evil." + host + "/object",
+        "https://user@" + host + "/object",
+        "https://" + host + ":444/object",
+        "http://" + host + "/object",
+    ):
+        with pytest.raises(d.DeliveryError):
+            d.huawei_upload_url(bad)
+
+
+def legacy_recovery_fixture(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> tuple[Any, ...]:
+    from types import SimpleNamespace
+
+    original, apk = release_file(tmp_path)
+    r = d.Release.parse(
+        {
+            **original.value,
+            "workflowSha": d.LEGACY_RUSTORE_WORKFLOW,
+            "buildRunId": d.LEGACY_RUSTORE_RUN,
+        }
+    )
+    # Only the test APK/manifest and fake server's version differ from real pins.
+    monkeypatch.setattr(d, "LEGACY_RUSTORE_MANIFEST", r.digest)
+    monkeypatch.setattr(d, "LEGACY_RUSTORE_VERSION", 9)
+    j = d.MemoryJournal()
+    j.release, j.release_id = r, d.LEGACY_RUSTORE_RELEASE
+    j.github = SimpleNamespace(repository="AlexeyKravtsov95/TalentForge")
+    j.put_once("rustore-create-intent", {"manifest": r.digest})
+    j.put_once("rustore-create-done", {"versionId": 9})
+    j.put_once("rustore-upload-intent", {"manifest": r.digest, "versionId": 9})
+    j.put_once(
+        "state-rustore-000001",
+        {
+            "observedAt": "2026-11-03T19:20:45Z",
+            "runUrl": f"https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/{d.LEGACY_RUSTORE_RUN}",
+            "sequence": 1,
+            "store": "rustore",
+            "state": {
+                "detail": "CONFLICT: RuStore must have exactly one universal APK",
+                "status": "CONFLICT",
+            },
+        },
+    )
+    store = DeferredRussianStore()
+    store.created = True
+    store.staged = [
+        {"verCode": 5, "verName": "1.0.0", "apkUid": "uid5", "size": 12, "isMainApk": True}
+    ]
+    api = d.RuStore(httpx.Client(transport=httpx.MockTransport(store.handler)), "token")
+    return r, apk, j, store, api
+
+
+def test_exact_legacy_postcondition_proof_recovers_ack_without_upload_or_asset_edits(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    r, apk, j, store, api = legacy_recovery_fixture(tmp_path, monkeypatch)
+    original = json.loads(json.dumps(j.records))
+    d.recover_rustore_ack(j)
+    proof = j.get("rustore-upload-ack-recovered")
+    assert proof["proof"] == "trusted-upload-OK-postcondition-failure"
+    assert "responseCode" not in proof and "apkUid" not in proof
+    assert d.advance_rustore(api, r, apk, j)["status"] == "SUBMITTED"
+    d.recover_rustore_ack(j)
+    assert d.advance_rustore(api, r, apk, j)["status"] == "IN_REVIEW"
+    store.raw = "ACTIVE"
+    assert d.advance_rustore(api, r, apk, j)["status"] == "PUBLISHED"
+    assert (store.uploads, store.submissions) == (0, 1)
+    assert all(j.get(k) == v for k, v in original.items())
+    assert j.get("rustore-upload-done") is None
+
+
+@pytest.mark.parametrize(
+    "changed",
+    [
+        "create-intent",
+        "create-done",
+        "upload-intent",
+        "state",
+        "time",
+        "run",
+        "repository",
+        "release-id",
+        "workflow",
+        "build-run",
+    ],
+)
+def test_legacy_recovery_refuses_any_other_evidence_or_provenance(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, changed: str
+) -> None:
+    r, _apk, j, store, _api = legacy_recovery_fixture(tmp_path, monkeypatch)
+    if changed in ("create-intent", "create-done", "upload-intent"):
+        j.records["rustore-" + changed] = {"unrelated": True}
+    elif changed == "state":
+        j.records["state-rustore-000001"]["state"] = {
+            "status": "UNKNOWN",
+            "detail": "POST transport failure",
+        }
+    elif changed == "time":
+        j.records["state-rustore-000001"]["observedAt"] = "2026-11-04T00:00:00Z"
+    elif changed == "run":
+        j.records["state-rustore-000001"]["runUrl"] = "https://github.com/other/repo/actions/runs/1"
+    elif changed == "repository":
+        j.github.repository = "other/repo"
+    elif changed == "release-id":
+        j.release_id += 1
+    else:
+        update = {"workflowSha": "e" * 40} if changed == "workflow" else {"buildRunId": 999}
+        j.release = d.Release.parse({**r.value, **update})
+        monkeypatch.setattr(d, "LEGACY_RUSTORE_MANIFEST", j.release.digest)
+    with pytest.raises(d.DeliveryError):
+        d.recover_rustore_ack(j)
+    assert j.get("rustore-upload-ack-recovered") is None
+    assert (store.uploads, store.submissions) == (0, 0)
+
+
+def test_other_release_transport_ambiguity_has_no_recovery_rule(tmp_path: Path) -> None:
+    from types import SimpleNamespace
+
+    r, apk = release_file(tmp_path)
+    j = d.MemoryJournal()
+    j.release, j.release_id = r, d.LEGACY_RUSTORE_RELEASE
+    j.github = SimpleNamespace(repository="AlexeyKravtsov95/TalentForge")
+    j.put_once("rustore-create-done", {"versionId": 9})
+    j.put_once("rustore-upload-intent", {"manifest": r.digest, "versionId": 9})
+    store = DeferredRussianStore()
+    store.created = True
+    api = d.RuStore(httpx.Client(transport=httpx.MockTransport(store.handler)), "token")
+    d.recover_rustore_ack(j)
+    with pytest.raises(d.DeliveryError, match="UNKNOWN"):
+        d.advance_rustore(api, r, apk, j)
+    assert j.get("rustore-upload-ack-recovered") is None
+    assert (store.uploads, store.submissions) == (0, 0)
+
+
+def test_rustore_package_uid_change_after_submission_is_refused(tmp_path: Path) -> None:
+    r, apk = release_file(tmp_path)
+    store, j = DeferredRussianStore(), d.MemoryJournal()
+    api = d.RuStore(httpx.Client(transport=httpx.MockTransport(store.handler)), "token")
+    d.advance_rustore(api, r, apk, j)
+    d.advance_rustore(api, r, apk, j)
+    store.packages[0]["apkUid"] = "another-package"
+    store.raw = "ACTIVE"
+    with pytest.raises(d.DeliveryError, match="MISMATCH"):
+        d.advance_rustore(api, r, apk, j)
+    assert store.uploads == store.submissions == 1
+
+
+def test_rustore_foreign_draft_blocks_commit_after_ack(tmp_path: Path) -> None:
+    r, apk = release_file(tmp_path)
+    store, j = DeferredRussianStore(), d.MemoryJournal()
+    store.created = True
+    j.put_once("rustore-create-done", {"versionId": 9})
+    j.put_once("rustore-upload-intent", {"manifest": r.digest, "versionId": 9})
+    j.put_once("rustore-upload-done", {"versionId": 9, "sha256": r.apk_hash, "responseCode": "OK"})
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        response = store.handler(req)
+        if req.method == "GET" and req.url.path.endswith("/version"):
+            body = response.json()
+            body["body"]["content"].append(
+                {"versionId": 99, "versionCode": 4, "versionStatus": "DRAFT"}
+            )
+            body["body"]["totalElements"] += 1
+            return httpx.Response(200, json=body)
+        return response
+
+    api = d.RuStore(httpx.Client(transport=httpx.MockTransport(handler)), "token")
+    with pytest.raises(d.DeliveryError, match="CONFLICT"):
+        d.advance_rustore(api, r, apk, j)
+    assert (store.uploads, store.submissions) == (0, 0)
+
+
+def test_rustore_lost_commit_response_is_read_back_without_second_write(tmp_path: Path) -> None:
+    r, apk = release_file(tmp_path)
+    store, j = DeferredRussianStore(), d.MemoryJournal()
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        response = store.handler(req)
+        if req.url.path.endswith("/commit"):
+            raise httpx.ReadTimeout("commit accepted, response lost", request=req)
+        return response
+
+    api = d.RuStore(httpx.Client(transport=httpx.MockTransport(handler)), "token")
+    with pytest.raises(d.DeliveryError, match="UNKNOWN"):
+        d.advance_rustore(api, r, apk, j)
+    assert d.advance_rustore(api, r, apk, j)["status"] == "IN_REVIEW"
+    assert (store.uploads, store.submissions) == (1, 1)

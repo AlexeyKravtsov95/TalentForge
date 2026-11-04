@@ -138,12 +138,25 @@ or response-contract error is retained too. Only package-list readback proving t
 approved hash, size and candidate identity can resolve that failure. No automatic
 upload or attachment retry is performed; intents and failure evidence remain intact.
 
-RuStore does **not** document a package SHA-256 in its detail API. A normal upload
-is bound by the upload response, exact local bytes, version ID and stored apkUid;
-later readbacks require that same UID/version/size. If the upload response or its
-receipt is lost before a UID can be saved, a versionCode alone is insufficient:
-the store stays UNKNOWN and needs owner recovery with store-side byte evidence.
-The automation never invents a store-reported hash or blindly reuploads it.
+RuStore does **not** document a package SHA-256 or apkUid in its upload response.
+The workflow verifies the exact approved local bytes, persists the upload's
+`code=OK` acknowledgement **before** any readback, then submits that bound draft.
+RuStore documents that API-uploaded APKs are not visible in the console until
+submission; package metadata can therefore remain absent/empty in DRAFT.
+A successful commit is SUBMITTED, never PUBLISHED. Later readback must identify
+exactly one main APK with the approved version/name/size; its apkUid is saved as
+`rustore-package-done` and must never change. ACTIVE plus full rollout and that
+bound package proves publication. Readback `partialValue=-1` and integer `100`
+both mean full rollout; other values and wire types are refused.
+[Upload contract](https://www.rustore.ru/help/work-with-rustore-api/api-upload-publication-app/apk-file-upload/file-upload-apk),
+[commit contract](https://www.rustore.ru/help/work-with-rustore-api/api-upload-publication-app/send-draft-app-for-moderation),
+[rollout sentinel](https://www.rustore.ru/help/en/work-with-rustore-api/api-upload-publication-app/get-version-status).
+
+A transport loss without an acknowledgement still stays UNKNOWN: neither
+versionCode nor an empty package list permits another upload or a commit.
+The single audited legacy exception below recovers an acknowledgement from a
+trusted postcondition failure, not from a lost HTTP response. It never claims a
+store-reported SHA-256, invents an apkUid, or replaces an existing journal asset.
 
 Every poll report lives in Actions (`android-store-report`). Only state transitions,
 write receipts and publication proofs consume immutable journal assets; unchanged
@@ -309,3 +322,66 @@ the observed refusal is understood and a safe recovery is established; use this
 same journal/approved APK. No new build or protected approval is needed for
 read-only inspection. The upload authority guard and missing-receipt refusal
 remain in force; this diagnostic change does not itself repair either refusal.
+
+
+### Provider readbacks and scoped recovery, 2026-11-04 UTC
+
+Read-only [inspection 41806286045](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/41806286045)
+(tooling `69c153703bdc365d9ebaae5e4b28863f41914303`) succeeded. Its
+[artifact 13309504146](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/41806286045/artifacts/13309504146)
+contains no signed URL paths/queries or authorization headers. It performed no
+store/journal/Telegram writes. These observations do **not** mean publication:
+
+- Huawei's authenticated `upload-url/for-obs` returned HTTPS authority
+  `nsp-appgallery-agcfs-drru.obs.ru-northwest-2.myhuaweicloud.ru`, PUT,
+  matching Host and approved SHA-256 headers. Its Russian domain was missing
+  from our allowlist. An independent default-system-trust TLS handshake verified
+  the hostname and an OV certificate for **Huawei Software Technologies Co., Ltd.**,
+  issuer GlobalSign RSA OV SSL CA 2018, SAN `*.obs.ru-northwest-2.myhuaweicloud.ru`,
+  valid until 2027-02-10. Only this exact observed bucket is added; the entire
+  `.myhuaweicloud.ru` suffix is not trusted. HTTPS, no user info, port 443, Host,
+  method, hash and normal certificate verification remain mandatory. This follows
+  the [for-obs contract](https://developer.huawei.com/consumer/en/doc/AppGallery-connect-References/agcapi-upload-url-new-0000001111685200),
+  which returns the actual signed server URL rather than promising a fixed suffix.
+  Existing package hashes are uppercase hex; SHA-256 comparison accepts either
+  hex case only after validating an exact 64-character hex string. No code 5
+  package existed and no Huawei upload intent was present at inspection time.
+- RuStore's bound version `2064929703` remained DRAFT, INSTANTLY, `partialValue=-1`,
+  `versionName=null`, `packages=[]`; fileUids contained screenshots only. There
+  was no submit intent. Empty precommit metadata is not evidence of upload refusal.
+
+#### Proof for the one legacy RuStore acknowledgement
+
+The immutable manifest digest is
+`47a982f71fb8aee29cdcf4bb2d34fca9542e34f92dceaf922631ba9716b593b9`,
+original run `41696390880`, build/tooling
+`9b463cb23e7d15fce54ecdae6bc567cdd97fc24c`, release journal `433118574`.
+Its original script SHA-256 is
+`0e630dc962ca6ae44949ed397ad31785f3557dbd432a913bb29f03477a092f9b`.
+The [pinned upload callback](https://github.com/AlexeyKravtsov95/TalentForge/blob/9b463cb23e7d15fce54ecdae6bc567cdd97fc24c/scripts/android_store_delivery.py#L669)
+first verifies approved bytes and calls POST `/apk`. `RuStore.call` returns only
+for a successful HTTP response with `code=OK`. The callback then reads detail and
+requires exactly one package **before returning to write_once**, which saves the
+receipt only after that return.
+
+The Actions-created, manifest-bound `state-rustore-000001.json` records at
+`2026-11-03T19:20:45Z`, from that same original run:
+`CONFLICT: RuStore must have exactly one universal APK`.
+At this point create-done and upload-intent exist, but upload-done does not.
+In that exact pinned control flow this error without a saved upload receipt is
+reachable only **after POST /apk returned OK**, inside the upload callback.
+A timeout, non-OK response, or an already outstanding upload would produce another
+typed error. This is a control-flow inference of a successful acknowledgement;
+the raw HTTP response itself was not persisted and is not reconstructed.
+
+Recovery validates every pin above, exact create/upload intent and version ID,
+repository/release identity, exact first transition including timestamp/run URL,
+and normal original owner approval/Actions asset provenance. It appends
+`rustore-upload-ack-recovered.json` explicitly labelled as this inference. It does
+not add a fake upload-done receipt or change any existing asset. The normal
+reconciler can then perform the **first commit** of this same draft, provided
+fresh publication settings, package identity if available, and foreign-version
+checks still pass. It never repeats POST `/apk`. All other ambiguous upload
+intents stay UNKNOWN. Publication still requires later package/UID readback and
+ACTIVE at full rollout. Recovery has not yet been executed as of this record;
+both stores remain unconfirmed until their real subsequent readbacks.
