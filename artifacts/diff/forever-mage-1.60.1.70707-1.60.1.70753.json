@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 8,
+    "token": "MAGE",
+    "name": "Mage"
+  },
+  "fromBuild": "1.60.1.70707",
+  "toBuild": "1.60.1.70753",
+  "fromContentHash": "sha256:b44bc4265aaec6a8399fefd88758f4d1e249543616ab90ce3c1838f75ddcf3ec",
+  "toContentHash": "sha256:2171781278054243589abb7842c7bdef95509ad4171060240186d2b6ff607080",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 4,
+    "changesByKind": {
+      "descriptionChanged": 1,
+      "effectBasePointsChanged": 3,
+      "effectRankValueChanged": 1,
+      "maxRankChanged": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 105762,
+      "treeId": 1112,
+      "name": "Ice Barrier",
+      "changes": [
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130491,
+          "effectIndex": 1,
+          "rank": null,
+          "old": 3,
+          "new": 5
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130491,
+          "effectIndex": 2,
+          "rank": null,
+          "old": 3,
+          "new": 5
+        }
+      ]
+    },
+    {
+      "nodeId": 105767,
+      "treeId": 1112,
+      "name": "Ice Lance",
+      "changes": [
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130496,
+          "effectIndex": 1,
+          "rank": null,
+          "old": 200,
+          "new": 300
+        }
+      ]
+    },
+    {
+      "nodeId": 105770,
+      "treeId": 1112,
+      "name": "Arctic Reach",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130499,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases the range of your Frostbolt, Frost Blast, and Blizzard spells and the radius of your Frost Nova and Cone of Cold spells by $s1%.",
+          "new": "Increases the range of your Frostbolt, Frost Blast, Ice Lance, and Blizzard spells and the radius of your Frost Nova and Cone of Cold spells by $s1%."
+        }
+      ]
+    },
+    {
+      "nodeId": 105802,
+      "treeId": 1112,
+      "name": "Arcane Resilience",
+      "changes": [
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 2,
+          "new": 3
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130531,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": null,
+          "new": 75
+        }
+      ]
+    }
+  ]
+}

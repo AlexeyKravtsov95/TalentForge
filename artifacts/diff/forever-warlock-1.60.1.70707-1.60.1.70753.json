@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 9,
+    "token": "WARLOCK",
+    "name": "Warlock"
+  },
+  "fromBuild": "1.60.1.70707",
+  "toBuild": "1.60.1.70753",
+  "fromContentHash": "sha256:35b6353fb5261c5e7b7d559d727506b19b5f76b483740a96843e4ffd0dd2029f",
+  "toContentHash": "sha256:133013c6d83af9ba6cbe826884940693ceadb6e80bcf0e4b60dd17964597ce79",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 1,
+    "changesByKind": {
+      "descriptionChanged": 1,
+      "effectAdded": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 105920,
+      "treeId": 1116,
+      "name": "Improved Drains",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130650,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases health drained or damage done by your Drain Life, Drain Soul, and Wrack spells by $m1%.",
+          "new": "Increases Health drained, damage done, or Mana drained by your Drain Life, Drain Soul, and Drain Mana spells by $m1%."
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 130650,
+          "effectIndex": 1,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 1,
+            "perRank": [
+              {
+                "rank": 1,
+                "value": 7
+              },
+              {
+                "rank": 2,
+                "value": 13
+              },
+              {
+                "rank": 3,
+                "value": 20
+              }
+            ],
+            "perRankStatus": "resolved",
+            "basePoints": 20,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    }
+  ]
+}
