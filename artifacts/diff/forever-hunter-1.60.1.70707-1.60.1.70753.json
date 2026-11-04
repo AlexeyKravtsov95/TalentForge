@@ -1,0 +1,186 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 3,
+    "token": "HUNTER",
+    "name": "Hunter"
+  },
+  "fromBuild": "1.60.1.70707",
+  "toBuild": "1.60.1.70753",
+  "fromContentHash": "sha256:9c86189b08f40f7ee3646e5e01545876dabf6b481f775f4f0f1d99f91bcc4c47",
+  "toContentHash": "sha256:0de44ed0cf9f5d77fc738a1bc06ad6f6954bc71d5404c59d5e7eff8ee9c33316",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 4,
+    "changesByKind": {
+      "positionChanged": 2,
+      "unlockRequirementsChanged": 3
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 104969,
+      "treeId": 1091,
+      "name": "Unleashed Fury",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104960,
+                104972,
+                104973,
+                104974,
+                104975,
+                104976
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104960,
+                104972,
+                104974,
+                104975,
+                104976
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 104970,
+      "treeId": 1091,
+      "name": "Bestial Swiftness",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104960,
+                104972,
+                104973,
+                104974,
+                104975,
+                104976
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104960,
+                104972,
+                104974,
+                104975,
+                104976
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 104972,
+      "treeId": 1091,
+      "name": "Improved Revive Pet",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 2820,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          },
+          "new": {
+            "x": 2220,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 104973,
+      "treeId": 1091,
+      "name": "Pathfinding",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 2220,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "new": {
+            "x": 1020,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                104960,
+                104976
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104960,
+                104972,
+                104974,
+                104975,
+                104976
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
