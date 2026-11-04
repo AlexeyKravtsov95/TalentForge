@@ -21,6 +21,64 @@
 | 6. Protected writer | main-only `ota-production` | повторные проверки, immutable blobs/read-back, pinned-primary external signer, durable WRITE_STARTED, catalog PUT последним |
 | 7. Public proof / notify | reference verifier / `notifications` | expected payload + все manifests/files + stable reread; общий с watcher marker, без повторного success |
 
+Подготовка выбирает максимальный `ClientVersion` среди неопубликованных сборок новее
+проверенного active build, из дерева **закреплённого успешным CI main-коммита**. Старые
+неопубликованные наборы остаются историей: последовательная публикация не требуется.
+Manifest выбранной сборки проверяется строго; ошибка её данных, совместимости, staging
+или G1–G8 останавливает подготовку без отката на более старую. Если для выбранного релиза
+уже есть committed request, подготовка не создаёт новый и не переходит к старой истории.
+
+Новый патч в main не меняет source SHA начатой подготовки. Ключ корреляции включает source,
+release ID, live base ID и SHA его manifest; сохранённый request/tag закрепляет run/attempt,
+artifact ID/digest и точные байты пакета. Даже внутренне валидный пакет с тем же source/base
+отклоняется, если его build/release ID не совпадает с выбранным кандидатом. Повторный запуск
+с тем же CI использует сохранённые pins;
+существующие requests, owner approvals, review branches и незавершённый production journal
+не перезаписываются и не отменяются автоматически. Новая подготовка не является одобрением:
+владелец проверяет конкретный release PR, а protected publication сохраняет все свои guards.
+
+Dispatch запрашивает `return_run_details=true` и закрепляет возвращённый run ID. Для этого
+ID metadata может появиться позже ответа: GET повторяется ограниченно (до 40 чтений с
+паузой 3 секунды), пока `display_title` не совпадёт с ключом корреляции. 404 означает только
+ожидание этого ID; повторного dispatch или выбора «последнего успешного» нет. Уже видимые
+repository/workflow/event/main/head SHA проверяются строго; новый dispatch принимает только
+attempt 1, смена SHA или attempt останавливает подготовку. Завершение проверяется через exact attempt endpoint,
+включая повторную корреляцию, provenance и source/base binding артефакта. Логи `SELECTED`,
+`DISPATCHED`, `CORRELATED` сохраняют проверяемые build/source/base/run/attempt pins.
+
+**Разбор сбоев 2026-11-04.** [Prepare 41886999694](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/41886999694)
+завершился `CANDIDATE_AMBIGUOUS`: CI `41884080843/1` закреплял
+`dd7d8a53c70e7025099ac2b3ecdfe34f71a0cbaa`, где одновременно есть неопубликованные
+`70753` и `70755`. Выбор максимального `ClientVersion` даёт `1.60.1.70755`; история
+не удаляется. Подписанный production-каталог при read-only проверке 2026-11-05 имеет
+active `1.60.1.70707-r1`, поэтому проверять нужно прямой переход `70707 → 70755`.
+
+[Prepare 41818577168](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/41818577168)
+завершился `DISPATCH_ID` после exact CI `41816734366/1`, хотя [staging 41818964927/1](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/41818964927)
+позже завершился успешно. Проверенный report артефакта `13316296739`
+(`ota-staging-verify-41818964927-1`, GitHub archive digest
+`sha256:c6d347d05e0b250d2f870846374adf994eb4e0b5df64ed3a20287eb850876ddf`)
+имеет `verdict=PASS`, `productionApproval=false`, `gradleExit=0`, `notExecuted=null`,
+source `5a7833e1e7fb834478bf6233cb122cd281752a4a`, base `1.60.1.70707`,
+candidate `1.60.1.70753`. Metadata run закрепляет тот же main SHA, workflow dispatch,
+attempt 1 и `display_title=ota-staging-7cd16ab30467d47a737de1564d363781e97e47c737b91d4f908ea0207111dfdc`.
+Ключ повторно вычислен по source/release/base и проверенному live base manifest
+`sha256:03309c9d7cfcb621ff97f590e4b34d5187e440a5fbf61ca41aa64dc84b7442f5`:
+он совпадает с `display_title`. Live base SHA отличается от заново собранного staging
+manifest; существующая проверка равенства файлов base сохраняется.
+Это evidence для **70753**, его нельзя переиспользовать для 70755. Оба исходных exact CI
+`41884080843/1` и `41816734366/1` повторно проверены через API: `CI`, main/push,
+completed/success, required job `checks=success`, SHA совпадают с указанными source pins.
+
+В прежнем коде `DISPATCH_ID` выдавался единственным немедленным GET после dispatch при
+несовпадении ID или title. Сырой ответ этого первого GET в старом логе не сохранён;
+запаздывание metadata — вывод из кода и последующей правильной корреляции, а не
+зафиксированное содержимое того ответа. Новая ограниченная проверка покрывает такой
+порядок появления metadata и сохраняет отказы для несовпавших pins. Формат ответа dispatch
+описан в [GitHub API](https://docs.github.com/en/rest/actions/workflows#create-a-workflow-dispatch-event).
+После merge исправления нужен новый staging → exact package → отдельный release PR для
+70755; только обычное owner approval этого PR разрешает production.
+
 Требуются **строго** `OTA_PRODUCTION_AUTOMATION_ENABLED=true` и явный `--execute`. Ручной
 workflow по умолчанию dry run; CI/webhook сам по себе не заменяет точный merged request.
 Preflight не получает production secrets. Writer подписывает только existing `tf-prod-2026a`;

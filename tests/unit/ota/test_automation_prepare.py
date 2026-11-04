@@ -435,6 +435,7 @@ def test_truncated_listing_is_not_permission_to_dispatch_again():
         ("f7c377ee8a5edd16e8e25a4e57e6c3a3345df524", "1.60.1.70532", "1.60.1.70707"),
         ("f7c377ee8a5edd16e8e25a4e57e6c3a3345df524", "1.60.1.70450", "1.60.1.70707"),
         ("f7c377ee8a5edd16e8e25a4e57e6c3a3345df524", "1.60.1.70707", None),
+        ("dd7d8a53c70e7025099ac2b3ecdfe34f71a0cbaa", "1.60.1.70707", "1.60.1.70755"),
     ],
 )
 def test_candidate_selection_never_reissues_70532_and_detects_new_committed_data(
@@ -805,3 +806,249 @@ def test_archive_supplies_github_user_agent_and_redirects_without_credentials(mo
             with pytest.raises(p.PreparationBlocked, match=code):
                 api.archive(metadata)
     assert [request.url.host for request in requests] == ["api.github.com", "storage.example.test"]
+
+
+@pytest.fixture
+def candidate_repository(tmp_path):
+    """A real committed dataset index; selection must read the supplied SHA only."""
+    repo = tmp_path / "repository"
+    repo.mkdir()
+    p.git(repo, "init", "-q")
+    manifest = json.loads(
+        p.git(ROOT, "show", f"{COMMIT}:data/normalized/forever/1.60.1.70450/manifest.json")
+    )
+
+    def commit(builds, *, invalid=None, requested=None):
+        for build in builds:
+            target = repo / "data/normalized/forever" / build / "manifest.json"
+            target.parent.mkdir(parents=True, exist_ok=True)
+            data = {**manifest, "clientBuild": build}
+            if build == invalid:
+                data["classes"] = []
+            target.write_text(json.dumps(data))
+        if requested:
+            request = repo / p.REQUEST_DIR / f"{requested}-r1.json"
+            request.parent.mkdir(parents=True, exist_ok=True)
+            request.write_text('{"owner":"kept request"}')
+        p.git(repo, "add", ".")
+        p.git(
+            repo,
+            "-c",
+            "user.name=TEST",
+            "-c",
+            "user.email=test@example.invalid",
+            "commit",
+            "-qm",
+            "committed inputs",
+        )
+        return p.git(repo, "rev-parse", "HEAD").decode().strip()
+
+    return repo, commit
+
+
+@pytest.mark.parametrize(
+    "builds,expected",
+    [
+        (["1.60.1.70707", "1.60.1.70753", "1.60.1.70755"], "1.60.1.70755"),
+        (["1.60.2.99999", "1.60.10.1"], "1.60.10.1"),
+    ],
+)
+def test_backlog_selects_newest_client_version_without_sequential_releases(
+    candidate_repository, builds, expected
+):
+    from tests.unit.ota.test_automation_public_verify import catalog_of
+
+    repo, commit = candidate_repository
+    source = commit(builds)
+    assert p.select_candidate(repo, source, catalog_of(publication())) == expected
+    assert len(list((repo / "data/normalized/forever").iterdir())) == len(builds)
+
+
+def test_invalid_newest_candidate_blocks_without_falling_back(candidate_repository):
+    from tests.unit.ota.test_automation_public_verify import catalog_of
+
+    repo, commit = candidate_repository
+    source = commit(["1.60.1.70753", "1.60.1.70755"], invalid="1.60.1.70755")
+    with pytest.raises(p.PreparationBlocked, match="CANDIDATE_INVALID"):
+        p.select_candidate(repo, source, catalog_of(publication()))
+
+
+def test_new_patch_cannot_change_selection_from_pinned_source(candidate_repository):
+    from tests.unit.ota.test_automation_public_verify import catalog_of
+
+    repo, commit = candidate_repository
+    source = commit(["1.60.1.70753", "1.60.1.70755"])
+    catalog = catalog_of(publication())
+    assert p.select_candidate(repo, source, catalog) == "1.60.1.70755"
+    newer = commit(["1.60.1.70756"])
+    assert p.select_candidate(repo, source, catalog) == "1.60.1.70755"
+    assert p.select_candidate(repo, newer, catalog) == "1.60.1.70756"
+
+
+def test_latest_committed_request_does_not_prepare_skipped_history(candidate_repository):
+    from tests.unit.ota.test_automation_public_verify import catalog_of
+
+    repo, commit = candidate_repository
+    source = commit(["1.60.1.70753", "1.60.1.70755"], requested="1.60.1.70755")
+    assert p.select_candidate(repo, source, catalog_of(publication())) is None
+    assert (repo / p.REQUEST_DIR / "1.60.1.70755-r1.json").read_text() == (
+        '{"owner":"kept request"}'
+    )
+
+
+@pytest.mark.parametrize("workflow", [p.STAGING_WORKFLOW, p.PACKAGE_WORKFLOW])
+@pytest.mark.parametrize("pending_title", [None, "", "OTA staging verification", "missing-run"])
+def test_dispatch_waits_for_correlated_metadata_of_returned_id(
+    prepared_inputs, workflow, pending_title
+):
+    fake = FakeGitHub(prepared_inputs)
+    original = fake.handler
+    reads = []
+    role = "staging" if workflow == p.STAGING_WORKFLOW else "package"
+    run_id = fake.runs[role]["id"]
+
+    def handler(req):
+        response = original(req)
+        if req.url.path.endswith(f"/actions/runs/{run_id}"):
+            reads.append(req.url.path)
+            if len(reads) <= 2:
+                if pending_title == "missing-run":
+                    return httpx.Response(404)
+                return httpx.Response(200, json={**response.json(), "display_title": pending_title})
+        return response
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        run = p.completed_run(
+            p.GitHub(client, "TEST"),
+            workflow,
+            "test-key",
+            {"revision": COMMIT},
+            sleep=lambda _: None,
+        )
+    assert run["id"] == run_id and run["run_attempt"] == 1
+    assert run["head_sha"] == COMMIT
+    assert len(reads) == 3 and len(fake.dispatched) == 1
+
+
+@pytest.mark.parametrize("fault", ["title", "id", "head", "attempt", "final-title"])
+def test_dispatch_never_accepts_uncorrelated_or_changed_run(prepared_inputs, fault):
+    fake = FakeGitHub(prepared_inputs)
+    original = fake.handler
+    run_id = fake.runs["staging"]["id"]
+    reads = []
+
+    def handler(req):
+        response = original(req)
+        if req.url.path.endswith(f"/actions/runs/{run_id}"):
+            run = response.json()
+            reads.append(run)
+            if fault == "title":
+                run["display_title"] = "ota-staging-foreign"
+            elif fault == "id":
+                run["id"] = 12345
+            elif fault == "head":
+                run["head_sha"] = "f" * 40
+            elif fault == "attempt":
+                run["display_title"] = "" if len(reads) == 1 else run["display_title"]
+                run["run_attempt"] = 1 if len(reads) == 1 else 2
+            return httpx.Response(200, json=run)
+        if fault == "final-title" and req.url.path.endswith(f"/actions/runs/{run_id}/attempts/1"):
+            return httpx.Response(200, json={**response.json(), "display_title": "foreign"})
+        return response
+
+    with (
+        httpx.Client(transport=httpx.MockTransport(handler)) as client,
+        pytest.raises((p.PreparationBlocked, p.RequestRejected)),
+    ):
+        p.completed_run(
+            p.GitHub(client, "TEST"),
+            p.STAGING_WORKFLOW,
+            "test-key",
+            {"revision": COMMIT},
+            sleep=lambda _: None,
+        )
+    assert len(fake.dispatched) == 1
+
+
+def test_main_advancing_during_preparation_cannot_replace_exact_package(prepared_inputs, tmp_path):
+    fake = FakeGitHub(prepared_inputs)
+    original = fake.handler
+    newer_main = "dd7d8a53c70e7025099ac2b3ecdfe34f71a0cbaa"
+    advanced = False
+
+    def handler(req):
+        nonlocal advanced
+        if advanced and req.url.path.endswith("/git/ref/heads/main"):
+            return httpx.Response(200, json={"object": {"sha": newer_main}})
+        response = original(req)
+        # A newer patch lands after the package dispatch captured its tooling SHA,
+        # while the run and its artifact are still being fetched/verified.
+        if req.method == "POST" and req.url.path.endswith("ota-release-package.yml/dispatches"):
+            advanced = True
+        return response
+
+    fake.handler = handler
+    first = run_prepare(fake, tmp_path / "one")
+    assert advanced
+    again = run_prepare(fake, tmp_path / "two")
+    assert first.request == again.request
+    assert first.request.source_commit == COMMIT
+    assert first.request.build == "1.60.1.70450"
+    assert first.request.artifact.archive_sha256 == prepared_inputs[0].artifact.archive_sha256
+    assert len(fake.dispatched) == 2
+
+
+def test_new_dispatch_cannot_start_from_a_rerun_attempt(prepared_inputs):
+    fake = FakeGitHub(prepared_inputs)
+    fake.runs["staging"]["run_attempt"] = 2
+    with (
+        httpx.Client(transport=httpx.MockTransport(fake.handler)) as client,
+        pytest.raises(p.PreparationBlocked, match="DISPATCH_ATTEMPT_CHANGED"),
+    ):
+        p.completed_run(
+            p.GitHub(client, "TEST"),
+            p.STAGING_WORKFLOW,
+            "test-key",
+            {"revision": COMMIT},
+            sleep=lambda _: None,
+        )
+    assert not any(path.endswith("/attempts/2") for _, path in fake.calls)
+
+
+def test_existing_run_missing_tooling_sha_has_typed_failure(prepared_inputs):
+    fake = FakeGitHub(prepared_inputs)
+    run = {**fake.runs["staging"], "display_title": "ota-staging-test-key"}
+    del run["head_sha"]
+    fake.run_list[p.STAGING_WORKFLOW] = [run]
+    with (
+        httpx.Client(transport=httpx.MockTransport(fake.handler)) as client,
+        pytest.raises(p.PreparationBlocked, match="RUN_METADATA"),
+    ):
+        p.completed_run(
+            p.GitHub(client, "TEST"),
+            p.STAGING_WORKFLOW,
+            "test-key",
+            {"revision": COMMIT},
+            sleep=lambda _: None,
+        )
+    assert fake.dispatched == []
+
+
+def test_other_build_package_cannot_replace_selected_candidate(
+    prepared_inputs, tmp_path, monkeypatch
+):
+    from tests.unit.ota.test_automation_public_verify import catalog_of
+
+    fake = FakeGitHub(prepared_inputs)
+    # Selection is covered against real committed trees above. Here the external
+    # verifier returns a correlated, internally valid package for a different build.
+    monkeypatch.setattr(p, "select_candidate", lambda *_: "1.60.1.70755")
+    catalog = catalog_of(fake.origin.objects)
+    active = catalog.releases[0]
+    key = p.correlation_key(COMMIT, "1.60.1.70755-r1", active.release_id, active.manifest_sha256)
+    fake.runs["package"]["display_title"] = f"ota-package-{key}"
+    fake.run_list[p.PACKAGE_WORKFLOW] = [fake.runs["package"]]
+    with pytest.raises(p.PreparationBlocked, match="CANDIDATE_CHANGED"):
+        run_prepare(fake, tmp_path / "out")
+    assert fake.posts == []
+    assert fake.prs == [] and fake.branch is None
