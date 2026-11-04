@@ -1738,3 +1738,38 @@ def test_rustore_lost_commit_response_is_read_back_without_second_write(tmp_path
         d.advance_rustore(api, r, apk, j)
     assert d.advance_rustore(api, r, apk, j)["status"] == "IN_REVIEW"
     assert (store.uploads, store.submissions) == (1, 1)
+
+
+def test_rustore_commit_refusal_keeps_concrete_reason_without_retry(tmp_path: Path) -> None:
+    r, apk = release_file(tmp_path)
+    store, j = DeferredRussianStore(), d.MemoryJournal()
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        if req.url.path.endswith("/commit"):
+            store.submissions += 1
+            return httpx.Response(
+                200,
+                json={"code": "error", "message": "Packages for version with id = 9 Is not found"},
+            )
+        return store.handler(req)
+
+    api = d.RuStore(httpx.Client(transport=httpx.MockTransport(handler)), "token")
+    with pytest.raises(d.DeliveryError, match="no uploaded APK"):
+        d.advance_rustore(api, r, apk, j)
+    state = d.advance_rustore(api, r, apk, j)
+    assert state["status"] == "STORE" and "no uploaded APK" in state["detail"]
+    assert j.get("rustore-submit-error")["status"] == "STORE"
+    assert j.get("rustore-submit-done") is None
+    assert (store.uploads, store.submissions) == (1, 1)
+
+
+def test_rustore_unknown_refusal_message_never_leaks_signed_values() -> None:
+    def handler(req: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200, json={"code": "error", "message": "https://private.example/path?signature=secret"}
+        )
+
+    api = d.RuStore(httpx.Client(transport=httpx.MockTransport(handler)), "token")
+    with pytest.raises(d.DeliveryError) as error:
+        api.call("POST", "/9/commit")
+    assert "secret" not in str(error.value) and "private.example" not in str(error.value)

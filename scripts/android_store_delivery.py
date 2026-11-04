@@ -597,6 +597,29 @@ class RuStore:
             )
         )
         if result.get("code") != "OK":
+            message = result.get("message")
+            # Only known public commit errors are exposed; arbitrary provider
+            # messages might contain URLs or credentials and remain redacted.
+            reasons = {
+                "Вы не загрузили APK при создании черновика": "no uploaded APK",
+                "Version must have at least one main non-HMS apk-file": "no main non-HMS APK",
+                # Preserve the exact documented provider message, including Cyrillic letters.
+                "Загрузите хотя бы один основной APK-файл с сервисом отличным от HMS": (  # noqa: RUF001
+                    "no main non-HMS APK"
+                ),
+                "Version must have not only HMS apk-file": "HMS-only APKs",
+                "Вы не можете загрузить файлы только с Huawei Mobile Services": (  # noqa: RUF001
+                    "HMS-only APKs"
+                ),
+            }
+            if suffix.endswith("/commit") and isinstance(message, str):
+                reason = reasons.get(message)
+                if re.fullmatch(
+                    r"Packages for version with id = (?:[0-9]+ )?Is not found", message
+                ):
+                    reason = "no uploaded APK"
+                if reason is not None:
+                    raise DeliveryError("STORE", "RuStore commit refused: " + reason)
             raise DeliveryError("STORE", "RuStore API refused request")
         return result
 
@@ -819,17 +842,34 @@ def advance_rustore(api: RuStore, release: Release, apk: Path, journal: Journal)
             )
         ):
             raise DeliveryError("MISMATCH", "RuStore draft identifies another APK")
+        failure = journal.get("rustore-submit-error")
+        if failure is not None:
+            status = string(failure.get("status"))
+            if set(failure) != {"status", "detail"} or status not in DeliveryError.CODES:
+                raise DeliveryError("CONTRACT", "invalid RuStore submission error receipt")
+            return {"status": status, "detail": string(failure["detail"]), "versionId": vid}
         intent = {"manifest": release.digest, "versionId": vid, "sha256": release.apk_hash}
         old_intent = journal.get("rustore-submit-intent")
         if old_intent is not None and package is not None:
             legacy = {"manifest": release.digest, "versionId": vid, "apkUid": package["apkUid"]}
             if old_intent == legacy:
                 intent = legacy
+
+        def submit() -> dict[str, Any]:
+            try:
+                api.call("POST", f"/{vid}/commit")
+            except DeliveryError as error:
+                journal.put_once(
+                    "rustore-submit-error", {"status": error.code, "detail": str(error)}
+                )
+                raise
+            return {"versionId": vid}
+
         write_once(
             journal,
             "rustore-submit",
             intent,
-            lambda: api.call("POST", f"/{vid}/commit") and {"versionId": vid},
+            submit,
         )
         return {"status": "SUBMITTED", "rawState": raw, "versionId": vid}
     if (

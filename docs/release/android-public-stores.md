@@ -385,3 +385,12 @@ checks still pass. It never repeats POST `/apk`. All other ambiguous upload
 intents stay UNKNOWN. Publication still requires later package/UID readback and
 ACTIVE at full rollout. Recovery has not yet been executed as of this record;
 both stores remain unconfirmed until their real subsequent readbacks.
+
+
+A RuStore commit refusal now also gets an immutable `rustore-submit-error` receipt.
+Documented public reasons (missing APK, missing main non-HMS APK, HMS-only APKs)
+are retained as safe categories; arbitrary response text is not printed. While
+that draft remains DRAFT, polling preserves the actual refusal or transport
+ambiguity without repeating commit. A later matching postcommit readback can
+prove acceptance if only the commit response was lost. This does not repair a
+refused or unknown upload and does not delete its original failure evidence.
