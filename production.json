@@ -3,8 +3,7 @@
   "kind": "notify-production-state",
   "notifiedRelease": "1.60.1.70707-r1",
   "failuresNotified": [
-    "ota-production/reconcile/PUBLIC_CATALOG",
     "ota-production/resign/PUBLIC_CATALOG"
   ],
-  "updatedAt": "2026-11-04T11:09:39+00:00"
+  "updatedAt": "2026-11-04T11:42:21+00:00"
 }
