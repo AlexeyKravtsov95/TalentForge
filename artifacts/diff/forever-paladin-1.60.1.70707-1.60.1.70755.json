@@ -1,0 +1,3621 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 2,
+    "token": "PALADIN",
+    "name": "Paladin"
+  },
+  "fromBuild": "1.60.1.70707",
+  "toBuild": "1.60.1.70755",
+  "fromContentHash": "sha256:a18ce4f3e32c6b5683e106d82765aa973fab4e75d4408e35676f1cbfd640e361",
+  "toContentHash": "sha256:f46b753c617536cab31eb6448ae38781441fceebea7f74d5a3e4b763f15bab97",
+  "summary": {
+    "added": 3,
+    "removed": 2,
+    "changed": 45,
+    "changesByKind": {
+      "descriptionChanged": 13,
+      "effectAdded": 4,
+      "effectBasePointsChanged": 11,
+      "effectRankValueChanged": 62,
+      "effectRemoved": 3,
+      "maxRankChanged": 9,
+      "positionChanged": 29,
+      "prerequisitesChanged": 6,
+      "renamed": 1,
+      "sectionChanged": 4,
+      "spellReplaced": 3,
+      "unlockRequirementsChanged": 42
+    }
+  },
+  "treeChanges": [],
+  "added": [
+    {
+      "nodeId": 113629,
+      "treeId": 1100,
+      "name": "Turn Evil",
+      "spellId": 1328370,
+      "sectionIndex": 2,
+      "position": {
+        "x": 9080,
+        "y": 4530,
+        "row": 4,
+        "column": 0
+      },
+      "maxRank": 2,
+      "relatedNodeId": null
+    },
+    {
+      "nodeId": 113630,
+      "treeId": 1100,
+      "name": "Divine Strength",
+      "spellId": 20262,
+      "sectionIndex": 0,
+      "position": {
+        "x": 2220,
+        "y": 2130,
+        "row": 0,
+        "column": 2
+      },
+      "maxRank": 5,
+      "relatedNodeId": null
+    },
+    {
+      "nodeId": 113631,
+      "treeId": 1100,
+      "name": "Boundless Light",
+      "spellId": 1328550,
+      "sectionIndex": 0,
+      "position": {
+        "x": 2220,
+        "y": 4530,
+        "row": 4,
+        "column": 2
+      },
+      "maxRank": 2,
+      "relatedNodeId": null
+    }
+  ],
+  "removed": [
+    {
+      "nodeId": 105629,
+      "treeId": 1100,
+      "name": "One-Handed Weapon Specialization",
+      "spellId": 20196,
+      "sectionIndex": 1,
+      "position": {
+        "x": 5620,
+        "y": 3930,
+        "row": 3,
+        "column": 1
+      },
+      "maxRank": 3,
+      "relatedNodeId": null
+    },
+    {
+      "nodeId": 110880,
+      "treeId": 1100,
+      "name": "Instrument of Law",
+      "spellId": 1311085,
+      "sectionIndex": 2,
+      "position": {
+        "x": 10280,
+        "y": 5130,
+        "row": 5,
+        "column": 2
+      },
+      "maxRank": 2,
+      "relatedNodeId": null
+    }
+  ],
+  "changed": [
+    {
+      "nodeId": 105320,
+      "treeId": 1100,
+      "name": "Light's Vigil",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105320,
+                105321,
+                105323,
+                105324,
+                105325,
+                105327,
+                105329,
+                105330,
+                105331,
+                105332,
+                105333,
+                105334,
+                105335,
+                105639,
+                110871,
+                110872,
+                110873
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105320,
+                105321,
+                105323,
+                105324,
+                105325,
+                105327,
+                105329,
+                105330,
+                105333,
+                105334,
+                105335,
+                105704,
+                110871,
+                110872,
+                110873,
+                113630,
+                113631
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130014,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Applies Light's Vigil to the target for $1310909d. Your next Holy Shock cast on them triggers no cooldown and causes enemy targets to suffer $1310914s1 Holy damage and refund $s2% of Light's Vigil's Mana cost, or allied targets to heal their party for $1310912s1. You may only have one Light's Vigil active per party.",
+          "new": "Applies Light's Vigil to a friendly target for $1310909d. The caster's next Holy Shock on the target incurs no cooldown and heals the target and their party for $1310912s1. Only one Vigil per Paladin may be active in each party."
+        }
+      ]
+    },
+    {
+      "nodeId": 105321,
+      "treeId": 1100,
+      "name": "Holy Power",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105323,
+                105324,
+                105325,
+                105327,
+                105329,
+                105330,
+                105331,
+                105332,
+                105333,
+                105334,
+                105335,
+                105639,
+                110871,
+                110872,
+                110873
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105323,
+                105324,
+                105325,
+                105327,
+                105329,
+                105330,
+                105333,
+                105334,
+                105335,
+                105704,
+                110871,
+                110872,
+                110873,
+                113630,
+                113631
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130015,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases the critical strike chance of your Holy Shock and Holy Strike spells by $m2%, and all other spells by $m1%.",
+          "new": "Increases the critical strike healing bonus of your Holy spells by $s1%."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130015,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 1,
+          "new": 10
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130015,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 2,
+          "new": 20
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130015,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 3,
+          "new": 30
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130015,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": 4,
+          "new": 40
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130015,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": 5,
+          "new": 50
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130015,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 5,
+          "new": 0
+        },
+        {
+          "kind": "effectRemoved",
+          "entryId": 130015,
+          "effectIndex": 1,
+          "rank": null,
+          "old": {
+            "index": 1,
+            "perRank": [
+              {
+                "rank": 1,
+                "value": 3
+              },
+              {
+                "rank": 2,
+                "value": 6
+              },
+              {
+                "rank": 3,
+                "value": 9
+              },
+              {
+                "rank": 4,
+                "value": 12
+              },
+              {
+                "rank": 5,
+                "value": 15
+              }
+            ],
+            "perRankStatus": "resolved",
+            "basePoints": 15,
+            "unresolvedReason": null
+          },
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 105323,
+      "treeId": 1100,
+      "name": "Holy Shock",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105325,
+                105327,
+                105329,
+                105330,
+                105331,
+                105332,
+                105333,
+                105334,
+                105335,
+                105639,
+                110871,
+                110873
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105324,
+                105325,
+                105327,
+                105329,
+                105330,
+                105333,
+                105334,
+                105335,
+                105704,
+                110871,
+                110873,
+                113630
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105324,
+      "treeId": 1100,
+      "name": "Divine Precision",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 1020,
+            "y": 4530,
+            "row": 4,
+            "column": 0
+          },
+          "new": {
+            "x": 1020,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          }
+        },
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 3,
+          "new": 2
+        },
+        {
+          "kind": "prerequisitesChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "nodeId": 105323,
+              "kind": "sufficient",
+              "name": "Holy Shock"
+            }
+          ],
+          "new": []
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105325,
+                105327,
+                105329,
+                105330,
+                105331,
+                105332,
+                105333,
+                105334,
+                105335,
+                105639,
+                110871,
+                110873
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105325,
+                105327,
+                105329,
+                105333,
+                105334,
+                105335,
+                105704,
+                110871,
+                113630
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130018,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Improves your chance to hit with Holy spells by $s1%.",
+          "new": "Improves your chance to hit with Holy spells by $s1%, and reduces the duration of Silence effects on you by $s2%."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130018,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 6,
+          "new": 4
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130018,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 12,
+          "new": 8
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130018,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 18,
+          "new": null
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130018,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 18,
+          "new": 8
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 130018,
+          "effectIndex": 1,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 1,
+            "perRank": [
+              {
+                "rank": 1,
+                "value": -10
+              },
+              {
+                "rank": 2,
+                "value": -20
+              }
+            ],
+            "perRankStatus": "resolved",
+            "basePoints": -20,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 105325,
+      "treeId": 1100,
+      "name": "Divine Favor",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 2220,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "new": {
+            "x": 1020,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105327,
+                105330,
+                105331,
+                105332,
+                105333,
+                105334,
+                105335,
+                105639,
+                110871
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105327,
+                105333,
+                105334,
+                105335,
+                110871,
+                113630
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105327,
+      "treeId": 1100,
+      "name": "Purifying Power",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 2220,
+            "y": 3330,
+            "row": 2,
+            "column": 2
+          },
+          "new": {
+            "x": 2820,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105331,
+                105332,
+                105333,
+                105334,
+                105335,
+                105639
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105335,
+                113630
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105329,
+      "treeId": 1100,
+      "name": "Illumination",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 1620,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          },
+          "new": {
+            "x": 1620,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105327,
+                105330,
+                105331,
+                105332,
+                105333,
+                105334,
+                105335,
+                105639,
+                110871
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105327,
+                105333,
+                105334,
+                105335,
+                110871,
+                113630
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105330,
+      "treeId": 1100,
+      "name": "Oath of Light",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 1020,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          },
+          "new": {
+            "x": 2220,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105331,
+                105332,
+                105333,
+                105334,
+                105335,
+                105639
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105325,
+                105327,
+                105329,
+                105333,
+                105334,
+                105335,
+                105704,
+                110871,
+                113630
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "spellReplaced",
+          "entryId": 130024,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 1310897,
+            "name": "Voice of Truth"
+          },
+          "new": {
+            "spellId": 1328548,
+            "name": "Oath of Light"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130024,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Grants you immunity to Silence and Interrupt effects for $d.",
+          "new": "Swear an Oath to protect target ally for $d, increasing the healing of your Holy Light on them by up to $s1, your Flash of Light by up to $s2, and your Holy Shock by up to $s3. Only one Oath of Light may be sworn by the Paladin at any one time."
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130024,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 100,
+          "new": 0
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130024,
+          "effectIndex": 1,
+          "rank": null,
+          "old": 100,
+          "new": 0
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130024,
+          "effectIndex": 2,
+          "rank": null,
+          "old": 100,
+          "new": 0
+        }
+      ]
+    },
+    {
+      "nodeId": 105331,
+      "treeId": 1100,
+      "name": "Unyielding Faith",
+      "changes": [
+        {
+          "kind": "sectionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 0,
+          "new": 2
+        },
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 2820,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          },
+          "new": {
+            "x": 9680,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105332,
+                105639
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105701,
+                105703,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105332,
+      "treeId": 1100,
+      "name": "Divine Intellect",
+      "changes": [
+        {
+          "kind": "sectionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 0,
+          "new": 1
+        },
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 2220,
+            "y": 2130,
+            "row": 0,
+            "column": 2
+          },
+          "new": {
+            "x": 5620,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 105333,
+      "treeId": 1100,
+      "name": "Healing Light",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105332,
+                105639
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105335,
+                113630
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105334,
+      "treeId": 1100,
+      "name": "Improved Seals",
+      "changes": [
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 3,
+          "new": 5
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105332,
+                105639
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105335,
+                113630
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130028,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 5,
+          "new": 3
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130028,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 10,
+          "new": 6
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130028,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 15,
+          "new": 9
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130028,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": null,
+          "new": 12
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130028,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": null,
+          "new": 15
+        }
+      ]
+    },
+    {
+      "nodeId": 105335,
+      "treeId": 1100,
+      "name": "Spiritual Focus",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 1620,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          },
+          "new": {
+            "x": 1620,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          }
+        },
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 2,
+          "new": 5
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105332,
+                105639
+              ]
+            }
+          ],
+          "new": []
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130029,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 35,
+          "new": 14
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130029,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 70,
+          "new": 28
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130029,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": null,
+          "new": 42
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130029,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": null,
+          "new": 56
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130029,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": null,
+          "new": 70
+        }
+      ]
+    },
+    {
+      "nodeId": 105625,
+      "treeId": 1100,
+      "name": "Templar's Bulwark",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 5620,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          },
+          "new": {
+            "x": 5020,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105626,
+                105629,
+                105630,
+                105632,
+                105633,
+                105634,
+                105636,
+                105637,
+                105638,
+                110874,
+                110875,
+                110878
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105332,
+                105626,
+                105632,
+                105637,
+                105638
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105626,
+      "treeId": 1100,
+      "name": "Redoubt",
+      "changes": [
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130350,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 4,
+          "new": 6
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130350,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 8,
+          "new": 12
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130350,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 12,
+          "new": 18
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130350,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": 16,
+          "new": 24
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130350,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": 20,
+          "new": 30
+        }
+      ]
+    },
+    {
+      "nodeId": 105627,
+      "treeId": 1100,
+      "name": "Reckoning",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105626,
+                105629,
+                105630,
+                105632,
+                105633,
+                105634,
+                105636,
+                105637,
+                105638,
+                110874,
+                110875,
+                110878
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105332,
+                105625,
+                105626,
+                105630,
+                105632,
+                105633,
+                105634,
+                105636,
+                105637,
+                105638,
+                110874,
+                110878
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105628,
+      "treeId": 1100,
+      "name": "Holy Shield",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 5620,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          },
+          "new": {
+            "x": 5620,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          }
+        },
+        {
+          "kind": "prerequisitesChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "nodeId": 105625,
+              "kind": "sufficient",
+              "name": "Templar's Bulwark"
+            }
+          ],
+          "new": []
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105625,
+                105626,
+                105627,
+                105628,
+                105629,
+                105630,
+                105632,
+                105633,
+                105634,
+                105636,
+                105637,
+                105638,
+                110874,
+                110875,
+                110878,
+                110879
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105332,
+                105625,
+                105626,
+                105630,
+                105632,
+                105633,
+                105634,
+                105636,
+                105637,
+                105638,
+                110874,
+                110878
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130352,
+          "effectIndex": 1,
+          "rank": null,
+          "old": 110,
+          "new": 75
+        }
+      ]
+    },
+    {
+      "nodeId": 105630,
+      "treeId": 1100,
+      "name": "Toughness",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 5620,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          },
+          "new": {
+            "x": 6820,
+            "y": 3330,
+            "row": 2,
+            "column": 3
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105332,
+                105626,
+                105632,
+                105637,
+                105638
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105632,
+      "treeId": 1100,
+      "name": "Sacred Duty",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 6820,
+            "y": 3330,
+            "row": 2,
+            "column": 3
+          },
+          "new": {
+            "x": 6820,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105626,
+                105630,
+                105636,
+                105637,
+                105638
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105332,
+                105626
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130356,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases your total Stamina by $s1% and reduces the cooldown of your Divine Shield, Divine Protection, and Templar's Bulwark spells by ${$m2/-1000} sec.",
+          "new": "Reduces the cooldown of your Divine Shield, Divine Protection, and Templar's Bulwark spells by ${$m2/-1000} sec, and reduces the duration of Forbearance by ${$m1/-1000} sec."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130356,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 2,
+          "new": -5000
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130356,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 4,
+          "new": -10000
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130356,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 4,
+          "new": -10000
+        }
+      ]
+    },
+    {
+      "nodeId": 105633,
+      "treeId": 1100,
+      "name": "Improved Hammer of Justice",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 6220,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "new": {
+            "x": 5620,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105626,
+                105630,
+                105632,
+                105634,
+                105636,
+                105637,
+                105638,
+                110874,
+                110875
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105332,
+                105626,
+                105632,
+                105637,
+                105638
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105634,
+      "treeId": 1100,
+      "name": "Improved Righteous Fury",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 5620,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "new": {
+            "x": 5620,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105626,
+                105630,
+                105636,
+                105637,
+                105638
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105332,
+                105625,
+                105626,
+                105630,
+                105632,
+                105633,
+                105637,
+                105638,
+                110874
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130358,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": -2,
+          "new": -3
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130358,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": -4,
+          "new": -6
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130358,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": -6,
+          "new": -9
+        }
+      ]
+    },
+    {
+      "nodeId": 105636,
+      "treeId": 1100,
+      "name": "Anticipation",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 6820,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          },
+          "new": {
+            "x": 6220,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105626,
+                105630
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105332,
+                105625,
+                105626,
+                105630,
+                105632,
+                105633,
+                105637,
+                105638,
+                110874
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105637,
+      "treeId": 1100,
+      "name": "Guardian's Favor",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105626,
+                105630
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105332,
+                105626
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105638,
+      "treeId": 1100,
+      "name": "Precision",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105626,
+                105630
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105332,
+                105626
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105639,
+      "treeId": 1100,
+      "name": "Stoicism",
+      "changes": [
+        {
+          "kind": "sectionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 0,
+          "new": 1
+        },
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 1620,
+            "y": 2130,
+            "row": 0,
+            "column": 1
+          },
+          "new": {
+            "x": 5020,
+            "y": 4530,
+            "row": 4,
+            "column": 0
+          }
+        },
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 5,
+          "new": 2
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105332,
+                105625,
+                105626,
+                105630,
+                105632,
+                105633,
+                105634,
+                105636,
+                105637,
+                105638,
+                110874,
+                110878
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "spellReplaced",
+          "entryId": 130363,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 20262,
+            "name": "Divine Strength"
+          },
+          "new": {
+            "spellId": 1328546,
+            "name": "Stoicism"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130363,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases your Strength by $s1%.",
+          "new": "Reduces the duration of Stun and Charm effects on you by $s1%."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130363,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 2,
+          "new": -10
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130363,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 4,
+          "new": -20
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130363,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 6,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130363,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": 8,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130363,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": 10,
+          "new": null
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130363,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 2,
+          "new": -20
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 130363,
+          "effectIndex": 1,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 1,
+            "perRank": [
+              {
+                "rank": 1,
+                "value": -10
+              },
+              {
+                "rank": 2,
+                "value": -20
+              }
+            ],
+            "perRankStatus": "resolved",
+            "basePoints": -20,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 105692,
+      "treeId": 1100,
+      "name": "Unsealed Wrath",
+      "changes": [
+        {
+          "kind": "prerequisitesChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [],
+          "new": [
+            {
+              "nodeId": 105694,
+              "kind": "sufficient",
+              "name": "Repentance"
+            }
+          ]
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105692,
+                105693,
+                105694,
+                105696,
+                105697,
+                105698,
+                105699,
+                105700,
+                105701,
+                105702,
+                105703,
+                105704,
+                105705,
+                105706,
+                105707,
+                110880,
+                110882
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105331,
+                105692,
+                105693,
+                105694,
+                105696,
+                105697,
+                105698,
+                105699,
+                105700,
+                105701,
+                105702,
+                105703,
+                105705,
+                105706,
+                105707,
+                110882,
+                113629
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "renamed",
+          "entryId": 130421,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Twist of Light",
+          "new": "Unsealed Wrath"
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130421,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Reduces the Mana cost of your Seal spells by $s1%, and when you replace your Seal of Command, Seal of Righteousness, Seal of Fury, or Seal of Justice with a different Seal, you gain an Echo of that Seal. Your next melee attack applies the replaced Seal's effects, consuming the Echo.",
+          "new": "Your melee attacks store a copy of your active Seal for $1311701d, stacking up to $1311701u times. Landing an attack with a different Seal consumes all stacks, giving the stored Seal its normal chance to activate once per stack."
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130421,
+          "effectIndex": 0,
+          "rank": null,
+          "old": -20,
+          "new": 0
+        }
+      ]
+    },
+    {
+      "nodeId": 105693,
+      "treeId": 1100,
+      "name": "Vengeance",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 9680,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          },
+          "new": {
+            "x": 10280,
+            "y": 4530,
+            "row": 4,
+            "column": 2
+          }
+        },
+        {
+          "kind": "prerequisitesChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "nodeId": 105701,
+              "kind": "sufficient",
+              "name": "Sanctified Judgement"
+            }
+          ],
+          "new": [
+            {
+              "nodeId": 105696,
+              "kind": "sufficient",
+              "name": "Seal of Command"
+            }
+          ]
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105696,
+                105698,
+                105699,
+                105700,
+                105701,
+                105702,
+                105703,
+                105704,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105331,
+                105696,
+                105697,
+                105698,
+                105699,
+                105700,
+                105701,
+                105702,
+                105703,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105694,
+      "treeId": 1100,
+      "name": "Repentance",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 10280,
+            "y": 4530,
+            "row": 4,
+            "column": 2
+          },
+          "new": {
+            "x": 9680,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105696,
+                105698,
+                105699,
+                105700,
+                105701,
+                105702,
+                105703,
+                105704,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105331,
+                105696,
+                105697,
+                105698,
+                105699,
+                105700,
+                105701,
+                105702,
+                105703,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105696,
+      "treeId": 1100,
+      "name": "Seal of Command",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105703,
+                105704,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105701,
+                105703,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105697,
+      "treeId": 1100,
+      "name": "Two-Handed Weapon Specialization",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 9080,
+            "y": 4530,
+            "row": 4,
+            "column": 0
+          },
+          "new": {
+            "x": 10880,
+            "y": 3930,
+            "row": 3,
+            "column": 3
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105696,
+                105698,
+                105699,
+                105700,
+                105701,
+                105702,
+                105703,
+                105704,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105331,
+                105696,
+                105699,
+                105701,
+                105702,
+                105703,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130426,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases the damage you deal with two-handed melee weapons by $s1%.",
+          "new": "Increases the physical damage you deal by $s1%, and reduces all threat you generate by $m2% while a two-handed melee weapon is equipped."
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 130426,
+          "effectIndex": 1,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 1,
+            "perRank": [
+              {
+                "rank": 1,
+                "value": -7
+              },
+              {
+                "rank": 2,
+                "value": -14
+              },
+              {
+                "rank": 3,
+                "value": -20
+              }
+            ],
+            "perRankStatus": "resolved",
+            "basePoints": -20,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 105698,
+      "treeId": 1100,
+      "name": "Eye for an Eye",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105696,
+                105699,
+                105701,
+                105702,
+                105703,
+                105704,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105331,
+                105696,
+                105699,
+                105701,
+                105702,
+                105703,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105699,
+      "treeId": 1100,
+      "name": "Pursuit of Justice",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105703,
+                105704,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105701,
+                105703,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105700,
+      "treeId": 1100,
+      "name": "Sacred Arbiter",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 10280,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "new": {
+            "x": 9680,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105696,
+                105699,
+                105701,
+                105702,
+                105703,
+                105704,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105331,
+                105696,
+                105699,
+                105701,
+                105702,
+                105703,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105701,
+      "treeId": 1100,
+      "name": "Sanctified Judgement",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 9680,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "new": {
+            "x": 10280,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105703,
+                105704,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105706,
+                105707
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105702,
+      "treeId": 1100,
+      "name": "Vindication",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105703,
+                105704,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105701,
+                105703,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130431,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Gives your damaging melee attacks a chance to reduce the target's Attack Power by ${$m1/-3*$440667m1}, and increase your Attack Power by $m1% for $440667d.",
+          "new": "Gives your damaging melee attacks a chance to reduce the target's Attack Power by ${$m1/-3*$440667m1} for $440667d."
+        }
+      ]
+    },
+    {
+      "nodeId": 105703,
+      "treeId": 1100,
+      "name": "Conviction",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 10280,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "new": {
+            "x": 9680,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          }
+        },
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 5,
+          "new": 3
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130432,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Improves your chance to get a critical strike with melee attacks by $s1%.",
+          "new": "Improves your chance to get a critical strike with all spells and attacks by $m1%."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130432,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 1,
+          "new": 2
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130432,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 2,
+          "new": 4
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130432,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 3,
+          "new": 6
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130432,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": 4,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130432,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": 5,
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 105704,
+      "treeId": 1100,
+      "name": "Holy Conduit",
+      "changes": [
+        {
+          "kind": "sectionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 2,
+          "new": 0
+        },
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 9680,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          },
+          "new": {
+            "x": 2220,
+            "y": 3330,
+            "row": 2,
+            "column": 2
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105706,
+                105707
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105327,
+                105333,
+                105334,
+                105335,
+                110871,
+                113630
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 110871,
+      "treeId": 1100,
+      "name": "Reverence",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 1620,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "new": {
+            "x": 1620,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          }
+        },
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 3,
+          "new": 2
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105331,
+                105332,
+                105333,
+                105334,
+                105335,
+                105639
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105335,
+                113630
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137869,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 10,
+          "new": 15
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137869,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 20,
+          "new": 30
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137869,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 30,
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 110872,
+      "treeId": 1100,
+      "name": "Consecrated Ground",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 2220,
+            "y": 4530,
+            "row": 4,
+            "column": 2
+          },
+          "new": {
+            "x": 1020,
+            "y": 4530,
+            "row": 4,
+            "column": 0
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105325,
+                105327,
+                105329,
+                105330,
+                105331,
+                105332,
+                105333,
+                105334,
+                105335,
+                105639,
+                110871,
+                110873
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105324,
+                105325,
+                105327,
+                105329,
+                105330,
+                105333,
+                105334,
+                105335,
+                105704,
+                110871,
+                110873,
+                113630
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 110873,
+      "treeId": 1100,
+      "name": "Infusion of Light",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 1020,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          },
+          "new": {
+            "x": 1620,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105327,
+                105330,
+                105331,
+                105332,
+                105333,
+                105334,
+                105335,
+                105639,
+                110871
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105325,
+                105327,
+                105329,
+                105333,
+                105334,
+                105335,
+                105704,
+                110871,
+                113630
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 110874,
+      "treeId": 1100,
+      "name": "Shield Specialization",
+      "changes": [
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 3,
+          "new": 2
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105626,
+                105630,
+                105636,
+                105637,
+                105638
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105332,
+                105626,
+                105632,
+                105637,
+                105638
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137872,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 10,
+          "new": 15
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137872,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 20,
+          "new": 30
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137872,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 30,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137872,
+          "effectIndex": 1,
+          "rank": 1,
+          "old": 33,
+          "new": 50
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137872,
+          "effectIndex": 1,
+          "rank": 2,
+          "old": 66,
+          "new": 100
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137872,
+          "effectIndex": 1,
+          "rank": 3,
+          "old": 100,
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 110875,
+      "treeId": 1100,
+      "name": "Shieldsworn",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 5030,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          },
+          "new": {
+            "x": 5620,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          }
+        },
+        {
+          "kind": "prerequisitesChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [],
+          "new": [
+            {
+              "nodeId": 105628,
+              "kind": "sufficient",
+              "name": "Holy Shield"
+            }
+          ]
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105626,
+                105630,
+                105636,
+                105637,
+                105638
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105332,
+                105625,
+                105626,
+                105627,
+                105628,
+                105630,
+                105632,
+                105633,
+                105634,
+                105636,
+                105637,
+                105638,
+                105639,
+                110874,
+                110875,
+                110878,
+                110879
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "spellReplaced",
+          "entryId": 137873,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 1314103,
+            "name": "Improved Seal of Fury"
+          },
+          "new": {
+            "spellId": 1328544,
+            "name": "Shieldsworn"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 137873,
+          "effectIndex": null,
+          "rank": null,
+          "old": "When Seal of Fury's shield is fully absorbed, restore $m1 Mana, increased by $m2% per level the attacker is above you, up to ${$m2*$m3}%.",
+          "new": "Reduces the cooldown of your Holy Strike ability by ${$m1/-1000} sec. Additionally, Holy Strike now strikes with your shield, triggering your active Holy Shield and Shield Specialization talents without consuming their charges or triggering their cooldowns, and allowing you to Block spells for $1328551d."
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 137873,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 0,
+          "new": -4000
+        },
+        {
+          "kind": "effectRemoved",
+          "entryId": 137873,
+          "effectIndex": 1,
+          "rank": null,
+          "old": {
+            "index": 1,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 15,
+            "unresolvedReason": null
+          },
+          "new": null
+        },
+        {
+          "kind": "effectRemoved",
+          "entryId": 137873,
+          "effectIndex": 2,
+          "rank": null,
+          "old": {
+            "index": 2,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 3,
+            "unresolvedReason": null
+          },
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 110878,
+      "treeId": 1100,
+      "name": "Swift Judgement",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 5030,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          },
+          "new": {
+            "x": 5020,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          }
+        },
+        {
+          "kind": "prerequisitesChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "nodeId": 110875,
+              "kind": "sufficient",
+              "name": "Improved Seal of Fury"
+            }
+          ],
+          "new": [
+            {
+              "nodeId": 105625,
+              "kind": "sufficient",
+              "name": "Templar's Bulwark"
+            }
+          ]
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105626,
+                105630,
+                105632,
+                105634,
+                105636,
+                105637,
+                105638,
+                110874,
+                110875
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105332,
+                105625,
+                105626,
+                105630,
+                105632,
+                105633,
+                105637,
+                105638,
+                110874
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 137876,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Finishes the remaining cooldown on your Judgement ability and reduces the Mana cost of your next Judgement by $s1%.",
+          "new": "Unleash the energy of a Seal spell upon an enemy. Does not consume the Seal. Refer to individual Seals for Judgement effect. Does not share a cooldown with your Judgement ability."
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 137876,
+          "effectIndex": 0,
+          "rank": null,
+          "old": -100,
+          "new": 0
+        }
+      ]
+    },
+    {
+      "nodeId": 110879,
+      "treeId": 1100,
+      "name": "Iron Creed",
+      "changes": [
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 5,
+          "new": 3
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105625,
+                105626,
+                105627,
+                105629,
+                105630,
+                105632,
+                105633,
+                105634,
+                105636,
+                105637,
+                105638,
+                110874,
+                110875,
+                110878
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105332,
+                105625,
+                105626,
+                105627,
+                105628,
+                105630,
+                105632,
+                105633,
+                105634,
+                105636,
+                105637,
+                105638,
+                105639,
+                110874,
+                110878
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137877,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 5,
+          "new": 10
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137877,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 10,
+          "new": 20
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137877,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 15,
+          "new": 30
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137877,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": 20,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137877,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": 25,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137877,
+          "effectIndex": 1,
+          "rank": 1,
+          "old": 2,
+          "new": -2
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137877,
+          "effectIndex": 1,
+          "rank": 2,
+          "old": 4,
+          "new": -4
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137877,
+          "effectIndex": 1,
+          "rank": 3,
+          "old": 6,
+          "new": -6
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137877,
+          "effectIndex": 1,
+          "rank": 4,
+          "old": 8,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137877,
+          "effectIndex": 1,
+          "rank": 5,
+          "old": 10,
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 110882,
+      "treeId": 1100,
+      "name": "Champion of the Light",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 9680,
+            "y": 5130,
+            "row": 5,
+            "column": 1
+          },
+          "new": {
+            "x": 10280,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          }
+        },
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 3,
+          "new": 5
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105693,
+                105694,
+                105696,
+                105697,
+                105698,
+                105699,
+                105700,
+                105701,
+                105702,
+                105703,
+                105704,
+                105705,
+                105706,
+                105707
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105331,
+                105693,
+                105694,
+                105696,
+                105697,
+                105698,
+                105699,
+                105700,
+                105701,
+                105702,
+                105703,
+                105705,
+                105706,
+                105707,
+                113629
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 137880,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases your spell damage by up to $m1% of your Intellect.",
+          "new": "Increases your spell damage by up to $m1% of your Intellect, and reduces the cast time of your Hammer of Wrath by ${$m2/-1000}.1 sec."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137880,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 20,
+          "new": 12
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137880,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 40,
+          "new": 24
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137880,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 60,
+          "new": 36
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137880,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": null,
+          "new": 48
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137880,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": null,
+          "new": 60
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 137880,
+          "effectIndex": 1,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 1,
+            "perRank": [
+              {
+                "rank": 1,
+                "value": -200
+              },
+              {
+                "rank": 2,
+                "value": -400
+              },
+              {
+                "rank": 3,
+                "value": -600
+              },
+              {
+                "rank": 4,
+                "value": -800
+              },
+              {
+                "rank": 5,
+                "value": -1000
+              }
+            ],
+            "perRankStatus": "resolved",
+            "basePoints": -1000,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "clientBuild": "1.60.1.70755",
+  "generatedAt": "2026-11-04T13:49:15Z",
+  "source": "wago.tools",
+  "classes": [
+    {
+      "token": "WARRIOR",
+      "file": "warrior.json",
+      "treeIds": [
+        1117
+      ],
+      "contentHash": "sha256:69c2aa8b41e3918d4c0f67f243b99c570fafbc0bd65b275a67b04c534ecce9a6",
+      "validation": {
+        "errors": 0,
+        "warnings": 0,
+        "warningsByCode": {}
+      }
+    },
+    {
+      "token": "PALADIN",
+      "file": "paladin.json",
+      "treeIds": [
+        1100
+      ],
+      "contentHash": "sha256:f46b753c617536cab31eb6448ae38781441fceebea7f74d5a3e4b763f15bab97",
+      "validation": {
+        "errors": 0,
+        "warnings": 0,
+        "warningsByCode": {}
+      }
+    },
+    {
+      "token": "HUNTER",
+      "file": "hunter.json",
+      "treeIds": [
+        1091
+      ],
+      "contentHash": "sha256:daec937a54fd48b0613a89bd799c3815f08104e6b29c98286fb39288cf5ddc93",
+      "validation": {
+        "errors": 0,
+        "warnings": 4,
+        "warningsByCode": {
+          "DUPLICATE_SPELL_IDENTITY": 1,
+          "OFF_GRID_NODE": 2,
+          "SUFFICIENT_PREREQUISITE_CYCLE": 1
+        }
+      }
+    },
+    {
+      "token": "ROGUE",
+      "file": "rogue.json",
+      "treeIds": [
+        1111
+      ],
+      "contentHash": "sha256:df863036e3787728c5bb959f56ed4677953537df463f8d765315752edaa659d9",
+      "validation": {
+        "errors": 0,
+        "warnings": 2,
+        "warningsByCode": {
+          "INCOMPLETE_RANK_CURVE": 1,
+          "UNRESOLVED_CONDITION": 1
+        }
+      }
+    },
+    {
+      "token": "PRIEST",
+      "file": "priest.json",
+      "treeIds": [
+        1114
+      ],
+      "contentHash": "sha256:49c37cef7b4cbace506fca493bf38e9c87189934e709cf0d4e27737cb714611e",
+      "validation": {
+        "errors": 0,
+        "warnings": 2,
+        "warningsByCode": {
+          "DUPLICATE_SPELL_IDENTITY": 1,
+          "OFF_GRID_NODE": 1
+        }
+      }
+    },
+    {
+      "token": "SHAMAN",
+      "file": "shaman.json",
+      "treeIds": [
+        1082
+      ],
+      "contentHash": "sha256:eca0c3dd5dc120dbee7427c1763795310d09ebc594f5781fa8370469e2a83b66",
+      "validation": {
+        "errors": 0,
+        "warnings": 0,
+        "warningsByCode": {}
+      }
+    },
+    {
+      "token": "MAGE",
+      "file": "mage.json",
+      "treeIds": [
+        1112
+      ],
+      "contentHash": "sha256:a9787943c3b0a57a40c20a4ec5147605ae184ec213c21fc11ad133bdbe4048b7",
+      "validation": {
+        "errors": 0,
+        "warnings": 0,
+        "warningsByCode": {}
+      }
+    },
+    {
+      "token": "WARLOCK",
+      "file": "warlock.json",
+      "treeIds": [
+        1116
+      ],
+      "contentHash": "sha256:a49e47838c4c5e7d9f411c0a7cc1ca040c67543636d32d680d5f18ef8abada1a",
+      "validation": {
+        "errors": 0,
+        "warnings": 2,
+        "warningsByCode": {
+          "OFF_GRID_NODE": 2
+        }
+      }
+    },
+    {
+      "token": "DRUID",
+      "file": "druid.json",
+      "treeIds": [
+        1089
+      ],
+      "contentHash": "sha256:64adb9c2ddd83437f71d66614576fed49c01edeb562ff542508a08f4c28d81d4",
+      "validation": {
+        "errors": 0,
+        "warnings": 0,
+        "warningsByCode": {}
+      }
+    }
+  ]
+}
