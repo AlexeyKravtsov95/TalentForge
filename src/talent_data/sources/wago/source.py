@@ -147,14 +147,15 @@ class WagoDb2Source:
         network failures, 5xx and anything else are UNKNOWN. Offline, only the cache and
         the recorded snapshot count."""
         directory = self._cache_root / str(version)
-        if is_valid_cache_entry(self.table_path(version, table)):
-            if table in read_snapshot(directory):
-                raise SourceError(
-                    f"{table} for {version} is cached but {snapshot_path(directory)} records "
-                    "it absent"
-                )
-            return TableAvailability(table, TableStatus.PRESENT, f"{self.name}: cached CSV")
+        path = self.table_path(version, table)
         recorded = read_snapshot(directory).get(table)
+        if path.is_file() and recorded is not None:
+            raise SourceError(
+                f"{table} for {version}: {path} exists but {snapshot_path(directory)} records "
+                "it absent"
+            )
+        if is_valid_cache_entry(path):
+            return TableAvailability(table, TableStatus.PRESENT, f"{self.name}: cached CSV")
         if recorded is not None:
             return recorded
         if self._offline or self._http is None:
@@ -170,6 +171,11 @@ class WagoDb2Source:
         except SourceError as exc:
             cause = exc.__cause__
             if isinstance(cause, DownloadError) and _is_table_not_found(cause):
+                if path.is_file():
+                    raise SourceError(
+                        f"{table} for {version}: {path} exists but {self.name} reports "
+                        "the table absent"
+                    ) from exc
                 evidence = (
                     f"{self.name}: GET /db2/{table}/csv?build={version} -> HTTP "
                     f'{cause.status_code} {{"errors": "Table not found."}}'

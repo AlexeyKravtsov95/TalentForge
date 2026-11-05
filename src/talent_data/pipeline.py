@@ -15,7 +15,11 @@ from pathlib import Path
 
 from talent_data.db2 import tables as t
 from talent_data.db2.dataset import TraitDataSet
-from talent_data.db2.tables import MUST_BE_ABSENT_TABLES, TRAIT_TABLES
+from talent_data.db2.tables import (
+    MUST_BE_ABSENT_TABLES,
+    OPTIONALLY_ABSENT_TRAIT_TABLES,
+    TRAIT_TABLES,
+)
 from talent_data.diff.engine import diff_documents
 from talent_data.diff.models import DatasetClassDiff, DatasetDiffReport, DiffReport, DiffSummary
 from talent_data.games import GameConfig
@@ -37,6 +41,7 @@ from talent_data.sources.base import (
     Db2Source,
     SourceError,
     TableAvailability,
+    TableStatus,
     latest_build,
 )
 from talent_data.validation.validators import ValidationReport, validate_document
@@ -77,6 +82,14 @@ def fetch_tables(
 ) -> list[str]:
     fetched = []
     for table in tables:
+        if table in OPTIONALLY_ABSENT_TRAIT_TABLES:
+            availability = source.table_status(version, table)
+            if availability.status is TableStatus.ABSENT:
+                continue
+            if availability.status is TableStatus.UNKNOWN:
+                raise SourceError(
+                    f"{table} for {version}: availability is unknown: {availability.evidence}"
+                )
         source.ensure_table(version, table)
         fetched.append(table)
         if progress:
