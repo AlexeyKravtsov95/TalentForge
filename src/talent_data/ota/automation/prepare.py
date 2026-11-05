@@ -324,31 +324,33 @@ def select_candidate(repo: Path, source: str, catalog: OtaCatalog) -> str | None
         .decode()
         .splitlines()
     )
-    candidates = []
-    for build in builds:
-        version = ClientVersion.parse(build)
-        if (
-            version <= ClientVersion.parse(active.client_build)
-            or build in published
-            or f"{build}-r1" == ALREADY_PUBLISHED
-        ):
-            continue
-        raw = git(repo, "show", f"{source}:data/normalized/forever/{build}/manifest.json")
-        manifest = parse_strict(DatasetManifest, raw)
-        same(manifest.game, "forever", "CANDIDATE_IDENTITY", "game")
-        same(manifest.client_build, build, "CANDIDATE_IDENTITY", "build")
-        same(obj(strict_json(raw)).get("schemaVersion"), 1, "CANDIDATE_SCHEMA", "schemaVersion")
-        require(
-            bool(manifest.classes) and all(c.validation.errors == 0 for c in manifest.classes),
-            "CANDIDATE_INVALID",
-            "candidate has validation errors or no classes",
-        )
-        # A merged release request is already proposed, not a reason for another package.
-        if git(repo, "show", f"{source}:{REQUEST_DIR}/{build}-r1.json", missing_ok=True):
-            continue
-        candidates.append(build)
-    require(len(candidates) <= 1, "CANDIDATE_AMBIGUOUS", "more than one unlisted newer build")
-    return candidates[0] if candidates else None
+    candidates = [
+        build
+        for build in builds
+        if ClientVersion.parse(build) > ClientVersion.parse(active.client_build)
+        and build not in published
+        and f"{build}-r1" != ALREADY_PUBLISHED
+    ]
+    if not candidates:
+        return None
+    # Select before validation: failure of the newest build must never silently
+    # fall back to skipped history. Every read uses the successful CI's source SHA.
+    build = max(candidates, key=ClientVersion.parse)
+    raw = git(repo, "show", f"{source}:data/normalized/forever/{build}/manifest.json")
+    manifest = parse_strict(DatasetManifest, raw)
+    same(manifest.game, "forever", "CANDIDATE_IDENTITY", "game")
+    same(manifest.client_build, build, "CANDIDATE_IDENTITY", "build")
+    same(obj(strict_json(raw)).get("schemaVersion"), 1, "CANDIDATE_SCHEMA", "schemaVersion")
+    require(
+        bool(manifest.classes) and all(c.validation.errors == 0 for c in manifest.classes),
+        "CANDIDATE_INVALID",
+        "candidate has validation errors or no classes",
+    )
+    # A merged request already owns this release. Do not replace it or start
+    # publishing older skipped builds while it awaits approval/recovery.
+    if git(repo, "show", f"{source}:{REQUEST_DIR}/{build}-r1.json", missing_ok=True):
+        return None
+    return build
 
 
 def correlation_key(source: str, release: str, base: str, base_sha: str) -> str:
@@ -405,26 +407,39 @@ def completed_run(
             )
         )
         dispatched_id = positive(dispatched.get("workflow_run_id"))
-        found = [obj(api.repo("GET", f"/actions/runs/{dispatched_id}"))]
-        same(found[0].get("id"), dispatched_id, "DISPATCH_ID", "returned run id")
-        same(found[0].get("display_title"), label, "DISPATCH_ID", "run correlation")
-    if dispatched_head is not None:
-        same(
-            found[0].get("head_sha"),
-            dispatched_head,
-            "DISPATCH_HEAD_CHANGED",
-            "workflow tooling SHA",
-        )
+        print(f"DISPATCHED: workflow={workflow} run={dispatched_id} head={dispatched_head}")
+        # The dispatch response pins the ID, but its metadata/run-name can lag.
+        # Poll that ID only; never redispatch or substitute a run from a listing.
+        for _ in range(40):
+            metadata = api.repo("GET", f"/actions/runs/{dispatched_id}", missing_ok=True)
+            if metadata is not None:
+                run = obj(metadata)
+                same(run.get("id"), dispatched_id, "DISPATCH_ID", "returned run id")
+                same(run.get("head_sha"), dispatched_head, "DISPATCH_HEAD_CHANGED", "tooling SHA")
+                for field, expected in {
+                    "path": workflow,
+                    "event": "workflow_dispatch",
+                    "head_branch": "main",
+                }.items():
+                    same(run.get(field), expected, "DISPATCH_ORIGIN", field)
+                for field in ("repository", "head_repository"):
+                    same(obj(run.get(field)).get("full_name"), REPOSITORY, "DISPATCH_ORIGIN", field)
+                same(run.get("run_attempt"), 1, "DISPATCH_ATTEMPT_CHANGED", "new run attempt")
+                if run.get("display_title") == label:
+                    found = [run]
+                    break
+            sleep(3)
+        require(bool(found), "DISPATCH_METADATA_TIMEOUT", "returned run did not correlate in time")
     run_id, attempt = positive(found[0].get("id")), positive(found[0].get("run_attempt"))
+    head = found[0].get("head_sha")
+    require(isinstance(head, str), "RUN_METADATA", "missing tooling SHA")
+    assert isinstance(head, str)
+    pin = RunPin(workflow_path=workflow, run_id=run_id, attempt=attempt, head_sha=head)
+    print(f"CORRELATED: workflow={workflow} run={run_id} attempt={attempt} head={pin.head_sha}")
     for _ in range(280):
         run = api.run(run_id, attempt)
+        same(run.get("display_title"), label, "RUN_CORRELATION", "completed run correlation")
         if run.get("status") == "completed":
-            pin = RunPin(
-                workflow_path=workflow,
-                run_id=run_id,
-                attempt=attempt,
-                head_sha=str(run.get("head_sha")),
-            )
             return _run(run, pin, workflow)
         sleep(15)
     raise PreparationBlocked("RUN_TIMEOUT", "workflow did not complete within budget")
@@ -774,6 +789,10 @@ def prepare_request(
     require(catalog == verified_catalog, "BASE_CHANGED", "production changed before staging")
     release = f"{candidate}-r1"
     active = next(r for r in catalog.releases if r.release_id == catalog.active_release_id)
+    print(
+        f"SELECTED: build={candidate} source={source} base={active.release_id} "
+        f"baseManifest={active.manifest_sha256}"
+    )
     key = correlation_key(source, release, active.release_id, active.manifest_sha256)
     frozen = read_tag(api, "ota-package/" + key, source)
     kept = api.content(f"{REQUEST_DIR}/{release}.json", f"ota-release/{release}")
@@ -919,6 +938,8 @@ def prepare_request(
             archive_bytes=archive,
             package=package,
         )
+    same(proposal.request.build, candidate, "CANDIDATE_CHANGED", "selected build")
+    same(proposal.request.release_id, release, "CANDIDATE_CHANGED", "selected release")
     # Independently persist the exact request even if the App job never starts.
     write_tag(
         api,
