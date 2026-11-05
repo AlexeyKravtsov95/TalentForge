@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "repository": "AlexeyKravtsov95/TalentForge",
+  "game": "forever",
+  "build": "1.60.1.70790",
+  "revision": 1,
+  "releaseId": "1.60.1.70790-r1",
+  "sourceCommit": "4c0d07c35b540a7f6c56ce879842bffb60e862d7",
+  "createdAt": "2026-11-05T05:37:06Z",
+  "manifestSha256": "sha256:9bbb092265fa9ead48a8e27b54021636230e88d848b0bc8192a6140d89bf7a91",
+  "baseReleaseId": "1.60.1.70707-r1",
+  "baseManifestSha256": "sha256:03309c9d7cfcb621ff97f590e4b34d5187e440a5fbf61ca41aa64dc84b7442f5",
+  "stagingRun": {
+    "workflowPath": ".github/workflows/ota-staging-verify.yml",
+    "runId": 41977231438,
+    "attempt": 1,
+    "headSha": "4c0d07c35b540a7f6c56ce879842bffb60e862d7"
+  },
+  "packageRun": {
+    "workflowPath": ".github/workflows/ota-release-package.yml",
+    "runId": 41977792095,
+    "attempt": 1,
+    "headSha": "4c0d07c35b540a7f6c56ce879842bffb60e862d7"
+  },
+  "artifact": {
+    "artifactId": 13392730872,
+    "name": "ota-release-package-41977792095-1",
+    "archiveSha256": "sha256:4d56943990d080b29b2cbdc5812d3b6d1f511807733a6a246c9363e494631627"
+  }
+}
