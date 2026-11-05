@@ -20,10 +20,10 @@ import pytest
 
 from talent_data.cli.main import main
 from talent_data.db2.dataset import TraitDataSet
-from talent_data.db2.tables import MUST_BE_ABSENT_TABLES, RANK_COST_EXTENSION_TABLES
+from talent_data.db2.tables import MUST_BE_ABSENT_TABLES, RANK_COST_EXTENSION_TABLES, TRAIT_TABLES
 from talent_data.games import get_game
 from talent_data.normalization.normalizer import NormalizationError
-from talent_data.pipeline import normalize_batch, probe_table_status
+from talent_data.pipeline import fetch_tables, normalize_batch, probe_table_status
 from talent_data.sources.base import SourceError, TableAvailability, TableStatus
 from talent_data.sources.capabilities import SNAPSHOT_FILE, read_snapshot, record_absent
 from talent_data.sources.http import HttpClient, HttpConfig
@@ -82,7 +82,8 @@ def test_captured_builds_prove_absence_and_normalize(class_key: str, build: Clie
         assert f"build={build}" in availability.evidence
         assert "Table not found." in availability.evidence
     dataset = TraitDataSet.load(source, build)
-    assert {a.status for a in dataset.table_status.values()} == {TableStatus.ABSENT}
+    assert {dataset.table_status[t].status for t in MUST_BE_ABSENT_TABLES} == {TableStatus.ABSENT}
+    assert dataset.table_status["TraitNodeXTraitCond"].status is TableStatus.PRESENT
     assert normalize_fixture_class(class_key, build).trees  # normalization succeeds
 
 
@@ -130,7 +131,7 @@ def test_missing_snapshot_means_unknown_not_absent(tmp_path: Path) -> None:
     directory = warrior_copy(tmp_path)
     (directory / SNAPSHOT_FILE).unlink()
     dataset = load(directory)
-    assert {a.status for a in dataset.table_status.values()} == {TableStatus.UNKNOWN}
+    assert {dataset.table_status[t].status for t in MUST_BE_ABSENT_TABLES} == {TableStatus.UNKNOWN}
     with pytest.raises(NormalizationError, match="cannot prove"):
         normalize_warrior(dataset)
 
@@ -288,3 +289,124 @@ def test_cli_normalize_all_fails_closed_without_proof(
     assert code == 1
     assert "cannot prove that TraitNodeGroupXTraitCost is absent" in captured.out + captured.err
     assert not (tmp_path / "data/normalized/forever" / str(NEW_BUILD)).exists()
+
+
+# ------------------------------------------------------------ optional node-condition links
+
+NODE_CONDITIONS = "TraitNodeXTraitCond"
+
+
+def test_proven_absent_node_condition_links_normalize_without_synthesized_csv(
+    tmp_path: Path,
+) -> None:
+    directory = warrior_copy(tmp_path)
+    (directory / f"{NODE_CONDITIONS}.csv").unlink()
+    record_absent(directory, NODE_CONDITIONS, f"TEST known-build absence build={NEW_BUILD}")
+    dataset = load(directory)
+    assert dataset.node_conds == {}
+    assert dataset.table_status[NODE_CONDITIONS].status is TableStatus.ABSENT
+    assert normalize_warrior(dataset) == normalize_fixture_class("warrior", NEW_BUILD)
+    assert not (directory / f"{NODE_CONDITIONS}.csv").exists()
+
+
+def test_fetch_preserves_recorded_node_condition_absence(tmp_path: Path) -> None:
+    directory = warrior_copy(tmp_path)
+    (directory / f"{NODE_CONDITIONS}.csv").unlink()
+    record_absent(directory, NODE_CONDITIONS, f"TEST known-build absence build={NEW_BUILD}")
+    source = LocalCsvDb2Source(directory, per_version=False)
+    fetched = fetch_tables(source, NEW_BUILD)
+    assert fetched == [name for name in TRAIT_TABLES if name != NODE_CONDITIONS]
+    assert read_snapshot(directory)[NODE_CONDITIONS].status is TableStatus.ABSENT
+    assert not (directory / f"{NODE_CONDITIONS}.csv").exists()
+
+
+def test_wago_fetch_records_node_condition_absence_for_offline_use(tmp_path: Path) -> None:
+    source, calls = _wago(tmp_path, TABLE_NOT_FOUND)
+    assert fetch_tables(source, NEW_BUILD, tables=[NODE_CONDITIONS]) == []
+    assert len(calls) == 1
+    offline = WagoDb2Source(None, tmp_path, offline=True)
+    assert fetch_tables(offline, NEW_BUILD, tables=[NODE_CONDITIONS]) == []
+    assert not offline.table_path(NEW_BUILD, NODE_CONDITIONS).exists()
+
+
+@pytest.mark.parametrize("sidecar", [None, "not json"])
+def test_wago_node_condition_csv_contradicts_absence_even_without_valid_cache_metadata(
+    tmp_path: Path, sidecar: str | None
+) -> None:
+    directory = tmp_path / str(NEW_BUILD)
+    record_absent(directory, NODE_CONDITIONS, "TEST contradiction")
+    csv_path = directory / f"{NODE_CONDITIONS}.csv"
+    csv_path.write_text("ID,TraitCondID,TraitNodeID\n27364,50984,105712\n")
+    if sidecar is not None:
+        csv_path.with_name(csv_path.name + ".meta.json").write_text(sidecar)
+    source = WagoDb2Source(None, tmp_path, offline=True)
+    with pytest.raises(SourceError, match="records it absent"):
+        fetch_tables(source, NEW_BUILD, tables=[NODE_CONDITIONS])
+
+
+def test_wago_probe_does_not_record_absence_over_an_existing_invalid_cache(tmp_path: Path) -> None:
+    source, _ = _wago(tmp_path, TABLE_NOT_FOUND)
+    csv_path = source.table_path(NEW_BUILD, NODE_CONDITIONS)
+    csv_path.parent.mkdir(parents=True)
+    csv_path.write_text("ID,TraitCondID,TraitNodeID\n27364,50984,105712\n")
+    with pytest.raises(SourceError, match="exists"):
+        fetch_tables(source, NEW_BUILD, tables=[NODE_CONDITIONS])
+    assert NODE_CONDITIONS not in read_snapshot(csv_path.parent)
+
+
+@pytest.mark.parametrize(
+    "response", [httpx.Response(503), httpx.Response(400, html="<html>unknown build</html>")]
+)
+def test_wago_node_condition_probe_unknown_never_becomes_an_empty_table(
+    tmp_path: Path, response: httpx.Response
+) -> None:
+    source, _ = _wago(tmp_path, response, response)
+    with pytest.raises(SourceError):
+        fetch_tables(source, NEW_BUILD, tables=[NODE_CONDITIONS])
+    assert NODE_CONDITIONS not in read_snapshot(tmp_path / str(NEW_BUILD))
+    assert not source.table_path(NEW_BUILD, NODE_CONDITIONS).exists()
+
+
+def test_missing_offline_node_condition_links_without_evidence_fail_closed(tmp_path: Path) -> None:
+    directory = warrior_copy(tmp_path)
+    (directory / f"{NODE_CONDITIONS}.csv").unlink()
+    with pytest.raises(SourceError):
+        load(directory)
+
+
+def test_node_condition_csv_and_absence_evidence_cannot_both_exist(tmp_path: Path) -> None:
+    directory = warrior_copy(tmp_path)
+    record_absent(directory, NODE_CONDITIONS, "TEST contradiction")
+    with pytest.raises(SourceError, match="records it absent"):
+        load(directory)
+
+
+def test_present_node_condition_links_keep_strict_columns(tmp_path: Path) -> None:
+    directory = warrior_copy(tmp_path)
+    (directory / f"{NODE_CONDITIONS}.csv").write_text("ID,TraitNodeID\n1,2\n")
+    with pytest.raises(SourceError, match="TraitCondID"):
+        load(directory)
+
+
+def test_present_historical_rogue_condition_is_still_unresolved() -> None:
+    dataset = TraitDataSet.load(fixture_source_for("rogue", NEW_BUILD), NEW_BUILD)
+    assert dataset.node_conds[105712] == [50984]
+    assert dataset.table_status[NODE_CONDITIONS].status is TableStatus.PRESENT
+    document = normalize_fixture_class("rogue", NEW_BUILD)
+    venom = next(node for tree in document.trees for node in tree.nodes if node.id == 105712)
+    assert venom.unresolved_condition_ids == [50984]
+
+
+def test_cli_normalize_all_uses_recorded_node_condition_absence_offline(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _seed_cache(tmp_path, snapshot=True)
+    directory = tmp_path / ".cache" / "wago" / "forever" / str(NEW_BUILD)
+    (directory / f"{NODE_CONDITIONS}.csv").unlink()
+    record_absent(directory, NODE_CONDITIONS, f"TEST known-build absence build={NEW_BUILD}")
+    monkeypatch.setenv("TALENT_DATA_ROOT", str(tmp_path))
+    code = main(["normalize", "--build", str(NEW_BUILD), "--class", "all", "--offline"])
+    assert code == 0, capsys.readouterr().out
+    manifest = tmp_path / "data/normalized/forever" / str(NEW_BUILD) / "manifest.json"
+    assert len(json.loads(manifest.read_text())["classes"]) == 9
+    assert not (directory / f"{NODE_CONDITIONS}.csv").exists()

@@ -7,7 +7,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 
 from talent_data.db2 import tables as t
-from talent_data.sources.base import Db2Source, SourceError, TableAvailability
+from talent_data.sources.base import Db2Source, SourceError, TableAvailability, TableStatus
 from talent_data.versions import ClientVersion
 
 log = logging.getLogger(__name__)
@@ -44,13 +44,24 @@ class TraitDataSet:
     spells: dict[int, t.Spell]
     spell_names: dict[int, str]
     spell_effects: dict[int, list[t.SpellEffect]]  # by SpellID, default difficulty only
-    # Availability of the tables whose absence the contract relies on (present / absent /
-    # unknown, as proven by the source) - see tables.MUST_BE_ABSENT_TABLES.
+    # Source evidence for optional relationship tables and rank-cost extension tables.
     table_status: dict[str, TableAvailability]
 
     @classmethod
     def load(cls, source: Db2Source, version: ClientVersion) -> TraitDataSet:
+        optional_status: dict[str, TableAvailability] = {}
+
         def rows[R: t.Db2Record](record: type[R]) -> list[R]:
+            if record.TABLE in t.OPTIONALLY_ABSENT_TRAIT_TABLES:
+                availability = source.table_status(version, record.TABLE)
+                optional_status[record.TABLE] = availability
+                if availability.status is TableStatus.ABSENT:
+                    return []
+                if availability.status is TableStatus.UNKNOWN:
+                    raise SourceError(
+                        f"{record.TABLE} for {version}: availability is unknown: "
+                        f"{availability.evidence}"
+                    )
             return t.parse_table(source.load_table(version, record.TABLE), record.parse)
 
         def unique[R](items: list[R], key: str, table: str) -> dict[int, R]:
@@ -143,7 +154,8 @@ class TraitDataSet:
             spell_names=spell_names,
             spell_effects=dict(spell_effects),
             table_status={
-                name: source.table_status(version, name) for name in t.MUST_BE_ABSENT_TABLES
+                **optional_status,
+                **{name: source.table_status(version, name) for name in t.MUST_BE_ABSENT_TABLES},
             },
         )
         log.debug("loaded trait dataset for %s", version)

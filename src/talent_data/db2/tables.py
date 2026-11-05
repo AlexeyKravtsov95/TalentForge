@@ -15,7 +15,7 @@ from typing import ClassVar, Protocol, Self
 
 from talent_data.sources.base import Db2Table, SourceError
 
-# Tables needed to build a class talent tree. `fetch` downloads exactly this set.
+# Tables needed to build a class talent tree. `fetch` downloads the present tables.
 TRAIT_TABLES: tuple[str, ...] = (
     # class -> tree resolution
     "ChrClasses",
@@ -47,6 +47,11 @@ TRAIT_TABLES: tuple[str, ...] = (
     "SpellName",
     "SpellEffect",
 )
+
+# A source-proven absence means there are no node-direct condition links in this build.
+# Missing local data or an inconclusive probe is UNKNOWN and must still stop the pipeline.
+# This does not apply to TraitCond itself or to any other structural table.
+OPTIONALLY_ABSENT_TRAIT_TABLES: tuple[str, ...] = ("TraitNodeXTraitCond",)
 
 
 # Tables that price a rank per node group / node / entry. talent-data.v1 has no cost field

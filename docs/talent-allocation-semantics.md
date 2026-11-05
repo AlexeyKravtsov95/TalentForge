@@ -316,6 +316,37 @@ the engine answers `UNRESOLVED_CONDITION` ("cannot verify availability of node 1
 containing Venom, even when the gate and the Mutilate edge are satisfied. §13 E4 is the
 in-game check that would resolve it.
 
+### Build 1.60.1.70790: source-proven absence of node-direct condition links
+
+Source checks on 2026-11-05 found a structural change, not new evidence about the
+runtime interpretation of condition 50984:
+
+* [70755 TraitNodeXTraitCond CSV](https://wago.tools/db2/TraitNodeXTraitCond/csv?build=1.60.1.70755)
+  is present with one link: `27364,50984,105712` (ID, TraitCondID, TraitNodeID).
+* [70790 TraitNodeXTraitCond CSV](https://wago.tools/db2/TraitNodeXTraitCond/csv?build=1.60.1.70790)
+  returns HTTP 400, `application/json`, `{"errors":"Table not found."}`. The build is
+  listed by wago.tools; its DB2 table inventory also omits this table, whereas 70755
+  lists it. The other 29 unique allocation, tooltip and visual source tables are present.
+* [70790 TraitCond CSV](https://wago.tools/db2/TraitCond/csv?build=1.60.1.70790)
+  contains 171 rows and no 50984, compared with 172 rows including 50984 in
+  [70755](https://wago.tools/db2/TraitCond/csv?build=1.60.1.70755).
+
+`TraitNodeXTraitCond` may therefore be present **or source-proven absent**, using the
+same availability evidence policy as §7. `fetch` records definitive absence in that
+build's `_table_status.json`; offline dataset loading requires that evidence and
+contributes no node-direct links. It neither creates an empty CSV nor borrows an older
+build's links. A missing file without evidence, an inconclusive response, or a CSV that
+contradicts recorded absence still stops preparation. Present CSVs retain strict parsing.
+This exception applies only to this relationship table, not to `TraitCond`, the other
+structural tables, or the cost restrictions.
+
+Historical builds keep unresolved condition 50984 and §13 E4 remains unresolved for
+those builds. No rule is upgraded to Proven; `EDGE-ACTIVE` and `EDGE-SUF` are unchanged.
+Local validation of the real 70790 source normalized all nine classes with 0 errors and
+8 warnings. Comparison with 70755 found 3 added nodes, 1 removed node and 87 changed
+nodes, including removal of Venom's unresolved-condition reference. The normal OTA
+completeness, compatibility and G1–G8 gates still apply to any release package.
+
 ## 7. Cost semantics
 
 `TraitTreeXTraitCost` → `TraitCost` per class tree (identical in 69977 and 70009):
