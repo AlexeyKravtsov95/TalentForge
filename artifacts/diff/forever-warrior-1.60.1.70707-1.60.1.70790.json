@@ -1,0 +1,983 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 1,
+    "token": "WARRIOR",
+    "name": "Warrior"
+  },
+  "fromBuild": "1.60.1.70707",
+  "toBuild": "1.60.1.70790",
+  "fromContentHash": "sha256:7cf8300eb8a2e1bf85e18b49ec12d7b3e6e9be05123d094b09bd4e766762f705",
+  "toContentHash": "sha256:4253dce39ddab152fc6a3ddd633c27afcea166afd2f9d20c77b88e7a53099948",
+  "summary": {
+    "added": 1,
+    "removed": 0,
+    "changed": 16,
+    "changesByKind": {
+      "descriptionChanged": 3,
+      "effectBasePointsChanged": 5,
+      "effectRankValueChanged": 24,
+      "effectStatusChanged": 3,
+      "maxRankChanged": 4,
+      "positionChanged": 4,
+      "prerequisitesChanged": 3,
+      "renamed": 1,
+      "unlockRequirementsChanged": 9
+    }
+  },
+  "treeChanges": [],
+  "added": [
+    {
+      "nodeId": 113636,
+      "treeId": 1117,
+      "name": "Reckless Swings",
+      "spellId": 1329555,
+      "sectionIndex": 1,
+      "position": {
+        "x": 5620,
+        "y": 3930,
+        "row": 3,
+        "column": 1
+      },
+      "maxRank": 1,
+      "relatedNodeId": null
+    }
+  ],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 105926,
+      "treeId": 1117,
+      "name": "Improved Intercept",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105931,
+                105932,
+                105933,
+                105934,
+                105935,
+                105937,
+                105938,
+                105939,
+                105953,
+                105977,
+                110857
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105931,
+                105932,
+                105933,
+                105934,
+                105935,
+                105937,
+                105938,
+                105939,
+                105953,
+                110857,
+                113636
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105927,
+      "treeId": 1117,
+      "name": "Death Wish",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105931,
+                105932,
+                105933,
+                105934,
+                105935,
+                105937,
+                105938,
+                105939,
+                105953,
+                105977,
+                110857
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105931,
+                105932,
+                105933,
+                105934,
+                105935,
+                105937,
+                105938,
+                105939,
+                105953,
+                110857,
+                113636
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105928,
+      "treeId": 1117,
+      "name": "Flurry",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 5620,
+            "y": 5130,
+            "row": 5,
+            "column": 1
+          },
+          "new": {
+            "x": 6220,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          }
+        },
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 5,
+          "new": 3
+        },
+        {
+          "kind": "prerequisitesChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "nodeId": 105927,
+              "kind": "sufficient",
+              "name": "Death Wish"
+            }
+          ],
+          "new": []
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105926,
+                105927,
+                105931,
+                105932,
+                105933,
+                105934,
+                105935,
+                105937,
+                105938,
+                105939,
+                105953,
+                105977,
+                105978,
+                110857
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105926,
+                105927,
+                105931,
+                105932,
+                105933,
+                105934,
+                105935,
+                105937,
+                105938,
+                105939,
+                105953,
+                105978,
+                110857,
+                113569,
+                113636
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130658,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 5,
+          "new": 10
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130658,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 10,
+          "new": 20
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130658,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 15,
+          "new": 30
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130658,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": 20,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130658,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": 25,
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 105930,
+      "treeId": 1117,
+      "name": "Bloodthirst",
+      "changes": [
+        {
+          "kind": "prerequisitesChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [],
+          "new": [
+            {
+              "nodeId": 105927,
+              "kind": "sufficient",
+              "name": "Death Wish"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105931,
+      "treeId": 1117,
+      "name": "Enrage",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 6220,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "new": {
+            "x": 6820,
+            "y": 3330,
+            "row": 2,
+            "column": 3
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105934,
+                105935,
+                105937,
+                105938,
+                105939,
+                105953,
+                110857
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105937,
+                105938,
+                105939,
+                110857
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105932,
+      "treeId": 1117,
+      "name": "Improved Execute",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105934,
+                105935,
+                105937,
+                105938,
+                105939,
+                105953,
+                110857
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105931,
+                105934,
+                105935,
+                105937,
+                105938,
+                105939,
+                105953,
+                110857
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105933,
+      "treeId": 1117,
+      "name": "Dual Wield Specialization",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105934,
+                105935,
+                105937,
+                105938,
+                105939,
+                105953,
+                110857
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105931,
+                105934,
+                105935,
+                105937,
+                105938,
+                105939,
+                105953,
+                110857
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105938,
+      "treeId": 1117,
+      "name": "Booming Voice",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130668,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases the area of effect of your Shouts by $s1% and reduces their Rage cost by $s2%.",
+          "new": "Increases the area of effect of your Shouts by $s1% and reduces the Rage cost by of your Shouts and Howls by $s2%."
+        }
+      ]
+    },
+    {
+      "nodeId": 105948,
+      "treeId": 1117,
+      "name": "Two-Handed Weapon Specialization",
+      "changes": [
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130678,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 1,
+          "new": 2
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130678,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 2,
+          "new": 4
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130678,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 3,
+          "new": 6
+        }
+      ]
+    },
+    {
+      "nodeId": 105949,
+      "treeId": 1117,
+      "name": "Spearing Strike",
+      "changes": [
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130679,
+          "effectIndex": 1,
+          "rank": null,
+          "old": 40,
+          "new": 75
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130679,
+          "effectIndex": 2,
+          "rank": null,
+          "old": 2,
+          "new": 1
+        }
+      ]
+    },
+    {
+      "nodeId": 105954,
+      "treeId": 1117,
+      "name": "Improved Tactical Mastery",
+      "changes": [
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 5,
+          "new": 3
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130684,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 3,
+          "new": 5
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130684,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 6,
+          "new": 10
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130684,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 9,
+          "new": 15
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130684,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": 12,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130684,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": 15,
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 105977,
+      "treeId": 1117,
+      "name": "Improved Whirlwind",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 5620,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          },
+          "new": {
+            "x": 5020,
+            "y": 5130,
+            "row": 5,
+            "column": 0
+          }
+        },
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 1,
+          "new": 2
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105934,
+                105935,
+                105937,
+                105938,
+                105939,
+                105953,
+                110857
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105926,
+                105927,
+                105931,
+                105932,
+                105933,
+                105934,
+                105935,
+                105937,
+                105938,
+                105939,
+                105953,
+                105978,
+                110857,
+                113569,
+                113636
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "renamed",
+          "entryId": 130707,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Raging Blows",
+          "new": "Improved Whirlwind"
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130707,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Reduces the Rage cost of your Cleave and Whirlwind abilities by ${$m2/-10}.",
+          "new": "Reduces the cooldown of your Whirlwind ability by ${$m1/-1000} sec and increases the damage it deals to the closest enemy by $s2%."
+        },
+        {
+          "kind": "effectStatusChanged",
+          "entryId": 130707,
+          "effectIndex": 0,
+          "rank": null,
+          "old": "none",
+          "new": "resolved"
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130707,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": null,
+          "new": -1000
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130707,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": null,
+          "new": -2000
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130707,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 100,
+          "new": -2000
+        },
+        {
+          "kind": "effectStatusChanged",
+          "entryId": 130707,
+          "effectIndex": 1,
+          "rank": null,
+          "old": "none",
+          "new": "resolved"
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130707,
+          "effectIndex": 1,
+          "rank": 1,
+          "old": null,
+          "new": 15
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130707,
+          "effectIndex": 1,
+          "rank": 2,
+          "old": null,
+          "new": 30
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130707,
+          "effectIndex": 1,
+          "rank": null,
+          "old": -30,
+          "new": 30
+        }
+      ]
+    },
+    {
+      "nodeId": 105978,
+      "treeId": 1117,
+      "name": "Improved Berserker Rage",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105931,
+                105932,
+                105933,
+                105934,
+                105935,
+                105937,
+                105938,
+                105939,
+                105953,
+                105977,
+                110857
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105931,
+                105932,
+                105933,
+                105934,
+                105935,
+                105937,
+                105938,
+                105939,
+                105953,
+                110857,
+                113636
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 110524,
+      "treeId": 1117,
+      "name": "Bloodthrill",
+      "changes": [
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 5,
+          "new": 2
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137214,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 4,
+          "new": 10
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137214,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 8,
+          "new": 20
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137214,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 12,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137214,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": 16,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137214,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": 20,
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 110858,
+      "treeId": 1117,
+      "name": "Improved Slam",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 137850,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Reduces the global cooldown and cast time of your Slam ability by ${$m1/-1000}.2 sec. In addition, Slam no longer interrupts or delays your melee swing and Slam's cooldown is reduced by ${$m3/-1000}.1 sec.",
+          "new": "Reduces the cooldown of your Slam ability by ${$m3/-1000}.1 sec, the cast time and global cooldown by ${$m1/-1000}.2 sec, and Slam no longer interrupts or delays your melee swing."
+        },
+        {
+          "kind": "effectStatusChanged",
+          "entryId": 137850,
+          "effectIndex": 2,
+          "rank": null,
+          "old": "none",
+          "new": "resolved"
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137850,
+          "effectIndex": 2,
+          "rank": 1,
+          "old": null,
+          "new": -2500
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137850,
+          "effectIndex": 2,
+          "rank": 2,
+          "old": null,
+          "new": -5000
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 137850,
+          "effectIndex": 2,
+          "rank": null,
+          "old": -3000,
+          "new": -5000
+        }
+      ]
+    },
+    {
+      "nodeId": 113569,
+      "treeId": 1117,
+      "name": "Gore Drinker",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 6220,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          },
+          "new": {
+            "x": 6220,
+            "y": 4530,
+            "row": 4,
+            "column": 2
+          }
+        },
+        {
+          "kind": "prerequisitesChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "nodeId": 105931,
+              "kind": "sufficient",
+              "name": "Enrage"
+            }
+          ],
+          "new": [
+            {
+              "nodeId": 105934,
+              "kind": "sufficient",
+              "name": "Blood Craze"
+            }
+          ]
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105926,
+                105927,
+                105931,
+                105932,
+                105933,
+                105934,
+                105935,
+                105937,
+                105938,
+                105939,
+                105953,
+                105977,
+                105978,
+                110857
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105931,
+                105932,
+                105933,
+                105934,
+                105935,
+                105937,
+                105938,
+                105939,
+                105953,
+                110857,
+                113636
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 5,
+    "token": "PRIEST",
+    "name": "Priest"
+  },
+  "fromBuild": "1.60.1.70707",
+  "toBuild": "1.60.1.70790",
+  "fromContentHash": "sha256:807e696a4084c31c2346d548be38f3c7734054436f3ad9aa282d763587aacb70",
+  "toContentHash": "sha256:0aa247fa1721185261ccfa08a16b9b0bb7a5ecd039688b6d986f780e9ae8ff3e",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 2,
+    "changesByKind": {
+      "descriptionChanged": 2,
+      "effectBasePointsChanged": 1,
+      "effectRemoved": 1,
+      "spellReplaced": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 105835,
+      "treeId": 1114,
+      "name": "Renewed Hope",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130564,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Your heals from Flash Heal, Binding Heal, Lesser Heal, Heal, Greater Heal, and Penance gain $m1% increased critical strike chance when cast on targets with Weakened Soul, and reduce the remaining duration of Weakened Soul on their target by ${$m2/-1000} sec.",
+          "new": "Your heals from Flash Heal, Lesser Heal, Heal, Greater Heal, and Penance gain $m1% increased critical strike chance when cast on targets with Weakened Soul, and reduce the remaining duration of Weakened Soul on their target by ${$m2/-1000} sec."
+        }
+      ]
+    },
+    {
+      "nodeId": 105856,
+      "treeId": 1114,
+      "name": "Holy Binding",
+      "changes": [
+        {
+          "kind": "spellReplaced",
+          "entryId": 130585,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 401937,
+            "name": "Binding Heal"
+          },
+          "new": {
+            "spellId": 1328569,
+            "name": "Holy Binding"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130585,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Heals a friendly target and the caster for $s1. Low threat.",
+          "new": "Each time you heal a target other than yourself with Flash Heal, you are healed for $s1% as much. This healing generates no threat."
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130585,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 247,
+          "new": 50
+        },
+        {
+          "kind": "effectRemoved",
+          "entryId": 130585,
+          "effectIndex": 1,
+          "rank": null,
+          "old": {
+            "index": 1,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 247,
+            "unresolvedReason": null
+          },
+          "new": null
+        }
+      ]
+    }
+  ]
+}

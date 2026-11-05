@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 8,
+    "token": "MAGE",
+    "name": "Mage"
+  },
+  "fromBuild": "1.60.1.70707",
+  "toBuild": "1.60.1.70790",
+  "fromContentHash": "sha256:b44bc4265aaec6a8399fefd88758f4d1e249543616ab90ce3c1838f75ddcf3ec",
+  "toContentHash": "sha256:c41bb4b5ccbba3ea5b106d5826df837d03a68c7959f48a5fb7674563985615ca",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 7,
+    "changesByKind": {
+      "descriptionChanged": 4,
+      "effectBasePointsChanged": 3,
+      "effectRankValueChanged": 1,
+      "maxRankChanged": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 105762,
+      "treeId": 1112,
+      "name": "Ice Barrier",
+      "changes": [
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130491,
+          "effectIndex": 1,
+          "rank": null,
+          "old": 3,
+          "new": 5
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130491,
+          "effectIndex": 2,
+          "rank": null,
+          "old": 3,
+          "new": 5
+        }
+      ]
+    },
+    {
+      "nodeId": 105763,
+      "treeId": 1112,
+      "name": "Winter's Chill",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130492,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Gives your Frostbolt, Frost Blast, and Fingers of Frost empowered Ice Lance spells a $m2% chance to apply Winter's Chill, increasing the target's damage taken from your next Cone of Cold by $12579s1% and it gains an additional $s3% of your spell damage, stacking up to $s1 times.",
+          "new": "Gives your Frostbolt and Fingers of Frost empowered Ice Lance spells a $m2% chance to apply Winter's Chill, increasing the target's damage taken from your next Cone of Cold by $12579s1% and it gains an additional $s3% of your spell damage, stacking up to $s1 times."
+        }
+      ]
+    },
+    {
+      "nodeId": 105767,
+      "treeId": 1112,
+      "name": "Ice Lance",
+      "changes": [
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130496,
+          "effectIndex": 1,
+          "rank": null,
+          "old": 200,
+          "new": 300
+        }
+      ]
+    },
+    {
+      "nodeId": 105770,
+      "treeId": 1112,
+      "name": "Arctic Reach",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130499,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases the range of your Frostbolt, Frost Blast, and Blizzard spells and the radius of your Frost Nova and Cone of Cold spells by $s1%.",
+          "new": "Increases the range of your Frostbolt, Ice Lance, and Blizzard spells and the radius of your Frost Nova and Cone of Cold spells by $s1%."
+        }
+      ]
+    },
+    {
+      "nodeId": 105779,
+      "treeId": 1112,
+      "name": "Improved Frostbolt",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130508,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Reduces the casting time of your Frostbolt and Frost Blast spells by $/1000;S1 sec.",
+          "new": "Reduces the casting time of your Frostbolt spell by $/1000;S1 sec."
+        }
+      ]
+    },
+    {
+      "nodeId": 105802,
+      "treeId": 1112,
+      "name": "Arcane Resilience",
+      "changes": [
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 2,
+          "new": 3
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130531,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": null,
+          "new": 75
+        }
+      ]
+    },
+    {
+      "nodeId": 105809,
+      "treeId": 1112,
+      "name": "Missile Barrage",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130538,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Gives your Arcane Blast spell a $m1% chance, and your Arcane Wrath, Fireball, Frostbolt, Frost Blast, and Frostfire Bolt spells a ${$m1/2}% chance to reduce the channeled duration of your next Arcane Missiles spell by $400589s1%, reduce the Mana cost by $400589s3%, and missiles fire every ${$m2/10}.1 sec.",
+          "new": "Gives your Arcane Blast spell a $m1% chance, and your Arcane Wrath, Fireball, Frostbolt, and Frostfire Bolt spells a ${$m1/2}% chance to reduce the channeled duration of your next Arcane Missiles spell by $400589s1%, reduce the Mana cost by $400589s3%, and missiles fire every ${$m2/10}.1 sec."
+        }
+      ]
+    }
+  ]
+}
