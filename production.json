@@ -5,7 +5,8 @@
   "failuresNotified": [
     "ota-production/publish/PUBLIC_CATALOG",
     "ota-production/publish/APPROVAL_GATES",
-    "ota-production/publish/PUBLISH"
+    "ota-production/publish/PUBLISH",
+    "ota-production/reconcile/PUBLISH"
   ],
-  "updatedAt": "2026-11-05T09:00:50+00:00"
+  "updatedAt": "2026-11-05T11:38:00+00:00"
 }
