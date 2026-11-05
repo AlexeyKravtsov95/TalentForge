@@ -2,6 +2,8 @@
   "stateVersion": 1,
   "kind": "notify-production-state",
   "notifiedRelease": "1.60.1.70707-r1",
-  "failuresNotified": [],
-  "updatedAt": "2026-11-04T22:41:17Z"
+  "failuresNotified": [
+    "ota-production/publish/PUBLIC_CATALOG"
+  ],
+  "updatedAt": "2026-11-05T01:33:09+00:00"
 }
