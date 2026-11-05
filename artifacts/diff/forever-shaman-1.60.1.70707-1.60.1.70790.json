@@ -1,0 +1,684 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 7,
+    "token": "SHAMAN",
+    "name": "Shaman"
+  },
+  "fromBuild": "1.60.1.70707",
+  "toBuild": "1.60.1.70790",
+  "fromContentHash": "sha256:6b691069b85801428327b40fb9f8e67d34787bb60516477f2db77776cec4bad6",
+  "toContentHash": "sha256:0cac6ebc082b12d407db0a6027a3207c25edfd1e8c905b08a87795beb76c2a15",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 18,
+    "changesByKind": {
+      "descriptionChanged": 9,
+      "effectAdded": 1,
+      "effectBasePointsChanged": 2,
+      "effectRankValueChanged": 11,
+      "effectRemoved": 1,
+      "positionChanged": 2,
+      "renamed": 1,
+      "spellReplaced": 1,
+      "unlockRequirementsChanged": 7
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 104724,
+      "treeId": 1082,
+      "name": "Riptide",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129384,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Heals a friendly target for $s1, an additional $o2 over $d, and increases the effectiveness of your Chain Heal casts directly on that target by $s3%.",
+          "new": "Heals a friendly target for $o2 over $d, and increases the effectiveness of your Chain Heal casts directly on that target by $s3%."
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 129384,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 480,
+          "new": 0
+        }
+      ]
+    },
+    {
+      "nodeId": 104743,
+      "treeId": 1082,
+      "name": "Stormstrike",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104748,
+                104749,
+                104750,
+                104751,
+                104752,
+                104753,
+                104754,
+                104755,
+                104756,
+                104757
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104748,
+                104749,
+                104750,
+                104751,
+                104753,
+                104754,
+                104755,
+                104756,
+                104757
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129403,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Instantly strike for normal weapon damage and increase the damage you deal to the target with your next Lightning Bolt, Chain Lightning, or Earth Shock spell by $s2% for $d.",
+          "new": "Instantly strike for $s3% weapon damage and increase the damage you deal to the target with your next Lightning Bolt, Chain Lightning, or Earth Shock spell by $s2% for $d."
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 129403,
+          "effectIndex": 2,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 2,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 150,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 104746,
+      "treeId": 1082,
+      "name": "Toughness",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104748,
+                104749,
+                104750,
+                104751,
+                104752,
+                104753,
+                104754,
+                104755,
+                104756,
+                104757
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104748,
+                104749,
+                104750,
+                104751,
+                104753,
+                104754,
+                104755,
+                104756,
+                104757
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 104747,
+      "treeId": 1082,
+      "name": "Flurry",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104748,
+                104749,
+                104750,
+                104751,
+                104752,
+                104753,
+                104754,
+                104755,
+                104756,
+                104757
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104748,
+                104749,
+                104750,
+                104751,
+                104753,
+                104754,
+                104755,
+                104756,
+                104757
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129407,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 5,
+          "new": 6
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129407,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 10,
+          "new": 12
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129407,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 15,
+          "new": 18
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129407,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": 20,
+          "new": 24
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129407,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": 25,
+          "new": 30
+        }
+      ]
+    },
+    {
+      "nodeId": 104748,
+      "treeId": 1082,
+      "name": "Anticipation",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104751,
+                104752,
+                104753,
+                104754,
+                104755,
+                104756,
+                104757
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104751,
+                104753,
+                104754,
+                104755,
+                104756,
+                104757
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 104749,
+      "treeId": 1082,
+      "name": "Shamanistic Focus",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104751,
+                104752,
+                104753,
+                104754,
+                104755,
+                104756,
+                104757
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104751,
+                104753,
+                104754,
+                104755,
+                104756,
+                104757
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 104750,
+      "treeId": 1082,
+      "name": "Elemental Weapons",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104751,
+                104752,
+                104753,
+                104754,
+                104755,
+                104756,
+                104757
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104751,
+                104753,
+                104754,
+                104755,
+                104756,
+                104757
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 104751,
+      "treeId": 1082,
+      "name": "Improved Lightning Shield",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 6820,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          },
+          "new": {
+            "x": 6220,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 104752,
+      "treeId": 1082,
+      "name": "Improved Ghost Wolf",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 6220,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "new": {
+            "x": 6820,
+            "y": 3930,
+            "row": 3,
+            "column": 3
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                104753,
+                104756,
+                104757
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                104748,
+                104749,
+                104750,
+                104751,
+                104753,
+                104754,
+                104755,
+                104756,
+                104757
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 104755,
+      "treeId": 1082,
+      "name": "Mental Dexterity",
+      "changes": [
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129415,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 33,
+          "new": 50
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129415,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 67,
+          "new": 100
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129415,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 100,
+          "new": 150
+        }
+      ]
+    },
+    {
+      "nodeId": 104758,
+      "treeId": 1082,
+      "name": "Lightning Mastery",
+      "changes": [
+        {
+          "kind": "renamed",
+          "entryId": 129418,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Elemental Mastery",
+          "new": "Lightning Mastery"
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129418,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Gain mastery over Fire and Lightning, reducing the cast time of Lightning Bolt and Lava Burst by ${$m1/-1000}.1 sec, and removing the cooldown from Chain Lightning. Lasts $d.",
+          "new": "Gain mastery over Lightning, reducing the cast time of your Lightning Bolt spell by ${$m1/-1000}.1 sec, and removing the cooldown from your Chain Lightning spell. Lasts $d."
+        }
+      ]
+    },
+    {
+      "nodeId": 104759,
+      "treeId": 1082,
+      "name": "Lightning Overload",
+      "changes": [
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129419,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 3,
+          "new": 10
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129419,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 7,
+          "new": 20
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129419,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 10,
+          "new": 30
+        }
+      ]
+    },
+    {
+      "nodeId": 104760,
+      "treeId": 1082,
+      "name": "Call of Thunder",
+      "changes": [
+        {
+          "kind": "spellReplaced",
+          "entryId": 129420,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 408490,
+            "name": "Lava Burst"
+          },
+          "new": {
+            "spellId": 16120,
+            "name": "Call of Thunder"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129420,
+          "effectIndex": null,
+          "rank": null,
+          "old": "You hurl molten lava at the target, dealing $s1 Fire damage. If your Flame Shock is on the target, Lava Burst deals $s2% increased damage.",
+          "new": "Increases the critical strike chance of your Lightning Bolt and Chain Lightning spells by $s1%."
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 129420,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 123,
+          "new": 5
+        },
+        {
+          "kind": "effectRemoved",
+          "entryId": 129420,
+          "effectIndex": 1,
+          "rank": null,
+          "old": {
+            "index": 1,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 20,
+            "unresolvedReason": null
+          },
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 104761,
+      "treeId": 1082,
+      "name": "Elemental Reach",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129421,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases the range of your Lightning Bolt, Chain Lightning, Fire Nova, and Lava Burst spells by $m1 yards and reduces the cooldown of Totemic Projection by ${$m3/-1000} sec.",
+          "new": "Increases the range of your Lightning Bolt, Chain Lightning, and Fire Nova spells by $m1 yards."
+        }
+      ]
+    },
+    {
+      "nodeId": 104763,
+      "treeId": 1082,
+      "name": "Eye of the Storm",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129423,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Gives your Lightning Bolt, Chain Lightning, and Lava Burst spells a $m1% chance to not lose casting time when you take damage.",
+          "new": "Gives your Lightning Bolt and Chain Lightning spells a $m1% chance to not lose casting time when you take damage."
+        }
+      ]
+    },
+    {
+      "nodeId": 104770,
+      "treeId": 1082,
+      "name": "Call of Flame",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129430,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases the damage done by your Fire Totems and by your Flame Shock, Fire Nova, and Lava Burst spells by $m1%, as well as increases the duration of your Flame Shock spell by ${$m3/1000} sec.",
+          "new": "Increases the damage done by your Fire Totems and by your Flame Shock and Fire Nova spells by $m1%, as well as increases the duration of your Flame Shock spell by ${$m3/1000} sec."
+        }
+      ]
+    },
+    {
+      "nodeId": 104771,
+      "treeId": 1082,
+      "name": "Elemental Alacrity",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129431,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Reduces the cast time of your Lightning Bolt, Chain Lightning, and Lava Burst spells by ${$m1/-1000}.2 sec.",
+          "new": "Reduces the cast time of your Lightning Bolt and Chain Lightning spells by ${$m1/-1000}.2 sec."
+        }
+      ]
+    },
+    {
+      "nodeId": 104773,
+      "treeId": 1082,
+      "name": "Convection",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129433,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Reduces the mana cost of your Shock, Lightning Bolt, Lava Burst, and Chain Lightning spells by $m1%.",
+          "new": "Reduces the mana cost of your Shock, Lightning Bolt, and Chain Lightning spells by $m1%."
+        }
+      ]
+    }
+  ]
+}

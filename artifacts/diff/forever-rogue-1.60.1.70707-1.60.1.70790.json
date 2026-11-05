@@ -1,0 +1,3462 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 4,
+    "token": "ROGUE",
+    "name": "Rogue"
+  },
+  "fromBuild": "1.60.1.70707",
+  "toBuild": "1.60.1.70790",
+  "fromContentHash": "sha256:318ed10c92a74f1cd7a42836421a32a755cded016941681ad6c241c976747c79",
+  "toContentHash": "sha256:e2dc3a454f2b76e308fcba8271d49c0921794396a192c130f79d2be41101e40d",
+  "summary": {
+    "added": 2,
+    "removed": 1,
+    "changed": 42,
+    "changesByKind": {
+      "descriptionChanged": 15,
+      "effectAdded": 6,
+      "effectBasePointsChanged": 8,
+      "effectRankValueChanged": 62,
+      "effectRemoved": 3,
+      "effectStatusChanged": 3,
+      "maxRankChanged": 7,
+      "positionChanged": 21,
+      "prerequisitesChanged": 6,
+      "renamed": 3,
+      "sectionChanged": 1,
+      "spellReplaced": 8,
+      "unlockRequirementsChanged": 38,
+      "unresolvedConditionsChanged": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [
+    {
+      "nodeId": 113633,
+      "treeId": 1111,
+      "name": "Relentless Strikes",
+      "spellId": 14179,
+      "sectionIndex": 0,
+      "position": {
+        "x": 1020,
+        "y": 4530,
+        "row": 4,
+        "column": 0
+      },
+      "maxRank": 5,
+      "relatedNodeId": null
+    },
+    {
+      "nodeId": 113635,
+      "treeId": 1111,
+      "name": "Dual Wield Specialization",
+      "spellId": 13715,
+      "sectionIndex": 1,
+      "position": {
+        "x": 5020,
+        "y": 4530,
+        "row": 4,
+        "column": 0
+      },
+      "maxRank": 2,
+      "relatedNodeId": null
+    }
+  ],
+  "removed": [
+    {
+      "nodeId": 110868,
+      "treeId": 1111,
+      "name": "Improved Distract",
+      "spellId": 14084,
+      "sectionIndex": 2,
+      "position": {
+        "x": 10280,
+        "y": 3330,
+        "row": 2,
+        "column": 2
+      },
+      "maxRank": 2,
+      "relatedNodeId": null
+    }
+  ],
+  "changed": [
+    {
+      "nodeId": 105708,
+      "treeId": 1111,
+      "name": "Coup de Grace",
+      "changes": [
+        {
+          "kind": "renamed",
+          "entryId": 130437,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Improved Eviscerate",
+          "new": "Coup de Grace"
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130437,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases the damage done by your Eviscerate ability by $m1%.",
+          "new": "Increases the damage done by your Eviscerate ability by $m1%, and the damage and storage rate of your Death Mark ability by $m2%."
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 130437,
+          "effectIndex": 1,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 1,
+            "perRank": [
+              {
+                "rank": 1,
+                "value": 7
+              },
+              {
+                "rank": 2,
+                "value": 13
+              },
+              {
+                "rank": 3,
+                "value": 20
+              }
+            ],
+            "perRankStatus": "resolved",
+            "basePoints": 20,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 105709,
+      "treeId": 1111,
+      "name": "Mutilate",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 1620,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          },
+          "new": {
+            "x": 1620,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          }
+        },
+        {
+          "kind": "prerequisitesChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [],
+          "new": [
+            {
+              "nodeId": 105712,
+              "kind": "sufficient",
+              "name": "Venom"
+            }
+          ]
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105713,
+                105714,
+                105715,
+                105716,
+                105717,
+                105720,
+                105721,
+                105722,
+                105723,
+                105739,
+                105742,
+                105759
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105709,
+                105710,
+                105711,
+                105712,
+                105713,
+                105714,
+                105715,
+                105716,
+                105717,
+                105718,
+                105720,
+                105721,
+                105722,
+                105723,
+                105739,
+                105742,
+                113633
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "spellReplaced",
+          "entryId": 130438,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 1310707,
+            "name": "Mutilate"
+          },
+          "new": {
+            "spellId": 399956,
+            "name": "Mutilate"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130438,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Instantly attacks with both weapons for $1310706s2% weapon damage plus an additional ${$1310706m1*$1310706m2/100} with each weapon. Damage increased by $m4% against Poisoned targets. Awards $m1 Combo $LPoint:Points;.",
+          "new": "Instantly attacks with both weapons for $399960s2% weapon damage plus an additional ${$399960m1*$399960m2/100} with each weapon. Damage increased by $m4% against Poisoned targets. Awards $m1 Combo $LPoint:Points;."
+        }
+      ]
+    },
+    {
+      "nodeId": 105710,
+      "treeId": 1111,
+      "name": "Seal Fate",
+      "changes": [
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 5,
+          "new": 3
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105709,
+                105711,
+                105713,
+                105714,
+                105715,
+                105716,
+                105717,
+                105718,
+                105720,
+                105721,
+                105722,
+                105723,
+                105739,
+                105742,
+                105759
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105711,
+                105712,
+                105713,
+                105714,
+                105715,
+                105716,
+                105717,
+                105718,
+                105720,
+                105721,
+                105722,
+                105723,
+                105739,
+                105742,
+                113633
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130439,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 20,
+          "new": 33
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130439,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 40,
+          "new": 66
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130439,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 60,
+          "new": 100
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130439,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": 80,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130439,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": 100,
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 105711,
+      "treeId": 1111,
+      "name": "Improved Kidney Shot",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105713,
+                105714,
+                105715,
+                105716,
+                105717,
+                105720,
+                105721,
+                105722,
+                105723,
+                105739,
+                105742,
+                105759
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105713,
+                105714,
+                105715,
+                105716,
+                105717,
+                105718,
+                105720,
+                105721,
+                105722,
+                105723,
+                105739,
+                105742
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105712,
+      "treeId": 1111,
+      "name": "Venom",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 1620,
+            "y": 5730,
+            "row": 6,
+            "column": 1
+          },
+          "new": {
+            "x": 1620,
+            "y": 4530,
+            "row": 4,
+            "column": 1
+          }
+        },
+        {
+          "kind": "prerequisitesChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "nodeId": 105709,
+              "kind": "sufficient",
+              "name": "Mutilate"
+            }
+          ],
+          "new": []
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105709,
+                105710,
+                105711,
+                105712,
+                105713,
+                105714,
+                105715,
+                105716,
+                105717,
+                105718,
+                105720,
+                105721,
+                105722,
+                105723,
+                105739,
+                105742,
+                105759
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105713,
+                105714,
+                105715,
+                105716,
+                105717,
+                105718,
+                105720,
+                105721,
+                105722,
+                105723,
+                105739,
+                105742
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "unresolvedConditionsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            50984
+          ],
+          "new": []
+        },
+        {
+          "kind": "spellReplaced",
+          "entryId": 130441,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 1310703,
+            "name": "Venom"
+          },
+          "new": {
+            "spellId": 1329328,
+            "name": "Venom"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130441,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Finishing move that increases the damage of your Poisons by $m2% and your chance to apply Poisons by $m4%. Lasts longer per combo point:\r\n   1 point  : 9 sec\r\n   2 points: 12 sec\r\n   3 points: 15 sec\r\n   4 points: 18 sec\r\n   5 points: 21 sec",
+          "new": "Causes your Shank ability to increase your Poison damage by $1310703s1% and your chance to apply Poisons by $1310703s3% for $1310703d."
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130441,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 0,
+          "new": 100
+        },
+        {
+          "kind": "effectRemoved",
+          "entryId": 130441,
+          "effectIndex": 1,
+          "rank": null,
+          "old": {
+            "index": 1,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 30,
+            "unresolvedReason": null
+          },
+          "new": null
+        },
+        {
+          "kind": "effectRemoved",
+          "entryId": 130441,
+          "effectIndex": 2,
+          "rank": null,
+          "old": {
+            "index": 2,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 30,
+            "unresolvedReason": null
+          },
+          "new": null
+        },
+        {
+          "kind": "effectRemoved",
+          "entryId": 130441,
+          "effectIndex": 3,
+          "rank": null,
+          "old": {
+            "index": 3,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 10,
+            "unresolvedReason": null
+          },
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 105713,
+      "treeId": 1111,
+      "name": "Improved Poisons",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105716,
+                105717,
+                105720,
+                105721,
+                105722,
+                105723,
+                105739,
+                105742,
+                105759
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105716,
+                105717,
+                105718,
+                105720,
+                105721,
+                105722,
+                105723,
+                105739,
+                105742
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105714,
+      "treeId": 1111,
+      "name": "Vile Poisons",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105716,
+                105717,
+                105720,
+                105721,
+                105722,
+                105723,
+                105739,
+                105742,
+                105759
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105716,
+                105717,
+                105718,
+                105720,
+                105721,
+                105722,
+                105723,
+                105739,
+                105742
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105715,
+      "treeId": 1111,
+      "name": "Cold Blood",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105716,
+                105717,
+                105720,
+                105721,
+                105722,
+                105723,
+                105739,
+                105742,
+                105759
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105716,
+                105717,
+                105718,
+                105720,
+                105721,
+                105722,
+                105723,
+                105739,
+                105742
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105716,
+      "treeId": 1111,
+      "name": "Lethality",
+      "changes": [
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 5,
+          "new": 2
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105720,
+                105721,
+                105722,
+                105723,
+                105739,
+                105742
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105717,
+                105721,
+                105722,
+                105723,
+                105739,
+                105742
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130445,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 4,
+          "new": 10
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130445,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 8,
+          "new": 20
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130445,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 12,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130445,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": 16,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130445,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": 20,
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 105717,
+      "treeId": 1111,
+      "name": "Improved Expose Armor",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 1620,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "new": {
+            "x": 1620,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105720,
+                105721,
+                105722,
+                105723,
+                105739,
+                105742
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105722,
+                105723,
+                105742
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105718,
+      "treeId": 1111,
+      "name": "Blood Splatter",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 1020,
+            "y": 4530,
+            "row": 4,
+            "column": 0
+          },
+          "new": {
+            "x": 1620,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          }
+        },
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 2,
+          "new": 1
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105713,
+                105714,
+                105715,
+                105716,
+                105717,
+                105720,
+                105721,
+                105722,
+                105723,
+                105739,
+                105742,
+                105759
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105717,
+                105721,
+                105722,
+                105723,
+                105739,
+                105742
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "spellReplaced",
+          "entryId": 130447,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 14983,
+            "name": "Vigor"
+          },
+          "new": {
+            "spellId": 1329256,
+            "name": "Blood Splatter"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130447,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases your maximum Energy by $s1.",
+          "new": "Increases the duration of your Rupture ability by ${$s1/1000} sec and your Garrote ability by ${$s2/1000} sec."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130447,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 5,
+          "new": 6000
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130447,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 10,
+          "new": null
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130447,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 10,
+          "new": 4000
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 130447,
+          "effectIndex": 1,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 1,
+            "perRank": [
+              {
+                "rank": 1,
+                "value": 9000
+              }
+            ],
+            "perRankStatus": "resolved",
+            "basePoints": 6000,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 105720,
+      "treeId": 1111,
+      "name": "Vigor",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 1620,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          },
+          "new": {
+            "x": 1020,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105722,
+                105723,
+                105742
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105717,
+                105721,
+                105722,
+                105723,
+                105739,
+                105742
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "spellReplaced",
+          "entryId": 130449,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 14158,
+            "name": "Murder"
+          },
+          "new": {
+            "spellId": 14983,
+            "name": "Vigor"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130449,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases all damage dealt by $m1% against Humanoid and Giant targets.",
+          "new": "Increases your maximum Energy by $s1."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130449,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 2,
+          "new": 5
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130449,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 4,
+          "new": 10
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130449,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 4,
+          "new": 10
+        }
+      ]
+    },
+    {
+      "nodeId": 105724,
+      "treeId": 1111,
+      "name": "Adrenaline Rush",
+      "changes": [
+        {
+          "kind": "prerequisitesChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [],
+          "new": [
+            {
+              "nodeId": 105728,
+              "kind": "sufficient",
+              "name": "Blade Flurry"
+            }
+          ]
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105708,
+                105719,
+                105724,
+                105726,
+                105727,
+                105728,
+                105730,
+                105732,
+                105733,
+                105735,
+                105736,
+                105737,
+                105738,
+                105740,
+                105741,
+                108100,
+                113398
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 30,
+              "countedNodeIds": [
+                105708,
+                105719,
+                105724,
+                105726,
+                105727,
+                105728,
+                105730,
+                105732,
+                105733,
+                105735,
+                105736,
+                105737,
+                105738,
+                105740,
+                105741,
+                105759,
+                108100,
+                113398,
+                113635
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105726,
+      "treeId": 1111,
+      "name": "Weapon Expertise",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 5620,
+            "y": 5130,
+            "row": 5,
+            "column": 1
+          },
+          "new": {
+            "x": 6220,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          }
+        },
+        {
+          "kind": "prerequisitesChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "nodeId": 105728,
+              "kind": "sufficient",
+              "name": "Blade Flurry"
+            }
+          ],
+          "new": [
+            {
+              "nodeId": 105737,
+              "kind": "sufficient",
+              "name": "Precision"
+            }
+          ]
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105708,
+                105719,
+                105727,
+                105728,
+                105732,
+                105733,
+                105735,
+                105736,
+                105737,
+                105738,
+                105740,
+                105741,
+                108100,
+                113398
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105708,
+                105719,
+                105732,
+                105735,
+                105736,
+                105737,
+                105738,
+                105741,
+                105759,
+                113398
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105727,
+      "treeId": 1111,
+      "name": "Hack and Slash",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105708,
+                105719,
+                105732,
+                105733,
+                105735,
+                105736,
+                105737,
+                105738,
+                105740,
+                105741,
+                108100,
+                113398
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105708,
+                105719,
+                105726,
+                105730,
+                105732,
+                105733,
+                105735,
+                105736,
+                105737,
+                105738,
+                105741,
+                105759,
+                108100,
+                113398
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105728,
+      "treeId": 1111,
+      "name": "Blade Flurry",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105708,
+                105719,
+                105732,
+                105733,
+                105735,
+                105736,
+                105737,
+                105738,
+                105740,
+                105741,
+                108100,
+                113398
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105708,
+                105719,
+                105726,
+                105730,
+                105732,
+                105733,
+                105735,
+                105736,
+                105737,
+                105738,
+                105741,
+                105759,
+                108100,
+                113398
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105730,
+      "treeId": 1111,
+      "name": "Aggression",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 6220,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          },
+          "new": {
+            "x": 6820,
+            "y": 3930,
+            "row": 3,
+            "column": 3
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105708,
+                105719,
+                105727,
+                105728,
+                105732,
+                105733,
+                105735,
+                105736,
+                105737,
+                105738,
+                105740,
+                105741,
+                108100,
+                113398
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105708,
+                105719,
+                105732,
+                105735,
+                105736,
+                105737,
+                105738,
+                105741,
+                105759,
+                113398
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130459,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases the damage of your Sinister Strike, Backstab, and Eviscerate abilities by $s1%.",
+          "new": "Increases the damage of your Sinister Strike and Eviscerate abilities by $s1%."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130459,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 2,
+          "new": 5
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130459,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 4,
+          "new": 10
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130459,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 6,
+          "new": 15
+        }
+      ]
+    },
+    {
+      "nodeId": 105732,
+      "treeId": 1111,
+      "name": "Improved Sprint",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 6820,
+            "y": 3330,
+            "row": 2,
+            "column": 3
+          },
+          "new": {
+            "x": 6820,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105708,
+                105719,
+                105737,
+                105738,
+                105741,
+                113398
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105708,
+                105741,
+                113398
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105733,
+      "treeId": 1111,
+      "name": "Improved Kick",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105708,
+                105719,
+                105732,
+                105735,
+                105736,
+                105737,
+                105738,
+                105741,
+                113398
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105708,
+                105719,
+                105732,
+                105735,
+                105736,
+                105737,
+                105738,
+                105741,
+                105759,
+                113398
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105735,
+      "treeId": 1111,
+      "name": "Riposte",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105708,
+                105719,
+                105737,
+                105738,
+                105741,
+                113398
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105708,
+                105719,
+                105732,
+                105737,
+                105738,
+                105741,
+                113398
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105736,
+      "treeId": 1111,
+      "name": "Endurance",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105708,
+                105719,
+                105737,
+                105738,
+                105741,
+                113398
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105708,
+                105719,
+                105732,
+                105737,
+                105738,
+                105741,
+                113398
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105740,
+      "treeId": 1111,
+      "name": "Flash of Steel",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 6220,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "new": {
+            "x": 6220,
+            "y": 5130,
+            "row": 5,
+            "column": 2
+          }
+        },
+        {
+          "kind": "prerequisitesChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "nodeId": 105737,
+              "kind": "sufficient",
+              "name": "Precision"
+            }
+          ],
+          "new": []
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105708,
+                105719,
+                105732,
+                105735,
+                105736,
+                105737,
+                105738,
+                105741,
+                113398
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105708,
+                105719,
+                105726,
+                105727,
+                105728,
+                105730,
+                105732,
+                105733,
+                105735,
+                105736,
+                105737,
+                105738,
+                105741,
+                105759,
+                108100,
+                113398,
+                113635
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "spellReplaced",
+          "entryId": 130469,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 13715,
+            "name": "Dual Wield Specialization"
+          },
+          "new": {
+            "spellId": 1329284,
+            "name": "Flash of Steel"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130469,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Increases the damage done by your off-hand weapon by $s1%.",
+          "new": "Increases the Energy generated by your Shank ability by $s1 and reduces its cooldown by ${$s2/-1000}.1 sec."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130469,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 5,
+          "new": 3
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130469,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 10,
+          "new": 6
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130469,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 15,
+          "new": 9
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130469,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": 20,
+          "new": 12
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130469,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": 25,
+          "new": 15
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130469,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 50,
+          "new": 15
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 130469,
+          "effectIndex": 1,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 1,
+            "perRank": [
+              {
+                "rank": 1,
+                "value": -400
+              },
+              {
+                "rank": 2,
+                "value": -800
+              },
+              {
+                "rank": 3,
+                "value": -1200
+              },
+              {
+                "rank": 4,
+                "value": -1600
+              },
+              {
+                "rank": 5,
+                "value": -2000
+              }
+            ],
+            "perRankStatus": "resolved",
+            "basePoints": -2500,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 105741,
+      "treeId": 1111,
+      "name": "Efficient Strikes",
+      "changes": [
+        {
+          "kind": "renamed",
+          "entryId": 130470,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Improved Sinister Strike",
+          "new": "Efficient Strikes"
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130470,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Reduces the Energy cost of your Sinister Strike ability by $s1.",
+          "new": "Reduces the Energy cost of your Sinister Strike and Hemorrhage abilities by $s1."
+        }
+      ]
+    },
+    {
+      "nodeId": 105743,
+      "treeId": 1111,
+      "name": "Premeditation",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 9680,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          },
+          "new": {
+            "x": 9680,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105749,
+                105751,
+                105753,
+                105754,
+                105755,
+                105756,
+                105757,
+                105760,
+                105761,
+                110868
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105745,
+                105749,
+                105751,
+                105756,
+                105757,
+                105760,
+                105761
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105745,
+      "treeId": 1111,
+      "name": "Dirty Deeds",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 9080,
+            "y": 4530,
+            "row": 4,
+            "column": 0
+          },
+          "new": {
+            "x": 9080,
+            "y": 2730,
+            "row": 1,
+            "column": 0
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105743,
+                105747,
+                105749,
+                105751,
+                105752,
+                105753,
+                105754,
+                105755,
+                105756,
+                105757,
+                105760,
+                105761,
+                110868
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105751,
+                105760,
+                105761
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105746,
+      "treeId": 1111,
+      "name": "Preparation",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105743,
+                105747,
+                105749,
+                105751,
+                105752,
+                105753,
+                105754,
+                105755,
+                105756,
+                105757,
+                105760,
+                105761,
+                110868
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105743,
+                105745,
+                105749,
+                105751,
+                105752,
+                105753,
+                105754,
+                105755,
+                105756,
+                105757,
+                105760,
+                105761,
+                110867
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105747,
+      "treeId": 1111,
+      "name": "Heightened Senses",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 9080,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          },
+          "new": {
+            "x": 9080,
+            "y": 4530,
+            "row": 4,
+            "column": 0
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105749,
+                105751,
+                105753,
+                105754,
+                105755,
+                105756,
+                105757,
+                105760,
+                105761,
+                110868
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105743,
+                105745,
+                105749,
+                105751,
+                105752,
+                105753,
+                105754,
+                105755,
+                105756,
+                105757,
+                105760,
+                105761,
+                110867
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105748,
+      "treeId": 1111,
+      "name": "Hemorrhage",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105743,
+                105747,
+                105749,
+                105751,
+                105752,
+                105753,
+                105754,
+                105755,
+                105756,
+                105757,
+                105760,
+                105761,
+                110868
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 20,
+              "countedNodeIds": [
+                105743,
+                105745,
+                105749,
+                105751,
+                105752,
+                105753,
+                105754,
+                105755,
+                105756,
+                105757,
+                105760,
+                105761,
+                110867
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130477,
+          "effectIndex": null,
+          "rank": null,
+          "old": "An instant strike that deals $m4% weapon damage ($m5% if a Dagger is equipped) and causes the target to take $m3% increased Rupture damage from the Rogue. Lasts $d. Awards $s2 Combo $lPoint:Points;.",
+          "new": "An instant strike that deals $m4% weapon damage ($m5% if a Dagger is equipped) and causes the target to take $m3% increased Rupture and Garrote damage from the Rogue. Lasts $d. Awards $s2 Combo $lPoint:Points;."
+        }
+      ]
+    },
+    {
+      "nodeId": 105749,
+      "treeId": 1111,
+      "name": "Improved Ambush",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 10880,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          },
+          "new": {
+            "x": 10280,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105756,
+                105760,
+                105761
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105751,
+                105760,
+                105761
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105750,
+      "treeId": 1111,
+      "name": "Boot Knife",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105743,
+                105745,
+                105746,
+                105747,
+                105748,
+                105749,
+                105751,
+                105752,
+                105753,
+                105754,
+                105755,
+                105756,
+                105757,
+                105760,
+                105761,
+                110868
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105743,
+                105745,
+                105746,
+                105747,
+                105748,
+                105749,
+                105751,
+                105752,
+                105753,
+                105754,
+                105755,
+                105756,
+                105757,
+                105760,
+                105761,
+                110867
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "spellReplaced",
+          "entryId": 130479,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 462708,
+            "name": "Cutthroat"
+          },
+          "new": {
+            "spellId": 1329286,
+            "name": "Boot Knife"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130479,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Your Backstab has a $m1% chance to cause your next Ambush within $462707d to not require Stealth.",
+          "new": "Grants your Shank ability a $s1% chance to add $s2 Combo Points to the target."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130479,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 3,
+          "new": 20
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130479,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 6,
+          "new": 40
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130479,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 9,
+          "new": 60
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130479,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": 12,
+          "new": 80
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130479,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": 15,
+          "new": 100
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130479,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 15,
+          "new": 100
+        },
+        {
+          "kind": "effectStatusChanged",
+          "entryId": 130479,
+          "effectIndex": 1,
+          "rank": null,
+          "old": "incomplete",
+          "new": "none"
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130479,
+          "effectIndex": 1,
+          "rank": 1,
+          "old": 5,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130479,
+          "effectIndex": 1,
+          "rank": 2,
+          "old": 10,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130479,
+          "effectIndex": 1,
+          "rank": 3,
+          "old": 15,
+          "new": null
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130479,
+          "effectIndex": 1,
+          "rank": null,
+          "old": null,
+          "new": 2
+        }
+      ]
+    },
+    {
+      "nodeId": 105751,
+      "treeId": 1111,
+      "name": "Setup",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 9080,
+            "y": 2730,
+            "row": 1,
+            "column": 0
+          },
+          "new": {
+            "x": 9080,
+            "y": 2130,
+            "row": 0,
+            "column": 0
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105756,
+                105760,
+                105761
+              ]
+            }
+          ],
+          "new": []
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130480,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Gives you a $m1% chance to add a Combo Point to your target after Dodging one of their attacks or fully resisting one of their spells.",
+          "new": "Gives you a $m1% chance to add a Combo Point to your target after Dodging their attack or fully resisting one of their spells."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130480,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 33,
+          "new": 15
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130480,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 67,
+          "new": 30
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130480,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 100,
+          "new": 45
+        }
+      ]
+    },
+    {
+      "nodeId": 105752,
+      "treeId": 1111,
+      "name": "Serrated Blades",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 10280,
+            "y": 3930,
+            "row": 3,
+            "column": 2
+          },
+          "new": {
+            "x": 10280,
+            "y": 3330,
+            "row": 2,
+            "column": 2
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105749,
+                105751,
+                105753,
+                105754,
+                105755,
+                105756,
+                105757,
+                105760,
+                105761,
+                110868
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105745,
+                105749,
+                105751,
+                105756,
+                105757,
+                105760,
+                105761
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105753,
+      "treeId": 1111,
+      "name": "Elusiveness",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 9680,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          },
+          "new": {
+            "x": 9080,
+            "y": 3930,
+            "row": 3,
+            "column": 0
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105756,
+                105760,
+                105761
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105743,
+                105745,
+                105749,
+                105751,
+                105752,
+                105755,
+                105756,
+                105757,
+                105760,
+                105761
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105754,
+      "treeId": 1111,
+      "name": "Ghostly Strike",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 9680,
+            "y": 3330,
+            "row": 2,
+            "column": 1
+          },
+          "new": {
+            "x": 9680,
+            "y": 3930,
+            "row": 3,
+            "column": 1
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105749,
+                105751,
+                105753,
+                105756,
+                105757,
+                105760,
+                105761
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105743,
+                105745,
+                105749,
+                105751,
+                105752,
+                105755,
+                105756,
+                105757,
+                105760,
+                105761
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130483,
+          "effectIndex": null,
+          "rank": null,
+          "old": "A strike that deals $s1% ($m4% if a Dagger is equipped in your Main Hand) weapon damage and increases your chance to dodge by $s2% for $d.  Awards $s3 combo $lpoint:points;.",
+          "new": "A strike that deals $s1% ($m4% if a Dagger is equipped in your Main Hand) weapon damage, increases your chance to dodge by $s2% for $d, and causes your next Ambush or Garrote cast within $1329326d to not require Stealth.  Awards $s3 combo $lpoint:points;."
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 130483,
+          "effectIndex": 4,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 4,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 0,
+            "unresolvedReason": null
+          }
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 130483,
+          "effectIndex": 5,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 5,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 0,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 105755,
+      "treeId": 1111,
+      "name": "Initiative",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105749,
+                105751,
+                105753,
+                105756,
+                105757,
+                105760,
+                105761
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105745,
+                105749,
+                105751,
+                105756,
+                105757,
+                105760,
+                105761
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105756,
+      "treeId": 1111,
+      "name": "Camouflage",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 9080,
+            "y": 2130,
+            "row": 0,
+            "column": 0
+          },
+          "new": {
+            "x": 9680,
+            "y": 2730,
+            "row": 1,
+            "column": 1
+          }
+        },
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 5,
+          "new": 3
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105751,
+                105760,
+                105761
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130485,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 3,
+          "new": 5
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130485,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 6,
+          "new": 10
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130485,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 9,
+          "new": 15
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130485,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": 12,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130485,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": 15,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130485,
+          "effectIndex": 1,
+          "rank": 2,
+          "old": -3000,
+          "new": -4000
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130485,
+          "effectIndex": 1,
+          "rank": 3,
+          "old": -4000,
+          "new": -6000
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130485,
+          "effectIndex": 1,
+          "rank": 4,
+          "old": -5000,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130485,
+          "effectIndex": 1,
+          "rank": 5,
+          "old": -6000,
+          "new": null
+        }
+      ]
+    },
+    {
+      "nodeId": 105757,
+      "treeId": 1111,
+      "name": "Dirty Tricks",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 10280,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "new": {
+            "x": 10880,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105756,
+                105760,
+                105761
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                105751,
+                105760,
+                105761
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 105759,
+      "treeId": 1111,
+      "name": "Composure",
+      "changes": [
+        {
+          "kind": "sectionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 0,
+          "new": 1
+        },
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 1020,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          },
+          "new": {
+            "x": 6820,
+            "y": 3330,
+            "row": 2,
+            "column": 3
+          }
+        },
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 1,
+          "new": 2
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105720,
+                105721,
+                105722,
+                105723,
+                105739,
+                105742
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                105708,
+                105719,
+                105732,
+                105737,
+                105738,
+                105741,
+                113398
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "spellReplaced",
+          "entryId": 130488,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 14179,
+            "name": "Relentless Strikes"
+          },
+          "new": {
+            "spellId": 1329265,
+            "name": "Composure"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130488,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Your finishing moves have a $m1% chance per Combo Point to restore $14181s1 Energy.",
+          "new": "Increases the Energy cost reduction of your Poised ability by $s1."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130488,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 20,
+          "new": -5
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130488,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": null,
+          "new": -10
+        }
+      ]
+    },
+    {
+      "nodeId": 105760,
+      "treeId": 1111,
+      "name": "Opportunity",
+      "changes": [
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 2,
+          "new": 5
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130489,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 5,
+          "new": 4
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130489,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 10,
+          "new": 8
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130489,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": null,
+          "new": 12
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130489,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": null,
+          "new": 16
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130489,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": null,
+          "new": 20
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130489,
+          "effectIndex": 1,
+          "rank": 1,
+          "old": 5,
+          "new": 4
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130489,
+          "effectIndex": 1,
+          "rank": 2,
+          "old": 10,
+          "new": 8
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130489,
+          "effectIndex": 1,
+          "rank": 3,
+          "old": null,
+          "new": 12
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130489,
+          "effectIndex": 1,
+          "rank": 4,
+          "old": null,
+          "new": 16
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 130489,
+          "effectIndex": 1,
+          "rank": 5,
+          "old": null,
+          "new": 20
+        }
+      ]
+    },
+    {
+      "nodeId": 108100,
+      "treeId": 1111,
+      "name": "Flawless Execution",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105708,
+                105719,
+                105732,
+                105735,
+                105736,
+                105737,
+                105738,
+                105741,
+                113398
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105708,
+                105719,
+                105732,
+                105735,
+                105736,
+                105737,
+                105738,
+                105741,
+                105759,
+                113398
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "effectStatusChanged",
+          "entryId": 133482,
+          "effectIndex": 0,
+          "rank": null,
+          "old": "none",
+          "new": "resolved"
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 133482,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": null,
+          "new": -15
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 133482,
+          "effectIndex": 0,
+          "rank": null,
+          "old": -10,
+          "new": -15
+        }
+      ]
+    },
+    {
+      "nodeId": 110866,
+      "treeId": 1111,
+      "name": "Death Mark",
+      "changes": [
+        {
+          "kind": "spellReplaced",
+          "entryId": 137864,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "spellId": 1310721,
+            "name": "Thousand Cuts"
+          },
+          "new": {
+            "spellId": 1316709,
+            "name": "Death Mark"
+          }
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 137864,
+          "effectIndex": null,
+          "rank": null,
+          "old": "When your Rupture ability deals periodic damage, the Energy cost of your next Hemorrhage or Backstab ability within $1310723d is reduced by $1310723s1, stacking up to $1310723u times.",
+          "new": "Finishing move that marks the target, storing a portion of the damage dealt by your attacks per Combo Point. Garrote and Rupture damage is stored at twice the rate. After $d, the stored damage is dealt, up to a maximum increased by Attack Power and Critical Strike chance:\r\n   1 point  : ${1*$<ratio>}% stored, ${((63+(1*102)+1*$<maxAP>*$apm)*($mcrit/100+1))*$<coup>} damage cap\r\n   2 points: ${2*$<ratio>}% stored, ${((63+(2*102)+2*$<maxAP>*$apm)*($mcrit/100+1))*$<coup>} damage cap\r\n   3 points: ${3*$<ratio>}% stored, ${((63+(3*102)+3*$<maxAP>*$apm)*($mcrit/100+1))*$<coup>} damage cap\r\n   4 points: ${4*$<ratio>}% stored, ${((63+(4*102)+4*$<maxAP>*$apm)*($mcrit/100+1))*$<coup>} damage cap\r\n   5 points: ${5*$<ratio>}% stored, ${((63+(5*102)+5*$<maxAP>*$apm)*($mcrit/100+1))*$<coup>} damage cap"
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 137864,
+          "effectIndex": 1,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 1,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 0,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 110867,
+      "treeId": 1111,
+      "name": "Quick Getaway",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 9080,
+            "y": 5130,
+            "row": 5,
+            "column": 0
+          },
+          "new": {
+            "x": 10880,
+            "y": 3930,
+            "row": 3,
+            "column": 3
+          }
+        },
+        {
+          "kind": "maxRankChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": 5,
+          "new": 2
+        },
+        {
+          "kind": "prerequisitesChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "nodeId": 105745,
+              "kind": "sufficient",
+              "name": "Dirty Deeds"
+            }
+          ],
+          "new": [
+            {
+              "nodeId": 105757,
+              "kind": "sufficient",
+              "name": "Dirty Tricks"
+            }
+          ]
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 25,
+              "countedNodeIds": [
+                105743,
+                105745,
+                105746,
+                105747,
+                105748,
+                105749,
+                105751,
+                105752,
+                105753,
+                105754,
+                105755,
+                105756,
+                105757,
+                105760,
+                105761,
+                110868
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 15,
+              "countedNodeIds": [
+                105743,
+                105745,
+                105749,
+                105751,
+                105752,
+                105755,
+                105756,
+                105757,
+                105760,
+                105761
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "renamed",
+          "entryId": 137865,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Quietus",
+          "new": "Quick Getaway"
+        },
+        {
+          "kind": "descriptionChanged",
+          "entryId": 137865,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Your Sinister Strike, Ghostly Strike, and Hemorrhage abilities cause $m1% more damage against targets below $m2% health.",
+          "new": "Increases the maximum number of targets you may have Sapped by $s1, and increases your movement speed by $s2% for $1329282d after Sapping a target."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137865,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 2,
+          "new": 1
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137865,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 4,
+          "new": 1
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137865,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 6,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137865,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": 8,
+          "new": null
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137865,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": 10,
+          "new": null
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 137865,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 10,
+          "new": 1
+        },
+        {
+          "kind": "effectStatusChanged",
+          "entryId": 137865,
+          "effectIndex": 1,
+          "rank": null,
+          "old": "none",
+          "new": "resolved"
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137865,
+          "effectIndex": 1,
+          "rank": 1,
+          "old": null,
+          "new": 15
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137865,
+          "effectIndex": 1,
+          "rank": 2,
+          "old": null,
+          "new": 30
+        }
+      ]
+    }
+  ]
+}

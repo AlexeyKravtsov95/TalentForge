@@ -1,0 +1,296 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 3,
+    "token": "HUNTER",
+    "name": "Hunter"
+  },
+  "fromBuild": "1.60.1.70707",
+  "toBuild": "1.60.1.70790",
+  "fromContentHash": "sha256:9c86189b08f40f7ee3646e5e01545876dabf6b481f775f4f0f1d99f91bcc4c47",
+  "toContentHash": "sha256:d97fa7d915ceecd2ac8377161c266209a7f2f38d155d6607369ba4c651a7add2",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 8,
+    "changesByKind": {
+      "effectBasePointsChanged": 2,
+      "effectRankValueChanged": 8,
+      "positionChanged": 2,
+      "unlockRequirementsChanged": 3
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 104969,
+      "treeId": 1091,
+      "name": "Unleashed Fury",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104960,
+                104972,
+                104973,
+                104974,
+                104975,
+                104976
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104960,
+                104972,
+                104974,
+                104975,
+                104976
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 104970,
+      "treeId": 1091,
+      "name": "Bestial Swiftness",
+      "changes": [
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104960,
+                104972,
+                104973,
+                104974,
+                104975,
+                104976
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104960,
+                104972,
+                104974,
+                104975,
+                104976
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 104972,
+      "treeId": 1091,
+      "name": "Improved Revive Pet",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 2820,
+            "y": 2730,
+            "row": 1,
+            "column": 3
+          },
+          "new": {
+            "x": 2220,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          }
+        }
+      ]
+    },
+    {
+      "nodeId": 104973,
+      "treeId": 1091,
+      "name": "Pathfinding",
+      "changes": [
+        {
+          "kind": "positionChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": {
+            "x": 2220,
+            "y": 2730,
+            "row": 1,
+            "column": 2
+          },
+          "new": {
+            "x": 1020,
+            "y": 3330,
+            "row": 2,
+            "column": 0
+          }
+        },
+        {
+          "kind": "unlockRequirementsChanged",
+          "entryId": null,
+          "effectIndex": null,
+          "rank": null,
+          "old": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 5,
+              "countedNodeIds": [
+                104960,
+                104976
+              ]
+            }
+          ],
+          "new": [
+            {
+              "kind": "pointsSpent",
+              "requiredPoints": 10,
+              "countedNodeIds": [
+                104960,
+                104972,
+                104974,
+                104975,
+                104976
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeId": 104997,
+      "treeId": 1091,
+      "name": "Sniper Shot",
+      "changes": [
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 129661,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 160,
+          "new": 320
+        }
+      ]
+    },
+    {
+      "nodeId": 105001,
+      "treeId": 1091,
+      "name": "Barrage",
+      "changes": [
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129665,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 3,
+          "new": 5
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129665,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 7,
+          "new": 10
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129665,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 10,
+          "new": 15
+        }
+      ]
+    },
+    {
+      "nodeId": 105004,
+      "treeId": 1091,
+      "name": "Trueshot Aura",
+      "changes": [
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 129668,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 15,
+          "new": 20
+        }
+      ]
+    },
+    {
+      "nodeId": 110859,
+      "treeId": 1091,
+      "name": "Lightning Reflexes",
+      "changes": [
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137851,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 2,
+          "new": 3
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137851,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 4,
+          "new": 6
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137851,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 6,
+          "new": 9
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137851,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": 8,
+          "new": 12
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137851,
+          "effectIndex": 0,
+          "rank": 5,
+          "old": 10,
+          "new": 15
+        }
+      ]
+    }
+  ]
+}
