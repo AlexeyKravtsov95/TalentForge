@@ -4,7 +4,8 @@
   "notifiedRelease": "1.60.1.70707-r1",
   "failuresNotified": [
     "ota-production/publish/PUBLIC_CATALOG",
-    "ota-production/publish/APPROVAL_GATES"
+    "ota-production/publish/APPROVAL_GATES",
+    "ota-production/publish/PUBLISH"
   ],
-  "updatedAt": "2026-11-05T03:36:39+00:00"
+  "updatedAt": "2026-11-05T04:28:33+00:00"
 }
