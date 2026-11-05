@@ -4,11 +4,10 @@
   "notified": [
     "1.60.1.70707-r1",
     "1.60.1.70753-r1",
-    "1.60.1.70755-r1"
+    "1.60.1.70755-r1",
+    "1.60.1.70790-r1"
   ],
-  "failuresNotified": [
-    "ota-prepare/prepare"
-  ],
+  "failuresNotified": [],
   "pending": [],
-  "updatedAt": "2026-11-05T03:27:13Z"
+  "updatedAt": "2026-11-05T04:53:32Z"
 }
