@@ -2,7 +2,7 @@ package io.github.alexeykravtsov95.talentforge.ui.tree
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,12 +18,12 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
@@ -32,6 +32,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,6 +41,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
@@ -49,11 +51,13 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.lerp
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.section_fit_tree
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.section_fit_tree_action
@@ -64,6 +68,8 @@ import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguage
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeRadius
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
+import kotlin.math.roundToInt
+import kotlinx.coroutines.flow.first
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -77,11 +83,8 @@ object TalentTreeSectionTabsMetrics {
     /** 1A v2 S1 tabs: 48 dp tall. */
     val TAB_HEIGHT_DP: Dp = 48.dp
 
-    /** 1A v2 S8: up to five tabs share the width while each keeps ≥ 72 dp; otherwise the row scrolls. */
+    /** 1A v2 S8: each tab has a minimum width of 72 dp. */
     val TAB_MIN_WIDTH_DP: Dp = 72.dp
-
-    /** Implementation-safe: the width of one tab in the scrollable row. */
-    val SCROLLING_TAB_WIDTH_DP: Dp = 96.dp
 
     /** 1A v2 S1: tab icon 20 dp. */
     val TAB_ICON_DP: Dp = 20.dp
@@ -180,8 +183,8 @@ fun talentSectionTabs(
  * section's first talent icon, its resolved display label (M5.REL.1: the
  * approved specialization name, e.g. "Arms" / "Оружие") and the points
  * spent in it. One tap switches the section; a tap on the active tab asks
- * for FIT. Any number of sections is supported: they share the width while
- * each tab keeps 72 dp, otherwise the row scrolls.
+ * for FIT. Tabs share the available space when their labels and counts fit,
+ * and scroll horizontally when their combined minimum widths exceed it.
  *
  * Accessibility: each tab is a selectable `Tab` whose merged text carries the
  * label and the count; the count is also its state description.
@@ -221,17 +224,60 @@ fun TalentTreeSectionTabs(
             },
     ) {
         if (tabs.isEmpty()) return@BoxWithConstraints
-        val shared = maxWidth / tabs.size
-        val scrolls = shared < TalentTreeSectionTabsMetrics.TAB_MIN_WIDTH_DP
-        val tabWidth = if (scrolls) TalentTreeSectionTabsMetrics.SCROLLING_TAB_WIDTH_DP else shared
-        val fontScale = LocalDensity.current.fontScale
+        val viewportWidth = constraints.maxWidth
+        val density = LocalDensity.current
+        val fontScale = density.fontScale
         val showIcons = maxWidth >= TalentTreeSectionTabsMetrics.ICONS_MIN_WIDTH_DP &&
             fontScale <= TalentTreeSectionTabsMetrics.ICONS_MAX_FONT_SCALE
         val numberOnly = fontScale >= TalentTreeSectionTabsMetrics.NUMBER_ONLY_FONT_SCALE
+        val tabIcons = tabs.map { if (showIcons) it.iconNodeId?.let(icons::iconOf) else null }
+        val shortLabels = tabs.indices.map { if (numberOnly) "${it + 1}" else null }
+        val textMeasurer = rememberTextMeasurer(cacheSize = tabs.size * 3)
+        val minimumWidths = with(density) {
+            val tabMin = TalentTreeSectionTabsMetrics.TAB_MIN_WIDTH_DP.roundToPx()
+            val sidePadding = TalentForgeSpacing.hairline.roundToPx() * 2
+            val gap = TabContentGap.roundToPx()
+            val iconWidth = TalentTreeSectionTabsMetrics.TAB_ICON_DP.roundToPx() + gap
+
+            tabs.mapIndexed { ordinal, tab ->
+                val label = shortLabels[ordinal] ?: tab.label
+                // Both weights must fit so that paging never changes the measured widths.
+                val labelWidth = maxOf(
+                    textMeasurer.measure(label, TabLabelStyle, softWrap = false, maxLines = 1).size.width,
+                    textMeasurer.measure(label, EmphasisedTabLabelStyle, softWrap = false, maxLines = 1).size.width,
+                )
+                val pointsWidth = textMeasurer.measure(
+                    tab.points.toString(), TabPointsStyle, softWrap = false, maxLines = 1,
+                ).size.width
+                val icon = if (tabIcons[ordinal] != null) iconWidth else 0
+                maxOf(tabMin, labelWidth + pointsWidth + sidePadding + gap + icon)
+            }
+        }
+        val tabWidths = adaptiveTabWidths(minimumWidths, viewportWidth)
+        val tabEdges = tabWidths.runningFold(0, Int::plus)
+        val scrollRange = tabEdges.last() - viewportWidth
+        val scrollState = if (scrollRange > 0) rememberScrollState() else null
         val selectedOrdinal = tabs.indexOfFirst { it.index == selectedIndex }.coerceAtLeast(0)
-        val indicatorWidth = tabWidth * TalentTreeSectionTabsMetrics.INDICATOR_WIDTH_FRACTION
-        val indicatorX by animateDpAsState(
-            targetValue = tabWidth * selectedOrdinal + (tabWidth - indicatorWidth) / 2,
+
+        if (scrollState != null) {
+            val start = tabEdges[selectedOrdinal]
+            val end = tabEdges[selectedOrdinal + 1]
+            LaunchedEffect(scrollState, viewportWidth, scrollRange, start, end, selectedIndex) {
+                // Wait for horizontalScroll to measure the current row before setting its offset.
+                snapshotFlow { scrollState.maxValue }.first { it == scrollRange }
+                val current = scrollState.value
+                val target = when {
+                    end - start > viewportWidth -> start // an oversized tab can be panned from its start
+                    start < current -> start
+                    end > current + viewportWidth -> end - viewportWidth
+                    else -> current
+                }
+                if (target != current) scrollState.animateScrollTo(target)
+            }
+        }
+
+        val indicatorOrdinal by animateFloatAsState(
+            targetValue = selectedOrdinal.toFloat(),
             animationSpec = tween(
                 durationMillis = TalentTreeSectionTabsMetrics.INDICATOR_MS,
                 easing = TalentTreeSectionTabsMetrics.INDICATOR_EASING,
@@ -247,41 +293,59 @@ fun TalentTreeSectionTabs(
         Box(
             Modifier
                 .fillMaxHeight()
-                .then(if (scrolls) Modifier.horizontalScroll(rememberScrollState()) else Modifier),
+                .then(if (scrollState != null) Modifier.horizontalScroll(scrollState) else Modifier),
         ) {
-            Row(Modifier.fillMaxHeight()) {
+            Row(Modifier.fillMaxHeight().selectableGroup()) {
                 for ((ordinal, tab) in tabs.withIndex()) {
                     SectionTab(
                         tab = tab,
-                        shortLabel = if (numberOnly) "${ordinal + 1}" else null,
+                        shortLabel = shortLabels[ordinal],
                         selected = tab.index == selectedIndex,
                         emphasised = (emphasisedOrdinal ?: selectedOrdinal) == ordinal,
                         accent = accent,
-                        icon = if (showIcons) tab.iconNodeId?.let { icons.iconOf(it) } else null,
+                        icon = tabIcons[ordinal],
                         highlightToken = if (tab.index in highlightedSections) highlightToken else 0,
                         onClick = { onSelectSection(tab.index) },
-                        modifier = Modifier.width(tabWidth),
+                        modifier = Modifier.width(with(density) { tabWidths[ordinal].toDp() }),
                     )
                 }
             }
-            Box(
-                Modifier
-                    .align(Alignment.BottomStart)
-                    .offset {
-                        val live = livePosition
-                        val x = if (live != null) {
-                            tabWidth * live() + (tabWidth - indicatorWidth) / 2
-                        } else {
-                            indicatorX
-                        }
-                        IntOffset(x.roundToPx(), 0)
-                    }
-                    .testTag(TALENT_SECTION_INDICATOR_TAG)
-                    .width(indicatorWidth)
-                    .height(TalentTreeSectionTabsMetrics.INDICATOR_HEIGHT_DP)
-                    .background(accent),
-            )
+            // Interpolate both edges in the scrolling content's coordinates. The live
+            // pager position is read during layout, so drag frames do not recompose the row.
+            Layout(
+                content = { Box(Modifier.testTag(TALENT_SECTION_INDICATOR_TAG).background(accent)) },
+                modifier = Modifier.matchParentSize(),
+            ) { measurables, constraints ->
+                val position = (livePosition?.invoke() ?: indicatorOrdinal).coerceIn(0f, tabs.lastIndex.toFloat())
+                val from = position.toInt()
+                val to = (from + 1).coerceAtMost(tabs.lastIndex)
+                val fraction = position - from
+                val tabStart = lerp(tabEdges[from], tabEdges[to], fraction)
+                val tabEnd = lerp(tabEdges[from + 1], tabEdges[to + 1], fraction)
+                val indicatorWidth = ((tabEnd - tabStart) * TalentTreeSectionTabsMetrics.INDICATOR_WIDTH_FRACTION)
+                    .roundToInt()
+                val indicatorStart = tabStart + (tabEnd - tabStart - indicatorWidth) / 2
+                val height = TalentTreeSectionTabsMetrics.INDICATOR_HEIGHT_DP.roundToPx()
+                val line = measurables.single().measure(Constraints.fixed(indicatorWidth, height))
+                layout(constraints.maxWidth, constraints.maxHeight) {
+                    line.placeRelative(indicatorStart, constraints.maxHeight - height)
+                }
+            }
         }
+    }
+}
+
+private fun adaptiveTabWidths(minimumWidths: List<Int>, viewportWidth: Int): List<Int> {
+    val equalShare = viewportWidth / minimumWidths.size
+    val widths = if (minimumWidths.all { it <= equalShare }) {
+        List(minimumWidths.size) { equalShare }
+    } else {
+        minimumWidths
+    }
+    val spare = viewportWidth - widths.sum()
+    if (spare <= 0) return widths
+    return widths.mapIndexed { ordinal, width ->
+        width + spare / widths.size + if (ordinal < spare % widths.size) 1 else 0
     }
 }
 
@@ -334,19 +398,20 @@ private fun SectionTab(
                     .clip(RoundedCornerShape(4.dp))
                     .testTag(TALENT_SECTION_TAB_ICON_TAG),
             )
-            Spacer(Modifier.width(6.dp))
+            Spacer(Modifier.width(TabContentGap))
         }
         BasicText(
             text = shortLabel ?: tab.label,
-            style = TabLabelStyle.copy(
-                color = if (emphasised) colors.textPrimary else colors.textSecondary,
-                fontWeight = if (emphasised) FontWeight.SemiBold else FontWeight.Medium,
-            ),
+            style = if (emphasised) {
+                EmphasisedTabLabelStyle.copy(color = colors.textPrimary)
+            } else {
+                TabLabelStyle.copy(color = colors.textSecondary)
+            },
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
+            softWrap = false,
             modifier = Modifier.weight(1f, fill = false),
         )
-        Spacer(Modifier.width(6.dp))
+        Spacer(Modifier.width(TabContentGap))
         BasicText(
             text = tab.points.toString(),
             style = TabPointsStyle.copy(
@@ -465,7 +530,9 @@ fun TalentSectionReturnChip(
 // ------------------------------------------------------------------ typography (1A v2 S1/S2)
 
 /** 1A v2 S1: tab label 13.5 sp. */
-private val TabLabelStyle = TextStyle(fontSize = 13.5.sp, lineHeight = 18.sp)
+private val TabLabelStyle = TextStyle(fontSize = 13.5.sp, lineHeight = 18.sp, fontWeight = FontWeight.Medium)
+private val EmphasisedTabLabelStyle = TabLabelStyle.copy(fontWeight = FontWeight.SemiBold)
+private val TabContentGap = 6.dp
 
 /** 1A v2 S1/S2: tab points 12.5 sp mono (Geist Mono in the mock; the platform mono here). */
 private val TabPointsStyle = TextStyle(
