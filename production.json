@@ -6,7 +6,8 @@
     "ota-production/publish/PUBLIC_CATALOG",
     "ota-production/publish/APPROVAL_GATES",
     "ota-production/publish/PUBLISH",
-    "ota-production/reconcile/PUBLISH"
+    "ota-production/reconcile/PUBLISH",
+    "ota-production/publish/PROVENANCE"
   ],
-  "updatedAt": "2026-11-07T19:13:13+00:00"
+  "updatedAt": "2026-11-07T20:32:22+00:00"
 }
