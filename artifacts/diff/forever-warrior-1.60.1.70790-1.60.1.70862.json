@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 1,
+    "token": "WARRIOR",
+    "name": "Warrior"
+  },
+  "fromBuild": "1.60.1.70790",
+  "toBuild": "1.60.1.70862",
+  "fromContentHash": "sha256:4253dce39ddab152fc6a3ddd633c27afcea166afd2f9d20c77b88e7a53099948",
+  "toContentHash": "sha256:76440f59ac6209c9a0d3695e7b9064e691e7ef8d84c3ae15c03616f402c2cc35",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 2,
+    "changesByKind": {
+      "descriptionChanged": 1,
+      "effectRankValueChanged": 3
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 110856,
+      "treeId": 1117,
+      "name": "Defiance",
+      "changes": [
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137848,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 5,
+          "new": 7
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137848,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 10,
+          "new": 13
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 137848,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 15,
+          "new": 20
+        }
+      ]
+    },
+    {
+      "nodeId": 113569,
+      "treeId": 1117,
+      "name": "Gore Drinker",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 141191,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Your Enrage, Berserker Rage, Bloodrage, Death Wish, and Bloodthirst abilities cause your next $m1 melee attacks to restore ${$s2}.1% of your maximum Health.",
+          "new": "Your Enrage, Berserker Rage, Bloodrage, Death Wish, Reckless Swings, and Bloodthirst abilities cause your next $m1 melee attacks to restore ${$s2}.1% of your maximum Health."
+        }
+      ]
+    }
+  ]
+}

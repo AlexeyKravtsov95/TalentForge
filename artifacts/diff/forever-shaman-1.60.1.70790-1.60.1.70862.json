@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 7,
+    "token": "SHAMAN",
+    "name": "Shaman"
+  },
+  "fromBuild": "1.60.1.70790",
+  "toBuild": "1.60.1.70862",
+  "fromContentHash": "sha256:0cac6ebc082b12d407db0a6027a3207c25edfd1e8c905b08a87795beb76c2a15",
+  "toContentHash": "sha256:84cb582e6b43f955a272b309dac08f4e92a207e457940f7f7df04437bd8ed68c",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 0,
+    "changesByKind": {}
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": []
+}
