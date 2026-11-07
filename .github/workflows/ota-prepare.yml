@@ -16,7 +16,7 @@ name: OTA data preparation
 # pull-request code (this workflow runs main's code only).
 # Runbook: docs/ota/auto-prepare.md
 on:
-  # after every run of the existing freshness watcher (M5.DATA.WATCH, daily ~06:00 UTC)
+  # after every freshness watcher run (M5.DATA.WATCH, 03:00/08:00/13:00 UTC daily)
   workflow_run:
     workflows: ["Dataset freshness"]
     types: [completed]
