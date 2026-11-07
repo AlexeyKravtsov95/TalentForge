@@ -333,7 +333,9 @@ def test_disabled_or_pr_event_never_reaches_secret_job(rehearsal, mode):
 
 
 @pytest.mark.parametrize("failure", ["artifact", "attempt", "approval"])
-def test_refused_preflight_is_durable_without_production_secret_reads(rehearsal, failure):
+def test_refused_preflight_is_durable_without_production_secret_reads(
+    rehearsal, monkeypatch, failure
+):
     r = rehearsal
     r.dependencies.api.corrupt = failure
     if failure == "approval":
@@ -354,11 +356,66 @@ def test_refused_preflight_is_durable_without_production_secret_reads(rehearsal,
         git(r.repo, "fetch", "origin", "main")
         git(r.repo, "reset", "--hard", "origin/main")
         r.environment["GITHUB_SHA"] = git(r.repo, "rev-parse", "HEAD").decode().strip()
+        # Rehearse CI for the withdrawal itself, then prove that the approval
+        # assessment refuses it before reading any production secret.
+        r.payload["workflow_run"]["head_sha"] = r.environment["GITHUB_SHA"]
+        original_run = r.dependencies.api.run
+
+        def withdrawal_ci(run_id, attempt):
+            run = original_run(run_id, attempt)
+            if run_id == 66:
+                run["head_sha"] = r.environment["GITHUB_SHA"]
+            return run
+
+        monkeypatch.setattr(r.dependencies.api, "run", withdrawal_ci)
     code, document = r.command("preflight")
     assert code == 1 and document.outcome == "BLOCKED"
     assert not r.reads and not r.writers
     receipt = next(iter(r.journal.read_all().values())).receipt
     assert receipt.state is RequestState.BLOCKED
+
+
+def test_blocked_request_resumes_after_approval_only_commit(rehearsal, monkeypatch):
+    r = rehearsal
+    r.journal.save(r.receipt.evolve(state=RequestState.BLOCKED, reason="CHECK_FAILED"))
+    request_path = r.remote / "docs/ota/release-requests" / f"{r.receipt.request.release_id}.json"
+    frozen_request = request_path.read_bytes()
+    r.approval.write_text(r.approval.read_text() + "\nOwner confirms the exact live build.\n")
+    git(r.remote, "add", str(r.approval))
+    git(
+        r.remote,
+        "-c",
+        "user.name=TEST",
+        "-c",
+        "user.email=test@example.invalid",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "commit",
+        "-qm",
+        "owner approval only",
+    )
+    git(r.repo, "fetch", "origin", "main")
+    git(r.repo, "reset", "--hard", "origin/main")
+    commit = git(r.repo, "rev-parse", "HEAD").decode().strip()
+    r.environment["GITHUB_SHA"] = commit
+    r.payload["workflow_run"]["head_sha"] = commit
+    original_run = r.dependencies.api.run
+
+    def current_ci(run_id, attempt):
+        run = original_run(run_id, attempt)
+        if run_id == 66:
+            run["head_sha"] = commit
+        return run
+
+    monkeypatch.setattr(r.dependencies.api, "run", current_ci)
+    code, preflight = r.command("preflight", arguments=("--operation", "publish"))
+    assert code == 0 and preflight.outcome == "READY" and preflight.writer_needed
+    assert not r.reads and not r.writers
+    code, published = r.command()
+    assert code == 0 and published.outcome == "VERIFIED"
+    assert len(r.writers) == 1
+    assert request_path.read_bytes() == frozen_request
+    assert r.command()[0] == 0 and len(r.writers) == 1
 
 
 def test_daily_reconcile_publishes_request_without_webhook(rehearsal):

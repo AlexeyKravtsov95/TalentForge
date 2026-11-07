@@ -484,7 +484,7 @@ class _Run:
                 self.ci_sha is not None
                 and request_change_commit(self.d.repo, request) != self.ci_sha
             ):
-                continue  # event writes only its exact release-change commit
+                continue  # event assesses only its exact request/approval-change commit
             if self.args.release_id is not None and request.release_id != self.args.release_id:
                 continue
             path = f"docs/ota/release-requests/{request.release_id}.json"

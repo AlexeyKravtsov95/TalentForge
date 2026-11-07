@@ -259,6 +259,53 @@ def test_reconciliation_discovers_ci_for_change_not_later_unrelated_commit(
         authorize_request(API(git(repo, "rev-parse", "HEAD").decode().strip()), repo, request)
 
 
+@pytest.mark.parametrize("discovery", [False, True])
+def test_approval_only_merge_requires_its_own_ci(request_history, monkeypatch, discovery):
+    from talent_data.ota.automation import prepare
+    from talent_data.ota.automation.authorization import authorize_request, request_change_commit
+
+    repo, request, request_commit, _ = request_history
+    monkeypatch.setattr(
+        prepare,
+        "_main_commit",
+        lambda sha: git(repo, "merge-base", "--is-ancestor", sha, "origin/main"),
+    )
+    approval = repo / "docs/ota/releases" / f"{request.release_id}.md"
+    approval.parent.mkdir(parents=True)
+    git(repo, "checkout", "-qb", "approval")
+    approval.write_text("owner accepts G7 for the exact package")
+    git(repo, "add", ".")
+    git(repo, "commit", "-qm", "owner approval")
+    branch_commit = git(repo, "rev-parse", "HEAD").decode().strip()
+    git(repo, "checkout", "main")
+    git(repo, "merge", "--no-ff", "approval", "-m", "approval merge")
+    merged = git(repo, "rev-parse", "HEAD").decode().strip()
+    git(repo, "update-ref", "refs/remotes/origin/main", merged)
+    assert request_change_commit(repo, request) == merged
+    pin = {} if discovery else {"ci_run_id": 9, "ci_attempt": 2}
+    assert authorize_request(API(merged), repo, request, **pin) == merged
+    for stale in (request_commit, branch_commit):
+        with pytest.raises(PreparationBlocked):
+            authorize_request(API(stale), repo, request, **pin)
+    # Later work, including another release's approval, cannot authorize this release.
+    (approval.parent / "1.60.1.99999-r1.md").write_text("other release")
+    git(repo, "add", ".")
+    git(repo, "commit", "-qm", "another release")
+    git(repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+    assert authorize_request(API(merged), repo, request, **pin) == merged
+    with pytest.raises(PreparationBlocked):
+        authorize_request(
+            API(git(repo, "rev-parse", "HEAD").decode().strip()), repo, request, **pin
+        )
+    # Revocation invalidates the previous authorization even with identical request bytes.
+    approval.unlink()
+    git(repo, "add", "-u")
+    git(repo, "commit", "-qm", "withdraw approval")
+    git(repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+    with pytest.raises(PreparationBlocked):
+        authorize_request(API(merged), repo, request, **pin)
+
+
 def test_ci_with_foreign_repository_or_failed_checks_is_refused(request_history, monkeypatch):
     from talent_data.ota.automation import prepare
     from talent_data.ota.automation.authorization import authorize_request
