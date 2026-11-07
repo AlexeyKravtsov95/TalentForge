@@ -4,14 +4,16 @@ name: OTA production publication
 # the merged exact request/approval; the production environment has no second review.
 # All journal preflights and catalog writers share a job-level lock, in dependency
 # order. No workflow-level lock (which would deadlock nested same-key jobs).
-# GitHub may replace pending runs: committed requests + durable journal + daily
+# GitHub may replace pending runs: committed requests + durable journal + periodic
 # reconciliation recover lost events. Do not assume FIFO or provider S3 CAS.
 on:
   workflow_run:
     workflows: ["CI"]
     types: [completed]
   schedule:
-    - cron: "41 3 * * *"
+    # Recover missed CI events within the next 15-minute schedule interval.
+    # Offset from the hour; GitHub may still delay scheduled starts.
+    - cron: "11,26,41,56 * * * *"
   workflow_dispatch:
     inputs:
       mode:
