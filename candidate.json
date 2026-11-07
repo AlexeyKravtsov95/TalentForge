@@ -8,7 +8,9 @@
     "1.60.1.70790-r1",
     "1.60.1.70862-r1"
   ],
-  "failuresNotified": [],
+  "failuresNotified": [
+    "ota-prepare/prepare"
+  ],
   "pending": [],
-  "updatedAt": "2026-11-07T05:46:17Z"
+  "updatedAt": "2026-11-07T14:56:20Z"
 }
