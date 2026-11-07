@@ -7,8 +7,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasAnyAncestor
@@ -77,6 +80,7 @@ class TalentTreeMotionUiTest {
         state: TalentTreeUiState.Ready = productState("WARRIOR"),
         reducedMotion: Boolean? = null,
         settle: Boolean = true,
+        fontScale: Float = 1f,
         block: ComposeUiTest.(Session) -> Unit,
     ) = runDesktopComposeUiTest(width = w.toInt(), height = h) {
         mainClock.autoAdvance = false
@@ -89,7 +93,7 @@ class TalentTreeMotionUiTest {
         )
         setContent {
             TalentForgeTheme {
-                CompositionLocalProvider(LocalDensity provides Density(1f), LocalReducedMotion provides reducedMotion, LocalAppLanguage provides AppLanguage.ENGLISH) {
+                CompositionLocalProvider(LocalDensity provides Density(1f, fontScale), LocalReducedMotion provides reducedMotion, LocalAppLanguage provides AppLanguage.ENGLISH) {
                     Box(Modifier.size(w.dp, h.dp)) {
                         TalentTreeScreen(
                             state,
@@ -124,11 +128,17 @@ class TalentTreeMotionUiTest {
     private fun ComposeUiTest.composed(section: Int): Boolean =
         onAllNodesWithTag(talentSectionPageTag(section)).fetchSemanticsNodes().isNotEmpty()
 
-    /** The tab indicator's position as a tab ordinal (three tabs share 360 dp). */
+    /** Recover the pager ordinal from the rendered tab centres, including the strip's scroll offset. */
     private fun ComposeUiTest.indicator(): Float {
-        val tab = w / 3f
-        val bounds = onNodeWithTag(TALENT_SECTION_INDICATOR_TAG).fetchSemanticsNode().boundsInRoot
-        return (bounds.center.x - tab / 2f) / tab
+        val tabs = onAllNodes(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Tab))
+            .fetchSemanticsNodes()
+        // boundsInRoot is clipped at the scrolling viewport. Position and size
+        // retain the geometry of the complete tab and indicator.
+        val centres = tabs.map { it.positionInRoot.x + it.size.width / 2f }
+        val indicator = onNodeWithTag(TALENT_SECTION_INDICATOR_TAG).fetchSemanticsNode()
+        val x = indicator.positionInRoot.x + indicator.size.width / 2f
+        val from = centres.indexOfLast { it <= x }.coerceIn(0, centres.lastIndex - 1)
+        return from + (x - centres[from]) / (centres[from + 1] - centres[from])
     }
 
     private fun Session.open(): Int = cameras.selectedSection ?: sections.first()
@@ -407,6 +417,38 @@ class TalentTreeMotionUiTest {
                 val shown = (w - leftOf(b)) / w // the visible share of Fury
                 assertEquals(shown, indicator(), 0.02f, "frame $it")
             }
+        }
+    }
+
+    @Test
+    fun theIndicatorFollowsUnequalScrollingTabsDuringSwipesAndTabTransitions() {
+        onPhone(state = productState("HUNTER"), fontScale = 1.3f) { session ->
+            val labels = listOf("Beast Mastery", "Marksmanship", "Survival")
+            val widths = labels.map { onNodeWithText(it).fetchSemanticsNode().size.width }
+            assertTrue(widths.distinct().size > 1, "this case exercises unequal tab widths")
+            assertTrue(widths.sum() > w, "this case exercises horizontal scrolling")
+            assertEquals(0f, indicator(), 0.02f)
+
+            drag(dx = -10f, steps = 10, release = false)
+            advance(16)
+            val middle = session.sections[1]
+            assertEquals((w - leftOf(middle)) / w, indicator(), 0.02f, "the indicator follows the held swipe")
+            onRoot().performTouchInput { up() }
+            rest()
+            assertSettledOn(session, middle, "the swipe opens Marksmanship")
+            assertEquals(1f, indicator(), 0.02f)
+
+            val last = session.sections.last()
+            onNodeWithText("Survival").performClick()
+            repeat(18) {
+                advance(16)
+                val shown = 1f + (w - leftOf(last)) / w
+                assertEquals(shown, indicator(), 0.02f, "frame $it while the strip scrolls")
+            }
+            rest()
+            assertSettledOn(session, last, "the tap opens Survival")
+            assertEquals(2f, indicator(), 0.02f)
+            assertTrue(session.reported.isEmpty())
         }
     }
 
