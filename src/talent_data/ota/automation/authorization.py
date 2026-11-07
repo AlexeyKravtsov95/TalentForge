@@ -20,6 +20,7 @@ from talent_data.ota.automation.prepare import (
 )
 from talent_data.ota.automation.provenance import REPOSITORY
 from talent_data.ota.automation.requests import ReleaseRequest, parse_request
+from talent_data.ota.release_package import APPROVALS_DIR, approval_record_at
 
 
 def committed_requests(repo: Path) -> tuple[ReleaseRequest, ...]:
@@ -43,12 +44,28 @@ def committed_requests(repo: Path) -> tuple[ReleaseRequest, ...]:
 
 
 def request_change_commit(repo: Path, request: ReleaseRequest) -> str:
-    """Identify the first-parent main commit of the current request's last change."""
+    """Identify the latest first-parent change to this request or its approval.
+
+    An approval-only merge must trigger the same exact-package assessment as the
+    request merge. CI for an older approval, a feature branch or unrelated work
+    cannot authorize the current pair of committed request/approval bytes.
+    """
     path = f"{REQUEST_DIR}/{request.release_id}.json"
+    approval_path = f"{APPROVALS_DIR}/{request.release_id}.md"
     current = git(repo, "show", f"origin/main:{path}")
     require(parse_request(current) == request, "REQUEST_CHANGED", "current main request differs")
     commit = (
-        git(repo, "log", "--first-parent", "-1", "--format=%H", "origin/main", "--", path)
+        git(
+            repo,
+            "log",
+            "--first-parent",
+            "-1",
+            "--format=%H",
+            "origin/main",
+            "--",
+            path,
+            approval_path,
+        )
         .decode("ascii", "strict")
         .strip()
     )
@@ -57,6 +74,12 @@ def request_change_commit(repo: Path, request: ReleaseRequest) -> str:
         git(repo, "show", f"{commit}:{path}") == current,
         "REQUEST_HISTORY",
         "request bytes differ at change commit",
+    )
+    require(
+        approval_record_at(repo, commit, request.release_id)
+        == approval_record_at(repo, "origin/main", request.release_id),
+        "REQUEST_HISTORY",
+        "approval bytes differ at change commit",
     )
     return commit
 
@@ -69,7 +92,7 @@ def authorize_request(
     ci_run_id: int | None = None,
     ci_attempt: int | None = None,
 ) -> str:
-    """Require successful CI for the exact commit which last changed this request.
+    """Require successful CI for the latest change to this request or its approval.
 
     Event processing supplies its own pinned CI run/attempt; scheduled reconciliation
     discovers runs independently of artifacts and checks each attempt via the API.
