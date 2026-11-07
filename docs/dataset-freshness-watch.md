@@ -1,6 +1,6 @@
 # Dataset freshness watcher (M5.DATA.WATCH)
 
-The watcher answers one question every day: is the app's product dataset
+The watcher answers one question three times a day: is the app's product dataset
 (`PRODUCT_BUNDLE`, currently `1.60.1.70450`) still the latest **publishable** Forever
 build? It reports through **one** tracked GitHub Issue and changes nothing else.
 
@@ -12,7 +12,7 @@ update.
 ## How it works
 
 ```
-.github/workflows/dataset-freshness.yml   (daily ~06:00 UTC + manual "Run workflow")
+.github/workflows/dataset-freshness.yml   (03:00 / 08:00 / 13:00 UTC + manual "Run workflow")
   1. checkout main, Python 3.12, pip install -e .
   2. scripts/check_product_freshness.py --output freshness/freshness.json
        = python -m talent_data builds freshness (M5.DATA.2), wago.tools /api/builds only
@@ -24,6 +24,8 @@ update.
        -> github.py (Issues REST, GITHUB_TOKEN); its exit code is the job's final status
 ```
 
+* Scheduled times are 10:00, 15:00 and 20:00 in `Asia/Novosibirsk` (UTC+7).
+  GitHub may delay scheduled runs; these times are not a delivery deadline.
 * Only the build index (`GET https://wago.tools/api/builds`) is read; no DB2 table is
   downloaded.
 * Permissions: `contents: read`, `issues: write`; the built-in `GITHUB_TOKEN`, no PAT.

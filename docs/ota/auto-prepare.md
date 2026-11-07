@@ -21,7 +21,7 @@ approval gates are unchanged.
 ## How it runs
 
 ```
-Dataset freshness (daily, M5.DATA.WATCH)  ──completed──▶  OTA data preparation
+Dataset freshness (03:00/08:00/13:00 UTC daily, M5.DATA.WATCH)  ──completed──▶  OTA data preparation
 Actions → OTA data preparation → Run workflow (build / base / force)  ──▶  (same job)
 
   1. checkout main (full history), Python 3.12, pip install -e ".[dev]"
@@ -43,6 +43,10 @@ job propose  (only when step 6 selected a candidate; M5.OTA.AUTO.3)
   3. scripts/ota_prepare.py propose  → check → branch ota-candidate/<game>-<build> → PR
   4. upload propose/ as  ota-propose-<run id>-<attempt>;  the final proposal status
 ```
+
+The scheduled checks run at 10:00, 15:00 and 20:00 in `Asia/Novosibirsk` (UTC+7).
+GitHub may delay scheduled runs. Each completed check triggers the preparation workflow;
+the existing review and publication gates still apply.
 
 Code: `src/talent_data/prepare/` (`detect.py`, `production.py`, `orchestrate.py`,
 `propose.py`, `runner.py`), `scripts/ota_prepare.py`. Permissions: the workflow default and the
