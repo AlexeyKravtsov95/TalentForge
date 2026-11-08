@@ -483,6 +483,21 @@ def test_zero_budget_and_nonfinite_budget_perform_no_requests():
         )
 
 
+def test_permanent_public_failure_does_not_consume_retry_budget():
+    clock = Clock()
+    calls = []
+
+    def handler(request):
+        calls.append(request.url.path)
+        return httpx.Response(403)
+
+    result = verify(
+        {}, clock, handler, expected_payload_sha256="sha256:" + "f" * 64, budget_seconds=60
+    )
+    assert not result.ok and result.problem == "HTTP_STATUS: 403"
+    assert len(calls) == 1 and clock.value == 0
+
+
 def test_renewal_receipt_wire_is_closed_and_required(renewal):
     import json
 
