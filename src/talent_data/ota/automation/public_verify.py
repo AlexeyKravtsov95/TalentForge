@@ -6,6 +6,7 @@ from collections import OrderedDict, deque
 from collections.abc import Callable, Mapping, Sequence
 from concurrent.futures import Future, ThreadPoolExecutor
 from contextlib import closing
+from contextvars import copy_context
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from time import monotonic
@@ -14,6 +15,7 @@ from urllib.parse import urlsplit
 import httpx
 
 from talent_data.models.manifest import DatasetManifest
+from talent_data.ota import io_metrics
 from talent_data.ota.models import (
     MAX_CATALOG_BYTES,
     MAX_RELEASE_BYTES,
@@ -56,7 +58,7 @@ def _require(condition: bool, problem: str, *, retryable: bool = False) -> None:
         raise _PublicFailure(problem, retryable=retryable)
 
 
-def _fetch_once(
+def _fetch_once_unobserved(
     client: httpx.Client,
     url: str,
     limit: int,
@@ -105,6 +107,29 @@ def _fetch_once(
         return bytes(body)
 
 
+def _fetch_once(
+    client: httpx.Client,
+    url: str,
+    limit: int,
+    *,
+    remaining: Callable[[], float],
+    retry: bool = False,
+) -> bytes:
+    body = None
+    try:
+        body = _fetch_once_unobserved(client, url, limit, remaining=remaining)
+        return body
+    finally:
+        io_metrics.count(
+            "GET",
+            bytes=len(body) if body is not None else 0,
+            retry=retry,
+            sha_ref=io_metrics.object_hash(urlsplit(url).path),
+        )
+        if body is None:
+            io_metrics.incomplete()
+
+
 def _fetch(
     client: httpx.Client, url: str, limit: int, *, remaining: Callable[[], float] = lambda: 30.0
 ) -> bytes:
@@ -115,7 +140,7 @@ def _fetch(
 
     for attempt in range(3):
         try:
-            return _fetch_once(client, url, limit, remaining=budget)
+            return _fetch_once(client, url, limit, remaining=budget, retry=attempt > 0)
         except (httpx.TransportError, _PublicFailure) as exc:
             transient = isinstance(exc, httpx.TransportError) or exc.retryable
             if not transient or attempt == 2 or budget() <= 0:
@@ -184,7 +209,10 @@ class _BlobCache:
                 self._cached_bytes -= len(self._bodies.pop(victim))
             self._queue.popleft()
             self._reserved_bytes += file.byte_length
-            self._pending[file.sha256] = (self._pool.submit(self._fetch, file), file.byte_length)
+            self._pending[file.sha256] = (
+                self._pool.submit(copy_context().run, self._fetch, file),
+                file.byte_length,
+            )
 
     def read(self, file: ReleaseFile) -> bytes:
         if file.sha256 not in self._bodies:
@@ -211,6 +239,7 @@ class _BlobCache:
         self._reserved_bytes = self._cached_bytes = 0
 
 
+@io_metrics.instrument("PUBLIC_VERIFY")
 def verify_publication(
     client: httpx.Client,
     *,

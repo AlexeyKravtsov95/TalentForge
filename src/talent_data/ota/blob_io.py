@@ -2,6 +2,7 @@
 
 from collections.abc import Callable, Iterable
 from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
+from contextvars import copy_context
 
 
 def run_bounded[T, R](
@@ -30,7 +31,7 @@ def run_bounded[T, R](
                 except StopIteration:
                     exhausted = True
                     break
-                future = pool.submit(worker, value)
+                future = pool.submit(copy_context().run, worker, value)
                 submitted[future] = len(submitted)
                 pending.add(future)
             if not pending:

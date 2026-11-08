@@ -1687,3 +1687,70 @@ def test_trigger_current_main_and_request_ci_both_required(code_only_recovery, m
     code, document = r.command(arguments=("--release-id", r.receipt.request.release_id))
     assert code == 1 and document.outcome == "BLOCKED"
     assert not r.reads and not r.writers
+
+
+def test_delivery_timings_record_verified_scoped_request(rehearsal):
+    from talent_data.ota.automation.timings import read_timings
+
+    r = rehearsal
+    r.dependencies.timing_now = lambda: r.clock[0] + timedelta(microseconds=123456)
+    timing = r.status.parent / "timing.json"
+    code, document = r.command(
+        arguments=("--release-id", r.receipt.request.release_id, "--timings-file", str(timing))
+    )
+    assert code == 0 and document.outcome == "VERIFIED"
+    result = read_timings(timing.read_bytes())
+    assert result.identity.request == r.receipt.request
+    assert result.identity.trigger_ci.run_id == result.identity.request_ci.run_id == 66
+    assert (
+        result.identity.trigger_ci.attempt == 2
+        and result.identity.main_sha == r.environment["GITHUB_SHA"]
+    )
+    assert result.proof.verified and result.verified_at is not None
+    assert result.verified_at.microsecond == 123456
+    assert result.slo == "UNKNOWN"  # this fixture supplies no PR/server-time evidence
+    assert result.io.get_requests > 0 and result.io.put_requests > 0
+    assert {"UPLOAD", "CATALOG_WRITE", "PRIVATE_READBACK", "PUBLIC_VERIFY"} <= {
+        p.name for p in result.phases
+    }
+    assert not any(secret in timing.read_text() for secret in r.secrets.values())
+
+
+def test_timing_file_failure_does_not_erase_verified_publication(rehearsal, monkeypatch, capsys):
+    r = rehearsal
+    timing = r.status.parent / "timing.json"
+    original = Path.write_text
+
+    def write(path, *args, **kwargs):
+        if path == timing.with_suffix(".json.tmp"):
+            raise OSError("TEST-SECRET-METRIC-WRITE")
+        return original(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "write_text", write)
+    code, document = r.command(
+        arguments=("--release-id", r.receipt.request.release_id, "--timings-file", str(timing))
+    )
+    assert code == 0 and document.outcome == "VERIFIED"
+    assert r.journal.load(r.receipt.request_digest).receipt.state is RequestState.VERIFIED
+    assert len(r.writers) == 1
+    error = capsys.readouterr().err
+    assert "DELIVERY_TIMINGS_UNAVAILABLE" in error and "TEST-SECRET" not in error
+
+
+def test_pending_public_timing_retains_expected_payload_pin(rehearsal):
+    from talent_data.ota.automation.timings import read_timings
+
+    r = rehearsal
+    r.public_old[0] = r.store.get(CATALOG)
+    timing = r.status.parent / "timing.json"
+    code, document = r.command(
+        arguments=("--release-id", r.receipt.request.release_id, "--timings-file", str(timing))
+    )
+    assert code == 3 and document.outcome == "PUBLISHED_NOT_VERIFIED"
+    result = read_timings(timing.read_bytes())
+    assert (
+        result.expected_payload_sha256
+        == r.journal.load(r.receipt.request_digest).receipt.payload_sha256
+    )
+    assert result.expected_payload_sha256 != result.proof.payload_sha256
+    assert result.verified_at is None and result.slo == "PENDING"

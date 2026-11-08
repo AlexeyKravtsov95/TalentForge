@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Mapping
+from dataclasses import dataclass
 from pathlib import Path
 
 from talent_data.ota.automation.prepare import (
@@ -19,7 +20,7 @@ from talent_data.ota.automation.prepare import (
     verify_ci,
 )
 from talent_data.ota.automation.provenance import REPOSITORY
-from talent_data.ota.automation.requests import ReleaseRequest, parse_request
+from talent_data.ota.automation.requests import ReleaseRequest, RunPin, parse_request
 from talent_data.ota.release_package import APPROVALS_DIR, approval_record_at
 
 
@@ -96,14 +97,21 @@ def request_ci_pin(
     return trigger_pin if trigger_sha == request_change_commit(repo, request) else None
 
 
-def authorize_request(
+@dataclass(frozen=True)
+class VerifiedCi:
+    pin: RunPin
+    run: dict[str, object]
+    jobs: tuple[dict[str, object], ...]
+
+
+def authorize_request_ci(
     api: GitHub,
     repo: Path,
     request: ReleaseRequest,
     *,
     ci_run_id: int | None = None,
     ci_attempt: int | None = None,
-) -> str:
+) -> VerifiedCi:
     """Require successful CI for the latest change to this request or its approval.
 
     Event processing supplies its own pinned CI run/attempt; scheduled reconciliation
@@ -130,13 +138,30 @@ def authorize_request(
         except PreparationBlocked:
             continue
         if sha == commit:
-            return sha
+            return VerifiedCi(
+                RunPin(workflow_path=CI_WORKFLOW, run_id=run_id, attempt=attempt, head_sha=sha),
+                dict(run),
+                tuple(dict(job) for job in jobs),
+            )
     raise PreparationBlocked("CI_MISSING", "no successful CI for exact request-change commit")
+
+
+def authorize_request(
+    api: GitHub,
+    repo: Path,
+    request: ReleaseRequest,
+    *,
+    ci_run_id: int | None = None,
+    ci_attempt: int | None = None,
+) -> str:
+    return authorize_request_ci(
+        api, repo, request, ci_run_id=ci_run_id, ci_attempt=ci_attempt
+    ).pin.head_sha
 
 
 def verify_invocation(
     api: GitHub, repo: Path, environment: Mapping[str, str], payload: dict[str, object]
-) -> None:
+) -> VerifiedCi | None:
     """Bind this trusted-main workflow run, actor, ref and event to GitHub API facts."""
     same(environment.get("GITHUB_REPOSITORY"), REPOSITORY, "TRIGGER_REPOSITORY", "repository")
     same(environment.get("GITHUB_REF"), "refs/heads/main", "TRIGGER_REF", "ref")
@@ -201,9 +226,16 @@ def verify_invocation(
         same(ci.get("run_attempt"), ci_attempt, "TRIGGER_CI", "attempt")
         same(ci.get("head_sha"), trigger.get("head_sha"), "TRIGGER_CI", "head SHA")
         same(ci.get("head_sha"), head, "TRIGGER_CI", "current main CI")
-        verify_ci(
+        jobs = api.pages(f"/actions/runs/{ci_id}/attempts/{ci_attempt}/jobs", "jobs")
+        sha = verify_ci(
             ci,
-            api.pages(f"/actions/runs/{ci_id}/attempts/{ci_attempt}/jobs", "jobs"),
+            jobs,
             run_id=ci_id,
             attempt=ci_attempt,
         )
+        return VerifiedCi(
+            RunPin(workflow_path=CI_WORKFLOW, run_id=ci_id, attempt=ci_attempt, head_sha=sha),
+            dict(ci),
+            tuple(dict(job) for job in jobs),
+        )
+    return None

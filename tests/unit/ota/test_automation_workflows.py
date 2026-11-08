@@ -576,3 +576,47 @@ def test_changed_approval_never_uses_old_request_ci(request_history, monkeypatch
     with pytest.raises(PreparationBlocked):
         authorize_request(API(old_sha), repo, request)
     assert authorize_request(API(new_sha), repo, request) == new_sha
+
+
+@pytest.mark.parametrize(
+    ("step", "filename"),
+    [
+        ("Secret-free preflight", "preflight-timings.json"),
+        ("Publish or renew", "delivery-timings.json"),
+    ],
+)
+@pytest.mark.parametrize("selected", [False, True])
+def test_real_publication_steps_request_scoped_timing_only(tmp_path, step, filename, selected):
+    import os
+    import sys
+
+    from tests.unit.test_telegram_notify import workflow_step_script
+
+    executable = tmp_path / "python"
+    capture = tmp_path / "argv.json"
+    executable.write_text(
+        f"#!{sys.executable}\nimport json, os, sys\nfrom pathlib import Path\n"
+        "Path(os.environ['CAPTURE']).write_text(json.dumps(sys.argv[1:]))\n"
+    )
+    executable.chmod(0o755)
+    run = subprocess.run(
+        ["bash", "-e", "-c", workflow_step_script("ota-production-publish.yml", step)],
+        env={
+            **os.environ,
+            "PATH": str(tmp_path) + os.pathsep + os.environ["PATH"],
+            "CAPTURE": str(capture),
+            "CI_RUN_ID": "",
+            "CI_ATTEMPT": "",
+            "RELEASE_ID": "1.60.1.70862-r1" if selected else "",
+            "OPERATION": "publish",
+            "EXECUTE": "true",
+            "RUNNER_TEMP": str(tmp_path),
+        },
+        capture_output=True,
+    )
+    assert run.returncode == 0, run.stderr
+    args = json.loads(capture.read_text())
+    if selected:
+        assert args[args.index("--timings-file") + 1] == str(tmp_path / filename)
+    else:
+        assert "--timings-file" not in args

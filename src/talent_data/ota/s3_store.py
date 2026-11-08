@@ -65,6 +65,7 @@ from enum import StrEnum
 from time import monotonic
 from typing import Any, Protocol
 
+from talent_data.ota import io_metrics
 from talent_data.ota.errors import OtaPublisherError
 from talent_data.ota.models import MAX_CATALOG_BYTES, Channel, OtaCatalog
 from talent_data.ota.s3_channels import PROFILES, require_profile
@@ -474,15 +475,20 @@ class S3BlobStore:
         )
         method = getattr(client, operation)
         started = monotonic()
+        metadata: dict[str, Any] = {}
         try:
             result: dict[str, Any] = method(Bucket=self.bucket, Key=key, **kwargs)
+            raw_meta = result.get("ResponseMetadata", {})
+            if isinstance(raw_meta, dict):
+                metadata = raw_meta
         except Exception as exc:
             kind, detail = _classify(exc)
             error = S3StoreError(kind, key, f"{operation}: {detail}")
             if operation in {"get_object", "head_object", "put_object", "delete_object"}:
                 error.operation = operation
             response = getattr(exc, "response", {})
-            metadata = response.get("ResponseMetadata", {}) if isinstance(response, dict) else {}
+            raw_meta = response.get("ResponseMetadata", {}) if isinstance(response, dict) else {}
+            metadata = raw_meta if isinstance(raw_meta, dict) else {}
             if isinstance(metadata, dict):
                 status = metadata.get("HTTPStatusCode")
                 retries = metadata.get("RetryAttempts")
@@ -491,7 +497,28 @@ class S3BlobStore:
                 if type(retries) is int and 0 <= retries <= 100:
                     error.attempt = retries + 1
             error.elapsed_seconds = max(0.0, monotonic() - started)
+            io_metrics.record_failure(error.diagnostic())
             raise error from exc
+        finally:
+            operations: dict[str, io_metrics.Operation] = {
+                "get_object": "GET",
+                "head_object": "HEAD",
+                "put_object": "PUT",
+            }
+            metric_operation = operations.get(operation)
+            if metric_operation is not None:
+                retries = metadata.get("RetryAttempts")
+                attempts = retries + 1 if type(retries) is int and 0 <= retries <= 100 else 1
+                if type(retries) is not int:
+                    io_metrics.incomplete()
+                for attempt in range(attempts):
+                    body = kwargs.get("Body", b"")
+                    io_metrics.count(
+                        metric_operation,
+                        bytes=len(body) if isinstance(body, bytes) else 0,
+                        retry=attempt > 0,
+                        sha_ref=io_metrics.object_hash(key),
+                    )
         return result
 
     # ------------------------------------------------------------------ BlobStore
@@ -624,9 +651,11 @@ class S3BlobStore:
             data: bytes = body.read()
         except Exception as exc:
             kind, detail = _classify(exc)
+            io_metrics.incomplete()
             raise S3StoreError(kind, key, f"get_object body: {detail}") from exc
         finally:
             body.close()
+        io_metrics.add_bytes(len(data))
         expected = response.get("ContentLength")
         if expected is not None and expected != len(data):
             raise S3StoreError(

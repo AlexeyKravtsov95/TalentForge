@@ -33,6 +33,7 @@ from pathlib import Path
 from typing import Protocol
 
 from talent_data.models.manifest import DatasetManifest
+from talent_data.ota import io_metrics
 from talent_data.ota.blob_io import run_bounded
 from talent_data.ota.errors import OtaPublisherError
 from talent_data.ota.models import (
@@ -106,10 +107,15 @@ class LocalDirectoryStore:
 
     def get(self, key: str) -> bytes:
         path = self._path(key)
+        data = b""
         try:
-            return path.read_bytes()
+            data = path.read_bytes()
         except FileNotFoundError as exc:
             raise OtaPublisherError(f"object {key} not found in {self.root}") from exc
+        else:
+            return data
+        finally:
+            io_metrics.count("GET", bytes=len(data), sha_ref=io_metrics.object_hash(key))
 
     def put(self, key: str, data: bytes, *, cache_control: str) -> None:
         if not cache_control:
@@ -128,9 +134,15 @@ class LocalDirectoryStore:
         except BaseException:
             tmp.unlink(missing_ok=True)
             raise
+        finally:
+            io_metrics.count("PUT", bytes=len(data), sha_ref=io_metrics.object_hash(key))
 
     def exists(self, key: str) -> bool:
-        return self._path(key).is_file()
+        path = self._path(key)
+        try:
+            return path.is_file()
+        finally:
+            io_metrics.count("HEAD", bytes=0, sha_ref=io_metrics.object_hash(key))
 
     def list(self, prefix: str) -> list[str]:
         base = self._path(prefix)
@@ -278,6 +290,7 @@ def dataset_manifest_of_release(store: BlobStore, entry: CatalogRelease) -> Data
 # --------------------------------------------------------------------------- write path
 
 
+@io_metrics.instrument("UPLOAD")
 def upload_blobs(
     store: BlobStore, blobs: Mapping[str, bytes], *, upload_workers: int = 4
 ) -> list[str]:
@@ -317,6 +330,7 @@ def ensure_blob(store: BlobStore, sha_ref: str) -> bytes:
     return data
 
 
+@io_metrics.instrument("PRIVATE_REFERENCES")
 def ensure_catalog_references(
     store: BlobStore, catalog: OtaCatalog, *, read_workers: int = 8
 ) -> None:
@@ -358,6 +372,7 @@ def ensure_catalog_references(
     run_bounded(lengths.items(), verify, max_workers=read_workers)
 
 
+@io_metrics.instrument("CATALOG_WRITE")
 def write_catalog(
     store: BlobStore,
     channel: Channel,

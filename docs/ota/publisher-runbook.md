@@ -446,3 +446,25 @@ and credential-revocation procedure below when immediate cessation is required.
    dedicated CI credentials, inspect journal/config and re-enable only when the single-writer
    condition holds. Compromised primary/main/runner additionally requires custody response;
    backup stays offline and revoking a pinned key on installed apps requires an app update.
+### Approval-to-public-proof timing evidence
+
+For scoped, nonterminal release commands, `ota_release_automation.py` accepts
+`--timings-file <path>` together with `--release-id <releaseId>`. The optional
+`delivery-timings.v1` artifact binds the frozen request, approval epoch, main and
+exact trigger/request CI pins to phase durations and bounded object-I/O counters.
+It is diagnostic data, never publication authorization or a substitute for public proof.
+
+The 600-second target starts at GitHub's server `merged_at` for the first valid
+approval in the current authorization epoch. Retries and code-only fixes keep that
+start; revocation ends the epoch. If server-time evidence is unavailable, delivery
+may still verify, while latency is `UNKNOWN`. `PASS` requires the expected payload,
+all retained public files, a stable signed catalog and a confirmed terminal receipt.
+An elapsed time above 600 seconds is `MISS`; it never cancels or retries catalog PUT.
+
+Aggregate health/renewal and already-terminal idempotent commands have no new
+per-release timing artifact. The normal delivery routing supplies a release scope.
+Optional report-writing/upload failures do not erase a durable publication outcome.
+I/O counters identify incomplete measurement explicitly rather than inventing bytes
+or SDK retry counts. Unknown external error text, credentials, keys and signed URLs
+are excluded from these artifacts. The CI token needs read-only pull-request metadata
+access to resolve the server approval time; it gains no PR write permission.

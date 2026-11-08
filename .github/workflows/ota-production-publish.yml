@@ -59,6 +59,7 @@ jobs:
     permissions:
       contents: write # GitHub journal only; no production secret binding
       actions: read
+      pull-requests: read # Server approval merged_at for optional delivery timings.
     outputs:
       outcome: ${{ steps.preflight.outputs.outcome }}
       writer_needed: ${{ steps.preflight.outputs.writer_needed }}
@@ -115,6 +116,7 @@ jobs:
           fi
           if [ -n "$RELEASE_ID" ]; then args+=(--release-id "$RELEASE_ID"); fi
           if [ "$EXECUTE" = true ]; then args+=(--execute); fi
+          if [ -n "$RELEASE_ID" ]; then args+=(--timings-file "$RUNNER_TEMP/preflight-timings.json"); fi
           python scripts/ota_release_automation.py preflight --operation "$OPERATION" \
             --status-file "$RUNNER_TEMP/preflight.json" "${args[@]}"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -124,6 +126,14 @@ jobs:
           name: ota-production-preflight-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/preflight.json
           if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        continue-on-error: true # Optional telemetry never changes publication authority.
+        with:
+          name: ota-delivery-preflight-timings-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/preflight-timings.json
+          if-no-files-found: ignore
           retention-days: 14
       - name: Report preflight result
         if: always()
@@ -149,6 +159,7 @@ jobs:
     permissions:
       contents: write # journal; no App token, PR write or Telegram token
       actions: read
+      pull-requests: read # Server approval merged_at for optional delivery timings.
     env:
       OPERATION: ${{ needs.preflight.outputs.operation }}
       EXECUTE: "true"
@@ -187,6 +198,7 @@ jobs:
           fi
           if [ -n "$RELEASE_ID" ]; then args+=(--release-id "$RELEASE_ID"); fi
           if [ "$EXECUTE" = true ]; then args+=(--execute); fi
+          if [ -n "$RELEASE_ID" ]; then args+=(--timings-file "$RUNNER_TEMP/delivery-timings.json"); fi
           python scripts/ota_release_automation.py "$OPERATION" \
             --status-file "$RUNNER_TEMP/candidate-status.json" "${args[@]}"
       - name: Signer smoke
@@ -255,6 +267,14 @@ jobs:
           name: ota-production-writer-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/candidate-status.json
           if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        continue-on-error: true
+        with:
+          name: ota-delivery-timings-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/delivery-timings.json
+          if-no-files-found: ignore
           retention-days: 14
       - name: Report protected result
         if: always()
