@@ -30,7 +30,7 @@ from pydantic import Field, field_validator, model_validator
 from talent_data.ota.automation.authorization import (
     authorize_request,
     committed_requests,
-    request_change_commit,
+    request_ci_pin,
     verify_invocation,
 )
 from talent_data.ota.automation.ci_signer import (
@@ -400,16 +400,22 @@ class _Run:
         # Re-fetch current main + exact committed bytes + authorization and API metadata
         # on EVERY assessment, including after upload and the WRITE_STARTED barrier.
         self.stage, self.reason = "AUTHORIZATION", "REQUEST_AUTHORIZATION_FAILED"
-        refresh_main(self.d.repo)
+        self.invocation()
+        self.stage, self.reason = "AUTHORIZATION", "REQUEST_AUTHORIZATION_FAILED"
         path = f"docs/ota/release-requests/{request.release_id}.json"
         raw = git(self.d.repo, "show", f"origin/main:{path}")
         same(raw, self.current_bytes[request_digest(request)], "REQUEST_CHANGED", "request bytes")
+        pin = self.ci_pin
+        if self.env.get("GITHUB_EVENT_NAME") == "workflow_run":
+            pin = request_ci_pin(
+                self.d.repo, request, trigger_sha=self.ci_sha, trigger_pin=self.ci_pin
+            )
         authorize_request(
             self.d.api,
             self.d.repo,
             request,
-            ci_run_id=self.ci_pin[0] if self.ci_pin else None,
-            ci_attempt=self.ci_pin[1] if self.ci_pin else None,
+            ci_run_id=pin[0] if pin else None,
+            ci_attempt=pin[1] if pin else None,
         )
         self.stage, self.reason = "PROVENANCE", "PACKAGE_PROVENANCE_FAILED"
         runs: dict[str, object] = {
@@ -504,11 +510,6 @@ class _Run:
             digest = request_digest(request)
             if digest in self.recovered:
                 continue  # recovery only diagnoses; exact PREPARED resumes on next run
-            if (
-                self.ci_sha is not None
-                and request_change_commit(self.d.repo, request) != self.ci_sha
-            ):
-                continue  # event assesses only its exact request/approval-change commit
             if self.args.release_id is not None and request.release_id != self.args.release_id:
                 continue
             path = f"docs/ota/release-requests/{request.release_id}.json"

@@ -84,6 +84,18 @@ def request_change_commit(repo: Path, request: ReleaseRequest) -> str:
     return commit
 
 
+def request_ci_pin(
+    repo: Path,
+    request: ReleaseRequest,
+    *,
+    trigger_sha: str | None,
+    trigger_pin: tuple[int, int] | None,
+) -> tuple[int, int] | None:
+    """Use a trigger pin only for the exact request/approval-change commit."""
+    require((trigger_sha is None) == (trigger_pin is None), "CI_PIN", "incomplete trigger pin")
+    return trigger_pin if trigger_sha == request_change_commit(repo, request) else None
+
+
 def authorize_request(
     api: GitHub,
     repo: Path,
@@ -188,6 +200,7 @@ def verify_invocation(
         same(ci.get("id"), ci_id, "TRIGGER_CI", "id")
         same(ci.get("run_attempt"), ci_attempt, "TRIGGER_CI", "attempt")
         same(ci.get("head_sha"), trigger.get("head_sha"), "TRIGGER_CI", "head SHA")
+        same(ci.get("head_sha"), head, "TRIGGER_CI", "current main CI")
         verify_ci(
             ci,
             api.pages(f"/actions/runs/{ci_id}/attempts/{ci_attempt}/jobs", "jobs"),

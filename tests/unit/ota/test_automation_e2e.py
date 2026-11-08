@@ -1607,3 +1607,83 @@ def test_due_resign_preflight_and_writer_do_not_parse_release_requests(
         code, refused = r.command("publish")
         assert code == 1 and refused.outcome == "BLOCKED"
         assert len(puts) == 1 and len(r.reads) == reads and len(r.writers) == writers
+
+
+@pytest.fixture
+def code_only_recovery(rehearsal, monkeypatch):
+    r = rehearsal
+    old_sha = r.environment["GITHUB_SHA"]
+    request_path = f"docs/ota/release-requests/{r.receipt.request.release_id}.json"
+    approval_path = f"docs/ota/releases/{r.receipt.request.release_id}.md"
+    before = [git(r.repo, "show", f"HEAD:{p}") for p in (request_path, approval_path)]
+    (r.remote / "code-fix-marker.py").write_text("# TEST code-only fix\n")
+    git(r.remote, "add", "code-fix-marker.py")
+    git(
+        r.remote,
+        "-c",
+        "user.name=TEST",
+        "-c",
+        "user.email=test@example.invalid",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "commit",
+        "-qm",
+        "TEST code-only fix",
+    )
+    git(r.repo, "fetch", "origin", "main")
+    git(r.repo, "reset", "--hard", "origin/main")
+    current = git(r.repo, "rev-parse", "HEAD").decode().strip()
+    assert before == [git(r.repo, "show", f"HEAD:{p}") for p in (request_path, approval_path)]
+    r.environment["GITHUB_SHA"] = current
+    r.payload["workflow_run"]["head_sha"] = current
+    api = r.dependencies.api
+    original_run, original_pages = api.run, api.pages
+
+    def run(run_id, attempt):
+        if run_id == 77:
+            result = original_run(66, 2)
+            return {**result, "id": 77, "run_attempt": 1, "head_sha": old_sha}
+        result = original_run(run_id, attempt)
+        if run_id == 66:
+            result["head_sha"] = current
+        return result
+
+    def pages(path, member, **kwargs):
+        if member == "workflow_runs":
+            assert kwargs["params"]["head_sha"] == old_sha
+            return [{"id": 77, "run_attempt": 1}]
+        return original_pages(path, member, **kwargs)
+
+    monkeypatch.setattr(api, "run", run)
+    monkeypatch.setattr(api, "pages", pages)
+    return r, old_sha, current
+
+
+def test_code_only_trigger_recovers_older_approved_request(code_only_recovery):
+    r, _, _ = code_only_recovery
+    code, document = r.command(arguments=("--release-id", r.receipt.request.release_id))
+    assert code == 0 and document.outcome == "VERIFIED"
+    assert r.journal.load(r.receipt.request_digest).receipt.state is RequestState.VERIFIED
+    assert len(r.writers) == 1
+
+
+@pytest.mark.parametrize("fault", ["request-ci", "trigger-ci"])
+def test_trigger_current_main_and_request_ci_both_required(code_only_recovery, monkeypatch, fault):
+    r, old_sha, current = code_only_recovery
+    api = r.dependencies.api
+    original = api.run
+
+    def run(run_id, attempt):
+        record = original(run_id, attempt)
+        if fault == "request-ci" and run_id == 77:
+            record["head_sha"] = current
+        elif fault == "trigger-ci" and run_id == 66:
+            record["head_sha"] = old_sha
+        return record
+
+    monkeypatch.setattr(api, "run", run)
+    if fault == "trigger-ci":
+        r.payload["workflow_run"]["head_sha"] = old_sha
+    code, document = r.command(arguments=("--release-id", r.receipt.request.release_id))
+    assert code == 1 and document.outcome == "BLOCKED"
+    assert not r.reads and not r.writers

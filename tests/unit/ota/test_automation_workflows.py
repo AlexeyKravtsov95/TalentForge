@@ -428,7 +428,7 @@ def test_request_introduced_on_feature_branch_is_authorized_by_merge_commit(
 
 @pytest.mark.parametrize(
     "fault",
-    ["path", "repository", "event", "conclusion", "checks", "attempt", "action"],
+    ["path", "repository", "event", "conclusion", "checks", "attempt", "action", "stale_head"],
 )
 def test_workflow_run_proves_entire_source_ci_before_any_request_selection(
     request_history, monkeypatch, fault
@@ -465,6 +465,8 @@ def test_workflow_run_proves_entire_source_ci_before_any_request_selection(
                 return run
             if fault == "attempt":
                 run["run_attempt"] = 1
+            elif fault == "stale_head":
+                run["head_sha"] = "f" * 40
             elif fault in ("path", "repository", "event", "conclusion"):
                 run[fault] = {
                     "path": ".github/workflows/evil.yml",
@@ -481,6 +483,8 @@ def test_workflow_run_proves_entire_source_ci_before_any_request_selection(
 
     if fault == "action":
         payload["action"] = "requested"
+    if fault == "stale_head":
+        payload["workflow_run"]["head_sha"] = "f" * 40
     with pytest.raises(PreparationBlocked):
         verify_invocation(InvocationAPI(commit), repo, environment, payload)
 
@@ -552,3 +556,23 @@ def test_production_wrapper_disabled_and_missing_configuration_are_explicit(tmp_
     assert blocked.returncode == 1
     assert json.loads(status.read_bytes())["outcome"] == "BLOCKED"
     assert not disabled.stderr and not blocked.stderr
+
+
+def test_changed_approval_never_uses_old_request_ci(request_history, monkeypatch):
+    from talent_data.ota.automation import prepare
+    from talent_data.ota.automation.authorization import authorize_request, request_ci_pin
+
+    repo, request, old_sha, _ = request_history
+    monkeypatch.setattr(prepare, "_main_commit", lambda _: None)
+    approval = repo / "docs/ota/releases" / f"{request.release_id}.md"
+    approval.parent.mkdir(parents=True)
+    approval.write_text("TEST changed approval")
+    git(repo, "add", ".")
+    git(repo, "commit", "-qm", "approval change")
+    new_sha = git(repo, "rev-parse", "HEAD").decode().strip()
+    git(repo, "update-ref", "refs/remotes/origin/main", new_sha)
+    assert request_ci_pin(repo, request, trigger_sha=old_sha, trigger_pin=(9, 2)) is None
+    assert request_ci_pin(repo, request, trigger_sha=new_sha, trigger_pin=(9, 2)) == (9, 2)
+    with pytest.raises(PreparationBlocked):
+        authorize_request(API(old_sha), repo, request)
+    assert authorize_request(API(new_sha), repo, request) == new_sha
