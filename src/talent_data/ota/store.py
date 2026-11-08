@@ -278,22 +278,35 @@ def dataset_manifest_of_release(store: BlobStore, entry: CatalogRelease) -> Data
 # --------------------------------------------------------------------------- write path
 
 
-def upload_blobs(store: BlobStore, blobs: Mapping[str, bytes]) -> list[str]:
+def upload_blobs(
+    store: BlobStore, blobs: Mapping[str, bytes], *, upload_workers: int = 4
+) -> list[str]:
     """Write the missing immutable blobs, each verified by reading it back.
 
     Returns the keys actually written. An existing object is never rewritten: its name
     is its hash, so a present object is either already correct or the store is corrupt
     - and a corrupt present object is caught by :func:`ensure_blob`.
     """
-    written: list[str] = []
-    for sha_ref, data in sorted(blobs.items()):
+    if type(upload_workers) is not int or not 1 <= upload_workers <= 4:
+        raise ValueError("upload_workers must be between 1 and 4")
+
+    def upload(item: tuple[str, bytes]) -> str | None:
+        sha_ref, data = item
+        if sha256_ref(data) != sha_ref:
+            raise OtaPublisherError(f"blob {sha_ref} does not hash to its name")
         key = blob_key(sha_ref)
         if store.exists(key):
-            continue
+            ensure_blob(store, sha_ref)
+            return None
         store.put(key, data, cache_control=BLOB_CACHE_CONTROL)
         ensure_blob(store, sha_ref)
-        written.append(key)
-    return written
+        return key
+
+    return [
+        key
+        for key in run_bounded(sorted(blobs.items()), upload, max_workers=upload_workers)
+        if key is not None
+    ]
 
 
 def ensure_blob(store: BlobStore, sha_ref: str) -> bytes:

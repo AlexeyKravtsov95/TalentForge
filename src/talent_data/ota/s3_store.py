@@ -242,14 +242,23 @@ def connect(
         request_checksum_calculation="when_required",
         response_checksum_validation="when_required",
         s3={"addressing_style": "virtual"},
-        retries={"mode": "standard", "max_attempts": 5},
-        connect_timeout=10,
-        read_timeout=60,
+        retries={"mode": "standard", "total_max_attempts": 3},
+        connect_timeout=5,
+        read_timeout=15,
         user_agent_extra="talentforge-ota-publisher",
     )
     try:
         session = boto3.Session(profile_name=location.profile, region_name=location.region)
         client = session.client("s3", endpoint_url=location.endpoint_url, config=config)
+        write_client = (
+            session.client(
+                "s3",
+                endpoint_url=location.endpoint_url,
+                config=config.merge(Config(retries={"mode": "standard", "total_max_attempts": 1})),
+            )
+            if writable
+            else None
+        )
     except BotoCoreError as exc:
         raise S3StoreError(S3Failure.CREDENTIALS, location.bucket, type(exc).__name__) from exc
     return S3BlobStore(
@@ -259,6 +268,7 @@ def connect(
         writable=writable,
         allow_delete=allow_delete,
         catalog_guard=catalog_guard,
+        write_client=write_client,
     )
 
 
@@ -387,6 +397,7 @@ class S3BlobStore:
         writable: bool = False,
         allow_delete: bool = False,
         catalog_guard: ProductionCatalogGuard | None = None,
+        write_client: S3Client | None = None,
     ) -> None:
         if bucket != PROFILES[channel].bucket:
             raise OtaPublisherError(
@@ -402,6 +413,7 @@ class S3BlobStore:
         elif catalog_guard is not None:
             raise OtaPublisherError("the production catalog guard is for the production store")
         self._client = client
+        self._write_client = client if write_client is None else write_client
         self.bucket = bucket
         self.channel = channel
         self.writable = writable
@@ -439,7 +451,10 @@ class S3BlobStore:
             )
 
     def _call(self, operation: str, key: str, **kwargs: Any) -> dict[str, Any]:
-        method = getattr(self._client, operation)
+        client = (
+            self._write_client if operation in {"put_object", "delete_object"} else self._client
+        )
+        method = getattr(client, operation)
         try:
             result: dict[str, Any] = method(Bucket=self.bucket, Key=key, **kwargs)
         except Exception as exc:
@@ -501,7 +516,24 @@ class S3BlobStore:
                 args["IfNoneMatch"] = "*"
             else:
                 args["IfMatch"] = etag
-        response = self._call("put_object", key, **args)
+        try:
+            response = self._call("put_object", key, **args)
+        except S3StoreError as exc:
+            # Only an immutable object's exact bytes/metadata can resolve a lost
+            # blob response here. Catalog recovery belongs to the durable journal.
+            if not is_blob or exc.kind not in {
+                S3Failure.NETWORK,
+                S3Failure.SERVICE,
+                S3Failure.PRECONDITION_FAILED,
+            }:
+                raise
+            try:
+                self._verify_put(key, data, md5.hexdigest(), content_type, cache_control)
+                if self.get(key) != data:
+                    raise
+            except S3StoreError:
+                raise exc from None
+            return
         self._verify_put(key, data, md5.hexdigest(), content_type, cache_control)
         if not is_blob:
             self._observe(key, response.get("ETag"))
