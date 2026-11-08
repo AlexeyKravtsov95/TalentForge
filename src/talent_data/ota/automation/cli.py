@@ -33,6 +33,7 @@ from talent_data.ota.automation.authorization import (
     VerifiedCi,
     authorize_request_ci,
     committed_requests,
+    current_main_ci,
     request_ci_pin,
     verify_invocation,
 )
@@ -470,11 +471,14 @@ class _Run:
         )
 
     @io_metrics.instrument("INVOCATION")
-    def invocation(self) -> None:
+    def invocation(self, *, require_ci: bool = False) -> None:
         self.stage, self.reason = "INVOCATION", "INVOCATION_REFUSED"
         refresh_main(self.d.repo)
         payload = obj(strict_json(Path(self.env["GITHUB_EVENT_PATH"]).read_bytes()))
         verified = verify_invocation(self.d.api, self.d.repo, self.env, payload)
+        if require_ci and self.env["GITHUB_EVENT_NAME"] == "schedule":
+            verified = current_main_ci(self.d.api, self.d.repo, self.env["GITHUB_SHA"])
+            require(verified is not None, "CI_PENDING", "current main CI is pending")
         if verified is not None:
             self.trigger_ci = verified
             if self.recorder is not None:
@@ -521,7 +525,7 @@ class _Run:
         # Re-fetch current main + exact committed bytes + authorization and API metadata
         # on EVERY assessment, including after upload and the WRITE_STARTED barrier.
         self.stage, self.reason = "AUTHORIZATION", "REQUEST_AUTHORIZATION_FAILED"
-        self.invocation()
+        self.invocation(require_ci=True)
         self.stage, self.reason = "AUTHORIZATION", "REQUEST_AUTHORIZATION_FAILED"
         path = f"docs/ota/release-requests/{request.release_id}.json"
         raw = git(self.d.repo, "show", f"origin/main:{path}")
@@ -986,6 +990,10 @@ def main(
     dependencies: Dependencies | None = None,
 ) -> int:
     argv = sys.argv[1:] if argv is None else argv
+    if argv and argv[0] == "probe":
+        from talent_data.ota.automation.probe import main as probe_main
+
+        return probe_main(argv[1:], environment=environment, dependencies=dependencies)
     if argv and argv[0] in {"check-app", "prepare-request", "propose-request", "fetch-staging"}:
         from talent_data.ota.automation.prepare import main as prepare_main
 

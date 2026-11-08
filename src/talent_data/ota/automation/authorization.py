@@ -104,6 +104,58 @@ class VerifiedCi:
     jobs: tuple[dict[str, object], ...]
 
 
+def current_main_ci(
+    api: GitHub, repo: Path, head_sha: str, *, pin: tuple[int, int] | None = None
+) -> VerifiedCi | None:
+    """Independently prove the tooling snapshot; None means known pending CI only."""
+    same(git(repo, "rev-parse", "HEAD").decode().strip(), head_sha, "CI_CHECKOUT", "checkout")
+    same(git(repo, "rev-parse", "origin/main").decode().strip(), head_sha, "CI_MAIN", "main")
+    if pin is None:
+        listed = api.pages(
+            f"/actions/workflows/{Path(CI_WORKFLOW).name}/runs",
+            "workflow_runs",
+            params={"event": "push", "branch": "main", "head_sha": head_sha},
+        )
+        pins = [(positive(r.get("id")), positive(r.get("run_attempt"))) for r in listed]
+    else:
+        pins = [(positive(pin[0]), positive(pin[1]))]
+    pending = False
+    for run_id, attempt in pins:
+        run = api.run(run_id, attempt)
+        for field, expected in {
+            "id": run_id,
+            "run_attempt": attempt,
+            "path": CI_WORKFLOW,
+            "name": "CI",
+            "head_sha": head_sha,
+            "event": "push",
+            "head_branch": "main",
+        }.items():
+            same(run.get(field), expected, "CI_ORIGIN", field)
+        for field in ("repository", "head_repository"):
+            same(obj(run.get(field)).get("full_name"), REPOSITORY, "CI_ORIGIN", field)
+        if run.get("status") in {"queued", "in_progress", "waiting", "pending", "requested"}:
+            same(run.get("conclusion"), None, "CI_ORIGIN", "pending conclusion")
+            pending = True
+            continue
+        jobs = api.pages(f"/actions/runs/{run_id}/attempts/{attempt}/jobs", "jobs")
+        sha = verify_ci(run, jobs, run_id=run_id, attempt=attempt)
+        for job in jobs:
+            for field, expected in {
+                "run_id": run_id,
+                "run_attempt": attempt,
+                "head_sha": head_sha,
+            }.items():
+                same(job.get(field), expected, "CI_JOB_ORIGIN", field)
+        return VerifiedCi(
+            RunPin(workflow_path=CI_WORKFLOW, run_id=run_id, attempt=attempt, head_sha=sha),
+            dict(run),
+            tuple(dict(j) for j in jobs),
+        )
+    require(pending, "CI_MISSING", "no current-main CI evidence")
+    return None
+
+
 def authorize_request_ci(
     api: GitHub,
     repo: Path,

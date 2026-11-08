@@ -183,7 +183,7 @@ class GitHub:
         require(isinstance(record.get("content"), str), "CONTENT_ENCODING", "missing content")
         return base64.b64decode(record["content"].replace("\n", ""), validate=True)
 
-    def archive(self, artifact: dict[str, Any]) -> bytes:
+    def archive(self, artifact: dict[str, Any], *, max_bytes: int = MAX_ARCHIVE_BYTES) -> bytes:
         artifact_id = positive(artifact.get("id"))
         url = API_ORIGIN + self.prefix + f"/actions/artifacts/{artifact_id}/zip"
         try:
@@ -220,7 +220,7 @@ class GitHub:
                 body = bytearray()
                 for chunk in response.iter_raw():
                     require(
-                        len(body) + len(chunk) <= MAX_ARCHIVE_BYTES,
+                        len(body) + len(chunk) <= max_bytes,
                         "ARTIFACT_SIZE",
                         "archive too large",
                     )

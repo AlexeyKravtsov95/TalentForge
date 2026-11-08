@@ -134,7 +134,18 @@ def rehearsal(env, tmp_path, monkeypatch):
         def pages(self, route, member, **kwargs):
             calls.append(("pages", route))
             if member == "jobs":
-                return [{"name": "checks", "status": "completed", "conclusion": "success"}]
+                parts = route.split("/")
+                run_id, attempt = int(parts[3]), int(parts[5])
+                return [
+                    {
+                        "name": "checks",
+                        "status": "completed",
+                        "conclusion": "success",
+                        "run_id": run_id,
+                        "run_attempt": attempt,
+                        "head_sha": self.run(run_id, attempt)["head_sha"],
+                    }
+                ]
             return [{"id": 66, "run_attempt": 2}]
 
         def archive(self, artifact):
