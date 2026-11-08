@@ -33,6 +33,7 @@ from pathlib import Path
 from typing import Protocol
 
 from talent_data.models.manifest import DatasetManifest
+from talent_data.ota.blob_io import run_bounded
 from talent_data.ota.errors import OtaPublisherError
 from talent_data.ota.models import (
     MAX_CATALOG_BYTES,
@@ -303,13 +304,18 @@ def ensure_blob(store: BlobStore, sha_ref: str) -> bytes:
     return data
 
 
-def ensure_catalog_references(store: BlobStore, catalog: OtaCatalog) -> None:
+def ensure_catalog_references(
+    store: BlobStore, catalog: OtaCatalog, *, read_workers: int = 8
+) -> None:
     """Everything the catalog references must resolve in the store, byte for byte.
 
     A catalog is never written while any object it will make clients fetch is missing
     or corrupt: every listed release's manifest must match its catalog pin (hash,
     length, identity) and every file the manifest lists must exist and hash to its
     own name."""
+    if type(read_workers) is not int or not 1 <= read_workers <= 8:
+        raise ValueError("read_workers must be between 1 and 8")
+    lengths: dict[str, int] = {}
     for entry in catalog.releases:
         _, manifest = read_release_manifest(store, entry)  # verifies the pin
         identity = {
@@ -325,7 +331,18 @@ def ensure_catalog_references(store: BlobStore, catalog: OtaCatalog) -> None:
                     f"entry on {name}: {found!r} != {expected!r}"
                 )
         for file in manifest.files:
-            ensure_blob(store, file.sha256)
+            previous = lengths.setdefault(file.sha256, file.byte_length)
+            if previous != file.byte_length:
+                raise OtaPublisherError(f"blob {file.sha256} has conflicting reference lengths")
+
+    def verify(reference: tuple[str, int]) -> None:
+        sha_ref, length = reference
+        data = ensure_blob(store, sha_ref)
+        if len(data) != length:
+            raise OtaPublisherError(f"blob {sha_ref} does not match its declared length")
+
+    # Only success markers survive this pass; bodies belong to individual workers.
+    run_bounded(lengths.items(), verify, max_workers=read_workers)
 
 
 def write_catalog(
