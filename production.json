@@ -1,7 +1,7 @@
 {
   "stateVersion": 1,
   "kind": "notify-production-state",
-  "notifiedRelease": "1.60.1.70790-r1",
+  "notifiedRelease": "1.60.1.70862-r1",
   "failuresNotified": [
     "ota-production/publish/PUBLIC_CATALOG",
     "ota-production/publish/APPROVAL_GATES",
@@ -9,5 +9,5 @@
     "ota-production/reconcile/PUBLISH",
     "ota-production/publish/PROVENANCE"
   ],
-  "updatedAt": "2026-11-07T21:18:41+00:00"
+  "updatedAt": "2026-11-08T00:48:02Z"
 }
