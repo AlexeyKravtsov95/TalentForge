@@ -238,6 +238,83 @@ def test_rehearsal_main_contains_only_its_test_request(rehearsal):
     assert paths == [f"docs/ota/release-requests/{rehearsal.receipt.request.release_id}.json"]
 
 
+@pytest.fixture
+def verified_scope(rehearsal):
+    from talent_data.ota.automation.state import PublicationReceipt
+
+    r = rehearsal
+    assert r.command()[0] == 0  # real gates, TEST signature, catalog write and all-file proof
+    request = r.receipt.request
+    other = request.model_copy(update={"revision": 2, "release_id": request.build + "-r2"})
+    blocked = PublicationReceipt.pending(other, run_id=12, attempt=1).evolve(
+        state=RequestState.BLOCKED, reason="CHECK_FAILED"
+    )
+    r.journal.save(blocked)
+    return r, blocked
+
+
+def scoped_run(r, release_id, operation="publish"):
+    args = cli._parser().parse_args(
+        [operation, "--status-file", str(r.status), "--release-id", release_id]
+    )
+    return cli._Run(args, r.environment, r.dependencies)
+
+
+def test_scoped_verified_ignores_unrelated_old_blocked(verified_scope):
+    r, blocked = verified_scope
+    before = r.journal.read_all()
+    document = scoped_run(r, r.receipt.request.release_id).final(changed=True)
+    assert document.outcome == "VERIFIED" and document.exit_code == 0
+    assert {op.release_id for op in document.operations} == {r.receipt.request.release_id}
+    assert r.journal.read_all() == before
+    assert before[blocked.request_digest].receipt == blocked
+
+
+def test_unscoped_reconcile_keeps_aggregate_failure(verified_scope):
+    r, _ = verified_scope
+    args = cli._parser().parse_args(["reconcile", "--status-file", str(r.status)])
+    document = cli._Run(args, r.environment, r.dependencies).final(changed=True)
+    assert document.outcome == "BLOCKED" and document.exit_code == 1
+    assert len(document.operations) == 2
+
+
+def test_global_ambiguous_blocks_scoped_target(verified_scope):
+    from talent_data.ota.automation.state import FileJournal
+
+    r, blocked = verified_scope
+    retained = r.journal.load(r.receipt.request_digest)
+    # A separate crash-recovery journal; never reactivate a terminal receipt.
+    recovery = FileJournal(r.temporary / "uncertain-journal.json")
+    recovery.initialize()
+    recovery.save(blocked)
+    recovery.save(
+        retained.receipt.evolve(state=RequestState.AMBIGUOUS, reason="OUTCOME_UNKNOWN"),
+        retained.prepared,
+    )
+    r.dependencies.journal = recovery
+    document = scoped_run(r, blocked.request.release_id).final(changed=False)
+    assert document.outcome == "AMBIGUOUS" and document.exit_code == 3
+    assert {op.release_id for op in document.operations} == {
+        blocked.request.release_id,
+        r.receipt.request.release_id,
+    }
+
+
+def test_upload_failure_reports_upload_stage_without_secrets(rehearsal, monkeypatch, capsys):
+    from talent_data.ota.s3_store import S3Failure, S3StoreError
+
+    r = rehearsal
+
+    def fail(key, data, *, cache_control):
+        raise S3StoreError(S3Failure.NETWORK, key, "TEST-SENSITIVE-ERROR-CONTENT")
+
+    monkeypatch.setattr(r.store, "put", fail)
+    code, document = r.command(arguments=("--release-id", r.receipt.request.release_id))
+    assert code == 1 and document.stage == "UPLOAD" and document.reason == "UPLOAD_FAILED"
+    assert "TEST-SENSITIVE" not in capsys.readouterr().out
+    assert r.journal.load(r.receipt.request_digest).receipt.reason == "UPLOAD_FAILED"
+
+
 def test_approved_request_to_verified_publication_and_one_notification(rehearsal, tmp_path):
     r = rehearsal
     from talent_data.notify.automation import notify_status

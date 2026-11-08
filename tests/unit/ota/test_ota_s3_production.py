@@ -833,3 +833,20 @@ def test_the_staging_helper_needs_the_staging_profile_to_write(capsys) -> None:
     wrong = [*flags, "--aws-profile", "talentforge-production", "--execute"]
     assert helper.main(["probe-conditional", *wrong]) == 1
     assert "holds the production key" in capsys.readouterr().err
+
+
+def test_s3_diagnostic_allowlist_hides_remote_strings():
+    from talent_data.ota.s3_store import S3Failure, S3StoreError
+
+    error = S3StoreError(S3Failure.NETWORK, "https://TEST-SECRET.invalid/token", "TEST-SECRET-PEM")
+    diagnostic = error.diagnostic()
+    assert set(diagnostic) == {
+        "kind",
+        "operation",
+        "objectHash",
+        "httpStatus",
+        "attempt",
+        "elapsedSeconds",
+    }
+    assert diagnostic["kind"] == "NETWORK" and diagnostic["objectHash"] is None
+    assert "TEST-SECRET" not in str(diagnostic)

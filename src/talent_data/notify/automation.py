@@ -39,7 +39,7 @@ def notify_status(
     summary: _Summary,
     run_url: str,
 ) -> str:
-    if document.outcome in {"DISABLED", "DRY_RUN", "READY"}:
+    if document.outcome in {"DISABLED", "DRY_RUN", "READY", "NO_ACTION"}:
         return "QUIET"
     previous = load_dedup(ProductionDedup, state)
     first = previous is None

@@ -62,6 +62,7 @@ from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
+from time import monotonic
 from typing import Any, Protocol
 
 from talent_data.ota.errors import OtaPublisherError
@@ -116,6 +117,23 @@ class S3StoreError(OtaPublisherError):
         super().__init__(f"s3 {kind.value} {key}: {detail}")
         self.kind = kind
         self.key = key
+        self.operation: str | None = None
+        self.http_status: int | None = None
+        self.attempt: int | None = None
+        self.elapsed_seconds = 0.0
+
+    def diagnostic(self) -> dict[str, str | int | float | None]:
+        """Only allowlisted scalars: never the provider's detail/key/URL/message."""
+        return {
+            "kind": self.kind.value,
+            "operation": self.operation,
+            "objectHash": "sha256:" + self.key.removeprefix(BLOB_PREFIX)
+            if BLOB_KEY.fullmatch(self.key)
+            else None,
+            "httpStatus": self.http_status,
+            "attempt": self.attempt,
+            "elapsedSeconds": self.elapsed_seconds,
+        }
 
 
 class S3Client(Protocol):
@@ -287,7 +305,7 @@ def _classify(exc: Exception) -> tuple[S3Failure, str]:
         meta = exc.response.get("ResponseMetadata", {})
         status = meta.get("HTTPStatusCode")
         code = str(exc.response.get("Error", {}).get("Code", ""))
-        detail = f"HTTP {status} {code}".strip()
+        detail = f"HTTP {status}" if type(status) is int and 100 <= status <= 599 else "HTTP_ERROR"
         if status == 404 or code in ("NoSuchKey", "NotFound", "404"):
             return S3Failure.NOT_FOUND, detail
         if status == 403 or code in ("AccessDenied", "Forbidden", "403"):
@@ -455,11 +473,25 @@ class S3BlobStore:
             self._write_client if operation in {"put_object", "delete_object"} else self._client
         )
         method = getattr(client, operation)
+        started = monotonic()
         try:
             result: dict[str, Any] = method(Bucket=self.bucket, Key=key, **kwargs)
         except Exception as exc:
             kind, detail = _classify(exc)
-            raise S3StoreError(kind, key, f"{operation}: {detail}") from exc
+            error = S3StoreError(kind, key, f"{operation}: {detail}")
+            if operation in {"get_object", "head_object", "put_object", "delete_object"}:
+                error.operation = operation
+            response = getattr(exc, "response", {})
+            metadata = response.get("ResponseMetadata", {}) if isinstance(response, dict) else {}
+            if isinstance(metadata, dict):
+                status = metadata.get("HTTPStatusCode")
+                retries = metadata.get("RetryAttempts")
+                if type(status) is int and 100 <= status <= 599:
+                    error.http_status = status
+                if type(retries) is int and 0 <= retries <= 100:
+                    error.attempt = retries + 1
+            error.elapsed_seconds = max(0.0, monotonic() - started)
+            raise error from exc
         return result
 
     # ------------------------------------------------------------------ BlobStore

@@ -70,6 +70,7 @@ from talent_data.ota.automation.state import (
     FileJournal,
     GitJournal,
     Journal,
+    JournalEntry,
     JournalError,
     PublicationReceipt,
     Receipt,
@@ -119,6 +120,7 @@ Stage = Literal[
     "PROVENANCE",
     "APPROVAL_GATES",
     "PUBLISH",
+    "UPLOAD",
     "RENEWAL",
     "SIGNER",
     "CLEANUP",
@@ -140,6 +142,7 @@ Reason = Literal[
     "ASSESSMENT_FAILED",
     "PUBLIC_VERIFIED",
     "PUBLICATION_BLOCKED",
+    "UPLOAD_FAILED",
     "RENEWAL_BLOCKED",
     "SIGNER_VERIFIED",
     "SIGNER_FAILED",
@@ -287,6 +290,22 @@ class _Run:
         self.run_id = int(env.get("GITHUB_RUN_ID", "0"))
         self.attempt = int(env.get("GITHUB_RUN_ATTEMPT", "0"))
 
+    def _in_scope(self, receipt: Receipt) -> bool:
+        return (
+            self.args.release_id is None
+            or receipt.state in _UNRESOLVED
+            or (
+                isinstance(receipt, PublicationReceipt)
+                and receipt.request.release_id == self.args.release_id
+            )
+        )
+
+    def scoped_entries(self) -> tuple[JournalEntry, ...]:
+        # read_all validates the ENTIRE journal before narrowing the presentation.
+        return tuple(
+            entry for entry in self.d.journal.read_all().values() if self._in_scope(entry.receipt)
+        )
+
     def status(
         self,
         outcome: Outcome,
@@ -299,13 +318,17 @@ class _Run:
         operations = []
         if self.operation not in {"init-journal", "signer-smoke"}:
             try:
-                receipts = {k: v.receipt for k, v in self.d.journal.read_all().items()}
+                receipts = {
+                    entry.receipt.request_digest: entry.receipt for entry in self.scoped_entries()
+                }
             except (JournalError, OSError):
                 if not fallback or not self.known_outcomes:
                     raise
                 receipts = {}
             if fallback:
                 for digest, known in self.known_outcomes.items():
+                    if not self._in_scope(known):
+                        continue
                     retained = receipts.get(digest)
                     if retained is None or retained.state is not RequestState.VERIFIED:
                         receipts[digest] = known
@@ -432,8 +455,9 @@ class _Run:
 
     def pending_verification(self) -> None:
         self.stage, self.reason = "PUBLIC_VERIFY", "PUBLIC_NOT_VERIFIED"
-        for digest, entry in self.d.journal.read_all().items():
+        for entry in self.scoped_entries():
             receipt = entry.receipt
+            digest = receipt.request_digest
             if receipt.state is not RequestState.PUBLISHED_NOT_VERIFIED:
                 continue
             assert receipt.payload_sha256 is not None
@@ -516,7 +540,7 @@ class _Run:
         return tuple(eligible), due
 
     def final(self, *, changed: bool) -> StatusDocument:
-        entries = self.d.journal.read_all().values()
+        entries = self.scoped_entries()
         states = {x.receipt.state for x in entries}
         if states & _UNRESOLVED:
             return self.status("AMBIGUOUS", "RECOVERY", "OUTCOME_UNKNOWN")
@@ -688,6 +712,8 @@ class _Run:
                         self.failure = (
                             ("SIGNER", "SIGNER_FAILED")
                             if result.reason == "SIGN_FAILED"
+                            else ("UPLOAD", "UPLOAD_FAILED")
+                            if result.reason == "UPLOAD_FAILED"
                             else (self.stage, self.reason)
                         )
                     changed |= result.state is RequestState.PUBLISHED_NOT_VERIFIED
