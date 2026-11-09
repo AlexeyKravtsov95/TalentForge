@@ -1,7 +1,7 @@
-# Graph Report - talentforge-ota-approval-ci-trigger  (2026-11-08)
+# Graph Report - talentforge-ota-reconcile-every-15-minutes  (2026-11-08)
 
 ## Corpus Check
-- 724 files · ~871,051 words
+- 724 files · ~871,118 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 24 file(s) not represented in the graph (top: .xml 9, (none) 4, .properties 2)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `1914dc4c`
+- Built from commit: `204deab8`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -1977,7 +1977,7 @@ Nodes (5): EditorBackStep, CLEAR_SELECTION, CLOSE_BUILD_ACTIONS, COLLAPSE_INSPEC
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `DatasetBundleId` connect `DatasetBundleId` to `LocalBuildRepository`, `TalentForgeTheme`, `TalentTreeBuildScreen.kt`, `IosOtaStagingE2ETest`, `DatasetIdentity.kt`, `BuildImportBundledDatasetsTest`, `NewBuildScreen.kt`, `createClassDraft`, `DatasetActivationManager`, `TalentTooltipsRepositoryTest`, `DatasetOutcome`, `TalentTreeSectionsTest`, `OtaPerformanceBenchmark`, `.check`, `OtaUi.kt`, `App`, `HomeScreen.kt`, `GameId`, `IosOtaDevice`, `OtaScenarioTest`, `BuildImportFlowTest`, `ClassToken`, `BuildImportController`, `DatasetUnavailableReason`, `AssetNotFoundException`, `LocalizationLoadError`, `OtaRemoteStagingCheck`, `VisualsLoadError`, `OtaStagingE2ETest`, `buildTalentTreeUiModel`?**
-  _High betweenness centrality (0.052) - this node is a cross-community bridge._
+  _High betweenness centrality (0.055) - this node is a cross-community bridge._
 - **Are the 225 inferred relationships involving `TalentDataDocument` (e.g. with `apply_mutations()` and `engine_for()`) actually correct?**
   _`TalentDataDocument` has 225 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Home`, `NewBuild`, `ImportBuild` to the rest of the system?**
