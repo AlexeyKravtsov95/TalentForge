@@ -52,8 +52,7 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.com
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_new_build_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_open_build_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_retry
-import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.ota_check_updated
-import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.ota_dismiss
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.help_title
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_about
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_about_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.home_all_builds_action
@@ -71,6 +70,9 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.imp
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_load_failed_body
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_load_failed_title
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_loading
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.ota_check_updated
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.ota_data_build
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.ota_dismiss
 import io.github.alexeykravtsov95.talentforge.data.DatasetBundleId
 import io.github.alexeykravtsov95.talentforge.data.TalentDatasetRepository
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
@@ -88,8 +90,8 @@ import io.github.alexeykravtsov95.talentforge.ui.library.InlineNoticeTone
 import io.github.alexeykravtsov95.talentforge.ui.library.LibraryData
 import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.library.PrimaryActionButton
-import io.github.alexeykravtsov95.talentforge.ui.library.SectionLabel
 import io.github.alexeykravtsov95.talentforge.ui.library.SecondaryActionButton
+import io.github.alexeykravtsov95.talentforge.ui.library.SectionLabel
 import io.github.alexeykravtsov95.talentforge.ui.library.buildCardTitle
 import io.github.alexeykravtsov95.talentforge.ui.library.classMonogramOf
 import io.github.alexeykravtsov95.talentforge.ui.library.dataVersionOf
@@ -149,9 +151,10 @@ fun HomeScreen(
     onNewBuild: () -> Unit,
     onImportBuild: () -> Unit,
     onAbout: () -> Unit,
+    onHelp: () -> Unit,
     autosave: BuildAutosaveCoordinator,
     sharing: BuildCodeSharing,
-    /** The product of the session (M5.OTA.3): the data version the first-run line names. */
+    /** The active product (M6.UX.2): refreshed after activation, independent of saved builds. */
     product: DatasetBundleId = PRODUCT_BUNDLE,
     /** Set once after an OTA activation switched new builds to this client build (OD-5). */
     dataUpdatedTo: String? = null,
@@ -206,6 +209,14 @@ fun HomeScreen(
                 ) {
                     Spacer(Modifier.height(TalentForgeSpacing.group))
                     BrandHeader(onAbout = onAbout)
+                    BasicText(
+                        text = stringResource(Res.string.help_title),
+                        style = TalentForgeTypography.bodySmall.copy(color = colors.textSecondary),
+                        modifier = Modifier
+                            .heightIn(min = 48.dp)
+                            .clickable(role = Role.Button, onClick = onHelp)
+                            .padding(vertical = TalentForgeSpacing.inline),
+                    )
                     if (dataUpdatedTo != null) {
                         InlineNotice(
                             text = stringResource(Res.string.ota_check_updated, dataVersionOf(dataUpdatedTo), dataUpdatedTo),
@@ -404,6 +415,10 @@ private fun NewUserContent(emptyCopyTopGap: Dp, product: DatasetBundleId) {
                 gameDisplayName(product.game),
                 dataVersionOf(product.clientBuild),
             ),
+            style = TalentForgeTypography.meta.copy(color = colors.textMuted),
+        )
+        BasicText(
+            stringResource(Res.string.ota_data_build, product.clientBuild),
             style = TalentForgeTypography.meta.copy(color = colors.textMuted),
         )
     }

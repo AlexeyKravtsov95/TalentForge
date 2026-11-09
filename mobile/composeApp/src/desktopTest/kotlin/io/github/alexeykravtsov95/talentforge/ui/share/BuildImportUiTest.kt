@@ -136,7 +136,8 @@ class BuildImportUiTest {
         enterCode(WARRIOR_13_OF_51)
         continueToPreview()
         composeRule.onNodeWithText("Warrior").assertExists()
-        composeRule.onNodeWithText("Forever · talent data 1.60.1.70374").assertExists()
+        composeRule.onNodeWithText("Forever · talent data 1.60.1").assertExists()
+        composeRule.onNodeWithText("Game build 1.60.1.70374").assertExists()
         composeRule.onNodeWithText("Points: 13 / 51").assertExists()
         composeRule.onNodeWithText(
             "Importing adds a new, independent build to this device. Your other builds stay unchanged.",
@@ -203,7 +204,8 @@ class BuildImportUiTest {
         awaitText(DRUID_FULL_70009)
         continueToPreview()
         // an older client build is shown — and kept — exactly
-        composeRule.onNodeWithText("Forever · talent data 1.60.1.70009").assertExists()
+        composeRule.onNodeWithText("Forever · talent data 1.60.1").assertExists()
+        composeRule.onNodeWithText("Game build 1.60.1.70009").assertExists()
         composeRule.onNodeWithText("Points: 51 / 51").assertExists()
         composeRule.onNodeWithText("Import").performClick()
         awaitText("Druid · Forever")
@@ -347,7 +349,8 @@ class BuildImportUiTest {
         composeRule.onNodeWithText("Продолжить").performClick()
         awaitText("Импортировать этот билд?")
         composeRule.onNodeWithText("Воин").assertExists()
-        composeRule.onNodeWithText("Forever · данные талантов 1.60.1.70374").assertExists()
+        composeRule.onNodeWithText("Forever · данные талантов 1.60.1").assertExists()
+        composeRule.onNodeWithText("Сборка игры 1.60.1.70374").assertExists()
         composeRule.onNodeWithText("Очки: 13 / 51").assertExists()
         composeRule.onNodeWithText("Отмена").assertExists()
         composeRule.onNodeWithText("Импортировать").performClick()

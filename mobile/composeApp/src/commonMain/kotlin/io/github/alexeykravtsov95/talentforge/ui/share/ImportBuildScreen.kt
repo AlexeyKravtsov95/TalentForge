@@ -70,6 +70,7 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.imp
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.import_preview_title
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.import_saving
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.import_title
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.ota_data_build
 import io.github.alexeykravtsov95.talentforge.data.TalentDatasetRepository
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.share.BuildImportPreview
@@ -79,6 +80,7 @@ import io.github.alexeykravtsov95.talentforge.ui.library.ClassArtworkSlot
 import io.github.alexeykravtsov95.talentforge.ui.library.PrimaryActionButton
 import io.github.alexeykravtsov95.talentforge.ui.library.SecondaryActionButton
 import io.github.alexeykravtsov95.talentforge.ui.library.classMonogramOf
+import io.github.alexeykravtsov95.talentforge.ui.library.dataVersionOf
 import io.github.alexeykravtsov95.talentforge.ui.library.gameDisplayName
 import io.github.alexeykravtsov95.talentforge.ui.library.localizedClassName
 import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
@@ -378,8 +380,12 @@ private fun ImportPreviewDialog(
                             text = stringResource(
                                 Res.string.common_talent_data_version,
                                 gameDisplayName(preview.game),
-                                preview.clientBuild,
+                                dataVersionOf(preview.clientBuild),
                             ),
+                            style = TalentForgeTypography.meta.copy(color = colors.textSecondary),
+                        )
+                        BasicText(
+                            text = stringResource(Res.string.ota_data_build, preview.clientBuild),
                             style = TalentForgeTypography.meta.copy(color = colors.textSecondary),
                         )
                     }

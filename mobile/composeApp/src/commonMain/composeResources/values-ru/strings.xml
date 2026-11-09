@@ -317,6 +317,7 @@
     <string name="home_about_action">открыть сведения о TalentForge</string>
     <string name="about_title">О приложении</string>
     <string name="about_version">Версия %1$s</string>
+    <string name="about_app_version">Версия приложения %1$s</string>
     <string name="about_tagline">Планировщик талантов: распределяйте очки по веткам талантов, храните билды на этом устройстве и делитесь ими в виде кодов.</string>
     <string name="about_section_project">О ПРОЕКТЕ</string>
     <string name="about_disclaimer">TalentForge — независимый неофициальный проект. Он не связан с разработчиком и издателем игры, не одобрен и не поддерживается ими.</string>
@@ -382,4 +383,12 @@
     <string name="editor_dataset_download_failed">Загрузка не удалась (%1$s). Билд остаётся сохранённым.</string>
     <string name="editor_dataset_needs_newer_app">Обновите приложение, чтобы открыть этот билд. Билд остаётся сохранённым.</string>
     <string name="editor_dataset_insufficient_storage">Недостаточно свободного места на устройстве. Билд остаётся сохранённым.</string>
+
+    <!-- M6.UX.2: repeatable first-use help. -->
+    <string name="help_title">Как пользоваться</string>
+    <string name="help_step_class">1. Выберите один из 9 классов WoW Forever.</string>
+    <string name="help_step_talents">2. Распределяйте очки в деревьях талантов и изучайте их описания.</string>
+    <string name="help_step_builds">3. Сохраняйте билды, редактируйте их и делитесь кодами сборок.</string>
+    <string name="help_step_offline">4. Планируйте билды офлайн. Игровые данные могут обновляться через интернет при наличии подключения.</string>
+    <string name="help_step_offline_disabled">4. Планируйте билды офлайн на встроенных игровых данных. В этой версии приложения обновления данных через интернет отключены.</string>
 </resources>
