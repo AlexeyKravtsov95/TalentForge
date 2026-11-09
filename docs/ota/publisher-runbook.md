@@ -391,12 +391,13 @@ python scripts/ota_release_automation.py reconcile --status-file out/status.json
 
 Outside the guarded workflow this is not authorization for a normal local writer. Every
 journal-changing preflight and writer mode uses `ota-production-writer`, cancel false,
-with job dependencies to serialize within each run. Reconciliation is scheduled every 15 minutes
-(UTC minutes 11, 26, 41 and 56) to discover complete committed requests despite lost
-webhook/pending jobs or a subsequent automation fix. GitHub can delay scheduled starts; this is
-a recovery interval, not a publication deadline. The exact successful request/approval-change CI,
-approval, provenance, live gates and durable journal checks still apply. A separate independent
-resign path runs
+with job dependencies to serialize within each run. A lightweight metadata probe runs every
+five minutes (UTC minutes 3, 8, ..., 58) to discover complete committed requests despite lost
+webhook/pending jobs or a subsequent automation fix; selected work enters the guarded jobs.
+Daily renewal/global health remains independent at 03:41 UTC. GitHub can delay scheduled
+starts; the probe interval is not a publication deadline. The exact successful
+request/approval-change CI, approval, provenance, live gates and durable journal checks still
+apply. A separate independent resign path runs
 even after BLOCKED candidates. Failed/expired artifacts stay BLOCKED. A signed public
 catalog can lag private S3: a public-only base mismatch or already-listed release stays
 retryable BLOCKED until convergence, without loading production secrets just to diagnose
@@ -450,3 +451,114 @@ and credential-revocation procedure below when immediate cessation is required.
    dedicated CI credentials, inspect journal/config and re-enable only when the single-writer
    condition holds. Compromised primary/main/runner additionally requires custody response;
    backup stays offline and revoking a pinned key on installed apps requires an app update.
+### Approval-to-public-proof timing evidence
+
+For scoped, nonterminal release commands, `ota_release_automation.py` accepts
+`--timings-file <path>` together with `--release-id <releaseId>`. The optional
+`delivery-timings.v1` artifact binds the frozen request, approval epoch, main and
+exact trigger/request CI pins to phase durations and bounded object-I/O counters.
+It is diagnostic data, never publication authorization or a substitute for public proof.
+
+The 600-second target starts at GitHub's server `merged_at` for the first valid
+approval in the current authorization epoch. Retries and code-only fixes keep that
+start; revocation ends the epoch. If server-time evidence is unavailable, delivery
+may still verify, while latency is `UNKNOWN`. `PASS` requires the expected payload,
+all retained public files, a stable signed catalog and a confirmed terminal receipt.
+An elapsed time above 600 seconds is `MISS`; it never cancels or retries catalog PUT.
+
+Aggregate health/renewal and already-terminal idempotent commands have no new
+per-release timing artifact. The normal delivery routing supplies a release scope.
+Optional report-writing/upload failures do not erase a durable publication outcome.
+I/O counters identify incomplete measurement explicitly rather than inventing bytes
+or SDK retry counts. Unknown external error text, credentials, keys and signed URLs
+are excluded from these artifacts. The CI token needs read-only pull-request metadata
+access to resolve the server approval time; it gains no PR write permission.
+
+### Event delivery and lightweight watchdog
+
+A completed, independently verified current-main CI triggers the read-only probe.
+The `3-58/5 * * * *` watchdog runs the same metadata selection; empty work and
+pending CI/approval skip package downloads, deep preflight, writer and notification.
+GitHub can delay scheduled starts, so five minutes is a polling interval, not a
+promise about delivery time. The separate `41 3 * * *` run retains independent
+renewal/global health even if a candidate fails.
+
+Probe artifacts contain data only. The trusted router validates the closed schema,
+passes release IDs as argv (no eval), checks the journal again under the existing
+`ota-production-writer` job lock and executes candidates sequentially. Each target
+keeps its own status/timing files. New publication precedes older CDN verification;
+unknown writes force a single recovery turn and prohibit subsequent fresh writes.
+Every publication still repeats exact invocation/CI, committed approval/request,
+provenance, G1–G8, signing, journal and reference barriers inside the guarded CLI.
+
+Automatic pre-write failures with unchanged request/approval/code/artifact identity
+wait at least 300 seconds and stop after three heavy failures in 24 hours. The probe
+reconstructs that budget from exact API attempts and bounded, independently hashed
+status/timing archives. Missing/expired/corrupt evidence blocks automatic retries.
+Input changes allow re-evaluation but never reset the original approval clock.
+Manual owner-controlled modes retain their explicit execute flag and default dry run.
+
+### Delivery read benchmark and next-write cache policy
+
+The next legitimate catalog publication/renewal uses `public, max-age=60`;
+immutable blobs keep their one-year cache policy. The already-served catalog may
+keep its old 300-second header until that normal write; this change does not reissue it.
+
+Run the standalone read-only benchmark with the project environment:
+
+```bash
+PYTHONPATH=src python scripts/benchmark_ota_delivery.py --mode fixture --read-workers 1 --latency-ms 1 --output /tmp/ota-serial.json
+PYTHONPATH=src python scripts/benchmark_ota_delivery.py --mode fixture --read-workers 8 --latency-ms 1 --output /tmp/ota-parallel.json
+PYTHONPATH=src python scripts/benchmark_ota_delivery.py --mode public --read-workers 8 --output /tmp/ota-public.json
+```
+
+Measured locally during implementation (fixed TEST fixture clock, 1 ms simulated
+private GET latency; public runs anonymous, sequential run before parallel run):
+
+| Measurement | Serial | Bounded parallel |
+| --- | ---: | ---: |
+| Private GETs, three reference barriers | 6,003 | 2,772 |
+| Private reference time, TEST graph | 9.178 s | 0.651 s |
+| Peak private reads in flight | 1 | 8 |
+| Public GETs, all retained releases | 926 | 926 |
+| Anonymous public full proof time | 147.106 s | 33.920 s |
+
+The TEST graph has five valid manifests, 1,996 file references and 919 unique file
+hashes; both variants also pass the unchanged complete semantic public verifier.
+Both public measurements proved the same stable signed catalog payload
+`sha256:069b0b3d53f25ff958efe0736c6ed89a075cd59378b52d3921e1a56865085e21`.
+No private production access, signer or PUT was used. Network/CDN conditions affect
+elapsed times and the second public run can benefit from warming. These are read
+measurements, not a GitHub approval-to-delivery test: the JSON always records
+`endToEndSloProven=false`. The 600-second target must still be measured on the next
+independently approved new frozen release through its actual final public proof.
+
+### Recovery details and workflow validation
+
+Successful producer jobs export their immutable artifact IDs. A failed-consumer-only
+rerun downloads those retained IDs, rather than constructing a new attempt's name;
+the pinned download action explicitly flattens ID downloads. CLI authorization still
+rechecks the current main, CI, approval, artifact metadata and live state.
+
+Each routed batch binds an atomic `execution.json` progress file to the exact input
+plan. The target is marked started before invocation. An untouched target is not a
+failed retry; a started target without its outcome remains unknown. Partial preflight
+failures retain their own statuses and an independent failure-audit job, while other
+ready targets can publish. Thus a successful workflow cannot hide a failed target.
+
+The four protected jobs retain one running writer and use GitHub's `queue: max`
+policy (up to 100 pending jobs), preserving queued daily renewal when a watchdog
+arrives. This is documented [GitHub concurrency behavior](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency).
+History reads are shared across candidates within one probe and capped at 48
+worst-case API requests, including pagination/download costs. Overflow or incomplete
+history blocks automatic retries; it never silently resets their count. Successful
+runs of this audited code SHA can be skipped using their exact repository/run metadata.
+
+The installed actionlint 1.7.12 has the known [upstream queue-schema gap](https://github.com/rhysd/actionlint/issues/657).
+Until upstream supports this documented field, validate the four literal `max` values
+and `cancel-in-progress: false` via the workflow regression tests, then run actionlint
+with only that exact obsolete-schema diagnostic excluded; every other diagnostic stays fatal:
+
+```bash
+actionlint -ignore '^unexpected key "queue" for "concurrency" section[.] expected one of "cancel-in-progress", "group"$' .github/workflows/ci.yml .github/workflows/ota-production-publish.yml
+```

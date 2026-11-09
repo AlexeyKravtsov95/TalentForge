@@ -1792,3 +1792,87 @@ def test_failed_production_telegram_delivery_rechecks_files_and_retries(producti
     assert len(fake.sent) == 2
     run()
     assert len(fake.sent) == 2
+
+
+def test_no_action_production_status_is_quiet_without_public_scan(tmp_path):
+    from datetime import UTC, datetime
+
+    import httpx
+
+    from talent_data.notify.automation import notify_status
+    from talent_data.notify.cli import _Summary
+    from talent_data.ota.automation.cli import StatusDocument
+
+    document = StatusDocument(
+        schema_version=1,
+        kind="ota-production-status",
+        command="preflight",
+        operation="publish",
+        outcome="NO_ACTION",
+        stage="PLANNING",
+        reason="NO_WORK",
+        writer_needed=False,
+        operations=(),
+    )
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("NO_ACTION must not scan public blobs or send a notification")
+
+    state = tmp_path / "absent-state.json"
+    with httpx.Client(transport=httpx.MockTransport(forbidden)) as client:
+        result = notify_status(
+            document,
+            state=state,
+            client=client,
+            keyring={},
+            now=datetime.now(UTC),
+            send=forbidden,
+            summary=_Summary(None),
+            run_url="https://TEST.invalid/run",
+        )
+    assert result == "QUIET" and not state.exists()
+
+
+def test_blocked_status_notifies_once_without_public_file_scan(tmp_path, monkeypatch):
+    from talent_data.notify import automation
+    from talent_data.notify.cli import _Summary
+    from talent_data.notify.state import initial_production
+    from talent_data.notify.telegram import SendResult, SendStatus
+    from talent_data.ota.automation.cli import StatusDocument
+
+    now = datetime(2026, 11, 8, tzinfo=UTC)
+    state = tmp_path / "production.json"
+    state.write_text(initial_production(now.isoformat()).model_dump_json(by_alias=True))
+    monkeypatch.setattr(
+        automation, "observe_production", lambda *a, **kw: pytest.fail("no full scan")
+    )
+    document = StatusDocument(
+        schema_version=1,
+        kind="ota-production-status",
+        command="preflight",
+        operation="publish",
+        outcome="BLOCKED",
+        stage="PLANNING",
+        reason="REQUEST_AUTHORIZATION_FAILED",
+        writer_needed=False,
+        operations=(),
+    )
+    sent = []
+
+    def send(text):
+        sent.append(text)
+        return SendResult(SendStatus.SENT, "TEST only")
+
+    with httpx.Client() as client:
+        for _ in range(2):
+            automation.notify_status(
+                document,
+                state=state,
+                client=client,
+                keyring={},
+                now=now,
+                send=send,
+                summary=_Summary(None),
+                run_url="https://github.com/TEST/actions/runs/1",
+            )
+    assert len(sent) == 1

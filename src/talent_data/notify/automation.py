@@ -39,12 +39,35 @@ def notify_status(
     summary: _Summary,
     run_url: str,
 ) -> str:
-    if document.outcome in {"DISABLED", "DRY_RUN", "READY"}:
+    if document.outcome in {"DISABLED", "DRY_RUN", "READY", "NO_ACTION"}:
         return "QUIET"
     previous = load_dedup(ProductionDedup, state)
     first = previous is None
     timestamp = now.isoformat()
     current = previous if previous is not None else initial_production(timestamp)
+    if document.outcome in {"BLOCKED", "AMBIGUOUS", "PUBLISHED_NOT_VERIFIED"}:
+        fingerprint = "ota-production/" + document.operation + "/" + document.stage
+        if fingerprint in current.failures_notified:
+            return "QUIET"
+        decision = Decision(
+            (
+                StageFailed(
+                    stage="production: " + document.stage,
+                    reason=document.outcome + ": " + document.reason,
+                    run_url=run_url,
+                    fingerprint=fingerprint,
+                ),
+            ),
+            current.model_copy(
+                update={
+                    "failures_notified": (*current.failures_notified, fingerprint),
+                    "updated_at": timestamp,
+                }
+            ),
+        )
+        if first:
+            decision = baseline(decision)
+        return _deliver(decision, state, send, summary, first_run=first)
     observation = observe_production(
         client,
         origin=PRODUCTION_PROFILE.public_origin,
@@ -54,43 +77,18 @@ def notify_status(
         verify_files=True,
     )
     decision = decide_production(current, observation=observation, run_url=run_url, now=timestamp)
-    if document.outcome in {"BLOCKED", "AMBIGUOUS", "PUBLISHED_NOT_VERIFIED"}:
-        fingerprint = "ota-production/" + document.operation + "/" + document.stage
-        events = []
-        failures = current.failures_notified
-        if fingerprint not in failures:
-            events.append(
-                StageFailed(
-                    stage="production: " + document.stage,
-                    reason=document.outcome + ": " + document.reason,
-                    run_url=run_url,
-                    fingerprint=fingerprint,
+    decision = Decision(
+        decision.events,
+        decision.state.model_copy(
+            update={
+                "failures_notified": tuple(
+                    x
+                    for x in decision.state.failures_notified
+                    if not x.startswith("ota-production/" + document.operation + "/")
                 )
-            )
-            failures = (*failures, fingerprint)
-        # An outcome failure cannot claim a successful activation or occupy its marker.
-        decision = Decision(
-            tuple(events),
-            current.model_copy(
-                update={
-                    "failures_notified": failures,
-                    "updated_at": timestamp,
-                }
-            ),
-        )
-    else:
-        decision = Decision(
-            decision.events,
-            decision.state.model_copy(
-                update={
-                    "failures_notified": tuple(
-                        x
-                        for x in decision.state.failures_notified
-                        if not x.startswith("ota-production/" + document.operation + "/")
-                    ),
-                }
-            ),
-        )
+            }
+        ),
+    )
     if first:
         decision = baseline(decision)
     return _deliver(decision, state, send, summary, first_run=first)

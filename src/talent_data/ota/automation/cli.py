@@ -19,6 +19,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from functools import partial
 from pathlib import Path
+from time import monotonic
 from typing import Literal, Self
 
 import httpx
@@ -27,10 +28,13 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 from pydantic import Field, field_validator, model_validator
 
+from talent_data.ota import io_metrics
 from talent_data.ota.automation.authorization import (
-    authorize_request,
+    VerifiedCi,
+    authorize_request_ci,
     committed_requests,
-    request_change_commit,
+    current_main_ci,
+    request_ci_pin,
     verify_invocation,
 )
 from talent_data.ota.automation.ci_signer import (
@@ -45,7 +49,12 @@ from talent_data.ota.automation.provenance import (
     RequestRejected,
     extract_verified_archive,
 )
-from talent_data.ota.automation.public_verify import _fetch, _PublicFailure, verify_publication
+from talent_data.ota.automation.public_verify import (
+    PublicVerification,
+    _fetch,
+    _PublicFailure,
+    verify_publication,
+)
 from talent_data.ota.automation.publisher import (
     LiveSnapshot,
     OutcomeJournalError,
@@ -70,12 +79,20 @@ from talent_data.ota.automation.state import (
     FileJournal,
     GitJournal,
     Journal,
+    JournalEntry,
     JournalError,
     PublicationReceipt,
     Receipt,
     RenewalReceipt,
     RequestState,
     request_digest,
+)
+from talent_data.ota.automation.timings import (
+    DeliveryFailure,
+    DeliveryIdentity,
+    DeliveryRecorder,
+    PhaseTiming,
+    resolve_approval_epoch,
 )
 from talent_data.ota.errors import OtaPublisherError
 from talent_data.ota.models import (
@@ -119,6 +136,7 @@ Stage = Literal[
     "PROVENANCE",
     "APPROVAL_GATES",
     "PUBLISH",
+    "UPLOAD",
     "RENEWAL",
     "SIGNER",
     "CLEANUP",
@@ -140,6 +158,7 @@ Reason = Literal[
     "ASSESSMENT_FAILED",
     "PUBLIC_VERIFIED",
     "PUBLICATION_BLOCKED",
+    "UPLOAD_FAILED",
     "RENEWAL_BLOCKED",
     "SIGNER_VERIFIED",
     "SIGNER_FAILED",
@@ -222,6 +241,7 @@ class Dependencies:
     now: Callable[[], datetime] = lambda: datetime.now(UTC).replace(microsecond=0)
     origin: str = PRODUCTION_PROFILE.public_origin
     verification_budget: float = 600
+    timing_now: Callable[[], datetime] | None = None
 
 
 class PublicStore:
@@ -286,6 +306,118 @@ class _Run:
         self.ci_sha: str | None = None
         self.run_id = int(env.get("GITHUB_RUN_ID", "0"))
         self.attempt = int(env.get("GITHUB_RUN_ATTEMPT", "0"))
+        self.trigger_ci: VerifiedCi | None = None
+        self.recorder: DeliveryRecorder | None = None
+        self.proof: PublicVerification | None = None
+        self.expected_payload: str | None = None
+        self.verified_at: datetime | None = None
+
+    def timing_now(self) -> datetime:
+        return (self.d.timing_now or self.d.now)()
+
+    def initialize_timing(self) -> None:
+        if self.args.release_id is None or self.operation not in {"publish", "reconcile", "verify"}:
+            return  # Aggregate health has no single approval epoch.
+        started, stamp = monotonic(), self.timing_now()
+        try:
+            request = next(
+                (
+                    r
+                    for r in committed_requests(self.d.repo)
+                    if r.release_id == self.args.release_id
+                ),
+                None,
+            )
+            if request is None:
+                return
+            entry = self.d.journal.load(request_digest(request))
+            if entry is not None and entry.receipt.state in {
+                RequestState.VERIFIED,
+                RequestState.STALE,
+            }:
+                return  # Idempotent/terminal turns do not invent a later delivery t1.
+            epoch = resolve_approval_epoch(self.d.api, self.d.repo, request)
+            identity = DeliveryIdentity(
+                request=request,
+                request_digest=request_digest(request),
+                approval_epoch=epoch,
+                main_sha=self.env["GITHUB_SHA"],
+                trigger_ci=self.trigger_ci.pin if self.trigger_ci else None,
+                request_ci=None,
+            )
+            recorder = DeliveryRecorder(identity, clock=monotonic, now=self.timing_now)
+            recorder.append_phase(
+                PhaseTiming(
+                    name="PLANNING",
+                    source="local",
+                    started_at=stamp,
+                    ended_at=self.timing_now(),
+                    elapsed_seconds=max(0.0, monotonic() - started),
+                    ok=True,
+                )
+            )
+            self.recorder = recorder
+            if self.trigger_ci is not None:
+                recorder.record_ci(
+                    self.trigger_ci.pin,
+                    self.trigger_ci.run,
+                    self.trigger_ci.jobs,
+                    source="trigger-ci",
+                )
+        except (*_FAILURES, KeyError, TypeError):
+            self.recorder = None  # Optional observation must not change publication authority.
+
+    def write_timing(self, document: StatusDocument) -> None:
+        path = getattr(self.args, "timings_file", None)
+        if path is None or self.recorder is None:
+            return
+        try:
+            if document.outcome in {"BLOCKED", "AMBIGUOUS", "PUBLISHED_NOT_VERIFIED"}:
+                previous = self.recorder.failure
+                details = (
+                    previous.model_dump()
+                    if previous is not None and previous.stage == document.stage
+                    else {
+                        "kind": None,
+                        "operation": None,
+                        "object_hash": None,
+                        "http_status": None,
+                        "attempt": None,
+                        "elapsed_seconds": None,
+                    }
+                )
+                self.recorder.failure = DeliveryFailure.model_validate(
+                    {**details, "stage": document.stage, "reason": document.reason}
+                )
+            else:
+                self.recorder.failure = None
+            result = self.recorder.finish(
+                verified_at=self.verified_at,
+                expected_payload_sha256=self.expected_payload,
+                proof=self.proof,
+            )
+            path.parent.mkdir(parents=True, exist_ok=True)
+            temporary = path.with_suffix(path.suffix + ".tmp")
+            temporary.write_text(result.model_dump_json(by_alias=True) + "\n", encoding="utf-8")
+            temporary.replace(path)
+        except (OSError, ValueError, TypeError):
+            print("DELIVERY_TIMINGS_UNAVAILABLE", file=sys.stderr)
+
+    def _in_scope(self, receipt: Receipt) -> bool:
+        return (
+            self.args.release_id is None
+            or receipt.state in _UNRESOLVED
+            or (
+                isinstance(receipt, PublicationReceipt)
+                and receipt.request.release_id == self.args.release_id
+            )
+        )
+
+    def scoped_entries(self) -> tuple[JournalEntry, ...]:
+        # read_all validates the ENTIRE journal before narrowing the presentation.
+        return tuple(
+            entry for entry in self.d.journal.read_all().values() if self._in_scope(entry.receipt)
+        )
 
     def status(
         self,
@@ -299,13 +431,17 @@ class _Run:
         operations = []
         if self.operation not in {"init-journal", "signer-smoke"}:
             try:
-                receipts = {k: v.receipt for k, v in self.d.journal.read_all().items()}
+                receipts = {
+                    entry.receipt.request_digest: entry.receipt for entry in self.scoped_entries()
+                }
             except (JournalError, OSError):
                 if not fallback or not self.known_outcomes:
                     raise
                 receipts = {}
             if fallback:
                 for digest, known in self.known_outcomes.items():
+                    if not self._in_scope(known):
+                        continue
                     retained = receipts.get(digest)
                     if retained is None or retained.state is not RequestState.VERIFIED:
                         receipts[digest] = known
@@ -334,11 +470,21 @@ class _Run:
             operations=tuple(operations),
         )
 
-    def invocation(self) -> None:
+    @io_metrics.instrument("INVOCATION")
+    def invocation(self, *, require_ci: bool = False) -> None:
         self.stage, self.reason = "INVOCATION", "INVOCATION_REFUSED"
         refresh_main(self.d.repo)
         payload = obj(strict_json(Path(self.env["GITHUB_EVENT_PATH"]).read_bytes()))
-        verify_invocation(self.d.api, self.d.repo, self.env, payload)
+        verified = verify_invocation(self.d.api, self.d.repo, self.env, payload)
+        if require_ci and self.env["GITHUB_EVENT_NAME"] == "schedule":
+            verified = current_main_ci(self.d.api, self.d.repo, self.env["GITHUB_SHA"])
+            require(verified is not None, "CI_PENDING", "current main CI is pending")
+        if verified is not None:
+            self.trigger_ci = verified
+            if self.recorder is not None:
+                self.recorder.record_ci(
+                    verified.pin, verified.run, verified.jobs, source="trigger-ci"
+                )
         event = self.env["GITHUB_EVENT_NAME"]
         if self.operation in {"signer-smoke", "init-journal"}:
             require(event == "workflow_dispatch", "MANUAL_REQUIRED", "manual setup only")
@@ -358,6 +504,7 @@ class _Run:
             same(inputs.get("ci_attempt"), str(raw_attempt), "CI_PIN", "manual CI attempt")
             self.ci_pin = (raw_id, raw_attempt)
 
+    @io_metrics.instrument("PUBLIC_CATALOG")
     def public_live(self) -> LiveSnapshot:
         self.stage, self.reason = "PUBLIC_CATALOG", "PUBLIC_CATALOG_UNVERIFIED"
         result = verify_publication(
@@ -373,21 +520,32 @@ class _Run:
         same(sha256_ref(live.payload), result.catalog_payload_sha256, "PUBLIC_CHANGED", "catalog")
         return live
 
+    @io_metrics.instrument("PROVENANCE")
     def evidence(self, request: ReleaseRequest) -> ProvenanceEvidence:
         # Re-fetch current main + exact committed bytes + authorization and API metadata
         # on EVERY assessment, including after upload and the WRITE_STARTED barrier.
         self.stage, self.reason = "AUTHORIZATION", "REQUEST_AUTHORIZATION_FAILED"
-        refresh_main(self.d.repo)
+        self.invocation(require_ci=True)
+        self.stage, self.reason = "AUTHORIZATION", "REQUEST_AUTHORIZATION_FAILED"
         path = f"docs/ota/release-requests/{request.release_id}.json"
         raw = git(self.d.repo, "show", f"origin/main:{path}")
         same(raw, self.current_bytes[request_digest(request)], "REQUEST_CHANGED", "request bytes")
-        authorize_request(
+        pin = self.ci_pin
+        if self.env.get("GITHUB_EVENT_NAME") == "workflow_run":
+            pin = request_ci_pin(
+                self.d.repo, request, trigger_sha=self.ci_sha, trigger_pin=self.ci_pin
+            )
+        authorized = authorize_request_ci(
             self.d.api,
             self.d.repo,
             request,
-            ci_run_id=self.ci_pin[0] if self.ci_pin else None,
-            ci_attempt=self.ci_pin[1] if self.ci_pin else None,
+            ci_run_id=pin[0] if pin else None,
+            ci_attempt=pin[1] if pin else None,
         )
+        if self.recorder is not None and self.recorder.identity.request == request:
+            self.recorder.record_ci(
+                authorized.pin, authorized.run, authorized.jobs, source="request-ci"
+            )
         self.stage, self.reason = "PROVENANCE", "PACKAGE_PROVENANCE_FAILED"
         runs: dict[str, object] = {
             name: self.d.api.run(pin.run_id, pin.attempt)
@@ -432,11 +590,14 @@ class _Run:
 
     def pending_verification(self) -> None:
         self.stage, self.reason = "PUBLIC_VERIFY", "PUBLIC_NOT_VERIFIED"
-        for digest, entry in self.d.journal.read_all().items():
+        for entry in self.scoped_entries():
             receipt = entry.receipt
+            digest = receipt.request_digest
             if receipt.state is not RequestState.PUBLISHED_NOT_VERIFIED:
                 continue
             assert receipt.payload_sha256 is not None
+            if self.recorder is not None and digest == self.recorder.identity.request_digest:
+                self.expected_payload = receipt.payload_sha256
             result = verify_after_write(
                 self.d.client,
                 origin=self.d.origin,
@@ -446,7 +607,11 @@ class _Run:
                 expected_payload_sha256=receipt.payload_sha256,
                 budget_seconds=self.d.verification_budget,
             )
-            confirm_publication(self.d.journal, digest, result)
+            confirmed = confirm_publication(self.d.journal, digest, result)
+            if self.recorder is not None and digest == self.recorder.identity.request_digest:
+                self.proof = result
+                if confirmed.state is RequestState.VERIFIED and result.ok:
+                    self.verified_at = self.timing_now()
 
     def plan(self, root: Path, *, mutate: bool) -> tuple[tuple[ReleaseRequest, ...], bool]:
         # An unknown private PUT must be diagnosed before CDN convergence is required.
@@ -480,11 +645,6 @@ class _Run:
             digest = request_digest(request)
             if digest in self.recovered:
                 continue  # recovery only diagnoses; exact PREPARED resumes on next run
-            if (
-                self.ci_sha is not None
-                and request_change_commit(self.d.repo, request) != self.ci_sha
-            ):
-                continue  # event assesses only its exact request/approval-change commit
             if self.args.release_id is not None and request.release_id != self.args.release_id:
                 continue
             path = f"docs/ota/release-requests/{request.release_id}.json"
@@ -516,7 +676,7 @@ class _Run:
         return tuple(eligible), due
 
     def final(self, *, changed: bool) -> StatusDocument:
-        entries = self.d.journal.read_all().values()
+        entries = self.scoped_entries()
         states = {x.receipt.state for x in entries}
         if states & _UNRESOLVED:
             return self.status("AMBIGUOUS", "RECOVERY", "OUTCOME_UNKNOWN")
@@ -545,6 +705,16 @@ class _Run:
         )
 
     def run(self) -> StatusDocument:
+        if getattr(self.args, "timings_file", None) is None:
+            return self._execute()
+        self.invocation()
+        self.initialize_timing()
+        if self.recorder is None:
+            return self._execute()
+        with io_metrics.observe(self.recorder):
+            return self._execute()
+
+    def _execute(self) -> StatusDocument:
         self.invocation()
         self.stage, self.reason = "CONFIG", "CONFIG_MISSING"
         same(self.env.get("OTA_PRODUCTION_KEY_ID"), PRIMARY_KEY, "KEY_ID", "primary key id")
@@ -688,6 +858,8 @@ class _Run:
                         self.failure = (
                             ("SIGNER", "SIGNER_FAILED")
                             if result.reason == "SIGN_FAILED"
+                            else ("UPLOAD", "UPLOAD_FAILED")
+                            if result.reason == "UPLOAD_FAILED"
                             else (self.stage, self.reason)
                         )
                     changed |= result.state is RequestState.PUBLISHED_NOT_VERIFIED
@@ -739,6 +911,7 @@ def _parser() -> argparse.ArgumentParser:
         sub.add_argument("--ci-run-id", type=int)
         sub.add_argument("--ci-attempt", type=int)
         sub.add_argument("--release-id")
+        sub.add_argument("--timings-file", type=Path)
         if command == "preflight":
             sub.add_argument(
                 "--operation",
@@ -817,6 +990,10 @@ def main(
     dependencies: Dependencies | None = None,
 ) -> int:
     argv = sys.argv[1:] if argv is None else argv
+    if argv and argv[0] == "probe":
+        from talent_data.ota.automation.probe import main as probe_main
+
+        return probe_main(argv[1:], environment=environment, dependencies=dependencies)
     if argv and argv[0] in {"check-app", "prepare-request", "propose-request", "fetch-staging"}:
         from talent_data.ota.automation.prepare import main as prepare_main
 
@@ -855,7 +1032,13 @@ def main(
                         )
 
                     dependencies = Dependencies(
-                        TRUSTED_REPO, api, client, GitJournal(TRUSTED_REPO), keys, writer
+                        TRUSTED_REPO,
+                        api,
+                        client,
+                        GitJournal(TRUSTED_REPO),
+                        keys,
+                        writer,
+                        timing_now=lambda: datetime.now(UTC),
                     )
                 run = _Run(args, env, dependencies)
                 document = run.run()
@@ -887,7 +1070,10 @@ def main(
                         x.state is RequestState.PUBLISHED_NOT_VERIFIED for x in document.operations
                     ):
                         document = document.model_copy(update={"outcome": "PUBLISHED_NOT_VERIFIED"})
-    return _emit(document, args.status_file, env)
+    code = _emit(document, args.status_file, env)
+    if run is not None:
+        run.write_timing(document)
+    return code
 
 
 if __name__ == "__main__":

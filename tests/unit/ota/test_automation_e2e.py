@@ -134,7 +134,18 @@ def rehearsal(env, tmp_path, monkeypatch):
         def pages(self, route, member, **kwargs):
             calls.append(("pages", route))
             if member == "jobs":
-                return [{"name": "checks", "status": "completed", "conclusion": "success"}]
+                parts = route.split("/")
+                run_id, attempt = int(parts[3]), int(parts[5])
+                return [
+                    {
+                        "name": "checks",
+                        "status": "completed",
+                        "conclusion": "success",
+                        "run_id": run_id,
+                        "run_attempt": attempt,
+                        "head_sha": self.run(run_id, attempt)["head_sha"],
+                    }
+                ]
             return [{"id": 66, "run_attempt": 2}]
 
         def archive(self, artifact):
@@ -236,6 +247,83 @@ def test_rehearsal_main_contains_only_its_test_request(rehearsal):
         .splitlines()
     )
     assert paths == [f"docs/ota/release-requests/{rehearsal.receipt.request.release_id}.json"]
+
+
+@pytest.fixture
+def verified_scope(rehearsal):
+    from talent_data.ota.automation.state import PublicationReceipt
+
+    r = rehearsal
+    assert r.command()[0] == 0  # real gates, TEST signature, catalog write and all-file proof
+    request = r.receipt.request
+    other = request.model_copy(update={"revision": 2, "release_id": request.build + "-r2"})
+    blocked = PublicationReceipt.pending(other, run_id=12, attempt=1).evolve(
+        state=RequestState.BLOCKED, reason="CHECK_FAILED"
+    )
+    r.journal.save(blocked)
+    return r, blocked
+
+
+def scoped_run(r, release_id, operation="publish"):
+    args = cli._parser().parse_args(
+        [operation, "--status-file", str(r.status), "--release-id", release_id]
+    )
+    return cli._Run(args, r.environment, r.dependencies)
+
+
+def test_scoped_verified_ignores_unrelated_old_blocked(verified_scope):
+    r, blocked = verified_scope
+    before = r.journal.read_all()
+    document = scoped_run(r, r.receipt.request.release_id).final(changed=True)
+    assert document.outcome == "VERIFIED" and document.exit_code == 0
+    assert {op.release_id for op in document.operations} == {r.receipt.request.release_id}
+    assert r.journal.read_all() == before
+    assert before[blocked.request_digest].receipt == blocked
+
+
+def test_unscoped_reconcile_keeps_aggregate_failure(verified_scope):
+    r, _ = verified_scope
+    args = cli._parser().parse_args(["reconcile", "--status-file", str(r.status)])
+    document = cli._Run(args, r.environment, r.dependencies).final(changed=True)
+    assert document.outcome == "BLOCKED" and document.exit_code == 1
+    assert len(document.operations) == 2
+
+
+def test_global_ambiguous_blocks_scoped_target(verified_scope):
+    from talent_data.ota.automation.state import FileJournal
+
+    r, blocked = verified_scope
+    retained = r.journal.load(r.receipt.request_digest)
+    # A separate crash-recovery journal; never reactivate a terminal receipt.
+    recovery = FileJournal(r.temporary / "uncertain-journal.json")
+    recovery.initialize()
+    recovery.save(blocked)
+    recovery.save(
+        retained.receipt.evolve(state=RequestState.AMBIGUOUS, reason="OUTCOME_UNKNOWN"),
+        retained.prepared,
+    )
+    r.dependencies.journal = recovery
+    document = scoped_run(r, blocked.request.release_id).final(changed=False)
+    assert document.outcome == "AMBIGUOUS" and document.exit_code == 3
+    assert {op.release_id for op in document.operations} == {
+        blocked.request.release_id,
+        r.receipt.request.release_id,
+    }
+
+
+def test_upload_failure_reports_upload_stage_without_secrets(rehearsal, monkeypatch, capsys):
+    from talent_data.ota.s3_store import S3Failure, S3StoreError
+
+    r = rehearsal
+
+    def fail(key, data, *, cache_control):
+        raise S3StoreError(S3Failure.NETWORK, key, "TEST-SENSITIVE-ERROR-CONTENT")
+
+    monkeypatch.setattr(r.store, "put", fail)
+    code, document = r.command(arguments=("--release-id", r.receipt.request.release_id))
+    assert code == 1 and document.stage == "UPLOAD" and document.reason == "UPLOAD_FAILED"
+    assert "TEST-SENSITIVE" not in capsys.readouterr().out
+    assert r.journal.load(r.receipt.request_digest).receipt.reason == "UPLOAD_FAILED"
 
 
 def test_approved_request_to_verified_publication_and_one_notification(rehearsal, tmp_path):
@@ -1530,3 +1618,150 @@ def test_due_resign_preflight_and_writer_do_not_parse_release_requests(
         code, refused = r.command("publish")
         assert code == 1 and refused.outcome == "BLOCKED"
         assert len(puts) == 1 and len(r.reads) == reads and len(r.writers) == writers
+
+
+@pytest.fixture
+def code_only_recovery(rehearsal, monkeypatch):
+    r = rehearsal
+    old_sha = r.environment["GITHUB_SHA"]
+    request_path = f"docs/ota/release-requests/{r.receipt.request.release_id}.json"
+    approval_path = f"docs/ota/releases/{r.receipt.request.release_id}.md"
+    before = [git(r.repo, "show", f"HEAD:{p}") for p in (request_path, approval_path)]
+    (r.remote / "code-fix-marker.py").write_text("# TEST code-only fix\n")
+    git(r.remote, "add", "code-fix-marker.py")
+    git(
+        r.remote,
+        "-c",
+        "user.name=TEST",
+        "-c",
+        "user.email=test@example.invalid",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "commit",
+        "-qm",
+        "TEST code-only fix",
+    )
+    git(r.repo, "fetch", "origin", "main")
+    git(r.repo, "reset", "--hard", "origin/main")
+    current = git(r.repo, "rev-parse", "HEAD").decode().strip()
+    assert before == [git(r.repo, "show", f"HEAD:{p}") for p in (request_path, approval_path)]
+    r.environment["GITHUB_SHA"] = current
+    r.payload["workflow_run"]["head_sha"] = current
+    api = r.dependencies.api
+    original_run, original_pages = api.run, api.pages
+
+    def run(run_id, attempt):
+        if run_id == 77:
+            result = original_run(66, 2)
+            return {**result, "id": 77, "run_attempt": 1, "head_sha": old_sha}
+        result = original_run(run_id, attempt)
+        if run_id == 66:
+            result["head_sha"] = current
+        return result
+
+    def pages(path, member, **kwargs):
+        if member == "workflow_runs":
+            assert kwargs["params"]["head_sha"] == old_sha
+            return [{"id": 77, "run_attempt": 1}]
+        return original_pages(path, member, **kwargs)
+
+    monkeypatch.setattr(api, "run", run)
+    monkeypatch.setattr(api, "pages", pages)
+    return r, old_sha, current
+
+
+def test_code_only_trigger_recovers_older_approved_request(code_only_recovery):
+    r, _, _ = code_only_recovery
+    code, document = r.command(arguments=("--release-id", r.receipt.request.release_id))
+    assert code == 0 and document.outcome == "VERIFIED"
+    assert r.journal.load(r.receipt.request_digest).receipt.state is RequestState.VERIFIED
+    assert len(r.writers) == 1
+
+
+@pytest.mark.parametrize("fault", ["request-ci", "trigger-ci"])
+def test_trigger_current_main_and_request_ci_both_required(code_only_recovery, monkeypatch, fault):
+    r, old_sha, current = code_only_recovery
+    api = r.dependencies.api
+    original = api.run
+
+    def run(run_id, attempt):
+        record = original(run_id, attempt)
+        if fault == "request-ci" and run_id == 77:
+            record["head_sha"] = current
+        elif fault == "trigger-ci" and run_id == 66:
+            record["head_sha"] = old_sha
+        return record
+
+    monkeypatch.setattr(api, "run", run)
+    if fault == "trigger-ci":
+        r.payload["workflow_run"]["head_sha"] = old_sha
+    code, document = r.command(arguments=("--release-id", r.receipt.request.release_id))
+    assert code == 1 and document.outcome == "BLOCKED"
+    assert not r.reads and not r.writers
+
+
+def test_delivery_timings_record_verified_scoped_request(rehearsal):
+    from talent_data.ota.automation.timings import read_timings
+
+    r = rehearsal
+    r.dependencies.timing_now = lambda: r.clock[0] + timedelta(microseconds=123456)
+    timing = r.status.parent / "timing.json"
+    code, document = r.command(
+        arguments=("--release-id", r.receipt.request.release_id, "--timings-file", str(timing))
+    )
+    assert code == 0 and document.outcome == "VERIFIED"
+    result = read_timings(timing.read_bytes())
+    assert result.identity.request == r.receipt.request
+    assert result.identity.trigger_ci.run_id == result.identity.request_ci.run_id == 66
+    assert (
+        result.identity.trigger_ci.attempt == 2
+        and result.identity.main_sha == r.environment["GITHUB_SHA"]
+    )
+    assert result.proof.verified and result.verified_at is not None
+    assert result.verified_at.microsecond == 123456
+    assert result.slo == "UNKNOWN"  # this fixture supplies no PR/server-time evidence
+    assert result.io.get_requests > 0 and result.io.put_requests > 0
+    assert {"UPLOAD", "CATALOG_WRITE", "PRIVATE_READBACK", "PUBLIC_VERIFY"} <= {
+        p.name for p in result.phases
+    }
+    assert not any(secret in timing.read_text() for secret in r.secrets.values())
+
+
+def test_timing_file_failure_does_not_erase_verified_publication(rehearsal, monkeypatch, capsys):
+    r = rehearsal
+    timing = r.status.parent / "timing.json"
+    original = Path.write_text
+
+    def write(path, *args, **kwargs):
+        if path == timing.with_suffix(".json.tmp"):
+            raise OSError("TEST-SECRET-METRIC-WRITE")
+        return original(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "write_text", write)
+    code, document = r.command(
+        arguments=("--release-id", r.receipt.request.release_id, "--timings-file", str(timing))
+    )
+    assert code == 0 and document.outcome == "VERIFIED"
+    assert r.journal.load(r.receipt.request_digest).receipt.state is RequestState.VERIFIED
+    assert len(r.writers) == 1
+    error = capsys.readouterr().err
+    assert "DELIVERY_TIMINGS_UNAVAILABLE" in error and "TEST-SECRET" not in error
+
+
+def test_pending_public_timing_retains_expected_payload_pin(rehearsal):
+    from talent_data.ota.automation.timings import read_timings
+
+    r = rehearsal
+    r.public_old[0] = r.store.get(CATALOG)
+    timing = r.status.parent / "timing.json"
+    code, document = r.command(
+        arguments=("--release-id", r.receipt.request.release_id, "--timings-file", str(timing))
+    )
+    assert code == 3 and document.outcome == "PUBLISHED_NOT_VERIFIED"
+    result = read_timings(timing.read_bytes())
+    assert (
+        result.expected_payload_sha256
+        == r.journal.load(r.receipt.request_digest).receipt.payload_sha256
+    )
+    assert result.expected_payload_sha256 != result.proof.payload_sha256
+    assert result.verified_at is None and result.slo == "PENDING"

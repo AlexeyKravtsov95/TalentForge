@@ -62,8 +62,10 @@ from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
+from time import monotonic
 from typing import Any, Protocol
 
+from talent_data.ota import io_metrics
 from talent_data.ota.errors import OtaPublisherError
 from talent_data.ota.models import MAX_CATALOG_BYTES, Channel, OtaCatalog
 from talent_data.ota.s3_channels import PROFILES, require_profile
@@ -116,6 +118,23 @@ class S3StoreError(OtaPublisherError):
         super().__init__(f"s3 {kind.value} {key}: {detail}")
         self.kind = kind
         self.key = key
+        self.operation: str | None = None
+        self.http_status: int | None = None
+        self.attempt: int | None = None
+        self.elapsed_seconds = 0.0
+
+    def diagnostic(self) -> dict[str, str | int | float | None]:
+        """Only allowlisted scalars: never the provider's detail/key/URL/message."""
+        return {
+            "kind": self.kind.value,
+            "operation": self.operation,
+            "objectHash": "sha256:" + self.key.removeprefix(BLOB_PREFIX)
+            if BLOB_KEY.fullmatch(self.key)
+            else None,
+            "httpStatus": self.http_status,
+            "attempt": self.attempt,
+            "elapsedSeconds": self.elapsed_seconds,
+        }
 
 
 class S3Client(Protocol):
@@ -242,14 +261,23 @@ def connect(
         request_checksum_calculation="when_required",
         response_checksum_validation="when_required",
         s3={"addressing_style": "virtual"},
-        retries={"mode": "standard", "max_attempts": 5},
-        connect_timeout=10,
-        read_timeout=60,
+        retries={"mode": "standard", "total_max_attempts": 3},
+        connect_timeout=5,
+        read_timeout=15,
         user_agent_extra="talentforge-ota-publisher",
     )
     try:
         session = boto3.Session(profile_name=location.profile, region_name=location.region)
         client = session.client("s3", endpoint_url=location.endpoint_url, config=config)
+        write_client = (
+            session.client(
+                "s3",
+                endpoint_url=location.endpoint_url,
+                config=config.merge(Config(retries={"mode": "standard", "total_max_attempts": 1})),
+            )
+            if writable
+            else None
+        )
     except BotoCoreError as exc:
         raise S3StoreError(S3Failure.CREDENTIALS, location.bucket, type(exc).__name__) from exc
     return S3BlobStore(
@@ -259,6 +287,7 @@ def connect(
         writable=writable,
         allow_delete=allow_delete,
         catalog_guard=catalog_guard,
+        write_client=write_client,
     )
 
 
@@ -277,7 +306,7 @@ def _classify(exc: Exception) -> tuple[S3Failure, str]:
         meta = exc.response.get("ResponseMetadata", {})
         status = meta.get("HTTPStatusCode")
         code = str(exc.response.get("Error", {}).get("Code", ""))
-        detail = f"HTTP {status} {code}".strip()
+        detail = f"HTTP {status}" if type(status) is int and 100 <= status <= 599 else "HTTP_ERROR"
         if status == 404 or code in ("NoSuchKey", "NotFound", "404"):
             return S3Failure.NOT_FOUND, detail
         if status == 403 or code in ("AccessDenied", "Forbidden", "403"):
@@ -387,6 +416,7 @@ class S3BlobStore:
         writable: bool = False,
         allow_delete: bool = False,
         catalog_guard: ProductionCatalogGuard | None = None,
+        write_client: S3Client | None = None,
     ) -> None:
         if bucket != PROFILES[channel].bucket:
             raise OtaPublisherError(
@@ -402,6 +432,7 @@ class S3BlobStore:
         elif catalog_guard is not None:
             raise OtaPublisherError("the production catalog guard is for the production store")
         self._client = client
+        self._write_client = client if write_client is None else write_client
         self.bucket = bucket
         self.channel = channel
         self.writable = writable
@@ -439,12 +470,55 @@ class S3BlobStore:
             )
 
     def _call(self, operation: str, key: str, **kwargs: Any) -> dict[str, Any]:
-        method = getattr(self._client, operation)
+        client = (
+            self._write_client if operation in {"put_object", "delete_object"} else self._client
+        )
+        method = getattr(client, operation)
+        started = monotonic()
+        metadata: dict[str, Any] = {}
         try:
             result: dict[str, Any] = method(Bucket=self.bucket, Key=key, **kwargs)
+            raw_meta = result.get("ResponseMetadata", {})
+            if isinstance(raw_meta, dict):
+                metadata = raw_meta
         except Exception as exc:
             kind, detail = _classify(exc)
-            raise S3StoreError(kind, key, f"{operation}: {detail}") from exc
+            error = S3StoreError(kind, key, f"{operation}: {detail}")
+            if operation in {"get_object", "head_object", "put_object", "delete_object"}:
+                error.operation = operation
+            response = getattr(exc, "response", {})
+            raw_meta = response.get("ResponseMetadata", {}) if isinstance(response, dict) else {}
+            metadata = raw_meta if isinstance(raw_meta, dict) else {}
+            if isinstance(metadata, dict):
+                status = metadata.get("HTTPStatusCode")
+                retries = metadata.get("RetryAttempts")
+                if type(status) is int and 100 <= status <= 599:
+                    error.http_status = status
+                if type(retries) is int and 0 <= retries <= 100:
+                    error.attempt = retries + 1
+            error.elapsed_seconds = max(0.0, monotonic() - started)
+            io_metrics.record_failure(error.diagnostic())
+            raise error from exc
+        finally:
+            operations: dict[str, io_metrics.Operation] = {
+                "get_object": "GET",
+                "head_object": "HEAD",
+                "put_object": "PUT",
+            }
+            metric_operation = operations.get(operation)
+            if metric_operation is not None:
+                retries = metadata.get("RetryAttempts")
+                attempts = retries + 1 if type(retries) is int and 0 <= retries <= 100 else 1
+                if type(retries) is not int:
+                    io_metrics.incomplete()
+                for attempt in range(attempts):
+                    body = kwargs.get("Body", b"")
+                    io_metrics.count(
+                        metric_operation,
+                        bytes=len(body) if isinstance(body, bytes) else 0,
+                        retry=attempt > 0,
+                        sha_ref=io_metrics.object_hash(key),
+                    )
         return result
 
     # ------------------------------------------------------------------ BlobStore
@@ -501,7 +575,24 @@ class S3BlobStore:
                 args["IfNoneMatch"] = "*"
             else:
                 args["IfMatch"] = etag
-        response = self._call("put_object", key, **args)
+        try:
+            response = self._call("put_object", key, **args)
+        except S3StoreError as exc:
+            # Only an immutable object's exact bytes/metadata can resolve a lost
+            # blob response here. Catalog recovery belongs to the durable journal.
+            if not is_blob or exc.kind not in {
+                S3Failure.NETWORK,
+                S3Failure.SERVICE,
+                S3Failure.PRECONDITION_FAILED,
+            }:
+                raise
+            try:
+                self._verify_put(key, data, md5.hexdigest(), content_type, cache_control)
+                if self.get(key) != data:
+                    raise
+            except S3StoreError:
+                raise exc from None
+            return
         self._verify_put(key, data, md5.hexdigest(), content_type, cache_control)
         if not is_blob:
             self._observe(key, response.get("ETag"))
@@ -560,9 +651,11 @@ class S3BlobStore:
             data: bytes = body.read()
         except Exception as exc:
             kind, detail = _classify(exc)
+            io_metrics.incomplete()
             raise S3StoreError(kind, key, f"get_object body: {detail}") from exc
         finally:
             body.close()
+        io_metrics.add_bytes(len(data))
         expected = response.get("ContentLength")
         if expected is not None and expected != len(data):
             raise S3StoreError(

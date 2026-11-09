@@ -11,9 +11,8 @@ on:
     workflows: ["CI"]
     types: [completed]
   schedule:
-    # Recover missed CI events within the next 15-minute schedule interval.
-    # Offset from the hour; GitHub may still delay scheduled starts.
-    - cron: "11,26,41,56 * * * *"
+    - cron: "3-58/5 * * * *" # Cheap selection only; GitHub can delay starts.
+    - cron: "41 3 * * *" # Independent daily renewal/global health.
   workflow_dispatch:
     inputs:
       mode:
@@ -40,10 +39,11 @@ permissions:
 
 env:
   OTA_PRODUCTION_AUTOMATION_ENABLED: ${{ vars.OTA_PRODUCTION_AUTOMATION_ENABLED }}
+  PYTHONPATH: src
   OTA_PRODUCTION_KEY_ID: ${{ vars.OTA_PRODUCTION_KEY_ID }}
 
 jobs:
-  preflight:
+  probe:
     if: >-
       github.repository == 'AlexeyKravtsov95/TalentForge' &&
       github.ref == 'refs/heads/main' &&
@@ -54,19 +54,97 @@ jobs:
         github.event.workflow_run.head_branch == 'main' &&
         github.event.workflow_run.head_repository.full_name == github.repository))
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      artifact_id: ${{ steps.probe-artifact.outputs.artifact-id }}
+      action: ${{ steps.route.outputs.action }}
+      delivery: ${{ steps.route.outputs.delivery }}
+      daily: ${{ steps.route.outputs.daily }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -e ".[ota]"
+      - name: Probe committed delivery metadata
+        id: probe
+        if: github.event_name != 'workflow_dispatch'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python scripts/ota_release_automation.py probe --status-file "$RUNNER_TEMP/probe.json"
+      - name: Select delivery route
+        id: route
+        env:
+          EVENT: ${{ github.event_name }}
+          SCHEDULE: ${{ github.event.schedule }}
+          PROBE_ACTION: ${{ steps.probe.outputs.action }}
+        run: |
+          daily=false
+          case "$EVENT" in
+            workflow_dispatch) action=MANUAL; delivery=true ;;
+            workflow_run) action="$PROBE_ACTION" ;;
+            schedule)
+              case "$SCHEDULE" in
+                '41 3 * * *') daily=true ;;
+                '3-58/5 * * * *') ;;
+                *) exit 1 ;;
+              esac
+              action="$PROBE_ACTION"
+              ;;
+            *) exit 1 ;;
+          esac
+          case "$action" in
+            PUBLISH|VERIFY|RECOVER|MANUAL) delivery=true ;;
+            NO_WORK|WAIT|BLOCKED) delivery=false ;;
+            *) exit 1 ;;
+          esac
+          {
+            echo "action=$action"
+            echo "delivery=$delivery"
+            echo "daily=$daily"
+          } >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        id: probe-artifact
+        if: github.event_name != 'workflow_dispatch'
+        with:
+          name: ota-delivery-probe-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/probe.json
+          if-no-files-found: error
+          retention-days: 14
+
+  preflight:
+    needs: probe
+    if: >-
+      always() && !cancelled() &&
+      github.repository == 'AlexeyKravtsov95/TalentForge' && github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' || needs.probe.outputs.delivery == 'true')
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     concurrency:
       group: ota-production-writer
       cancel-in-progress: false
+      queue: max
     permissions:
       contents: write # GitHub journal only; no production secret binding
       actions: read
+      pull-requests: read # Server approval merged_at for optional delivery timings.
     outputs:
       outcome: ${{ steps.preflight.outputs.outcome }}
+      partial_failure: ${{ steps.preflight.outputs.partial_failure }}
       writer_needed: ${{ steps.preflight.outputs.writer_needed }}
       artifact: ${{ steps.status-artifact.outcome == 'success' }}
+      artifact_id: ${{ steps.status-artifact.outputs.artifact-id }}
       operation: ${{ steps.select.outputs.operation }}
       execute: ${{ steps.select.outputs.execute }}
+      automatic: ${{ steps.select.outputs.automatic }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -86,8 +164,7 @@ jobs:
           EXECUTE: ${{ inputs.execute }}
         run: |
           case "$EVENT" in
-            workflow_run) operation=publish; execute=true ;;
-            schedule) operation=reconcile; execute=true ;;
+            workflow_run|schedule) operation=publish; execute=true ;;
             workflow_dispatch)
               case "$MODE" in
                 publish|reconcile|resign|verify|signer-smoke|init-journal) operation="$MODE" ;;
@@ -100,6 +177,15 @@ jobs:
           esac
           echo "operation=$operation" >> "$GITHUB_OUTPUT"
           echo "execute=$execute" >> "$GITHUB_OUTPUT"
+          automatic=true
+          if [ "$EVENT" = workflow_dispatch ]; then automatic=false; fi
+          echo "automatic=$automatic" >> "$GITHUB_OUTPUT"
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        if: steps.select.outputs.automatic == 'true'
+        with:
+          artifact-ids: ${{ needs.probe.outputs.artifact_id }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/delivery-probe
       - name: Secret-free preflight
         id: preflight
         continue-on-error: true
@@ -108,15 +194,22 @@ jobs:
           CI_RUN_ID: ${{ github.event.workflow_run.id || inputs.ci_run_id }}
           CI_ATTEMPT: ${{ github.event.workflow_run.run_attempt || inputs.ci_attempt }}
           RELEASE_ID: ${{ inputs.release_id }}
+          AUTOMATIC: ${{ steps.select.outputs.automatic }}
           OPERATION: ${{ steps.select.outputs.operation }}
           EXECUTE: ${{ steps.select.outputs.execute }}
         run: |
+          if [ "$AUTOMATIC" = true ]; then
+            python scripts/ota_delivery_route.py preflight --probe-file "$RUNNER_TEMP/delivery-probe/probe.json" \
+              --output-dir "$RUNNER_TEMP/delivery-preflight"
+            exit $?
+          fi
           args=()
           if [ -n "$CI_RUN_ID" ] || [ -n "$CI_ATTEMPT" ]; then
             args+=(--ci-run-id "$CI_RUN_ID" --ci-attempt "$CI_ATTEMPT")
           fi
           if [ -n "$RELEASE_ID" ]; then args+=(--release-id "$RELEASE_ID"); fi
           if [ "$EXECUTE" = true ]; then args+=(--execute); fi
+          if [ -n "$RELEASE_ID" ]; then args+=(--timings-file "$RUNNER_TEMP/preflight-timings.json"); fi
           python scripts/ota_release_automation.py preflight --operation "$OPERATION" \
             --status-file "$RUNNER_TEMP/preflight.json" "${args[@]}"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -124,8 +217,16 @@ jobs:
         if: always()
         with:
           name: ota-production-preflight-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/preflight.json
+          path: ${{ steps.select.outputs.automatic == 'true' && format('{0}/delivery-preflight', runner.temp) || format('{0}/preflight.json', runner.temp) }}
           if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        continue-on-error: true # Optional telemetry never changes publication authority.
+        with:
+          name: ota-delivery-preflight-timings-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.select.outputs.automatic == 'true' && format('{0}/delivery-preflight', runner.temp) || format('{0}/preflight-timings.json', runner.temp) }}
+          if-no-files-found: ignore
           retention-days: 14
       - name: Report preflight result
         if: always()
@@ -148,14 +249,18 @@ jobs:
     concurrency:
       group: ota-production-writer
       cancel-in-progress: false
+      queue: max
     permissions:
       contents: write # journal; no App token, PR write or Telegram token
       actions: read
+      pull-requests: read # Server approval merged_at for optional delivery timings.
     env:
+      AUTOMATIC: ${{ needs.preflight.outputs.automatic }}
       OPERATION: ${{ needs.preflight.outputs.operation }}
       EXECUTE: "true"
     outputs:
       artifact: ${{ steps.status-artifact.outcome == 'success' }}
+      artifact_id: ${{ steps.status-artifact.outputs.artifact-id }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -167,6 +272,12 @@ jobs:
           python-version: "3.12"
       - name: Install
         run: pip install -e ".[ota,s3]"
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        if: env.AUTOMATIC == 'true'
+        with:
+          artifact-ids: ${{ needs.preflight.outputs.artifact_id }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/delivery-plan
       # Protected CLI repeats current-main/API/provenance/approval/live gates before
       # reading credentials. Never execute code from a downloaded release artifact.
       - name: Publish or renew
@@ -183,12 +294,18 @@ jobs:
           OTA_PRODUCTION_S3_ACCESS_KEY_ID: ${{ secrets.OTA_PRODUCTION_S3_ACCESS_KEY_ID }}
           OTA_PRODUCTION_S3_SECRET_ACCESS_KEY: ${{ secrets.OTA_PRODUCTION_S3_SECRET_ACCESS_KEY }}
         run: |
+          if [ "$AUTOMATIC" = true ]; then
+            python scripts/ota_delivery_route.py writer --probe-file "$RUNNER_TEMP/delivery-plan/plan.json" \
+              --output-dir "$RUNNER_TEMP/delivery-writer"
+            exit $?
+          fi
           args=()
           if [ -n "$CI_RUN_ID" ] || [ -n "$CI_ATTEMPT" ]; then
             args+=(--ci-run-id "$CI_RUN_ID" --ci-attempt "$CI_ATTEMPT")
           fi
           if [ -n "$RELEASE_ID" ]; then args+=(--release-id "$RELEASE_ID"); fi
           if [ "$EXECUTE" = true ]; then args+=(--execute); fi
+          if [ -n "$RELEASE_ID" ]; then args+=(--timings-file "$RUNNER_TEMP/delivery-timings.json"); fi
           python scripts/ota_release_automation.py "$OPERATION" \
             --status-file "$RUNNER_TEMP/candidate-status.json" "${args[@]}"
       - name: Signer smoke
@@ -232,7 +349,7 @@ jobs:
       - name: Preserve unknown interrupted outcome
         if: always()
         env:
-          STATUS_FILE: ${{ runner.temp }}/candidate-status.json
+          STATUS_FILE: ${{ needs.preflight.outputs.automatic == 'true' && format('{0}/delivery-writer/candidate-status.json', runner.temp) || format('{0}/candidate-status.json', runner.temp) }}
         run: |
           python - <<'PYTHON'
           import os
@@ -248,6 +365,7 @@ jobs:
                   outcome="AMBIGUOUS", stage="RECOVERY", reason="OUTCOME_UNKNOWN",
                   writer_needed=False, operations=(),
               )
+              path.parent.mkdir(parents=True, exist_ok=True)
               path.write_text(document.model_dump_json(by_alias=True))
           PYTHON
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -255,13 +373,21 @@ jobs:
         if: always()
         with:
           name: ota-production-writer-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/candidate-status.json
+          path: ${{ needs.preflight.outputs.automatic == 'true' && format('{0}/delivery-writer', runner.temp) || format('{0}/candidate-status.json', runner.temp) }}
           if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        continue-on-error: true
+        with:
+          name: ota-delivery-timings-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ needs.preflight.outputs.automatic == 'true' && format('{0}/delivery-writer', runner.temp) || format('{0}/delivery-timings.json', runner.temp) }}
+          if-no-files-found: ignore
           retention-days: 14
       - name: Report protected result
         if: always()
         env:
-          STATUS_FILE: ${{ runner.temp }}/candidate-status.json
+          STATUS_FILE: ${{ needs.preflight.outputs.automatic == 'true' && format('{0}/delivery-writer/candidate-status.json', runner.temp) || format('{0}/candidate-status.json', runner.temp) }}
         run: |
           python - <<'PYTHON'
           import os
@@ -270,10 +396,21 @@ jobs:
           raise SystemExit(read_status(Path(os.environ["STATUS_FILE"]).read_bytes()).exit_code)
           PYTHON
 
+  delivery-result:
+    needs: preflight
+    if: always() && needs.preflight.outputs.partial_failure == 'true'
+    runs-on: ubuntu-24.04
+    permissions: {}
+    steps:
+      # Keep a partial preflight failure visible in run history while ready targets proceed.
+      - name: Preserve partial batch failure
+        run: exit 1
+
   renewal-preflight:
-    needs: [preflight, writer]
+    needs: [probe, preflight, writer]
     if: >-
       always() && !cancelled() && github.event_name == 'schedule' &&
+      github.event.schedule == '41 3 * * *' &&
       github.repository == 'AlexeyKravtsov95/TalentForge' &&
       github.ref == 'refs/heads/main' &&
       (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' ||
@@ -287,6 +424,7 @@ jobs:
     concurrency:
       group: ota-production-writer
       cancel-in-progress: false
+      queue: max
     permissions:
       contents: write # GitHub journal only; no production secret binding
       actions: read
@@ -294,6 +432,7 @@ jobs:
       outcome: ${{ steps.preflight.outputs.outcome }}
       writer_needed: ${{ steps.preflight.outputs.writer_needed }}
       artifact: ${{ steps.status-artifact.outcome == 'success' }}
+      artifact_id: ${{ steps.status-artifact.outputs.artifact-id }}
       operation: resign
       execute: "true"
     steps:
@@ -355,6 +494,7 @@ jobs:
     concurrency:
       group: ota-production-writer
       cancel-in-progress: false
+      queue: max
     permissions:
       contents: write # journal; no App token, PR write or Telegram token
       actions: read
@@ -363,6 +503,7 @@ jobs:
       EXECUTE: "true"
     outputs:
       artifact: ${{ steps.status-artifact.outcome == 'success' }}
+      artifact_id: ${{ steps.status-artifact.outputs.artifact-id }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -440,11 +581,11 @@ jobs:
           PYTHON
 
   notify:
-    needs: [preflight, writer, renewal-preflight, renewal-writer]
+    needs: [probe, preflight, writer, renewal-preflight, renewal-writer]
     if: >-
       always() && github.repository == 'AlexeyKravtsov95/TalentForge' &&
       github.ref == 'refs/heads/main' &&
-      (needs.preflight.outputs.artifact == 'true' || needs.writer.result == 'failure' ||
+      (needs.probe.outputs.action == 'BLOCKED' || needs.preflight.outputs.artifact == 'true' || needs.writer.result == 'failure' ||
        needs.writer.result == 'cancelled' || needs.renewal-preflight.outputs.artifact == 'true')
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -470,26 +611,60 @@ jobs:
         continue-on-error: true
         if: needs.preflight.outputs.artifact == 'true'
         with:
-          name: ota-production-preflight-${{ github.run_id }}-${{ github.run_attempt }}
+          artifact-ids: ${{ needs.preflight.outputs.artifact_id }}
+          merge-multiple: true
           path: ${{ runner.temp }}/candidate-preflight
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         continue-on-error: true
         if: needs.writer.outputs.artifact == 'true'
         with:
-          name: ota-production-writer-${{ github.run_id }}-${{ github.run_attempt }}
+          artifact-ids: ${{ needs.writer.outputs.artifact_id }}
+          merge-multiple: true
           path: ${{ runner.temp }}/candidate-writer
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         continue-on-error: true
         if: needs.renewal-preflight.outputs.artifact == 'true'
         with:
-          name: ota-production-renewal-preflight-${{ github.run_id }}-${{ github.run_attempt }}
+          artifact-ids: ${{ needs.renewal-preflight.outputs.artifact_id }}
+          merge-multiple: true
           path: ${{ runner.temp }}/renewal-preflight
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         continue-on-error: true
         if: needs.renewal-writer.outputs.artifact == 'true'
         with:
-          name: ota-production-renewal-writer-${{ github.run_id }}-${{ github.run_attempt }}
+          artifact-ids: ${{ needs.renewal-writer.outputs.artifact_id }}
+          merge-multiple: true
           path: ${{ runner.temp }}/renewal-writer
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        if: needs.probe.outputs.action == 'BLOCKED'
+        with:
+          artifact-ids: ${{ needs.probe.outputs.artifact_id }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/delivery-probe
+      - name: Notify probe refusal
+        if: needs.probe.outputs.action == 'BLOCKED'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python - <<'PYTHON'
+          import os
+          from pathlib import Path
+          from talent_data.ota.automation.probe import read_probe
+          from talent_data.ota.automation.cli import StatusDocument
+          root = Path(os.environ["RUNNER_TEMP"])
+          probe = read_probe((root / "delivery-probe/probe.json").read_bytes())
+          if probe.action != "BLOCKED":
+              raise SystemExit(1)
+          document = StatusDocument(schema_version=1, kind="ota-production-status", command="preflight",
+              operation="publish", outcome="BLOCKED", stage="PLANNING", reason="REQUEST_AUTHORIZATION_FAILED",
+              writer_needed=False, operations=())
+          (root / "probe-refusal.json").write_text(document.model_dump_json(by_alias=True))
+          PYTHON
+          python scripts/telegram_notify.py production-status --status-file "$RUNNER_TEMP/probe-refusal.json" \
+            --state-dir "$RUNNER_TEMP/probe-notify-state"
       - name: Notify candidate outcome
         continue-on-error: true
         env:
@@ -499,6 +674,18 @@ jobs:
           WRITER_RESULT: ${{ needs.writer.result }}
           OPERATION: ${{ needs.preflight.outputs.operation }}
         run: |
+          targets_seen=false
+          for target_status in "$RUNNER_TEMP/candidate-preflight"/targets/*/preflight.json "$RUNNER_TEMP/candidate-writer"/targets/*/candidate-status.json; do
+            if [ ! -f "$target_status" ]; then continue; fi
+            digest=$(basename "$(dirname "$target_status")")
+            case "$digest" in *[!0-9a-f]*|'') exit 1 ;; esac
+            [ "${#digest}" -eq 64 ]
+            if [[ "$target_status" == */preflight.json ]] && [ -f "$RUNNER_TEMP/candidate-writer/targets/$digest/candidate-status.json" ]; then continue; fi
+            targets_seen=true
+            python scripts/telegram_notify.py production-status --status-file "$target_status" \
+              --state-dir "$RUNNER_TEMP/candidate-notify-$digest"
+          done
+          if [ "$targets_seen" = true ] && [ "$WRITER_RESULT" != failure ] && [ "$WRITER_RESULT" != cancelled ]; then exit 0; fi
           status="$RUNNER_TEMP/candidate-writer/candidate-status.json"
           if [ ! -f "$status" ]; then
             if [ "$WRITER_RESULT" = failure ] || [ "$WRITER_RESULT" = cancelled ]; then

@@ -245,3 +245,157 @@ def test_excessive_json_nesting_is_a_failure_for_full_and_lightweight_watch():
     with httpx.Client(transport=httpx.MockTransport(origin.handler)) as client:
         result = observe_production(client, origin=ORIGIN, keyring=KEYRING, game=GAME, now=NOW)
     assert result.status is ProductionStatus.UNKNOWN
+
+
+def test_public_prefetch_bounded_and_singleflight():
+    from threading import Barrier, Lock
+
+    origin = FakeOrigin(publication())
+    files = real_release().manifest.files
+    paired = {"/" + blob_key(f.sha256) for f in files[:2]}
+    barrier, lock = Barrier(2, timeout=5), Lock()
+    active = peak = 0
+    counts = Counter()
+
+    def handler(request):
+        nonlocal active, peak
+        with lock:
+            counts[request.url.path] += 1
+            active += 1
+            peak = max(peak, active)
+        try:
+            if request.url.path in paired:
+                barrier.wait()
+            return origin.handler(request)
+        finally:
+            with lock:
+                active -= 1
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        result = verify_publication(
+            client, origin=ORIGIN, keyring=KEYRING, game=GAME, now=NOW, read_workers=2
+        )
+    assert result.ok and active == 0 and peak == 2
+    assert counts["/" + CATALOG] == 2
+    assert all(counts["/" + blob_key(f.sha256)] == 1 for f in files)
+
+
+def test_cache_reservations_include_inflight_bytes_and_eviction_refetches():
+    from threading import Lock
+
+    from talent_data.ota.automation.public_verify import _BlobCache
+
+    raw = (b"1111", b"2222", b"3333", b"4444", b"xxxxxxxx")
+    bodies = {sha256_ref(b): b for b in raw}
+    base = real_release().manifest.files[0]
+    files = [base.model_copy(update={"sha256": sha256_ref(b), "byte_length": len(b)}) for b in raw]
+    counts, lock = Counter(), Lock()
+
+    def fetch(file):
+        with lock:
+            counts[file.sha256] += 1
+            assert cache._cached_bytes + cache._reserved_bytes <= 8
+        return bodies[file.sha256]
+
+    cache = _BlobCache(fetch, read_workers=2, max_bytes=8)
+    try:
+        for batch in (files[:2], files[2:4], files[:2], files[4:]):
+            cache.prepare(batch)
+            assert [cache.read(f) for f in batch] == [bodies[f.sha256] for f in batch]
+            assert cache._cached_bytes + cache._reserved_bytes <= 8
+        assert counts[files[0].sha256] == counts[files[1].sha256] == 2
+        assert counts[files[4].sha256] == 1  # one maximum object still makes progress
+    finally:
+        cache.close()
+
+
+@pytest.mark.parametrize("workers", [1, 8])
+@pytest.mark.parametrize("fault", ["corrupt", "missing", "oversize", "redirect", "encoded"])
+def test_parallel_matches_serial_strict_failures(workers, fault):
+    origin = FakeOrigin(publication())
+    file = real_release().manifest.files[0]
+    key = blob_key(file.sha256)
+    if fault == "corrupt":
+        origin.objects[key] = b"x" * file.byte_length
+    elif fault == "missing":
+        del origin.objects[key]
+    elif fault == "oversize":
+        origin.edge_overrides[key] = (200, {}, b"x" * (file.byte_length + 1))
+    elif fault == "redirect":
+        origin.edge_overrides[key] = (302, {"location": "https://evil.invalid"}, b"")
+    else:
+        origin.edge_overrides[key] = (200, {"content-encoding": "gzip"}, b"bad")
+    with httpx.Client(transport=httpx.MockTransport(origin.handler)) as client:
+        result = verify_publication(
+            client, origin=ORIGIN, keyring=KEYRING, game=GAME, now=NOW, read_workers=workers
+        )
+    assert not result.ok
+    assert {
+        "corrupt": "BLOB_HASH_MISMATCH",
+        "missing": "HTTP_STATUS: 403",  # existing S3-style fixture conceals absent objects
+        "oversize": "SIZE_LIMIT",
+        "redirect": "HTTP_STATUS: 302",
+        "encoded": "CONTENT_ENCODING",
+    }[fault] in result.problem
+
+
+@pytest.mark.parametrize(("status", "attempts"), [(503, 3), (429, 3), (403, 1), (302, 1)])
+def test_fetch_retry_is_bounded_and_does_not_repeat_permanent_failures(status, attempts):
+    from talent_data.ota.automation.public_verify import _fetch, _PublicFailure
+
+    calls = []
+
+    def handler(request):
+        calls.append(request)
+        return httpx.Response(status)
+
+    with (
+        httpx.Client(transport=httpx.MockTransport(handler)) as client,
+        pytest.raises(_PublicFailure),
+    ):
+        _fetch(client, "https://TEST.invalid/blob", 100)
+    assert len(calls) == attempts
+
+
+def test_conflicting_length_references_rejected_even_when_cached():
+    from talent_data.ota.automation.public_verify import _BlobCache, _PublicFailure
+
+    file = real_release().manifest.files[0]
+    cache = _BlobCache(lambda _: b"x" * file.byte_length, read_workers=1)
+    try:
+        cache.prepare([file])
+        assert cache.read(file) == b"x" * file.byte_length
+        with pytest.raises(_PublicFailure, match="LENGTH_CONFLICT"):
+            cache.prepare([file.model_copy(update={"byte_length": file.byte_length + 1})])
+    finally:
+        cache.close()
+
+
+def test_failed_prefetch_stops_new_submissions():
+    from talent_data.ota.automation.public_verify import _BlobCache, _PublicFailure
+
+    base = real_release().manifest.files[0]
+    files = [
+        base.model_copy(update={"sha256": sha256_ref(b), "byte_length": len(b)})
+        for b in (b"a", b"b", b"c")
+    ]
+    calls = []
+
+    def fetch(file):
+        calls.append(file.sha256)
+        if file.sha256 == files[1].sha256:
+            raise _PublicFailure("TEST bad body")
+        return b"a"
+
+    cache = _BlobCache(fetch, read_workers=2)
+    try:
+        cache.prepare(files)
+        with pytest.raises(_PublicFailure):
+            cache._pending[files[1].sha256][0].result(timeout=5)
+        assert cache.read(files[0]) == b"a"
+        assert files[2].sha256 not in cache._pending
+        with pytest.raises(_PublicFailure):
+            cache.read(files[1])
+    finally:
+        cache.close()
+    assert files[2].sha256 not in calls

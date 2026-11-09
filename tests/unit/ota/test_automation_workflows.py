@@ -28,7 +28,15 @@ def workflow_jobs(name="ota-production-publish.yml"):
 
 def test_production_job_topology_serializes_preflights_and_independent_renewal():
     text, jobs = workflow_jobs()
-    assert set(jobs) == {"preflight", "writer", "renewal-preflight", "renewal-writer", "notify"}
+    assert set(jobs) == {
+        "probe",
+        "delivery-result",
+        "preflight",
+        "writer",
+        "renewal-preflight",
+        "renewal-writer",
+        "notify",
+    }
     assert "concurrency:" not in text.split("jobs:\n", 1)[0]
     for name in ("preflight", "writer", "renewal-preflight", "renewal-writer"):
         assert "group: ota-production-writer" in jobs[name]
@@ -36,7 +44,7 @@ def test_production_job_topology_serializes_preflights_and_independent_renewal()
         assert "contents: write" in jobs[name]
         assert "actions: read" in jobs[name]
     assert "needs: preflight" in jobs["writer"]
-    assert "needs: [preflight, writer]" in jobs["renewal-preflight"]
+    assert "needs: [probe, preflight, writer]" in jobs["renewal-preflight"]
     assert "always()" in jobs["renewal-preflight"]
     assert "github.event_name == 'schedule'" in jobs["renewal-preflight"]
     assert "needs.writer.result == 'success'" not in jobs["renewal-preflight"]
@@ -105,7 +113,7 @@ def test_production_secrets_artifacts_and_trusted_checkout_boundaries():
     ("event", "mode", "execute", "expected", "write"),
     [
         ("workflow_run", "", "", "publish", "true"),
-        ("schedule", "", "", "reconcile", "true"),
+        ("schedule", "", "", "publish", "true"),
         ("workflow_dispatch", "reconcile", "false", "reconcile", "false"),
         ("workflow_dispatch", "signer-smoke", "true", "signer-smoke", "true"),
         ("workflow_dispatch", "init-journal", "true", "init-journal", "true"),
@@ -140,7 +148,11 @@ def test_real_workflow_mode_selection_is_closed_and_manual_is_dry_run(
         assert run.returncode != 0
     else:
         assert run.returncode == 0
-        assert output.read_text().splitlines() == [f"operation={expected}", f"execute={write}"]
+        assert output.read_text().splitlines() == [
+            f"operation={expected}",
+            f"execute={write}",
+            f"automatic={str(event != 'workflow_dispatch').lower()}",
+        ]
 
 
 def test_interrupted_workflow_never_claims_no_write_and_preserves_existing_status(tmp_path):
@@ -428,7 +440,7 @@ def test_request_introduced_on_feature_branch_is_authorized_by_merge_commit(
 
 @pytest.mark.parametrize(
     "fault",
-    ["path", "repository", "event", "conclusion", "checks", "attempt", "action"],
+    ["path", "repository", "event", "conclusion", "checks", "attempt", "action", "stale_head"],
 )
 def test_workflow_run_proves_entire_source_ci_before_any_request_selection(
     request_history, monkeypatch, fault
@@ -465,6 +477,8 @@ def test_workflow_run_proves_entire_source_ci_before_any_request_selection(
                 return run
             if fault == "attempt":
                 run["run_attempt"] = 1
+            elif fault == "stale_head":
+                run["head_sha"] = "f" * 40
             elif fault in ("path", "repository", "event", "conclusion"):
                 run[fault] = {
                     "path": ".github/workflows/evil.yml",
@@ -481,6 +495,8 @@ def test_workflow_run_proves_entire_source_ci_before_any_request_selection(
 
     if fault == "action":
         payload["action"] = "requested"
+    if fault == "stale_head":
+        payload["workflow_run"]["head_sha"] = "f" * 40
     with pytest.raises(PreparationBlocked):
         verify_invocation(InvocationAPI(commit), repo, environment, payload)
 
@@ -552,3 +568,67 @@ def test_production_wrapper_disabled_and_missing_configuration_are_explicit(tmp_
     assert blocked.returncode == 1
     assert json.loads(status.read_bytes())["outcome"] == "BLOCKED"
     assert not disabled.stderr and not blocked.stderr
+
+
+def test_changed_approval_never_uses_old_request_ci(request_history, monkeypatch):
+    from talent_data.ota.automation import prepare
+    from talent_data.ota.automation.authorization import authorize_request, request_ci_pin
+
+    repo, request, old_sha, _ = request_history
+    monkeypatch.setattr(prepare, "_main_commit", lambda _: None)
+    approval = repo / "docs/ota/releases" / f"{request.release_id}.md"
+    approval.parent.mkdir(parents=True)
+    approval.write_text("TEST changed approval")
+    git(repo, "add", ".")
+    git(repo, "commit", "-qm", "approval change")
+    new_sha = git(repo, "rev-parse", "HEAD").decode().strip()
+    git(repo, "update-ref", "refs/remotes/origin/main", new_sha)
+    assert request_ci_pin(repo, request, trigger_sha=old_sha, trigger_pin=(9, 2)) is None
+    assert request_ci_pin(repo, request, trigger_sha=new_sha, trigger_pin=(9, 2)) == (9, 2)
+    with pytest.raises(PreparationBlocked):
+        authorize_request(API(old_sha), repo, request)
+    assert authorize_request(API(new_sha), repo, request) == new_sha
+
+
+@pytest.mark.parametrize(
+    ("step", "filename"),
+    [
+        ("Secret-free preflight", "preflight-timings.json"),
+        ("Publish or renew", "delivery-timings.json"),
+    ],
+)
+@pytest.mark.parametrize("selected", [False, True])
+def test_real_publication_steps_request_scoped_timing_only(tmp_path, step, filename, selected):
+    import os
+    import sys
+
+    from tests.unit.test_telegram_notify import workflow_step_script
+
+    executable = tmp_path / "python"
+    capture = tmp_path / "argv.json"
+    executable.write_text(
+        f"#!{sys.executable}\nimport json, os, sys\nfrom pathlib import Path\n"
+        "Path(os.environ['CAPTURE']).write_text(json.dumps(sys.argv[1:]))\n"
+    )
+    executable.chmod(0o755)
+    run = subprocess.run(
+        ["bash", "-e", "-c", workflow_step_script("ota-production-publish.yml", step)],
+        env={
+            **os.environ,
+            "PATH": str(tmp_path) + os.pathsep + os.environ["PATH"],
+            "CAPTURE": str(capture),
+            "CI_RUN_ID": "",
+            "CI_ATTEMPT": "",
+            "RELEASE_ID": "1.60.1.70862-r1" if selected else "",
+            "OPERATION": "publish",
+            "EXECUTE": "true",
+            "RUNNER_TEMP": str(tmp_path),
+        },
+        capture_output=True,
+    )
+    assert run.returncode == 0, run.stderr
+    args = json.loads(capture.read_text())
+    if selected:
+        assert args[args.index("--timings-file") + 1] == str(tmp_path / filename)
+    else:
+        assert "--timings-file" not in args

@@ -33,6 +33,8 @@ from pathlib import Path
 from typing import Protocol
 
 from talent_data.models.manifest import DatasetManifest
+from talent_data.ota import io_metrics
+from talent_data.ota.blob_io import run_bounded
 from talent_data.ota.errors import OtaPublisherError
 from talent_data.ota.models import (
     MAX_CATALOG_BYTES,
@@ -47,7 +49,7 @@ from talent_data.ota.verify import TrustedKey, sha256_ref
 BLOB_PREFIX = "v1/blobs/sha256/"
 #: contract §1 recommended cache headers - the publisher sets them, the client ignores them
 BLOB_CACHE_CONTROL = "public, max-age=31536000, immutable"
-CATALOG_CACHE_CONTROL = "public, max-age=300"
+CATALOG_CACHE_CONTROL = "public, max-age=60"
 
 
 def blob_key(sha_ref: str) -> str:
@@ -105,10 +107,15 @@ class LocalDirectoryStore:
 
     def get(self, key: str) -> bytes:
         path = self._path(key)
+        data = b""
         try:
-            return path.read_bytes()
+            data = path.read_bytes()
         except FileNotFoundError as exc:
             raise OtaPublisherError(f"object {key} not found in {self.root}") from exc
+        else:
+            return data
+        finally:
+            io_metrics.count("GET", bytes=len(data), sha_ref=io_metrics.object_hash(key))
 
     def put(self, key: str, data: bytes, *, cache_control: str) -> None:
         if not cache_control:
@@ -127,9 +134,15 @@ class LocalDirectoryStore:
         except BaseException:
             tmp.unlink(missing_ok=True)
             raise
+        finally:
+            io_metrics.count("PUT", bytes=len(data), sha_ref=io_metrics.object_hash(key))
 
     def exists(self, key: str) -> bool:
-        return self._path(key).is_file()
+        path = self._path(key)
+        try:
+            return path.is_file()
+        finally:
+            io_metrics.count("HEAD", bytes=0, sha_ref=io_metrics.object_hash(key))
 
     def list(self, prefix: str) -> list[str]:
         base = self._path(prefix)
@@ -277,22 +290,36 @@ def dataset_manifest_of_release(store: BlobStore, entry: CatalogRelease) -> Data
 # --------------------------------------------------------------------------- write path
 
 
-def upload_blobs(store: BlobStore, blobs: Mapping[str, bytes]) -> list[str]:
+@io_metrics.instrument("UPLOAD")
+def upload_blobs(
+    store: BlobStore, blobs: Mapping[str, bytes], *, upload_workers: int = 4
+) -> list[str]:
     """Write the missing immutable blobs, each verified by reading it back.
 
     Returns the keys actually written. An existing object is never rewritten: its name
     is its hash, so a present object is either already correct or the store is corrupt
     - and a corrupt present object is caught by :func:`ensure_blob`.
     """
-    written: list[str] = []
-    for sha_ref, data in sorted(blobs.items()):
+    if type(upload_workers) is not int or not 1 <= upload_workers <= 4:
+        raise ValueError("upload_workers must be between 1 and 4")
+
+    def upload(item: tuple[str, bytes]) -> str | None:
+        sha_ref, data = item
+        if sha256_ref(data) != sha_ref:
+            raise OtaPublisherError(f"blob {sha_ref} does not hash to its name")
         key = blob_key(sha_ref)
         if store.exists(key):
-            continue
+            ensure_blob(store, sha_ref)
+            return None
         store.put(key, data, cache_control=BLOB_CACHE_CONTROL)
         ensure_blob(store, sha_ref)
-        written.append(key)
-    return written
+        return key
+
+    return [
+        key
+        for key in run_bounded(sorted(blobs.items()), upload, max_workers=upload_workers)
+        if key is not None
+    ]
 
 
 def ensure_blob(store: BlobStore, sha_ref: str) -> bytes:
@@ -303,13 +330,19 @@ def ensure_blob(store: BlobStore, sha_ref: str) -> bytes:
     return data
 
 
-def ensure_catalog_references(store: BlobStore, catalog: OtaCatalog) -> None:
+@io_metrics.instrument("PRIVATE_REFERENCES")
+def ensure_catalog_references(
+    store: BlobStore, catalog: OtaCatalog, *, read_workers: int = 8
+) -> None:
     """Everything the catalog references must resolve in the store, byte for byte.
 
     A catalog is never written while any object it will make clients fetch is missing
     or corrupt: every listed release's manifest must match its catalog pin (hash,
     length, identity) and every file the manifest lists must exist and hash to its
     own name."""
+    if type(read_workers) is not int or not 1 <= read_workers <= 8:
+        raise ValueError("read_workers must be between 1 and 8")
+    lengths: dict[str, int] = {}
     for entry in catalog.releases:
         _, manifest = read_release_manifest(store, entry)  # verifies the pin
         identity = {
@@ -325,9 +358,21 @@ def ensure_catalog_references(store: BlobStore, catalog: OtaCatalog) -> None:
                     f"entry on {name}: {found!r} != {expected!r}"
                 )
         for file in manifest.files:
-            ensure_blob(store, file.sha256)
+            previous = lengths.setdefault(file.sha256, file.byte_length)
+            if previous != file.byte_length:
+                raise OtaPublisherError(f"blob {file.sha256} has conflicting reference lengths")
+
+    def verify(reference: tuple[str, int]) -> None:
+        sha_ref, length = reference
+        data = ensure_blob(store, sha_ref)
+        if len(data) != length:
+            raise OtaPublisherError(f"blob {sha_ref} does not match its declared length")
+
+    # Only success markers survive this pass; bodies belong to individual workers.
+    run_bounded(lengths.items(), verify, max_workers=read_workers)
 
 
+@io_metrics.instrument("CATALOG_WRITE")
 def write_catalog(
     store: BlobStore,
     channel: Channel,

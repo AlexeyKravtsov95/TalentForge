@@ -480,7 +480,7 @@ def test_a_catalog_write_needs_an_observation_and_is_conditional(s3) -> None:
     assert store.exists(STAGING) is False  # observed absent -> If-None-Match: *
     store.put(STAGING, b'{"c": 1}', cache_control=CATALOG_CACHE_CONTROL)
     assert s3.objects[STAGING]["ContentType"] == "application/json"
-    assert s3.objects[STAGING]["CacheControl"] == "public, max-age=300"
+    assert s3.objects[STAGING]["CacheControl"] == "public, max-age=60"
 
     other = store_over(s3)
     assert other.get(STAGING) == b'{"c": 1}'  # observed ETag -> If-Match

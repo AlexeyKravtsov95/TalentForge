@@ -16,6 +16,7 @@ from datetime import datetime
 from pathlib import Path
 
 from talent_data.cli.ota import _enforce_gates_and_approval, verify_appended_releases
+from talent_data.ota import io_metrics
 from talent_data.ota.automation.ci_signer import SecretError, Signer
 from talent_data.ota.automation.prepare import PreparationBlocked, git, verify_staged_base_bytes
 from talent_data.ota.automation.provenance import RequestRejected, verify_package_origin
@@ -137,6 +138,7 @@ def approval_directory(
     return directory
 
 
+@io_metrics.instrument("PRIVATE_READBACK")
 def recover_outcome[R: (PublicationReceipt, RenewalReceipt)](
     receipt: R,
     prepared: PreparedPublication,
@@ -164,6 +166,7 @@ def recover_outcome[R: (PublicationReceipt, RenewalReceipt)](
     return receipt.evolve(state=RequestState.AMBIGUOUS, reason="OUTCOME_UNKNOWN")
 
 
+@io_metrics.instrument("APPROVAL_GATES")
 def assess_request(
     request: ReleaseRequest,
     *,
@@ -219,6 +222,7 @@ def assess_request(
     return live, args
 
 
+@io_metrics.instrument("PUBLISH")
 def publish_request(
     request: ReleaseRequest,
     *,
@@ -342,7 +346,8 @@ def publish_request(
                 if key_id not in keyring:
                     return save(RequestState.BLOCKED, "SIGN_FAILED")
                 try:
-                    der = signer.sign(pae(CATALOG_PAYLOAD_TYPE, update.payload))
+                    with io_metrics.phase("SIGNER"):
+                        der = signer.sign(pae(CATALOG_PAYLOAD_TYPE, update.payload))
                     if not verify_der_signature(keyring[key_id].public_key, der, update.payload):
                         return save(RequestState.BLOCKED, "SIGN_FAILED")
                 except (SecretError, OSError, ValueError):

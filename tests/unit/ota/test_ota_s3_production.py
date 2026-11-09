@@ -319,7 +319,7 @@ def test_a_valid_first_production_catalog_is_written_last_and_read_back(
     puts = [key for operation, key in vk.mutations() if operation == "put_object"]
     assert puts[-1] == PRODUCTION and puts.count(PRODUCTION) == 1
     assert all(key.startswith("v1/blobs/sha256/") for key in puts[:-1])
-    assert vk.objects[PRODUCTION]["CacheControl"] == "public, max-age=300"
+    assert vk.objects[PRODUCTION]["CacheControl"] == "public, max-age=60"
     assert vk.objects[PRODUCTION]["ContentType"] == "application/json"
     assert catalog.sequence == 1
     # the state was re-read right before the put (HEAD) and the put was read back
@@ -833,3 +833,20 @@ def test_the_staging_helper_needs_the_staging_profile_to_write(capsys) -> None:
     wrong = [*flags, "--aws-profile", "talentforge-production", "--execute"]
     assert helper.main(["probe-conditional", *wrong]) == 1
     assert "holds the production key" in capsys.readouterr().err
+
+
+def test_s3_diagnostic_allowlist_hides_remote_strings():
+    from talent_data.ota.s3_store import S3Failure, S3StoreError
+
+    error = S3StoreError(S3Failure.NETWORK, "https://TEST-SECRET.invalid/token", "TEST-SECRET-PEM")
+    diagnostic = error.diagnostic()
+    assert set(diagnostic) == {
+        "kind",
+        "operation",
+        "objectHash",
+        "httpStatus",
+        "attempt",
+        "elapsedSeconds",
+    }
+    assert diagnostic["kind"] == "NETWORK" and diagnostic["objectHash"] is None
+    assert "TEST-SECRET" not in str(diagnostic)

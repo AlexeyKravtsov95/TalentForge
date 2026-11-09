@@ -162,6 +162,7 @@ def verify_after_write(
     budget_seconds: float = 600,
     sleeper: Callable[[float], None] = sleep,
     clock: Callable[[], float] = monotonic,
+    read_workers: int = 8,
 ) -> PublicVerification:
     """Only retry verification. Each fetch checks a shared monotonic deadline.
 
@@ -184,8 +185,9 @@ def verify_after_write(
             expected_payload_sha256=expected_payload_sha256,
             deadline=deadline,
             clock=clock,
+            read_workers=read_workers,
         )
-        if result.ok:
+        if result.ok or not result.retryable:
             return result
         remaining = deadline - clock()
         if remaining <= 0:
