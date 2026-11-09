@@ -5,11 +5,15 @@ import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.printToString
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.printToString
 import androidx.compose.ui.test.runDesktopComposeUiTest
+import io.github.alexeykravtsov95.talentforge.share.BuildShareCode
+import io.github.alexeykravtsov95.talentforge.share.ShareCodeEncoding
 import io.github.alexeykravtsov95.talentforge.ui.App
 import io.github.alexeykravtsov95.talentforge.ui.FixedClock
 import io.github.alexeykravtsov95.talentforge.ui.SequentialIds
@@ -25,6 +29,7 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
 import io.github.alexeykravtsov95.talentforge.ui.tree.TalentTreeBuildScreen
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -144,6 +149,36 @@ class OtaUiTest {
     }
 
     @Test
+    fun importingAnOlderBuildAfterActivationShowsItsOwnGameBuildInBothLanguages() {
+        for (language in AppLanguage.entries) {
+            uiLanguage.language = language
+            val ru = language == AppLanguage.RUSSIAN
+            OtaDevice().test { device ->
+                val old = device.saveBuild(A_BUILD)
+                val code = assertIs<ShareCodeEncoding.Encoded>(BuildShareCode.encode(old.build)).code
+                device.server.publish(TestRelease.A, TestRelease.B)
+                device.server.catalog = OtaTestRepo.fixture("catalogs/catalog-b-active.json")
+                device.check()
+                assertEquals(B_BUILD, device.runtime.snapshot.value.product.clientBuild)
+                val before = device.library.payload
+                runDesktopComposeUiTest(width = 393, height = 852) {
+                    setContent { App(storage = device.library, clock = FixedClock(), ids = SequentialIds(), ota = device.runtime) }
+                    awaitText(if (ru) "ПРОДОЛЖИТЬ" else "CONTINUE")
+                    onAllNodesWithText(if (ru) "Импортировать билд" else "Import build").onFirst().performClick()
+                    onNodeWithContentDescription(if (ru) "код билда" else "build code").performTextInput(code)
+                    onAllNodesWithText(if (ru) "Продолжить" else "Continue").onFirst().performClick()
+                    awaitText(if (ru) "Сборка игры $A_BUILD" else "Game build $A_BUILD")
+                    onAllNodesWithText(if (ru) "Сборка игры $B_BUILD" else "Game build $B_BUILD").fetchSemanticsNodes().let {
+                        assertEquals(0, it.size, "the import keeps its own data version")
+                    }
+                    onAllNodesWithText(if (ru) "Отмена" else "Cancel").onFirst().performClick()
+                    assertEquals(before, device.library.payload, "viewing or cancelling the preview never writes")
+                }
+            }
+        }
+    }
+
+    @Test
     fun homeShowsTheUpdatedLineOnceAndNeverWaitsForTheNetwork() = OtaDevice().test { device ->
         device.server.publish(TestRelease.A, TestRelease.B)
         device.server.catalog = OtaTestRepo.fixture("catalogs/catalog-b-active.json")
@@ -152,7 +187,12 @@ class OtaUiTest {
         runDesktopComposeUiTest(width = 393 * 2, height = 852 * 2) {
             setContent { App(storage = device.library, clock = FixedClock(), ids = SequentialIds(), ota = device.runtime) }
             awaitText("No builds yet") // the first screen while the check is still waiting for the network
+            awaitText("Game build 1.60.1.70374")
+            onAllNodesWithText("How to use").onFirst().performScrollTo().performClick()
+            awaitText("4. Plan builds offline. Game data can update over the internet when connected.")
+            onNodeWithContentDescription("go back").performClick()
             gate.complete(Unit)
+            awaitText("Game build 1.60.1.70450")
             awaitText("Talent data updated to 1.60.1 (1.60.1.70450)", substring = true)
             onAllNodesWithText("OK").onFirst().performClick()
             waitUntil(timeoutMillis = 10_000) {

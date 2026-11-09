@@ -91,8 +91,8 @@ class AboutScreenUiTest {
     fun englishAboutShowsTheHeaderDataStatementAndCompactPrivacy() = onScreen(content = about()) {
         awaitText("About")
         awaitText("TalentForge")
-        awaitText("Version 0.1.0")
-        assertAbsent("Version 0.1.0 (1)")
+        awaitText("App version 0.1.0")
+        assertAbsent("App version 0.1.0 (1)")
         awaitText("TALENT DATA")
         awaitText("Forever · talent data $dataVersion")
         awaitText("Included with the app")
@@ -224,8 +224,8 @@ class AboutScreenUiTest {
     @Test
     fun russianAboutIsFullyLocalized() = onScreen(language = AppLanguage.RUSSIAN, content = about(AppLanguage.RUSSIAN)) {
         awaitText("О приложении")
-        awaitText("Версия 0.1.0")
-        assertAbsent("Версия 0.1.0 (1)")
+        awaitText("Версия приложения 0.1.0")
+        assertAbsent("Версия приложения 0.1.0 (1)")
         awaitText("ДАННЫЕ ТАЛАНТОВ")
         awaitText("Forever · данные талантов $dataVersion")
         awaitText("Встроены в приложение")
@@ -258,7 +258,7 @@ class AboutScreenUiTest {
         for (language in AppLanguage.entries) {
             val ru = language == AppLanguage.RUSSIAN
             onScreen(language = language, content = about(language, appVersion = AppVersion(name = "1.0.0", code = 2))) {
-                awaitText(if (ru) "Версия 1.0.0" else "Version 1.0.0")
+                awaitText(if (ru) "Версия приложения 1.0.0" else "App version 1.0.0")
                 assertAbsent("(2)", substring = true)
                 assertTrue(texts().none { it.contains("1.0.0") && it.contains('2') }, "the build number is shown: ${texts()}")
             }
@@ -295,7 +295,7 @@ class AboutScreenUiTest {
         content = about(appVersion = null, backup = BackupStatement.IosDeviceBackup),
     ) {
         awaitText("TalentForge")
-        assertAbsent("Version ", substring = true)
+        assertAbsent("App version ", substring = true)
         clickText("Show details")
         awaitText("If your device's backup (iCloud or a computer) is on", substring = true)
         assertAbsent("The app turns off Android backup", substring = true)
@@ -399,7 +399,7 @@ class AboutScreenUiTest {
             ) {
                 awaitText(if (ru) "Новый билд" else "New build")
                 onAllNodes(clickLabelled(if (ru) "открыть сведения о TalentForge" else "open About TalentForge")).onFirst().performClick()
-                awaitText(if (ru) "О приложении" else "Version 0.1.0")
+                awaitText(if (ru) "О приложении" else "App version 0.1.0")
                 clickText(if (ru) "Политика конфиденциальности" else "Privacy policy")
                 // the desktop host is the Android UI's: the app root passes the Android policy
                 assertEquals(listOf(privacyPolicyUrlOf(PublishedPrivacyPolicy.Android, language)), handler.opened)
@@ -489,11 +489,11 @@ class AboutScreenUiTest {
         val entry = onAllNodesWithContentDescription("About").fetchSemanticsNodes().single()
         assertTrue(entry.size.width >= 48 && entry.size.height >= 48, "About entry ${entry.size} < 48 dp")
         onAllNodes(clickLabelled("open About TalentForge")).onFirst().performClick()
-        awaitText("Version 0.1.0")
+        awaitText("App version 0.1.0")
 
         onAllNodes(clickLabelled("open the open-source licenses")).onFirst().performScrollTo().performClick()
         awaitText("AndroidX (Android Jetpack)")
-        assertAbsent("Version 0.1.0")
+        assertAbsent("App version 0.1.0")
 
         // a group and a licence text close first, one Back each
         onAllNodes(clickLabelled("open AndroidX (Android Jetpack)")).onFirst().performScrollTo().performClick()
@@ -506,12 +506,12 @@ class AboutScreenUiTest {
         awaitText("COMPONENTS")
 
         onAllNodesWithContentDescription("go back").onFirst().performClick()
-        awaitText("Version 0.1.0")
+        awaitText("App version 0.1.0")
         assertAbsent("AndroidX (Android Jetpack)")
 
         onAllNodesWithContentDescription("go back").onFirst().performClick()
         awaitText("New build")
-        assertAbsent("Version 0.1.0")
+        assertAbsent("App version 0.1.0")
     }
 
     @Test

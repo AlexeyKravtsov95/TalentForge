@@ -306,6 +306,7 @@
     <string name="home_about_action">open About TalentForge</string>
     <string name="about_title">About</string>
     <string name="about_version">Version %1$s</string>
+    <string name="about_app_version">App version %1$s</string>
     <string name="about_tagline">A talent planner: spend points across the talent trees, keep your builds on this device and share them as codes.</string>
     <string name="about_section_project">ABOUT THE PROJECT</string>
     <string name="about_disclaimer">TalentForge is an independent, unofficial project. It is not affiliated with, endorsed by or sponsored by the game's developer or publisher.</string>
@@ -372,4 +373,12 @@
     <string name="editor_dataset_download_failed">The download failed (%1$s). The build stays saved.</string>
     <string name="editor_dataset_needs_newer_app">Update the app to open this build. The build stays saved.</string>
     <string name="editor_dataset_insufficient_storage">Not enough free space on this device. The build stays saved.</string>
+
+    <!-- M6.UX.2: repeatable first-use help. -->
+    <string name="help_title">How to use</string>
+    <string name="help_step_class">1. Choose one of the 9 WoW Forever classes.</string>
+    <string name="help_step_talents">2. Spend points in talent trees and read talent descriptions.</string>
+    <string name="help_step_builds">3. Save builds, edit them and share build codes.</string>
+    <string name="help_step_offline">4. Plan builds offline. Game data can update over the internet when connected.</string>
+    <string name="help_step_offline_disabled">4. Plan builds offline using the included game data. Online data updates are disabled in this app version.</string>
 </resources>

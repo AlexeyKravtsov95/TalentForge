@@ -32,6 +32,7 @@ import io.github.alexeykravtsov95.talentforge.ui.about.platformPrivacyPolicy
 import io.github.alexeykravtsov95.talentforge.ui.about.privacyPolicyUrlOf
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
 import io.github.alexeykravtsov95.talentforge.ui.builds.AllBuildsScreen
+import io.github.alexeykravtsov95.talentforge.ui.home.HelpScreen
 import io.github.alexeykravtsov95.talentforge.ui.home.HomeScreen
 import io.github.alexeykravtsov95.talentforge.ui.lang.appLanguage
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildAutosaveCoordinator
@@ -65,6 +66,7 @@ import kotlinx.coroutines.launch
  * - Home or Builds → Import build (push, M5.SHARE.2): Back → where it was
  *   opened; a confirmed import REPLACES the import screen with the new
  *   record's editor, so Back from it returns to Home or Builds likewise;
+ * - Home → How to use (push, M6.UX.2): Back → Home;
  * - Home → About (push, M5.RC.2b): Back → Home;
  * - About → Open-source licenses (push, M5.UI.ABOUT.1): Back → About; a
  *   group or licence text opened inside it closes first (M5.UI.ABOUT.2).
@@ -84,6 +86,8 @@ sealed interface AppDestination {
 
     data object ImportBuild : AppDestination
 
+    data object Help : AppDestination
+
     data object About : AppDestination
 
     data object Licenses : AppDestination
@@ -98,7 +102,7 @@ enum class EditorOrigin { CreatedNew, FromHome, FromAllBuilds, Imported }
 
 /**
  * Save/restore of the back stack as plain strings (`home`, `new-build`,
- * `all-builds`, `import-build`, `about`, `licenses`, `editor␟localId␟origin`). A decoded stack must be non-empty
+ * `all-builds`, `import-build`, `help`, `about`, `licenses`, `editor␟localId␟origin`). A decoded stack must be non-empty
  * and rooted at Home — anything else (blank, malformed entries, a stack that
  * does not start with Home) fails closed to the initial Home-only stack:
  * navigation state is not user data, and a corrupt bundle must never restore
@@ -116,6 +120,7 @@ internal fun encodeDestination(destination: AppDestination): String = when (dest
     AppDestination.NewBuild -> "new-build"
     AppDestination.AllBuilds -> "all-builds"
     AppDestination.ImportBuild -> "import-build"
+    AppDestination.Help -> "help"
     AppDestination.About -> "about"
     AppDestination.Licenses -> "licenses"
     is AppDestination.Editor ->
@@ -132,6 +137,7 @@ internal fun decodeDestinations(values: List<String>): List<AppDestination>? {
             "new-build" -> AppDestination.NewBuild
             "all-builds" -> AppDestination.AllBuilds
             "import-build" -> AppDestination.ImportBuild
+            "help" -> AppDestination.Help
             "about" -> AppDestination.About
             "licenses" -> AppDestination.Licenses
             else -> {
@@ -306,12 +312,16 @@ fun App(
                         onNewBuild = { destinations = destinations + AppDestination.NewBuild },
                         onImportBuild = { destinations = destinations + AppDestination.ImportBuild },
                         onAbout = { destinations = destinations + AppDestination.About },
+                        onHelp = { destinations = destinations + AppDestination.Help },
                         autosave = autosave,
                         sharing = sharing,
-                        product = session.product,
+                        // Home names the active product; editors keep their leased session.
+                        product = latestSession.product,
                         dataUpdatedTo = otaStatus?.updatedTo,
                         onDismissDataUpdate = { ota?.coordinator?.acknowledgeUpdate() },
                     )
+
+                    AppDestination.Help -> HelpScreen(onBack = ::navigateUp, otaEnabled = ota != null)
 
                     AppDestination.About -> AboutScreen(
                         appVersion = appVersion,

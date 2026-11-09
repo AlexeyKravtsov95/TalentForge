@@ -30,6 +30,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_app_version
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_disclaimer
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_entry_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_licenses_title
@@ -53,7 +54,6 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.abo
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_section_project
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_tagline
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_title
-import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.about_version
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.app_icon
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_talent_data_version
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.ota_check_now
@@ -248,7 +248,7 @@ private fun AppIdentity(appVersion: AppVersion?) {
                 autoSize = TextAutoSize.StepBased(maxFontSize = TalentForgeTypography.title.fontSize),
             )
             if (appVersion != null) {
-                AboutMeta(stringResource(Res.string.about_version, appVersion.name))
+                AboutMeta(stringResource(Res.string.about_app_version, appVersion.name))
             }
         }
     }
