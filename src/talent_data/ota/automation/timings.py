@@ -122,6 +122,7 @@ class DeliveryFailure(_TimedModel):
     reason: Literal[
         "UPLOAD_FAILED",
         "SIGN_FAILED",
+        "SIGNER_FAILED",
         "CHECK_FAILED",
         "OUTCOME_UNKNOWN",
         "PUBLIC_NOT_VERIFIED",

@@ -59,6 +59,7 @@ jobs:
       contents: read
       actions: read
     outputs:
+      artifact_id: ${{ steps.probe-artifact.outputs.artifact-id }}
       action: ${{ steps.route.outputs.action }}
       delivery: ${{ steps.route.outputs.delivery }}
       daily: ${{ steps.route.outputs.daily }}
@@ -111,6 +112,7 @@ jobs:
             echo "daily=$daily"
           } >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        id: probe-artifact
         if: github.event_name != 'workflow_dispatch'
         with:
           name: ota-delivery-probe-${{ github.run_id }}-${{ github.run_attempt }}
@@ -129,14 +131,17 @@ jobs:
     concurrency:
       group: ota-production-writer
       cancel-in-progress: false
+      queue: max
     permissions:
       contents: write # GitHub journal only; no production secret binding
       actions: read
       pull-requests: read # Server approval merged_at for optional delivery timings.
     outputs:
       outcome: ${{ steps.preflight.outputs.outcome }}
+      partial_failure: ${{ steps.preflight.outputs.partial_failure }}
       writer_needed: ${{ steps.preflight.outputs.writer_needed }}
       artifact: ${{ steps.status-artifact.outcome == 'success' }}
+      artifact_id: ${{ steps.status-artifact.outputs.artifact-id }}
       operation: ${{ steps.select.outputs.operation }}
       execute: ${{ steps.select.outputs.execute }}
       automatic: ${{ steps.select.outputs.automatic }}
@@ -178,7 +183,8 @@ jobs:
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         if: steps.select.outputs.automatic == 'true'
         with:
-          name: ota-delivery-probe-${{ github.run_id }}-${{ github.run_attempt }}
+          artifact-ids: ${{ needs.probe.outputs.artifact_id }}
+          merge-multiple: true
           path: ${{ runner.temp }}/delivery-probe
       - name: Secret-free preflight
         id: preflight
@@ -243,6 +249,7 @@ jobs:
     concurrency:
       group: ota-production-writer
       cancel-in-progress: false
+      queue: max
     permissions:
       contents: write # journal; no App token, PR write or Telegram token
       actions: read
@@ -253,6 +260,7 @@ jobs:
       EXECUTE: "true"
     outputs:
       artifact: ${{ steps.status-artifact.outcome == 'success' }}
+      artifact_id: ${{ steps.status-artifact.outputs.artifact-id }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -267,7 +275,8 @@ jobs:
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         if: env.AUTOMATIC == 'true'
         with:
-          name: ota-production-preflight-${{ github.run_id }}-${{ github.run_attempt }}
+          artifact-ids: ${{ needs.preflight.outputs.artifact_id }}
+          merge-multiple: true
           path: ${{ runner.temp }}/delivery-plan
       # Protected CLI repeats current-main/API/provenance/approval/live gates before
       # reading credentials. Never execute code from a downloaded release artifact.
@@ -387,6 +396,16 @@ jobs:
           raise SystemExit(read_status(Path(os.environ["STATUS_FILE"]).read_bytes()).exit_code)
           PYTHON
 
+  delivery-result:
+    needs: preflight
+    if: always() && needs.preflight.outputs.partial_failure == 'true'
+    runs-on: ubuntu-24.04
+    permissions: {}
+    steps:
+      # Keep a partial preflight failure visible in run history while ready targets proceed.
+      - name: Preserve partial batch failure
+        run: exit 1
+
   renewal-preflight:
     needs: [probe, preflight, writer]
     if: >-
@@ -405,6 +424,7 @@ jobs:
     concurrency:
       group: ota-production-writer
       cancel-in-progress: false
+      queue: max
     permissions:
       contents: write # GitHub journal only; no production secret binding
       actions: read
@@ -412,6 +432,7 @@ jobs:
       outcome: ${{ steps.preflight.outputs.outcome }}
       writer_needed: ${{ steps.preflight.outputs.writer_needed }}
       artifact: ${{ steps.status-artifact.outcome == 'success' }}
+      artifact_id: ${{ steps.status-artifact.outputs.artifact-id }}
       operation: resign
       execute: "true"
     steps:
@@ -473,6 +494,7 @@ jobs:
     concurrency:
       group: ota-production-writer
       cancel-in-progress: false
+      queue: max
     permissions:
       contents: write # journal; no App token, PR write or Telegram token
       actions: read
@@ -481,6 +503,7 @@ jobs:
       EXECUTE: "true"
     outputs:
       artifact: ${{ steps.status-artifact.outcome == 'success' }}
+      artifact_id: ${{ steps.status-artifact.outputs.artifact-id }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -588,30 +611,35 @@ jobs:
         continue-on-error: true
         if: needs.preflight.outputs.artifact == 'true'
         with:
-          name: ota-production-preflight-${{ github.run_id }}-${{ github.run_attempt }}
+          artifact-ids: ${{ needs.preflight.outputs.artifact_id }}
+          merge-multiple: true
           path: ${{ runner.temp }}/candidate-preflight
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         continue-on-error: true
         if: needs.writer.outputs.artifact == 'true'
         with:
-          name: ota-production-writer-${{ github.run_id }}-${{ github.run_attempt }}
+          artifact-ids: ${{ needs.writer.outputs.artifact_id }}
+          merge-multiple: true
           path: ${{ runner.temp }}/candidate-writer
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         continue-on-error: true
         if: needs.renewal-preflight.outputs.artifact == 'true'
         with:
-          name: ota-production-renewal-preflight-${{ github.run_id }}-${{ github.run_attempt }}
+          artifact-ids: ${{ needs.renewal-preflight.outputs.artifact_id }}
+          merge-multiple: true
           path: ${{ runner.temp }}/renewal-preflight
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         continue-on-error: true
         if: needs.renewal-writer.outputs.artifact == 'true'
         with:
-          name: ota-production-renewal-writer-${{ github.run_id }}-${{ github.run_attempt }}
+          artifact-ids: ${{ needs.renewal-writer.outputs.artifact_id }}
+          merge-multiple: true
           path: ${{ runner.temp }}/renewal-writer
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         if: needs.probe.outputs.action == 'BLOCKED'
         with:
-          name: ota-delivery-probe-${{ github.run_id }}-${{ github.run_attempt }}
+          artifact-ids: ${{ needs.probe.outputs.artifact_id }}
+          merge-multiple: true
           path: ${{ runner.temp }}/delivery-probe
       - name: Notify probe refusal
         if: needs.probe.outputs.action == 'BLOCKED'

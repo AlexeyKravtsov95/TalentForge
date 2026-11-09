@@ -10,10 +10,10 @@ import re
 import stat
 import zipfile
 import zlib
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, Self
+from typing import TYPE_CHECKING, Any, Literal, Self, cast
 
 import httpx
 from pydantic import Field, field_validator, model_validator
@@ -108,6 +108,83 @@ class ProbeCandidate(_TimedModel):
     input_fingerprint: Digest
 
 
+class ExecutionProgress(_TimedModel):
+    schema_version: Literal[1]
+    kind: Literal["ota-batch-execution"]
+    main_sha: Commit
+    input_sha256: Digest
+    started: tuple[Digest, ...]
+
+    @field_validator("schema_version", mode="before")
+    @classmethod
+    def integer_version(cls, value: object) -> object:
+        if type(value) is not int:
+            raise ValueError("schemaVersion must be an integer")
+        return value
+
+
+def execution_progress(plan_raw: bytes, progress_raw: bytes) -> ExecutionProgress:
+    plan = read_probe(plan_raw)
+    progress = parse_strict(ExecutionProgress, progress_raw)
+    same(progress.main_sha, plan.main_sha, "HISTORY_UNAVAILABLE", "progress tooling")
+    same(progress.input_sha256, sha256_ref(plan_raw), "HISTORY_UNAVAILABLE", "progress input")
+    same(
+        progress.started,
+        plan.request_digests[: len(progress.started)],
+        "HISTORY_UNAVAILABLE",
+        "started target order",
+    )
+    return progress
+
+
+class _HistoryReads(GitHub):
+    """One probe's shared, worst-case 48-request history budget. Never a writer cache."""
+
+    def __init__(self, api: GitHub):
+        self.api, self.remaining = api, 48
+        self.cache: dict[tuple[object, ...], Any] = {}
+
+    def _read[T](self, key: tuple[object, ...], cost: int, read: Callable[[], T]) -> T:
+        if key not in self.cache:
+            require(self.remaining >= cost, "HISTORY_BUDGET", "complete history exceeds budget")
+            self.remaining -= cost
+            self.cache[key] = read()
+        return cast(T, self.cache[key])
+
+    def pages(
+        self,
+        path: str,
+        member: str | None = None,
+        *,
+        params: Mapping[str, str | int] | None = None,
+        max_pages: int = 200,
+    ) -> list[dict[str, Any]]:
+        bound = min(3, max_pages)
+        return self._read(
+            ("pages", path, member, json.dumps(params, sort_keys=True)),
+            bound,
+            lambda: self.api.pages(path, member, params=params, max_pages=bound),
+        )
+
+    def run(self, run_id: int, attempt: int) -> dict[str, Any]:
+        return self._read(("run", run_id, attempt), 1, lambda: self.api.run(run_id, attempt))
+
+    def repo(self, method: str, path: str, **kwargs: Any) -> Any:
+        require(method == "GET", "HISTORY_METHOD", "history is read-only")
+        return self._read(
+            (method, path, json.dumps(kwargs, sort_keys=True)),
+            1,
+            lambda: self.api.repo(method, path, **kwargs),
+        )
+
+    def archive(self, artifact: dict[str, Any], *, max_bytes: int = MAX_HISTORY_ZIP) -> bytes:
+        return self._read(
+            ("archive", positive(artifact.get("id")), artifact.get("digest")),
+            2,
+            lambda: self.api.archive(artifact, max_bytes=min(max_bytes, MAX_HISTORY_ZIP)),
+        )
+
+
 class ProbeResult(_TimedModel):
     schema_version: Literal[1]
     kind: Literal["ota-delivery-probe"]
@@ -129,6 +206,8 @@ class ProbeResult(_TimedModel):
 
     @model_validator(mode="after")
     def bindings(self) -> Self:
+        if len(set(self.request_digests)) != len(self.request_digests):
+            raise ValueError("duplicate probe target")
         if self.request_digests != tuple(c.request_digest for c in self.candidates):
             raise ValueError("probe digest order differs")
         if self.release_ids != tuple(c.release_id for c in self.candidates if c.release_id):
@@ -305,7 +384,13 @@ def _history_document(
                 and info.file_size <= MAX_HISTORY_JSON
                 and (
                     info.filename
-                    in {"input-plan.json", "plan.json", "preflight.json", "candidate-status.json"}
+                    in {
+                        "input-plan.json",
+                        "execution.json",
+                        "plan.json",
+                        "preflight.json",
+                        "candidate-status.json",
+                    }
                     or re.fullmatch(
                         r"targets/[a-f0-9]{64}/(?:preflight|candidate-status|preflight-timings|delivery-timings)\.json",
                         info.filename,
@@ -318,10 +403,15 @@ def _history_document(
             )
         selected_path = filename
         if "input-plan.json" in names:
-            plan = read_probe(archive.read("input-plan.json"))
+            plan_raw = archive.read("input-plan.json")
+            plan = read_probe(plan_raw)
             same(plan.main_sha, run["head_sha"], "HISTORY_UNAVAILABLE", "batch tooling")
             if digest not in plan.request_digests:
                 return None  # Another target's failure is not this input's retry.
+            require("execution.json" in names, "HISTORY_UNAVAILABLE", "execution evidence missing")
+            progress = execution_progress(plan_raw, archive.read("execution.json"))
+            if digest not in progress.started:
+                return None
             selected_path = f"targets/{digest.removeprefix('sha256:')}/{filename}"
         require(selected_path in names, "HISTORY_UNAVAILABLE", "target history is missing")
         info = archive.getinfo(selected_path)
@@ -371,11 +461,17 @@ def _backoff(
             continue  # Explicit owner-controlled runs are a separate authorization path.
         run_id, last = positive(item.get("id")), positive(item.get("run_attempt"))
         require(last <= 100, "HISTORY_UNAVAILABLE", "attempt history exceeds bound")
+        if last == 1 and item.get("status") == "completed" and item.get("conclusion") == "success":
+            # This code SHA audits partial batch failures into the overall run result.
+            _run_identity(item, head, run_id, 1)
+            continue
         for attempt in range(1, last + 1):
             require((run_id, attempt) not in seen, "HISTORY_UNAVAILABLE", "duplicate attempt")
             seen.add((run_id, attempt))
             run = api.run(run_id, attempt)
             _run_identity(run, head, run_id, attempt)
+            if run.get("status") == "completed" and run.get("conclusion") == "success":
+                continue  # Earlier failed attempts remain separately accounted.
             if run.get("status") != "completed":
                 require(
                     run.get("status")
@@ -476,7 +572,7 @@ def _backoff(
                     "timing request",
                 )
                 if timing.failure is not None and (
-                    timing.failure.reason == "SIGN_FAILED"
+                    timing.failure.reason in {"SIGN_FAILED", "SIGNER_FAILED"}
                     or (
                         timing.failure.kind is not None
                         and timing.failure.kind.value in {"ACCESS_DENIED", "CREDENTIALS"}
@@ -484,6 +580,8 @@ def _backoff(
                 ):
                     return "PERMANENT_FAILURE", None
                 failures.append(stamp)
+                if len(failures) >= 3:
+                    return "RETRY_LIMIT", None
                 break  # One failed heavy attempt, even if both jobs report it.
 
     if len(failures) >= 3:
@@ -552,6 +650,7 @@ def probe_delivery(
         blocks: list[Reason] = []
         catalog: OtaCatalog | None = None
         catalog_checked = False
+        history = _HistoryReads(api)
         for request in sorted(pending, key=lambda r: r.release_id, reverse=True):
             approval = approval_record_at(repo, "origin/main", request.release_id)
             if approval is None or approval_record_problems(
@@ -600,7 +699,7 @@ def probe_delivery(
                 blocks.append("INPUT_INVALID")
                 continue
             try:
-                reason, next_at = _backoff(api, head, candidate, now)
+                reason, next_at = _backoff(history, head, candidate, now)
             except (
                 PreparationBlocked,
                 RequestRejected,

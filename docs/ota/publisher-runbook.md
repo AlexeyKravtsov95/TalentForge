@@ -527,3 +527,33 @@ elapsed times and the second public run can benefit from warming. These are read
 measurements, not a GitHub approval-to-delivery test: the JSON always records
 `endToEndSloProven=false`. The 600-second target must still be measured on the next
 independently approved new frozen release through its actual final public proof.
+
+### Recovery details and workflow validation
+
+Successful producer jobs export their immutable artifact IDs. A failed-consumer-only
+rerun downloads those retained IDs, rather than constructing a new attempt's name;
+the pinned download action explicitly flattens ID downloads. CLI authorization still
+rechecks the current main, CI, approval, artifact metadata and live state.
+
+Each routed batch binds an atomic `execution.json` progress file to the exact input
+plan. The target is marked started before invocation. An untouched target is not a
+failed retry; a started target without its outcome remains unknown. Partial preflight
+failures retain their own statuses and an independent failure-audit job, while other
+ready targets can publish. Thus a successful workflow cannot hide a failed target.
+
+The four protected jobs retain one running writer and use GitHub's `queue: max`
+policy (up to 100 pending jobs), preserving queued daily renewal when a watchdog
+arrives. This is documented [GitHub concurrency behavior](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency).
+History reads are shared across candidates within one probe and capped at 48
+worst-case API requests, including pagination/download costs. Overflow or incomplete
+history blocks automatic retries; it never silently resets their count. Successful
+runs of this audited code SHA can be skipped using their exact repository/run metadata.
+
+The installed actionlint 1.7.12 has the known [upstream queue-schema gap](https://github.com/rhysd/actionlint/issues/657).
+Until upstream supports this documented field, validate the four literal `max` values
+and `cancel-in-progress: false` via the workflow regression tests, then run actionlint
+with only that exact obsolete-schema diagnostic excluded; every other diagnostic stays fatal:
+
+```bash
+actionlint -ignore '^unexpected key "queue" for "concurrency" section[.] expected one of "cancel-in-progress", "group"$' .github/workflows/ci.yml .github/workflows/ota-production-publish.yml
+```

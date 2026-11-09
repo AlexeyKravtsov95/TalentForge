@@ -371,7 +371,7 @@ def test_lost_or_invalid_history_blocks_instead_of_resetting_retry_budget(pendin
 
 
 def test_per_target_batch_history_retains_retry_limit(pending):
-    from talent_data.ota.automation.probe import ProbeCandidate, _result
+    from talent_data.ota.automation.probe import ExecutionProgress, ProbeCandidate, _result
     from talent_data.ota.automation.state import request_digest
 
     add_failure(pending, 101)
@@ -390,7 +390,16 @@ def test_per_target_batch_history_retains_retry_limit(pending):
             body = old.read(filename)
         raw = io.BytesIO()
         with zipfile.ZipFile(raw, "w") as new:
-            new.writestr("input-plan.json", plan.model_dump_json(by_alias=True))
+            plan_raw = plan.model_dump_json(by_alias=True).encode()
+            new.writestr("input-plan.json", plan_raw)
+            progress = ExecutionProgress(
+                schema_version=1,
+                kind="ota-batch-execution",
+                main_sha=api.head,
+                input_sha256=sha256_ref(plan_raw),
+                started=(digest,),
+            )
+            new.writestr("execution.json", progress.model_dump_json(by_alias=True))
             new.writestr(f"targets/{digest[7:]}/{filename}", body)
         api.zips[aid] = raw.getvalue()
         artifact.update(digest=sha256_ref(raw.getvalue()), size_in_bytes=len(raw.getvalue()))
@@ -622,17 +631,6 @@ def probe_without_integrity_helper(pending):
     )
 
 
-def test_successful_batch_does_not_hide_failed_target_budget(pending, monkeypatch):
+def test_partial_batch_failure_remains_in_failed_run_budget(pending):
     add_failure(pending, 101)
-    api = pending[2]
-    api.productions[0]["conclusion"] = "success"
-    original = api.pages
-
-    def pages(path, member, **kwargs):
-        values = original(path, member, **kwargs)
-        if "/101/" in path and member == "jobs":
-            return [{**j, "conclusion": "success"} for j in values]
-        return values
-
-    monkeypatch.setattr(api, "pages", pages)
     assert probe(pending).reason == "COOLDOWN"

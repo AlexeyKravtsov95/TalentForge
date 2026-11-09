@@ -151,10 +151,16 @@ class GitHub:
         return self.call(method, self.prefix + path, **kwargs)
 
     def pages(
-        self, path: str, member: str | None = None, *, params: Mapping[str, str | int] | None = None
+        self,
+        path: str,
+        member: str | None = None,
+        *,
+        params: Mapping[str, str | int] | None = None,
+        max_pages: int = 200,
     ) -> list[dict[str, Any]]:
+        require(type(max_pages) is int and 1 <= max_pages <= 200, "LISTING_INVALID", "page bound")
         found: list[dict[str, Any]] = []
-        for page in range(1, 201):
+        for page in range(1, max_pages + 1):
             raw = self.repo("GET", path, params={**(params or {}), "per_page": 100, "page": page})
             values = obj(raw).get(member) if member else raw
             require(isinstance(values, list), "LISTING_INVALID", "expected an API listing")

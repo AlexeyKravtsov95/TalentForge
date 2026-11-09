@@ -30,6 +30,7 @@ def test_production_job_topology_serializes_preflights_and_independent_renewal()
     text, jobs = workflow_jobs()
     assert set(jobs) == {
         "probe",
+        "delivery-result",
         "preflight",
         "writer",
         "renewal-preflight",
