@@ -28,7 +28,14 @@ def workflow_jobs(name="ota-production-publish.yml"):
 
 def test_production_job_topology_serializes_preflights_and_independent_renewal():
     text, jobs = workflow_jobs()
-    assert set(jobs) == {"preflight", "writer", "renewal-preflight", "renewal-writer", "notify"}
+    assert set(jobs) == {
+        "probe",
+        "preflight",
+        "writer",
+        "renewal-preflight",
+        "renewal-writer",
+        "notify",
+    }
     assert "concurrency:" not in text.split("jobs:\n", 1)[0]
     for name in ("preflight", "writer", "renewal-preflight", "renewal-writer"):
         assert "group: ota-production-writer" in jobs[name]
@@ -36,7 +43,7 @@ def test_production_job_topology_serializes_preflights_and_independent_renewal()
         assert "contents: write" in jobs[name]
         assert "actions: read" in jobs[name]
     assert "needs: preflight" in jobs["writer"]
-    assert "needs: [preflight, writer]" in jobs["renewal-preflight"]
+    assert "needs: [probe, preflight, writer]" in jobs["renewal-preflight"]
     assert "always()" in jobs["renewal-preflight"]
     assert "github.event_name == 'schedule'" in jobs["renewal-preflight"]
     assert "needs.writer.result == 'success'" not in jobs["renewal-preflight"]
@@ -105,7 +112,7 @@ def test_production_secrets_artifacts_and_trusted_checkout_boundaries():
     ("event", "mode", "execute", "expected", "write"),
     [
         ("workflow_run", "", "", "publish", "true"),
-        ("schedule", "", "", "reconcile", "true"),
+        ("schedule", "", "", "publish", "true"),
         ("workflow_dispatch", "reconcile", "false", "reconcile", "false"),
         ("workflow_dispatch", "signer-smoke", "true", "signer-smoke", "true"),
         ("workflow_dispatch", "init-journal", "true", "init-journal", "true"),
@@ -140,7 +147,11 @@ def test_real_workflow_mode_selection_is_closed_and_manual_is_dry_run(
         assert run.returncode != 0
     else:
         assert run.returncode == 0
-        assert output.read_text().splitlines() == [f"operation={expected}", f"execute={write}"]
+        assert output.read_text().splitlines() == [
+            f"operation={expected}",
+            f"execute={write}",
+            f"automatic={str(event != 'workflow_dispatch').lower()}",
+        ]
 
 
 def test_interrupted_workflow_never_claims_no_write_and_preserves_existing_status(tmp_path):

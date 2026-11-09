@@ -6,6 +6,7 @@ import argparse
 import io
 import json
 import os
+import re
 import stat
 import zipfile
 import zlib
@@ -250,7 +251,8 @@ def _history_document(
     name: str,
     filename: str,
     run: dict[str, object],
-) -> bytes:
+    digest: str,
+) -> bytes | None:
     selected = [a for a in listed if a.get("name") == name]
     require(len(selected) == 1, "HISTORY_UNAVAILABLE", "missing or duplicate history artifact")
     artifact = obj(api.repo("GET", f"/actions/artifacts/{positive(selected[0].get('id'))}"))
@@ -285,18 +287,44 @@ def _history_document(
     _check_zip_directory(raw)
     with zipfile.ZipFile(io.BytesIO(raw)) as archive:
         infos = archive.infolist()
-        require(len(infos) == 1, "HISTORY_UNAVAILABLE", "history must contain one file")
-        info = infos[0]
+        names = [i.filename for i in infos]
         require(
-            info.filename == info.orig_filename == filename
-            and not info.is_dir()
-            and not info.flag_bits & 1
-            and stat.S_IFMT(info.external_attr >> 16) in (0, stat.S_IFREG)
-            and info.compress_type in (zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED)
-            and info.file_size <= MAX_HISTORY_JSON,
+            len(infos) <= 128
+            and len(set(names)) == len(names)
+            and sum(i.file_size for i in infos) <= MAX_HISTORY_ZIP,
             "HISTORY_UNAVAILABLE",
-            "invalid history file",
+            "history members exceed bounds",
         )
+        for info in infos:
+            require(
+                info.filename == info.orig_filename
+                and not info.is_dir()
+                and not info.flag_bits & 1
+                and stat.S_IFMT(info.external_attr >> 16) in (0, stat.S_IFREG)
+                and info.compress_type in (zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED)
+                and info.file_size <= MAX_HISTORY_JSON
+                and (
+                    info.filename
+                    in {"input-plan.json", "plan.json", "preflight.json", "candidate-status.json"}
+                    or re.fullmatch(
+                        r"targets/[a-f0-9]{64}/(?:preflight|candidate-status|preflight-timings|delivery-timings)\.json",
+                        info.filename,
+                    )
+                    is not None
+                    or info.filename == filename
+                ),
+                "HISTORY_UNAVAILABLE",
+                "invalid history member",
+            )
+        selected_path = filename
+        if "input-plan.json" in names:
+            plan = read_probe(archive.read("input-plan.json"))
+            same(plan.main_sha, run["head_sha"], "HISTORY_UNAVAILABLE", "batch tooling")
+            if digest not in plan.request_digests:
+                return None  # Another target's failure is not this input's retry.
+            selected_path = f"targets/{digest.removeprefix('sha256:')}/{filename}"
+        require(selected_path in names, "HISTORY_UNAVAILABLE", "target history is missing")
+        info = archive.getinfo(selected_path)
         with archive.open(info) as stream:
             document = stream.read(MAX_HISTORY_JSON + 1)
         require(len(document) == info.file_size, "HISTORY_UNAVAILABLE", "history file length")
@@ -343,9 +371,6 @@ def _backoff(
             continue  # Explicit owner-controlled runs are a separate authorization path.
         run_id, last = positive(item.get("id")), positive(item.get("run_attempt"))
         require(last <= 100, "HISTORY_UNAVAILABLE", "attempt history exceeds bound")
-        if last == 1 and item.get("status") == "completed" and item.get("conclusion") == "success":
-            _run_identity(item, head, run_id, 1)
-            continue
         for attempt in range(1, last + 1):
             require((run_id, attempt) not in seen, "HISTORY_UNAVAILABLE", "duplicate attempt")
             seen.add((run_id, attempt))
@@ -359,12 +384,11 @@ def _backoff(
                     "HISTORY_UNAVAILABLE",
                     "unknown run status",
                 )
-            if run.get("conclusion") == "success":
-                continue
             require(
                 run.get("conclusion") is None
                 or run.get("conclusion")
                 in {
+                    "success",
                     "failure",
                     "cancelled",
                     "timed_out",
@@ -402,26 +426,27 @@ def _backoff(
             )
             if run.get("status") != "completed":
                 return "RUN_PENDING", None
-            failed = next((j for j in heavy if j.get("name") == "writer"), heavy[0])
-            if failed.get("conclusion") == "success":
-                continue
-            stamp = _utc(failed.get("completed_at"))
-            require(stamp <= now, "HISTORY_UNAVAILABLE", "future failure")
-            if stamp < since:
-                continue
             artifacts = api.pages(f"/actions/runs/{run_id}/artifacts", "artifacts")
-            writer = failed.get("name") == "writer"
-            status = read_status(
-                _history_document(
+            for failed in sorted(heavy, key=lambda job: job.get("name") != "writer"):
+                stamp = _utc(failed.get("completed_at"))
+                require(stamp <= now, "HISTORY_UNAVAILABLE", "future failure")
+                if stamp < since:
+                    continue
+                writer = failed.get("name") == "writer"
+                status_raw = _history_document(
                     api,
                     artifacts,
                     name=f"ota-production-{'writer' if writer else 'preflight'}-{run_id}-{attempt}",
                     filename="candidate-status.json" if writer else "preflight.json",
                     run=run,
+                    digest=candidate.request_digest,
                 )
-            )
-            timing = read_timings(
-                _history_document(
+                if status_raw is None:
+                    continue
+                status = read_status(status_raw)
+                if status.outcome in {"READY", "VERIFIED", "NO_ACTION", "DISABLED", "DRY_RUN"}:
+                    continue
+                timing_raw = _history_document(
                     api,
                     artifacts,
                     name="ota-delivery-"
@@ -429,33 +454,38 @@ def _backoff(
                     + f"-{run_id}-{attempt}",
                     filename="delivery-timings.json" if writer else "preflight-timings.json",
                     run=run,
+                    digest=candidate.request_digest,
                 )
-            )
-            same(timing.identity.main_sha, head, "HISTORY_UNAVAILABLE", "timing code")
-            require(
-                status.command in ({"publish", "reconcile"} if writer else {"preflight"})
-                and status.operation in {"publish", "reconcile"}
-                and status.outcome in {"BLOCKED", "AMBIGUOUS", "PUBLISHED_NOT_VERIFIED"},
-                "HISTORY_UNAVAILABLE",
-                "failed heavy job status missing",
-            )
-            if timing.input_fingerprint != candidate.input_fingerprint:
-                continue
-            same(
-                timing.identity.request_digest,
-                candidate.request_digest,
-                "HISTORY_UNAVAILABLE",
-                "timing request",
-            )
-            if timing.failure is not None and (
-                timing.failure.reason == "SIGN_FAILED"
-                or (
-                    timing.failure.kind is not None
-                    and timing.failure.kind.value in {"ACCESS_DENIED", "CREDENTIALS"}
+                require(timing_raw is not None, "HISTORY_UNAVAILABLE", "target timing is missing")
+                assert timing_raw is not None
+                timing = read_timings(timing_raw)
+                same(timing.identity.main_sha, head, "HISTORY_UNAVAILABLE", "timing code")
+                require(
+                    status.command in ({"publish", "reconcile"} if writer else {"preflight"})
+                    and status.operation in {"publish", "reconcile"}
+                    and status.outcome in {"BLOCKED", "AMBIGUOUS", "PUBLISHED_NOT_VERIFIED"},
+                    "HISTORY_UNAVAILABLE",
+                    "failed heavy job status missing",
                 )
-            ):
-                return "PERMANENT_FAILURE", None
-            failures.append(stamp)
+                if timing.input_fingerprint != candidate.input_fingerprint:
+                    continue
+                same(
+                    timing.identity.request_digest,
+                    candidate.request_digest,
+                    "HISTORY_UNAVAILABLE",
+                    "timing request",
+                )
+                if timing.failure is not None and (
+                    timing.failure.reason == "SIGN_FAILED"
+                    or (
+                        timing.failure.kind is not None
+                        and timing.failure.kind.value in {"ACCESS_DENIED", "CREDENTIALS"}
+                    )
+                ):
+                    return "PERMANENT_FAILURE", None
+                failures.append(stamp)
+                break  # One failed heavy attempt, even if both jobs report it.
+
     if len(failures) >= 3:
         return "RETRY_LIMIT", None
     if failures and (eligible := max(failures) + timedelta(seconds=300)) > now:

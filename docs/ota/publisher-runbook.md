@@ -468,3 +468,27 @@ I/O counters identify incomplete measurement explicitly rather than inventing by
 or SDK retry counts. Unknown external error text, credentials, keys and signed URLs
 are excluded from these artifacts. The CI token needs read-only pull-request metadata
 access to resolve the server approval time; it gains no PR write permission.
+
+### Event delivery and lightweight watchdog
+
+A completed, independently verified current-main CI triggers the read-only probe.
+The `3-58/5 * * * *` watchdog runs the same metadata selection; empty work and
+pending CI/approval skip package downloads, deep preflight, writer and notification.
+GitHub can delay scheduled starts, so five minutes is a polling interval, not a
+promise about delivery time. The separate `41 3 * * *` run retains independent
+renewal/global health even if a candidate fails.
+
+Probe artifacts contain data only. The trusted router validates the closed schema,
+passes release IDs as argv (no eval), checks the journal again under the existing
+`ota-production-writer` job lock and executes candidates sequentially. Each target
+keeps its own status/timing files. New publication precedes older CDN verification;
+unknown writes force a single recovery turn and prohibit subsequent fresh writes.
+Every publication still repeats exact invocation/CI, committed approval/request,
+provenance, G1–G8, signing, journal and reference barriers inside the guarded CLI.
+
+Automatic pre-write failures with unchanged request/approval/code/artifact identity
+wait at least 300 seconds and stop after three heavy failures in 24 hours. The probe
+reconstructs that budget from exact API attempts and bounded, independently hashed
+status/timing archives. Missing/expired/corrupt evidence blocks automatic retries.
+Input changes allow re-evaluation but never reset the original approval clock.
+Manual owner-controlled modes retain their explicit execute flag and default dry run.

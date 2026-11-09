@@ -1831,3 +1831,48 @@ def test_no_action_production_status_is_quiet_without_public_scan(tmp_path):
             run_url="https://TEST.invalid/run",
         )
     assert result == "QUIET" and not state.exists()
+
+
+def test_blocked_status_notifies_once_without_public_file_scan(tmp_path, monkeypatch):
+    from talent_data.notify import automation
+    from talent_data.notify.cli import _Summary
+    from talent_data.notify.state import initial_production
+    from talent_data.notify.telegram import SendResult, SendStatus
+    from talent_data.ota.automation.cli import StatusDocument
+
+    now = datetime(2026, 11, 8, tzinfo=UTC)
+    state = tmp_path / "production.json"
+    state.write_text(initial_production(now.isoformat()).model_dump_json(by_alias=True))
+    monkeypatch.setattr(
+        automation, "observe_production", lambda *a, **kw: pytest.fail("no full scan")
+    )
+    document = StatusDocument(
+        schema_version=1,
+        kind="ota-production-status",
+        command="preflight",
+        operation="publish",
+        outcome="BLOCKED",
+        stage="PLANNING",
+        reason="REQUEST_AUTHORIZATION_FAILED",
+        writer_needed=False,
+        operations=(),
+    )
+    sent = []
+
+    def send(text):
+        sent.append(text)
+        return SendResult(SendStatus.SENT, "TEST only")
+
+    with httpx.Client() as client:
+        for _ in range(2):
+            automation.notify_status(
+                document,
+                state=state,
+                client=client,
+                keyring={},
+                now=now,
+                send=send,
+                summary=_Summary(None),
+                run_url="https://github.com/TEST/actions/runs/1",
+            )
+    assert len(sent) == 1

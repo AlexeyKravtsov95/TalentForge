@@ -370,6 +370,33 @@ def test_lost_or_invalid_history_blocks_instead_of_resetting_retry_budget(pendin
     assert result.action == "BLOCKED" and result.reason == "HISTORY_UNAVAILABLE"
 
 
+def test_per_target_batch_history_retains_retry_limit(pending):
+    from talent_data.ota.automation.probe import ProbeCandidate, _result
+    from talent_data.ota.automation.state import request_digest
+
+    add_failure(pending, 101)
+    api = pending[2]
+    digest = request_digest(pending[1])
+    candidate = ProbeCandidate(
+        action="PUBLISH",
+        release_id=pending[1].release_id,
+        request_digest=digest,
+        input_fingerprint="sha256:" + "e" * 64,
+    )
+    plan = _result("PUBLISH", "READY", head=api.head, candidates=(candidate,))
+    for aid, artifact in api.artifacts.items():
+        with zipfile.ZipFile(io.BytesIO(api.zips[aid])) as old:
+            filename = old.namelist()[0]
+            body = old.read(filename)
+        raw = io.BytesIO()
+        with zipfile.ZipFile(raw, "w") as new:
+            new.writestr("input-plan.json", plan.model_dump_json(by_alias=True))
+            new.writestr(f"targets/{digest[7:]}/{filename}", body)
+        api.zips[aid] = raw.getvalue()
+        artifact.update(digest=sha256_ref(raw.getvalue()), size_in_bytes=len(raw.getvalue()))
+    assert probe(pending).reason == "COOLDOWN"
+
+
 def test_missing_journal_and_malformed_request_are_blocked(pending):
     pending[3].path.unlink()
     assert probe_without_integrity_helper(pending).action == "BLOCKED"
@@ -491,6 +518,25 @@ def test_successful_rerun_does_not_hide_previous_failed_attempt(pending, monkeyp
     monkeypatch.setattr(
         api, "run", lambda n, a: first.copy() if n == 101 and a == 1 else original(n, a)
     )
+    original_pages = api.pages
+    monkeypatch.setattr(
+        api,
+        "pages",
+        lambda path, member, **kw: (
+            [
+                {
+                    "name": "probe",
+                    "run_id": 101,
+                    "run_attempt": 2,
+                    "head_sha": api.head,
+                    "status": "completed",
+                    "conclusion": "success",
+                }
+            ]
+            if "/101/attempts/2/jobs" in path
+            else original_pages(path, member, **kw)
+        ),
+    )
     assert probe(pending).reason == "COOLDOWN"
 
 
@@ -574,3 +620,19 @@ def probe_without_integrity_helper(pending):
     return probe_delivery(
         pending[2], pending[0], pending[3], now=NOW, trigger_sha=None, trigger_pin=None
     )
+
+
+def test_successful_batch_does_not_hide_failed_target_budget(pending, monkeypatch):
+    add_failure(pending, 101)
+    api = pending[2]
+    api.productions[0]["conclusion"] = "success"
+    original = api.pages
+
+    def pages(path, member, **kwargs):
+        values = original(path, member, **kwargs)
+        if "/101/" in path and member == "jobs":
+            return [{**j, "conclusion": "success"} for j in values]
+        return values
+
+    monkeypatch.setattr(api, "pages", pages)
+    assert probe(pending).reason == "COOLDOWN"
