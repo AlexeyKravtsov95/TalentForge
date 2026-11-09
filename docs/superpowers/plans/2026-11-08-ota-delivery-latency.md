@@ -88,7 +88,10 @@ assert global_unknown_status.outcome == "AMBIGUOUS" and global_unknown_status.ex
 assert verified_request_ci_sha == request_change_commit(repo, request)
 assert verified_trigger_ci_sha == current_main_sha
 # Tasks 7/8: fake server times and side-effect guards.
-assert first_attempt_timings.identity.approval_epoch.approved_at == retry_timings.identity.approval_epoch.approved_at
+assert (
+    first_attempt_timings.identity.approval_epoch.approved_at
+    == retry_timings.identity.approval_epoch.approved_at
+)
 assert no_work_probe.action == "NO_WORK"
 assert blob_reads == secret_reads == journal_writes == 0
 # Task 9: the selected validation path must actually succeed.
