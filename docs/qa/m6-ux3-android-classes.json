@@ -1,0 +1,75 @@
+{
+  "classes": [
+    {
+      "class": "WARRIOR",
+      "node": 105951,
+      "talent": "Anger Management",
+      "requiredPoints": 10,
+      "result": "PASS"
+    },
+    {
+      "class": "PALADIN",
+      "node": 105329,
+      "talent": "Illumination",
+      "requiredPoints": 15,
+      "result": "PASS"
+    },
+    {
+      "class": "HUNTER",
+      "node": 104964,
+      "talent": "Intimidation",
+      "requiredPoints": 20,
+      "result": "PASS"
+    },
+    {
+      "class": "ROGUE",
+      "node": 105716,
+      "talent": "Lethality",
+      "requiredPoints": 10,
+      "result": "PASS"
+    },
+    {
+      "class": "PRIEST",
+      "node": 105839,
+      "talent": "Soul Warding",
+      "requiredPoints": 15,
+      "result": "PASS"
+    },
+    {
+      "class": "SHAMAN",
+      "node": 104759,
+      "talent": "Lightning Overload",
+      "requiredPoints": 20,
+      "result": "PASS"
+    },
+    {
+      "class": "MAGE",
+      "node": 105803,
+      "talent": "Arcane Meditation",
+      "requiredPoints": 15,
+      "result": "PASS"
+    },
+    {
+      "class": "WARLOCK",
+      "node": 105913,
+      "talent": "Curse of Exhaustion",
+      "requiredPoints": 15,
+      "result": "PASS"
+    },
+    {
+      "class": "DRUID",
+      "node": 104928,
+      "talent": "Nature's Splendor",
+      "requiredPoints": 10,
+      "result": "PASS"
+    }
+  ],
+  "originalWarriorAllocations": [
+    {
+      "nodeId": 105956,
+      "entryId": 130686,
+      "rank": 1
+    }
+  ],
+  "result": "PASS"
+}

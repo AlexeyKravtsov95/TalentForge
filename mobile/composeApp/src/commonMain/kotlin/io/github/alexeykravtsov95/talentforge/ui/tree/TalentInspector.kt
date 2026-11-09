@@ -15,9 +15,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
-import kotlin.math.abs
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -46,6 +43,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
@@ -67,16 +66,25 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.ins
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_collapse_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_expand
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_expand_action
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_requirement_all
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_requirement_any
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_requirement_met
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_requirement_points
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_requirement_rank
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_requirement_unmet
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_requirements
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_select_prompt
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_show
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_show_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_tier_points
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.talent_clear_selection_action
+import io.github.alexeykravtsov95.talentforge.data.talentdata.PrerequisiteKind
 import io.github.alexeykravtsov95.talentforge.ui.motion.prefersReducedMotion
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeMotion
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeRadius
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
 import io.github.alexeykravtsov95.talentforge.ui.theme.talentForgeColors
+import kotlin.math.abs
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -209,6 +217,7 @@ fun TalentInspectorCompactBar(
                         onSpendRank = onSpendRank,
                         onRefundRank = onRefundRank,
                         onShowPrerequisite = onShowPrerequisite,
+                        onInspectRequirements = onToggleExpanded,
                     )
                 }
                 Column(
@@ -262,7 +271,7 @@ fun TalentInspectorCompactBar(
                             }
                             if (twoLine) CompactRank(content.rankText, start = 0.dp)
                             if (!twoLine) {
-                                InspectorReasonLines(content = content, color = stateColor, maxLines = 2)
+                                InspectorReasonLines(content = content, color = stateColor)
                             }
                         }
                         if (!twoLine) cluster()
@@ -272,7 +281,7 @@ fun TalentInspectorCompactBar(
                             text = (content.prerequisiteLine ?: content.tierLine ?: content.stateLine)?.text(),
                             textStyle = InspectorStateLineStyle,
                             gap = TalentForgeSpacing.inline,
-                            content = { InspectorReasonLines(content = content, color = stateColor, maxLines = 4) },
+                            content = { InspectorReasonLines(content = content, color = stateColor) },
                             actions = cluster,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -679,11 +688,12 @@ private fun InspectorDetail(
                 style = InspectorStateLineStyle.copy(color = stateColor ?: talentForgeColors().textSecondary),
             )
         }
-        for (gate in content.tierMeters) {
-            TierMeter(gate = gate, modifier = Modifier.fillMaxWidth())
+        InspectorRequirements(content, onShowPrerequisite, showActionInline || content.showAction == null)
+        if (content.requirementGates.isEmpty()) {
+            for (gate in content.tierMeters) TierMeter(gate, Modifier.fillMaxWidth())
         }
         content.description?.let { InspectorDescriptionBlock(it) }
-        if (showActionInline) {
+        if (showActionInline && content.prerequisites.isEmpty()) {
             content.showAction?.let { action ->
                 ShowButton(action = action, onClick = { onShowPrerequisite(action.prerequisiteNodeId) })
             }
@@ -691,27 +701,84 @@ private fun InspectorDetail(
     }
 }
 
+/** Full detail keeps completed requirements and names every selectable one-hop source. */
+@Composable
+private fun InspectorRequirements(
+    content: TalentInspectorContent,
+    onShowPrerequisite: (Int) -> Unit,
+    showActions: Boolean,
+) {
+    for (gate in content.requirementGates) {
+        RequirementStatus(
+            met = gate.spentPoints >= gate.requiredPoints,
+            text = stringResource(Res.string.inspector_requirement_points, gate.spentPoints, gate.requiredPoints),
+        )
+        TierMeter(gate, Modifier.fillMaxWidth())
+    }
+    for ((kind, prerequisites) in content.prerequisites.groupBy { it.kind }) {
+        if (prerequisites.size > 1) {
+            RequirementStatus(
+                met = if (kind == PrerequisiteKind.SUFFICIENT) prerequisites.any { it.met } else prerequisites.all { it.met },
+                text = stringResource(
+                    if (kind == PrerequisiteKind.SUFFICIENT) Res.string.inspector_requirement_any else Res.string.inspector_requirement_all,
+                ),
+            )
+        }
+        for (prerequisite in prerequisites) {
+            Column(verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.hairline)) {
+                RequirementStatus(
+                    met = prerequisite.met,
+                    text = stringResource(
+                        Res.string.inspector_requirement_rank, prerequisite.source.text(), prerequisite.rank, prerequisite.requiredRank,
+                    ),
+                )
+                if (!prerequisite.met && showActions) {
+                    ShowButton(
+                        action = TalentInspectorContent.ShowAction(prerequisite.source.nodeId, prerequisite.source),
+                        onClick = { onShowPrerequisite(prerequisite.source.nodeId) },
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** Words and glyphs carry status independently of colour. Text wraps inside the scrollable inspector. */
+@Composable
+private fun RequirementStatus(met: Boolean, text: String) {
+    val status = stringResource(if (met) Res.string.inspector_requirement_met else Res.string.inspector_requirement_unmet)
+    val glyph = if (met) "✓" else "○"
+    BasicText(
+        text = "$glyph $status · $text",
+        style = InspectorStateLineStyle.copy(color = talentForgeColors().textSecondary),
+    )
+}
+
 /**
  * Compact lock reason line: the prerequisite reason when present, else the
- * tier reason, else the state line (which carries a disabled control's
- * engine-derived explanation). M5.UX.2a: wraps up to [maxLines] instead of
- * cutting the reason after a few characters.
+ * tier reason, retaining both when combined; otherwise the state line.
+ * Essential lock reasons wrap without a line cap, including at large text.
  */
 @Composable
 private fun InspectorReasonLines(
     content: TalentInspectorContent,
     color: androidx.compose.ui.graphics.Color,
-    maxLines: Int,
     modifier: Modifier = Modifier,
 ) {
-    val line = content.prerequisiteLine ?: content.tierLine ?: content.stateLine ?: return
-    BasicText(
-        text = line.text(),
-        style = InspectorStateLineStyle.copy(color = color),
-        maxLines = maxLines,
-        overflow = TextOverflow.Ellipsis,
-        modifier = modifier.testTag(TALENT_INSPECTOR_REASON_TAG),
-    )
+    val lines = listOfNotNull(content.prerequisiteLine, content.tierLine).ifEmpty {
+        listOfNotNull(content.stateLine)
+    }
+    Column(modifier) {
+        for ((index, line) in lines.withIndex()) {
+            BasicText(
+                text = line.text(),
+                style = InspectorStateLineStyle.copy(color = color),
+                modifier = Modifier.fillMaxWidth().then(
+                    if (index == 0) Modifier.testTag(TALENT_INSPECTOR_REASON_TAG) else Modifier,
+                ),
+            )
+        }
+    }
 }
 
 /**
@@ -783,6 +850,7 @@ private fun CompactActionCluster(
     onSpendRank: (Int) -> Unit,
     onRefundRank: (Int) -> Unit,
     onShowPrerequisite: (Int) -> Unit,
+    onInspectRequirements: () -> Unit,
 ) {
     val show = content.showAction
     val gate = content.tierMeters.firstOrNull()
@@ -793,6 +861,15 @@ private fun CompactActionCluster(
             portrait = true,
             modifier = Modifier.height(TalentInspectorMetrics.COMPACT_ACTION_DP),
         )
+    } else if (content.prerequisites.count { !it.met } > 1 && actions?.offersRankControls != true) {
+        Box(
+            Modifier.heightIn(min = TalentInspectorMetrics.ACTION_MIN_DP)
+                .border(1.dp, talentForgeColors().warning, RoundedCornerShape(TalentForgeRadius.medium))
+                .clickable(role = Role.Button, onClick = onInspectRequirements)
+                .padding(TalentForgeSpacing.inline),
+        ) {
+            BasicText(stringResource(Res.string.inspector_requirements), style = InspectorActionStyle.copy(color = talentForgeColors().warning))
+        }
     } else if (gate != null && actions?.offersRankControls != true) {
         TierChip(gate)
     } else if (actions != null && actions.offersRankControls) {

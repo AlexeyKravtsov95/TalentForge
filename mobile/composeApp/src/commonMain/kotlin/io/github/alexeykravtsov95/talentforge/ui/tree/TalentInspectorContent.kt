@@ -1,5 +1,9 @@
 package io.github.alexeykravtsov95.talentforge.ui.tree
 
+import io.github.alexeykravtsov95.talentforge.data.talentdata.Prerequisite
+import io.github.alexeykravtsov95.talentforge.data.talentdata.PrerequisiteKind
+import io.github.alexeykravtsov95.talentforge.data.talentdata.UnlockRequirement
+
 /**
  * Pure, UI-toolkit-free content of the talent inspector (M4.2). Built from a
  * [TalentNodePresentation], the real node names and the tree-level point
@@ -50,14 +54,12 @@ data class TalentInspectorContent(
      * provided no descriptions (the inspector then has no description section).
      */
     val description: TalentInspectorDescription? = null,
+    /** Every real gameplay prerequisite, including completed alternatives; never visual-only edges. */
+    val prerequisites: List<TalentPrerequisiteProgress> = emptyList(),
+    /** All published gates, counted over their own exact node sets, including completed gates. */
+    val requirementGates: List<TalentTierGateProgress> = emptyList(),
 ) {
-    /**
-     * The read-only prerequisite navigation action (B3 07: one hop, never
-     * spends). Offered only when the engine reports *exactly one* unmet
-     * prerequisite source: B3 does not define which source Show should pick
-     * when several exist, so the presentation fails safe and offers no action
-     * rather than implying a semantic preference.
-     */
+    /** The unambiguous compact one-hop action. Multiple sources are chosen in the full inspector. */
     data class ShowAction(val prerequisiteNodeId: Int, val prerequisiteName: TalentName)
 }
 
@@ -70,6 +72,8 @@ data class TalentInspectorContent(
 data class TalentTreeNodeFacts(
     val names: Map<Int, String?>,
     val maxRanks: Map<Int, Int>,
+    val prerequisites: Map<Int, List<Prerequisite>> = emptyMap(),
+    val unlockRequirements: Map<Int, List<UnlockRequirement>> = emptyMap(),
 ) {
     /** The node's published name, or `null` → the localized `Talent <id>` fallback at display time. */
     fun talentName(nodeId: Int): TalentName =
@@ -91,6 +95,8 @@ fun talentNodeFacts(
     TalentTreeNodeFacts(
         names = engine.tree.nodes.associate { it.id to (localizedNames[it.id] ?: it.name) },
         maxRanks = engine.tree.nodes.associate { it.id to it.maxRank },
+        prerequisites = engine.tree.nodes.associate { it.id to it.prerequisites },
+        unlockRequirements = engine.tree.nodes.associate { it.id to it.unlockRequirements },
     )
 
 /**
@@ -154,6 +160,20 @@ fun buildTalentInspectorContent(
             )
         },
         tierMeters = presentation.tierGates,
+        prerequisites = facts.prerequisites[presentation.nodeId].orEmpty().map { prerequisite ->
+            TalentPrerequisiteProgress(
+                source = facts.talentName(prerequisite.nodeId),
+                rank = tree.nodes.getValue(prerequisite.nodeId).rank,
+                requiredRank = facts.maxRanks.getValue(prerequisite.nodeId),
+                kind = prerequisite.kind,
+            )
+        },
+        requirementGates = facts.unlockRequirements[presentation.nodeId].orEmpty().map { gate ->
+            TalentTierGateProgress(
+                requiredPoints = gate.requiredPoints,
+                spentPoints = gate.countedNodeIds.sumOf { tree.nodes.getValue(it).rank },
+            )
+        },
         description = buildTalentInspectorDescription(
             descriptions = descriptions,
             nodeId = presentation.nodeId,
@@ -166,9 +186,8 @@ fun buildTalentInspectorContent(
 /**
  * "Requires <prerequisite> <maxRank>/<maxRank>" from the real node facts (the
  * unmet source must be fully ranked — EDGE-ACTIVE). With several unmet
- * sources the combination has no frozen wording (and no Show — see
- * [TalentInspectorContent.ShowAction]), so the line reports the count without
- * inventing priority between them.
+ * sources the summary preserves ANY versus ALL; the full inspector names
+ * each source and lets the reader choose a one-hop Show destination.
  */
 private fun prerequisiteLineOf(
     presentation: TalentNodePresentation,
@@ -183,7 +202,12 @@ private fun prerequisiteLineOf(
             requiredRank = facts.maxRankOf(sourceId),
         )
     }
-    return InspectorText.RequiresPrerequisites(count = unmet.size)
+    return InspectorText.RequiresPrerequisites(
+        count = unmet.size,
+        anyOf = facts.prerequisites[presentation.nodeId].orEmpty().let { edges ->
+            edges.isNotEmpty() && edges.all { it.kind == PrerequisiteKind.SUFFICIENT }
+        },
+    )
 }
 
 /** "Spend <deficit> more points in this tree" from the first unmet gate's real values. */
@@ -198,3 +222,13 @@ private fun tierLineOf(presentation: TalentNodePresentation): InspectorText? =
 
         else -> InspectorText.SpendMorePointsInTree
     }
+
+/** Published rank facts for one incoming gameplay edge (EDGE-ACTIVE remains provisional). */
+data class TalentPrerequisiteProgress(
+    val source: TalentName,
+    val rank: Int,
+    val requiredRank: Int,
+    val kind: PrerequisiteKind,
+) {
+    val met: Boolean get() = rank >= requiredRank
+}

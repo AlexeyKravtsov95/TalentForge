@@ -16,6 +16,7 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.ins
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_blocked_unavailable
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_max_rank_reached
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_needed_for
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_requires_any_prerequisite
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_requires_prerequisite
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_requires_prerequisites
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.inspector_spend_more_points
@@ -94,7 +95,7 @@ sealed interface InspectorText {
     data class RequiresPrerequisite(val source: TalentName, val requiredRank: Int) : InspectorText
 
     /** Several unmet prerequisite sources: their count, no invented priority between them. */
-    data class RequiresPrerequisites(val count: Int) : InspectorText
+    data class RequiresPrerequisites(val count: Int, val anyOf: Boolean = false) : InspectorText
 
     /** "Spend <deficit> more points in this tree" from the gate's real values. */
     data class SpendMorePoints(val deficit: Int) : InspectorText
@@ -162,7 +163,11 @@ fun InspectorText.text(): String = when (this) {
         stringResource(Res.string.inspector_requires_prerequisite, source.text(), requiredRank)
 
     is InspectorText.RequiresPrerequisites ->
-        pluralStringResource(Res.plurals.inspector_requires_prerequisites, count, count)
+        if (anyOf) {
+            stringResource(Res.string.inspector_requires_any_prerequisite, count)
+        } else {
+            pluralStringResource(Res.plurals.inspector_requires_prerequisites, count, count)
+        }
 
     is InspectorText.SpendMorePoints -> pluralStringResource(Res.plurals.inspector_spend_more_points, deficit, deficit)
     InspectorText.SpendMorePointsInTree -> stringResource(Res.string.inspector_spend_more_points_unspecified)
