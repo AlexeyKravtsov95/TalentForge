@@ -49,7 +49,7 @@ from talent_data.ota.verify import TrustedKey, sha256_ref
 BLOB_PREFIX = "v1/blobs/sha256/"
 #: contract §1 recommended cache headers - the publisher sets them, the client ignores them
 BLOB_CACHE_CONTROL = "public, max-age=31536000, immutable"
-CATALOG_CACHE_CONTROL = "public, max-age=300"
+CATALOG_CACHE_CONTROL = "public, max-age=60"
 
 
 def blob_key(sha_ref: str) -> str:

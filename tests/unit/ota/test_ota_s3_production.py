@@ -319,7 +319,7 @@ def test_a_valid_first_production_catalog_is_written_last_and_read_back(
     puts = [key for operation, key in vk.mutations() if operation == "put_object"]
     assert puts[-1] == PRODUCTION and puts.count(PRODUCTION) == 1
     assert all(key.startswith("v1/blobs/sha256/") for key in puts[:-1])
-    assert vk.objects[PRODUCTION]["CacheControl"] == "public, max-age=300"
+    assert vk.objects[PRODUCTION]["CacheControl"] == "public, max-age=60"
     assert vk.objects[PRODUCTION]["ContentType"] == "application/json"
     assert catalog.sequence == 1
     # the state was re-read right before the put (HEAD) and the put was read back

@@ -492,3 +492,38 @@ reconstructs that budget from exact API attempts and bounded, independently hash
 status/timing archives. Missing/expired/corrupt evidence blocks automatic retries.
 Input changes allow re-evaluation but never reset the original approval clock.
 Manual owner-controlled modes retain their explicit execute flag and default dry run.
+
+### Delivery read benchmark and next-write cache policy
+
+The next legitimate catalog publication/renewal uses `public, max-age=60`;
+immutable blobs keep their one-year cache policy. The already-served catalog may
+keep its old 300-second header until that normal write; this change does not reissue it.
+
+Run the standalone read-only benchmark with the project environment:
+
+```bash
+PYTHONPATH=src python scripts/benchmark_ota_delivery.py --mode fixture --read-workers 1 --latency-ms 1 --output /tmp/ota-serial.json
+PYTHONPATH=src python scripts/benchmark_ota_delivery.py --mode fixture --read-workers 8 --latency-ms 1 --output /tmp/ota-parallel.json
+PYTHONPATH=src python scripts/benchmark_ota_delivery.py --mode public --read-workers 8 --output /tmp/ota-public.json
+```
+
+Measured locally during implementation (fixed TEST fixture clock, 1 ms simulated
+private GET latency; public runs anonymous, sequential run before parallel run):
+
+| Measurement | Serial | Bounded parallel |
+| --- | ---: | ---: |
+| Private GETs, three reference barriers | 6,003 | 2,772 |
+| Private reference time, TEST graph | 9.178 s | 0.651 s |
+| Peak private reads in flight | 1 | 8 |
+| Public GETs, all retained releases | 926 | 926 |
+| Anonymous public full proof time | 147.106 s | 33.920 s |
+
+The TEST graph has five valid manifests, 1,996 file references and 919 unique file
+hashes; both variants also pass the unchanged complete semantic public verifier.
+Both public measurements proved the same stable signed catalog payload
+`sha256:069b0b3d53f25ff958efe0736c6ed89a075cd59378b52d3921e1a56865085e21`.
+No private production access, signer or PUT was used. Network/CDN conditions affect
+elapsed times and the second public run can benefit from warming. These are read
+measurements, not a GitHub approval-to-delivery test: the JSON always records
+`endToEndSloProven=false`. The 600-second target must still be measured on the next
+independently approved new frozen release through its actual final public proof.
