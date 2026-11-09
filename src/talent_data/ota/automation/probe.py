@@ -177,11 +177,12 @@ class _HistoryReads(GitHub):
             lambda: self.api.repo(method, path, **kwargs),
         )
 
-    def archive(self, artifact: dict[str, Any], *, max_bytes: int = MAX_HISTORY_ZIP) -> bytes:
+    def archive(self, artifact: dict[str, Any], *, max_bytes: int | None = None) -> bytes:
+        bound = MAX_HISTORY_ZIP if max_bytes is None else min(max_bytes, MAX_HISTORY_ZIP)
         return self._read(
             ("archive", positive(artifact.get("id")), artifact.get("digest")),
             2,
-            lambda: self.api.archive(artifact, max_bytes=min(max_bytes, MAX_HISTORY_ZIP)),
+            lambda: self.api.archive(artifact, max_bytes=bound),
         )
 
 

@@ -1,7 +1,7 @@
 # Graph Report - talentforge-ota-delivery-latency-design  (2026-11-09)
 
 ## Corpus Check
-- 745 files · ~897,204 words
+- 745 files · ~897,224 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 24 file(s) not represented in the graph (top: .xml 9, (none) 4, .properties 2)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `3922a744`
+- Built from commit: `0462aedb`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -1872,7 +1872,7 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `talent_data/pipeline.py` be split into smaller, more focused modules?**
   _Cohesion score 0.02940454266421117 - nodes in this community are weakly interconnected._
 - **Why does `DatasetBundleId` connect `AssetNotFoundException` to `.check`, `TalentForgeTheme`, `OtaUiTest.kt`, `DatasetActivationManager`, `BuildImportBundledDatasetsTest`, `TalentTreeSectionTabsUiTest`, `M5Ui2ScreenshotTest`, `TalentTreeSectionsTest`, `GameId`, `OtaScenarioTest`, `BuildImportFlowTest`, `TalentTreeBuildScreen.kt`, `ClassToken`, `LocalizationLoadError`, `NewBuildScreen.kt`, `assertequals`, `BuildImportController`, `AppIconResourceTest.kt`, `HomeScreen.kt`, `OtaRemoteStagingCheck`, `IosOtaDevice`, `OtaDevice`, `OtaStagingE2ETest`, `IosOtaDevice`, `buildTalentTreeUiModel`?**
-  _High betweenness centrality (0.040) - this node is a cross-community bridge._
+  _High betweenness centrality (0.038) - this node is a cross-community bridge._
 - **Are the 11 inferred relationships involving `ClassToken` (e.g. with `.parsesAndRoundTripsBuildFile()` and `.parsesMinimalTalentDataDocument()`) actually correct?**
   _`ClassToken` has 11 INFERRED edges - model-reasoned connections that need verification._
 - **Should `pytest` be split into smaller, more focused modules?**

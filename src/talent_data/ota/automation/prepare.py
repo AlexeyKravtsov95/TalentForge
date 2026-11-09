@@ -189,7 +189,9 @@ class GitHub:
         require(isinstance(record.get("content"), str), "CONTENT_ENCODING", "missing content")
         return base64.b64decode(record["content"].replace("\n", ""), validate=True)
 
-    def archive(self, artifact: dict[str, Any], *, max_bytes: int = MAX_ARCHIVE_BYTES) -> bytes:
+    def archive(self, artifact: dict[str, Any], *, max_bytes: int | None = None) -> bytes:
+        if max_bytes is None:
+            max_bytes = MAX_ARCHIVE_BYTES
         artifact_id = positive(artifact.get("id"))
         url = API_ORIGIN + self.prefix + f"/actions/artifacts/{artifact_id}/zip"
         try:
