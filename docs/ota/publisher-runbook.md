@@ -391,8 +391,13 @@ python scripts/ota_release_automation.py reconcile --status-file out/status.json
 
 Outside the guarded workflow this is not authorization for a normal local writer. Every
 journal-changing preflight and writer mode uses `ota-production-writer`, cancel false,
-with job dependencies to serialize within a daily run. Daily reconciliation discovers complete
-committed requests despite lost webhook/pending jobs; a separate independent resign path runs
+with job dependencies to serialize within each run. A lightweight metadata probe runs every
+five minutes (UTC minutes 3, 8, ..., 58) to discover complete committed requests despite lost
+webhook/pending jobs or a subsequent automation fix; selected work enters the guarded jobs.
+Daily renewal/global health remains independent at 03:41 UTC. GitHub can delay scheduled
+starts; the probe interval is not a publication deadline. The exact successful
+request/approval-change CI, approval, provenance, live gates and durable journal checks still
+apply. A separate independent resign path runs
 even after BLOCKED candidates. Failed/expired artifacts stay BLOCKED. A signed public
 catalog can lag private S3: a public-only base mismatch or already-listed release stays
 retryable BLOCKED until convergence, without loading production secrets just to diagnose
