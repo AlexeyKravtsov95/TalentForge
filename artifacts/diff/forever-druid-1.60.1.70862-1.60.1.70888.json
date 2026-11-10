@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 11,
+    "token": "DRUID",
+    "name": "Druid"
+  },
+  "fromBuild": "1.60.1.70862",
+  "toBuild": "1.60.1.70888",
+  "fromContentHash": "sha256:f3e86f11b880dcf31fba7cbb8ed8db53e05aaaf40bfef3557aab0a9c66db5783",
+  "toContentHash": "sha256:d9059424425482e1896d28102070403fb4a7a3e25469987e41e622ec7d88b06e",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 1,
+    "changesByKind": {
+      "descriptionChanged": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 104912,
+      "treeId": 1089,
+      "name": "Swiftmend",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129572,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Instantly heals a target with your active Rejuvenation or Regrowth effect for an amount equal to the full duration of the periodic effect of the consumed spell.",
+          "new": "Instantly heals a target with your active Rejuvenation or Regrowth effect for an amount equal to the full duration of the periodic effect."
+        }
+      ]
+    }
+  ]
+}
