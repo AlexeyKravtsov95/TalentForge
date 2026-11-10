@@ -244,6 +244,10 @@ class LocalBuildRepository(
         }
     }
 
+    /** Metadata only; assigning the existing value is a successful no-op without a write. */
+    fun setFavorite(localId: String, isFavorite: Boolean): BuildLibraryOutcome<LocalBuildRecord> =
+        mutate(localId) { record -> record.copy(isFavorite = isFavorite) }
+
     /**
      * Duplicates a record into an INDEPENDENT new record (M5.2a): a fresh
      * unique `localId` (the same bounded collision policy as

@@ -1,0 +1,13 @@
+{
+  "fixture_records": 3,
+  "ids": [
+    "legacy-1",
+    "legacy-2",
+    "legacy-3"
+  ],
+  "all_original_record_fields_equal": true,
+  "v1_read_did_not_write": true,
+  "favorite_id": "legacy-1",
+  "cold_restart_payload_byte_exact": true,
+  "platform": "Android API 35 arm64 Pixel 9a emulator, isolated .lib2check"
+}

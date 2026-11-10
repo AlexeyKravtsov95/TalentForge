@@ -39,7 +39,7 @@ import kotlinx.coroutines.withContext
  *   onBuildStateChanged path submits.
  *
  * Threading: a main-thread API (Compose click handlers and the app scope) —
- * [submit]/[flush]/[rename] are called from the composition, the consumer
+ * [submit]/[flush]/[rename]/[setFavorite] are called from the composition, the consumer
  * runs in [scope] and hops to [Dispatchers.Default] only for the storage write.
  *
  * M5.SHARE.2 rename: the app's ONE rename path (Home, All Builds and the
@@ -61,7 +61,7 @@ class BuildAutosaveCoordinator(
     private val processed = MutableStateFlow(0L)
     private val outcomeState = MutableStateFlow<SaveResult?>(null)
 
-    /** Serializes the library writes of this class: autosaves and renames never interleave. */
+    /** Serializes the library writes of this class: autosaves, renames and favorites never interleave. */
     private val writeLock = Mutex()
 
     /** Main-thread confined: submissions before the current flush target. */
@@ -115,6 +115,24 @@ class BuildAutosaveCoordinator(
         }
     }
 
+    /**
+     * Favorites share the autosave/rename write lock. Read–modify–write must
+     * see the latest saved allocation, and a later save must see this metadata.
+     * Refuse while this build's pending talent change failed to save.
+     */
+    suspend fun setFavorite(localId: String, isFavorite: Boolean): BuildFavoriteOutcome {
+        val pending = flush()
+        if (pending != null && pending.localId == localId && pending.failed) {
+            return BuildFavoriteOutcome.PendingSaveFailed
+        }
+        return when (val outcome = writeLock.withLock {
+            withContext(Dispatchers.Default) { repository.setFavorite(localId, isFavorite) }
+        }) {
+            is BuildLibraryOutcome.Loaded -> BuildFavoriteOutcome.Saved(outcome.value)
+            is BuildLibraryOutcome.Failed -> BuildFavoriteOutcome.Failed(outcome.error)
+        }
+    }
+
     private suspend fun consumeForever() {
         // scope-owned loop: scope cancellation cancels the suspended receive
         while (true) {
@@ -153,4 +171,11 @@ sealed interface BuildRenameOutcome {
 
     /** The rename itself failed (storage, a vanished record, an invalid name). */
     data class Failed(val error: BuildLibraryError) : BuildRenameOutcome
+}
+
+/** Typed result of a favorite change, including a failed prerequisite autosave. */
+sealed interface BuildFavoriteOutcome {
+    data class Saved(val record: LocalBuildRecord) : BuildFavoriteOutcome
+    data object PendingSaveFailed : BuildFavoriteOutcome
+    data class Failed(val error: BuildLibraryError) : BuildFavoriteOutcome
 }

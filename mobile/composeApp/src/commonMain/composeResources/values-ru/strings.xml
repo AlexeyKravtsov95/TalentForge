@@ -414,4 +414,11 @@
     <string name="builds_search_empty_body">Попробуйте другое название или класс либо сбросьте фильтры.</string>
     <string name="builds_filter_empty_title">Нет билдов этого класса</string>
     <string name="builds_filter_empty_body">Выберите другой класс или сбросьте фильтры.</string>
+    <string name="builds_favorite_add">Добавить в избранное: %1$s</string>
+    <string name="builds_favorite_remove">Убрать из избранного: %1$s</string>
+    <string name="builds_favorite_failed">Не удалось обновить избранное. Билд не изменён.</string>
+    <string name="builds_favorite_pending_save_failed">Сохраните последние изменения талантов перед изменением избранного.</string>
+    <string name="builds_favorites_empty_title">В избранном пока пусто</string>
+    <string name="builds_favorites_empty_body">Нажмите звезду рядом с билдом, чтобы добавить его в избранное.</string>
+    <string name="builds_favorites_filter">Избранное</string>
 </resources>
