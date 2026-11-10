@@ -1075,6 +1075,29 @@ Opt-in screenshot evidence: `M5Ui2ScreenshotTest`
 (393×852, 360×800, 320×568, 130 %, 200 %), the unavailable class, the
 loading failure, creation in flight and the creation failure.
 
+## Build library search and class filters (M6.LIB.1)
+
+All Builds keeps the existing repository load and `updatedAt` order. It resolves
+`buildCardTitle` and `localizedClassName` into temporary presentation entries,
+then applies the pure common Kotlin `filterBuildLibrary` function: trim the query,
+match title OR displayed class without case, AND intersect with the selected
+`ClassToken`. Unnamed builds therefore match the exact localized title on screen.
+The nine filter choices reuse `LibraryText`'s existing class resources; no dataset
+or network dependency is introduced.
+
+Search and selection are saveable view state only. Typing, clearing and filtering
+perform no repository operation. Management reloads reapply the current selection;
+row opening and actions retain each record's opaque `localId`. A true empty
+library keeps its existing creation/import state; search and class exclusions have
+separate no-results copy and Reset filters. Loading and typed storage failures
+keep their original branches and Retry. Storage version, records and portable
+build contracts are unchanged.
+
+Controls use the existing shell tokens, a 48 dp search/clear target and a compact
+scrolling class dropdown. Tests cover EN/RU, 1/10/100 records, immutable storage,
+management and ID routing, plus 320/360/393/412 dp at 100/130/175/200% text.
+Android review images: `docs/screenshots/m6-lib1/`.
+
 ## Localized specialization names (M5.REL.1)
 
 Presentation-only milestone: the section tabs (portrait row, landscape

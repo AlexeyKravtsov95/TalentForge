@@ -13,6 +13,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
@@ -86,6 +87,8 @@ class BuildActionsUiTest {
 
         @Volatile var failWrites = false
 
+        @Volatile var failReads = false
+
         @Volatile var writes = 0
 
         @Volatile private var gate: CountDownLatch? = null
@@ -99,7 +102,10 @@ class BuildActionsUiTest {
             gate = null
         }
 
-        override fun read(): String? = payload
+        override fun read(): String? {
+            if (failReads) throw io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryReadException("injected read failure")
+            return payload
+        }
 
         override fun write(payload: String) {
             gate?.await(20, TimeUnit.SECONDS)
@@ -596,6 +602,106 @@ class BuildActionsUiTest {
         awaitGone("Rename build")
         awaitText("Moonkin")
         assertEquals(older.copy(name = "Moonkin"), persisted(older.localId))
+    }
+
+    // --------------------------------------------------------------- M6.LIB.1
+
+    @Test
+    fun librarySearchCombinesClassAndNameWithoutWritingAndOpensTheRealId() {
+        val (druid, _) = seedTwo()
+        composeApp()
+        awaitText("All builds 2")
+        composeRule.onNodeWithText("All builds 2").performClick()
+        awaitDescription("Search builds")
+        val before = storage.payload
+        val writes = storage.writes
+
+        composeRule.onNodeWithContentDescription("Search builds").performTextReplacement("  fErAl  ")
+        awaitGone("Frost")
+        awaitText("Feral")
+        composeRule.onNodeWithContentDescription("Filter by class: All classes").performClick()
+        composeRule.onNodeWithText("Warrior").performClick()
+        awaitText("No search results")
+        composeRule.onNodeWithText("Reset filters").performClick()
+        awaitText("Frost")
+        composeRule.onNodeWithContentDescription("Search builds").performTextReplacement(" druid ")
+        awaitGone("Frost")
+        assertEquals(before, storage.payload)
+        assertEquals(writes, storage.writes)
+
+        composeRule.onNodeWithText("Feral").performClick()
+        awaitDescription("open build actions")
+        assertEquals(druid.localId, persisted().maxBy { it.lastOpenedAt ?: Long.MIN_VALUE }.localId)
+    }
+
+    @Test
+    fun libraryRenameAndDeleteReapplyTheActiveSearch() {
+        seedTwo()
+        composeApp()
+        awaitText("All builds 2")
+        composeRule.onNodeWithText("All builds 2").performClick()
+        awaitDescription("Search builds")
+        composeRule.onNodeWithContentDescription("Search builds").performTextReplacement("Feral")
+        openRecentActions("Feral")
+        composeRule.onNodeWithText("Rename").performClick()
+        awaitText("Rename build")
+        typeName("Moonkin")
+        composeRule.onNodeWithText("Save").performClick()
+        awaitGone("Rename build")
+        awaitText("No search results")
+        composeRule.onNodeWithContentDescription("Clear search").performClick()
+        awaitText("Moonkin")
+        composeRule.onNodeWithContentDescription("Search builds").performTextReplacement("Moon")
+        openRecentActions("Moonkin")
+        composeRule.onNodeWithText("Delete").performClick()
+        awaitText("Delete \"Moonkin\"?")
+        composeRule.onNodeWithText("Delete").performClick()
+        awaitText("No search results")
+        assertEquals(1, persisted().size)
+    }
+
+    @Test
+    fun russianLibrarySearchUsesTheDisplayedDraftTitleAndClassName() {
+        uiLanguage.language = AppLanguage.RUSSIAN
+        seedWarrior(null)
+        composeApp()
+        awaitText("Все билды\u00A01")
+        composeRule.onNodeWithText("Все билды\u00A01").performClick()
+        awaitDescription("Поиск билдов")
+        val before = storage.payload
+        composeRule.onNodeWithContentDescription("Поиск билдов").performTextReplacement("  БИЛД ВОИНА ")
+        awaitText("Билд воина")
+        composeRule.onNodeWithContentDescription("Поиск билдов").performTextReplacement(" ВоИн ")
+        awaitText("Билд воина")
+        composeRule.onNodeWithContentDescription("Фильтр по классу: Все классы").performClick()
+        composeRule.onNodeWithText("Маг").performScrollTo().performClick()
+        awaitText("Ничего не найдено")
+        assertEquals(before, storage.payload)
+    }
+
+    @Test
+    fun classOnlyNoResultsOffersResetAndReadFailuresStayVisible() {
+        seedTwo()
+        composeApp()
+        awaitText("All builds 2")
+        composeRule.onNodeWithText("All builds 2").performClick()
+        awaitDescription("Search builds")
+        composeRule.onNodeWithContentDescription("Filter by class: All classes").performClick()
+        composeRule.onNodeWithText("Mage").performScrollTo().performClick()
+        awaitText("No builds for this class")
+        assertTrue(!has("No saved builds yet."))
+        composeRule.onNodeWithText("Reset filters").performClick()
+        awaitText("Feral")
+        composeRule.onNodeWithContentDescription("go back").performClick()
+        awaitText("All builds 2")
+        // A real read failure on the next library load must never become an empty list.
+        storage.failReads = true
+        composeRule.onNodeWithText("All builds 2").performClick()
+        awaitText("Couldn't load your builds")
+        assertTrue(!has("No saved builds yet.") && !has("No search results"))
+        storage.failReads = false
+        composeRule.onNodeWithText("Retry").performClick()
+        awaitText("Feral")
     }
 
     // ---------------------------------------------------------------- Russian

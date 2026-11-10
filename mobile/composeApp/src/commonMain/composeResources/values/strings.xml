@@ -391,4 +391,17 @@
     <string name="inspector_requirement_all">All of these talents</string>
     <string name="inspector_requirement_rank">%1$s · %2$d/%3$d ranks</string>
     <string name="inspector_requirement_points">Counted points: %1$d/%2$d</string>
+
+    <!-- M6.LIB.1: local library search and class filter -->
+    <string name="builds_search_label">Search builds</string>
+    <string name="builds_search_hint">Name or class</string>
+    <string name="builds_search_clear">Clear search</string>
+    <string name="builds_filter_all">All classes</string>
+    <string name="builds_filter_description">Filter by class: %1$s</string>
+    <string name="builds_filter_reset">Reset filters</string>
+    <string name="builds_results_count">Results: %1$d of %2$d</string>
+    <string name="builds_search_empty_title">No search results</string>
+    <string name="builds_search_empty_body">Try another name or class, or reset filters.</string>
+    <string name="builds_filter_empty_title">No builds for this class</string>
+    <string name="builds_filter_empty_body">Choose another class or reset filters.</string>
 </resources>
