@@ -46,6 +46,9 @@ private val classCopy: Map<String, ClassCopy> = mapOf(
     "DRUID" to ClassCopy(Res.string.class_name_druid, Res.string.build_title_druid),
 )
 
+/** The existing shell class vocabulary, in its stable display order; no game/network lookup. */
+internal val libraryClassTokens: List<ClassToken> = classCopy.keys.map(::ClassToken)
+
 /** The class-name resource of [classToken]; `null` for a token outside the nine shipped classes. */
 fun classNameResourceFor(classToken: ClassToken): StringResource? = classCopy[classToken.value]?.name
 

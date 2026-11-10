@@ -24,14 +24,18 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -43,8 +47,14 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.bui
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_duplicated
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_empty_body
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_empty_title
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_filter_empty_body
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_filter_empty_title
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_filter_reset
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_results_count
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_row_actions_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_row_actions_description
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_search_empty_body
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_search_empty_title
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_title
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_title_count
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_new_build
@@ -56,6 +66,7 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.imp
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_load_failed_body
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_load_failed_title
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.library_loading
+import io.github.alexeykravtsov95.talentforge.data.ClassToken
 import io.github.alexeykravtsov95.talentforge.data.TalentDatasetRepository
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
@@ -144,6 +155,9 @@ fun AllBuildsScreen(
     autosave: BuildAutosaveCoordinator,
 ) {
     var data by remember { mutableStateOf<LibraryData<List<BuildCardModel>>>(LibraryData.Loading) }
+    var query by rememberSaveable { mutableStateOf("") }
+    var selectedClassValue by rememberSaveable { mutableStateOf<String?>(null) }
+    val selectedClass = selectedClassValue?.let(::ClassToken)
     var reloadToken by remember { mutableStateOf(0) }
     LaunchedEffect(reloadToken) {
         data = LibraryData.Loading
@@ -233,7 +247,7 @@ fun AllBuildsScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(44.dp),
+                    .heightIn(min = 44.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 BackChevronButton(onClick = onBack)
@@ -327,13 +341,55 @@ fun AllBuildsScreen(
                         )
                         ImportBuildButton(onClick = onImportBuild)
                     } else {
-                        for (card in current.value) {
-                            BuildRow(
-                                card = card,
-                                clockMillis = clockMillis,
-                                onClick = { onOpenBuild(card.record.localId) },
-                                onActions = { overlay = ManagementOverlay.Actions(card.record.localId) },
+                        BuildLibraryFilters(
+                            query = query,
+                            onQueryChange = { query = it },
+                            selectedClass = selectedClass,
+                            onClassChange = { selectedClassValue = it?.value },
+                        )
+                        val entries = current.value.map { card ->
+                            BuildLibrarySearchEntry(
+                                card,
+                                buildCardTitle(card),
+                                localizedClassName(card.record.build.classToken, card.classDisplayName)
+                                    ?: card.record.build.classToken.value,
                             )
+                        }
+                        val results = filterBuildLibrary(entries, query, selectedClass)
+                        BasicText(
+                            stringResource(Res.string.builds_results_count, results.size, entries.size),
+                            style = TalentForgeTypography.meta.copy(color = colors.textSecondary),
+                            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                        )
+                        if (results.isEmpty()) {
+                            BasicText(
+                                stringResource(if (query.isNotBlank()) Res.string.builds_search_empty_title else Res.string.builds_filter_empty_title),
+                                style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary),
+                            )
+                            BasicText(
+                                stringResource(if (query.isNotBlank()) Res.string.builds_search_empty_body else Res.string.builds_filter_empty_body),
+                                style = TalentForgeTypography.bodySmall.copy(color = colors.textSecondary),
+                            )
+                            SecondaryActionButton(
+                                text = stringResource(Res.string.builds_filter_reset),
+                                onClickLabel = stringResource(Res.string.builds_filter_reset),
+                                onClick = {
+                                    query = ""
+                                    selectedClassValue = null
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                        for (entry in results) {
+                            val card = entry.card
+                            key(card.record.localId) {
+                                BuildRow(
+                                    card = card,
+                                    clockMillis = clockMillis,
+                                    onClick = { onOpenBuild(card.record.localId) },
+                                    onActions = { overlay = ManagementOverlay.Actions(card.record.localId) },
+                                )
+                            }
                         }
                         Spacer(Modifier.height(TalentForgeSpacing.inline))
                         ImportBuildButton(onClick = onImportBuild)

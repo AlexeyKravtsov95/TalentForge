@@ -401,4 +401,17 @@
     <string name="inspector_requirement_all">Все эти таланты</string>
     <string name="inspector_requirement_rank">%1$s · ранги %2$d/%3$d</string>
     <string name="inspector_requirement_points">Засчитано очков: %1$d/%2$d</string>
+
+    <!-- M6.LIB.1: local library search and class filter -->
+    <string name="builds_search_label">Поиск билдов</string>
+    <string name="builds_search_hint">Название или класс</string>
+    <string name="builds_search_clear">Очистить поиск</string>
+    <string name="builds_filter_all">Все классы</string>
+    <string name="builds_filter_description">Фильтр по классу: %1$s</string>
+    <string name="builds_filter_reset">Сбросить фильтры</string>
+    <string name="builds_results_count">Результаты: %1$d из %2$d</string>
+    <string name="builds_search_empty_title">Ничего не найдено</string>
+    <string name="builds_search_empty_body">Попробуйте другое название или класс либо сбросьте фильтры.</string>
+    <string name="builds_filter_empty_title">Нет билдов этого класса</string>
+    <string name="builds_filter_empty_body">Выберите другой класс или сбросьте фильтры.</string>
 </resources>
