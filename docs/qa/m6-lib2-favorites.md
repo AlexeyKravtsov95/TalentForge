@@ -45,6 +45,8 @@ cd mobile
 
 The mobile CI adds an API 35 emulator job for these tests; existing shared JVM, Compose Desktop, Android build/signing and Xcode 27.1/iOS jobs remain required.
 
+The offline Python baseline uses `pytest -o tmp_path_retention_policy=failed --basetemp=/tmp/tf-lib2-pytest`: the same full suite, with passed tests' temporary clones deleted promptly. A first local run was interrupted because default retention accumulated 15 GB of disposable clones; those task-created clones were removed and the complete suite restarted with this retention option. This changes test-output retention, not test selection or product behavior.
+
 ## Validation results
 
 | Check | Result |
@@ -52,14 +54,15 @@ The mobile CI adds an API 35 emulator job for these tests; existing shared JVM, 
 | Dataset sync check | Pass: 50 files across five builds |
 | Ruff check / format check | Pass: all checks; 452 files already formatted |
 | mypy | Pass: 122 source files |
-| Shared JVM | Pass before final navigation guard; final complete baseline running |
-| Compose focused tests | Pass: migration/filter coordination, complete 32-case EN/RU size/font matrix, four app favorites tests (including delayed-write navigation guard) |
-| Android SharedPreferences | Pass: 3 instrumented tests on isolated API 35 arm64 Pixel 9a emulator |
-| iOS shared/app simulator tests and debug frameworks | Pass; final rerun with navigation guard running |
+| Shared JVM | Pass: 382 tests, zero failures |
+| Complete Compose Desktop | Pass: 914 tests, zero failures, 64 existing opt-in checks skipped; includes the 32-case EN/RU size/font matrix and four app favorites tests |
+| Android SharedPreferences | Pass: 3 instrumented tests on isolated API 35 arm64 Pixel 9a emulator, repeated against the final APK; new Android CI job also passed |
+| iOS shared/app simulator tests and debug frameworks | Pass on final code: 198 shared + 8 app tests, zero failures/skips; both debug frameworks linked |
 | iOS host simulator xcodebuild | Pass: Xcode 27.1 / 27A9275 |
-| Python pytest / complete mobile baseline / remote CI | Running when this draft is opened; final results will replace this row |
+| Complete mobile baseline | Pass: shared JVM, desktop, Android debug/test APKs, iOS simulator tests and debug frameworks |
+| Python pytest and final per-commit remote CI | Exact results and run links are recorded in [PR #137](https://github.com/AlexeyKravtsov95/TalentForge/pull/137) |
 | actionlint | New job passes; existing `xcode-27` runner-label diagnostic ignored because installed actionlint does not recognize that preview label |
-| graphify update | AST graph rebuilt; final update running |
+| graphify update | Pass: AST graph rebuilt after the navigation fix |
 
 Android screenshots are actual emulator captures from `.lib2check`, not desktop renders:
 
