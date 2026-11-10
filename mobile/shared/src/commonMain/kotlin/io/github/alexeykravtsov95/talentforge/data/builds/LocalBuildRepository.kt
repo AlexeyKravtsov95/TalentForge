@@ -240,7 +240,7 @@ class LocalBuildRepository(
             )
         }
         return mutate(localId) { record ->
-            if (record.name == trimmed) record else record.copy(name = trimmed)
+            if (record.name == trimmed) record else record.copy(name = trimmed, storedBlankName = null)
         }
     }
 

@@ -11,7 +11,7 @@ v1 JSON → strict v1 decode → records with isFavorite=false
                          encode entire v2 envelope → synchronous storage replacement
 ```
 
-Every record retains its stable localId, name, createdAt, updatedAt, lastOpenedAt and embedded BuildFile, except the field explicitly changed by the requested operation. A favorite change only changes isFavorite. Encoding retains canonical localId order. Repository display ordering remains updatedAt descending, createdAt descending, localId ascending. A duplicate has isFavorite=false; the source is untouched. No game data, allocation semantics, public schemas, share codes, OTA settings or application versions change.
+Every record retains its stable localId, name, createdAt, updatedAt, lastOpenedAt and embedded BuildFile, except the field explicitly changed by the requested operation. A favorite change only changes isFavorite. Encoding retains canonical localId order. Repository display ordering remains updatedAt descending, createdAt descending, localId ascending. A duplicate has isFavorite=false; the source is untouched. Accepted legacy blank names still appear as Draft (`name == null`) but their exact original blank string is retained privately for serialization, including later v2 writes. Explicit rename replaces it; newly created/duplicated Drafts write null. No extra JSON field is introduced. No game data, allocation semantics, public schemas, share codes, OTA settings or application versions change.
 
 | Reader | v1 storage | v2 storage | Unknown future storage |
 |---|---|---|---|
@@ -32,7 +32,7 @@ Android uses the existing SharedPreferences string cell and synchronous commit. 
 
 `mobile/shared/src/jvmTest/resources/builds/local-library-v1.json` is a frozen three-record fixture verified byte-for-byte against the **original v1 production writer before changing it**. It includes named/unnamed records, Cyrillic, nullable open time, allocations and three Forever versions. It is a storage fixture, not evidence of allocation validity. Common JVM/iOS tests use the identical frozen text; the JVM test loads the JSON and pins their equality; Android tests load that same JSON as a test asset. No test generates v1 with the new v2 encoder.
 
-The migration test compares every original record JSON object against its migrated object after removing only isFavorite. It also compares complete domain records before/after, IDs and order, and retries a failed first migration after checking byte-exact original payload preservation. Synthetic 0/1/10/100-record v1 libraries cover scale and empty storage.
+The migration test compares every original record JSON object against its migrated object after removing only isFavorite. It also compares complete domain records before/after, IDs and order, and retries a failed first migration after checking byte-exact original payload preservation. Synthetic 0/1/10/100-record v1 libraries cover scale and empty storage. A dedicated regression covers blank names on the favorite target and untouched neighbors, subsequent v2 writes, explicit rename and Draft duplication.
 
 The UI matrix covers EN/RU, widths 320/360/393/412 dp, and font scales 100/130/175/200%. It checks the star's 48 dp target, checkbox state, favorite filtering and empty state, reset, persistence, unchanged bytes after favorite/unfavorite, class/search controls and the New Build action. App-level tests cover rename/delete under all filters, duplicate defaults, write failure/retry and recreation. Home and its Continue Editing selection logic are unchanged.
 
@@ -47,22 +47,23 @@ The mobile CI adds an API 35 emulator job for these tests; existing shared JVM, 
 
 The offline Python baseline uses `pytest -o tmp_path_retention_policy=failed --basetemp=/tmp/tf-lib2-pytest`: the same full suite, with passed tests' temporary clones deleted promptly. A first local run was interrupted because default retention accumulated 15 GB of disposable clones; those task-created clones were removed and the complete suite restarted with this retention option. This changes test-output retention, not test selection or product behavior.
 
-## Validation results
+## Validation and evidence
 
-| Check | Result |
-|---|---|
-| Dataset sync check | Pass: 50 files across five builds |
-| Ruff check / format check | Pass: all checks; 452 files already formatted |
-| mypy | Pass: 122 source files |
-| Shared JVM | Pass: 382 tests, zero failures |
-| Complete Compose Desktop | Pass: 914 tests, zero failures, 64 existing opt-in checks skipped; includes the 32-case EN/RU size/font matrix and four app favorites tests |
-| Android SharedPreferences | Pass: 3 instrumented tests on isolated API 35 arm64 Pixel 9a emulator, repeated against the final APK; new Android CI job also passed |
-| iOS shared/app simulator tests and debug frameworks | Pass on final code: 198 shared + 8 app tests, zero failures/skips; both debug frameworks linked |
-| iOS host simulator xcodebuild | Pass: Xcode 27.1 / 27A9275 |
-| Complete mobile baseline | Pass: shared JVM, desktop, Android debug/test APKs, iOS simulator tests and debug frameworks |
-| Python pytest and final per-commit remote CI | Exact results and run links are recorded in [PR #137](https://github.com/AlexeyKravtsov95/TalentForge/pull/137) |
-| actionlint | New job passes; existing `xcode-27` runner-label diagnostic ignored because installed actionlint does not recognize that preview label |
-| graphify update | Pass: AST graph rebuilt after the navigation fix |
+Exact whole-suite counts, platform build results and final per-commit CI links are maintained in [PR #137](https://github.com/AlexeyKravtsov95/TalentForge/pull/137). This report keeps the migration contract, reproducible checks and preservation/screenshot evidence together without freezing an intermediate CI snapshot.
+
+```sh
+ruff check .
+ruff format --check .
+mypy
+pytest -o tmp_path_retention_policy=failed --basetemp=/tmp/tf-lib2-pytest
+python3 scripts/sync_mobile_datasets.py --check
+cd mobile
+./gradlew :shared:jvmTest :composeApp:desktopTest :composeApp:assembleDebug
+./gradlew :shared:iosSimulatorArm64Test :composeApp:iosSimulatorArm64Test
+./gradlew :composeApp:linkDebugFrameworkIosArm64 :composeApp:linkDebugFrameworkIosSimulatorArm64
+```
+
+The iOS host simulator build follows `docs/mobile-architecture.md`. `actionlint` validates the added Android job; the installed version's existing unknown `xcode-27` runner-label diagnostic is ignored. The committed graph was rebuilt with `graphify update .` (AST only).
 
 Android screenshots are actual emulator captures from `.lib2check`, not desktop renders:
 

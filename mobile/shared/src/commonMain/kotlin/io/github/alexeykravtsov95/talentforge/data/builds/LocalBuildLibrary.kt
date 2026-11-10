@@ -21,7 +21,8 @@ import kotlinx.serialization.json.intOrNull
  * `name == null` means the build is a **Draft** (unnamed). A Draft is not an
  * unsaved build: it is persisted the moment it is created. An empty string is
  * never a second representation of "unnamed" — persisted blank names are
- * normalized to `null` while decoding.
+ * normalized to `null` while decoding; their original wire string is retained
+ * internally so unrelated writes never rewrite a legacy name.
  */
 data class LocalBuildRecord(
     /** Opaque, stable identifier inside this device's library. UI derives no meaning from it. */
@@ -38,6 +39,11 @@ data class LocalBuildRecord(
     val build: BuildFile,
     /** App-private metadata; never changes allocation or edit/open timestamps. */
     val isFavorite: Boolean = false,
+    /**
+     * Retains accepted legacy wire blanks while [name] stays the normalized
+     * Draft value. Not a JSON field: only an explicit rename replaces it.
+     */
+    internal val storedBlankName: String? = null,
 )
 
 /** Typed, fail-closed decoding failures of the private library envelope. */
@@ -73,7 +79,8 @@ sealed class LocalBuildLibraryFormatException(message: String) : Exception(messa
  * - an embedded [BuildFile] with an unexpected `schemaVersion` is malformed;
  * - duplicate or blank `localId`s are malformed (ids are stable and unique);
  * - a blank `name` is normalized to `null` (Draft) rather than rejected —
- *   an older writer may have persisted one.
+ *   an older writer may have persisted one. Its original blank string remains
+ *   available for serialization until an explicit rename replaces it.
  *
  * Encoding is deterministic: records are serialized in ascending `localId`
  * order with a stable field order, so the same library always produces the
@@ -116,6 +123,9 @@ object LocalBuildLibraryCodec {
                 throw LocalBuildLibraryFormatException.Malformed(
                     "duplicate localId ${record.localId} — refusing to encode a library the reader would reject",
                 )
+            }
+            if (record.storedBlankName != null && record.storedBlankName.isNotBlank()) {
+                throw LocalBuildLibraryFormatException.Malformed("storedBlankName must be blank")
             }
             if (record.build.schemaVersion != BuildFileVersion.V1) {
                 throw LocalBuildLibraryFormatException.Malformed(
@@ -184,6 +194,7 @@ object LocalBuildLibraryCodec {
             records += LocalBuildRecord(
                 localId = wire.localId,
                 name = wire.name?.takeIf { it.isNotBlank() },
+                storedBlankName = wire.name?.takeIf { it.isBlank() },
                 createdAt = wire.createdAt,
                 updatedAt = wire.updatedAt,
                 lastOpenedAt = wire.lastOpenedAt,
@@ -248,7 +259,7 @@ object LocalBuildLibraryCodec {
 
     private fun LocalBuildRecord.toWire(): LocalBuildRecordFileV2 = LocalBuildRecordFileV2(
         localId = localId,
-        name = name,
+        name = name ?: storedBlankName,
         createdAt = createdAt,
         updatedAt = updatedAt,
         lastOpenedAt = lastOpenedAt,

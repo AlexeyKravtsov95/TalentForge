@@ -148,4 +148,30 @@ class LocalBuildFavoritesMigrationTest {
         assertEquals(LEGACY_LIBRARY_V1, storage.payload)
         assertEquals(0, storage.writeCount)
     }
+    @Test
+    fun legacyBlankNamesOnTheTargetAndNeighborsSurviveMigrationAndSubsequentV2Writes() {
+        val root = Json.parseToJsonElement(LEGACY_LIBRARY_V1).jsonObject
+        val originals = root["builds"]!!.jsonArray.mapIndexed { index, record ->
+            JsonObject(record.jsonObject + ("name" to if (index == 0) JsonPrimitive("  ") else JsonPrimitive("")))
+        }
+        val store = InMemoryBuildLibraryStorage(JsonObject(root + ("builds" to JsonArray(originals))).toString())
+        val repo = LocalBuildRepository(store, FixedBuildClock(), SequentialBuildIds())
+        assertTrue(loaded(repo.load()).all { it.name == null }, "blank names still display as Draft")
+        for (id in listOf("legacy-1", "legacy-2")) {
+            loaded(repo.setFavorite(id, true))
+            val persisted = Json.parseToJsonElement(store.payload!!).jsonObject["builds"]!!.jsonArray
+            assertEquals(originals.map { it["name"] }, persisted.map { it.jsonObject["name"] })
+            assertTrue(loaded(repo.load()).all { it.name == null })
+        }
+        loaded(repo.renameBuild("legacy-1", "Named"))
+        loaded(repo.setFavorite("legacy-1", false))
+        val persisted = Json.parseToJsonElement(store.payload!!).jsonObject["builds"]!!.jsonArray
+        assertEquals(listOf(JsonPrimitive("Named"), JsonPrimitive(""), JsonPrimitive("")), persisted.map { it.jsonObject["name"] })
+        val duplicate = loaded(repo.duplicateBuild("legacy-2", " (copy)"))
+        assertEquals(null, duplicate.name)
+        val duplicateWire = Json.parseToJsonElement(store.payload!!).jsonObject["builds"]!!.jsonArray
+            .single { it.jsonObject["localId"] == JsonPrimitive(duplicate.localId) }.jsonObject
+        assertEquals(kotlinx.serialization.json.JsonNull, duplicateWire["name"], "new Draft copies have no inherited wire blank")
+    }
+
 }
