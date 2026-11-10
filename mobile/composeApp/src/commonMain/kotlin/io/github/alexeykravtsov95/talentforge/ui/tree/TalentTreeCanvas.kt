@@ -86,7 +86,8 @@ import kotlin.math.hypot
  *   2 dp dashed when inactive" (B3 06) — active = the edge's source node is
  *   fully ranked (the EDGE-ACTIVE reference rule, applied here as a *visual*
  *   treatment of published rank facts only);
- * - visual-only edges carry no requirement, so they stay neutral solid;
+ * - visual-only edges carry no requirement, so they stay neutral solid unless
+ *   a gameplay edge connects the same pair: decoration must not fill its dash gaps;
  * - lines fade to 30% with a selection (B3) and to 18% while a Show guide is
  *   active, except the origin→target path, which turns bright at 3 dp (B3 07);
  * - nodes layer the B3 state treatment under the neutral selection ring;
@@ -279,6 +280,19 @@ fun TalentTreeCanvas(
             },
     ) {
         val connectorColor = colors.borderStrong
+        // Druid has a reverse visual-only edge over its Required edge (104927/104928).
+        // Keep both in the data model, but draw gameplay once: a solid decoration,
+        // even underneath a dashed line, would fill the gaps of an unmet requirement.
+        val connectorEdges = remember(model) {
+            model.edges.filterNot { edge ->
+                edge.kind == TalentTreeEdgeKind.VISUAL_ONLY && model.edges.any { gameplay ->
+                    gameplay.kind == TalentTreeEdgeKind.PREREQUISITE && (
+                        gameplay.fromNodeId == edge.fromNodeId && gameplay.toNodeId == edge.toNodeId ||
+                            gameplay.fromNodeId == edge.toNodeId && gameplay.toNodeId == edge.fromNodeId
+                        )
+                }
+            }
+        }
 
         // Connectors: one draw pass in screen space, reading the transform
         // deferred so pan/zoom redraw without recomposition.
@@ -289,7 +303,7 @@ fun TalentTreeCanvas(
                 .drawBehind {
                     val viewport = viewportState.viewport ?: return@drawBehind
                     val guideEdge = showGuide?.let { guide ->
-                        model.edges.firstOrNull { edge ->
+                        connectorEdges.firstOrNull { edge ->
                             edge.kind == TalentTreeEdgeKind.PREREQUISITE &&
                                 (
                                     edge.fromNodeId == guide.targetNodeId &&
@@ -304,7 +318,7 @@ fun TalentTreeCanvas(
                         selectedNodeId != null -> TalentTreeCanvasMetrics.CONNECTOR_SELECTED_ALPHA
                         else -> 1f
                     }
-                    for (edge in model.edges) {
+                    for (edge in connectorEdges) {
                         val start = viewport
                             .worldToScreen(Offset(edge.startX, edge.startY))
                             .times(this.density)
