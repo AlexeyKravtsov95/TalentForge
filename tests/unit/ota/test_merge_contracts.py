@@ -25,6 +25,7 @@ def binding_wire():
         "baseSha": "c" * 40,
         "toolingSha": "d" * 40,
         "preparationCi": run(".github/workflows/ci.yml", 50, "a" * 40),
+        "candidateRun": run(".github/workflows/ota-prepare.yml", 49, "c" * 40),
         "stagingRun": run(".github/workflows/ota-staging-verify.yml", 51, "d" * 40),
         "packageRun": run(".github/workflows/ota-release-package.yml", 52, "d" * 40),
         "candidateArtifact": {
@@ -101,6 +102,16 @@ def test_candidate_binding_refuses_false_producer_head():
     wire["stagingRun"]["headSha"] = "a" * 40
     with pytest.raises(ValueError):
         CandidateBinding.model_validate_json(json.dumps(wire))
+
+
+def test_candidate_binding_keeps_original_artifact_attempt():
+    from talent_data.ota.automation.candidate import CandidateBinding
+
+    wire = binding_wire()
+    wire["candidateRun"]["attempt"] = 2
+    binding = CandidateBinding.model_validate_json(json.dumps(wire))
+    assert binding.candidate_run.attempt == 2
+    assert binding.candidate_run.head_sha == "c" * 40
 
 
 def test_conditional_record_roundtrip_requires_no_personal_observation():
