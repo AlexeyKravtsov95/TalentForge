@@ -170,6 +170,13 @@ class CandidateAPI:
         assert metadata["id"] == 11
         return self.raw
 
+    def content(self, path, ref):
+        result = subprocess.run(
+            ["git", "-C", str(self.repo_path), "show", ref + ":" + path],
+            capture_output=True,
+        )
+        return result.stdout if result.returncode == 0 else None
+
     def synthetic_ci(self, *, wrong_tree=False):
         tree = git(
             self.repo_path, "rev-parse", (self.base if wrong_tree else self.source) + "^{tree}"

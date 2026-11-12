@@ -1,7 +1,11 @@
 """One candidate MR: conditional metadata append, never merge or production writes."""
 
+from collections.abc import Mapping
+from datetime import datetime
 from pathlib import Path
 from typing import Any
+
+import httpx
 
 from talent_data.ota.automation.candidate import (
     CandidateBinding,
@@ -15,12 +19,13 @@ from talent_data.ota.automation.prepare import (
     BOT,
     REQUEST_DIR,
     GitHub,
+    PreparedProposal,
     obj,
     require,
     same,
 )
 from talent_data.ota.automation.requests import ReleaseRequest, RunPin
-from talent_data.ota.verify import sha256_ref
+from talent_data.ota.verify import TrustedKey, sha256_ref
 
 REPOSITORY = "AlexeyKravtsov95/TalentForge"
 
@@ -307,3 +312,79 @@ def mark_candidate_ready(
         "ready read-back",
     )
     same(policy_pull(reader, pull_number).get("draft"), False, "READY_FAILED", "ready read-back")
+
+
+def route_candidate_ci(reader: GitHub, repo: Path, pin: RunPin) -> tuple[str, int]:
+    from talent_data.ota.automation.candidate import verify_full_pr_ci
+    from talent_data.ota.automation.requests import parse_request
+
+    run = reader.run(pin.run_id, pin.attempt)
+    for field, expected in {
+        "id": pin.run_id,
+        "run_attempt": pin.attempt,
+        "path": ".github/workflows/ci.yml",
+        "name": "CI",
+        "event": "pull_request",
+        "head_sha": pin.head_sha,
+        "status": "completed",
+        "conclusion": "success",
+    }.items():
+        same(run.get(field), expected, "PREMERGE_TRIGGER", field)
+    for key in ("repository", "head_repository"):
+        same(obj(run.get(key)).get("full_name"), REPOSITORY, "PREMERGE_TRIGGER", "repository")
+    pulls = run.get("pull_requests")
+    require(
+        isinstance(pulls, list) and len(pulls) == 1, "PREMERGE_TRIGGER", "single PR association"
+    )
+    assert isinstance(pulls, list)
+    number = obj(pulls[0]).get("number")
+    require(type(number) is int and number > 0, "PREMERGE_TRIGGER", "PR number")
+    assert isinstance(number, int)
+    pull = policy_pull(reader, number)
+    head = str(obj(pull.get("head")).get("sha"))
+    branch = str(obj(pull.get("head")).get("ref"))
+    same(run.get("head_branch"), branch, "PREMERGE_TRIGGER", "branch")
+    require(branch.startswith("ota-candidate/forever-"), "PREMERGE_TRIGGER", "candidate branch")
+    verify_full_pr_ci(reader, number, head, pin)
+    build = branch.removeprefix("ota-candidate/forever-")
+    raw = reader.content(f"{REQUEST_DIR}/{build}-r1.json", head)
+    if raw is None:
+        return "prepare", number
+    request = parse_request(raw)
+    same(request.build, build, "PREMERGE_TRIGGER", "metadata build")
+    return "ready", number
+
+
+def prepare_candidate(
+    client: httpx.Client,
+    *,
+    reader: GitHub,
+    repo: Path,
+    ci_pin: RunPin,
+    destination: Path,
+    now: datetime,
+    keyring: Mapping[str, TrustedKey],
+) -> PreparedProposal | None:
+    from talent_data.ota.automation.candidate import verify_candidate
+    from talent_data.ota.automation.prepare import prepare_request
+
+    phase, number = route_candidate_ci(reader, repo, ci_pin)
+    require(
+        phase == "prepare", "PREMERGE_PHASE", "metadata already prepared; only readiness allowed"
+    )
+    pull = policy_pull(reader, number)
+    candidate = verify_candidate(
+        reader, repo, number, source_sha=str(obj(pull.get("head")).get("sha")), ci_pin=ci_pin
+    )
+    return prepare_request(
+        client,
+        token=reader.token,
+        ci_run_id=ci_pin.run_id,
+        ci_attempt=ci_pin.attempt,
+        repo=repo,
+        keyring=keyring,
+        now=now,
+        destination=destination,
+        api=reader,
+        candidate_context=candidate,
+    )

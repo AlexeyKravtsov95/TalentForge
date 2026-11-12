@@ -1,0 +1,102 @@
+"""CI events select preparation once and readiness after metadata; no executable artifact."""
+
+import copy
+from pathlib import Path
+
+import pytest
+import yaml
+
+from talent_data.ota.automation.candidate import verify_candidate
+from talent_data.ota.automation.prepare import PreparationBlocked
+from talent_data.ota.automation.requests import RunPin
+from tests.unit.ota.single_merge_testkit import candidate_fixture
+from tests.unit.ota.test_premerge_proposal import setup
+
+ROOT = Path(__file__).resolve().parents[3]
+
+
+def test_initial_exact_pr_ci_routes_preparation(tmp_path):
+    from talent_data.ota.automation.premerge import route_candidate_ci
+
+    repo, api = candidate_fixture(tmp_path)
+    pin = verify_candidate(api, repo, 141, source_sha=api.source).ci_pin
+    assert route_candidate_ci(api, repo, pin) == ("prepare", 141)
+
+
+@pytest.mark.parametrize(
+    "fault", ["fork", "workflow", "event", "attempt", "failed", "foreign-branch"]
+)
+def test_foreign_ci_cannot_reach_dispatch(tmp_path, fault):
+    from talent_data.ota.automation.premerge import route_candidate_ci
+
+    repo, api = candidate_fixture(tmp_path)
+    pin = RunPin(
+        workflow_path=".github/workflows/ci.yml", run_id=201, attempt=1, head_sha=api.source
+    )
+    if fault == "fork":
+        api.runs[201]["head_repository"]["full_name"] = "other/repo"
+    elif fault == "workflow":
+        api.runs[201]["path"] = ".github/workflows/evil.yml"
+    elif fault == "event":
+        api.runs[201]["event"] = "push"
+    elif fault == "attempt":
+        pin = pin.model_copy(update={"attempt": 2})
+    elif fault == "failed":
+        api.jobs[201][1]["conclusion"] = "failure"
+    else:
+        api.runs[201]["head_branch"] = "foreign"
+    with pytest.raises(PreparationBlocked):
+        route_candidate_ci(api, repo, pin)
+
+
+def test_final_head_routes_ready_without_preparation(tmp_path):
+    from talent_data.ota.automation.premerge import bind_candidate_request, route_candidate_ci
+
+    repo, reader, writer, candidate, request, binding = setup(tmp_path)
+    head = bind_candidate_request(reader, writer, repo, candidate, request, binding)
+    run = reader.runs[201]
+    run["head_sha"] = head
+    run["pull_requests"][0]["head"]["sha"] = head
+    for job in reader.jobs[201]:
+        job["head_sha"] = head
+    pin = RunPin(workflow_path=".github/workflows/ci.yml", run_id=201, attempt=1, head_sha=head)
+    before = copy.deepcopy(writer.writes)
+    assert route_candidate_ci(reader, repo, pin) == ("ready", 141)
+    assert writer.writes == before
+
+
+def test_workflow_keeps_pr_input_away_from_app_and_production_secrets():
+    workflow = yaml.load(
+        (ROOT / ".github/workflows/ota-release-prepare.yml").read_text(), Loader=yaml.BaseLoader
+    )
+    jobs = workflow["jobs"]
+    prepare = jobs["premerge"]
+    review = jobs["premerge-review"]
+    assert prepare["permissions"] == {
+        "contents": "write",
+        "actions": "write",
+        "pull-requests": "read",
+    }
+    assert "pull_request" in prepare["if"] and "head_repository.full_name" in prepare["if"]
+    for job in (prepare, review):
+        checkout = next(
+            s for s in job["steps"] if s.get("uses", "").startswith("actions/checkout@")
+        )
+        assert checkout["with"]["ref"] == "${{ github.sha }}"
+        assert checkout["with"]["persist-credentials"] == "false"
+        assert "production" not in job.get("environment", "")
+    text = str(prepare)
+    assert "PRIVATE_KEY" not in text and "S3" not in text
+    assert review["needs"] == "premerge"
+    assert "pull_request_target" not in workflow["on"]
+
+
+def test_consumer_retry_keeps_successful_original_preparation_when_proposal_failed(tmp_path):
+    repo, api = candidate_fixture(tmp_path)
+    api.runs[101]["conclusion"] = "failure"
+    api.jobs[101][1]["conclusion"] = "failure"  # App/API failure after immutable data preparation
+    original = (api.notice["candidateArtifact"].copy(), api.notice["preparationRun"].copy())
+    candidate = verify_candidate(api, repo, 141, source_sha=api.source)
+    assert candidate.candidate_artifact.artifact_id == original[0]["artifactId"]
+    assert candidate.candidate_run.run_id == original[1]["runId"]
+    assert candidate.candidate_run.attempt == original[1]["attempt"]

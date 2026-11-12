@@ -377,6 +377,15 @@ jobs:
 
       # Exits 0 OPENED / EXISTS / ALREADY_ON_MAIN / DECLINED, 3 REFUSED / CONFLICT, 1 FAILED;
       # recorded, restored at the end. The token reaches git only for fetch/ls-remote/push.
+      - name: Bind conditional publication terms to the original preparation
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRODUCER_RUN: ${{ needs.prepare.outputs.candidate_run_id }}
+          PRODUCER_ARTIFACT: ${{ needs.prepare.outputs.candidate_artifact }}
+        run: |
+          python scripts/ota_premerge.py notice --run-id "$PRODUCER_RUN" \
+            --artifact-name "$PRODUCER_ARTIFACT" --out candidate-notice.json
+
       - name: Propose
         id: propose
         shell: bash
@@ -388,6 +397,7 @@ jobs:
           set +e
           python scripts/ota_prepare.py propose --artifact candidate --artifact-name "$ARTIFACT" \
             --preparation-url "$PREPARATION_URL" --repository "$GITHUB_REPOSITORY" \
+            --owner-merge-notice candidate-notice.json \
             --out propose > /dev/null
           code=$?
           set -e

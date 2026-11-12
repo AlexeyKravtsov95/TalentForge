@@ -19,7 +19,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from urllib.parse import urlsplit
 
 import httpx
@@ -68,6 +68,9 @@ from talent_data.versions import ClientVersion
 
 CI_WORKFLOW = ".github/workflows/ci.yml"
 PREPARE_WORKFLOW = ".github/workflows/ota-release-prepare.yml"
+if TYPE_CHECKING:
+    from talent_data.ota.automation.candidate import VerifiedCandidate
+
 API_ORIGIN = "https://api.github.com"
 REQUEST_DIR = "docs/ota/release-requests"
 APPROVAL_DIR = "docs/ota/releases"
@@ -660,7 +663,13 @@ def check_base(catalog: OtaCatalog, request: ReleaseRequest) -> None:
     )
 
 
-def load_proposal(api: GitHub, request: ReleaseRequest, *, destination: Path) -> PreparedProposal:
+def load_proposal(
+    api: GitHub,
+    request: ReleaseRequest,
+    *,
+    destination: Path,
+    candidate_context: VerifiedCandidate | None = None,
+) -> PreparedProposal:
     package_run = api.run(request.package_run.run_id, request.package_run.attempt)
     staging_run = api.run(request.staging_run.run_id, request.staging_run.attempt)
     artifact = obj(api.repo("GET", f"/actions/artifacts/{request.artifact.artifact_id}"))
@@ -681,6 +690,7 @@ def load_proposal(api: GitHub, request: ReleaseRequest, *, destination: Path) ->
         artifact_metadata=artifact,
         archive_bytes=archive,
         package=package,
+        candidate_context=candidate_context,
     )
     return make_proposal(
         package,
@@ -784,13 +794,31 @@ def prepare_request(
     now: datetime,
     destination: Path,
     sleep: Callable[[float], None] = time.sleep,
+    candidate_context: VerifiedCandidate | None = None,
+    api: GitHub | None = None,
 ) -> PreparedProposal | None:
-    api = GitHub(client, token)
+    api = api or GitHub(client, token)
     ci = api.run(ci_run_id, ci_attempt)
     jobs = api.pages(f"/actions/runs/{ci_run_id}/attempts/{ci_attempt}/jobs", "jobs")
-    source = verify_ci(ci, jobs, run_id=ci_run_id, attempt=ci_attempt)
+    if candidate_context is None:
+        source = verify_ci(ci, jobs, run_id=ci_run_id, attempt=ci_attempt)
+    else:
+        from talent_data.ota.automation.candidate import verify_candidate
+
+        candidate_context = verify_candidate(
+            api,
+            repo,
+            candidate_context.pull_number,
+            source_sha=candidate_context.source_sha,
+            ci_pin=candidate_context.ci_pin,
+        )
+        source = candidate_context.source_sha
     catalog = read_live(client, keyring, now, full=False)
-    candidate = select_candidate(repo, source, catalog)
+    candidate = (
+        select_candidate(repo, source, catalog)
+        if candidate_context is None
+        else candidate_context.build
+    )
     if candidate is None:
         return None
     verified_catalog = read_live(client, keyring, now)
@@ -802,8 +830,21 @@ def prepare_request(
         f"baseManifest={active.manifest_sha256}"
     )
     key = correlation_key(source, release, active.release_id, active.manifest_sha256)
+    candidate_inputs = (
+        {}
+        if candidate_context is None
+        else {
+            "candidate_pr": str(candidate_context.pull_number),
+            "candidate_ci_run_id": str(candidate_context.ci_pin.run_id),
+            "candidate_ci_attempt": str(candidate_context.ci_pin.attempt),
+        }
+    )
     frozen = read_tag(api, "ota-package/" + key, source)
-    kept = api.content(f"{REQUEST_DIR}/{release}.json", f"ota-release/{release}")
+    kept = (
+        api.content(f"{REQUEST_DIR}/{release}.json", f"ota-release/{release}")
+        if candidate_context is None
+        else None
+    )
     if kept is not None and frozen is not None:
         same(
             parse_request(kept), parse_request(frozen), "REQUEST_CONFLICT", "branch/frozen request"
@@ -813,7 +854,9 @@ def prepare_request(
         request = parse_request(kept)
         same(request.source_commit, source, "SOURCE_CHANGED", "frozen source")
         check_base(catalog, request)
-        proposal = load_proposal(api, request, destination=destination)
+        proposal = load_proposal(
+            api, request, destination=destination, candidate_context=candidate_context
+        )
     else:
         reservation = read_tag(api, "ota-preparation/" + key, source)
         # Discover a frozen package before any new staging or package dispatch.
@@ -838,7 +881,12 @@ def prepare_request(
                 api,
                 STAGING_WORKFLOW,
                 key,
-                {"revision": source, "base": active.client_build, "candidate": candidate},
+                {
+                    "revision": source,
+                    "base": active.client_build,
+                    "candidate": candidate,
+                    **candidate_inputs,
+                },
                 sleep=sleep,
             )
             stage_artifact = artifact_for(
@@ -900,6 +948,15 @@ def prepare_request(
                 "staging_run": str(staging["id"]) if not existing else "",
                 "staging_attempt": str(staging["run_attempt"]) if not existing else "",
                 "created_at": str(ci["created_at"]),
+                **candidate_inputs,
+                **(
+                    {
+                        "candidate_base_release_id": active.release_id,
+                        "candidate_base_manifest_sha256": active.manifest_sha256,
+                    }
+                    if candidate_context is not None
+                    else {}
+                ),
             },
             sleep=sleep,
             allow_dispatch=reserved_now,
@@ -945,6 +1002,7 @@ def prepare_request(
             artifact_metadata=artifact,
             archive_bytes=archive,
             package=package,
+            candidate_context=candidate_context,
         )
     same(proposal.request.build, candidate, "CANDIDATE_CHANGED", "selected build")
     same(proposal.request.release_id, release, "CANDIDATE_CHANGED", "selected release")

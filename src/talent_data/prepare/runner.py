@@ -262,6 +262,11 @@ def _cmd_propose(args: argparse.Namespace) -> int:
                     base_branch=args.base_branch,
                     expected_artifact=args.artifact_name,
                     preparation_url=args.preparation_url,
+                    owner_merge_notice=(
+                        args.owner_merge_notice.read_text(encoding="utf-8")
+                        if args.owner_merge_notice is not None
+                        else None
+                    ),
                 )
         except Exception:  # noqa: BLE001 - the crash is recorded, then reported as a failure
             out.mkdir(parents=True, exist_ok=True)
@@ -356,6 +361,7 @@ def _parser() -> argparse.ArgumentParser:
     prop.add_argument("--repository", required=True, help="owner/name on GitHub")
     prop.add_argument("--remote", default="origin")
     prop.add_argument("--base-branch", default="main")
+    prop.add_argument("--owner-merge-notice", type=Path, help=argparse.SUPPRESS)
     prop.add_argument("--preparation-url", help="link to the run that prepared the candidate")
     prop.add_argument(
         "--api-url", default=os.environ.get("GITHUB_API_URL", "https://api.github.com")

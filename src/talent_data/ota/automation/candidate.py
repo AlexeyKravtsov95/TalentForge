@@ -303,9 +303,13 @@ def verify_candidate(
         "head_branch": "main",
         "path": prep.workflow_path,
         "status": "completed",
-        "conclusion": "success",
     }.items():
         same(run.get(field), expected, "CANDIDATE_ORIGIN", field)
+    require(
+        run.get("conclusion") in {"success", "failure"},
+        "CANDIDATE_ORIGIN",
+        "producer must have finished; the exact prepare job is checked independently",
+    )
     require(
         run.get("event") in {"workflow_run", "workflow_dispatch"},
         "CANDIDATE_ORIGIN",
@@ -325,7 +329,9 @@ def verify_candidate(
         "CANDIDATE_ORIGIN",
         "duplicate preparation jobs",
     )
-    for name in ("prepare", "propose"):
+    # A consumer may recover an App/API proposal failure without replacing the
+    # successful immutable producer. The data-producing job itself must pass.
+    for name in ("prepare",):
         selected = [j for j in prep_jobs if j.get("name") == name]
         require(
             len(selected) == 1
