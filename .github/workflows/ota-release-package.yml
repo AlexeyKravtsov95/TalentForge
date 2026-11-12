@@ -34,6 +34,14 @@ on:
         required: false
         default: "0"
         type: string
+      candidate_base_release_id:
+        description: "Frozen live base identity for the verified candidate"
+        type: string
+        default: ""
+      candidate_base_manifest_sha256:
+        description: "Frozen live base manifest digest"
+        type: string
+        default: ""
       automation_key:
         description: "Internal exact source/base correlation (empty for manual packaging)"
         required: false
@@ -142,6 +150,8 @@ jobs:
           CREATED_AT: ${{ inputs.created_at }}
           BASE: ${{ inputs.base || '1.60.1.70450' }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          CANDIDATE_BASE_RELEASE_ID: ${{ inputs.candidate_base_release_id }}
+          CANDIDATE_BASE_MANIFEST_SHA256: ${{ inputs.candidate_base_manifest_sha256 }}
           CANDIDATE_PR: ${{ inputs.candidate_pr || '0' }}
           CANDIDATE_CI_RUN_ID: ${{ inputs.candidate_ci_run_id || '0' }}
           CANDIDATE_CI_ATTEMPT: ${{ inputs.candidate_ci_attempt || '0' }}
@@ -153,7 +163,9 @@ jobs:
             --created-at "$CREATED_AT" --base "$BASE" --staging-run "$RUNNER_TEMP/staging/staging-run.json" \
             --staging-artifact "$RUNNER_TEMP/staging" --run-url "$RUN_URL" \
             --candidate-pr "$CANDIDATE_PR" --candidate-ci-run-id "$CANDIDATE_CI_RUN_ID" \
-            --candidate-ci-attempt "$CANDIDATE_CI_ATTEMPT"
+            --candidate-ci-attempt "$CANDIDATE_CI_ATTEMPT" \
+            --candidate-base-release-id "$CANDIDATE_BASE_RELEASE_ID" \
+            --candidate-base-manifest-sha256 "$CANDIDATE_BASE_MANIFEST_SHA256"
           code=$?
           set -e
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"

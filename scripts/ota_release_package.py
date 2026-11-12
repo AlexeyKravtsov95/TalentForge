@@ -332,6 +332,45 @@ def build(args: argparse.Namespace) -> int:
     )
     staging, attachments = bind(args, artifact)
 
+    if context is not None:
+        from talent_data.ota.automation.candidate import CandidateBinding
+        from talent_data.ota.automation.requests import RunPin
+
+        stage_run = rp.run_record(json.loads(args.staging_run.read_bytes()))
+        proof = CandidateBinding(
+            schema_version=1,
+            kind="ota-candidate-binding",
+            policy="owner-merge-v1",
+            repository=args.repository,
+            pull_number=context.pull_number,
+            game=GAME,
+            build=args.build,
+            revision=args.revision,
+            source_sha=subject.sha,
+            source_tree=context.source_tree,
+            preparation_head_sha=subject.sha,
+            base_sha=context.base_sha,
+            tooling_sha=context.tooling_sha,
+            preparation_ci=context.ci_pin,
+            candidate_run=context.candidate_run,
+            candidate_artifact=context.candidate_artifact,
+            staging_run=RunPin(
+                workflow_path=rp.STAGING_WORKFLOW,
+                run_id=stage_run["id"],
+                attempt=stage_run["attempt"],
+                head_sha=stage_run["headSha"],
+            ),
+            package_run=RunPin(
+                workflow_path=".github/workflows/ota-release-package.yml",
+                run_id=int(os.environ["GITHUB_RUN_ID"]),
+                attempt=int(os.environ["GITHUB_RUN_ATTEMPT"]),
+                head_sha=context.tooling_sha,
+            ),
+            base_release_id=args.candidate_base_release_id,
+            base_manifest_sha256=args.candidate_base_manifest_sha256,
+        )
+        attachments[rp.CANDIDATE_BINDING_NAME] = proof.model_dump_json(by_alias=True).encode()
+
     rows = [(r.gate.value, r.status.value, r.detail) for r in gates]
     attachments["report/gates.json"] = (
         json.dumps([{"gate": g, "status": s, "detail": d} for g, s, d in rows], indent=2) + "\n"
@@ -426,6 +465,8 @@ def main(argv: list[str] | None = None) -> int:
     go.add_argument("--candidate-pr", type=int, default=0, help=argparse.SUPPRESS)
     go.add_argument("--candidate-ci-run-id", type=int, default=0, help=argparse.SUPPRESS)
     go.add_argument("--candidate-ci-attempt", type=int, default=0, help=argparse.SUPPRESS)
+    go.add_argument("--candidate-base-release-id", default="", help=argparse.SUPPRESS)
+    go.add_argument("--candidate-base-manifest-sha256", default="", help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
     if (args.staging_run is None) != (args.staging_artifact is None):
         parser.error("--staging-run and --staging-artifact go together")
