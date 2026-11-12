@@ -368,6 +368,7 @@ def build(args: argparse.Namespace) -> int:
             ),
             base_release_id=args.candidate_base_release_id,
             base_manifest_sha256=args.candidate_base_manifest_sha256,
+            flagged_gates=tuple(r.gate.value for r in gates if r.status is GateStatus.FLAG),
         )
         attachments[rp.CANDIDATE_BINDING_NAME] = proof.model_dump_json(by_alias=True).encode()
 

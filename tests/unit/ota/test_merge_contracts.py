@@ -12,6 +12,7 @@ def binding_wire():
 
     return {
         "schemaVersion": 1,
+        "flaggedGates": ["G7"],
         "kind": "ota-candidate-binding",
         "policy": "owner-merge-v1",
         "repository": "AlexeyKravtsov95/TalentForge",

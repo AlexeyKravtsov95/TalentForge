@@ -34,6 +34,11 @@ def bound_package(exact_package, tmp_path):
     )
     wire["stagingRun"] = request.staging_run.model_dump(mode="json", by_alias=True)
     wire["packageRun"] = request.package_run.model_dump(mode="json", by_alias=True)
+    wire["flaggedGates"] = [
+        r["gate"]
+        for r in json.loads(package.attachment("report/gates.json"))
+        if r["status"] == "FLAG"
+    ]
     binding = CandidateBinding.model_validate_json(json.dumps(wire))
     attach(root, binding.model_dump_json(by_alias=True).encode())
     raw = zip_tree(root)

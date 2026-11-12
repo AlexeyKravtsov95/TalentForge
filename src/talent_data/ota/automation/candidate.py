@@ -22,7 +22,7 @@ from talent_data.ota.automation.prepare import (
     same,
 )
 from talent_data.ota.automation.provenance import extract_data_archive
-from talent_data.ota.automation.requests import ArtifactPin, RunPin, _Model
+from talent_data.ota.automation.requests import ArtifactPin, ReleaseRequest, RunPin, _Model
 from talent_data.ota.models import BUILD_PATTERN, COMMIT_PATTERN, RELEASE_ID_PATTERN, SHA256_PATTERN
 from talent_data.ota.verify import OtaError, parse_strict, sha256_ref
 from talent_data.prepare.propose import Git, GitError, Refusal, load_candidate
@@ -59,9 +59,12 @@ class CandidateBinding(VersionedModel):
     candidate_artifact: ArtifactPin
     base_release_id: str = Field(pattern=RELEASE_ID_PATTERN)
     base_manifest_sha256: str = Field(pattern=SHA256_PATTERN)
+    flagged_gates: tuple[Literal["G5", "G7"], ...]
 
     @model_validator(mode="after")
     def producer_context(self) -> Self:
+        if len(set(self.flagged_gates)) != len(self.flagged_gates):
+            raise ValueError("duplicate flagged gates")
         if self.preparation_head_sha != self.source_sha:
             raise ValueError("preparation head must be the frozen candidate source")
         if self.preparation_ci.workflow_path != ".github/workflows/ci.yml":
@@ -111,11 +114,16 @@ def _repositories(record: dict[str, Any], *, code: str) -> None:
 
 
 def verify_full_pr_ci(
-    api: GitHub, pull_number: int, head_sha: str, pin: RunPin | None = None
+    api: GitHub,
+    pull_number: int,
+    head_sha: str,
+    pin: RunPin | None = None,
+    *,
+    review_head_sha: str | None = None,
 ) -> RunPin:
     pull = obj(api.repo("GET", f"/pulls/{positive(pull_number)}"))
     head, base = obj(pull.get("head")), obj(pull.get("base"))
-    same(head.get("sha"), head_sha, "CANDIDATE_CI", "PR head")
+    same(head.get("sha"), review_head_sha or head_sha, "CANDIDATE_CI", "PR head")
     for ref in (head, base):
         same(
             obj(ref.get("repo")).get("full_name"),
@@ -227,7 +235,13 @@ class VerifiedCandidate:
 
 
 def verify_candidate(
-    api: GitHub, repo: Path, pull_number: int, *, source_sha: str, ci_pin: RunPin | None = None
+    api: GitHub,
+    repo: Path,
+    pull_number: int,
+    *,
+    source_sha: str,
+    ci_pin: RunPin | None = None,
+    metadata: tuple[ReleaseRequest, CandidateBinding] | None = None,
 ) -> VerifiedCandidate:
     pull = obj(api.repo("GET", f"/pulls/{positive(pull_number)}"))
     same(pull.get("state"), "open", "CANDIDATE_ORIGIN", "PR state")
@@ -245,7 +259,16 @@ def verify_candidate(
             "CANDIDATE_ORIGIN",
             "repository",
         )
-    same(head.get("sha"), source_sha, "CANDIDATE_ORIGIN", "source head")
+    review_head = source_sha
+    if metadata is not None:
+        from talent_data.ota.automation.premerge import verify_metadata_head
+
+        request, binding = metadata
+        same(request.source_commit, source_sha, "CANDIDATE_ORIGIN", "frozen data source")
+        same(binding.pull_number, pull_number, "CANDIDATE_ORIGIN", "metadata PR")
+        review_head = str(head.get("sha"))
+        verify_metadata_head(api, review_head, request, binding)
+    same(head.get("sha"), review_head, "CANDIDATE_ORIGIN", "source head")
     same(base.get("ref"), "main", "CANDIDATE_ORIGIN", "base ref")
     tooling = git(repo, "rev-parse", "HEAD").decode().strip()
     same(
@@ -368,11 +391,13 @@ def verify_candidate(
     tree = git(repo, "rev-parse", source_sha + "^{tree}").decode().strip()
     remote_source = obj(api.repo("GET", f"/git/commits/{source_sha}"))
     same(obj(remote_source.get("tree")).get("sha"), tree, "CANDIDATE_ORIGIN", "source tree")
-    checked_ci = verify_full_pr_ci(api, pull_number, source_sha, ci_pin)
+    checked_ci = verify_full_pr_ci(
+        api, pull_number, source_sha, ci_pin, review_head_sha=review_head
+    )
     latest = obj(api.repo("GET", f"/pulls/{pull_number}"))
     require(
         latest.get("state") == "open"
-        and obj(latest.get("head")).get("sha") == source_sha
+        and obj(latest.get("head")).get("sha") == review_head
         and obj(latest.get("base")).get("sha") == tooling,
         "CANDIDATE_CHANGED",
         "MR changed during verification",

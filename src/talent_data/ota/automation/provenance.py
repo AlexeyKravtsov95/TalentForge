@@ -386,6 +386,31 @@ def verify_package_origin(
             "candidate proof required",
         )
         if proof is not None:
+            rows = strict_json(current.attachment("report/gates.json"))
+            _require(
+                isinstance(rows, list) and len(rows) == 8, "CANDIDATE_BINDING", "gate evidence"
+            )
+            assert isinstance(rows, list)
+            _require(
+                {r.get("gate") for r in rows if isinstance(r, dict)}
+                == {f"G{i}" for i in range(1, 9)}
+                and all(
+                    isinstance(r, dict)
+                    and (
+                        r.get("status") == "PASS"
+                        or (r.get("status") == "FLAG" and r.get("gate") in {"G5", "G7"})
+                    )
+                    for r in rows
+                ),
+                "CANDIDATE_BINDING",
+                "STOP or malformed preparation gate",
+            )
+            _same(
+                sorted(proof.flagged_gates),
+                sorted(r["gate"] for r in rows if r["status"] == "FLAG"),
+                "CANDIDATE_BINDING",
+                "displayed flags",
+            )
             for found, expected in (
                 (proof.repository, request.repository),
                 (proof.source_sha, request.source_commit),
