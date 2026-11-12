@@ -19,6 +19,21 @@ run-name: ${{ inputs.automation_key != '' && format('ota-package-{0}', inputs.au
 on:
   workflow_dispatch:
     inputs:
+      candidate_pr:
+        description: "Internal verified candidate MR (0: normal main source)"
+        required: false
+        default: "0"
+        type: string
+      candidate_ci_run_id:
+        description: "Exact successful full candidate PR CI"
+        required: false
+        default: "0"
+        type: string
+      candidate_ci_attempt:
+        description: "Exact candidate CI attempt"
+        required: false
+        default: "0"
+        type: string
       automation_key:
         description: "Internal exact source/base correlation (empty for manual packaging)"
         required: false
@@ -127,12 +142,18 @@ jobs:
           CREATED_AT: ${{ inputs.created_at }}
           BASE: ${{ inputs.base || '1.60.1.70450' }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          CANDIDATE_PR: ${{ inputs.candidate_pr || '0' }}
+          CANDIDATE_CI_RUN_ID: ${{ inputs.candidate_ci_run_id || '0' }}
+          CANDIDATE_CI_ATTEMPT: ${{ inputs.candidate_ci_attempt || '0' }}
+          GH_TOKEN: ${{ github.event_name == 'workflow_dispatch' && github.token || '' }}
         run: |
           set +e
           python scripts/ota_release_package.py build "$RUNNER_TEMP/package" \
             --build "$BUILD" --revision "$RELEASE_REVISION" --source-revision "$SOURCE_REVISION" \
             --created-at "$CREATED_AT" --base "$BASE" --staging-run "$RUNNER_TEMP/staging/staging-run.json" \
-            --staging-artifact "$RUNNER_TEMP/staging" --run-url "$RUN_URL"
+            --staging-artifact "$RUNNER_TEMP/staging" --run-url "$RUN_URL" \
+            --candidate-pr "$CANDIDATE_PR" --candidate-ci-run-id "$CANDIDATE_CI_RUN_ID" \
+            --candidate-ci-attempt "$CANDIDATE_CI_ATTEMPT"
           code=$?
           set -e
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"

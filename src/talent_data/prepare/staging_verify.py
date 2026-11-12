@@ -24,10 +24,14 @@ import xml.etree.ElementTree as ET
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
+from typing import TYPE_CHECKING
 
 from talent_data.ota.release import ROOT_DIRS, commit_snapshot
 from talent_data.prepare.replay import Scenario, Verdict, combine
 from talent_data.versions import ClientVersion
+
+if TYPE_CHECKING:
+    from talent_data.ota.automation.candidate import VerifiedCandidate
 
 GAME = "forever"
 MAIN_REF = "origin/main"
@@ -52,6 +56,7 @@ class Subject:
     source: str  # how ``sha`` was chosen
     base: str
     candidate: str
+    verification_ref: str = MAIN_REF
 
     @property
     def base_release(self) -> str:
@@ -66,7 +71,14 @@ def _git(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True)
 
 
-def resolve_subject(repo: Path, revision: str, base: str, candidate: str) -> Subject:
+def resolve_subject(
+    repo: Path,
+    revision: str,
+    base: str,
+    candidate: str,
+    *,
+    candidate_context: VerifiedCandidate | None = None,
+) -> Subject:
     """Fix the commit and validate the builds; :class:`InputError` names every problem.
 
     An empty ``revision`` is the HEAD of ``origin/main``. Any revision must be a commit on
@@ -83,7 +95,25 @@ def resolve_subject(repo: Path, revision: str, base: str, candidate: str) -> Sub
         raise InputError(f"revision {named!r} does not name a commit in {repo}")
     sha = resolved.stdout.strip()
     problems: list[str] = []
-    if _git(repo, "merge-base", "--is-ancestor", sha, MAIN_REF).returncode != 0:
+    verification_ref = MAIN_REF
+    if candidate_context is not None:
+        ctx = candidate_context
+        verification_ref = ctx.verified_ref
+        expected_ref = f"refs/talentforge/candidate/{ctx.pull_number}/{ctx.source_sha}"
+        if (
+            revision != ctx.source_sha
+            or sha != ctx.source_sha
+            or base != ctx.base_build
+            or candidate != ctx.build
+            or ctx.game != GAME
+            or ctx.verified_ref != expected_ref
+            or _git(repo, "rev-parse", "HEAD").stdout.strip() != ctx.tooling_sha
+            or _git(repo, "rev-parse", MAIN_REF).stdout.strip() != ctx.base_sha
+            or _git(repo, "rev-parse", ctx.verified_ref).stdout.strip() != ctx.source_sha
+            or _git(repo, "rev-parse", sha + "^{tree}").stdout.strip() != ctx.source_tree
+        ):
+            problems.append("candidate preparation context changed or does not match inputs")
+    elif _git(repo, "merge-base", "--is-ancestor", sha, MAIN_REF).returncode != 0:
         problems.append(f"commit {sha} is not on {MAIN_REF}")
 
     versions: dict[str, ClientVersion] = {}
@@ -103,8 +133,15 @@ def resolve_subject(repo: Path, revision: str, base: str, candidate: str) -> Sub
         problems.append(f"the candidate {candidate} is not newer than the base {base}")
     if problems:
         raise InputError("; ".join(problems))
-    source = f"input {revision!r}" if revision else f"HEAD of {MAIN_REF} (no revision given)"
-    return Subject(revision, sha, source, base, candidate)
+    source = (
+        f"verified candidate #{candidate_context.pull_number} on "
+        f"{verification_ref} (preparation only)"
+        if candidate_context is not None
+        else f"input {revision!r}"
+        if revision
+        else f"HEAD of {MAIN_REF} (no revision given)"
+    )
+    return Subject(revision, sha, source, base, candidate, verification_ref)
 
 
 # --------------------------------------------------------------------------- files

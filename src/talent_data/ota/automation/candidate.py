@@ -1,6 +1,7 @@
 """Strict binding of unmerged data to trusted, preparation-only producers."""
 
 import json
+import os
 import re
 import tempfile
 from dataclasses import dataclass
@@ -8,6 +9,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Literal, Self
 
+import httpx
 from pydantic import Field, field_validator, model_validator
 
 from talent_data.ota.automation.prepare import (
@@ -391,3 +393,49 @@ def verify_candidate(
         checked_ci,
         verified_ref,
     )
+
+
+def candidate_context_from_cli(
+    repo: Path,
+    *,
+    pull_number: int = 0,
+    source_sha: str = "",
+    ci_run_id: int = 0,
+    ci_attempt: int = 0,
+    api: GitHub | None = None,
+) -> VerifiedCandidate | None:
+    if not any((pull_number, ci_run_id, ci_attempt)):
+        return None
+    require(
+        all(type(n) is int and n > 0 for n in (pull_number, ci_run_id, ci_attempt))
+        and re.fullmatch(COMMIT_PATTERN, source_sha) is not None,
+        "CANDIDATE_INPUT",
+        "candidate preparation requires PR, full source SHA and exact CI",
+    )
+    if api is None:
+        token = os.environ.get("GH_TOKEN", "")
+        require(bool(token.strip()), "TOKEN_MISSING", "candidate preparation needs a GitHub reader")
+        require(
+            os.environ.get("GITHUB_REPOSITORY") == "AlexeyKravtsov95/TalentForge"
+            and os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
+            and os.environ.get("GITHUB_REF") == "refs/heads/main",
+            "CANDIDATE_ORIGIN",
+            "candidate preparation runs trusted main only",
+        )
+        with httpx.Client(follow_redirects=False, timeout=30) as client:
+            return candidate_context_from_cli(
+                repo,
+                pull_number=pull_number,
+                source_sha=source_sha,
+                ci_run_id=ci_run_id,
+                ci_attempt=ci_attempt,
+                api=GitHub(client, token),
+            )
+    metadata = api.run(ci_run_id, ci_attempt)
+    pin = RunPin(
+        workflow_path=".github/workflows/ci.yml",
+        run_id=ci_run_id,
+        attempt=ci_attempt,
+        head_sha=str(metadata.get("head_sha")),
+    )
+    return verify_candidate(api, repo, pull_number, source_sha=source_sha, ci_pin=pin)

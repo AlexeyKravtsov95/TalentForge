@@ -143,6 +143,8 @@ def ci_gates(
     base: ReleaseArtifact,
     approval: ApprovalRecord | None,
     now: dt.datetime,
+    *,
+    main_ref: str = "origin/main",
 ) -> tuple[list[GateResult], str]:
     """Gates G1-G8 (production) and the review diff, against the diff base rebuilt from the
     same commit as a stand-in for the live release: CI never reads production."""
@@ -169,6 +171,7 @@ def ci_gates(
             channel=Channel.PRODUCTION,
             now=now,
             approval=approval,
+            main_ref=main_ref,
         )
         return gates, render_review_report(under_test, stand_in, store)
 
@@ -273,8 +276,21 @@ def build(args: argparse.Namespace) -> int:
         print(f"error: {out} is not empty", file=sys.stderr)
         return EXIT_USAGE
     try:
-        subject = sv.resolve_subject(ROOT, args.source_revision, args.base, args.build)
-    except sv.InputError as exc:
+        from talent_data.ota.automation.candidate import candidate_context_from_cli
+        from talent_data.ota.automation.prepare import PreparationBlocked
+        from talent_data.ota.automation.provenance import RequestRejected
+
+        context = candidate_context_from_cli(
+            ROOT,
+            pull_number=getattr(args, "candidate_pr", 0),
+            source_sha=args.source_revision,
+            ci_run_id=getattr(args, "candidate_ci_run_id", 0),
+            ci_attempt=getattr(args, "candidate_ci_attempt", 0),
+        )
+        subject = sv.resolve_subject(
+            ROOT, args.source_revision, args.base, args.build, candidate_context=context
+        )
+    except (sv.InputError, PreparationBlocked, RequestRejected, ValueError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return EXIT_USAGE
     created_at = (
@@ -311,7 +327,9 @@ def build(args: argparse.Namespace) -> int:
                 approval_problems.append(f"the publisher cannot parse it: {exc}")
             else:
                 approval = None if approval_problems else parsed
-    gates, diff = ci_gates(artifact, release(args.base, 1), approval, created_at)
+    gates, diff = ci_gates(
+        artifact, release(args.base, 1), approval, created_at, main_ref=subject.verification_ref
+    )
     staging, attachments = bind(args, artifact)
 
     rows = [(r.gate.value, r.status.value, r.detail) for r in gates]
@@ -405,6 +423,9 @@ def main(argv: list[str] | None = None) -> int:
     )
     go.add_argument("--run-url", default="", help="the URL of the workflow run building this")
     go.add_argument("--created-at", default="", help=argparse.SUPPRESS)  # tests: a fixed clock
+    go.add_argument("--candidate-pr", type=int, default=0, help=argparse.SUPPRESS)
+    go.add_argument("--candidate-ci-run-id", type=int, default=0, help=argparse.SUPPRESS)
+    go.add_argument("--candidate-ci-attempt", type=int, default=0, help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
     if (args.staging_run is None) != (args.staging_artifact is None):
         parser.error("--staging-run and --staging-artifact go together")
