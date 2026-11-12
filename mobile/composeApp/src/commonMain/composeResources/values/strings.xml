@@ -404,4 +404,11 @@
     <string name="builds_search_empty_body">Try another name or class, or reset filters.</string>
     <string name="builds_filter_empty_title">No builds for this class</string>
     <string name="builds_filter_empty_body">Choose another class or reset filters.</string>
+    <string name="builds_favorite_add">Add to Favorites: %1$s</string>
+    <string name="builds_favorite_remove">Remove from Favorites: %1$s</string>
+    <string name="builds_favorite_failed">Could not update favorites. Your build is unchanged.</string>
+    <string name="builds_favorite_pending_save_failed">Save your latest talent changes before updating favorites.</string>
+    <string name="builds_favorites_empty_title">No favorites yet</string>
+    <string name="builds_favorites_empty_body">Tap the star next to a build to add it to Favorites.</string>
+    <string name="builds_favorites_filter">Favorites</string>
 </resources>

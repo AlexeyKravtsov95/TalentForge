@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
@@ -33,6 +34,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
@@ -40,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_favorites_filter
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_filter_all
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_filter_description
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_search_clear
@@ -61,6 +64,8 @@ internal fun BuildLibraryFilters(
     onQueryChange: (String) -> Unit,
     selectedClass: ClassToken?,
     onClassChange: (ClassToken?) -> Unit,
+    favoritesOnly: Boolean,
+    onFavoritesChange: (Boolean) -> Unit,
 ) {
     val colors = talentForgeColors()
     val shape = RoundedCornerShape(TalentForgeRadius.medium)
@@ -107,6 +112,20 @@ internal fun BuildLibraryFilters(
             ) {
                 BasicText("×", style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary))
             }
+        }
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                .background(colors.surfaceInteractive, shape)
+                .border(1.dp, if (favoritesOnly) colors.focus else colors.borderStrong, shape)
+                .toggleable(value = favoritesOnly, role = Role.Checkbox, onValueChange = onFavoritesChange)
+                .padding(TalentForgeSpacing.rowGap),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
+        ) {
+            BasicText(if (favoritesOnly) "★" else "☆", style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary),
+                modifier = Modifier.clearAndSetSemantics { })
+            BasicText(stringResource(Res.string.builds_favorites_filter),
+                style = TalentForgeTypography.bodySmall.copy(color = colors.textPrimary), modifier = Modifier.weight(1f))
         }
         val allClasses = stringResource(Res.string.builds_filter_all)
         val selectedName = selectedClass?.let { classNameResourceFor(it)?.let { resource -> stringResource(resource) } }

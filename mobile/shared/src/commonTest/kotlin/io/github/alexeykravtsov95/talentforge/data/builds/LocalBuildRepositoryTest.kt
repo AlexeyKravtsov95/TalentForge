@@ -257,11 +257,11 @@ class LocalBuildRepositoryTest {
 
     @Test
     fun unsupportedStorageVersionIsATypedFailure() {
-        val error = failureOver("""{"storageVersion":2,"builds":[]}""")
+        val error = failureOver("""{"storageVersion":3,"builds":[]}""")
 
         val versionError = assertIs<BuildLibraryError.UnsupportedStorageVersion>(error)
-        assertEquals(2, versionError.actual)
-        assertEquals(1, versionError.supported)
+        assertEquals(3, versionError.actual)
+        assertEquals(2, versionError.supported)
     }
 
     @Test
@@ -301,10 +301,10 @@ class LocalBuildRepositoryTest {
 
     @Test
     fun unknownEnvelopeFieldsAreRejectedWithinAStorageVersion() {
-        // Documented policy: drift within storageVersion 1 is a bug and fails;
-        // schema evolution requires a storageVersion bump (plus migration later).
+        // Documented policy: drift within storageVersion 2 is a bug and fails;
+        // schema evolution requires a storageVersion bump and explicit migration.
         val payload = LocalBuildLibraryCodec.encode(listOf(record("id-1", 1L, 1L)))
-            .replace("\"storageVersion\":1", "\"storageVersion\":1,\"futureField\":7")
+            .replace("\"storageVersion\":2", "\"storageVersion\":2,\"futureField\":7")
 
         assertIs<BuildLibraryError.Malformed>(failureOver(payload))
     }

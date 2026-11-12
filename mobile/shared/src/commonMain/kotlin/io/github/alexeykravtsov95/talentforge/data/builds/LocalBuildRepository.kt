@@ -240,9 +240,13 @@ class LocalBuildRepository(
             )
         }
         return mutate(localId) { record ->
-            if (record.name == trimmed) record else record.copy(name = trimmed)
+            if (record.name == trimmed) record else record.copy(name = trimmed, storedBlankName = null)
         }
     }
+
+    /** Metadata only; assigning the existing value is a successful no-op without a write. */
+    fun setFavorite(localId: String, isFavorite: Boolean): BuildLibraryOutcome<LocalBuildRecord> =
+        mutate(localId) { record -> record.copy(isFavorite = isFavorite) }
 
     /**
      * Duplicates a record into an INDEPENDENT new record (M5.2a): a fresh
