@@ -14,6 +14,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from talent_data.cli.ota import _enforce_gates_and_approval, verify_appended_releases
 from talent_data.ota import io_metrics
@@ -67,12 +68,16 @@ from talent_data.ota.verify import (
     strict_b64decode,
 )
 
+if TYPE_CHECKING:
+    from talent_data.ota.automation.merge_approval import VerifiedOwnerMerge
+
 
 @dataclass(frozen=True)
 class ProvenanceEvidence:
     run_metadata: dict[str, object]
     artifact_metadata: dict[str, object]
     archive_bytes: bytes
+    owner_merge: VerifiedOwnerMerge | None = None
 
 
 @dataclass(frozen=True)
@@ -121,12 +126,32 @@ def refresh_main(repo: Path) -> None:
 
 
 def approval_directory(
-    request: ReleaseRequest, repo: Path, directory: Path, *, main_ref: str | None = None
+    request: ReleaseRequest,
+    repo: Path,
+    directory: Path,
+    *,
+    main_ref: str | None = None,
+    owner_merge: VerifiedOwnerMerge | None = None,
 ) -> Path:
     if main_ref is None:
         refresh_main(repo)
         main_ref = "origin/main"
     record = approval_record_at(repo, main_ref, request.release_id)
+    from talent_data.ota.automation.merge_approval import parse_merge_record
+
+    conditional = parse_merge_record(record.decode("utf-8", "strict")) if record else None
+    if conditional is not None:
+        if (
+            owner_merge is None
+            or owner_merge.record != conditional
+            or owner_merge.request != request
+            or owner_merge.main_sha != main_ref
+            or conditional.revoked
+        ):
+            raise OtaPublisherError("current owner merge authorization is unverified or withdrawn")
+        assert record is not None
+        (directory / f"{request.release_id}.md").write_bytes(record)
+        return directory
     if record is None or approval_record_problems(
         record.decode("utf-8", "strict"),
         release_id=request.release_id,
@@ -186,8 +211,10 @@ def assess_request(
     """
     refresh_main(repo)
     main = git(repo, "rev-parse", "origin/main").strip()
-    approvals = approval_directory(request, repo, directory, main_ref=main.decode("ascii"))
     evidence = provenance()
+    approvals = approval_directory(
+        request, repo, directory, main_ref=main.decode("ascii"), owner_merge=evidence.owner_merge
+    )
     if git(repo, "rev-parse", "origin/main").strip() != main:
         raise OtaPublisherError("current main changed during assessment")
     verify_package_origin(
@@ -208,6 +235,8 @@ def assess_request(
         package.attachment(STAGING_FILES["report"]),
     )
     args = argparse.Namespace(repo=repo, releases_docs=approvals, main_ref=main.decode("ascii"))
+    if evidence.owner_merge is not None:
+        args.verified_owner_merge = evidence.owner_merge
     under_test = under_test_from_bytes(package.manifest_bytes, repo)
     if (
         _enforce_gates_and_approval(

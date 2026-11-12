@@ -25,7 +25,7 @@ from talent_data.ota.automation.provenance import extract_data_archive
 from talent_data.ota.automation.requests import ArtifactPin, ReleaseRequest, RunPin, _Model
 from talent_data.ota.models import BUILD_PATTERN, COMMIT_PATTERN, RELEASE_ID_PATTERN, SHA256_PATTERN
 from talent_data.ota.verify import OtaError, parse_strict, sha256_ref
-from talent_data.prepare.propose import Git, GitError, Refusal, load_candidate
+from talent_data.prepare.propose import Candidate, Git, GitError, Refusal, load_candidate
 
 
 class VersionedModel(_Model):
@@ -234,59 +234,10 @@ class VerifiedCandidate:
     verified_ref: str
 
 
-def verify_candidate(
-    api: GitHub,
-    repo: Path,
-    pull_number: int,
-    *,
-    source_sha: str,
-    ci_pin: RunPin | None = None,
-    metadata: tuple[ReleaseRequest, CandidateBinding] | None = None,
-) -> VerifiedCandidate:
-    pull = obj(api.repo("GET", f"/pulls/{positive(pull_number)}"))
-    same(pull.get("state"), "open", "CANDIDATE_ORIGIN", "PR state")
-    same(pull.get("merged"), False, "CANDIDATE_ORIGIN", "merged")
-    actor = obj(pull.get("user"))
-    same(actor.get("id"), 351368232, "CANDIDATE_ORIGIN", "App identity")
-    same(
-        actor.get("login"), "talentforge-ota-alexeykravtsov95[bot]", "CANDIDATE_ORIGIN", "App login"
-    )
-    head, base = obj(pull.get("head")), obj(pull.get("base"))
-    for ref in (head, base):
-        same(
-            obj(ref.get("repo")).get("full_name"),
-            "AlexeyKravtsov95/TalentForge",
-            "CANDIDATE_ORIGIN",
-            "repository",
-        )
-    review_head = source_sha
-    if metadata is not None:
-        from talent_data.ota.automation.premerge import verify_metadata_head
-
-        request, binding = metadata
-        same(request.source_commit, source_sha, "CANDIDATE_ORIGIN", "frozen data source")
-        same(binding.pull_number, pull_number, "CANDIDATE_ORIGIN", "metadata PR")
-        review_head = str(head.get("sha"))
-        verify_metadata_head(api, review_head, request, binding)
-    same(head.get("sha"), review_head, "CANDIDATE_ORIGIN", "source head")
-    same(base.get("ref"), "main", "CANDIDATE_ORIGIN", "base ref")
-    tooling = git(repo, "rev-parse", "HEAD").decode().strip()
-    same(
-        git(repo, "rev-parse", "origin/main").decode().strip(),
-        tooling,
-        "CANDIDATE_ORIGIN",
-        "trusted checkout",
-    )
-    same(base.get("sha"), tooling, "CANDIDATE_ORIGIN", "current base")
-    pulls = api.pages(
-        "/pulls", params={"head": "AlexeyKravtsov95:" + str(head.get("ref")), "state": "all"}
-    )
-    require(
-        len(pulls) == 1 and pulls[0].get("number") == pull_number,
-        "CANDIDATE_ORIGIN",
-        "ambiguous candidate MR",
-    )
-    notice = candidate_notice(str(pull.get("body", "")))
+def verify_original_candidate(
+    api: GitHub, repo: Path, notice: CandidateNotice, base_sha: str
+) -> Candidate:
+    """Verify immutable data producer independently of the consumer/current PR state."""
     prep = notice.preparation_run
     same(
         prep.workflow_path,
@@ -294,7 +245,7 @@ def verify_candidate(
         "CANDIDATE_ORIGIN",
         "preparation workflow",
     )
-    same(prep.head_sha, tooling, "CANDIDATE_ORIGIN", "preparation main")
+    same(prep.head_sha, base_sha, "CANDIDATE_ORIGIN", "preparation main")
     run = api.run(prep.run_id, prep.attempt)
     for field, expected in {
         "id": prep.run_id,
@@ -352,7 +303,7 @@ def verify_candidate(
     rid = positive(obj(run.get("repository")).get("id"))
     for field, expected in {
         "id": prep.run_id,
-        "head_sha": tooling,
+        "head_sha": base_sha,
         "head_branch": "main",
         "repository_id": rid,
         "head_repository_id": rid,
@@ -384,11 +335,69 @@ def verify_candidate(
             loaded = load_candidate(
                 directory,
                 Git(repo),
-                base_ref="origin/main",
+                base_ref=base_sha,
                 expected=notice.candidate_artifact.name,
             )
     except (Refusal, GitError, OSError) as exc:
         raise PreparationBlocked("CANDIDATE_ORIGIN", "candidate artifact/source refused") from exc
+    return loaded
+
+
+def verify_candidate(
+    api: GitHub,
+    repo: Path,
+    pull_number: int,
+    *,
+    source_sha: str,
+    ci_pin: RunPin | None = None,
+    metadata: tuple[ReleaseRequest, CandidateBinding] | None = None,
+) -> VerifiedCandidate:
+    pull = obj(api.repo("GET", f"/pulls/{positive(pull_number)}"))
+    same(pull.get("state"), "open", "CANDIDATE_ORIGIN", "PR state")
+    same(pull.get("merged"), False, "CANDIDATE_ORIGIN", "merged")
+    actor = obj(pull.get("user"))
+    same(actor.get("id"), 351368232, "CANDIDATE_ORIGIN", "App identity")
+    same(
+        actor.get("login"), "talentforge-ota-alexeykravtsov95[bot]", "CANDIDATE_ORIGIN", "App login"
+    )
+    head, base = obj(pull.get("head")), obj(pull.get("base"))
+    for ref in (head, base):
+        same(
+            obj(ref.get("repo")).get("full_name"),
+            "AlexeyKravtsov95/TalentForge",
+            "CANDIDATE_ORIGIN",
+            "repository",
+        )
+    review_head = source_sha
+    if metadata is not None:
+        from talent_data.ota.automation.premerge import verify_metadata_head
+
+        request, binding = metadata
+        same(request.source_commit, source_sha, "CANDIDATE_ORIGIN", "frozen data source")
+        same(binding.pull_number, pull_number, "CANDIDATE_ORIGIN", "metadata PR")
+        review_head = str(head.get("sha"))
+        verify_metadata_head(api, review_head, request, binding)
+    same(head.get("sha"), review_head, "CANDIDATE_ORIGIN", "source head")
+    same(base.get("ref"), "main", "CANDIDATE_ORIGIN", "base ref")
+    tooling = git(repo, "rev-parse", "HEAD").decode().strip()
+    same(
+        git(repo, "rev-parse", "origin/main").decode().strip(),
+        tooling,
+        "CANDIDATE_ORIGIN",
+        "trusted checkout",
+    )
+    same(base.get("sha"), tooling, "CANDIDATE_ORIGIN", "current base")
+    pulls = api.pages(
+        "/pulls", params={"head": "AlexeyKravtsov95:" + str(head.get("ref")), "state": "all"}
+    )
+    require(
+        len(pulls) == 1 and pulls[0].get("number") == pull_number,
+        "CANDIDATE_ORIGIN",
+        "ambiguous candidate MR",
+    )
+    notice = candidate_notice(str(pull.get("body", "")))
+    prep = notice.preparation_run
+    loaded = verify_original_candidate(api, repo, notice, tooling)
     same(loaded.commit, source_sha, "CANDIDATE_ORIGIN", "artifact source")
     same(loaded.report.main_commit, tooling, "CANDIDATE_ORIGIN", "artifact base")
     same(

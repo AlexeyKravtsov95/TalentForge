@@ -563,7 +563,36 @@ class _Run:
         digest = request_digest(request)
         if digest not in self.archives:
             self.archives[digest] = self.d.api.archive(artifact)
-        return ProvenanceEvidence(runs, artifact, self.archives[digest])
+        from talent_data.ota.automation.merge_approval import parse_merge_record, verify_owner_merge
+        from talent_data.ota.release_package import approval_record_at, candidate_binding
+
+        if digest in self.packages:
+            binding = candidate_binding(self.packages[digest])
+        else:
+            with tempfile.TemporaryDirectory(prefix="ota-merge-binding-") as temporary:
+                binding = candidate_binding(
+                    load_package(
+                        extract_verified_archive(
+                            self.archives[digest], Path(temporary).resolve() / "package"
+                        )
+                    )
+                )
+        approval_raw = approval_record_at(self.d.repo, "origin/main", request.release_id)
+        record = (
+            parse_merge_record(approval_raw.decode("utf-8", "strict")) if approval_raw else None
+        )
+        owner_merge = None
+        if record is not None or binding is not None:
+            require(
+                record is not None and binding is not None,
+                "OWNER_MERGE_RECORD",
+                "candidate package requires matching conditional authorization",
+            )
+            assert record is not None and binding is not None
+            owner_merge = verify_owner_merge(
+                self.d.api, self.d.repo, request, record, binding=binding
+            )
+        return ProvenanceEvidence(runs, artifact, self.archives[digest], owner_merge)
 
     def assess(self, request: ReleaseRequest, root: Path) -> None:
         digest = request_digest(request)

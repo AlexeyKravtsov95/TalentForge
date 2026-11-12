@@ -654,7 +654,24 @@ def probe_delivery(
         history = _HistoryReads(api)
         for request in sorted(pending, key=lambda r: r.release_id, reverse=True):
             approval = approval_record_at(repo, "origin/main", request.release_id)
-            if approval is None or approval_record_problems(
+            from talent_data.ota.automation.merge_approval import parse_merge_record
+
+            conditional = (
+                parse_merge_record(approval.decode("utf-8", "strict")) if approval else None
+            )
+            if conditional is not None:
+                if (
+                    conditional.revoked
+                    or conditional.release_id != request.release_id
+                    or conditional.source_sha != request.source_commit
+                    or conditional.request_digest
+                    != sha256_ref(
+                        (request.model_dump_json(by_alias=True, indent=2) + "\n").encode()
+                    )
+                ):
+                    waits.append(("APPROVAL_PENDING", None))
+                    continue
+            elif approval is None or approval_record_problems(
                 approval.decode("utf-8", "strict"),
                 release_id=request.release_id,
                 manifest_sha256=request.manifest_sha256,
@@ -673,6 +690,7 @@ def probe_delivery(
                 if catalog is None or _stale_reason(request, catalog) is not None:
                     waits.append(("BASE_NOT_CURRENT", None))
                     continue
+            assert approval is not None
             candidate = ProbeCandidate(
                 action="PUBLISH",
                 release_id=request.release_id,
