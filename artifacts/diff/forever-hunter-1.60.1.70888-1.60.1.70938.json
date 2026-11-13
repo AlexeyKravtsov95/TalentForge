@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 3,
+    "token": "HUNTER",
+    "name": "Hunter"
+  },
+  "fromBuild": "1.60.1.70888",
+  "toBuild": "1.60.1.70938",
+  "fromContentHash": "sha256:a2e8ef8b4e82db80ba2bed6144a6613a1c0f012b6c45f934e839511b02ea9742",
+  "toContentHash": "sha256:0d4a823482f171c360ab55d9eb7dc9154ca91d2d230aa6b047cfdb772147ae68",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 0,
+    "changesByKind": {}
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": []
+}
