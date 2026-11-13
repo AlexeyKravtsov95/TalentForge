@@ -10,7 +10,9 @@
     "1.60.1.70888-r1",
     "1.60.1.70938-r1"
   ],
-  "failuresNotified": [],
+  "failuresNotified": [
+    "ota-prepare/prepare"
+  ],
   "pending": [],
-  "updatedAt": "2026-11-13T10:49:58Z"
+  "updatedAt": "2026-11-13T20:40:20Z"
 }
