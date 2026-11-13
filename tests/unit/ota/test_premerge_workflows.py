@@ -1,15 +1,16 @@
 """CI events select preparation once and readiness after metadata; no executable artifact."""
 
 import copy
+import re
 from pathlib import Path
 
 import pytest
-import yaml
 
 from talent_data.ota.automation.candidate import verify_candidate
 from talent_data.ota.automation.prepare import PreparationBlocked
 from talent_data.ota.automation.requests import RunPin
 from tests.unit.ota.single_merge_testkit import candidate_fixture
+from tests.unit.ota.test_automation_workflows import workflow_jobs
 from tests.unit.ota.test_premerge_proposal import setup
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -69,29 +70,29 @@ def test_final_head_routes_ready_without_preparation(tmp_path):
 
 
 def test_workflow_keeps_pr_input_away_from_app_and_production_secrets():
-    workflow = yaml.load(
-        (ROOT / ".github/workflows/ota-release-prepare.yml").read_text(), Loader=yaml.BaseLoader
-    )
-    jobs = workflow["jobs"]
-    prepare = jobs["premerge"]
-    review = jobs["premerge-review"]
-    assert prepare["permissions"] == {
-        "contents": "write",
-        "actions": "write",
-        "pull-requests": "read",
+    text, jobs = workflow_jobs("ota-release-prepare.yml")
+    prepare, review = jobs["premerge"], jobs["premerge-review"]
+    permissions = re.search(r"^    permissions:\n((?:      .*\n)+)", prepare, re.M)
+    assert permissions is not None
+    assert {line.split("#", 1)[0].strip() for line in permissions[1].splitlines()} == {
+        "contents: write",
+        "actions: write",
+        "pull-requests: read",
     }
-    assert "pull_request" in prepare["if"] and "head_repository.full_name" in prepare["if"]
+    assert "pull_request" in prepare and "head_repository.full_name" in prepare
     for job in (prepare, review):
-        checkout = next(
-            s for s in job["steps"] if s.get("uses", "").startswith("actions/checkout@")
+        checkout = re.search(
+            r"^      - uses: actions/checkout@[^\n]+\n(.*?)(?=^      - |\Z)",
+            job,
+            re.M | re.S,
         )
-        assert checkout["with"]["ref"] == "${{ github.sha }}"
-        assert checkout["with"]["persist-credentials"] == "false"
-        assert "production" not in job.get("environment", "")
-    text = str(prepare)
-    assert "PRIVATE_KEY" not in text and "S3" not in text
-    assert review["needs"] == "premerge"
-    assert "pull_request_target" not in workflow["on"]
+        assert checkout is not None
+        assert "ref: ${{ github.sha }}" in checkout[1]
+        assert "persist-credentials: false" in checkout[1]
+        assert re.search(r"^    environment:.*production", job, re.M) is None
+    assert "PRIVATE_KEY" not in prepare and "S3" not in prepare
+    assert "needs: premerge" in review
+    assert "pull_request_target:" not in text.split("jobs:\n", 1)[0]
 
 
 def test_consumer_retry_keeps_successful_original_preparation_when_proposal_failed(tmp_path):
