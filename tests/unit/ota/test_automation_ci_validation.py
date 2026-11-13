@@ -250,7 +250,13 @@ def test_ci_workflow_retains_full_checks_and_strict_selected_branch_aggregator(t
     from tests.unit.test_telegram_notify import workflow_step_script
 
     text, jobs = workflow_jobs("ci.yml")
-    assert set(jobs) == {"classify", "full-validation", "metadata-validation", "checks"}
+    assert set(jobs) == {
+        "classify",
+        "full-validation",
+        "metadata-validation",
+        "merge-validation",
+        "checks",
+    }
     for command in (
         "ruff check .",
         "ruff format --check .",
@@ -283,6 +289,7 @@ def test_ci_workflow_retains_full_checks_and_strict_selected_branch_aggregator(t
                 "MODE": mode,
                 "FULL_RESULT": full,
                 "METADATA_RESULT": metadata,
+                "MERGE_RESULT": "skipped",
                 "CLASSIFY_RESULT": classify,
             },
             capture_output=True,
