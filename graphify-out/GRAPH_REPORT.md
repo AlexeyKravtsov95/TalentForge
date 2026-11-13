@@ -1,17 +1,17 @@
 # Graph Report - talentforge-ota-single-merge-approval  (2026-11-14)
 
 ## Corpus Check
-- 789 files · ~943,487 words
+- 789 files · ~943,493 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 24 file(s) not represented in the graph (top: .xml 9, (none) 4, .properties 2)
 
 ## Summary
-- 16199 nodes · 51980 edges · 510 communities (368 shown, 142 thin omitted)
+- 16199 nodes · 51981 edges · 510 communities (368 shown, 142 thin omitted)
 - Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 5299 edges (avg confidence: 0.9)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `3ec7ad48`
+- Built from commit: `f475fde8`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 

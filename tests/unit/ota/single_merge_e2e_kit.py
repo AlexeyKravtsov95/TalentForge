@@ -349,6 +349,7 @@ class World:
         self.root = tmp_path
         self.repo, source, base, artifact, report = actual_candidate(tmp_path)
         self.api = API(self, source, base, artifact, report)
+        git(self.repo, "update-ref", "refs/heads/" + self.api.branch, source)
         self.writer = Writer(self.api)
         self.package_script = load_script("ota_release_package")
         monkeypatch.setattr(self.package_script, "ROOT", self.repo)
