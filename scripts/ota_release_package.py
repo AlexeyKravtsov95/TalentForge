@@ -183,6 +183,7 @@ def conditions(
     approval_problems: list[str] | None,
     accepted: set[str],
     package_problem: str | None,
+    owner_merge: bool = False,
 ) -> list[dict[str, str]]:
     """What publication needs, each ``MET`` / ``FAIL`` / ``MISSING`` / ``OWNER``."""
     stops = [r.gate.value for r in gates if r.status is GateStatus.STOP]
@@ -236,10 +237,36 @@ def conditions(
             "ota_production_release.py prepare --execute, then openssl offline",
         ),
     ]
-    return [{"id": i, "condition": c, "status": s, "detail": d} for i, c, s, d in rows]
+    result = [{"id": i, "condition": c, "status": s, "detail": d} for i, c, s, d in rows]
+    if owner_merge:
+        descriptions = {
+            "approval": (
+                "owner ordinary Merge authorizes this exact package",
+                "Pending the owner's merge of the same ready data MR; no second MR",
+            ),
+            "acceptance": (
+                "displayed frozen warnings are accepted by that merge",
+                "Only already displayed flags; no separate approval form",
+            ),
+            "live": (
+                "protected publisher rechecks current live base and all gates",
+                "Automatic after merge; changed base or any STOP refuses publication",
+            ),
+            "signature": (
+                "protected publisher signs after independently verified owner merge",
+                "Automatic signing and public-file proof; no manual signing step",
+            ),
+        }
+        for row in result:
+            if row["id"] in descriptions:
+                row["condition"], row["detail"] = descriptions[row["id"]]
+                row["status"] = "OWNER"  # the sole pending human action is that merge
+    return result
 
 
-def render_conditions(index: rp.PackageIndex, rows: list[dict[str, str]], verdict: str) -> str:
+def render_conditions(
+    index: rp.PackageIndex, rows: list[dict[str, str]], verdict: str, *, owner_merge: bool = False
+) -> str:
     staging = index.staging
     lines = [
         f"# OTA release package {index.release_id}: {verdict}",
@@ -250,8 +277,14 @@ def render_conditions(index: rp.PackageIndex, rows: list[dict[str, str]], verdic
         f"* {index.file_count} files, {index.blob_count} blobs, {index.total_byte_length:,} bytes",
         f"* staging: {staging.status}"
         + (f" — {staging.run_url} ({staging.mode})" if staging.status == "PASS" else ""),
-        "* not a publication and not an approval: the owner reviews, merges the approval record, "
-        "signs offline and publishes (docs/ota/production-release.md)",
+        (
+            "* Prepared before authorization: ordinary owner Merge of the same ready MR "
+            "authorizes automatic publication of these exact bytes; no second MR or manual form."
+            if owner_merge
+            else "* not a publication and not an approval: the owner reviews, "
+            "merges the approval record, "
+            "signs offline and publishes (docs/ota/production-release.md)"
+        ),
         "",
         "| condition | status | detail |",
         "| --- | --- | --- |",
@@ -407,13 +440,24 @@ def build(args: argparse.Namespace) -> int:
         approval_problems=approval_problems,
         accepted=accepted,
         package_problem=None,
+        owner_merge=context is not None,
     )
     verdict = verdict_of(table)
-    attachments[rp.APPROVAL_TEMPLATE_NAME] = rp.render_approval_template(
-        identity, gates=rows
-    ).encode()
+    if context is None:
+        attachments[rp.APPROVAL_TEMPLATE_NAME] = rp.render_approval_template(
+            identity, gates=rows
+        ).encode()
+    else:
+        attachments["report/merge-terms.md"] = (
+            "# Условия выпуска\n\n"
+            "Готовый пакет: нажми обычный Merge в исходном MR.\n"
+            "Это разрешает автоматическую публикацию этих точных байтов; второго MR, "
+            "ручного одобрения или ручной подписи не требуется. До merge разрешения нет.\n"
+        ).encode()
     attachments["report/conditions.json"] = (json.dumps(table, indent=2) + "\n").encode()
-    attachments["report/conditions.md"] = render_conditions(identity, table, verdict).encode()
+    attachments["report/conditions.md"] = render_conditions(
+        identity, table, verdict, owner_merge=context is not None
+    ).encode()
     index = rp.write_package(package_root, artifact, attachments=attachments, **common)
 
     try:
@@ -425,9 +469,10 @@ def build(args: argparse.Namespace) -> int:
             approval_problems=approval_problems,
             accepted=accepted,
             package_problem=str(exc),
+            owner_merge=context is not None,
         )
         verdict = verdict_of(table)
-    summary = render_conditions(index, table, verdict)
+    summary = render_conditions(index, table, verdict, owner_merge=context is not None)
     (out / "summary.md").write_text(summary, encoding="utf-8")
     if step_summary := os.environ.get("GITHUB_STEP_SUMMARY"):
         with Path(step_summary).open("a", encoding="utf-8") as handle:

@@ -332,3 +332,48 @@ def test_ready_requires_exact_final_full_validation(tmp_path, monkeypatch, fault
         assert [p for _, p, _ in writer.writes] == ["/pulls/141", "/graphql"]
         premerge.mark_candidate_ready(reader, writer, repo, 141, ci_pin=pin)
         assert len(writer.writes) == 2
+
+
+def test_racing_head_during_ready_is_returned_to_draft(tmp_path, monkeypatch):
+    from talent_data.ota.automation import premerge
+    from talent_data.ota.automation.requests import RunPin
+
+    repo, reader, writer, candidate, request, binding = setup(tmp_path)
+    head = premerge.bind_candidate_request(reader, writer, repo, candidate, request, binding)
+    reader.pull["node_id"] = "PR_test"
+    run = reader.runs[201]
+    run["head_sha"] = head
+    run["pull_requests"][0]["head"]["sha"] = head
+    for job in reader.jobs[201]:
+        job["head_sha"] = head
+    monkeypatch.setattr(
+        premerge,
+        "review_package",
+        lambda *args: premerge.CandidateReview(
+            copy.deepcopy(reader.pull),
+            request,
+            binding,
+            candidate,
+            ({"gate": "G7", "status": "FLAG", "detail": "merge"},),
+            403,
+            5125504,
+        ),
+    )
+    original = writer.call
+
+    def call(method, path, **kwargs):
+        if path == "/graphql":
+            writer.writes.append((method, path, kwargs["data"]))
+            draft = "convertPullRequestToDraft" in kwargs["data"]["query"]
+            reader.pull["draft"] = draft
+            if not draft:
+                reader.pull["head"]["sha"] = candidate.source_sha
+            return {"data": {}}
+        return original(method, path, **kwargs)
+
+    writer.call = call
+    pin = RunPin(workflow_path=".github/workflows/ci.yml", run_id=201, attempt=1, head_sha=head)
+    with pytest.raises(PreparationBlocked, match="CANDIDATE_CHANGED"):
+        premerge.mark_candidate_ready(reader, writer, repo, 141, ci_pin=pin)
+    assert reader.pull["draft"] is True
+    assert all(not p.endswith("/merge") for _, p, _ in writer.writes)

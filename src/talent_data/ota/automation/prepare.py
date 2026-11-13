@@ -49,6 +49,7 @@ from talent_data.ota.release_package import (
     STAGING_WORKFLOW,
     LoadedPackage,
     bind_staging,
+    candidate_binding,
     load_package,
     manifest_files,
     run_record,
@@ -596,6 +597,12 @@ def make_proposal(
         package_run=package_run,
         artifact=artifact,
     )
+    binding = candidate_binding(package)
+    if binding is not None:
+        same(binding.source_sha, request.source_commit, "CANDIDATE_BINDING", "proposal source")
+        return PreparedProposal(
+            request, "", package.attachment("report/merge-terms.md").decode("utf-8")
+        )
     approval = package.attachment(APPROVAL_TEMPLATE_NAME).decode("utf-8")
     require("<OWNER:" in approval, "APPROVAL_TEMPLATE", "owner decisions must stay unfilled")
     body = f"""Prepare OTA release `{index.release_id}` for OWNER review (not approval/publication).
@@ -1037,6 +1044,11 @@ def request_text(proposal: PreparedProposal) -> str:
 
 
 def ensure_release_pr(client: httpx.Client, *, proposal: PreparedProposal, app_token: str) -> str:
+    require(
+        "<OWNER:" in proposal.approval_template,
+        "CANDIDATE_PHASE",
+        "candidate packages must stay in their original data MR",
+    )
     api = GitHub(client, app_token)
     installation = obj(api.call("GET", "/installation/repositories", params={"per_page": 100}))
     repos = installation.get("repositories")

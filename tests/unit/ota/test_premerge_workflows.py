@@ -148,3 +148,116 @@ def test_changed_head_returns_to_draft_without_authorizing_any_write(tmp_path, f
         with pytest.raises(PreparationBlocked):
             invalidate_candidate_ready(reader, writer, repo, pin)
         assert not writer.writes
+
+
+def test_notice_reuses_original_artifact_attempt_not_consumer_attempt(tmp_path, monkeypatch):
+    from tests.unit.ota.release_package_testkit import load_script
+
+    _repo, api = candidate_fixture(tmp_path)
+    script = load_script("ota_premerge")
+    original_run = copy.deepcopy(api.runs[101])
+    api.runs[101].update(
+        run_attempt=2, run_started_at="2027-01-01T10:00:00Z", updated_at="2027-01-01T11:00:00Z"
+    )
+    run = api.run
+    api.run = lambda rid, attempt: (
+        copy.deepcopy(original_run) if (rid, attempt) == (101, 1) else run(rid, attempt)
+    )
+    original_repo, original_pages = api.repo, api.pages
+    api.repo = lambda method, path, **kwargs: (
+        copy.deepcopy(api.runs[101])
+        if path == "/actions/runs/101"
+        else original_repo(method, path, **kwargs)
+    )
+    api.pages = lambda path, *args, **kwargs: (
+        [copy.deepcopy(api.artifact)]
+        if path == "/actions/runs/101/artifacts"
+        else original_pages(path, *args, **kwargs)
+    )
+    monkeypatch.setenv("GITHUB_RUN_ID", "999")
+    notice = script.notice(api, 101, api.artifact["name"])
+    assert notice.preparation_run.attempt == 1
+    assert notice.candidate_artifact.artifact_id == 11
+
+
+def test_current_producer_can_open_draft_before_run_end_timestamp_updates(tmp_path, monkeypatch):
+    from tests.unit.ota.release_package_testkit import load_script
+
+    _repo, api = candidate_fixture(tmp_path)
+    script = load_script("ota_premerge")
+    api.runs[101].update(
+        status="in_progress", conclusion=None, updated_at=api.runs[101]["run_started_at"]
+    )
+    original_repo, original_pages = api.repo, api.pages
+    api.repo = lambda method, path, **kwargs: (
+        copy.deepcopy(api.runs[101])
+        if path == "/actions/runs/101"
+        else original_repo(method, path, **kwargs)
+    )
+    api.pages = lambda path, *args, **kwargs: (
+        [copy.deepcopy(api.artifact)]
+        if path == "/actions/runs/101/artifacts"
+        else original_pages(path, *args, **kwargs)
+    )
+    monkeypatch.setenv("GITHUB_RUN_ID", "101")
+    monkeypatch.setenv("GITHUB_RUN_ATTEMPT", "1")
+    notice = script.notice(api, 101, api.artifact["name"])
+    assert notice.preparation_run.attempt == 1
+
+
+@pytest.mark.parametrize("fault", [None, "stale-main", "legacy"])
+def test_main_movement_invalidates_ready_before_owner_merge(tmp_path, fault):
+    from talent_data.ota.automation.premerge import invalidate_ready_on_main_change
+    from tests.unit.ota.single_merge_e2e_kit import commit_tree
+    from tests.unit.ota.test_premerge_proposal import App
+    from tests.unit.test_ota_prepare import git
+
+    repo, reader = candidate_fixture(tmp_path)
+    original = reader.base
+    main = commit_tree(
+        repo, git(repo, "rev-parse", original + "^{tree}"), [original], "TEST new main"
+    )
+    git(repo, "update-ref", "refs/remotes/origin/main", main)
+    git(repo, "checkout", "--quiet", "--detach", main)
+    reader.pull.update(draft=False, node_id="PR_test")
+    reader.pull["base"]["sha"] = main
+    run = copy.deepcopy(reader.runs[201])
+    run.update(
+        id=401,
+        event="push",
+        head_branch="main",
+        head_sha=main,
+        status="in_progress",
+        conclusion=None,
+    )
+    reader.runs[401] = run
+    pages = reader.pages
+    reader.pages = lambda path, *args, **kwargs: (
+        [copy.deepcopy(reader.pull)]
+        if path == "/pulls" and (kwargs.get("params") or {}).get("base") == "main"
+        else pages(path, *args, **kwargs)
+    )
+    writer = App(reader)
+    original_call = writer.call
+
+    def call(method, path, **kwargs):
+        if path == "/graphql":
+            assert "convertPullRequestToDraft" in kwargs["data"]["query"]
+            writer.writes.append((method, path, kwargs["data"]))
+            reader.pull["draft"] = True
+            return {"data": {}}
+        return original_call(method, path, **kwargs)
+
+    writer.call = call
+    if fault == "legacy":
+        reader.pull["body"] = "legacy, no conditional merge policy"
+    pin = RunPin(workflow_path=".github/workflows/ci.yml", run_id=401, attempt=1, head_sha=main)
+    if fault == "stale-main":
+        pin = pin.model_copy(update={"head_sha": original})
+        with pytest.raises(PreparationBlocked):
+            invalidate_ready_on_main_change(reader, writer, repo, pin)
+        assert not writer.writes
+    else:
+        invalidate_ready_on_main_change(reader, writer, repo, pin)
+        assert reader.pull["draft"] is (fault is None)
+        assert len(writer.writes) == (1 if fault is None else 0)

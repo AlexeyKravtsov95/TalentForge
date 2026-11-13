@@ -19,6 +19,7 @@ from talent_data.ota.automation.candidate import (  # noqa: E402
 from talent_data.ota.automation.premerge import (  # noqa: E402
     bind_candidate_request,
     invalidate_candidate_ready,
+    invalidate_ready_on_main_change,
     mark_candidate_ready,
     prepare_candidate,
     route_candidate_ci,
@@ -56,29 +57,48 @@ def notice(api: GitHub, run_id: int, name: str) -> CandidateNotice:
             "CANDIDATE_ORIGIN",
             "producer repository",
         )
-    artifact = artifact_for(api, run, name)
-    # A retained producer is pinned to its actual artifact's attempt interval, never
-    # to the consumer attempt. A live same-run proposal uses its exact current attempt.
+    found = [
+        a
+        for a in api.pages(f"/actions/runs/{run_id}/artifacts", "artifacts")
+        if a.get("name") == name
+    ]
+    require(len(found) == 1, "CANDIDATE_ORIGIN", "one original producer artifact required")
+    artifact = found[0]
+    same(artifact.get("expired"), False, "CANDIDATE_ORIGIN", "artifact expiry")
+    origin = obj(artifact.get("workflow_run"))
+    repository_id = positive(obj(run.get("repository")).get("id"))
+    for key, expected in {
+        "id": run_id,
+        "head_sha": run.get("head_sha"),
+        "head_branch": "main",
+        "repository_id": repository_id,
+        "head_repository_id": repository_id,
+    }.items():
+        same(origin.get(key), expected, "CANDIDATE_ORIGIN", "artifact producer")
     attempt = positive(run.get("run_attempt"))
     require(attempt <= 20, "CANDIDATE_ORIGIN", "producer attempt history bound")
-    if str(run_id) == os.environ.get("GITHUB_RUN_ID"):
-        same(
-            attempt,
-            int(os.environ.get("GITHUB_RUN_ATTEMPT", "0")),
-            "CANDIDATE_ORIGIN",
-            "current attempt",
-        )
-    else:
-        created = datetime.fromisoformat(str(artifact.get("created_at")))
+    created = datetime.fromisoformat(str(artifact.get("created_at")))
+    started = datetime.fromisoformat(str(run.get("run_started_at")))
+    current = (
+        str(run_id) == os.environ.get("GITHUB_RUN_ID")
+        and attempt == int(os.environ.get("GITHUB_RUN_ATTEMPT", "0"))
+        and run.get("status") != "completed"
+        and created >= started
+    )
+    if not current:
         matching = []
         for number in range(1, attempt + 1):
             producer = api.run(run_id, number)
             start = datetime.fromisoformat(str(producer.get("run_started_at")))
             end = datetime.fromisoformat(str(producer.get("updated_at")))
-            if start <= created <= end:
+            if producer.get("status") == "completed" and start <= created <= end:
                 matching.append(number)
         require(len(matching) == 1, "CANDIDATE_ORIGIN", "artifact original attempt")
         attempt = matching[0]
+        artifact = artifact_for(api, api.run(run_id, attempt), name)
+    # Opening a draft is preparation only. For an in-progress same-run producer,
+    # updated_at may precede the upload; final source verification still requires
+    # the completed exact prepare job and independently checks the full interval.
     return CandidateNotice(
         schema_version=1,
         kind="ota-candidate-notice",
@@ -97,7 +117,9 @@ def notice(api: GitHub, run_id: int, name: str) -> CandidateNotice:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("phase", choices=("notice", "prepare", "bind", "ready", "invalidate"))
+    parser.add_argument(
+        "phase", choices=("notice", "prepare", "bind", "ready", "invalidate", "invalidate-main")
+    )
     parser.add_argument("--ci-run-id", type=int, default=0)
     parser.add_argument("--ci-attempt", type=int, default=0)
     parser.add_argument("--run-id", type=int, default=0)
@@ -132,6 +154,10 @@ def main(argv=None) -> int:
                 attempt=args.ci_attempt,
                 head_sha=str(run["head_sha"]),
             )
+            if args.phase == "invalidate-main":
+                writer = GitHub(client, os.environ.get("OTA_APP_TOKEN", ""))
+                invalidate_ready_on_main_change(reader, writer, ROOT, pin)
+                return 0
             if args.phase == "invalidate":
                 writer = GitHub(client, os.environ.get("OTA_APP_TOKEN", ""))
                 invalidate_candidate_ready(reader, writer, ROOT, pin)

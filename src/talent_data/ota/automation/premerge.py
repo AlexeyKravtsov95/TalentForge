@@ -387,12 +387,11 @@ def mark_candidate_ready(
         )
     )
     require(not result.get("errors"), "READY_FAILED", "GitHub refused readiness")
-    same(
-        obj(policy_pull(reader, pull_number).get("head")).get("sha"),
-        head,
-        "CANDIDATE_CHANGED",
-        "ready read-back",
-    )
+    latest = policy_pull(reader, pull_number)
+    actual_head = str(obj(latest.get("head")).get("sha"))
+    if actual_head != head:
+        _draft_current(reader, writer, pull_number, actual_head)
+        require(False, "CANDIDATE_CHANGED", "head changed during readiness; draft restored")
     same(policy_pull(reader, pull_number).get("draft"), False, "READY_FAILED", "ready read-back")
 
 
@@ -521,8 +520,14 @@ def invalidate_candidate_ready(reader: GitHub, writer: GitHub, repo: Path, pin: 
         "PREMERGE_TRIGGER",
         "trusted main checkout",
     )
+    _draft_current(reader, writer, number, head)
+
+
+def _draft_current(reader: GitHub, writer: GitHub, number: int, expected_head: str) -> bool:
+    pull = policy_pull(reader, number)
+    same(obj(pull.get("head")).get("sha"), expected_head, "CANDIDATE_CHANGED", "head before draft")
     if pull.get("draft") is True:
-        return
+        return False
     writer_scope(writer)
     node = pull.get("node_id")
     require(isinstance(node, str) and bool(node), "CANDIDATE_CHANGED", "PR node id")
@@ -541,3 +546,48 @@ def invalidate_candidate_ready(reader: GitHub, writer: GitHub, repo: Path, pin: 
     )
     require(not result.get("errors"), "READY_FAILED", "GitHub refused draft transition")
     same(policy_pull(reader, number).get("draft"), True, "READY_FAILED", "draft read-back")
+    return True
+
+
+def invalidate_ready_on_main_change(reader: GitHub, writer: GitHub, repo: Path, pin: RunPin) -> int:
+    """Invalidate stale preparation bases early; legacy/manual MRs remain untouched."""
+    run = reader.run(pin.run_id, pin.attempt)
+    for key, value in {
+        "id": pin.run_id,
+        "run_attempt": pin.attempt,
+        "path": ".github/workflows/ci.yml",
+        "name": "CI",
+        "event": "push",
+        "head_branch": "main",
+        "head_sha": pin.head_sha,
+    }.items():
+        same(run.get(key), value, "PREMERGE_TRIGGER", key)
+    for key in ("repository", "head_repository"):
+        same(obj(run.get(key)).get("full_name"), REPOSITORY, "PREMERGE_TRIGGER", "repository")
+    for ref in ("HEAD", "origin/main"):
+        same(
+            git(repo, "rev-parse", ref).decode().strip(),
+            pin.head_sha,
+            "PREMERGE_TRIGGER",
+            "current main",
+        )
+    changed = 0
+    for summary in reader.pages("/pulls", params={"state": "open", "base": "main"}):
+        body = str(summary.get("body") or "")
+        actor = obj(summary.get("user"))
+        if (
+            actor.get("id") != 351368232
+            or "<!-- talentforge:owner-merge-v1" not in body
+            or not str(obj(summary.get("head")).get("ref")).startswith("ota-candidate/forever-")
+        ):
+            continue
+        number = summary.get("number")
+        require(type(number) is int and number > 0, "CANDIDATE_CHANGED", "PR number")
+        assert isinstance(number, int)
+        pull = policy_pull(reader, number)
+        notice = candidate_notice(str(pull.get("body") or ""))
+        if notice.preparation_run.head_sha != pin.head_sha:
+            changed += int(
+                _draft_current(reader, writer, number, str(obj(pull.get("head")).get("sha")))
+            )
+    return changed
