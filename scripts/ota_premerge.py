@@ -18,6 +18,7 @@ from talent_data.ota.automation.candidate import (  # noqa: E402
 )
 from talent_data.ota.automation.premerge import (  # noqa: E402
     bind_candidate_request,
+    invalidate_candidate_ready,
     mark_candidate_ready,
     prepare_candidate,
     route_candidate_ci,
@@ -96,7 +97,7 @@ def notice(api: GitHub, run_id: int, name: str) -> CandidateNotice:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("phase", choices=("notice", "prepare", "bind", "ready"))
+    parser.add_argument("phase", choices=("notice", "prepare", "bind", "ready", "invalidate"))
     parser.add_argument("--ci-run-id", type=int, default=0)
     parser.add_argument("--ci-attempt", type=int, default=0)
     parser.add_argument("--run-id", type=int, default=0)
@@ -131,6 +132,10 @@ def main(argv=None) -> int:
                 attempt=args.ci_attempt,
                 head_sha=str(run["head_sha"]),
             )
+            if args.phase == "invalidate":
+                writer = GitHub(client, os.environ.get("OTA_APP_TOKEN", ""))
+                invalidate_candidate_ready(reader, writer, ROOT, pin)
+                return 0
             phase, number = route_candidate_ci(reader, ROOT, pin)
             if args.phase == "prepare":
                 if phase == "prepare":

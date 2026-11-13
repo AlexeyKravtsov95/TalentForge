@@ -6,7 +6,7 @@ name: OTA release preparation
 on:
   workflow_run:
     workflows: ["CI"]
-    types: [completed]
+    types: [in_progress, completed]
   workflow_dispatch:
     inputs:
       ci_run_id:
@@ -135,7 +135,8 @@ jobs:
     if: >-
       github.repository == 'AlexeyKravtsov95/TalentForge' &&
       github.event_name == 'workflow_run' &&
-      github.event.workflow_run.conclusion == 'success' &&
+      (github.event.workflow_run.conclusion == 'success' ||
+       github.event.workflow_run.conclusion == 'failure' || github.event.action == 'in_progress') &&
       github.event.workflow_run.event == 'pull_request' &&
       startsWith(github.event.workflow_run.head_branch, 'ota-candidate/forever-') &&
       github.event.workflow_run.head_repository.full_name == github.repository
@@ -177,7 +178,9 @@ jobs:
 
   premerge-review:
     needs: premerge
-    if: needs.premerge.outputs.phase == 'bind' || needs.premerge.outputs.phase == 'ready'
+    if: >-
+      always() && (needs.premerge.result == 'failure' ||
+      needs.premerge.outputs.phase == 'bind' || needs.premerge.outputs.phase == 'ready')
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     environment: ota-preparation
@@ -214,7 +217,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           OTA_APP_TOKEN: ${{ steps.app-token.outputs.token }}
-          PHASE: ${{ needs.premerge.outputs.phase }}
+          PHASE: ${{ needs.premerge.result == 'failure' && 'invalidate' || needs.premerge.outputs.phase }}
           CI_RUN_ID: ${{ github.event.workflow_run.id }}
           CI_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
         run: |

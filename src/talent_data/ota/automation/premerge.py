@@ -21,6 +21,7 @@ from talent_data.ota.automation.prepare import (
     REQUEST_DIR,
     GitHub,
     PreparedProposal,
+    git,
     obj,
     require,
     same,
@@ -469,3 +470,74 @@ def prepare_candidate(
         api=reader,
         candidate_context=candidate,
     )
+
+
+def invalidate_candidate_ready(reader: GitHub, writer: GitHub, repo: Path, pin: RunPin) -> None:
+    """Return an updated/failed candidate to draft; never act on stale CI events."""
+    run = reader.run(pin.run_id, pin.attempt)
+    for key, value in {
+        "id": pin.run_id,
+        "run_attempt": pin.attempt,
+        "path": ".github/workflows/ci.yml",
+        "name": "CI",
+        "event": "pull_request",
+        "head_sha": pin.head_sha,
+    }.items():
+        same(run.get(key), value, "PREMERGE_TRIGGER", key)
+    for key in ("repository", "head_repository"):
+        same(obj(run.get(key)).get("full_name"), REPOSITORY, "PREMERGE_TRIGGER", "repository")
+    associated = run.get("pull_requests")
+    require(isinstance(associated, list) and len(associated) == 1, "PREMERGE_TRIGGER", "single PR")
+    assert isinstance(associated, list)
+    number = obj(associated[0]).get("number")
+    require(type(number) is int and number > 0, "PREMERGE_TRIGGER", "PR number")
+    assert isinstance(number, int)
+    pull = policy_pull(reader, number)
+    head, branch = str(obj(pull.get("head")).get("sha")), str(obj(pull.get("head")).get("ref"))
+    same(obj(obj(associated[0]).get("head")).get("sha"), head, "CANDIDATE_CHANGED", "current head")
+    same(run.get("head_branch"), branch, "PREMERGE_TRIGGER", "branch")
+    require(branch.startswith("ota-candidate/forever-"), "PREMERGE_TRIGGER", "candidate branch")
+    listed = reader.pages(
+        "/actions/workflows/ci.yml/runs",
+        "workflow_runs",
+        params={"event": "pull_request", "branch": branch},
+    )
+    eligible = [
+        r
+        for r in listed
+        if r.get("head_sha") == head
+        or any(
+            obj(p).get("number") == number and obj(obj(p).get("head")).get("sha") == head
+            for p in r.get("pull_requests", [])
+        )
+    ]
+    require(bool(eligible), "CANDIDATE_CHANGED", "current CI listing missing")
+    latest = max(eligible, key=lambda r: int(r.get("id", 0)))
+    same(latest.get("id"), pin.run_id, "CANDIDATE_CHANGED", "latest CI event")
+    same(latest.get("run_attempt"), pin.attempt, "CANDIDATE_CHANGED", "latest CI attempt")
+    same(
+        git(repo, "rev-parse", "HEAD"),
+        git(repo, "rev-parse", "origin/main"),
+        "PREMERGE_TRIGGER",
+        "trusted main checkout",
+    )
+    if pull.get("draft") is True:
+        return
+    writer_scope(writer)
+    node = pull.get("node_id")
+    require(isinstance(node, str) and bool(node), "CANDIDATE_CHANGED", "PR node id")
+    result = obj(
+        writer.call(
+            "POST",
+            "/graphql",
+            data={
+                "query": (
+                    "mutation($id:ID!){convertPullRequestToDraft(input:{pullRequestId:$id})"
+                    "{pullRequest{id isDraft}}}"
+                ),
+                "variables": {"id": node},
+            },
+        )
+    )
+    require(not result.get("errors"), "READY_FAILED", "GitHub refused draft transition")
+    same(policy_pull(reader, number).get("draft"), True, "READY_FAILED", "draft read-back")

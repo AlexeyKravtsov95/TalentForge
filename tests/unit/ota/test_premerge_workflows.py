@@ -100,3 +100,51 @@ def test_consumer_retry_keeps_successful_original_preparation_when_proposal_fail
     assert candidate.candidate_artifact.artifact_id == original[0]["artifactId"]
     assert candidate.candidate_run.run_id == original[1]["runId"]
     assert candidate.candidate_run.attempt == original[1]["attempt"]
+
+
+@pytest.mark.parametrize("fault", [None, "stale-head", "older-attempt"])
+def test_changed_head_returns_to_draft_without_authorizing_any_write(tmp_path, fault):
+    from talent_data.ota.automation.premerge import invalidate_candidate_ready
+    from tests.unit.ota.test_premerge_proposal import App
+
+    repo, reader = candidate_fixture(tmp_path)
+    writer = App(reader)
+    reader.pull.update(draft=False, node_id="PR_test")
+    reader.runs[201].update(status="in_progress", conclusion=None)
+    pin = RunPin(
+        workflow_path=".github/workflows/ci.yml", run_id=201, attempt=1, head_sha=reader.source
+    )
+    original = writer.call
+
+    def call(method, path, **kwargs):
+        if path == "/graphql":
+            assert "convertPullRequestToDraft" in kwargs["data"]["query"]
+            writer.writes.append((method, path, kwargs["data"]))
+            reader.pull["draft"] = True
+            return {
+                "data": {
+                    "convertPullRequestToDraft": {"pullRequest": {"id": "PR_test", "isDraft": True}}
+                }
+            }
+        return original(method, path, **kwargs)
+
+    writer.call = call
+    if fault == "stale-head":
+        reader.pull["head"]["sha"] = reader.base
+    elif fault == "older-attempt":
+        listing = reader.pages
+        reader.pages = lambda path, *args, **kwargs: (
+            [{**reader.runs[201], "run_attempt": 2}]
+            if path == "/actions/workflows/ci.yml/runs"
+            else listing(path, *args, **kwargs)
+        )
+    if fault is None:
+        invalidate_candidate_ready(reader, writer, repo, pin)
+        assert reader.pull["draft"] is True
+        assert [p for _, p, _ in writer.writes] == ["/graphql"]
+        invalidate_candidate_ready(reader, writer, repo, pin)
+        assert len(writer.writes) == 1
+    else:
+        with pytest.raises(PreparationBlocked):
+            invalidate_candidate_ready(reader, writer, repo, pin)
+        assert not writer.writes
