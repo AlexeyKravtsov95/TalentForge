@@ -8,9 +8,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isSelected
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -102,6 +105,25 @@ class BuildLibraryFiltersUiTest {
                     onNodeWithText("Raid").performScrollTo().assertIsDisplayed()
                     assertEquals(before, storage.payload)
                     assertEquals(writes, storage.writeCount)
+                    val add = if (ru) "Добавить в избранное: Raid" else "Add to Favorites: Raid"
+                    val remove = if (ru) "Убрать из избранного: Raid" else "Remove from Favorites: Raid"
+                    val favorites = if (ru) "Избранное" else "Favorites"
+                    val star = onNodeWithContentDescription(add).performScrollTo().assertIsDisplayed().assertIsOff()
+                    assertTrue(star.fetchSemanticsNode().boundsInRoot.width >= 48f)
+                    assertTrue(star.fetchSemanticsNode().boundsInRoot.height >= 48f)
+                    star.performClick()
+                    waitUntil(timeoutMillis = 10_000) { onAllNodesWithContentDescription(remove).fetchSemanticsNodes().isNotEmpty() }
+                    onNodeWithContentDescription(remove).assertIsOn()
+                    onNodeWithText(favorites).performScrollTo().performClick().assertIsOn()
+                    onNodeWithText("Raid").performScrollTo().assertIsDisplayed()
+                    onNodeWithContentDescription(remove).performScrollTo().performClick()
+                    val noFavorites = if (ru) "В избранном пока пусто" else "No favorites yet"
+                    waitUntil(timeoutMillis = 10_000) { onAllNodesWithText(noFavorites).fetchSemanticsNodes().isNotEmpty() }
+                    onNodeWithText(noFavorites).performScrollTo().assertIsDisplayed()
+                    onNodeWithText(if (ru) "Сбросить фильтры" else "Reset filters").performScrollTo().performClick()
+                    onNodeWithContentDescription(add).performScrollTo().assertIsOff()
+                    assertEquals(before, storage.payload, "favorite/unfavorite restores every byte of v2")
+                    assertEquals(writes + 2, storage.writeCount)
                     // The existing + action stays reachable above the scrolling filters.
                     onNodeWithText("+").assertIsDisplayed().performClick()
                     waitUntil(timeoutMillis = 10_000) { onAllNodesWithText(copy.className("WARRIOR")).fetchSemanticsNodes().isNotEmpty() }

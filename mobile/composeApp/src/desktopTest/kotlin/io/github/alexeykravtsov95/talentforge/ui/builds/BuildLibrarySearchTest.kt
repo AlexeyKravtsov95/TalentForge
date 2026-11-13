@@ -66,4 +66,20 @@ class BuildLibrarySearchTest {
         assertEquals(listOf(1L, 2L, 3L), entries.map { it.card.record.updatedAt })
         assertTrue(entries.all { it.card.record.lastOpenedAt == null })
     }
+    @Test
+    fun searchClassAndFavoritesIntersectStablyAcrossVersionsAndLibrarySizes() {
+        for (size in listOf(0, 1, 10, 100)) {
+            val entries = (size downTo 1).map { index ->
+                val entry = entry(index, "Raid $index", "Warrior")
+                entry.copy(card = entry.card.copy(record = entry.card.record.copy(
+                    isFavorite = index % 2 == 1,
+                    build = entry.card.record.build.copy(clientBuild = if (index % 3 == 0) "1.60.1.70374" else "1.60.1.70450"),
+                )))
+            }
+            val expected = entries.filter { it.card.record.isFavorite && it.title.startsWith("Raid 1") }
+            assertEquals(expected, filterBuildLibrary(entries, "raid 1", ClassToken("WARRIOR"), true))
+            assertTrue(filterBuildLibrary(entries, "Raid", ClassToken("MAGE"), true).isEmpty())
+        }
+    }
+
 }

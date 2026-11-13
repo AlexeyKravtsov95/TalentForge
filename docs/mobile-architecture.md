@@ -2310,3 +2310,10 @@ checks (including the OSS notices), JVM/shared contract tests, desktop tests,
 the Android debug build and the release-signing self-test (a temporary test key,
 deleted on exit) on Linux, and iOS compilation, framework linking and the
 iosApp simulator build on macOS. CI holds no production signing secret.
+
+
+### M6.LIB.2 favorites and storage v2
+
+The local build library now writes `storageVersion=2`, with a required `isFavorite` boolean on each record. It reads v1 strictly with favorites initially false and never writes on load. The first successful mutation writes the complete v2 library; no-op metadata assignments do not migrate. Favorites preserve every allocation and timestamp, do not affect last-edited ordering, and are false on new/duplicated records. All Builds combines the favorites toggle with the existing search/class filters; Home's Continue Editing policy stays unchanged.
+
+Favorite changes use `BuildAutosaveCoordinator.setFavorite`, flushing pending autosaves and serializing with autosave/rename on the existing write mutex. SharedPreferences restores the prior cell if commit fails after changing memory. Migration details, downgrade compatibility, preservation checks and validation evidence are recorded in [M6.LIB.2 QA](qa/m6-lib2-favorites.md). **A v1-only older application may refuse to read v2 after an application downgrade; there is no automatic reverse migration.**

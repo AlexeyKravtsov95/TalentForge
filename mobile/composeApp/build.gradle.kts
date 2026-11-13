@@ -472,6 +472,12 @@ kotlin {
             implementation(libs.kotlinx.coroutines.test)
         }
 
+        androidInstrumentedTest.dependencies {
+            implementation("androidx.test:runner:1.7.0")
+            implementation("androidx.test.ext:junit:1.3.0")
+            implementation(libs.kotlin.test)
+        }
+
         val androidMain by getting {
             dependencies {
                 implementation(libs.androidx.activity.compose)
@@ -682,6 +688,7 @@ android {
         applicationId = "io.github.alexeykravtsov95.talentforge"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         versionCode = 5
         versionName = "1.0.0"
     }
@@ -709,6 +716,9 @@ android {
             }
         }
     }
+
+    // The same frozen v1 JSON is loaded by JVM tests and real Android preferences tests.
+    sourceSets.getByName("androidTest").assets.srcDir("../shared/src/jvmTest/resources/builds")
 
     // NET-1: the release manifest overlay. OTA off (the default, NET-1 = B): src/androidRelease
     // removes INTERNET. talentforge.ota.android.production.enabled=true (M5.OTA.PROD.3):

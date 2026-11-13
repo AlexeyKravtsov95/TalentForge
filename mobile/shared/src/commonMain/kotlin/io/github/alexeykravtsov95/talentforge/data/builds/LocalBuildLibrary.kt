@@ -9,6 +9,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.intOrNull
 
 /**
  * One locally stored build: the portable [BuildFile] payload plus the
@@ -20,7 +21,8 @@ import kotlinx.serialization.json.JsonPrimitive
  * `name == null` means the build is a **Draft** (unnamed). A Draft is not an
  * unsaved build: it is persisted the moment it is created. An empty string is
  * never a second representation of "unnamed" — persisted blank names are
- * normalized to `null` while decoding.
+ * normalized to `null` while decoding; their original wire string is retained
+ * internally so unrelated writes never rewrite a legacy name.
  */
 data class LocalBuildRecord(
     /** Opaque, stable identifier inside this device's library. UI derives no meaning from it. */
@@ -35,6 +37,13 @@ data class LocalBuildRecord(
     val lastOpenedAt: Long?,
     /** The canonical allocation payload — the only portable part of the record. */
     val build: BuildFile,
+    /** App-private metadata; never changes allocation or edit/open timestamps. */
+    val isFavorite: Boolean = false,
+    /**
+     * Retains accepted legacy wire blanks while [name] stays the normalized
+     * Draft value. Not a JSON field: only an explicit rename replaces it.
+     */
+    internal val storedBlankName: String? = null,
 )
 
 /** Typed, fail-closed decoding failures of the private library envelope. */
@@ -61,16 +70,17 @@ sealed class LocalBuildLibraryFormatException(message: String) : Exception(messa
  *
  * - unknown fields are rejected (`ignoreUnknownKeys = false`): drift *within*
  *   a storage version is a bug and must surface, schema evolution requires a
- *   `storageVersion` bump plus a migration (none exists in M5.1);
+ *   `storageVersion` bump plus an explicit migration;
  * - quoted numeric literals are rejected in every numeric position (the same
  *   canonical wire-form check `TalentDataContract` applies to public
  *   contracts — kotlinx.serialization would otherwise accept them);
- * - a `storageVersion` other than [STORAGE_VERSION] is an explicit
+ * - a `storageVersion` other than 1 or [STORAGE_VERSION] is an explicit
  *   [LocalBuildLibraryFormatException.UnsupportedVersion];
  * - an embedded [BuildFile] with an unexpected `schemaVersion` is malformed;
  * - duplicate or blank `localId`s are malformed (ids are stable and unique);
  * - a blank `name` is normalized to `null` (Draft) rather than rejected —
- *   an older writer may have persisted one.
+ *   an older writer may have persisted one. Its original blank string remains
+ *   available for serialization until an explicit rename replaces it.
  *
  * Encoding is deterministic: records are serialized in ascending `localId`
  * order with a stable field order, so the same library always produces the
@@ -78,8 +88,8 @@ sealed class LocalBuildLibraryFormatException(message: String) : Exception(messa
  */
 object LocalBuildLibraryCodec {
 
-    /** The only storage format version M5.1 reads and writes. */
-    const val STORAGE_VERSION: Int = 1
+    /** Writes v2; reads legacy v1 without writing. */
+    const val STORAGE_VERSION: Int = 2
 
     private val json: Json = Json {
         ignoreUnknownKeys = false
@@ -114,6 +124,9 @@ object LocalBuildLibraryCodec {
                     "duplicate localId ${record.localId} — refusing to encode a library the reader would reject",
                 )
             }
+            if (record.storedBlankName != null && record.storedBlankName.isNotBlank()) {
+                throw LocalBuildLibraryFormatException.Malformed("storedBlankName must be blank")
+            }
             if (record.build.schemaVersion != BuildFileVersion.V1) {
                 throw LocalBuildLibraryFormatException.Malformed(
                     "record ${record.localId} embeds build schemaVersion ${record.build.schemaVersion} " +
@@ -121,11 +134,11 @@ object LocalBuildLibraryCodec {
                 )
             }
         }
-        val envelope = LocalBuildLibraryFile(
+        val envelope = LocalBuildLibraryFileV2(
             storageVersion = STORAGE_VERSION,
             builds = sorted.map { it.toWire() },
         )
-        return json.encodeToString(LocalBuildLibraryFile.serializer(), envelope)
+        return json.encodeToString(LocalBuildLibraryFileV2.serializer(), envelope)
     }
 
     /**
@@ -134,34 +147,38 @@ object LocalBuildLibraryCodec {
      * guessed or partially repaired library.
      */
     fun decode(payload: String): List<LocalBuildRecord> {
-        val envelope = try {
-            json.decodeFromString(LocalBuildLibraryFile.serializer(), payload)
+        val records = try {
+            val root = json.parseToJsonElement(payload) as? JsonObject
+                ?: throw SerializationException("expected a library object")
+            val version = root["storageVersion"] as? JsonPrimitive
+                ?: throw SerializationException("required numeric storageVersion")
+            if (version.isString) throw SerializationException("storageVersion must be an unquoted integer")
+            val number = version.intOrNull ?: throw SerializationException("storageVersion must be an integer")
+            when (number) {
+                1 -> {
+                    val legacy = json.decodeFromJsonElement(LocalBuildLibraryFileV1.serializer(), root)
+                    verifyWireForm(root, json.encodeToJsonElement(LocalBuildLibraryFileV1.serializer(), legacy))
+                    legacy.builds.map { it.toCurrent() }
+                }
+                STORAGE_VERSION -> {
+                    val current = json.decodeFromJsonElement(LocalBuildLibraryFileV2.serializer(), root)
+                    verifyWireForm(root, json.encodeToJsonElement(LocalBuildLibraryFileV2.serializer(), current))
+                    current.builds
+                }
+                else -> throw LocalBuildLibraryFormatException.UnsupportedVersion(number)
+            }
         } catch (e: SerializationException) {
-            throw LocalBuildLibraryFormatException.Malformed(e.message ?: "invalid JSON")
+            throw LocalBuildLibraryFormatException.Malformed(e.message ?: "invalid JSON or wire form")
         } catch (e: IllegalArgumentException) {
-            throw LocalBuildLibraryFormatException.Malformed(e.message ?: "invalid JSON")
+            throw LocalBuildLibraryFormatException.Malformed(e.message ?: "invalid JSON or wire form")
         }
-        if (envelope.storageVersion != STORAGE_VERSION) {
-            throw LocalBuildLibraryFormatException.UnsupportedVersion(envelope.storageVersion)
-        }
-        // The same numeric wire-form standard as the public contracts: at every
-        // position the model re-encodes as a number, the payload must carry an
-        // unquoted numeric literal.
-        try {
-            verifyNumericWireForm(
-                payload = json.parseToJsonElement(payload),
-                canonical = json.encodeToJsonElement(LocalBuildLibraryFile.serializer(), envelope),
-            )
-        } catch (e: SerializationException) {
-            throw LocalBuildLibraryFormatException.Malformed(e.message ?: "invalid wire form")
-        }
-        return decodeRecords(envelope)
+        return decodeRecords(records)
     }
 
-    private fun decodeRecords(envelope: LocalBuildLibraryFile): List<LocalBuildRecord> {
-        val seenIds = HashSet<String>(envelope.builds.size)
-        val records = ArrayList<LocalBuildRecord>(envelope.builds.size)
-        for (wire in envelope.builds) {
+    private fun decodeRecords(builds: List<LocalBuildRecordFileV2>): List<LocalBuildRecord> {
+        val seenIds = HashSet<String>(builds.size)
+        val records = ArrayList<LocalBuildRecord>(builds.size)
+        for (wire in builds) {
             if (wire.localId.isBlank()) {
                 throw LocalBuildLibraryFormatException.Malformed("record with a blank localId")
             }
@@ -177,33 +194,34 @@ object LocalBuildLibraryCodec {
             records += LocalBuildRecord(
                 localId = wire.localId,
                 name = wire.name?.takeIf { it.isNotBlank() },
+                storedBlankName = wire.name?.takeIf { it.isBlank() },
                 createdAt = wire.createdAt,
                 updatedAt = wire.updatedAt,
                 lastOpenedAt = wire.lastOpenedAt,
                 build = wire.build,
+                isFavorite = wire.isFavorite,
             )
         }
         return records
     }
 
-    /** Recomputes the payload against the model's canonical re-encoding (numeric positions). */
-    private fun verifyNumericWireForm(payload: JsonElement, canonical: JsonElement) {
-        verifyNumericWireForm(payload, canonical, "$")
+    /** Recomputes the payload against the model's canonical re-encoding (all primitive wire types). */
+    private fun verifyWireForm(payload: JsonElement, canonical: JsonElement) {
+        verifyWireForm(payload, canonical, "$")
     }
 
-    private fun verifyNumericWireForm(payload: JsonElement, canonical: JsonElement, path: String) {
+    private fun verifyWireForm(payload: JsonElement, canonical: JsonElement, path: String) {
         when (canonical) {
-            is JsonPrimitive -> if (canonical.isNumericLiteral()) {
+            is JsonPrimitive -> {
                 val original = payload as? JsonPrimitive
-                    ?: throw SerializationException(
-                        "expected a JSON number at $path, found structured value $payload",
-                    )
-                if (!original.isNumericLiteral()) {
-                    throw SerializationException(
-                        "expected an unquoted JSON number at $path, found ${original.describe()} — " +
-                            "quoted numeric literals violate the storage format",
-                    )
+                    ?: throw SerializationException("expected a JSON primitive at $path")
+                val sameType = when {
+                    canonical === JsonNull -> original === JsonNull
+                    canonical.isString -> original.isString
+                    canonical.isNumericLiteral() -> original.isNumericLiteral()
+                    else -> !original.isString && original.content in setOf("true", "false")
                 }
+                if (!sameType) throw SerializationException("wrong JSON wire type at $path: ${original.describe()}")
             }
 
             is JsonObject -> {
@@ -211,7 +229,7 @@ object LocalBuildLibraryCodec {
                     ?: throw SerializationException("expected a JSON object at $path, found $payload")
                 for ((key, canonicalValue) in canonical) {
                     val originalValue = original[key] ?: continue // model default, absent in payload
-                    verifyNumericWireForm(originalValue, canonicalValue, "$path.$key")
+                    verifyWireForm(originalValue, canonicalValue, "$path.$key")
                 }
             }
 
@@ -224,7 +242,7 @@ object LocalBuildLibraryCodec {
                     )
                 }
                 for (index in canonical.indices) {
-                    verifyNumericWireForm(original[index], canonical[index], "$path[$index]")
+                    verifyWireForm(original[index], canonical[index], "$path[$index]")
                 }
             }
         }
@@ -239,13 +257,14 @@ object LocalBuildLibraryCodec {
         else -> "literal $content"
     }
 
-    private fun LocalBuildRecord.toWire(): LocalBuildRecordFile = LocalBuildRecordFile(
+    private fun LocalBuildRecord.toWire(): LocalBuildRecordFileV2 = LocalBuildRecordFileV2(
         localId = localId,
-        name = name,
+        name = name ?: storedBlankName,
         createdAt = createdAt,
         updatedAt = updatedAt,
         lastOpenedAt = lastOpenedAt,
         build = build,
+        isFavorite = isFavorite,
     )
 }
 
@@ -256,18 +275,40 @@ private object BuildFileVersion {
 
 /** Wire form of the whole library. Internal to the private envelope. */
 @Serializable
-internal data class LocalBuildLibraryFile(
+internal data class LocalBuildLibraryFileV2(
     val storageVersion: Int,
-    val builds: List<LocalBuildRecordFile> = emptyList(),
+    val builds: List<LocalBuildRecordFileV2> = emptyList(),
 )
 
 /** Wire form of one record: private metadata + the portable [BuildFile]. */
 @Serializable
-internal data class LocalBuildRecordFile(
+internal data class LocalBuildRecordFileV2(
     val localId: String,
     val name: String? = null,
     val createdAt: Long,
     val updatedAt: Long,
     val lastOpenedAt: Long? = null,
     val build: BuildFile,
+    val isFavorite: Boolean,
 )
+
+/** Frozen v1 wire form. Its defaults remain readable; v1 must reject v2-only fields. */
+@Serializable
+private data class LocalBuildLibraryFileV1(
+    val storageVersion: Int,
+    val builds: List<LocalBuildRecordFileV1> = emptyList(),
+)
+
+@Serializable
+private data class LocalBuildRecordFileV1(
+    val localId: String,
+    val name: String? = null,
+    val createdAt: Long,
+    val updatedAt: Long,
+    val lastOpenedAt: Long? = null,
+    val build: BuildFile,
+) {
+    fun toCurrent(): LocalBuildRecordFileV2 = LocalBuildRecordFileV2(
+        localId, name, createdAt, updatedAt, lastOpenedAt, build, isFavorite = false,
+    )
+}

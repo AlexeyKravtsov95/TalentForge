@@ -270,6 +270,7 @@ fun BackChevronButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     size: Dp = TalentTreeHeaderMetrics.CONTROL_SIZE_DP,
+    enabled: Boolean = true,
 ) {
     val color = talentForgeColors().textPrimary
     val label = stringResource(Res.string.common_go_back)
@@ -278,6 +279,7 @@ fun BackChevronButton(
             .size(size)
             .clickable(
                 role = Role.Button,
+                enabled = enabled,
                 onClickLabel = label,
                 onClick = onClick,
             )

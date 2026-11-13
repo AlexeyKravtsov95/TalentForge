@@ -108,6 +108,39 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+  mobile-android-library:
+    name: Android — library v1 migration on SharedPreferences
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Test isolated Android library migration
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          disable-animations: true
+          working-directory: mobile
+          script: ./gradlew :composeApp:connectedDebugAndroidTest -Ptalentforge.applicationIdSuffix=.lib2check --console=plain
+      - name: Upload migration test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-library-migration-reports
+          path: |
+            mobile/composeApp/build/reports/androidTests/
+            mobile/composeApp/build/outputs/androidTest-results/
+          if-no-files-found: ignore
+
   mobile-macos:
     name: Mobile (macOS) — iOS, Xcode 27.1
     # M5.IOS.1: the iOS release toolchain is Xcode 27.1 / iOS 27.1 SDK. GitHub ships Xcode 27 only

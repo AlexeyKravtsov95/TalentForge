@@ -15,10 +15,12 @@ internal fun filterBuildLibrary(
     entries: List<BuildLibrarySearchEntry>,
     query: String,
     selectedClass: ClassToken?,
+    favoritesOnly: Boolean = false,
 ): List<BuildLibrarySearchEntry> {
     val text = query.trim()
     return entries.filter { entry ->
-        (selectedClass == null || entry.card.record.build.classToken == selectedClass) &&
+        (!favoritesOnly || entry.card.record.isFavorite) &&
+            (selectedClass == null || entry.card.record.build.classToken == selectedClass) &&
             (text.isEmpty() || entry.title.contains(text, ignoreCase = true) ||
                 entry.className.contains(text, ignoreCase = true))
     }

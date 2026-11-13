@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -34,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
@@ -47,6 +49,12 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.bui
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_duplicated
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_empty_body
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_empty_title
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_favorite_add
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_favorite_failed
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_favorite_pending_save_failed
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_favorite_remove
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_favorites_empty_body
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_favorites_empty_title
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_filter_empty_body
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_filter_empty_title
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_filter_reset
@@ -72,6 +80,7 @@ import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildAutosaveCoordinator
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildCardModel
+import io.github.alexeykravtsov95.talentforge.ui.library.BuildFavoriteOutcome
 import io.github.alexeykravtsov95.talentforge.ui.library.ClassArtworkMark
 import io.github.alexeykravtsov95.talentforge.ui.library.ClassArtworkSlot
 import io.github.alexeykravtsov95.talentforge.ui.library.InlineNotice
@@ -117,6 +126,8 @@ private sealed interface ManagementNotice {
     data class Duplicated(val id: Int) : ManagementNotice
 
     data class DuplicateFailed(val localId: String) : ManagementNotice
+
+    data class FavoriteFailed(val localId: String, val value: Boolean, val pendingSave: Boolean) : ManagementNotice
 }
 
 /**
@@ -155,6 +166,7 @@ fun AllBuildsScreen(
     autosave: BuildAutosaveCoordinator,
 ) {
     var data by remember { mutableStateOf<LibraryData<List<BuildCardModel>>>(LibraryData.Loading) }
+    var favoritesOnly by rememberSaveable { mutableStateOf(false) }
     var query by rememberSaveable { mutableStateOf("") }
     var selectedClassValue by rememberSaveable { mutableStateOf<String?>(null) }
     val selectedClass = selectedClassValue?.let(::ClassToken)
@@ -198,7 +210,7 @@ fun AllBuildsScreen(
      * nothing: Back is consumed, yet neither navigates nor cancels.
      */
     PlatformBackHandler(
-        enabled = overlay != ManagementOverlay.Hidden,
+        enabled = overlay != ManagementOverlay.Hidden || operationInFlight,
         onBack = {
             if (!operationInFlight) overlay = ManagementOverlay.Hidden
         },
@@ -227,6 +239,19 @@ fun AllBuildsScreen(
         }
     }
 
+    fun setFavorite(localId: String, value: Boolean) {
+        launchManagement {
+            when (val outcome = autosave.setFavorite(localId, value)) {
+                is BuildFavoriteOutcome.Saved -> {
+                    notice = ManagementNotice.None
+                    reloadToken += 1
+                }
+                BuildFavoriteOutcome.PendingSaveFailed -> notice = ManagementNotice.FavoriteFailed(localId, value, pendingSave = true)
+                is BuildFavoriteOutcome.Failed -> notice = ManagementNotice.FavoriteFailed(localId, value, pendingSave = false)
+            }
+        }
+    }
+
     // like a failed duplicate, the sheet closes either way: the share sheet or
     // the retryable notice is the visible answer
     fun share(localId: String) {
@@ -250,7 +275,7 @@ fun AllBuildsScreen(
                     .heightIn(min = 44.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                BackChevronButton(onClick = onBack)
+                BackChevronButton(onClick = onBack, enabled = !operationInFlight)
                 BasicText(
                     text = when (val current = data) {
                         is LibraryData.Ready -> stringResource(Res.string.builds_title_count, current.value.size)
@@ -268,6 +293,7 @@ fun AllBuildsScreen(
                         .clickable(
                             role = Role.Button,
                             onClickLabel = stringResource(Res.string.common_new_build_action),
+                            enabled = !operationInFlight,
                             onClick = onNewBuild,
                         ),
                 )
@@ -291,6 +317,12 @@ fun AllBuildsScreen(
                     text = stringResource(Res.string.builds_duplicate_failed),
                     actionText = stringResource(Res.string.common_retry),
                     onAction = { duplicate(current.localId) },
+                )
+
+                is ManagementNotice.FavoriteFailed -> InlineNotice(
+                    text = stringResource(if (current.pendingSave) Res.string.builds_favorite_pending_save_failed else Res.string.builds_favorite_failed),
+                    actionText = stringResource(Res.string.common_retry),
+                    onAction = { setFavorite(current.localId, current.value) },
                 )
 
                 ManagementNotice.None -> {}
@@ -337,15 +369,18 @@ fun AllBuildsScreen(
                         PrimaryActionButton(
                             text = stringResource(Res.string.common_new_build),
                             onClickLabel = stringResource(Res.string.common_new_build_action),
+                            enabled = !operationInFlight,
                             onClick = onNewBuild,
                         )
-                        ImportBuildButton(onClick = onImportBuild)
+                        ImportBuildButton(onClick = onImportBuild, enabled = !operationInFlight)
                     } else {
                         BuildLibraryFilters(
                             query = query,
                             onQueryChange = { query = it },
                             selectedClass = selectedClass,
                             onClassChange = { selectedClassValue = it?.value },
+                            favoritesOnly = favoritesOnly,
+                            onFavoritesChange = { favoritesOnly = it },
                         )
                         val entries = current.value.map { card ->
                             BuildLibrarySearchEntry(
@@ -355,19 +390,30 @@ fun AllBuildsScreen(
                                     ?: card.record.build.classToken.value,
                             )
                         }
-                        val results = filterBuildLibrary(entries, query, selectedClass)
+                        val results = filterBuildLibrary(entries, query, selectedClass, favoritesOnly)
                         BasicText(
                             stringResource(Res.string.builds_results_count, results.size, entries.size),
                             style = TalentForgeTypography.meta.copy(color = colors.textSecondary),
                             modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                         )
                         if (results.isEmpty()) {
+                            val noFavorites = favoritesOnly && entries.none { it.card.record.isFavorite }
+                            val emptyTitle = when {
+                                noFavorites -> Res.string.builds_favorites_empty_title
+                                query.isNotBlank() -> Res.string.builds_search_empty_title
+                                else -> Res.string.builds_filter_empty_title
+                            }
+                            val emptyBody = when {
+                                noFavorites -> Res.string.builds_favorites_empty_body
+                                query.isNotBlank() -> Res.string.builds_search_empty_body
+                                else -> Res.string.builds_filter_empty_body
+                            }
                             BasicText(
-                                stringResource(if (query.isNotBlank()) Res.string.builds_search_empty_title else Res.string.builds_filter_empty_title),
+                                stringResource(emptyTitle),
                                 style = TalentForgeTypography.componentTitle.copy(color = colors.textPrimary),
                             )
                             BasicText(
-                                stringResource(if (query.isNotBlank()) Res.string.builds_search_empty_body else Res.string.builds_filter_empty_body),
+                                stringResource(emptyBody),
                                 style = TalentForgeTypography.bodySmall.copy(color = colors.textSecondary),
                             )
                             SecondaryActionButton(
@@ -376,6 +422,7 @@ fun AllBuildsScreen(
                                 onClick = {
                                     query = ""
                                     selectedClassValue = null
+                                    favoritesOnly = false
                                 },
                                 modifier = Modifier.fillMaxWidth(),
                             )
@@ -388,11 +435,13 @@ fun AllBuildsScreen(
                                     clockMillis = clockMillis,
                                     onClick = { onOpenBuild(card.record.localId) },
                                     onActions = { overlay = ManagementOverlay.Actions(card.record.localId) },
+                                    onFavoriteChange = { setFavorite(card.record.localId, it) },
+                                    busy = operationInFlight,
                                 )
                             }
                         }
                         Spacer(Modifier.height(TalentForgeSpacing.inline))
-                        ImportBuildButton(onClick = onImportBuild)
+                        ImportBuildButton(onClick = onImportBuild, enabled = !operationInFlight)
                     }
                 }
                 Spacer(Modifier.height(TalentForgeSpacing.group))
@@ -438,11 +487,12 @@ fun AllBuildsScreen(
 
 /** M5.SHARE.2: `Import build`, a full-width secondary action after the list (and in the empty state). */
 @Composable
-private fun ImportBuildButton(onClick: () -> Unit) {
+private fun ImportBuildButton(onClick: () -> Unit, enabled: Boolean) {
     SecondaryActionButton(
         text = stringResource(Res.string.import_build),
         onClickLabel = stringResource(Res.string.import_build_action),
         onClick = onClick,
+        enabled = enabled,
         modifier = Modifier.fillMaxWidth(),
     )
 }
@@ -469,6 +519,8 @@ private fun BuildRow(
     clockMillis: () -> Long,
     onClick: () -> Unit,
     onActions: () -> Unit,
+    onFavoriteChange: (Boolean) -> Unit,
+    busy: Boolean,
 ) {
     BoxWithConstraints(Modifier.fillMaxWidth()) {
         val compact = isCompactRow(hasPoints = card.spentPoints != null && card.pointBudget != null)
@@ -478,6 +530,8 @@ private fun BuildRow(
             compact = compact,
             onClick = onClick,
             onActions = onActions,
+            onFavoriteChange = onFavoriteChange,
+            busy = busy,
         )
     }
 }
@@ -504,6 +558,8 @@ private fun BuildRowContent(
     compact: Boolean,
     onClick: () -> Unit,
     onActions: () -> Unit,
+    onFavoriteChange: (Boolean) -> Unit,
+    busy: Boolean,
 ) {
     val colors = talentForgeColors()
     val title = buildCardTitle(card)
@@ -514,6 +570,7 @@ private fun BuildRowContent(
             .clickable(
                 role = Role.Button,
                 onClickLabel = stringResource(Res.string.common_open_build_action, title),
+                enabled = !busy,
                 onClick = onClick,
             )
             .padding(vertical = TalentForgeSpacing.hairline),
@@ -570,7 +627,26 @@ private fun BuildRowContent(
                 style = BuildsPointsStyle.copy(color = colors.textPrimary),
             )
         }
-        RowActionsButton(title = title, onClick = onActions)
+        Column {
+            val favoriteDescription = stringResource(
+                if (card.record.isFavorite) Res.string.builds_favorite_remove else Res.string.builds_favorite_add,
+                title,
+            )
+            Box(
+                Modifier.size(RowActionsButtonSize)
+                    .semantics { contentDescription = favoriteDescription }
+                    .toggleable(value = card.record.isFavorite, enabled = !busy, role = Role.Checkbox,
+                        onValueChange = onFavoriteChange,
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                BasicText(if (card.record.isFavorite) "★" else "☆",
+                    style = BuildsNewButtonStyle.copy(color = colors.textPrimary),
+                    modifier = Modifier.clearAndSetSemantics { },
+                )
+            }
+            RowActionsButton(title = title, onClick = onActions, enabled = !busy)
+        }
     }
 }
 
@@ -592,7 +668,7 @@ private fun rowMetaLine(
  * rows use the same button.
  */
 @Composable
-internal fun RowActionsButton(title: String, onClick: () -> Unit) {
+internal fun RowActionsButton(title: String, onClick: () -> Unit, enabled: Boolean = true) {
     val description = stringResource(Res.string.builds_row_actions_description, title)
     Box(
         modifier = Modifier
@@ -601,6 +677,7 @@ internal fun RowActionsButton(title: String, onClick: () -> Unit) {
             .clickable(
                 role = Role.Button,
                 onClickLabel = stringResource(Res.string.builds_row_actions_action, title),
+                enabled = enabled,
                 onClick = onClick,
             ),
         contentAlignment = Alignment.Center,
