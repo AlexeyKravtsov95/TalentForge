@@ -32,7 +32,8 @@ jobs:
     if: >-
       github.repository == 'AlexeyKravtsov95/TalentForge' &&
       (github.event_name == 'workflow_dispatch' ||
-       (github.event.workflow_run.conclusion == 'success' &&
+       (github.event.action == 'completed' &&
+        github.event.workflow_run.conclusion == 'success' &&
         github.event.workflow_run.event == 'push' &&
         github.event.workflow_run.head_branch == 'main' &&
         github.event.workflow_run.head_repository.full_name == github.repository))
@@ -135,8 +136,8 @@ jobs:
     if: >-
       github.repository == 'AlexeyKravtsov95/TalentForge' &&
       github.event_name == 'workflow_run' &&
-      (github.event.workflow_run.conclusion == 'success' ||
-       github.event.workflow_run.conclusion == 'failure' || github.event.action == 'in_progress') &&
+      github.event.action == 'completed' &&
+      github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.event == 'pull_request' &&
       startsWith(github.event.workflow_run.head_branch, 'ota-candidate/forever-') &&
       github.event.workflow_run.head_repository.full_name == github.repository
@@ -179,7 +180,14 @@ jobs:
   premerge-review:
     needs: premerge
     if: >-
-      always() && (needs.premerge.result == 'failure' ||
+      always() && github.repository == 'AlexeyKravtsov95/TalentForge' &&
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      startsWith(github.event.workflow_run.head_branch, 'ota-candidate/forever-') &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      (github.event.action == 'in_progress' ||
+      (github.event.action == 'completed' && github.event.workflow_run.conclusion != 'success') ||
+      needs.premerge.result == 'failure' ||
       needs.premerge.outputs.phase == 'bind' || needs.premerge.outputs.phase == 'ready')
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -213,11 +221,11 @@ jobs:
           repositories: TalentForge
           permission-contents: write
           permission-pull-requests: write
-      - name: Append metadata or mark the same MR ready
+      - name: Invalidate readiness or update the verified MR
         env:
           GH_TOKEN: ${{ github.token }}
           OTA_APP_TOKEN: ${{ steps.app-token.outputs.token }}
-          PHASE: ${{ needs.premerge.result == 'failure' && 'invalidate' || needs.premerge.outputs.phase }}
+          PHASE: ${{ (github.event.action == 'in_progress' || github.event.workflow_run.conclusion != 'success' || needs.premerge.result == 'failure') && 'invalidate' || needs.premerge.outputs.phase }}
           CI_RUN_ID: ${{ github.event.workflow_run.id }}
           CI_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
         run: |
@@ -228,7 +236,8 @@ jobs:
   premerge-main-change:
     if: >-
       github.repository == 'AlexeyKravtsov95/TalentForge' &&
-      github.event_name == 'workflow_run' && github.event.workflow_run.event == 'push' &&
+      github.event_name == 'workflow_run' && github.event.action == 'in_progress' &&
+      github.event.workflow_run.event == 'push' &&
       github.event.workflow_run.head_branch == 'main' &&
       github.event.workflow_run.head_repository.full_name == github.repository
     runs-on: ubuntu-24.04
