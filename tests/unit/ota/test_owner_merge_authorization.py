@@ -86,6 +86,13 @@ def test_real_owner_merge_of_exact_final_tree_authorizes_without_personal_eviden
     assert gate.manifest_sha256 == data[2].manifest_sha256
 
 
+def test_closed_pr_ci_empty_associations_still_require_exact_original_and_final_heads(tmp_path):
+    data = merged(tmp_path)
+    for rid in (201, 301):
+        data[1].runs[rid]["pull_requests"] = []
+    assert check(data).final_head_sha == data[-2]
+
+
 @pytest.mark.parametrize(
     "fault",
     [

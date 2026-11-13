@@ -588,6 +588,9 @@ class World:
         return package
 
     def owner_merge(self):
+        # Observed on real closed GitHub PRs: run identity remains, association disappears.
+        for rid in (201, 301):
+            self.api.runs[rid]["pull_requests"] = []
         self.merge = commit_tree(
             self.repo,
             git(self.repo, "rev-parse", self.head + "^{tree}"),

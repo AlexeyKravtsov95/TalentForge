@@ -113,6 +113,84 @@ def _repositories(record: dict[str, Any], *, code: str) -> None:
         same(obj(record.get(field)).get("full_name"), "AlexeyKravtsov95/TalentForge", code, field)
 
 
+def ci_pull_number(api: GitHub, run: dict[str, Any]) -> int:
+    """GitHub may omit PR associations after closure; branch lookup is identity only."""
+    associated = run.get("pull_requests")
+    require(
+        isinstance(associated, list) and len(associated) <= 1,
+        "CANDIDATE_CI",
+        "ambiguous PR association",
+    )
+    assert isinstance(associated, list)
+    if associated:
+        return positive(obj(associated[0]).get("number"))
+    branch = run.get("head_branch")
+    require(isinstance(branch, str) and bool(branch), "CANDIDATE_CI", "missing CI branch")
+    pulls = api.pages("/pulls", params={"head": "AlexeyKravtsov95:" + str(branch), "state": "all"})
+    require(len(pulls) == 1, "CANDIDATE_CI", "ambiguous branch PR")
+    pull = obj(pulls[0])
+    same(obj(pull.get("head")).get("ref"), branch, "CANDIDATE_CI", "branch PR")
+    for key in ("head", "base"):
+        same(
+            obj(obj(pull.get(key)).get("repo")).get("full_name"),
+            "AlexeyKravtsov95/TalentForge",
+            "CANDIDATE_CI",
+            "branch repository",
+        )
+    return positive(pull.get("number"))
+
+
+def verify_pr_ci_subject(
+    api: GitHub, run: dict[str, Any], pull: dict[str, Any], head_sha: str
+) -> None:
+    """Require the exact source or an equal-tree synthetic merge, never branch alone."""
+    same(ci_pull_number(api, run), pull.get("number"), "CANDIDATE_CI", "PR number")
+    head, base = obj(pull.get("head")), obj(pull.get("base"))
+    same(run.get("head_branch"), head.get("ref"), "CANDIDATE_CI", "branch")
+    associated = run["pull_requests"]
+    if associated:
+        association = obj(associated[0])
+        for actual, expected in (
+            (obj(association.get("head")).get("sha"), head_sha),
+            (obj(association.get("base")).get("sha"), base.get("sha")),
+        ):
+            same(actual, expected, "CANDIDATE_CI", "PR association")
+    sha = run.get("head_sha")
+    require(
+        isinstance(sha, str) and re.fullmatch(COMMIT_PATTERN, sha) is not None,
+        "CANDIDATE_CI",
+        "CI commit",
+    )
+    if sha != head_sha:
+        merge = obj(api.repo("GET", f"/git/commits/{sha}"))
+        source = obj(api.repo("GET", f"/git/commits/{head_sha}"))
+        same(
+            [obj(p).get("sha") for p in merge.get("parents", [])],
+            [base.get("sha"), head_sha],
+            "CANDIDATE_CI",
+            "synthetic parents",
+        )
+        same(
+            obj(merge.get("tree")).get("sha"),
+            obj(source.get("tree")).get("sha"),
+            "CANDIDATE_CI",
+            "synthetic tree",
+        )
+
+
+def pr_ci_runs_for_head(
+    api: GitHub, listed: list[dict[str, Any]], pull: dict[str, Any], head_sha: str
+) -> list[dict[str, Any]]:
+    eligible = []
+    for run in listed:
+        try:
+            verify_pr_ci_subject(api, run, pull, head_sha)
+        except PreparationBlocked:
+            continue
+        eligible.append(run)
+    return eligible
+
+
 def verify_full_pr_ci(
     api: GitHub,
     pull_number: int,
@@ -137,15 +215,7 @@ def verify_full_pr_ci(
             "workflow_runs",
             params={"event": "pull_request", "branch": str(head.get("ref"))},
         )
-        eligible = [
-            r
-            for r in listed
-            if r.get("head_sha") == head_sha
-            or any(
-                p.get("number") == pull_number and obj(p.get("head")).get("sha") == head_sha
-                for p in r.get("pull_requests", [])
-            )
-        ]
+        eligible = pr_ci_runs_for_head(api, listed, pull, head_sha)
         require(bool(eligible), "CANDIDATE_CI_PENDING", "no exact PR validation")
         latest = max(eligible, key=lambda r: positive(r.get("id")))
         pin = RunPin(
@@ -167,35 +237,7 @@ def verify_full_pr_ci(
     }.items():
         same(run.get(field), expected, "CANDIDATE_CI", field)
     _repositories(run, code="CANDIDATE_CI")
-    associated = run.get("pull_requests")
-    require(
-        isinstance(associated, list) and len(associated) == 1,
-        "CANDIDATE_CI",
-        "ambiguous PR association",
-    )
-    assert isinstance(associated, list)
-    association = obj(associated[0])
-    for actual, expected in (
-        (association.get("number"), pull_number),
-        (obj(association.get("head")).get("sha"), head_sha),
-        (obj(association.get("base")).get("sha"), base.get("sha")),
-    ):
-        same(actual, expected, "CANDIDATE_CI", "PR association")
-    if pin.head_sha != head_sha:
-        merge = obj(api.repo("GET", f"/git/commits/{pin.head_sha}"))
-        source = obj(api.repo("GET", f"/git/commits/{head_sha}"))
-        same(
-            [obj(p).get("sha") for p in merge.get("parents", [])],
-            [base.get("sha"), head_sha],
-            "CANDIDATE_CI",
-            "synthetic parents",
-        )
-        same(
-            obj(merge.get("tree")).get("sha"),
-            obj(source.get("tree")).get("sha"),
-            "CANDIDATE_CI",
-            "synthetic tree",
-        )
+    verify_pr_ci_subject(api, run, pull, head_sha)
     jobs = api.pages(f"/actions/runs/{pin.run_id}/attempts/{pin.attempt}/jobs", "jobs")
     ids = [positive(j.get("id")) for j in jobs]
     require(len(set(ids)) == len(ids), "CANDIDATE_CI", "duplicate jobs")

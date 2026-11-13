@@ -396,7 +396,7 @@ def mark_candidate_ready(
 
 
 def route_candidate_ci(reader: GitHub, repo: Path, pin: RunPin) -> tuple[str, int]:
-    from talent_data.ota.automation.candidate import verify_full_pr_ci
+    from talent_data.ota.automation.candidate import ci_pull_number, verify_full_pr_ci
     from talent_data.ota.automation.requests import parse_request
 
     run = reader.run(pin.run_id, pin.attempt)
@@ -413,14 +413,7 @@ def route_candidate_ci(reader: GitHub, repo: Path, pin: RunPin) -> tuple[str, in
         same(run.get(field), expected, "PREMERGE_TRIGGER", field)
     for key in ("repository", "head_repository"):
         same(obj(run.get(key)).get("full_name"), REPOSITORY, "PREMERGE_TRIGGER", "repository")
-    pulls = run.get("pull_requests")
-    require(
-        isinstance(pulls, list) and len(pulls) == 1, "PREMERGE_TRIGGER", "single PR association"
-    )
-    assert isinstance(pulls, list)
-    number = obj(pulls[0]).get("number")
-    require(type(number) is int and number > 0, "PREMERGE_TRIGGER", "PR number")
-    assert isinstance(number, int)
+    number = ci_pull_number(reader, run)
     pull = policy_pull(reader, number)
     head = str(obj(pull.get("head")).get("sha"))
     branch = str(obj(pull.get("head")).get("ref"))
@@ -485,15 +478,16 @@ def invalidate_candidate_ready(reader: GitHub, writer: GitHub, repo: Path, pin: 
         same(run.get(key), value, "PREMERGE_TRIGGER", key)
     for key in ("repository", "head_repository"):
         same(obj(run.get(key)).get("full_name"), REPOSITORY, "PREMERGE_TRIGGER", "repository")
-    associated = run.get("pull_requests")
-    require(isinstance(associated, list) and len(associated) == 1, "PREMERGE_TRIGGER", "single PR")
-    assert isinstance(associated, list)
-    number = obj(associated[0]).get("number")
-    require(type(number) is int and number > 0, "PREMERGE_TRIGGER", "PR number")
-    assert isinstance(number, int)
+    from talent_data.ota.automation.candidate import (
+        ci_pull_number,
+        pr_ci_runs_for_head,
+        verify_pr_ci_subject,
+    )
+
+    number = ci_pull_number(reader, run)
     pull = policy_pull(reader, number)
     head, branch = str(obj(pull.get("head")).get("sha")), str(obj(pull.get("head")).get("ref"))
-    same(obj(obj(associated[0]).get("head")).get("sha"), head, "CANDIDATE_CHANGED", "current head")
+    verify_pr_ci_subject(reader, run, pull, head)
     same(run.get("head_branch"), branch, "PREMERGE_TRIGGER", "branch")
     require(branch.startswith("ota-candidate/forever-"), "PREMERGE_TRIGGER", "candidate branch")
     listed = reader.pages(
@@ -501,15 +495,7 @@ def invalidate_candidate_ready(reader: GitHub, writer: GitHub, repo: Path, pin: 
         "workflow_runs",
         params={"event": "pull_request", "branch": branch},
     )
-    eligible = [
-        r
-        for r in listed
-        if r.get("head_sha") == head
-        or any(
-            obj(p).get("number") == number and obj(obj(p).get("head")).get("sha") == head
-            for p in r.get("pull_requests", [])
-        )
-    ]
+    eligible = pr_ci_runs_for_head(reader, listed, pull, head)
     require(bool(eligible), "CANDIDATE_CHANGED", "current CI listing missing")
     latest = max(eligible, key=lambda r: int(r.get("id", 0)))
     same(latest.get("id"), pin.run_id, "CANDIDATE_CHANGED", "latest CI event")

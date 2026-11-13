@@ -110,6 +110,37 @@ def test_synthetic_pr_merge_requires_equal_tree_and_exact_parents(context):
     assert result.ci_pin.head_sha == synthetic != api.source
 
 
+@pytest.mark.parametrize("synthetic", [False, True])
+def test_empty_ci_association_uses_unique_branch_and_exact_commit(context, synthetic):
+    _, api = context
+    if synthetic:
+        api.synthetic_ci()
+    api.runs[201]["pull_requests"] = []
+    assert verify(context).ci_pin.head_sha == api.runs[201]["head_sha"]
+
+
+@pytest.mark.parametrize("fault", ["ambiguous", "missing", "foreign", "wrong-tree"])
+def test_empty_association_never_trusts_branch_alone(context, fault):
+    _, api = context
+    api.runs[201]["pull_requests"] = []
+    pages = api.pages
+    if fault == "wrong-tree":
+        api.synthetic_ci(wrong_tree=True)
+    else:
+        pulls = [api.pull, api.pull] if fault == "ambiguous" else []
+        if fault == "foreign":
+            import copy
+
+            pull = copy.deepcopy(api.pull)
+            pull["head"]["repo"]["full_name"] = "foreign/repo"
+            pulls = [pull]
+        api.pages = lambda path, *args, **kwargs: (
+            pulls if path == "/pulls" else pages(path, *args, **kwargs)
+        )
+    with pytest.raises(PreparationBlocked):
+        verify(context)
+
+
 @pytest.mark.parametrize("fault", ["code", "symlink", "delete", "rename"])
 def test_even_consistently_hashed_artifact_cannot_expand_candidate_scope(context, fault):
     repo, api = context

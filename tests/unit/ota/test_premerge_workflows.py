@@ -15,10 +15,13 @@ from tests.unit.ota.test_premerge_proposal import setup
 ROOT = Path(__file__).resolve().parents[3]
 
 
-def test_initial_exact_pr_ci_routes_preparation(tmp_path):
+@pytest.mark.parametrize("empty_association", [False, True])
+def test_initial_exact_pr_ci_routes_preparation(tmp_path, empty_association):
     from talent_data.ota.automation.premerge import route_candidate_ci
 
     repo, api = candidate_fixture(tmp_path)
+    if empty_association:
+        api.runs[201]["pull_requests"] = []
     pin = verify_candidate(api, repo, 141, source_sha=api.source).ci_pin
     assert route_candidate_ci(api, repo, pin) == ("prepare", 141)
 
@@ -103,7 +106,10 @@ def test_consumer_retry_keeps_successful_original_preparation_when_proposal_fail
 
 
 @pytest.mark.parametrize("fault", [None, "stale-head", "older-attempt"])
-def test_changed_head_returns_to_draft_without_authorizing_any_write(tmp_path, fault):
+@pytest.mark.parametrize("empty_association", [False, True])
+def test_changed_head_returns_to_draft_without_authorizing_any_write(
+    tmp_path, fault, empty_association
+):
     from talent_data.ota.automation.premerge import invalidate_candidate_ready
     from tests.unit.ota.test_premerge_proposal import App
 
@@ -111,6 +117,8 @@ def test_changed_head_returns_to_draft_without_authorizing_any_write(tmp_path, f
     writer = App(reader)
     reader.pull.update(draft=False, node_id="PR_test")
     reader.runs[201].update(status="in_progress", conclusion=None)
+    if empty_association:
+        reader.runs[201]["pull_requests"] = []
     pin = RunPin(
         workflow_path=".github/workflows/ci.yml", run_id=201, attempt=1, head_sha=reader.source
     )
