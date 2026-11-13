@@ -416,7 +416,7 @@ class _Run:
                     timeline.model_dump_json(by_alias=True) + "\n", encoding="utf-8"
                 )
                 audit_tmp.replace(audit)
-        except (OSError, ValueError, TypeError):
+        except (*_FAILURES, TypeError, RuntimeError):
             print("DELIVERY_TIMINGS_UNAVAILABLE", file=sys.stderr)
 
     def _in_scope(self, receipt: Receipt) -> bool:
@@ -1050,44 +1050,41 @@ def main(
         return _emit(
             _empty(args, "DISABLED", "CONFIG", "AUTOMATION_DISABLED"), args.status_file, env
         )
-    with _git_authentication(env.get("GITHUB_TOKEN")):
+    with _git_authentication(env.get("GITHUB_TOKEN")), contextlib.ExitStack() as stack:
         run = None
         try:
-            with contextlib.ExitStack() as stack:
-                if dependencies is None:
-                    client = stack.enter_context(httpx.Client(follow_redirects=False, timeout=30))
-                    keys = production_keyring(
-                        TRUSTED_REPO / "docs/ota/keys/production-keyring.json"
-                    )
-                    api = GitHub(client, env.get("GITHUB_TOKEN", ""))
+            if dependencies is None:
+                client = stack.enter_context(httpx.Client(follow_redirects=False, timeout=30))
+                keys = production_keyring(TRUSTED_REPO / "docs/ota/keys/production-keyring.json")
+                api = GitHub(client, env.get("GITHUB_TOKEN", ""))
 
-                    @contextlib.contextmanager
-                    def writer() -> Iterator[BlobStore]:
-                        profile = PRODUCTION_PROFILE
-                        yield connect(
-                            S3Location(
-                                bucket=profile.bucket,
-                                endpoint_url=profile.endpoint_url,
-                                region=profile.region,
-                                profile=profile.aws_profile,
-                                channel=Channel.PRODUCTION,
-                            ),
-                            writable=True,
-                            allow_delete=False,
-                            catalog_guard=ProductionCatalogGuard(keys, game=GAME),
-                        )
-
-                    dependencies = Dependencies(
-                        TRUSTED_REPO,
-                        api,
-                        client,
-                        GitJournal(TRUSTED_REPO),
-                        keys,
-                        writer,
-                        timing_now=lambda: datetime.now(UTC),
+                @contextlib.contextmanager
+                def writer() -> Iterator[BlobStore]:
+                    profile = PRODUCTION_PROFILE
+                    yield connect(
+                        S3Location(
+                            bucket=profile.bucket,
+                            endpoint_url=profile.endpoint_url,
+                            region=profile.region,
+                            profile=profile.aws_profile,
+                            channel=Channel.PRODUCTION,
+                        ),
+                        writable=True,
+                        allow_delete=False,
+                        catalog_guard=ProductionCatalogGuard(keys, game=GAME),
                     )
-                run = _Run(args, env, dependencies)
-                document = run.run()
+
+                dependencies = Dependencies(
+                    TRUSTED_REPO,
+                    api,
+                    client,
+                    GitJournal(TRUSTED_REPO),
+                    keys,
+                    writer,
+                    timing_now=lambda: datetime.now(UTC),
+                )
+            run = _Run(args, env, dependencies)
+            document = run.run()
         except (*_FAILURES, InvalidSignature, KeyError, TypeError) as exc:
             if run is not None and isinstance(exc, JournalError):
                 run.stage, run.reason = "JOURNAL", "JOURNAL_FAILED"
@@ -1116,9 +1113,9 @@ def main(
                         x.state is RequestState.PUBLISHED_NOT_VERIFIED for x in document.operations
                     ):
                         document = document.model_copy(update={"outcome": "PUBLISHED_NOT_VERIFIED"})
+        if run is not None:
+            run.write_timing(document)
     code = _emit(document, args.status_file, env)
-    if run is not None:
-        run.write_timing(document)
     return code
 
 

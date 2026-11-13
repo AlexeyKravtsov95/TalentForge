@@ -20,6 +20,7 @@ from talent_data.ota.automation.prepare import (
     BOT,
     REQUEST_DIR,
     GitHub,
+    PreparationBlocked,
     PreparedProposal,
     git,
     obj,
@@ -121,7 +122,7 @@ def verify_metadata_head(
         same(api.content(path, head), raw.encode(), "METADATA_CHANGED", "committed bytes")
 
 
-def writer_scope(writer: GitHub) -> None:
+def writer_scope(writer: GitHub) -> str:
     installation = obj(writer.call("GET", "/installation/repositories", params={"per_page": 100}))
     same(installation.get("total_count"), 1, "APP_SCOPE", "single repository")
     repos = installation.get("repositories")
@@ -132,6 +133,11 @@ def writer_scope(writer: GitHub) -> None:
         "APP_SCOPE",
         "TalentForge installation only",
     )
+    assert isinstance(repos, list)
+    node = obj(repos[0]).get("node_id")
+    require(isinstance(node, str) and bool(node), "APP_SCOPE", "repository node identity")
+    assert isinstance(node, str)
+    return node
 
 
 def bind_candidate_request(
@@ -168,7 +174,7 @@ def bind_candidate_request(
             "METADATA_CHANGED",
             "release metadata already exists",
         )
-    writer_scope(writer)
+    repository_node = writer_scope(writer)
     parent = obj(reader.repo("GET", f"/git/commits/{head}"))
     tree = obj(
         writer.repo(
@@ -198,11 +204,39 @@ def bind_candidate_request(
         )
     )
     result = str(commit["sha"])
-    # The only ref update is fast-forward D->P. Any concurrent sibling/foreign commit
-    # makes this update non-fast-forward and GitHub refuses it; never force or retry.
+    # updateRefs atomically checks beforeOid; REST force:false alone permits rewind races.
+    # https://docs.github.com/en/graphql/reference/git#updaterefs
     current = policy_pull(reader, candidate.pull_number)
     same(obj(current.get("head")).get("sha"), head, "BRANCH_CHANGED", "head before update")
-    writer.repo("PATCH", "/git/refs/heads/" + branch, data={"sha": result, "force": False})
+    updated = obj(
+        writer.call(
+            "POST",
+            "/graphql",
+            data={
+                "query": (
+                    "mutation($input:UpdateRefsInput!){updateRefs(input:$input){clientMutationId}}"
+                ),
+                "variables": {
+                    "input": {
+                        "repositoryId": repository_node,
+                        "refUpdates": [
+                            {
+                                "name": "refs/heads/" + branch,
+                                "beforeOid": head,
+                                "afterOid": result,
+                                "force": False,
+                            }
+                        ],
+                    }
+                },
+            },
+        )
+    )
+    require(
+        not updated.get("errors") and "updateRefs" in obj(updated.get("data")),
+        "BRANCH_CHANGED",
+        "atomic expected-head update refused",
+    )
     same(
         obj(policy_pull(reader, candidate.pull_number).get("head")).get("sha"),
         result,
@@ -355,18 +389,22 @@ def mark_candidate_ready(
     review = review_package(reader, repo, pull_number)
     pull, request, binding = review.pull, review.request, review.binding
     head = str(obj(pull.get("head")).get("sha"))
-    verify_full_pr_ci(reader, pull_number, head, ci_pin)
+
+    def current_ready_proof() -> dict[str, Any]:
+        current = policy_pull(reader, pull_number)
+        same(obj(current.get("head")).get("sha"), head, "CANDIDATE_CHANGED", "current head")
+        same(obj(current.get("base")).get("sha"), binding.base_sha, "BASE_CHANGED", "frozen base")
+        latest_ci = verify_full_pr_ci(reader, pull_number, head)
+        same(latest_ci, ci_pin, "CANDIDATE_CI", "latest final CI run/attempt")
+        return current
+
+    current = current_ready_proof()
     verify_metadata_head(reader, head, request, binding)
-    current = policy_pull(reader, pull_number)
-    same(obj(current.get("head")).get("sha"), head, "CANDIDATE_CHANGED", "head before ready")
     body = render_ready_body(review)
     if current.get("body") != body:
         writer_scope(writer)
         writer.repo("PATCH", f"/pulls/{pull_number}", data={"body": body})
-        current = policy_pull(reader, pull_number)
-        same(
-            obj(current.get("head")).get("sha"), head, "CANDIDATE_CHANGED", "review body read-back"
-        )
+        current = current_ready_proof()
     if current.get("draft") is False:
         return
     same(current.get("draft"), True, "CANDIDATE_CHANGED", "draft state")
@@ -387,12 +425,13 @@ def mark_candidate_ready(
         )
     )
     require(not result.get("errors"), "READY_FAILED", "GitHub refused readiness")
-    latest = policy_pull(reader, pull_number)
-    actual_head = str(obj(latest.get("head")).get("sha"))
-    if actual_head != head:
-        _draft_current(reader, writer, pull_number, actual_head)
-        require(False, "CANDIDATE_CHANGED", "head changed during readiness; draft restored")
-    same(policy_pull(reader, pull_number).get("draft"), False, "READY_FAILED", "ready read-back")
+    try:
+        current = current_ready_proof()
+    except PreparationBlocked:
+        latest = policy_pull(reader, pull_number)
+        _draft_current(reader, writer, pull_number, str(obj(latest.get("head")).get("sha")))
+        raise
+    same(current.get("draft"), False, "READY_FAILED", "ready read-back")
 
 
 def route_candidate_ci(reader: GitHub, repo: Path, pin: RunPin) -> tuple[str, int]:

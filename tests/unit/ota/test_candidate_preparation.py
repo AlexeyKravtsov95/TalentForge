@@ -3,7 +3,6 @@
 import json
 import os
 import subprocess
-from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -112,13 +111,17 @@ def test_staging_resolve_reports_the_verified_candidate_context(context, tmp_pat
     ],
 )
 def test_workflow_passes_candidate_identity_as_literal_cli_arguments(tmp_path, workflow, job, step):
-    import yaml
+    from tests.unit.ota.test_automation_workflows import workflow_jobs
 
-    root = Path(__file__).resolve().parents[3]
-    document = yaml.load(
-        (root / ".github/workflows" / workflow).read_text(), Loader=yaml.BaseLoader
-    )
-    script = next(s["run"] for s in document["jobs"][job]["steps"] if s.get("name") == step)
+    _, jobs = workflow_jobs(workflow)
+    lines = jobs[job].split(f"      - name: {step}\n", 1)[1].splitlines()
+    start = lines.index("        run: |")
+    body = []
+    for line in lines[start + 1 :]:
+        if line and not line.startswith(" " * 10):
+            break
+        body.append(line[10:])
+    script = "\n".join(body) + "\n"
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     executable = bin_dir / "python"

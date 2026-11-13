@@ -132,3 +132,82 @@ def test_frozen_review_terms_show_warning_and_exact_package(tmp_path):
     from dataclasses import replace
 
     assert render_ready_body(replace(facts, pull={**facts.pull, "body": body})) == body
+
+
+@pytest.mark.parametrize("failure", [None, "api", "http"])
+@pytest.mark.parametrize("routing", [False, True])
+def test_owned_client_timeline_cannot_break_authoritative_preflight(
+    tmp_path, monkeypatch, failure, routing
+):
+    from types import SimpleNamespace
+
+    import httpx
+
+    from talent_data.ota.automation import cli, timings
+    from talent_data.ota.automation.delivery_routing import route
+    from talent_data.ota.automation.prepare import PreparationBlocked
+    from tests.unit.ota.test_delivery_routing import hint
+
+    real_client = httpx.Client
+    clients, timeline_calls = [], []
+
+    def client_factory(**kwargs):
+        client = real_client(transport=httpx.MockTransport(lambda _: httpx.Response(200, json={})))
+        clients.append(client)
+        return client
+
+    monkeypatch.setattr(cli.httpx, "Client", client_factory)
+    monkeypatch.setattr(cli, "production_keyring", lambda _: {})
+    monkeypatch.setattr(cli, "GitJournal", lambda _: object())
+
+    def operation(self):
+        assert not self.d.client.is_closed
+        self.recorder = SimpleNamespace(
+            failure=None, finish=lambda **_: SimpleNamespace(model_dump_json=lambda **_: "{}")
+        )
+        self.owner_merge = object()
+        return cli._empty(self.args, "READY", "PLANNING", "READY").model_copy(
+            update={"writer_needed": True}
+        )
+
+    def timeline(api, proof, **kwargs):
+        timeline_calls.append(True)
+        assert not api.client.is_closed
+        api.repo("GET", "/pulls/141")  # actual owned httpx client, isolated transport
+        if failure == "api":
+            raise PreparationBlocked("GITHUB_HTTP", "unavailable optional audit")
+        if failure == "http":
+            raise httpx.ConnectError("unavailable optional audit")
+        return SimpleNamespace(model_dump_json=lambda **_: "{}")
+
+    monkeypatch.setattr(cli._Run, "run", operation)
+    monkeypatch.setattr(timings, "owner_merge_timeline", timeline)
+    env = {cli.ENABLE_FLAG: "true", "GITHUB_TOKEN": "test-isolated-token"}
+    if routing:
+        result = route(
+            hint(),
+            "preflight",
+            tmp_path,
+            head_sha="a" * 40,
+            invoke=lambda argv: cli.main(argv, environment=env),
+        )
+        assert result.outcome == "READY" and result.writer_needed
+    else:
+        status = tmp_path / "status.json"
+        assert (
+            cli.main(
+                [
+                    "preflight",
+                    "--status-file",
+                    str(status),
+                    "--timings-file",
+                    str(tmp_path / "timings.json"),
+                ],
+                environment=env,
+            )
+            == 0
+        )
+        result = cli.read_status(status.read_bytes())
+        assert result.outcome == "READY" and result.writer_needed
+    assert timeline_calls == [True]
+    assert clients and all(c.is_closed for c in clients)

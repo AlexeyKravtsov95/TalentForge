@@ -23,8 +23,26 @@ class App:
         self.race = None
 
     def call(self, method, path, **kwargs):
+        if method == "POST" and path == "/graphql":
+            self.writes.append((method, path, copy.deepcopy(kwargs["data"])))
+            assert "updateRefs" in kwargs["data"]["query"]
+            inputs = kwargs["data"]["variables"]["input"]
+            assert inputs["repositoryId"] == "R_test"
+            (update,) = inputs["refUpdates"]
+            assert update["force"] is False
+            assert update["name"] == "refs/heads/" + self.api.branch
+            if self.race:
+                self.api.pull["head"]["sha"] = self.race
+            if update["beforeOid"] != self.api.pull["head"]["sha"]:
+                return {"errors": [{"message": "expected old ref differs"}]}
+            assert (
+                git(self.api.repo_path, "rev-parse", update["afterOid"] + "^")
+                == update["beforeOid"]
+            )
+            self.api.pull["head"]["sha"] = update["afterOid"]
+            return {"data": {"updateRefs": {"clientMutationId": None}}}
         assert method == "GET" and path == "/installation/repositories"
-        return {"total_count": 1, "repositories": [{"full_name": REPOSITORY}]}
+        return {"total_count": 1, "repositories": [{"full_name": REPOSITORY, "node_id": "R_test"}]}
 
     def repo(self, method, path, *, data=None, **kwargs):
         if method == "GET":
@@ -89,7 +107,18 @@ class App:
             if self.race:
                 self.api.pull["head"]["sha"] = self.race
             sha = data["sha"]
-            if git(repo, "rev-parse", sha + "^") != self.api.pull["head"]["sha"]:
+            if subprocess.run(
+                [
+                    "git",
+                    "-C",
+                    str(repo),
+                    "merge-base",
+                    "--is-ancestor",
+                    self.api.pull["head"]["sha"],
+                    sha,
+                ],
+                capture_output=True,
+            ).returncode:
                 raise PreparationBlocked("BRANCH_CHANGED", "non fast forward")
             self.api.pull["head"]["sha"] = sha
             return {"object": {"sha": sha}}
@@ -201,6 +230,16 @@ def test_one_metadata_commit_is_idempotent_and_keeps_data(tmp_path):
     assert bind_candidate_request(reader, writer, repo, candidate, request, binding) == head
     assert len(writer.writes) == before
     assert all(path != "/pulls" for _, path, _ in writer.writes)
+
+
+def test_owner_rewind_at_ref_update_is_not_overwritten(tmp_path):
+    from talent_data.ota.automation.premerge import bind_candidate_request
+
+    repo, reader, writer, candidate, request, binding = setup(tmp_path)
+    writer.race = reader.base
+    with pytest.raises(PreparationBlocked):
+        bind_candidate_request(reader, writer, repo, candidate, request, binding)
+    assert reader.pull["head"]["sha"] == reader.base
 
 
 @pytest.mark.parametrize("fault", ["foreign-head", "race", "wrong-binding", "revoked-policy"])
@@ -377,3 +416,65 @@ def test_racing_head_during_ready_is_returned_to_draft(tmp_path, monkeypatch):
         premerge.mark_candidate_ready(reader, writer, repo, 141, ci_pin=pin)
     assert reader.pull["draft"] is True
     assert all(not p.endswith("/merge") for _, p, _ in writer.writes)
+
+
+@pytest.mark.parametrize(
+    "fault", ["stale-success", "base-during-body", "base-during-ready", "ci-during-ready"]
+)
+def test_readiness_rechecks_latest_ci_and_frozen_base(tmp_path, monkeypatch, fault):
+    from talent_data.ota.automation import premerge
+    from talent_data.ota.automation.requests import RunPin
+
+    repo, reader, writer, candidate, request, binding = setup(tmp_path)
+    head = premerge.bind_candidate_request(reader, writer, repo, candidate, request, binding)
+    reader.pull["node_id"] = "PR_test"
+    reader.runs[201].update(head_sha=head, pull_requests=[])
+    for job in reader.jobs[201]:
+        job["head_sha"] = head
+    review = premerge.CandidateReview(
+        copy.deepcopy(reader.pull),
+        request,
+        binding,
+        candidate,
+        ({"gate": "G7", "status": "FLAG", "detail": "merge"},),
+        403,
+        5125504,
+    )
+    monkeypatch.setattr(premerge, "review_package", lambda *args: review)
+    original_pages = reader.pages
+
+    def fail_current_ci():
+        reader.runs[301] = {**copy.deepcopy(reader.runs[201]), "id": 301, "conclusion": "failure"}
+        reader.pages = lambda path, *args, **kwargs: (
+            [reader.runs[301], reader.runs[201]]
+            if path == "/actions/workflows/ci.yml/runs"
+            else original_pages(path, *args, **kwargs)
+        )
+
+    original_repo, original_call = writer.repo, writer.call
+
+    def write(method, path, **kwargs):
+        result = original_repo(method, path, **kwargs)
+        if fault == "base-during-body" and path == "/pulls/141":
+            reader.pull["base"]["sha"] = "f" * 40
+        return result
+
+    def call(method, path, **kwargs):
+        if path == "/graphql":
+            writer.writes.append((method, path, kwargs["data"]))
+            draft = "convertPullRequestToDraft" in kwargs["data"]["query"]
+            reader.pull["draft"] = draft
+            if not draft and fault == "base-during-ready":
+                reader.pull["base"]["sha"] = "f" * 40
+            if not draft and fault == "ci-during-ready":
+                fail_current_ci()
+            return {"data": {}}
+        return original_call(method, path, **kwargs)
+
+    writer.repo, writer.call = write, call
+    if fault == "stale-success":
+        fail_current_ci()
+    pin = RunPin(workflow_path=".github/workflows/ci.yml", run_id=201, attempt=1, head_sha=head)
+    with pytest.raises(PreparationBlocked):
+        premerge.mark_candidate_ready(reader, writer, repo, 141, ci_pin=pin)
+    assert reader.pull["draft"] is True

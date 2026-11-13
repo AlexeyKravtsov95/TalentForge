@@ -307,6 +307,18 @@ class API(CandidateAPI):
 
 class Writer(App):
     def call(self, method, path, **kwargs):
+        if path == "/graphql" and "updateRefs" in kwargs["data"]["query"]:
+            result = super().call(method, path, **kwargs)
+            if not result.get("errors"):
+                (update,) = kwargs["data"]["variables"]["input"]["refUpdates"]
+                git(
+                    self.api.repo_path,
+                    "update-ref",
+                    update["name"],
+                    update["afterOid"],
+                    update["beforeOid"],
+                )
+            return result
         if path == "/graphql":
             self.writes.append((method, path, kwargs["data"]))
             self.api.pull["draft"] = "convertPullRequestToDraft" in kwargs["data"]["query"]
