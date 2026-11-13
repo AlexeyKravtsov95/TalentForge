@@ -287,7 +287,15 @@ def test_ready_requires_exact_final_full_validation(tmp_path, monkeypatch, fault
     monkeypatch.setattr(
         premerge,
         "review_package",
-        lambda *args: (copy.deepcopy(reader.pull), request, binding, candidate),
+        lambda *args: premerge.CandidateReview(
+            copy.deepcopy(reader.pull),
+            request,
+            binding,
+            candidate,
+            ({"gate": "G7", "status": "FLAG", "detail": "merge decision"},),
+            403,
+            5125504,
+        ),
     )
     original = writer.call
 
@@ -321,6 +329,6 @@ def test_ready_requires_exact_final_full_validation(tmp_path, monkeypatch, fault
     else:
         premerge.mark_candidate_ready(reader, writer, repo, 141, ci_pin=pin)
         assert reader.pull["draft"] is False
-        assert [p for _, p, _ in writer.writes] == ["/graphql"]
+        assert [p for _, p, _ in writer.writes] == ["/pulls/141", "/graphql"]
         premerge.mark_candidate_ready(reader, writer, repo, 141, ci_pin=pin)
-        assert len(writer.writes) == 1
+        assert len(writer.writes) == 2

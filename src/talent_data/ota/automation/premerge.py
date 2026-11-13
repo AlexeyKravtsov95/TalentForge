@@ -1,6 +1,7 @@
 """One candidate MR: conditional metadata append, never merge or production writes."""
 
 from collections.abc import Mapping
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -211,9 +212,67 @@ def bind_candidate_request(
     return result
 
 
-def review_package(
-    reader: GitHub, repo: Path, pull_number: int
-) -> tuple[dict[str, Any], ReleaseRequest, CandidateBinding, VerifiedCandidate]:
+@dataclass(frozen=True)
+class CandidateReview:
+    pull: dict[str, Any]
+    request: ReleaseRequest
+    binding: CandidateBinding
+    candidate: VerifiedCandidate
+    gates: tuple[dict[str, Any], ...]
+    file_count: int
+    total_bytes: int
+
+
+def render_ready_body(review: CandidateReview) -> str:
+    request, binding = review.request, review.binding
+    marker = "<!-- talentforge:frozen-review-v1 -->"
+    original = str(review.pull.get("body", "")).split(marker, 1)[0].rstrip()
+    lines = [
+        original,
+        "",
+        marker,
+        "",
+        "## Пакет готов к выпуску",
+        "",
+        "После проверки нажми обычный Merge. Это разрешает автоматическую публикацию "
+        "этого пакета для live-серверов; второго MR "
+        "или дополнительного подтверждения не требуется. "
+        "Используй merge commit; squash/rebase в этой схеме не поддерживаются.",
+        "",
+        f"- Выпуск: `{request.release_id}`; {review.file_count} файлов, {review.total_bytes} байт.",
+        f"- Манифест: `{request.manifest_sha256}`.",
+        f"- Источник: `{request.source_commit}`; создан: `{request.created_at}`.",
+        f"- База: `{request.base_release_id}` / `{request.base_manifest_sha256}`.",
+        f"- Пакет: artifact `{request.artifact.artifact_id}`, `{request.artifact.archive_sha256}`; "
+        f"[проверенный запуск](https://github.com/{request.repository}/actions/runs/{request.package_run.run_id}/attempts/{request.package_run.attempt}).",
+        f"- [Staging](https://github.com/{request.repository}/actions/runs/"
+        f"{request.staging_run.run_id}/attempts/{request.staging_run.attempt}): "
+        "пройден на тех же файлах.",
+        "- Полный CI финального MR пройден. Пакет после merge не пересобирается.",
+    ]
+    if "G5" in binding.flagged_gates:
+        detail = next(
+            str(g.get("detail"))
+            for g in review.gates
+            if g.get("gate") == "G5" and g.get("status") == "FLAG"
+        )
+        lines += [
+            "",
+            "Новые предупреждения относительно базы (merge означает их принятие):",
+            "",
+            detail,
+        ]
+    lines += [
+        "",
+        "Целевое время от merge до полной публичной проверки — 10 минут. "
+        "Это целевой показатель; задержки GitHub и фактическое время проверки "
+        "сохраняются в отчёте.",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def review_package(reader: GitHub, repo: Path, pull_number: int) -> CandidateReview:
     """Fresh API/archive/source proof for an MR with appended release metadata."""
     import tempfile
 
@@ -271,7 +330,20 @@ def review_package(
             package=package,
             candidate_context=candidate,
         )
-    return pull, request, binding, candidate
+        from talent_data.ota.verify import strict_json
+
+        rows = strict_json(package.attachment("report/gates.json"))
+        assert isinstance(rows, list)
+        review = CandidateReview(
+            pull,
+            request,
+            binding,
+            candidate,
+            tuple(obj(r) for r in rows),
+            package.index.file_count,
+            package.index.total_byte_length,
+        )
+    return review
 
 
 def mark_candidate_ready(
@@ -279,12 +351,21 @@ def mark_candidate_ready(
 ) -> None:
     from talent_data.ota.automation.candidate import verify_full_pr_ci
 
-    pull, request, binding, _ = review_package(reader, repo, pull_number)
+    review = review_package(reader, repo, pull_number)
+    pull, request, binding = review.pull, review.request, review.binding
     head = str(obj(pull.get("head")).get("sha"))
     verify_full_pr_ci(reader, pull_number, head, ci_pin)
     verify_metadata_head(reader, head, request, binding)
     current = policy_pull(reader, pull_number)
     same(obj(current.get("head")).get("sha"), head, "CANDIDATE_CHANGED", "head before ready")
+    body = render_ready_body(review)
+    if current.get("body") != body:
+        writer_scope(writer)
+        writer.repo("PATCH", f"/pulls/{pull_number}", data={"body": body})
+        current = policy_pull(reader, pull_number)
+        same(
+            obj(current.get("head")).get("sha"), head, "CANDIDATE_CHANGED", "review body read-back"
+        )
     if current.get("draft") is False:
         return
     same(current.get("draft"), True, "CANDIDATE_CHANGED", "draft state")

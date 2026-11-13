@@ -20,7 +20,7 @@ from datetime import UTC, datetime
 from functools import partial
 from pathlib import Path
 from time import monotonic
-from typing import Literal, Self
+from typing import TYPE_CHECKING, Literal, Self
 
 import httpx
 from cryptography.exceptions import InvalidSignature
@@ -109,6 +109,9 @@ from talent_data.ota.s3_store import ProductionCatalogGuard, S3Location, connect
 from talent_data.ota.store import BLOB_PREFIX, BlobStore, catalog_key
 from talent_data.ota.verify import OtaError, TrustedKey, pae, parse_strict, sha256_ref, strict_json
 from talent_data.prepare.propose import git_auth
+
+if TYPE_CHECKING:
+    from talent_data.ota.automation.merge_approval import VerifiedOwnerMerge
 
 ENABLE_FLAG = "OTA_PRODUCTION_AUTOMATION_ENABLED"
 PRIMARY_KEY = "tf-prod-2026a"
@@ -311,6 +314,7 @@ class _Run:
         self.proof: PublicVerification | None = None
         self.expected_payload: str | None = None
         self.verified_at: datetime | None = None
+        self.owner_merge: VerifiedOwnerMerge | None = None
 
     def timing_now(self) -> datetime:
         return (self.d.timing_now or self.d.now)()
@@ -400,6 +404,18 @@ class _Run:
             temporary = path.with_suffix(path.suffix + ".tmp")
             temporary.write_text(result.model_dump_json(by_alias=True) + "\n", encoding="utf-8")
             temporary.replace(path)
+            if self.owner_merge is not None:
+                from talent_data.ota.automation.timings import owner_merge_timeline
+
+                timeline = owner_merge_timeline(
+                    self.d.api, self.owner_merge, verified_at=self.verified_at
+                )
+                audit = path.with_suffix(".owner-merge.json")
+                audit_tmp = audit.with_suffix(audit.suffix + ".tmp")
+                audit_tmp.write_text(
+                    timeline.model_dump_json(by_alias=True) + "\n", encoding="utf-8"
+                )
+                audit_tmp.replace(audit)
         except (OSError, ValueError, TypeError):
             print("DELIVERY_TIMINGS_UNAVAILABLE", file=sys.stderr)
 
@@ -592,6 +608,7 @@ class _Run:
             owner_merge = verify_owner_merge(
                 self.d.api, self.d.repo, request, record, binding=binding
             )
+            self.owner_merge = owner_merge
         return ProvenanceEvidence(runs, artifact, self.archives[digest], owner_merge)
 
     def assess(self, request: ReleaseRequest, root: Path) -> None:
