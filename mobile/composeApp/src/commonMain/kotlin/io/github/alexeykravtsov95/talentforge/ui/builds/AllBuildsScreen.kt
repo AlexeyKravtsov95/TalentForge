@@ -79,6 +79,7 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.lib
 import io.github.alexeykravtsov95.talentforge.data.ClassToken
 import io.github.alexeykravtsov95.talentforge.data.TalentDatasetRepository
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
+import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRecord
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildAutosaveCoordinator
 import io.github.alexeykravtsov95.talentforge.ui.library.BuildCardModel
@@ -140,11 +141,13 @@ private sealed interface ManagementNotice {
  * Rename / Duplicate / Delete sheet. Tap on the row still opens the build;
  * tap on `⋯` never does. Management operations run off the main thread, one
  * at a time (repeated presses are ignored while one is in flight), and every
- * success reloads the list from the repository — the screen never keeps a
- * second copy of the library as its source of truth. Rename/delete failures
+ * rename/duplicate/delete success reloads the list from the repository.
+ * Favorites update only the matching card, preserving resolved metadata and
+ * scroll position; the optimistic star rolls back on failure and only the
+ * repository-confirmed record is kept after success. Rename/delete failures
  * keep their dialog open with a retryable error; a failed duplicate shows a
- * retryable notice. The list count, order and empty state all come from the
- * reload.
+ * retryable notice. The list count, order and empty state derive from the
+ * current cards, including each favorite update.
  *
  * M5.SHARE.2: Rename, `Share` and Delete in the row sheet go through the
  * app's one [BuildActionsPresenter] (also used by Home's Recent rows; the
@@ -248,13 +251,32 @@ fun AllBuildsScreen(
 
     fun setFavorite(localId: String, value: Boolean) {
         launchManagement {
+            val confirmed = (data as? LibraryData.Ready)?.value
+                ?.firstOrNull { it.record.localId == localId }?.record ?: return@launchManagement
+
+            fun updateRecord(record: LocalBuildRecord) {
+                val current = data as? LibraryData.Ready ?: return
+                data = LibraryData.Ready(current.value.map { card ->
+                    if (card.record.localId == record.localId) card.copy(record = record) else card
+                })
+            }
+
+            // The single-flight guard covers this optimistic update and its write.
+            // Keep Ready (and all dataset-derived metadata) throughout the operation.
+            updateRecord(confirmed.copy(isFavorite = value))
             when (val outcome = autosave.setFavorite(localId, value)) {
                 is BuildFavoriteOutcome.Saved -> {
+                    updateRecord(outcome.record)
                     notice = ManagementNotice.None
-                    reloadToken += 1
                 }
-                BuildFavoriteOutcome.PendingSaveFailed -> notice = ManagementNotice.FavoriteFailed(localId, value, pendingSave = true)
-                is BuildFavoriteOutcome.Failed -> notice = ManagementNotice.FavoriteFailed(localId, value, pendingSave = false)
+                BuildFavoriteOutcome.PendingSaveFailed -> {
+                    updateRecord(confirmed)
+                    notice = ManagementNotice.FavoriteFailed(localId, value, pendingSave = true)
+                }
+                is BuildFavoriteOutcome.Failed -> {
+                    updateRecord(confirmed)
+                    notice = ManagementNotice.FavoriteFailed(localId, value, pendingSave = false)
+                }
             }
         }
     }

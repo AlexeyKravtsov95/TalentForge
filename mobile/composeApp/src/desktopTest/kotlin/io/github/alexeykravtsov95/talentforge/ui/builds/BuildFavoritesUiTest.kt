@@ -30,7 +30,8 @@ class BuildFavoritesUiTest {
     private fun records() = assertIs<BuildLibraryOutcome.Loaded<List<LocalBuildRecord>>>(repository().load()).value
     private fun await(text: String) = ui.waitUntil(10_000) { ui.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty() }
     private fun awaitStar(title: String) = ui.waitUntil(10_000) {
-        ui.onAllNodesWithContentDescription("Remove from Favorites: $title").fetchSemanticsNodes().isNotEmpty()
+        ui.onAllNodes(hasContentDescription("Remove from Favorites: $title") and isEnabled())
+            .fetchSemanticsNodes().isNotEmpty()
     }
     private fun openLibrary() {
         await("All builds 2")
