@@ -19,10 +19,15 @@ import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import io.github.alexeykravtsov95.talentforge.data.BundledTalentDatasetRepository
 import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
+import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildLibraryCodec
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRecord
 import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.ui.App
+import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
+import io.github.alexeykravtsov95.talentforge.ui.library.BuildCardModel
+import io.github.alexeykravtsov95.talentforge.ui.library.LibraryData
 import io.github.alexeykravtsov95.talentforge.ui.FakeBuildLibraryStorage
 import io.github.alexeykravtsov95.talentforge.ui.FixedClock
 import io.github.alexeykravtsov95.talentforge.ui.SequentialIds
@@ -34,7 +39,9 @@ import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 
 @OptIn(ExperimentalTestApi::class)
@@ -150,6 +157,69 @@ class BuildLibrarySortingUiTest {
         assertEquals(warrior.updatedAt, renamed.updatedAt)
         assertEquals(warrior.lastOpenedAt, renamed.lastOpenedAt)
         assertEquals(warrior.build, renamed.build)
+    }
+
+    @Test
+    fun missingHistoricalDatasetKeepsEnRuClassGroupLabelsWithoutMaskingMissingData() {
+        for (language in AppLanguage.entries) {
+            uiLanguage.language = language
+            val ru = language == AppLanguage.RUSSIAN
+            val storage = FakeBuildLibraryStorage()
+            val clock = FixedClock()
+            ShellLibraryFixtures.persist(
+                storage,
+                clock,
+                listOf(ShellLibraryFixtures.Build("WARRIOR", name = "Legacy")),
+            )
+            // Use the real v2 codec to persist a build whose exact historical
+            // dataset is unavailable. Its stable class token remains valid.
+            val records = LocalBuildLibraryCodec.decode(storage.payload!!)
+            storage.write(LocalBuildLibraryCodec.encode(records.map {
+                it.copy(build = it.build.copy(clientBuild = "1.60.1.00000"))
+            }))
+            val repository = LocalBuildRepository(storage, clock, SequentialIds())
+            val datasets = BundledTalentDatasetRepository(ComposeResourceDatasetAssetSource())
+            val cards = assertIs<LibraryData.Ready<List<BuildCardModel>>>(
+                runBlocking { loadBuildsModel(repository, datasets) },
+            ).value
+            assertNull(cards.single().classDisplayName, "fixture must represent an unavailable dataset")
+            val originalPayload = storage.payload
+            val originalWrites = storage.writeCount
+
+            runDesktopComposeUiTest(width = 360, height = 852) {
+                setContent {
+                    TalentForgeTheme {
+                        Box(Modifier.size(360.dp, 852.dp)) {
+                            App(storage = storage, clock = clock, ids = SequentialIds())
+                        }
+                    }
+                }
+                val copy = ShellCopy.of(language)
+                waitUntil(timeoutMillis = 10_000) {
+                    onAllNodesWithText(copy.allBuildsLink(1)).fetchSemanticsNodes().isNotEmpty()
+                }
+                onNodeWithText(copy.allBuildsLink(1)).performScrollTo().performClick()
+                waitUntil(timeoutMillis = 10_000) {
+                    onAllNodesWithText("Legacy").fetchSemanticsNodes().isNotEmpty()
+                }
+                val sortLabel = if (ru) {
+                    "Сортировка и группировка: Последние изменения, группировка выключена"
+                } else {
+                    "Sort and grouping: Last edited, grouping off"
+                }
+                onNodeWithContentDescription(sortLabel).performScrollTo().performClick()
+                onNodeWithText(if (ru) "Группировать по классам" else "Group by class").performClick()
+                onNodeWithText(copy.className("WARRIOR") + " · 1").performScrollTo().assertIsDisplayed()
+
+                // Search also recognizes the visible localized class even if
+                // the old talent dataset cannot be resolved.
+                onNodeWithContentDescription(if (ru) "Поиск билдов" else "Search builds")
+                    .performScrollTo().performTextReplacement(copy.className("WARRIOR"))
+                onNodeWithText("Legacy").performScrollTo().assertIsDisplayed()
+                assertEquals(originalPayload, storage.payload)
+                assertEquals(originalWrites, storage.writeCount)
+            }
+        }
     }
 
     @Test
