@@ -64,9 +64,9 @@ class BuildLibrarySortingUiTest {
                             }
                         }
                     }
-                    waitUntil(10_000) { onAllNodesWithText(copy.allBuildsLink(2)).fetchSemanticsNodes().isNotEmpty() }
+                    waitUntil(timeoutMillis = 10_000) { onAllNodesWithText(copy.allBuildsLink(2)).fetchSemanticsNodes().isNotEmpty() }
                     onNodeWithText(copy.allBuildsLink(2)).performScrollTo().performClick()
-                    waitUntil(10_000) { onAllNodesWithText("Alpha").fetchSemanticsNodes().isNotEmpty() }
+                    waitUntil(timeoutMillis = 10_000) { onAllNodesWithText("Alpha").fetchSemanticsNodes().isNotEmpty() }
                     val off = if (ru) "выключена" else "off"
                     val on = if (ru) "включена" else "on"
                     val latest = if (ru) "Последние изменения" else "Last edited"
@@ -115,9 +115,9 @@ class BuildLibrarySortingUiTest {
                     }
                 }
             }
-            waitUntil(10_000) { onAllNodesWithText("All builds 2").fetchSemanticsNodes().isNotEmpty() }
+            waitUntil(timeoutMillis = 10_000) { onAllNodesWithText("All builds 2").fetchSemanticsNodes().isNotEmpty() }
             onNodeWithText("All builds 2").performScrollTo().performClick()
-            waitUntil(10_000) { onAllNodesWithText("Zulu").fetchSemanticsNodes().isNotEmpty() }
+            waitUntil(timeoutMillis = 10_000) { onAllNodesWithText("Zulu").fetchSemanticsNodes().isNotEmpty() }
             onNodeWithContentDescription("Sort and grouping: Last edited, grouping off").performScrollTo().performClick()
             onNodeWithText("Name").performClick()
             onNodeWithContentDescription("Sort and grouping: Name, grouping off").performClick()
@@ -128,15 +128,15 @@ class BuildLibrarySortingUiTest {
             onNodeWithText("Rename").performClick()
             onNodeWithContentDescription("build name").performTextReplacement("Beta")
             onNodeWithText("Save").performClick()
-            waitUntil(10_000) { onAllNodesWithText("Beta").fetchSemanticsNodes().isNotEmpty() }
+            waitUntil(timeoutMillis = 10_000) { onAllNodesWithText("Beta").fetchSemanticsNodes().isNotEmpty() }
             onNodeWithContentDescription("build actions for Beta").performScrollTo().performClick()
             onNodeWithText("Duplicate").performClick()
-            waitUntil(10_000) { onAllNodesWithText("Beta (copy)").fetchSemanticsNodes().isNotEmpty() }
+            waitUntil(timeoutMillis = 10_000) { onAllNodesWithText("Beta (copy)").fetchSemanticsNodes().isNotEmpty() }
             onNodeWithText("Warrior · 2").performScrollTo().assertIsDisplayed()
             onNodeWithContentDescription("build actions for Beta (copy)").performScrollTo().performClick()
             onNodeWithText("Delete").performClick()
             onNodeWithText("Delete").performClick()
-            waitUntil(10_000) { onAllNodesWithText("Warrior · 1").fetchSemanticsNodes().isNotEmpty() }
+            waitUntil(timeoutMillis = 10_000) { onAllNodesWithText("Warrior · 1").fetchSemanticsNodes().isNotEmpty() }
             onNodeWithText("Warrior · 1").performScrollTo().assertIsDisplayed()
         }
         val result = assertIs<BuildLibraryOutcome.Loaded<List<LocalBuildRecord>>>(
@@ -170,16 +170,16 @@ class BuildLibrarySortingUiTest {
                     }
                 }
             }
-            waitUntil(10_000) { onAllNodesWithText("All builds 2").fetchSemanticsNodes().isNotEmpty() }
+            waitUntil(timeoutMillis = 10_000) { onAllNodesWithText("All builds 2").fetchSemanticsNodes().isNotEmpty() }
             onNodeWithText("All builds 2").performScrollTo().performClick()
-            waitUntil(10_000) { onAllNodesWithText("Alpha").fetchSemanticsNodes().isNotEmpty() }
+            waitUntil(timeoutMillis = 10_000) { onAllNodesWithText("Alpha").fetchSemanticsNodes().isNotEmpty() }
             onNodeWithContentDescription("Sort and grouping: Last edited, grouping off").performScrollTo().performClick()
             onNodeWithText("Class").performClick()
             onNodeWithContentDescription("Sort and grouping: Class, grouping off").performClick()
             onNodeWithText("Group by class").performClick()
             onNodeWithContentDescription("Sort and grouping: Class, grouping on").performScrollTo().assertIsDisplayed()
             restoration.emulateSaveAndRestore()
-            waitUntil(10_000) {
+            waitUntil(timeoutMillis = 10_000) {
                 onAllNodesWithText("Warrior · 1").fetchSemanticsNodes().isNotEmpty()
             }
             onNodeWithContentDescription("Sort and grouping: Class, grouping on").performScrollTo().assertIsDisplayed()
