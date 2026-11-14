@@ -94,6 +94,7 @@ import io.github.alexeykravtsov95.talentforge.ui.library.buildCardTitle
 import io.github.alexeykravtsov95.talentforge.ui.library.classMonogramOf
 import io.github.alexeykravtsov95.talentforge.ui.library.gameDisplayName
 import io.github.alexeykravtsov95.talentforge.ui.library.loadBuildsModel
+import io.github.alexeykravtsov95.talentforge.ui.library.localizedLibraryClassName
 import io.github.alexeykravtsov95.talentforge.ui.library.localizedClassName
 import io.github.alexeykravtsov95.talentforge.ui.library.relativeBuildTime
 import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
@@ -398,8 +399,7 @@ fun AllBuildsScreen(
                             BuildLibrarySearchEntry(
                                 card,
                                 buildCardTitle(card),
-                                localizedClassName(card.record.build.classToken, card.classDisplayName)
-                                    ?: card.record.build.classToken.value,
+                                localizedLibraryClassName(card.record.build.classToken, card.classDisplayName),
                             )
                         }
                         val results = sortBuildLibrary(filterBuildLibrary(entries, query, selectedClass, favoritesOnly), sortMode)
