@@ -6,6 +6,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.StateRestorationTester
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -147,5 +148,44 @@ class BuildLibrarySortingUiTest {
         assertEquals(warrior.updatedAt, renamed.updatedAt)
         assertEquals(warrior.lastOpenedAt, renamed.lastOpenedAt)
         assertEquals(warrior.build, renamed.build)
+    }
+
+    @Test
+    fun savedSortAndGroupingSurviveComposeSaveRestoreWithoutStorageWrites() {
+        val storage = FakeBuildLibraryStorage()
+        val clock = FixedClock()
+        ShellLibraryFixtures.persist(storage, clock, listOf(
+            ShellLibraryFixtures.Build("WARRIOR", name = "Zulu"),
+            ShellLibraryFixtures.Build("MAGE", name = "Alpha"),
+        ))
+        val before = storage.payload
+        val writes = storage.writeCount
+
+        runDesktopComposeUiTest(width = 393, height = 852) {
+            val restoration = StateRestorationTester(this)
+            restoration.setContent {
+                TalentForgeTheme {
+                    Box(Modifier.size(393.dp, 852.dp)) {
+                        App(storage = storage, clock = clock, ids = SequentialIds())
+                    }
+                }
+            }
+            waitUntil(10_000) { onAllNodesWithText("All builds 2").fetchSemanticsNodes().isNotEmpty() }
+            onNodeWithText("All builds 2").performScrollTo().performClick()
+            waitUntil(10_000) { onAllNodesWithText("Alpha").fetchSemanticsNodes().isNotEmpty() }
+            onNodeWithContentDescription("Sort and grouping: Last edited, grouping off").performScrollTo().performClick()
+            onNodeWithText("Class").performClick()
+            onNodeWithContentDescription("Sort and grouping: Class, grouping off").performClick()
+            onNodeWithText("Group by class").performClick()
+            onNodeWithContentDescription("Sort and grouping: Class, grouping on").performScrollTo().assertIsDisplayed()
+            restoration.emulateSaveAndRestore()
+            waitUntil(10_000) {
+                onAllNodesWithText("Warrior · 1").fetchSemanticsNodes().isNotEmpty()
+            }
+            onNodeWithContentDescription("Sort and grouping: Class, grouping on").performScrollTo().assertIsDisplayed()
+            onNodeWithText("Mage · 1").performScrollTo().assertIsDisplayed()
+            assertEquals(before, storage.payload)
+            assertEquals(writes, storage.writeCount)
+        }
     }
 }
