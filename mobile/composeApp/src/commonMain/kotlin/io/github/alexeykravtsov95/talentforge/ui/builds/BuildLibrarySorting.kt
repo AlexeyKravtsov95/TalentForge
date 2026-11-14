@@ -30,7 +30,7 @@ internal fun sortBuildLibrary(
 
         BuildLibrarySortMode.NAME ->
             compareBy<BuildLibrarySearchEntry> { it.title.lowercase() }
-                .thenBy { it.card.record.updatedAt * -1.0 }
+                .thenByDescending { it.card.record.updatedAt }
                 .thenBy { it.card.record.localId }
 
         BuildLibrarySortMode.CLASS ->
