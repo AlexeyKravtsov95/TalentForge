@@ -12,9 +12,13 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import io.github.alexeykravtsov95.talentforge.data.builds.BuildLibraryOutcome
+import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRecord
+import io.github.alexeykravtsov95.talentforge.data.builds.LocalBuildRepository
 import io.github.alexeykravtsov95.talentforge.ui.App
 import io.github.alexeykravtsov95.talentforge.ui.FakeBuildLibraryStorage
 import io.github.alexeykravtsov95.talentforge.ui.FixedClock
@@ -26,6 +30,7 @@ import io.github.alexeykravtsov95.talentforge.ui.lang.AppLanguageRule
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import org.junit.Rule
 
@@ -84,5 +89,63 @@ class BuildLibrarySortingUiTest {
                 }
             }
         }
+    }
+
+    @Test
+    fun renameDuplicateAndDeleteRefreshActiveGroupedNameOrderByLocalId() {
+        val storage = FakeBuildLibraryStorage()
+        val clock = FixedClock()
+        val ids = SequentialIds()
+        ShellLibraryFixtures.persist(storage, clock, listOf(
+            ShellLibraryFixtures.Build("WARRIOR", name = "Zulu"),
+            ShellLibraryFixtures.Build("MAGE", name = "Alpha"),
+        ))
+        val initial = assertIs<BuildLibraryOutcome.Loaded<List<LocalBuildRecord>>>(
+            LocalBuildRepository(storage, clock, SequentialIds()).load(),
+        ).value
+        val warrior = initial.single { it.name == "Zulu" }
+        ids.next(); ids.next() // avoid reusing the ids of seeded records on Duplicate
+
+        runDesktopComposeUiTest(width = 393, height = 852) {
+            setContent {
+                TalentForgeTheme {
+                    Box(Modifier.size(393.dp, 852.dp)) {
+                        App(storage = storage, clock = clock, ids = ids)
+                    }
+                }
+            }
+            waitUntil(10_000) { onAllNodesWithText("All builds 2").fetchSemanticsNodes().isNotEmpty() }
+            onNodeWithText("All builds 2").performScrollTo().performClick()
+            waitUntil(10_000) { onAllNodesWithText("Zulu").fetchSemanticsNodes().isNotEmpty() }
+            onNodeWithContentDescription("Sort and grouping: Last edited, grouping off").performScrollTo().performClick()
+            onNodeWithText("Name").performClick()
+            onNodeWithContentDescription("Sort and grouping: Name, grouping off").performClick()
+            onNodeWithText("Group by class").performClick()
+            onNodeWithText("Warrior · 1").performScrollTo().assertIsDisplayed()
+
+            onNodeWithContentDescription("build actions for Zulu").performScrollTo().performClick()
+            onNodeWithText("Rename").performClick()
+            onNodeWithContentDescription("build name").performTextReplacement("Beta")
+            onNodeWithText("Save").performClick()
+            waitUntil(10_000) { onAllNodesWithText("Beta").fetchSemanticsNodes().isNotEmpty() }
+            onNodeWithContentDescription("build actions for Beta").performScrollTo().performClick()
+            onNodeWithText("Duplicate").performClick()
+            waitUntil(10_000) { onAllNodesWithText("Beta (copy)").fetchSemanticsNodes().isNotEmpty() }
+            onNodeWithText("Warrior · 2").performScrollTo().assertIsDisplayed()
+            onNodeWithContentDescription("build actions for Beta (copy)").performScrollTo().performClick()
+            onNodeWithText("Delete").performClick()
+            onNodeWithText("Delete").performClick()
+            waitUntil(10_000) { onAllNodesWithText("Warrior · 1").fetchSemanticsNodes().isNotEmpty() }
+            onNodeWithText("Warrior · 1").performScrollTo().assertIsDisplayed()
+        }
+        val result = assertIs<BuildLibraryOutcome.Loaded<List<LocalBuildRecord>>>(
+            LocalBuildRepository(storage, clock, SequentialIds()).load(),
+        ).value
+        assertEquals(setOf("Alpha", "Beta"), result.mapNotNull { it.name }.toSet())
+        val renamed = result.single { it.name == "Beta" }
+        assertEquals(warrior.localId, renamed.localId)
+        assertEquals(warrior.updatedAt, renamed.updatedAt)
+        assertEquals(warrior.lastOpenedAt, renamed.lastOpenedAt)
+        assertEquals(warrior.build, renamed.build)
     }
 }
