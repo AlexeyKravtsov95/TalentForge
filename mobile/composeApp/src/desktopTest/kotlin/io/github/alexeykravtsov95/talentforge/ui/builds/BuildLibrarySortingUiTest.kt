@@ -6,7 +6,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.StateRestorationTester
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
+import androidx.compose.runtime.saveable.SaveableStateRegistry
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -162,11 +164,19 @@ class BuildLibrarySortingUiTest {
         val writes = storage.writeCount
 
         runDesktopComposeUiTest(width = 393, height = 852) {
-            val restoration = StateRestorationTester(this)
-            restoration.setContent {
-                TalentForgeTheme {
-                    Box(Modifier.size(393.dp, 852.dp)) {
-                        App(storage = storage, clock = clock, ids = SequentialIds())
+            // StateRestorationTester is not implemented on Skiko Desktop.
+            // Instead, save the actual rememberSaveable registry, dispose the
+            // app composition, and restore a fresh registry with those values.
+            val visible = mutableStateOf(true)
+            val registry = mutableStateOf(SaveableStateRegistry(null) { true })
+            setContent {
+                CompositionLocalProvider(LocalSaveableStateRegistry provides registry.value) {
+                    if (visible.value) {
+                        TalentForgeTheme {
+                            Box(Modifier.size(393.dp, 852.dp)) {
+                                App(storage = storage, clock = clock, ids = SequentialIds())
+                            }
+                        }
                     }
                 }
             }
@@ -178,7 +188,17 @@ class BuildLibrarySortingUiTest {
             onNodeWithContentDescription("Sort and grouping: Class, grouping off").performClick()
             onNodeWithText("Group by class").performClick()
             onNodeWithContentDescription("Sort and grouping: Class, grouping on").performScrollTo().assertIsDisplayed()
-            restoration.emulateSaveAndRestore()
+            var saved: Map<String, List<Any?>> = emptyMap()
+            runOnIdle {
+                saved = registry.value.performSave()
+                visible.value = false
+            }
+            waitForIdle()
+            runOnIdle {
+                registry.value = SaveableStateRegistry(saved) { true }
+                visible.value = true
+            }
+            waitForIdle()
             waitUntil(timeoutMillis = 10_000) {
                 onAllNodesWithText("Warrior · 1").fetchSemanticsNodes().isNotEmpty()
             }
