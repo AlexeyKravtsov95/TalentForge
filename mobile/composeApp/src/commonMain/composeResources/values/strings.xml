@@ -398,6 +398,15 @@
     <string name="builds_search_clear">Clear search</string>
     <string name="builds_filter_all">All classes</string>
     <string name="builds_filter_description">Filter by class: %1$s</string>
+    <string name="builds_sort_last_edited">Last edited</string>
+    <string name="builds_sort_name">Name</string>
+    <string name="builds_sort_class">Class</string>
+    <string name="builds_order_label">Sort: %1$s</string>
+    <string name="builds_order_description">Sort and grouping: %1$s, grouping %2$s</string>
+    <string name="builds_group_by_class">Group by class</string>
+    <string name="builds_group_on">on</string>
+    <string name="builds_group_off">off</string>
+    <string name="builds_group_header">%1$s · %2$d</string>
     <string name="builds_filter_reset">Reset filters</string>
     <string name="builds_results_count">Results: %1$d of %2$d</string>
     <string name="builds_search_empty_title">No search results</string>

@@ -130,7 +130,19 @@ jobs:
           arch: x86_64
           disable-animations: true
           working-directory: mobile
-          script: ./gradlew :composeApp:connectedDebugAndroidTest -Ptalentforge.applicationIdSuffix=.lib2check --console=plain
+          script: |
+            ./gradlew :composeApp:connectedDebugAndroidTest -Ptalentforge.applicationIdSuffix=.lib2check --console=plain
+            mkdir -p ../artifacts/m6-lib3-android
+            adb pull /sdcard/Pictures/TalentForge-M6-LIB3/. ../artifacts/m6-lib3-android/
+            test -s ../artifacts/m6-lib3-android/android-en-393dp-sort-class-grouped.png
+            test -s ../artifacts/m6-lib3-android/android-ru-393dp-sort-class-grouped.png
+      - name: Upload Android M6.LIB.3 EN/RU screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m6-lib3-android-screenshots
+          path: artifacts/m6-lib3-android/*.png
+          if-no-files-found: ignore
       - name: Upload migration test reports
         if: always()
         uses: actions/upload-artifact@v4

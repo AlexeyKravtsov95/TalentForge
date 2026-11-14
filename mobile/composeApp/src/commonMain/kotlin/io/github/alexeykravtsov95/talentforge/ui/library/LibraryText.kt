@@ -65,6 +65,20 @@ fun localizedClassName(classToken: ClassToken, datasetName: String?): String? {
     return stringResource(resource)
 }
 
+/**
+ * Localized class label for the *library's presentation controls* (search,
+ * class sorting and group headers). All nine shipped class labels come from
+ * static UI resources even when an old build's exact dataset is unavailable.
+ * This does not claim its talents or class document successfully loaded:
+ * [localizedClassName] remains the resolved-data-only label used by row meta.
+ * Unknown tokens keep the loaded dataset name or the original token.
+ */
+@Composable
+fun localizedLibraryClassName(classToken: ClassToken, datasetName: String?): String =
+    classNameResourceFor(classToken)?.let { stringResource(it) }
+        ?: datasetName
+        ?: classToken.value
+
 /** A build card's DISPLAY title: [buildDisplayTitle] of the card's record. */
 @Composable
 fun buildCardTitle(card: BuildCardModel): String =

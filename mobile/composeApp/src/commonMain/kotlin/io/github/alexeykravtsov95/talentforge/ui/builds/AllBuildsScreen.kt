@@ -37,6 +37,7 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -58,6 +59,7 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.bui
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_filter_empty_body
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_filter_empty_title
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_filter_reset
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_group_header
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_results_count
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_row_actions_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_row_actions_description
@@ -92,6 +94,7 @@ import io.github.alexeykravtsov95.talentforge.ui.library.buildCardTitle
 import io.github.alexeykravtsov95.talentforge.ui.library.classMonogramOf
 import io.github.alexeykravtsov95.talentforge.ui.library.gameDisplayName
 import io.github.alexeykravtsov95.talentforge.ui.library.loadBuildsModel
+import io.github.alexeykravtsov95.talentforge.ui.library.localizedLibraryClassName
 import io.github.alexeykravtsov95.talentforge.ui.library.localizedClassName
 import io.github.alexeykravtsov95.talentforge.ui.library.relativeBuildTime
 import io.github.alexeykravtsov95.talentforge.ui.navigation.PlatformBackHandler
@@ -167,6 +170,10 @@ fun AllBuildsScreen(
 ) {
     var data by remember { mutableStateOf<LibraryData<List<BuildCardModel>>>(LibraryData.Loading) }
     var favoritesOnly by rememberSaveable { mutableStateOf(false) }
+    var sortModeValue by rememberSaveable { mutableStateOf(BuildLibrarySortMode.LAST_EDITED.name) }
+    var groupByClass by rememberSaveable { mutableStateOf(false) }
+    val sortMode = BuildLibrarySortMode.entries.firstOrNull { it.name == sortModeValue }
+        ?: BuildLibrarySortMode.LAST_EDITED
     var query by rememberSaveable { mutableStateOf("") }
     var selectedClassValue by rememberSaveable { mutableStateOf<String?>(null) }
     val selectedClass = selectedClassValue?.let(::ClassToken)
@@ -382,15 +389,20 @@ fun AllBuildsScreen(
                             favoritesOnly = favoritesOnly,
                             onFavoritesChange = { favoritesOnly = it },
                         )
+                        BuildLibraryOrderingControl(
+                            sortMode = sortMode,
+                            onSortModeChange = { sortModeValue = it.name },
+                            groupByClass = groupByClass,
+                            onGroupByClassChange = { groupByClass = it },
+                        )
                         val entries = current.value.map { card ->
                             BuildLibrarySearchEntry(
                                 card,
                                 buildCardTitle(card),
-                                localizedClassName(card.record.build.classToken, card.classDisplayName)
-                                    ?: card.record.build.classToken.value,
+                                localizedLibraryClassName(card.record.build.classToken, card.classDisplayName),
                             )
                         }
-                        val results = filterBuildLibrary(entries, query, selectedClass, favoritesOnly)
+                        val results = sortBuildLibrary(filterBuildLibrary(entries, query, selectedClass, favoritesOnly), sortMode)
                         BasicText(
                             stringResource(Res.string.builds_results_count, results.size, entries.size),
                             style = TalentForgeTypography.meta.copy(color = colors.textSecondary),
@@ -427,17 +439,41 @@ fun AllBuildsScreen(
                                 modifier = Modifier.fillMaxWidth(),
                             )
                         }
-                        for (entry in results) {
-                            val card = entry.card
-                            key(card.record.localId) {
-                                BuildRow(
-                                    card = card,
-                                    clockMillis = clockMillis,
-                                    onClick = { onOpenBuild(card.record.localId) },
-                                    onActions = { overlay = ManagementOverlay.Actions(card.record.localId) },
-                                    onFavoriteChange = { setFavorite(card.record.localId, it) },
-                                    busy = operationInFlight,
+                        val groups = if (groupByClass) groupBuildLibrary(results, sortMode) else emptyList()
+                        if (groupByClass) {
+                            for (group in groups) {
+                                BasicText(
+                                    text = stringResource(Res.string.builds_group_header, group.className, group.entries.size),
+                                    style = TalentForgeTypography.bodySmall.copy(color = colors.textSecondary, fontWeight = FontWeight.SemiBold),
+                                    modifier = Modifier.fillMaxWidth().semantics { heading() },
                                 )
+                                for (entry in group.entries) {
+                                    val card = entry.card
+                                    key(card.record.localId) {
+                                        BuildRow(
+                                            card = card,
+                                            clockMillis = clockMillis,
+                                            onClick = { onOpenBuild(card.record.localId) },
+                                            onActions = { overlay = ManagementOverlay.Actions(card.record.localId) },
+                                            onFavoriteChange = { setFavorite(card.record.localId, it) },
+                                            busy = operationInFlight,
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            for (entry in results) {
+                                val card = entry.card
+                                key(card.record.localId) {
+                                    BuildRow(
+                                        card = card,
+                                        clockMillis = clockMillis,
+                                        onClick = { onOpenBuild(card.record.localId) },
+                                        onActions = { overlay = ManagementOverlay.Actions(card.record.localId) },
+                                        onFavoriteChange = { setFavorite(card.record.localId, it) },
+                                        busy = operationInFlight,
+                                    )
+                                }
                             }
                         }
                         Spacer(Modifier.height(TalentForgeSpacing.inline))
