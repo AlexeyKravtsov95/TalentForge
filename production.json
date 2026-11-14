@@ -1,9 +1,9 @@
 {
   "stateVersion": 1,
   "kind": "notify-production-state",
-  "notifiedRelease": "1.60.1.70888-r1",
+  "notifiedRelease": "1.60.1.70938-r1",
   "failuresNotified": [
     "ota-production/reconcile/PUBLISH"
   ],
-  "updatedAt": "2026-11-13T23:40:49Z"
+  "updatedAt": "2026-11-14T05:59:06+00:00"
 }
