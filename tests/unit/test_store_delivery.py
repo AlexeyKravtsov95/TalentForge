@@ -291,7 +291,10 @@ def test_the_committed_project_versions_parse() -> None:
     pbxproj = (ROOT / d.IOS_PROJECT_FILE).read_text()
     name, code = d.android_version(gradle)
     version, build = d.ios_version(pbxproj)
-    assert name == version == "1.0.0" and code >= 3 and build >= 3
+    # Android and iOS have independent release/versionCode sequences.
+    # M7 changes only Android; iOS remains at its existing App Store version.
+    assert (name, code) == ("1.1.0", 6)
+    assert (version, build) == ("1.0.0", 4)
 
 
 # --------------------------------------------------------------------------- configuration
