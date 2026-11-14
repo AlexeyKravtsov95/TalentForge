@@ -711,7 +711,17 @@ def _enforce_gates_and_approval(
     from talent_data.ota.verify import sha256_ref
 
     release_id = under_test.manifest.release_id
-    approval = load_approval_record(release_id, args.releases_docs.expanduser())
+    verified_merge = getattr(args, "verified_owner_merge", None)
+    if verified_merge is None:
+        approval = load_approval_record(release_id, args.releases_docs.expanduser())
+    else:
+        from talent_data.ota.automation.merge_approval import VerifiedOwnerMerge, as_gate_approval
+
+        if not isinstance(verified_merge, VerifiedOwnerMerge):
+            raise OtaPublisherError("invalid owner merge proof")
+        if verified_merge.request.release_id != release_id:
+            raise OtaPublisherError("owner merge proof belongs to another release")
+        approval = as_gate_approval(verified_merge)
     manifest_sha = sha256_ref(under_test.manifest_bytes)
     if (
         approval is not None
@@ -738,6 +748,9 @@ def _enforce_gates_and_approval(
     stopped, flagged = _print_gates(results)
     if stopped:
         return EXIT_FAILURE
+    if verified_merge is not None:
+        assert approval is not None
+        return None if all(approval.accepts(result.gate) for result in flagged) else EXIT_FAILURE
     return _require_approval(flagged, release_id, args.releases_docs)
 
 

@@ -47,7 +47,10 @@ import traceback
 from collections.abc import Callable
 from pathlib import Path
 from types import ModuleType
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from talent_data.ota.automation.candidate import VerifiedCandidate
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
@@ -161,10 +164,19 @@ def client_not_established(r: Run, verdict: Verdict, why: str) -> None:
 # --------------------------------------------------------------------------- 1. resolve
 
 
-def phase_resolve(r: Run, revision: str, base: str, candidate: str) -> sv.Subject | None:
+def phase_resolve(
+    r: Run,
+    revision: str,
+    base: str,
+    candidate: str,
+    *,
+    candidate_context: VerifiedCandidate | None = None,
+) -> sv.Subject | None:
     title = "the revision is fixed to one commit on origin/main; both builds are committed there"
     try:
-        subject = sv.resolve_subject(ROOT, revision, base, candidate)
+        subject = sv.resolve_subject(
+            ROOT, revision, base, candidate, candidate_context=candidate_context
+        )
     except sv.InputError as exc:
         r.add("R1", "resolve", title, Verdict.BLOCKED, str(exc))
         return None
@@ -177,6 +189,9 @@ def phase_resolve(r: Run, revision: str, base: str, candidate: str) -> sv.Subjec
         "baseRelease": subject.base_release,
         "candidateRelease": subject.candidate_release,
     }
+    if candidate_context is not None:
+        r.facts["subject"]["verificationRef"] = subject.verification_ref
+        title = "the verified candidate source is fixed for preparation only"
     r.add(
         "R1",
         "resolve",
@@ -207,6 +222,7 @@ def phase_publish(r: Run, subject: sv.Subject) -> None:
                 now=_now(),
                 base=subject.base,
                 candidate=subject.candidate,
+                main_ref=subject.verification_ref,
             )
     finally:
         log.write_text(captured.getvalue(), encoding="utf-8")
@@ -593,7 +609,25 @@ def run(args: argparse.Namespace) -> int:
     before = checkout_state()
     r.facts.update(startedAt=_stamp(_now()), requested=requested, tooling={"head": before["head"]})
 
-    subject = phase_resolve(r, args.revision, args.base, args.candidate)
+    from talent_data.ota.automation.candidate import candidate_context_from_cli
+    from talent_data.ota.automation.prepare import PreparationBlocked
+    from talent_data.ota.automation.provenance import RequestRejected
+
+    try:
+        context = candidate_context_from_cli(
+            ROOT,
+            pull_number=getattr(args, "candidate_pr", 0),
+            source_sha=args.revision,
+            ci_run_id=getattr(args, "candidate_ci_run_id", 0),
+            ci_attempt=getattr(args, "candidate_ci_attempt", 0),
+        )
+    except (PreparationBlocked, RequestRejected, ValueError) as exc:
+        r.add("R1", "resolve", "verified preparation context", Verdict.BLOCKED, str(exc))
+        subject = None
+    else:
+        subject = phase_resolve(
+            r, args.revision, args.base, args.candidate, candidate_context=context
+        )
     published = False
     if subject is None:
         publish_not_established(r, "not established: the revision or the builds are unusable (R1)")
@@ -694,6 +728,9 @@ def main(argv: list[str] | None = None) -> int:
         "--revision", default="", help="commit or ref on origin/main (default: its HEAD)"
     )
     go.add_argument("--skip-client", action="store_true", help="no Gradle: NOT RUN")
+    go.add_argument("--candidate-pr", type=int, default=0, help=argparse.SUPPRESS)
+    go.add_argument("--candidate-ci-run-id", type=int, default=0, help=argparse.SUPPRESS)
+    go.add_argument("--candidate-ci-attempt", type=int, default=0, help=argparse.SUPPRESS)
     return run(parser.parse_args(argv))
 
 

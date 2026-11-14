@@ -9,6 +9,47 @@ Every mutating command is a **dry run by default**: nothing is written without
 `--execute`, and `gc` additionally needs `--confirm`. Nothing ever deletes a listed
 release or a blob a listed release references.
 
+## Ordinary new patch delivery: one MR
+
+For a newly generated `owner-merge-v1` data MR, wait for the bot to mark it ready and review
+its frozen manifest/package, staging result and any displayed warnings. **Ordinary Merge**
+by `AlexeyKravtsov95` is the sole production authorization. No second release MR or manual
+G7 form is required. Squash/rebase, another merger, an unprepared MR, changed source/base,
+failed final full CI, unknown fields or any STOP do not authorize publication.
+
+Before merge, trusted main workflows prepare source `D`, tooling `T`, staging and the exact
+package. A single fast-forward metadata commit produces final head `H`; full PR CI validates
+it. Main merge `M` must have parents `[B,H]` and exactly H's tree. A separate `merge-validation`
+job rechecks the package and complete PR proof and produces its own main/push `checks`.
+The publisher checks that reuse again, together with current conditional record and actual
+production gates, before secrets/signing and activation. It never reuses a candidate ref as
+production G1 and never rebuilds the approved package after merge.
+
+The conditional record accepts only the already displayed frozen warning flags; it records
+merge-based consent, not a claim that the owner played the build. To revoke, commit
+`revoked: true` in that release's conditional record. A removed/altered record or changed
+request also blocks fresh authorization before secrets/PUT. Closed/deleted feature branches
+after a successful merge do not revoke its historical fact. UNKNOWN PUT still permits only
+read-only recovery; no blind retry or replacement package.
+
+The journal keeps the frozen request digest and immutable archive pin. That archive indexes
+`report/candidate-binding.json`, which identifies the unique MR and producer/CI pins; fresh
+API proof resolves its exact owner merge. A separate `owner-merge-timeline.v1` audit artifact
+records D/T/H/M and server timestamps without changing legacy journal or timing schemas.
+It distinguishes candidate-to-ready, ready-to-owner-merge and merge-to-public-proof. Missing
+ready events remain unknown. Completion still requires a stable signed catalog and all
+public files, independently of the workflow's green result.
+
+The target is 600 seconds from server `merged_at` to complete public proof. Exceeding it is
+`MISS` and never cancels delivery or repeats PUT. Earlier release 70888 took 831.236548 s
+([production run 43034393179](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/43034393179)):
+that was a measured MISS, not proof of this new flow's target. The next ordinary release
+must establish its actual end-to-end result. Healthy/pending turns stay quiet; the MR's ready
+transition occurs once, and existing public-proof completion/error notifications retain dedup.
+
+The remaining manual procedures are recovery/reference for existing legacy packages; they
+are not extra steps in ordinary new patch delivery.
+
 ## 0. Rehearse offline first
 
 The whole pipeline runs against a local directory standing in for the bucket — the same

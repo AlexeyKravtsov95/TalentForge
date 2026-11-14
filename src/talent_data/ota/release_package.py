@@ -40,7 +40,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
@@ -50,6 +50,11 @@ from talent_data.ota.gates import FLAGGABLE_GATES
 from talent_data.ota.models import COMMIT_PATTERN, SHA256_PATTERN, OtaReleaseManifest
 from talent_data.ota.release import ReleaseArtifact, build_release
 from talent_data.ota.verify import parse_strict, sha256_ref
+
+if TYPE_CHECKING:
+    from talent_data.ota.automation.candidate import CandidateBinding
+
+CANDIDATE_BINDING_NAME = "report/candidate-binding.json"
 
 PACKAGE_FORMAT: Literal["talentforge-ota-release-package"] = "talentforge-ota-release-package"
 INDEX_NAME = "package.json"
@@ -162,6 +167,19 @@ class LoadedPackage:
 
     def attachment(self, name: str) -> bytes:
         return (self.root / name).read_bytes()
+
+
+def candidate_binding(package: LoadedPackage) -> CandidateBinding | None:
+    """An optional indexed internal proof; malformed proof never falls back to legacy."""
+    from talent_data.ota.automation.candidate import CandidateBinding
+    from talent_data.ota.verify import OtaError
+
+    if CANDIDATE_BINDING_NAME not in package.index.files:
+        return None
+    try:
+        return parse_strict(CandidateBinding, package.attachment(CANDIDATE_BINDING_NAME))
+    except (OtaError, ValueError) as exc:
+        raise PackageError("invalid indexed candidate binding") from exc
 
 
 # --------------------------------------------------------------------------- files
@@ -615,6 +633,8 @@ def approval_record_problems(
     ``<OWNER: …>`` line of the template, and state its accepted gates - none, or only the
     FLAG-able G5/G7 (a G7 with its live-build evidence). Which of them it accepts is the
     owner's decision."""
+    if "- Authorization mode:" in text or "```owner-merge-v1" in text:
+        return ["owner merge authorization needs independent API proof, not manual approval"]
     fields: dict[str, str] = {}
     for line in text.splitlines():
         for name in (

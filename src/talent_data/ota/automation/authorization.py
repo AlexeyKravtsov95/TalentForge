@@ -140,6 +140,9 @@ def current_main_ci(
             continue
         jobs = api.pages(f"/actions/runs/{run_id}/attempts/{attempt}/jobs", "jobs")
         sha = verify_ci(run, jobs, run_id=run_id, attempt=attempt)
+        from talent_data.ota.automation.ci_validation import verify_main_ci_evidence
+
+        verify_main_ci_evidence(api, repo, run, jobs)
         for job in jobs:
             for field, expected in {
                 "run_id": run_id,
@@ -187,6 +190,9 @@ def authorize_request_ci(
         jobs = api.pages(f"/actions/runs/{run_id}/attempts/{attempt}/jobs", "jobs")
         try:
             sha = verify_ci(run, jobs, run_id=run_id, attempt=attempt)
+            from talent_data.ota.automation.ci_validation import verify_main_ci_evidence
+
+            verify_main_ci_evidence(api, repo, run, jobs)
         except PreparationBlocked:
             continue
         if sha == commit:

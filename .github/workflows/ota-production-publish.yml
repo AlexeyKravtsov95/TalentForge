@@ -58,6 +58,7 @@ jobs:
     permissions:
       contents: read
       actions: read
+      pull-requests: read # Read-only owner merge and PR validation proof.
     outputs:
       artifact_id: ${{ steps.probe-artifact.outputs.artifact-id }}
       action: ${{ steps.route.outputs.action }}
@@ -135,7 +136,7 @@ jobs:
     permissions:
       contents: write # GitHub journal only; no production secret binding
       actions: read
-      pull-requests: read # Server approval merged_at for optional delivery timings.
+      pull-requests: read # Exact owner merge authorization and server timing proof.
     outputs:
       outcome: ${{ steps.preflight.outputs.outcome }}
       partial_failure: ${{ steps.preflight.outputs.partial_failure }}
@@ -253,7 +254,7 @@ jobs:
     permissions:
       contents: write # journal; no App token, PR write or Telegram token
       actions: read
-      pull-requests: read # Server approval merged_at for optional delivery timings.
+      pull-requests: read # Exact owner merge authorization and server timing proof.
     env:
       AUTOMATIC: ${{ needs.preflight.outputs.automatic }}
       OPERATION: ${{ needs.preflight.outputs.operation }}
@@ -428,6 +429,7 @@ jobs:
     permissions:
       contents: write # GitHub journal only; no production secret binding
       actions: read
+      pull-requests: read # Read-only owner merge and PR validation proof.
     outputs:
       outcome: ${{ steps.preflight.outputs.outcome }}
       writer_needed: ${{ steps.preflight.outputs.writer_needed }}
@@ -498,6 +500,7 @@ jobs:
     permissions:
       contents: write # journal; no App token, PR write or Telegram token
       actions: read
+      pull-requests: read # Read-only owner merge and PR validation proof.
     env:
       OPERATION: ${{ needs.renewal-preflight.outputs.operation }}
       EXECUTE: "true"

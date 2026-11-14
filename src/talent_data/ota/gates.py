@@ -442,6 +442,8 @@ class ApprovalRecord:
     live_build_evidence: str | None
     #: pins the exact manifest bytes the record approves, when the record states one
     manifest_sha256: str | None = None
+    #: API-verified merge audit, never read from the manual record format.
+    merge_authorization_evidence: str | None = None
 
     def accepts(self, gate: Gate) -> bool:
         return gate in self.accepted_gates
@@ -457,8 +459,11 @@ def load_approval_record(release_id: str, docs_dir: Path) -> ApprovalRecord | No
     path = docs_dir / f"{release_id}.md"
     if not path.is_file():
         return None
+    text = path.read_text(encoding="utf-8")
+    if "- Authorization mode:" in text or "```owner-merge-v1" in text:
+        raise OtaPublisherError(f"{path}: owner merge authorization requires independent API proof")
     fields: dict[str, str] = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for line in text.splitlines():
         for name, prefix in (
             ("release", "- Release: "),
             ("accepted", "- Accepted gates: "),
@@ -510,6 +515,8 @@ def gate_g7_live_build_evidence(
     note) is. Staging carries no such requirement."""
     if channel is Channel.STAGING:
         return GateResult(Gate.G7, GateStatus.PASS, "staging needs no live-build evidence")
+    if approval is not None and approval.accepts(Gate.G7) and approval.merge_authorization_evidence:
+        return GateResult(Gate.G7, GateStatus.PASS, approval.merge_authorization_evidence)
     if approval is not None and approval.live_build_evidence:
         return GateResult(
             Gate.G7, GateStatus.PASS, f"recorded evidence: {approval.live_build_evidence}"

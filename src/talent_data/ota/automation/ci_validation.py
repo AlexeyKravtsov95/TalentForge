@@ -5,13 +5,20 @@ from __future__ import annotations
 import argparse
 import os
 import re
+import tempfile
 from pathlib import Path
-from typing import Literal, Self
+from typing import Any, Literal, Self
 
 import httpx
 from pydantic import Field, model_validator
 
 from talent_data.ota.automation import provenance
+from talent_data.ota.automation.candidate import CandidateBinding
+from talent_data.ota.automation.merge_approval import (
+    VerifiedOwnerMerge,
+    parse_merge_record,
+    verify_owner_merge,
+)
 from talent_data.ota.automation.prepare import (
     CI_WORKFLOW,
     GitHub,
@@ -24,18 +31,20 @@ from talent_data.ota.automation.prepare import (
 )
 from talent_data.ota.automation.probe import _package_metadata
 from talent_data.ota.automation.provenance import REPOSITORY, TRUSTED_REPO, RequestRejected
-from talent_data.ota.automation.requests import _Model, parse_request
+from talent_data.ota.automation.requests import ReleaseRequest, _Model, parse_request
 from talent_data.ota.models import COMMIT_PATTERN, RELEASE_ID_PATTERN
 from talent_data.ota.release_package import (
     APPROVALS_DIR,
     approval_record_at,
     approval_record_problems,
+    candidate_binding,
+    load_package,
 )
 from talent_data.ota.verify import OtaError, parse_strict
 
 
 class CiDecision(_Model):
-    mode: Literal["full", "metadata"]
+    mode: Literal["full", "metadata", "validated-merge"]
     head_sha: str = Field(pattern=COMMIT_PATTERN)
     baseline_sha: str | None = Field(pattern=COMMIT_PATTERN)
     baseline_run_id: int | None = Field(gt=0)
@@ -45,7 +54,9 @@ class CiDecision(_Model):
     @model_validator(mode="after")
     def baseline_binding(self) -> Self:
         pins = (self.baseline_sha, self.baseline_run_id, self.baseline_attempt)
-        if self.mode == "metadata" and (any(p is None for p in pins) or not self.changed_paths):
+        if self.mode in {"metadata", "validated-merge"} and (
+            any(p is None for p in pins) or not self.changed_paths
+        ):
             raise ValueError("metadata mode requires full baseline and paths")
         if self.mode == "full" and any(p is not None for p in pins):
             raise ValueError("full mode cannot claim a metadata baseline")
@@ -132,6 +143,122 @@ def _metadata_diff(repo: Path, base: str, head: str) -> tuple[str, ...] | None:
     return tuple(paths) if paths else None
 
 
+def load_merge_binding(api: GitHub, request: ReleaseRequest) -> CandidateBinding:
+    """Independently check the retained exact archive before reusing its validation."""
+    _package_metadata(api, request)
+    metadata = api.repo("GET", f"/actions/artifacts/{request.artifact.artifact_id}")
+    archive = api.archive(metadata)
+    runs: dict[str, object] = {
+        name: api.run(pin.run_id, pin.attempt)
+        for name, pin in (("package", request.package_run), ("staging", request.staging_run))
+    }
+    with tempfile.TemporaryDirectory(prefix="ota-ci-merge-") as temp:
+        package = load_package(
+            provenance.extract_verified_archive(archive, Path(temp).resolve() / "package")
+        )
+        provenance.verify_package_origin(
+            request,
+            run_metadata=runs,
+            artifact_metadata=metadata,
+            archive_bytes=archive,
+            package=package,
+        )
+        binding = candidate_binding(package)
+        require(binding is not None, "CI_MERGE", "indexed candidate proof required")
+        assert binding is not None
+        return binding
+
+
+def verify_validated_merge(api: GitHub, repo: Path, main_sha: str) -> VerifiedOwnerMerge | None:
+    parents = git(repo, "show", "-s", "--format=%P", main_sha).decode().strip().split()
+    if len(parents) != 2:
+        return None
+    paths = git(repo, "diff", "--name-only", parents[0], main_sha).decode().splitlines()
+    requests = [
+        path
+        for path in paths
+        if path.startswith("docs/ota/release-requests/") and path.endswith(".json")
+    ]
+    if len(requests) != 1:
+        return None
+    request = parse_request(git(repo, "show", f"{main_sha}:{requests[0]}"))
+    approval = approval_record_at(repo, main_sha, request.release_id)
+    record = parse_merge_record(approval.decode("utf-8", "strict")) if approval else None
+    if record is None:
+        return None
+    binding = load_merge_binding(api, request)
+    verified = verify_owner_merge(api, repo, request, record, binding=binding)
+    same(verified.merge_sha, main_sha, "CI_MERGE", "exact main merge")
+    return verified
+
+
+def _merge_decision(repo: Path, merged: VerifiedOwnerMerge) -> CiDecision:
+    return CiDecision(
+        mode="validated-merge",
+        head_sha=merged.merge_sha,
+        baseline_sha=merged.pr_ci.head_sha,
+        baseline_run_id=merged.pr_ci.run_id,
+        baseline_attempt=merged.pr_ci.attempt,
+        changed_paths=tuple(
+            git(repo, "diff", "--name-only", merged.base_sha, merged.merge_sha)
+            .decode()
+            .splitlines()
+        ),
+    )
+
+
+def validate_merge_decision(api: GitHub, repo: Path, decision: CiDecision) -> None:
+    require(decision.mode == "validated-merge", "CI_MODE", "merge decision required")
+    for ref in ("HEAD", "origin/main"):
+        same(
+            git(repo, "rev-parse", ref).decode().strip(),
+            decision.head_sha,
+            "CI_MERGE",
+            "current main checkout",
+        )
+    merged = verify_validated_merge(api, repo, decision.head_sha)
+    require(merged is not None, "CI_MERGE", "verified owner data merge required")
+    assert merged is not None
+    same(decision, _merge_decision(repo, merged), "CI_MERGE", "fresh exact reuse decision")
+
+
+def verify_main_ci_evidence(
+    api: GitHub, repo: Path, run: dict[str, Any], jobs: list[dict[str, Any]]
+) -> None:
+    selected = [j for j in jobs if j.get("name") == "merge-validation"]
+    if not selected or all(j.get("conclusion") == "skipped" for j in selected):
+        return
+    require(
+        len(selected) == 1
+        and selected[0].get("conclusion") == "success"
+        and selected[0].get("status") == "completed",
+        "CI_MERGE",
+        "merge validation did not pass",
+    )
+    same(run.get("event"), "push", "CI_MERGE", "own main push run")
+    same(run.get("head_branch"), "main", "CI_MERGE", "own main branch")
+    for job in jobs:
+        for key in ("run_id", "run_attempt", "head_sha"):
+            expected = run.get("id") if key == "run_id" else run.get(key)
+            same(job.get(key), expected, "CI_MERGE", "exact main job origin")
+    for name, expected in (
+        ("full-validation", "skipped"),
+        ("metadata-validation", "skipped"),
+        ("classify", "success"),
+        ("checks", "success"),
+    ):
+        found = [j for j in jobs if j.get("name") == name]
+        require(
+            len(found) == 1
+            and found[0].get("conclusion") == expected
+            and found[0].get("status") == "completed",
+            "CI_MERGE",
+            "exactly one validation branch",
+        )
+    merged = verify_validated_merge(api, repo, str(run.get("head_sha")))
+    require(merged is not None, "CI_MERGE", "reused PR proof no longer valid")
+
+
 def classify_changes(api: GitHub, repo: Path, *, head_sha: str, event: str) -> CiDecision:
     actual = git(repo, "rev-parse", "HEAD").decode("ascii").strip()
     fallback = _full(actual)
@@ -140,6 +267,9 @@ def classify_changes(api: GitHub, repo: Path, *, head_sha: str, event: str) -> C
     try:
         same(actual, head_sha, "CI_CHECKOUT", "checkout")
         same(git(repo, "rev-parse", "origin/main").decode().strip(), head_sha, "CI_MAIN", "main")
+        merged = verify_validated_merge(api, repo, head_sha)
+        if merged is not None:
+            return _merge_decision(repo, merged)
         candidates = api.pages(
             f"/actions/workflows/{Path(CI_WORKFLOW).name}/runs",
             "workflow_runs",
@@ -264,7 +394,10 @@ def main(argv: list[str] | None = None) -> int:
                 )
                 decision = parse_strict(CiDecision, args.decision_file.read_bytes())
                 same(decision.head_sha, env.get("GITHUB_SHA"), "CI_CONTEXT", "head")
-                validate_metadata_changes(api, TRUSTED_REPO, decision)
+                if decision.mode == "validated-merge":
+                    validate_merge_decision(api, TRUSTED_REPO, decision)
+                else:
+                    validate_metadata_changes(api, TRUSTED_REPO, decision)
     except (
         PreparationBlocked,
         RequestRejected,

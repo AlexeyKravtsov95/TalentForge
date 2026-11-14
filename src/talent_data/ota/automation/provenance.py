@@ -17,6 +17,7 @@ import zipfile
 import zlib
 from datetime import datetime, timedelta
 from pathlib import Path, PurePosixPath
+from typing import TYPE_CHECKING
 
 from talent_data.ota.automation.requests import ReleaseRequest, RunPin
 from talent_data.ota.catalog import catalog_entry
@@ -25,6 +26,7 @@ from talent_data.ota.release_package import (
     STAGING_FILES,
     STAGING_WORKFLOW,
     LoadedPackage,
+    candidate_binding,
     load_package,
     rebind_staging,
     rebuild_problems,
@@ -37,6 +39,9 @@ from talent_data.ota.verify import (
     verify_release_files,
     verify_release_manifest,
 )
+
+if TYPE_CHECKING:
+    from talent_data.ota.automation.candidate import VerifiedCandidate
 
 REPOSITORY = "AlexeyKravtsov95/TalentForge"
 PACKAGE_WORKFLOW = ".github/workflows/ota-release-package.yml"
@@ -281,6 +286,7 @@ def verify_package_origin(
     artifact_metadata: dict[str, object],
     archive_bytes: bytes,
     package: LoadedPackage,
+    candidate_context: VerifiedCandidate | None = None,
 ) -> None:
     """Fail closed before package use on any foreign/mismatched run or artifact."""
     _same(request.repository, REPOSITORY, "RUN_REPOSITORY", "repository")
@@ -335,7 +341,19 @@ def verify_package_origin(
         "ARCHIVE_DIGEST",
         "archive digest",
     )
-    _main_commit(request.source_commit)
+    if candidate_context is None:
+        _main_commit(request.source_commit)
+    else:
+        _same(request.source_commit, candidate_context.source_sha, "CANDIDATE_SOURCE", "source")
+        _same(
+            subprocess.check_output(
+                ["git", "-C", str(TRUSTED_REPO), "rev-parse", candidate_context.verified_ref],
+                text=True,
+            ).strip(),
+            request.source_commit,
+            "CANDIDATE_SOURCE",
+            "verified source ref",
+        )
     try:
         # Do not rely on a previously loaded object or an independently supplied package.
         current = load_package(package.root)
@@ -361,6 +379,66 @@ def verify_package_origin(
                 "PACKAGE_ARCHIVE",
                 "supplied package differs from archive",
             )
+        proof = candidate_binding(current)
+        _require(
+            candidate_context is None or proof is not None,
+            "CANDIDATE_BINDING",
+            "candidate proof required",
+        )
+        if proof is not None:
+            rows = strict_json(current.attachment("report/gates.json"))
+            _require(
+                isinstance(rows, list) and len(rows) == 8, "CANDIDATE_BINDING", "gate evidence"
+            )
+            assert isinstance(rows, list)
+            _require(
+                {r.get("gate") for r in rows if isinstance(r, dict)}
+                == {f"G{i}" for i in range(1, 9)}
+                and all(
+                    isinstance(r, dict)
+                    and (
+                        r.get("status") == "PASS"
+                        or (r.get("status") == "FLAG" and r.get("gate") in {"G5", "G7"})
+                    )
+                    for r in rows
+                ),
+                "CANDIDATE_BINDING",
+                "STOP or malformed preparation gate",
+            )
+            _same(
+                sorted(proof.flagged_gates),
+                sorted(r["gate"] for r in rows if r["status"] == "FLAG"),
+                "CANDIDATE_BINDING",
+                "displayed flags",
+            )
+            for found, expected in (
+                (proof.repository, request.repository),
+                (proof.source_sha, request.source_commit),
+                (proof.game, request.game),
+                (proof.build, request.build),
+                (proof.revision, request.revision),
+                (proof.package_run, request.package_run),
+                (proof.staging_run, request.staging_run),
+                (proof.base_release_id, request.base_release_id),
+                (proof.base_manifest_sha256, request.base_manifest_sha256),
+            ):
+                _same(found, expected, "CANDIDATE_BINDING", "request/proof identity")
+            if candidate_context is not None:
+                for context_found, context_expected in (
+                    (proof.pull_number, candidate_context.pull_number),
+                    (proof.source_tree, candidate_context.source_tree),
+                    (proof.base_sha, candidate_context.base_sha),
+                    (proof.tooling_sha, candidate_context.tooling_sha),
+                    (proof.candidate_run, candidate_context.candidate_run),
+                    (proof.candidate_artifact, candidate_context.candidate_artifact),
+                    (proof.preparation_ci, candidate_context.ci_pin),
+                ):
+                    _same(
+                        context_found,
+                        context_expected,
+                        "CANDIDATE_BINDING",
+                        "verified preparation identity",
+                    )
         index = current.index
         for field, expected in {
             "game": request.game,

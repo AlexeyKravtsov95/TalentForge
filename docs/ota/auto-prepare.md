@@ -8,15 +8,28 @@ automatically: its candidate commit goes to the branch `ota-candidate/<game>-<bu
 pull request is opened ([below](#the-review-pull-request-m5otaauto3)), so nobody carries the
 artifact over by hand.
 
-It **never publishes**. It does not stage, promote, sign, upload to any bucket or merge; it
-never writes to `main` and does not change `PRODUCT_BUNDLE`, `BUNDLED_BUILDS` or any app
-build. The only write is the review branch and its PR, made by a separate job (`propose`).
-It holds **no production signing or S3 secret** (the
-production catalog is read anonymously over HTTPS and verified against the committed public
-keyring); the isolated `propose` job uses a repository-scoped GitHub App installation token. Publication stays the
-owner's manual procedure ([publisher-runbook.md](publisher-runbook.md),
-[production-deployment.md](production-deployment.md)); the publication rules and the
-approval gates are unchanged.
+## Current flow: one data MR
+
+New automatically generated candidates use `owner-merge-v1`. The bot opens a **draft** data
+MR, prepares staging and the exact release package using trusted main tooling, and appends
+only its frozen request and conditional authorization to that same MR. Full CI runs on the
+final MR head. The bot then displays the exact package, source, manifest, base and warning
+report and marks that MR ready.
+
+The owner's **ordinary Merge** authorizes automatic publication of that exact package to
+live servers. No second release MR, manual approval record or separate live-build answer is
+needed. Use a merge commit; squash/rebase is refused by this first policy version. Merging
+before the package/final CI is ready cannot authorize production. The package is built from
+the data source commit before merge and is never rebuilt from the merge commit.
+
+The preparation and App jobs have no production signing/S3 secret and never merge or write
+main. The protected publisher independently verifies the owner, MR/source/package/CI pins,
+actual main ancestry, unchanged live base and all publication gates before secrets and PUT.
+Its own main/push CI may reuse the final full PR validation only for the exact equal merge
+tree. Public signature, manifest and **every** file must pass independently before completion.
+
+Only newly generated policy MRs use this path. Existing frozen legacy requests/approvals are
+unchanged. The manual recovery reference below applies to those legacy packages only.
 
 ## How it runs
 
@@ -41,7 +54,11 @@ job propose  (only when step 6 selected a candidate; M5.OTA.AUTO.3)
   1. checkout main (full history, no persisted credentials), pip install -e .
   2. download that artifact (this run's or the earlier run's, actions: read)
   3. scripts/ota_prepare.py propose  → check → branch ota-candidate/<game>-<build> → PR
-  4. upload propose/ as  ota-propose-<run id>-<attempt>;  the final proposal status
+  4. upload propose/ as ota-propose-<run id>-<attempt>; the final proposal status
+
+CI on D -> trusted premerge staging/package -> append request/conditional record P
+CI on final H -> verify frozen package + mark same MR ready
+owner ordinary Merge M -> own short main CI -> protected publisher -> independent public proof
 ```
 
 The scheduled checks run at 10:00, 15:00 and 20:00 in `Asia/Novosibirsk` (UTC+7).
@@ -115,7 +132,8 @@ the forced re-runs of `1.60.1.70450` did not show it because `main` already held
 
 G1 always stops on a prepared candidate - its commit is not on `main`. That is the expected
 state, reported as a required step: the data reaches production only after a reviewed refresh
-PR is merged and the release is rebuilt from the merge commit.
+MR is merged. Candidate-mode staging/package uses an explicitly verified preparation ref;
+that is not production G1. Production repeats G1 against actual current main after merge.
 
 ## Statuses and the job result
 
@@ -209,7 +227,7 @@ PR is opened. **Re-run failed jobs** on the run page retries the same way. At mo
 open per branch: an HTTP 422 on creation (another run was first) is resolved by listing the
 PRs again. Runs are queued by the concurrency group; pushes use `--force-with-lease`.
 
-**The PR description** shows the candidate build and release revision, the base (kind and
+**Legacy PR descriptions** showed the candidate build and release revision, the base (kind and
 release id), `PRODUCT_BUNDLE`, the source `main` SHA, the candidate commit, a link to the
 preparation run and the artifact name, the production catalog state, the release id and
 manifest SHA-256 built from the candidate commit (not the one to approve), the talent changes
@@ -245,7 +263,7 @@ The scope guard still permits only `ota-candidate/<game>-<build>` and candidate 
 it never authorizes a write to main or workflow files. Real App installation/dispatch/PR CI
 smoke is a post-merge owner setup check; development tests use fakes and TEST keys.
 
-## From PREPARED to a release (manual)
+## Legacy manual recovery reference
 
 1. Review the candidate PR (Actions → the run → `propose`, or the `ota-candidate/*` PR):
    `summary.md`, `report.json`, the diff and `review-report.txt` are in the preparation

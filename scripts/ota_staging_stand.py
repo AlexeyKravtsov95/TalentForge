@@ -260,12 +260,21 @@ def generate_tls(tls: Path, now: dt.datetime) -> dict[str, str]:
 class Publisher:
     """The real ``talent-data ota`` CLI against a local directory store, staging only."""
 
-    def __init__(self, out: Path, *, commit: str, now: dt.datetime, candidate: str) -> None:
+    def __init__(
+        self,
+        out: Path,
+        *,
+        commit: str,
+        now: dt.datetime,
+        candidate: str,
+        main_ref: str = "origin/main",
+    ) -> None:
         self.out = out
         self.candidate = candidate
         self.store = out / "work" / "store"
         self.artifacts = out / "work" / "artifacts"
         self.commit = commit
+        self.main_ref = main_ref
         self.now = _stamp(now)
         self.key_id, self.keyring, self.pem = generate_staging_key(out / "keys")
         self.log: list[dict[str, Any]] = []
@@ -291,16 +300,21 @@ class Publisher:
         )  # fmt: skip
         return self.manifest_path(f"{build}-r{revision}")
 
-    def validate(self, manifest: Path, *, expect: int = 0, repo: Path = ROOT) -> int:
+    def validate(
+        self, manifest: Path, *, expect: int = 0, repo: Path = ROOT, main_ref: str | None = None
+    ) -> int:
         return self.cli(
             "validate", *self.common(), "--channel", CHANNEL, "--manifest", str(manifest),
-            "--now", self.now, expect=expect, repo=repo,
+            "--now", self.now, "--main-ref", main_ref or self.main_ref, expect=expect, repo=repo,
         )  # fmt: skip
 
-    def stage(self, manifest: Path, *, expect: int = 0, repo: Path = ROOT) -> int:
+    def stage(
+        self, manifest: Path, *, expect: int = 0, repo: Path = ROOT, main_ref: str | None = None
+    ) -> int:
         return self.cli(
             "stage", *self.common(), "--manifest", str(manifest), "--key", str(self.pem),
-            "--key-id", self.key_id, "--execute", "--now", self.now, expect=expect, repo=repo,
+            "--key-id", self.key_id, "--execute", "--now", self.now,
+            "--main-ref", main_ref or self.main_ref, expect=expect, repo=repo,
         )  # fmt: skip
 
     def rollback(self, release_id: str) -> None:
@@ -318,6 +332,7 @@ class Publisher:
             "attach-signature", *self.common(), "--payload", str(payload),
             "--signature", str(signature), "--key-id", self.key_id, "--channel", CHANNEL,
             "--execute", "--now", self.now,
+            "--main-ref", self.main_ref,
         )  # fmt: skip
 
     def verify_live(self) -> None:
@@ -374,8 +389,8 @@ class Publisher:
         before = tree_digest(self.store)
         captured = io.StringIO()
         with contextlib.redirect_stdout(captured):
-            validate_exit = self.validate(manifest, expect=1, repo=repo)
-            stage_exit = self.stage(manifest, expect=1, repo=repo)
+            validate_exit = self.validate(manifest, expect=1, repo=repo, main_ref="origin/main")
+            stage_exit = self.stage(manifest, expect=1, repo=repo, main_ref="origin/main")
         output = captured.getvalue()
         sys.stdout.write(output)
         if tree_digest(self.store) != before:
@@ -401,6 +416,7 @@ def prepare(
     now: dt.datetime,
     base: str = BUILD_A,
     candidate: str = BUILD_B,
+    main_ref: str = "origin/main",
 ) -> dict[str, Any]:
     out = out.expanduser().resolve()
     if base == candidate:
@@ -414,7 +430,7 @@ def prepare(
     out.mkdir(parents=True, exist_ok=True)
     # transport validity follows the wall clock, whatever publication instant --now names
     tls = generate_tls(out / "tls", utc(None))
-    publisher = Publisher(out, commit=commit, now=now, candidate=candidate)
+    publisher = Publisher(out, commit=commit, now=now, candidate=candidate, main_ref=main_ref)
     snapshots = []
 
     for build, name in ((base, SNAPSHOTS[0]), (candidate, SNAPSHOTS[1])):

@@ -6,7 +6,7 @@ name: OTA release preparation
 on:
   workflow_run:
     workflows: ["CI"]
-    types: [completed]
+    types: [in_progress, completed]
   workflow_dispatch:
     inputs:
       ci_run_id:
@@ -32,7 +32,8 @@ jobs:
     if: >-
       github.repository == 'AlexeyKravtsov95/TalentForge' &&
       (github.event_name == 'workflow_dispatch' ||
-       (github.event.workflow_run.conclusion == 'success' &&
+       (github.event.action == 'completed' &&
+        github.event.workflow_run.conclusion == 'success' &&
         github.event.workflow_run.event == 'push' &&
         github.event.workflow_run.head_branch == 'main' &&
         github.event.workflow_run.head_repository.full_name == github.repository))
@@ -130,3 +131,148 @@ jobs:
           python scripts/ota_release_automation.py propose-request \
             --request "$RUNNER_TEMP/request/release-request.json" \
             --ci-run-id "$CI_RUN_ID" --ci-attempt "$CI_ATTEMPT"
+
+  premerge:
+    if: >-
+      github.repository == 'AlexeyKravtsov95/TalentForge' &&
+      github.event_name == 'workflow_run' &&
+      github.event.action == 'completed' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      startsWith(github.event.workflow_run.head_branch, 'ota-candidate/forever-') &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    permissions:
+      contents: write # immutable original producer reservations only
+      actions: write # staging/package dispatch, no production workflow
+      pull-requests: read
+    outputs:
+      phase: ${{ steps.prepare.outputs.phase }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Install trusted tools
+        run: pip install -e ".[ota]"
+      - name: Prepare or recognize the frozen package
+        id: prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CI_RUN_ID: ${{ github.event.workflow_run.id }}
+          CI_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+        run: |
+          python scripts/ota_premerge.py prepare --ci-run-id "$CI_RUN_ID" \
+            --ci-attempt "$CI_ATTEMPT" --out "$RUNNER_TEMP/premerge"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: steps.prepare.outputs.phase == 'bind'
+        with:
+          name: ota-premerge-request-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/premerge/release-request.json
+          if-no-files-found: error
+          retention-days: 7
+
+  premerge-review:
+    needs: premerge
+    if: >-
+      always() && github.repository == 'AlexeyKravtsov95/TalentForge' &&
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      startsWith(github.event.workflow_run.head_branch, 'ota-candidate/forever-') &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      (github.event.action == 'in_progress' ||
+      (github.event.action == 'completed' && github.event.workflow_run.conclusion != 'success') ||
+      needs.premerge.result == 'failure' ||
+      needs.premerge.outputs.phase == 'bind' || needs.premerge.outputs.phase == 'ready')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: ota-preparation
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Install trusted tools
+        run: pip install -e ".[ota]"
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        if: needs.premerge.outputs.phase == 'bind'
+        with:
+          name: ota-premerge-request-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/request
+      - uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        id: app-token
+        with:
+          client-id: ${{ vars.OTA_APP_CLIENT_ID }}
+          private-key: ${{ secrets.OTA_APP_PRIVATE_KEY }}
+          owner: AlexeyKravtsov95
+          repositories: TalentForge
+          permission-contents: write
+          permission-pull-requests: write
+      - name: Invalidate readiness or update the verified MR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OTA_APP_TOKEN: ${{ steps.app-token.outputs.token }}
+          PHASE: ${{ (github.event.action == 'in_progress' || github.event.workflow_run.conclusion != 'success' || needs.premerge.result == 'failure') && 'invalidate' || needs.premerge.outputs.phase }}
+          CI_RUN_ID: ${{ github.event.workflow_run.id }}
+          CI_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+        run: |
+          python scripts/ota_premerge.py "$PHASE" --ci-run-id "$CI_RUN_ID" \
+            --ci-attempt "$CI_ATTEMPT" --request "$RUNNER_TEMP/request/release-request.json" \
+            --out "$RUNNER_TEMP/review"
+
+  premerge-main-change:
+    if: >-
+      github.repository == 'AlexeyKravtsov95/TalentForge' &&
+      github.event_name == 'workflow_run' && github.event.action == 'in_progress' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: ota-preparation
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Install trusted tools
+        run: pip install -e ".[ota]"
+      - uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        id: app-token
+        with:
+          client-id: ${{ vars.OTA_APP_CLIENT_ID }}
+          private-key: ${{ secrets.OTA_APP_PRIVATE_KEY }}
+          owner: AlexeyKravtsov95
+          repositories: TalentForge
+          permission-contents: write
+          permission-pull-requests: write
+      - name: Return stale-base candidates to draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OTA_APP_TOKEN: ${{ steps.app-token.outputs.token }}
+          CI_RUN_ID: ${{ github.event.workflow_run.id }}
+          CI_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+        run: |
+          python scripts/ota_premerge.py invalidate-main --ci-run-id "$CI_RUN_ID" \
+            --ci-attempt "$CI_ATTEMPT"

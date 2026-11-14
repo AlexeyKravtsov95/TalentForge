@@ -9,7 +9,7 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta
 from pathlib import Path
 from threading import Lock
-from typing import Annotated, Literal, Self
+from typing import TYPE_CHECKING, Annotated, Literal, Self
 
 from pydantic import Field, field_validator, model_validator
 
@@ -32,6 +32,9 @@ from talent_data.ota.release_package import (
 )
 from talent_data.ota.s3_store import S3Failure
 from talent_data.ota.verify import parse_strict, sha256_ref
+
+if TYPE_CHECKING:
+    from talent_data.ota.automation.merge_approval import VerifiedOwnerMerge
 
 Digest = Annotated[str, Field(pattern=SHA256_PATTERN)]
 Commit = Annotated[str, Field(pattern=COMMIT_PATTERN)]
@@ -247,6 +250,32 @@ def resolve_approval_epoch(
     digest = sha256_ref(request.model_dump_json(by_alias=True).encode())
     path = f"docs/ota/release-requests/{request.release_id}.json"
     approval_path = f"{APPROVALS_DIR}/{request.release_id}.md"
+    current_approval = approval_record_at(repo, "origin/main", request.release_id)
+    from talent_data.ota.automation.merge_approval import parse_merge_record, verify_owner_merge
+
+    conditional = (
+        parse_merge_record(current_approval.decode("utf-8", "strict")) if current_approval else None
+    )
+    if conditional is not None:
+        start = None
+        approved_at = None
+        try:
+            from talent_data.ota.automation.ci_validation import load_merge_binding
+
+            binding = load_merge_binding(api, request)
+            verified = verify_owner_merge(api, repo, request, conditional, binding=binding)
+            start, approved_at = verified.merge_sha, verified.merged_at
+        except (PreparationBlocked, ValueError, OSError, KeyError, TypeError):
+            pass
+        return ApprovalEpoch(
+            epoch_id=sha256_ref(json.dumps([digest, start], separators=(",", ":")).encode()),
+            request_digest=digest,
+            approval_digest=sha256_ref(current_approval) if current_approval else None,
+            approval_change_sha=start,
+            epoch_start_sha=start,
+            approved_at=approved_at,
+            time_source="merged_at" if approved_at is not None else None,
+        )
     changes = (
         git(
             repo,
@@ -528,3 +557,98 @@ class DeliveryRecorder:
             slo=slo,
             failure=self.failure,
         )
+
+
+class OwnerMergeTimeline(_TimedModel):
+    """Separate internal evidence; existing delivery-timings.v1/journal stay unchanged."""
+
+    schema_version: Literal[1]
+    kind: Literal["owner-merge-timeline.v1"]
+    release_id: str
+    request_digest: Digest
+    pull_number: int = Field(gt=0)
+    source_sha: Commit
+    tooling_sha: Commit
+    final_head_sha: Commit
+    merge_sha: Commit
+    candidate_at: datetime | None
+    staging_at: datetime | None
+    package_at: datetime | None
+    final_ci_at: datetime | None
+    ready_at: datetime | None
+    merged_at: datetime
+    verified_at: datetime | None
+    candidate_to_ready_seconds: Seconds | None
+    ready_to_merge_seconds: Seconds | None
+    merge_to_verified_seconds: Seconds | None
+    slo: Slo
+
+    @field_validator("schema_version", mode="before")
+    @classmethod
+    def version_type(cls, value: object) -> object:
+        if type(value) is not int:
+            raise ValueError("schemaVersion must be an integer")
+        return value
+
+
+def owner_merge_timeline(
+    api: GitHub, verified: VerifiedOwnerMerge, *, verified_at: datetime | None = None
+) -> OwnerMergeTimeline:
+    """Read actual server events. Missing readiness is unknown, never a CI timestamp."""
+    pull = api.repo("GET", f"/pulls/{verified.record.pull_number}")
+
+    def stamp(value: object) -> datetime | None:
+        try:
+            return _utc(value)
+        except (TypeError, ValueError):
+            return None
+
+    candidate_at = stamp(pull.get("created_at"))
+    times = []
+    for pin in (verified.binding.staging_run, verified.binding.package_run, verified.pr_ci):
+        times.append(stamp(api.run(pin.run_id, pin.attempt).get("updated_at")))
+    events = api.pages(f"/issues/{verified.record.pull_number}/timeline")
+    # GitHub issue-event-types: ready_for_review.created_at is the server event time.
+    ready = [
+        stamp(e.get("created_at"))
+        for e in events
+        if e.get("event") == "ready_for_review" and e.get("actor", {}).get("id") == 351368232
+    ]
+    eligible = [
+        t
+        for t in ready
+        if t is not None and t <= verified.merged_at and (times[2] is None or t >= times[2])
+    ]
+    ready_at = max(eligible) if eligible else None
+
+    def elapsed(start: datetime | None, end: datetime | None) -> float | None:
+        if start is None or end is None:
+            return None
+        value = (end - start).total_seconds()
+        if value < 0:
+            raise ValueError("server timeline is out of order")
+        return value
+
+    seconds = elapsed(verified.merged_at, verified_at)
+    return OwnerMergeTimeline(
+        schema_version=1,
+        kind="owner-merge-timeline.v1",
+        release_id=verified.request.release_id,
+        request_digest=sha256_ref(verified.request.model_dump_json(by_alias=True).encode()),
+        pull_number=verified.record.pull_number,
+        source_sha=verified.request.source_commit,
+        tooling_sha=verified.binding.tooling_sha,
+        final_head_sha=verified.final_head_sha,
+        merge_sha=verified.merge_sha,
+        candidate_at=candidate_at,
+        staging_at=times[0],
+        package_at=times[1],
+        final_ci_at=times[2],
+        ready_at=ready_at,
+        merged_at=verified.merged_at,
+        verified_at=verified_at,
+        candidate_to_ready_seconds=elapsed(candidate_at, ready_at),
+        ready_to_merge_seconds=elapsed(ready_at, verified.merged_at),
+        merge_to_verified_seconds=seconds,
+        slo="PENDING" if seconds is None else ("PASS" if seconds <= 600 else "MISS"),
+    )

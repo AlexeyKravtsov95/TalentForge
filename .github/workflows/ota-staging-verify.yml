@@ -16,6 +16,21 @@ run-name: ${{ inputs.automation_key != '' && format('ota-staging-{0}', inputs.au
 on:
   workflow_dispatch:
     inputs:
+      candidate_pr:
+        description: "Internal verified candidate MR (0: normal main source)"
+        required: false
+        default: "0"
+        type: string
+      candidate_ci_run_id:
+        description: "Exact successful full candidate PR CI"
+        required: false
+        default: "0"
+        type: string
+      candidate_ci_attempt:
+        description: "Exact candidate CI attempt"
+        required: false
+        default: "0"
+        type: string
       automation_key:
         description: "Internal exact source/base correlation (empty for manual staging)"
         required: false
@@ -50,10 +65,11 @@ on:
 
 permissions:
   contents: read
+  actions: read # independently verify candidate preparation/artifact and exact PR CI
 
 concurrency:
-  group: ota-staging-verify-${{ github.ref }}
-  cancel-in-progress: true
+  group: ota-staging-verify-${{ github.ref }}-${{ inputs.candidate_pr || '0' }}-${{ inputs.automation_key }}
+  cancel-in-progress: ${{ inputs.candidate_pr == '' || inputs.candidate_pr == '0' }}
 
 jobs:
   verify:
@@ -94,10 +110,16 @@ jobs:
           REVISION: ${{ inputs.revision }}
           CANDIDATE: ${{ inputs.candidate || '1.60.1.70532' }}
           BASE: ${{ inputs.base || '1.60.1.70450' }}
+          CANDIDATE_PR: ${{ inputs.candidate_pr || '0' }}
+          CANDIDATE_CI_RUN_ID: ${{ inputs.candidate_ci_run_id || '0' }}
+          CANDIDATE_CI_ATTEMPT: ${{ inputs.candidate_ci_attempt || '0' }}
+          GH_TOKEN: ${{ github.event_name == 'workflow_dispatch' && github.token || '' }}
         run: |
           set +e
           python scripts/ota_staging_verify.py run "$RUNNER_TEMP/staging" \
-            --base "$BASE" --candidate "$CANDIDATE" --revision "$REVISION"
+            --base "$BASE" --candidate "$CANDIDATE" --revision "$REVISION" \
+            --candidate-pr "$CANDIDATE_PR" --candidate-ci-run-id "$CANDIDATE_CI_RUN_ID" \
+            --candidate-ci-attempt "$CANDIDATE_CI_ATTEMPT"
           code=$?
           set -e
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"
@@ -135,11 +157,17 @@ jobs:
           REVISION: ${{ inputs.revision }}
           CANDIDATE: ${{ inputs.candidate || '1.60.1.70532' }}
           BASE: ${{ inputs.base || '1.60.1.70450' }}
+          CANDIDATE_PR: ${{ inputs.candidate_pr || '0' }}
+          CANDIDATE_CI_RUN_ID: ${{ inputs.candidate_ci_run_id || '0' }}
+          CANDIDATE_CI_ATTEMPT: ${{ inputs.candidate_ci_attempt || '0' }}
+          GH_TOKEN: ${{ github.event_name == 'workflow_dispatch' && github.token || '' }}
         run: |
           mv "$RUNNER_TEMP/staging" "$RUNNER_TEMP/staging-first"
           set +e
           python scripts/ota_staging_verify.py run "$RUNNER_TEMP/staging" \
-            --base "$BASE" --candidate "$CANDIDATE" --revision "$REVISION"
+            --base "$BASE" --candidate "$CANDIDATE" --revision "$REVISION" \
+            --candidate-pr "$CANDIDATE_PR" --candidate-ci-run-id "$CANDIDATE_CI_RUN_ID" \
+            --candidate-ci-attempt "$CANDIDATE_CI_ATTEMPT"
           code=$?
           set -e
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"

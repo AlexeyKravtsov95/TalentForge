@@ -143,6 +143,8 @@ def ci_gates(
     base: ReleaseArtifact,
     approval: ApprovalRecord | None,
     now: dt.datetime,
+    *,
+    main_ref: str = "origin/main",
 ) -> tuple[list[GateResult], str]:
     """Gates G1-G8 (production) and the review diff, against the diff base rebuilt from the
     same commit as a stand-in for the live release: CI never reads production."""
@@ -169,6 +171,7 @@ def ci_gates(
             channel=Channel.PRODUCTION,
             now=now,
             approval=approval,
+            main_ref=main_ref,
         )
         return gates, render_review_report(under_test, stand_in, store)
 
@@ -180,6 +183,7 @@ def conditions(
     approval_problems: list[str] | None,
     accepted: set[str],
     package_problem: str | None,
+    owner_merge: bool = False,
 ) -> list[dict[str, str]]:
     """What publication needs, each ``MET`` / ``FAIL`` / ``MISSING`` / ``OWNER``."""
     stops = [r.gate.value for r in gates if r.status is GateStatus.STOP]
@@ -233,10 +237,36 @@ def conditions(
             "ota_production_release.py prepare --execute, then openssl offline",
         ),
     ]
-    return [{"id": i, "condition": c, "status": s, "detail": d} for i, c, s, d in rows]
+    result = [{"id": i, "condition": c, "status": s, "detail": d} for i, c, s, d in rows]
+    if owner_merge:
+        descriptions = {
+            "approval": (
+                "owner ordinary Merge authorizes this exact package",
+                "Pending the owner's merge of the same ready data MR; no second MR",
+            ),
+            "acceptance": (
+                "displayed frozen warnings are accepted by that merge",
+                "Only already displayed flags; no separate approval form",
+            ),
+            "live": (
+                "protected publisher rechecks current live base and all gates",
+                "Automatic after merge; changed base or any STOP refuses publication",
+            ),
+            "signature": (
+                "protected publisher signs after independently verified owner merge",
+                "Automatic signing and public-file proof; no manual signing step",
+            ),
+        }
+        for row in result:
+            if row["id"] in descriptions:
+                row["condition"], row["detail"] = descriptions[row["id"]]
+                row["status"] = "OWNER"  # the sole pending human action is that merge
+    return result
 
 
-def render_conditions(index: rp.PackageIndex, rows: list[dict[str, str]], verdict: str) -> str:
+def render_conditions(
+    index: rp.PackageIndex, rows: list[dict[str, str]], verdict: str, *, owner_merge: bool = False
+) -> str:
     staging = index.staging
     lines = [
         f"# OTA release package {index.release_id}: {verdict}",
@@ -247,8 +277,14 @@ def render_conditions(index: rp.PackageIndex, rows: list[dict[str, str]], verdic
         f"* {index.file_count} files, {index.blob_count} blobs, {index.total_byte_length:,} bytes",
         f"* staging: {staging.status}"
         + (f" — {staging.run_url} ({staging.mode})" if staging.status == "PASS" else ""),
-        "* not a publication and not an approval: the owner reviews, merges the approval record, "
-        "signs offline and publishes (docs/ota/production-release.md)",
+        (
+            "* Prepared before authorization: ordinary owner Merge of the same ready MR "
+            "authorizes automatic publication of these exact bytes; no second MR or manual form."
+            if owner_merge
+            else "* not a publication and not an approval: the owner reviews, "
+            "merges the approval record, "
+            "signs offline and publishes (docs/ota/production-release.md)"
+        ),
         "",
         "| condition | status | detail |",
         "| --- | --- | --- |",
@@ -273,8 +309,21 @@ def build(args: argparse.Namespace) -> int:
         print(f"error: {out} is not empty", file=sys.stderr)
         return EXIT_USAGE
     try:
-        subject = sv.resolve_subject(ROOT, args.source_revision, args.base, args.build)
-    except sv.InputError as exc:
+        from talent_data.ota.automation.candidate import candidate_context_from_cli
+        from talent_data.ota.automation.prepare import PreparationBlocked
+        from talent_data.ota.automation.provenance import RequestRejected
+
+        context = candidate_context_from_cli(
+            ROOT,
+            pull_number=getattr(args, "candidate_pr", 0),
+            source_sha=args.source_revision,
+            ci_run_id=getattr(args, "candidate_ci_run_id", 0),
+            ci_attempt=getattr(args, "candidate_ci_attempt", 0),
+        )
+        subject = sv.resolve_subject(
+            ROOT, args.source_revision, args.base, args.build, candidate_context=context
+        )
+    except (sv.InputError, PreparationBlocked, RequestRejected, ValueError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return EXIT_USAGE
     created_at = (
@@ -311,8 +360,50 @@ def build(args: argparse.Namespace) -> int:
                 approval_problems.append(f"the publisher cannot parse it: {exc}")
             else:
                 approval = None if approval_problems else parsed
-    gates, diff = ci_gates(artifact, release(args.base, 1), approval, created_at)
+    gates, diff = ci_gates(
+        artifact, release(args.base, 1), approval, created_at, main_ref=subject.verification_ref
+    )
     staging, attachments = bind(args, artifact)
+
+    if context is not None:
+        from talent_data.ota.automation.candidate import CandidateBinding
+        from talent_data.ota.automation.requests import RunPin
+
+        stage_run = rp.run_record(json.loads(args.staging_run.read_bytes()))
+        proof = CandidateBinding(
+            schema_version=1,
+            kind="ota-candidate-binding",
+            policy="owner-merge-v1",
+            repository=args.repository,
+            pull_number=context.pull_number,
+            game=GAME,
+            build=args.build,
+            revision=args.revision,
+            source_sha=subject.sha,
+            source_tree=context.source_tree,
+            preparation_head_sha=subject.sha,
+            base_sha=context.base_sha,
+            tooling_sha=context.tooling_sha,
+            preparation_ci=context.ci_pin,
+            candidate_run=context.candidate_run,
+            candidate_artifact=context.candidate_artifact,
+            staging_run=RunPin(
+                workflow_path=rp.STAGING_WORKFLOW,
+                run_id=stage_run["id"],
+                attempt=stage_run["attempt"],
+                head_sha=stage_run["headSha"],
+            ),
+            package_run=RunPin(
+                workflow_path=".github/workflows/ota-release-package.yml",
+                run_id=int(os.environ["GITHUB_RUN_ID"]),
+                attempt=int(os.environ["GITHUB_RUN_ATTEMPT"]),
+                head_sha=context.tooling_sha,
+            ),
+            base_release_id=args.candidate_base_release_id,
+            base_manifest_sha256=args.candidate_base_manifest_sha256,
+            flagged_gates=tuple(r.gate.value for r in gates if r.status is GateStatus.FLAG),
+        )
+        attachments[rp.CANDIDATE_BINDING_NAME] = proof.model_dump_json(by_alias=True).encode()
 
     rows = [(r.gate.value, r.status.value, r.detail) for r in gates]
     attachments["report/gates.json"] = (
@@ -349,13 +440,24 @@ def build(args: argparse.Namespace) -> int:
         approval_problems=approval_problems,
         accepted=accepted,
         package_problem=None,
+        owner_merge=context is not None,
     )
     verdict = verdict_of(table)
-    attachments[rp.APPROVAL_TEMPLATE_NAME] = rp.render_approval_template(
-        identity, gates=rows
-    ).encode()
+    if context is None:
+        attachments[rp.APPROVAL_TEMPLATE_NAME] = rp.render_approval_template(
+            identity, gates=rows
+        ).encode()
+    else:
+        attachments["report/merge-terms.md"] = (
+            "# Условия выпуска\n\n"
+            "Готовый пакет: нажми обычный Merge в исходном MR.\n"
+            "Это разрешает автоматическую публикацию этих точных байтов; второго MR, "
+            "ручного одобрения или ручной подписи не требуется. До merge разрешения нет.\n"
+        ).encode()
     attachments["report/conditions.json"] = (json.dumps(table, indent=2) + "\n").encode()
-    attachments["report/conditions.md"] = render_conditions(identity, table, verdict).encode()
+    attachments["report/conditions.md"] = render_conditions(
+        identity, table, verdict, owner_merge=context is not None
+    ).encode()
     index = rp.write_package(package_root, artifact, attachments=attachments, **common)
 
     try:
@@ -367,9 +469,10 @@ def build(args: argparse.Namespace) -> int:
             approval_problems=approval_problems,
             accepted=accepted,
             package_problem=str(exc),
+            owner_merge=context is not None,
         )
         verdict = verdict_of(table)
-    summary = render_conditions(index, table, verdict)
+    summary = render_conditions(index, table, verdict, owner_merge=context is not None)
     (out / "summary.md").write_text(summary, encoding="utf-8")
     if step_summary := os.environ.get("GITHUB_STEP_SUMMARY"):
         with Path(step_summary).open("a", encoding="utf-8") as handle:
@@ -405,6 +508,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     go.add_argument("--run-url", default="", help="the URL of the workflow run building this")
     go.add_argument("--created-at", default="", help=argparse.SUPPRESS)  # tests: a fixed clock
+    go.add_argument("--candidate-pr", type=int, default=0, help=argparse.SUPPRESS)
+    go.add_argument("--candidate-ci-run-id", type=int, default=0, help=argparse.SUPPRESS)
+    go.add_argument("--candidate-ci-attempt", type=int, default=0, help=argparse.SUPPRESS)
+    go.add_argument("--candidate-base-release-id", default="", help=argparse.SUPPRESS)
+    go.add_argument("--candidate-base-manifest-sha256", default="", help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
     if (args.staging_run is None) != (args.staging_artifact is None):
         parser.error("--staging-run and --staging-artifact go together")

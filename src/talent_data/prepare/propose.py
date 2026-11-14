@@ -350,12 +350,14 @@ class GitHub:
             raise GitHubError("list pull requests", None, f"unexpected response: {exc}") from exc
         return [p for p in pulls if p.head.ref == branch]
 
-    def create(self, *, title: str, branch: str, base: str, body: str) -> PullRequest:
+    def create(
+        self, *, title: str, branch: str, base: str, body: str, draft: bool = False
+    ) -> PullRequest:
         data = self._call(
             "create pull request",
             "POST",
             f"/repos/{self.repository}/pulls",
-            json={"title": title, "head": branch, "base": base, "body": body, "draft": False},
+            json={"title": title, "head": branch, "base": base, "body": body, "draft": draft},
         )
         try:
             return PullRequest.model_validate(data)
@@ -515,6 +517,7 @@ def propose(
     base_branch: str = "main",
     expected_artifact: str | None = None,
     preparation_url: str | None = None,
+    owner_merge_notice: str | None = None,
 ) -> tuple[Proposal, str | None]:
     """Propose the artifact's candidate; returns the proposal and the PR description, when
     one was rendered. Expected failures never raise: the outcome says what happened."""
@@ -557,7 +560,9 @@ def propose(
         )
         return proposal, None
 
-    body = render_body(candidate, artifact, preparation_url, on_main)
+    body = render_body(
+        candidate, artifact, preparation_url, on_main, owner_merge_notice=owner_merge_notice
+    )
     try:
         _sync_branch(git, candidate, proposal, remote=remote, base_ref=base_ref)
     except GitError as exc:
@@ -641,7 +646,13 @@ def _sync_pull(
             f"data: OTA candidate {candidate.game} {candidate.build} (diff from {candidate.base})"
         )
         try:
-            created = github.create(title=title, branch=branch, base=base_branch, body=body)
+            created = github.create(
+                title=title,
+                branch=branch,
+                base=base_branch,
+                body=body,
+                **({"draft": True} if "<!-- talentforge:owner-merge-v1" in body else {}),
+            )
         except GitHubError as exc:
             if exc.status != 422:
                 raise
@@ -657,6 +668,11 @@ def _sync_pull(
     proposal.outcome = Outcome.EXISTS
     proposal.pull_number, proposal.pull_url = open_pull.number, open_pull.html_url
     proposal.reason = f"pull request #{open_pull.number} already proposes the candidate"
+    if "<!-- talentforge:owner-merge-v1" in body and "<!-- talentforge:owner-merge-v1" not in (
+        open_pull.body or ""
+    ):
+        proposal.reason += "; existing legacy policy retained"
+        return
     # the description follows the preparation whose commit the branch holds
     if open_pull.head.sha == candidate.commit and (open_pull.body or "") != body:
         github.update_body(open_pull.number, body)
@@ -679,6 +695,8 @@ def render_body(
     artifact: Path,
     preparation_url: str | None,
     on_main: Mapping[str, tuple[str, str]],
+    *,
+    owner_merge_notice: str | None = None,
 ) -> str:
     """The pull request description: what was prepared, from what, how it was checked and
     what is still missing before anything may be published."""
@@ -708,7 +726,7 @@ def render_body(
         sequence = "no catalog" if p.sequence is None else f"sequence {p.sequence}"
         active = f", active `{p.active_release_id}`" if p.active_release_id else ""
         lines.append(f"| Production catalog | {p.status.value} ({sequence}{active}) |")
-    if r.release is not None:
+    if r.release is not None and owner_merge_notice is None:
         lines.append(
             f"| Release from the candidate commit | `{r.release.release_id}`, manifest "
             f"`{r.release.manifest_sha256}` (not the manifest to approve: the release is "
@@ -785,12 +803,31 @@ def render_body(
         for s in r.steps
     ]
     lines += ["", "</details>", ""]
-    if r.gates:
+    if r.gates and owner_merge_notice is None:
         lines += ["| gate | status | detail |", "| --- | --- | --- |"]
         lines += [
             f"| {g.gate.value} | {g.status.value} | {g.detail.replace('|', '/')} |" for g in r.gates
         ]
         lines.append("")
+
+    if owner_merge_notice is not None:
+        from talent_data.ota.automation.candidate import CandidateNotice
+        from talent_data.ota.verify import parse_strict
+
+        notice = parse_strict(CandidateNotice, owner_merge_notice.encode())
+        lines[2] = (
+            "> Слияние этого MR владельцем разрешает автоматическую публикацию "
+            "указанного готового пакета для live-серверов. "
+            "Бот сначала завершит staging, подготовку пакета и проверки, затем снимет draft. "
+            "До слияния публикация не разрешена; второго релизного MR не будет."
+        )
+        lines += [
+            "<!-- talentforge:owner-merge-v1",
+            notice.model_dump_json(by_alias=True),
+            "-->",
+            "",
+        ]
+        return "\n".join(lines) + "\n"
 
     lines += ["### Still required before any publication (not done by this PR)", ""]
     lines += [

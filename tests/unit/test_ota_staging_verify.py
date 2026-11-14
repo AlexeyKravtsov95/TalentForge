@@ -630,7 +630,11 @@ def test_the_workflow_takes_the_three_inputs_and_holds_no_secret() -> None:
         run = step.split("run: |", 1)[1] if "run: |" in step else ""
         assert "${{" not in run, step.splitlines()[0]
     assert '--base "$BASE" --candidate "$CANDIDATE" --revision "$REVISION"' in text
-    assert "permissions:\n  contents: read\n\n" in text
+    permissions = text.split("permissions:\n", 1)[1].split("\n\n", 1)[0]
+    assert {line.split("#", 1)[0].strip() for line in permissions.splitlines()} == {
+        "contents: read",
+        "actions: read",
+    }
     assert "persist-credentials: false" in text and "fetch-depth: 0" in text
     assert "secrets." not in text
     for forbidden in ("--execute", "promote", "attach-signature", "--backend", "aws ", "AWS_"):

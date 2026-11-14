@@ -20,7 +20,7 @@ from datetime import UTC, datetime
 from functools import partial
 from pathlib import Path
 from time import monotonic
-from typing import Literal, Self
+from typing import TYPE_CHECKING, Literal, Self
 
 import httpx
 from cryptography.exceptions import InvalidSignature
@@ -109,6 +109,9 @@ from talent_data.ota.s3_store import ProductionCatalogGuard, S3Location, connect
 from talent_data.ota.store import BLOB_PREFIX, BlobStore, catalog_key
 from talent_data.ota.verify import OtaError, TrustedKey, pae, parse_strict, sha256_ref, strict_json
 from talent_data.prepare.propose import git_auth
+
+if TYPE_CHECKING:
+    from talent_data.ota.automation.merge_approval import VerifiedOwnerMerge
 
 ENABLE_FLAG = "OTA_PRODUCTION_AUTOMATION_ENABLED"
 PRIMARY_KEY = "tf-prod-2026a"
@@ -311,6 +314,7 @@ class _Run:
         self.proof: PublicVerification | None = None
         self.expected_payload: str | None = None
         self.verified_at: datetime | None = None
+        self.owner_merge: VerifiedOwnerMerge | None = None
 
     def timing_now(self) -> datetime:
         return (self.d.timing_now or self.d.now)()
@@ -400,7 +404,19 @@ class _Run:
             temporary = path.with_suffix(path.suffix + ".tmp")
             temporary.write_text(result.model_dump_json(by_alias=True) + "\n", encoding="utf-8")
             temporary.replace(path)
-        except (OSError, ValueError, TypeError):
+            if self.owner_merge is not None:
+                from talent_data.ota.automation.timings import owner_merge_timeline
+
+                timeline = owner_merge_timeline(
+                    self.d.api, self.owner_merge, verified_at=self.verified_at
+                )
+                audit = path.with_suffix(".owner-merge.json")
+                audit_tmp = audit.with_suffix(audit.suffix + ".tmp")
+                audit_tmp.write_text(
+                    timeline.model_dump_json(by_alias=True) + "\n", encoding="utf-8"
+                )
+                audit_tmp.replace(audit)
+        except (*_FAILURES, TypeError, RuntimeError):
             print("DELIVERY_TIMINGS_UNAVAILABLE", file=sys.stderr)
 
     def _in_scope(self, receipt: Receipt) -> bool:
@@ -563,7 +579,37 @@ class _Run:
         digest = request_digest(request)
         if digest not in self.archives:
             self.archives[digest] = self.d.api.archive(artifact)
-        return ProvenanceEvidence(runs, artifact, self.archives[digest])
+        from talent_data.ota.automation.merge_approval import parse_merge_record, verify_owner_merge
+        from talent_data.ota.release_package import approval_record_at, candidate_binding
+
+        if digest in self.packages:
+            binding = candidate_binding(self.packages[digest])
+        else:
+            with tempfile.TemporaryDirectory(prefix="ota-merge-binding-") as temporary:
+                binding = candidate_binding(
+                    load_package(
+                        extract_verified_archive(
+                            self.archives[digest], Path(temporary).resolve() / "package"
+                        )
+                    )
+                )
+        approval_raw = approval_record_at(self.d.repo, "origin/main", request.release_id)
+        record = (
+            parse_merge_record(approval_raw.decode("utf-8", "strict")) if approval_raw else None
+        )
+        owner_merge = None
+        if record is not None or binding is not None:
+            require(
+                record is not None and binding is not None,
+                "OWNER_MERGE_RECORD",
+                "candidate package requires matching conditional authorization",
+            )
+            assert record is not None and binding is not None
+            owner_merge = verify_owner_merge(
+                self.d.api, self.d.repo, request, record, binding=binding
+            )
+            self.owner_merge = owner_merge
+        return ProvenanceEvidence(runs, artifact, self.archives[digest], owner_merge)
 
     def assess(self, request: ReleaseRequest, root: Path) -> None:
         digest = request_digest(request)
@@ -1004,44 +1050,41 @@ def main(
         return _emit(
             _empty(args, "DISABLED", "CONFIG", "AUTOMATION_DISABLED"), args.status_file, env
         )
-    with _git_authentication(env.get("GITHUB_TOKEN")):
+    with _git_authentication(env.get("GITHUB_TOKEN")), contextlib.ExitStack() as stack:
         run = None
         try:
-            with contextlib.ExitStack() as stack:
-                if dependencies is None:
-                    client = stack.enter_context(httpx.Client(follow_redirects=False, timeout=30))
-                    keys = production_keyring(
-                        TRUSTED_REPO / "docs/ota/keys/production-keyring.json"
-                    )
-                    api = GitHub(client, env.get("GITHUB_TOKEN", ""))
+            if dependencies is None:
+                client = stack.enter_context(httpx.Client(follow_redirects=False, timeout=30))
+                keys = production_keyring(TRUSTED_REPO / "docs/ota/keys/production-keyring.json")
+                api = GitHub(client, env.get("GITHUB_TOKEN", ""))
 
-                    @contextlib.contextmanager
-                    def writer() -> Iterator[BlobStore]:
-                        profile = PRODUCTION_PROFILE
-                        yield connect(
-                            S3Location(
-                                bucket=profile.bucket,
-                                endpoint_url=profile.endpoint_url,
-                                region=profile.region,
-                                profile=profile.aws_profile,
-                                channel=Channel.PRODUCTION,
-                            ),
-                            writable=True,
-                            allow_delete=False,
-                            catalog_guard=ProductionCatalogGuard(keys, game=GAME),
-                        )
-
-                    dependencies = Dependencies(
-                        TRUSTED_REPO,
-                        api,
-                        client,
-                        GitJournal(TRUSTED_REPO),
-                        keys,
-                        writer,
-                        timing_now=lambda: datetime.now(UTC),
+                @contextlib.contextmanager
+                def writer() -> Iterator[BlobStore]:
+                    profile = PRODUCTION_PROFILE
+                    yield connect(
+                        S3Location(
+                            bucket=profile.bucket,
+                            endpoint_url=profile.endpoint_url,
+                            region=profile.region,
+                            profile=profile.aws_profile,
+                            channel=Channel.PRODUCTION,
+                        ),
+                        writable=True,
+                        allow_delete=False,
+                        catalog_guard=ProductionCatalogGuard(keys, game=GAME),
                     )
-                run = _Run(args, env, dependencies)
-                document = run.run()
+
+                dependencies = Dependencies(
+                    TRUSTED_REPO,
+                    api,
+                    client,
+                    GitJournal(TRUSTED_REPO),
+                    keys,
+                    writer,
+                    timing_now=lambda: datetime.now(UTC),
+                )
+            run = _Run(args, env, dependencies)
+            document = run.run()
         except (*_FAILURES, InvalidSignature, KeyError, TypeError) as exc:
             if run is not None and isinstance(exc, JournalError):
                 run.stage, run.reason = "JOURNAL", "JOURNAL_FAILED"
@@ -1070,9 +1113,9 @@ def main(
                         x.state is RequestState.PUBLISHED_NOT_VERIFIED for x in document.operations
                     ):
                         document = document.model_copy(update={"outcome": "PUBLISHED_NOT_VERIFIED"})
+        if run is not None:
+            run.write_timing(document)
     code = _emit(document, args.status_file, env)
-    if run is not None:
-        run.write_timing(document)
     return code
 
 
