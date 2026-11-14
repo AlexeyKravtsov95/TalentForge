@@ -1,36 +1,29 @@
 # M7.RELEASE.1 — Android 1.1.0 (6) release candidate
 
-**Status: DRAFT / NO-GO until owner acceptance.** Release preparation only; no merge, APK/AAB upload, Google Play production publication or OTA publication is authorized by this report.
+**Status: Android RC source version configured; NO-GO for distribution until signed artifacts and in-place upgrade acceptance are verified.** Release preparation only; no merge, APK/AAB upload, Google Play production publication or OTA publication is authorized by this report.
 
 | Field | Value / evidence |
 |---|---|
 | Source examined | `main` at `f0a17c006c62d7ae0e5f818908c5e29390514056` (2026-11-14) |
 | PR base | `main`; release candidate branch `release/m7-android-1.1.0-rc` |
-| Requested Android version | `1.1.0 (6)` **proposed, not yet set** |
-| Actual Android version at source | `1.0.0 (5)`, `mobile/composeApp/build.gradle.kts` |
+| Android version in PR #146 | **`1.1.0 (6)` configured** in Android `defaultConfig`, after owner console confirmation |
+| Previous `main` version | `1.0.0 (5)` at baseline; PR updates Android to `1.1.0 (6)` |
 | Android applicationId | `io.github.alexeykravtsov95.talentforge` (read-only source inspection) |
 | Android signing | Existing app-signing key for universal APK; distinct existing Play upload key for AAB; production certificate matches **not yet verified on RC** |
 | iOS | Out of scope; no iOS version, sources, keys or signing changes |
 | CI baseline | [CI run 43581893182](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/43581893182) PASS; [mobile-ci run 43581893164](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/43581893164) PASS, both on the source SHA |
 | Store delivery history | GitHub release `android-store-5`, `docs/release/android-versioning.md`, `docs/release/android-public-stores.md` |
 | APK SHA-256 / AAB SHA-256 (RC) | **NOT BUILT / NOT RECORDED**. Never copy SHA values from v1.0.0 (5) |
-| Owner acceptance | **OPEN** — full details below |
+| Owner version allocation | **CONFIRMED by owner 2026-11-14**: highest used code 5 in Play, RuStore and AppGallery; not independent API verification |
+| Remaining owner acceptance | **OPEN** — signed APK/AAB, install-over-installed-5, final pre-upload collision recheck |
 
-## 1. Version allocation — blocking before editing build config
+## 1. Version allocation — owner-confirmed, release not published
 
-The repository ledger records 1–5. Code 5 is the approved public-UX APK, source `9e9d9e188c5a0a10c2e573640b0e0d171f9eebf5`, APK SHA-256 `ec2d62fe461d688cfc2c7aa674bfc44d4ef6deac4d6c35480984170d45fa0526`. It is **not** a valid artifact for 1.1.0. GitHub's `android-store-5` draft journal exists and includes RuStore/AppGallery delivery intents and receipts.
+**On 2026-11-14, the owner checked all three consoles (Google Play, RuStore, Huawei AppGallery) and explicitly confirmed the maximum consumed `versionCode` in each is 5.** This is a user-supplied owner readback, **not independent API evidence**. This confirmation resolves the previous version allocation blocker; PR #146 now sets Android `versionCode = 6`, `versionName = "1.1.0"`. The application ID and Android signing configuration are unchanged.
 
-The last documented provider readback (2026-11-04) found RuStore's code-5 draft `2064929703`, without proof of publication, and AppGallery without a code-5 package. These historical observations do **not** establish today's live console state; neither store's publication is marked complete here.
+**Code 6 is allocated in source but not uploaded, submitted or published.** Before the **first** upload, owner must repeat version occupancy checks including Play's all tracks and drafts, RuStore drafts/versions and AppGallery Open Testing/pending submissions. If code 6 or higher was subsequently consumed, stop; do not reuse a code or upload either artifact.
 
-**Unresolved: no authenticated read-only check of all current Play Console, RuStore and AppGallery versions/drafts/testing uploads was available. Therefore code 6 cannot be proven unused and must NOT be assigned yet.** Before applying the version bump, owner must:
-
-- [ ] In Google Play Console, inspect App bundle explorer and **all** releases/tracks (Production, open/closed/internal testing, drafts and inactive packages). Verify there is no consumed `versionCode >= 6`.
-- [ ] In RuStore, inspect all releases, drafts and uploaded packages for `io.github.alexeykravtsov95.talentforge`; verify no code 6 or higher is consumed.
-- [ ] In AppGallery Connect, inspect formal release, open testing, version history, pending package/review entries; verify no code 6 or higher is consumed.
-- [ ] Record date/UTC time, redacted evidence and highest consumed code for every console in this document or a PR comment. If **any** code ≥6 is already consumed, STOP and revise the proposed number (same sequence across all three Android stores).
-- [ ] After the clean readback, modify **only Android** `defaultConfig` in `mobile/composeApp/build.gradle.kts` to `versionCode = 6`, `versionName = "1.1.0"`, update `android-versioning.md`, and rerun exact-source CI and QA before Ready for Review.
-
-No placeholder version bump is committed in this draft.
+Version 5 is a separate historical artifact: source `9e9d9e188c5a0a10c2e573640b0e0d171f9eebf5`, approved APK SHA-256 `ec2d62fe461d688cfc2c7aa674bfc44d4ef6deac4d6c35480984170d45fa0526`. That hash identifies the **old** APK only, not this candidate. The `android-store-5` GitHub journal, RuStore draft `2064929703` and the dated 2026-11-04 AppGallery readback remain unresolved and must be reconciled separately. Neither store is newly marked published, and old APK bytes must not be reuploaded or reused.
 
 ## 2. QA evidence at baseline (not equivalent to RC device acceptance)
 
@@ -49,11 +42,11 @@ No placeholder version bump is committed in this draft.
 | Signing identity (APK and Play upload key) | **OPEN — signed artifact validation** | Verify signed APK against existing app signing fingerprint and AAB against existing upload certificate (without revealing secret material) |
 | In-place upgrade 1.0.0 → 1.1.0 | **OPEN — BLOCKING owner gate** | Real installed previous production build, upgrade without uninstall/clear data, verify persisted records and same package/signing identity |
 
-The baseline **CI** and **mobile-ci** were successful on `f0a17c0`. Their pass does not imply the as-yet-unbuilt 1.1.0 artifacts were verified. No new app feature, migration, data-store or OTA-signature implementation is included in this PR.
+The baseline **CI** and **mobile-ci** were successful on `f0a17c0`. The final RC SHA requires new CI and mobile-ci, including Android and iOS compatibility. Successful CI does **not** imply signed 1.1.0 deliverables or an in-place owner upgrade have been verified. No new app feature, migration, data-store or OTA-signature implementation is included in this PR.
 
 ## 3. Exact RC build and technical verification (owner environment only)
 
-Use the existing Gradle build tasks; **do not introduce a delivery pipeline**. Keep production key material solely in the owner's protected signing environment. Avoid printing properties, aliases, passwords, private keys, credential files or secret values. On the owner machine, after version allocation and CI green on the exact release commit:
+Use the existing Gradle build tasks; **do not introduce a delivery pipeline**. Keep production key material solely in the owner's protected signing environment. Avoid printing properties, aliases, passwords, private keys, credential files or secret values. On the owner machine/protected signing environment, **after exact-source CI is green**, and only using the existing credentials without exposing them:
 
 ```bash
 cd mobile
@@ -72,7 +65,7 @@ git rev-parse HEAD
 - [ ] Compare generated OTA configuration and packaged release artifacts: Android production OTA enabled, pinned `https://ota.mythweld.com` and production public keyring only; **no staging URL/key/CA, debug or test signing**, even from iOS staging environment variables.
 - [ ] Check merged release and Play manifests for INTERNET permission with OTA ON. No staged or old artifact reused.
 - [ ] Record **source SHA**, artifact paths/file names, **APK SHA-256**, **AAB SHA-256**, app signing certificate SHA-256, Play upload certificate SHA-256, and UTC timestamp in the acceptance report. No private key data.
-- [ ] Verify `main`/PR head and built source SHA are identical before accepting artifacts.
+- [ ] Verify the build source SHA equals the **final reviewed PR head**; after any future owner-approved merge, verify the intended release source and store-delivery gate against `main`. Do not claim the PR head already equals `main`.
 
 ### 3.1 Owner acceptance: non-destructive upgrade
 
@@ -84,7 +77,7 @@ A new isolated `.lib2check` test install is **not** enough. Use an actual app wi
 - [ ] Network connected: About shows OTA status and production game data loads/updates using HTTPS. Reopen offline to verify cached builds remain accessible.
 - [ ] Capture non-sensitive build identity / before-after evidence, tested device/API, test date and explicit owner **PASS** or **FAIL**.
 
-If APK install reports signature mismatch, do **not** uninstall existing data to make the test pass. Resolve the certificate lineage, test through the correct Play channel or mark release **NO-GO**.
+If APK install reports signature mismatch, do **not** uninstall existing data to make the test pass. Resolve the certificate lineage, test through the correct Play channel or mark release **NO-GO**. The detailed [upgrade acceptance checklist](m7-android-1.1.0/upgrade-acceptance.md) is mandatory: device provenance, explicit test steps for both v1 and v2 stored data, artifact fingerprint, pre/post invariants, OTA, RU/EN and sign-off.
 
 ## 4. Store readiness / separation of delivery
 
@@ -100,6 +93,14 @@ The historical `android-store-5` release is **not** proof of code-5 publication 
 
 ## 5. Decision / exit criteria
 
-**NO-GO** until every item is satisfied: code 6 free in all current consoles; Android version committed and CI green on its source SHA; production OTA-on signed APK/AAB validated with both SHA-256 values recorded; Android installed-version migration explicitly accepted by owner; RU/EN small-screen and editor flows accepted; no staging endpoints/keys; source and signing identity matched; prior APK-store submissions reconciled; independent Play Production plan acknowledged.
+**NO-GO for distribution** until every item is satisfied: Android 1.1.0 (6) source committed and CI/mobile-ci green on the final PR SHA, including Android and iOS compatibility; production OTA-on signed APK/AAB validated with both SHA-256 values recorded; Android installed-version migration explicitly accepted by owner; RU/EN small-screen and editor flows accepted; no staging endpoints/keys; source and signing identity matched; versionCode 6 rechecked in all consoles immediately before upload; previous APK-store history reconciled separately; independent Play Production plan acknowledged. **Version allocation was owner-approved on 2026-11-14; it does not prove current store availability at a later upload time.**
 
 Release notes (ready to copy only after acceptance): [RU](m7-android-1.1.0/notes-ru.txt) and [EN](m7-android-1.1.0/notes-en.txt). Publication and merge require separate explicit owner authorization.
+
+## 6. RC final SHA — evidence to attach after GitHub checks
+
+- [ ] CI success on **final PR #146 head SHA**; cite run URL and UTC completion time (baseline-only PASS does not satisfy this gate).
+- [ ] Mobile CI success on **the same final SHA**, including `Mobile (Linux)`, `Android — library v1 migration on SharedPreferences`, macOS/iOS compatibility and iOS OTA staging test jobs in the existing workflow. Staging **test** jobs do not mean staging keys are allowed inside the release APK.
+- [ ] Verify Android `1.1.0 (6)` and applicationId via source and (after signed build) APK/AAB validator reports. iOS versions untouched by PR diff.
+- [ ] Signed APK/AAB with production OTA ON: **OWNER GATE — not built here; no protected signing environment was accessed**. No APK/AAB SHA-256 is asserted for the RC until the files actually exist.
+- [ ] `android-store-5` remains a separate unresolved reconciliation task; no old release asset was reused.
