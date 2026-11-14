@@ -26,6 +26,7 @@ internal fun sortBuildLibrary(
     val comparator = when (mode) {
         BuildLibrarySortMode.LAST_EDITED ->
             compareByDescending<BuildLibrarySearchEntry> { it.card.record.updatedAt }
+                .thenByDescending { it.card.record.createdAt }
                 .thenBy { it.card.record.localId }
 
         BuildLibrarySortMode.NAME ->
