@@ -17,6 +17,7 @@ class BuildLibrarySortingTest {
         token: String = "WARRIOR",
         className: String = "Warrior",
         edited: Long = 0L,
+        created: Long = 1L,
         opened: Long? = null,
         favorite: Boolean = false,
         persistedName: String? = title,
@@ -24,7 +25,7 @@ class BuildLibrarySortingTest {
         val record = LocalBuildRecord(
             localId = id,
             name = persistedName,
-            createdAt = 1L,
+            createdAt = created,
             updatedAt = edited,
             lastOpenedAt = opened,
             build = BuildFile(
@@ -52,6 +53,24 @@ class BuildLibrarySortingTest {
             ids(sortBuildLibrary(items, BuildLibrarySortMode.LAST_EDITED)),
             ids(sortBuildLibrary(items.reversed(), BuildLibrarySortMode.LAST_EDITED)),
         )
+    }
+
+    @Test
+    fun lastEditedPreservesRepositoryOrderWhenEditTimesTieButCreationTimesDiffer() {
+        // localIds deliberately conflict with creation order. The older
+        // version's repository comparator was edited DESC, created DESC, id ASC.
+        val entries = listOf(
+            entry("a-old", "Old", edited = 50L, created = 10L, opened = 999L),
+            entry("z-new", "New", edited = 50L, created = 30L, opened = null),
+            entry("b-mid", "Middle", edited = 50L, created = 20L, opened = 1L),
+            entry("c-same-created", "Same time", edited = 50L, created = 20L),
+            entry("fresh", "Fresh", edited = 60L, created = 5L),
+        )
+        val expected = listOf("fresh", "z-new", "b-mid", "c-same-created", "a-old")
+        assertEquals(expected, ids(sortBuildLibrary(entries, BuildLibrarySortMode.LAST_EDITED)))
+        assertEquals(expected, ids(sortBuildLibrary(entries.reversed(), BuildLibrarySortMode.LAST_EDITED)))
+        // The returned records, including both timestamps, remain untouched.
+        assertEquals(listOf(10L, 30L, 20L, 20L, 5L), entries.map { it.card.record.createdAt })
     }
 
     @Test
