@@ -67,6 +67,7 @@ with that code yet.
 | 3 | | Google Play upload, track `alpha` | | `c24387e66aa1d2b3ee9a9b31f60310dc50648fb588659aa259916a19e293ac01` | Google Play `alpha` (date not recorded) |
 | 4 | `e07d7825d3ddbe5de3a68d5536595dbe8ab9d048` (merge of [#95](https://github.com/AlexeyKravtsov95/TalentForge/pull/95)) | test build, OTA ON: first [Store delivery](ci-delivery.md), track `alpha` | `25febe10c387b04ede5009e471f4a294510a150175b32c4844d465f11ec1db2d` | `66d6da923f261c40e32057b4399f7b458966031799b6cd98ef1d14e852e98f43` | AAB: Google Play `alpha`, `completed` (2026-10-27 UTC, run [40540792139](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/40540792139)). APK: run artifact only, not uploaded to RuStore or AppGallery |
 | 5 | `9e9d9e188c5a0a10c2e573640b0e0d171f9eebf5` | approved public UX APK, OTA ON; delivery incomplete, retain these exact bytes | `ec2d62fe461d688cfc2c7aa674bfc44d4ef6deac4d6c35480984170d45fa0526` | not selected | 2026-11-03 UTC: RuStore draft `2064929703`, original upload OK inferred from pinned postcondition failure; scoped acknowledgement recovery prepared, not yet executed. AppGallery stopped before upload at the missing Russian bucket allowlist entry. Neither store confirmed PUBLISHED. [Run 41696390880](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/41696390880), durable journal ID `433118574` |
+| 6 | PR [#146](https://github.com/AlexeyKravtsov95/TalentForge/pull/146), final RC SHA in PR Actions | 1.1.0 RC; version allocated after owner verified all three consoles on 2026-11-14; **not uploaded or published** | not built | not built | **none** — repeat live version conflict check before first upload |
 
 Code `2` is consumed (owner, 2026-10-26): it was uploaded to Google Play with OTA ON. Its commit,
 SHA-256 values and upload date are not recorded here.
@@ -134,7 +135,7 @@ or reuse it, and do not infer publication from a successful approval or upload.
 
 ## 4. Test build (`versionCode 1`)
 
-Historical: this section applied to code `1`. `main` is now at `4` (§3).
+Historical: this section applied to code `1` and was written while `main` used code `4`. Current RC version allocation is documented in §8.
 
 At M5.RELEASE.VERSION `main` was already set to `1` / `1.0.0`. No version change was needed. The
 owner builds `assemblePublishableRelease` and `bundlePublishablePlay` from the reviewed release commit
@@ -209,6 +210,22 @@ artifacts only. They are never uploaded.
 ## 7. Where the version shows
 
 - About screen: "Version 1.0.0 (1)" / "Версия 1.0.0 (1)", read from the installed package.
-- OTA HTTP User-Agent `TalentForge/1.0.0`. Production OTA is off in release builds.
+- OTA HTTP User-Agent reflects the installed Android app version. Production OTA is enabled only when the owner supplies `talentforge.ota.android.production.enabled=true`; otherwise it remains off. The release APK/AAB must explicitly be built with production OTA ON for this milestone.
 - The UI tests and screenshot tests use their own fixed `AppVersion("0.1.0", 1)` fixture, which is
   independent of the build. It is not changed here.
+
+## 8. M7.RELEASE.1 — Android feature update 1.1.0 (6) (2026-11-14)
+
+**Owner verification and authorization, 2026-11-14:** the owner checked **Google Play, RuStore and Huawei AppGallery** and reported that the highest consumed `versionCode` in **each** console is **5**, including versions visible to the owner in those consoles. This is an **owner confirmation, not an independent authenticated API audit**. It authorizes setting Android `versionCode = 6`, `versionName = "1.1.0"` in [PR #146](https://github.com/AlexeyKravtsov95/TalentForge/pull/146). The owner confirmation does **not** authorize uploading, merging, or production publication.
+
+| Code | Version | Source configuration | Artifact state | Store state |
+|---|---|---|---|---|
+| **6** | **1.1.0** | **Set in Android `defaultConfig` in PR #146**, `applicationId` unchanged | APK/AAB signing, production OTA validation and SHA-256 **pending owner signing gate** | **Not uploaded, not submitted, not published** |
+
+The source version is now **prepared**, but code 6 is **not consumed by an upload**. No signed 1.1.0 artifacts or their SHA-256 fingerprints are recorded; never reuse the source or APK bytes of code 5. Before **first upload**, recheck every Play Console track and draft, all RuStore versions/packages/drafts, and AppGallery versions, pending reviews and Open Testing. If any code **6 or higher** is found consumed, **STOP**. Do not attempt upload; reconcile and allocate a higher code in a separate reviewed change before building anything for delivery.
+
+Version 5 remains a separate unresolved delivery history, tracked by the immutable GitHub `android-store-5` journal and [readback record](android-public-stores.md). The previous provider observations (2026-11-04) alone are **not** evidence of code-5 publication in RuStore or AppGallery. Resolve this separately; no version-5 release asset is uploaded, rebuilt or modified by M7.
+
+**Android-only implementation:** `mobile/composeApp/build.gradle.kts` changes two values in `android.defaultConfig`. The iOS `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION`, store-delivery workflows, OTA schema/pins, local build repository and game engine stay untouched. Android signed deliverables still require both existing Gradle tasks with production OTA ON, exact-source CI, app-signing certificate match for APK and Play upload-key match for AAB.
+
+See [M7 RC QA report](m7-android-1.1.0-rc.md), [non-destructive 1.0.0 (5) → 1.1.0 (6) acceptance checklist](m7-android-1.1.0/upgrade-acceptance.md), and [RU](m7-android-1.1.0/notes-ru.txt) / [EN](m7-android-1.1.0/notes-en.txt) release notes. A version bump alone is not an RC sign-off.

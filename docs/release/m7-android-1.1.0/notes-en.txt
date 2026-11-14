@@ -1,0 +1,5 @@
+Improved talent unlock requirements and prerequisite navigation.
+Added an in-app guide to TalentForge.
+Added build search, favorites, and filters.
+Added sorting and grouping for saved builds.
+Improved layouts for smaller screens.
