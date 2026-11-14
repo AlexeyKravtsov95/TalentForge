@@ -209,6 +209,20 @@ artifacts only. They are never uploaded.
 ## 7. Where the version shows
 
 - About screen: "Version 1.0.0 (1)" / "Версия 1.0.0 (1)", read from the installed package.
-- OTA HTTP User-Agent `TalentForge/1.0.0`. Production OTA is off in release builds.
+- OTA HTTP User-Agent reflects the installed Android app version. Production OTA is enabled only when the owner supplies `talentforge.ota.android.production.enabled=true`; otherwise it remains off. The release APK/AAB must explicitly be built with production OTA ON for this milestone.
 - The UI tests and screenshot tests use their own fixed `AppVersion("0.1.0", 1)` fixture, which is
   independent of the build. It is not changed here.
+
+## 8. M7.RELEASE.1 — Android feature update 1.1.0 (6) (2026-11-14)
+
+This is a **proposed next version, not an allocated or consumed code**. The highest documented Android code is **5** (approved 2026-11-03 public-UX APK, delivery unresolved). The GitHub `android-store-5` journal, its source/hash, and the 2026-11-04 historical readbacks are documented in §3 and [android-public-stores](android-public-stores.md). No current authenticated cross-console audit was available to establish that code **6** is unused in every Play track/draft, RuStore version/draft and AppGallery formal/test/pending submission.
+
+| Proposed code | Name | State | Source and artifacts | Store disposition |
+|---|---|---|---|---|
+| **6** | **1.1.0** | **PROPOSED / NOT ALLOCATED**; owner three-console readback required before Gradle edit | Baseline `f0a17c006c62d7ae0e5f818908c5e29390514056`; no 1.1.0 signed APK or AAB built; SHA-256 pending | Not uploaded, not submitted, not published |
+
+**Version bump is deliberately deferred:** only after owner proves code 6 unconsumed should `mobile/composeApp/build.gradle.kts` change Android `versionCode = 5` → `6` and `versionName = "1.0.0"` → `"1.1.0"`. Do not touch iOS `MARKETING_VERSION` or `CURRENT_PROJECT_VERSION`. Then build both existing publishable tasks with production OTA ON, verify both existing certificate identities and record source SHA, APK/AAB SHA-256 and store readback.
+
+See [M7 Android RC QA and owner acceptance gates](m7-android-1.1.0-rc.md) and [RU](m7-android-1.1.0/notes-ru.txt) / [EN](m7-android-1.1.0/notes-en.txt) store notes. Version 5 must never be rebuilt from the new source or uploaded again as an old APK.
+
+The historical first-release example in §§1–5 and v1.0.0 screenshot/test references in §7 describe prior versions; they do not imply `versionCode 1` or OTA OFF is current.
