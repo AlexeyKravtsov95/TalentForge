@@ -1758,11 +1758,40 @@ def summary(report: dict[str, Any]) -> None:
         )
 
 
+def scoped_releases(
+    github: GitHub, release_id: int | None, version_code: int | None
+) -> list[dict[str, Any]]:
+    remotes = (
+        [obj(github.call("GET", f"releases/{release_id}"))]
+        if release_id
+        else [
+            r
+            for r in github.pages("releases")
+            if re.fullmatch(r"android-store-[1-9][0-9]*", str(r.get("tag_name", "")))
+        ]
+    )
+    if version_code is not None:
+        integer(version_code, minimum=1)
+        remotes = [r for r in remotes if r.get("tag_name") == f"android-store-{version_code}"]
+        if release_id is not None and not remotes:
+            raise DeliveryError("GATE", "release ID is outside selected reconciliation version")
+    return remotes
+
+
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "command",
-        choices=("audit", "manifest", "approval", "initialize", "inspect", "reconcile", "notify"),
+        choices=(
+            "audit",
+            "manifest",
+            "approval",
+            "initialize",
+            "inspect",
+            "reconcile",
+            "notify",
+            "preflight-failure",
+        ),
     )
     parser.add_argument("--repo", type=Path, default=Path())
     parser.add_argument("--gate", type=Path)
@@ -1788,6 +1817,27 @@ def run(args: argparse.Namespace) -> int:
     token = string(os.environ.get("GH_TOKEN"))
     with delivery_client() as client:
         github = GitHub(client, repository, token)
+        if args.command == "preflight-failure":
+            if args.version_code != 6:
+                raise DeliveryError("GATE", "preflight refusal reporting is scoped to Android 6")
+            remotes = scoped_releases(github, args.release_id, args.version_code)
+            result = {
+                "releases": [],
+                "errors": [
+                    {
+                        "releaseId": integer(r.get("id"), minimum=1),
+                        "status": "GATE",
+                        "detail": (
+                            "OTA preflight failed or timed out; "
+                            "no APK store upload attempted by this job. Inspect the preflight logs."
+                        ),
+                    }
+                    for r in remotes
+                ],
+            }
+            core.write_json(args.out, result)
+            summary(result)
+            return 0
         if args.command == "audit":
             gate = core.read_json_object(args.gate)
             selected = list(STORES) if args.stores == "both" else [args.stores]
@@ -1850,24 +1900,7 @@ def run(args: argparse.Namespace) -> int:
             summary(result)
             return int(any(s["status"] != "OBSERVED" for s in result["stores"].values()))
         if args.command == "reconcile":
-            remotes = (
-                [obj(github.call("GET", f"releases/{args.release_id}"))]
-                if args.release_id
-                else [
-                    r
-                    for r in github.pages("releases")
-                    if re.fullmatch(r"android-store-[1-9][0-9]*", str(r.get("tag_name", "")))
-                ]
-            )
-            if args.version_code is not None:
-                integer(args.version_code, minimum=1)
-                remotes = [
-                    r for r in remotes if r.get("tag_name") == f"android-store-{args.version_code}"
-                ]
-                if args.release_id is not None and not remotes:
-                    raise DeliveryError(
-                        "GATE", "release ID is outside selected reconciliation version"
-                    )
+            remotes = scoped_releases(github, args.release_id, args.version_code)
             result = reconcile_releases(github, remotes, args.repo, args.out)
             summary(result)
             pending = {"PUBLISHED", "IN_REVIEW", "PROCESSING", "SUBMITTED", "READY_TO_SUBMIT"}

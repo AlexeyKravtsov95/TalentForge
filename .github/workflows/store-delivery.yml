@@ -525,7 +525,7 @@ jobs:
       && needs.gate.result == 'success' && needs.android-build.result == 'success'
       && (needs.public-approval.result == 'success' || inputs.apk_stores == 'none' || inputs.mode == 'verify')
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 90
     environment: google-play-production
     permissions:
       contents: write # immutable production intent/receipt journal
@@ -554,10 +554,19 @@ jobs:
           name: android-release
           path: delivery/android
       - name: Refresh Production OTA preflight after owner approval
+        id: ota-preflight
+        timeout-minutes: 45
         run: >-
           "$PY" tooling/scripts/ota_production_preflight.py --expect published
           --keyring src/docs/ota/keys/production-keyring.json --min-validity-days 30
           --json delivery/production-ota-preflight.json
+      - name: Preserve early preflight refusal for Telegram
+        if: ${{ !cancelled() && steps.ota-preflight.outcome == 'failure' }}
+        env:
+          APPROVED_PRODUCTION_SHA256: ${{ needs.android-build.outputs.production_sha256 }}
+        run: >-
+          "$PY" tooling/scripts/google_play_production.py preflight-failure --repo tooling
+          --directory delivery/android --outcome failure --out delivery/production.json
       - name: Verify or deliver approved Google Play Production release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -572,6 +581,7 @@ jobs:
         if: always()
         with:
           name: google-play-production-report
+          overwrite: true # operational report; approvals and journal assets remain immutable
           path: |
             delivery/production.json
             delivery/production-ota-preflight.json
@@ -614,6 +624,7 @@ jobs:
         if: always()
         with:
           name: google-play-production-notification
+          overwrite: true # operational report; approvals and journal assets remain immutable
           path: delivery/production-notification.json
           if-no-files-found: ignore
 
@@ -718,7 +729,7 @@ jobs:
       !cancelled() && inputs.apk_stores != 'none' && needs.gate.outputs.mode == 'deliver'
       && needs.gate.result == 'success' && needs.public-journal.result == 'success'
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 90
     environment: android-stores
     permissions:
       contents: write
@@ -739,10 +750,23 @@ jobs:
           path: src
           persist-credentials: false
       - name: Refresh OTA preflight before APK-store writes
+        id: ota-preflight
+        timeout-minutes: 45
         run: >-
           "$PY" tooling/scripts/ota_production_preflight.py --expect published
           --keyring src/docs/ota/keys/production-keyring.json --min-validity-days 30
           --json delivery/public/ota-preflight.json
+      - name: Preserve APK preflight refusal for Telegram
+        if: ${{ !cancelled() && steps.ota-preflight.outcome == 'failure' }}
+        env:
+          RELEASE_ID: ${{ needs.public-journal.outputs.release_id }}
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_ID" =~ ^[1-9][0-9]*$ ]]
+          mkdir -p delivery/public
+          jq -n --argjson rid "$RELEASE_ID" \
+            '{releases: [], errors: [{releaseId: $rid, status: "GATE", detail: "OTA preflight failed or timed out; no APK store upload attempted by this job. Inspect the preflight logs."}]}' \
+            > delivery/public/report.json
       - name: Read back, upload once, submit for automatic full publication
         env:
           GH_TOKEN: ${{ github.token }}
@@ -757,7 +781,10 @@ jobs:
         if: always()
         with:
           name: android-store-report
-          path: delivery/public/report.json
+          overwrite: true # operational report; approvals and journal assets remain immutable
+          path: |
+            delivery/public/report.json
+            delivery/public/ota-preflight.json
           if-no-files-found: error
           retention-days: 90
 
@@ -797,6 +824,7 @@ jobs:
         if: always()
         with:
           name: android-store-notifications
+          overwrite: true # operational notification report, never an approval
           path: delivery/telegram.json
           if-no-files-found: ignore
 

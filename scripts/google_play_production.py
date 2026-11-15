@@ -355,6 +355,82 @@ def journal_for(
     return result
 
 
+def preflight_failure(manifest: dict[str, Any], *, outcome: str, run_id: int) -> dict[str, Any]:
+    """An operational refusal, never a publication receipt or permission to upload."""
+    if outcome not in {"failure", "cancelled"}:
+        raise public.DeliveryError("CONFIG", "preflight failure needs a failed step outcome")
+    public.integer(run_id, minimum=1)
+    if (
+        manifest.get("schema") != "talentforge-play-production/1"
+        or manifest.get("versionName") != "1.1.0"
+        or type(manifest.get("versionCode")) is not int
+        or manifest["versionCode"] != 6
+    ):
+        raise public.DeliveryError("CONTRACT", "invalid preflight alert release")
+    for key in ("sourceSha", "workflowSha"):
+        if not core.FULL_SHA.fullmatch(public.string(manifest.get(key))):
+            raise public.DeliveryError("CONTRACT", "invalid preflight alert revision")
+    return {
+        "schema": "talentforge-play-preflight-failure/1",
+        "phase": "ota-preflight",
+        "status": "GATE",
+        "outcome": outcome,
+        "runId": run_id,
+        "manifestSha256": digest(manifest),
+        "manifest": manifest,
+        "detail": f"Production OTA preflight {outcome}; no upload attempted. "
+        "Full OTA verification must pass before delivery; inspect the preflight logs.",
+    }
+
+
+def preflight_alert_journal(github: public.GitHub, report: dict[str, Any]) -> public.AssetJournal:
+    # Separate from play-production-6: an early refusal must not create/adopt a release journal.
+    expected = preflight_failure(
+        public.obj(report.get("manifest")),
+        outcome=public.string(report.get("outcome")),
+        run_id=public.integer(report.get("runId"), minimum=1),
+    )
+    if report != expected:
+        raise public.DeliveryError("CONTRACT", "invalid preflight failure report")
+    tag = f"play-preflight-alert-{report['runId']}"
+    found = [r for r in github.pages("releases") if r.get("tag_name") == tag]
+    if len(found) > 1:
+        raise public.DeliveryError("CONFLICT", "duplicate preflight alert journal")
+    remote = (
+        found[0]
+        if found
+        else public.obj(
+            github.call(
+                "POST",
+                "releases",
+                json={
+                    "tag_name": tag,
+                    "target_commitish": report["manifest"]["workflowSha"],
+                    "name": f"Blocked Play delivery (run {report['runId']})",
+                    "body": report["manifestSha256"],
+                    "draft": True,
+                    "prerelease": False,
+                },
+            )
+        )
+    )
+    if (
+        remote.get("body") != report["manifestSha256"]
+        or remote.get("target_commitish") != report["manifest"]["workflowSha"]
+        or public.obj(remote.get("author")).get("login") != "github-actions[bot]"
+    ):
+        raise public.DeliveryError("GATE", "preflight alert journal identity differs")
+    return public.AssetJournal(
+        github,
+        public.integer(remote.get("id"), minimum=1),
+        {
+            "schema": "talentforge-play-preflight-alert/1",
+            "runId": report["runId"],
+            "manifest": report["manifestSha256"],
+        },
+    )
+
+
 def notify(report: dict[str, Any], client: httpx.Client) -> dict[str, Any]:
     config = core.require_env(
         os.environ,
@@ -366,6 +442,24 @@ def notify(report: dict[str, Any], client: httpx.Client) -> dict[str, Any]:
         ],
     )
     github = public.GitHub(client, config["GITHUB_REPOSITORY"], config["GH_TOKEN"])
+    if "schema" in report and report["schema"] != "talentforge-play-preflight-failure/1":
+        raise public.DeliveryError("CONTRACT", "unknown Production notification report schema")
+    if report.get("schema") == "talentforge-play-preflight-failure/1":
+        journal = preflight_alert_journal(github, report)
+        return public.write_once(
+            journal,
+            "telegram-preflight",
+            report,
+            lambda: public.send_telegram(
+                client,
+                config["TELEGRAM_BOT_TOKEN"],
+                config["TELEGRAM_CHAT_ID"],
+                "Google Play Production 1.1.0 (6): BLOCKED (OTA preflight)\n"
+                + report["detail"]
+                + "\n"
+                + f"https://github.com/{github.repository}/actions/runs/{report['runId']}",
+            ),
+        )
     identity = public.string(report.get("manifestSha256"))
     found = [r for r in github.pages("releases") if r.get("tag_name") == "play-production-6"]
     if not found:
@@ -407,14 +501,29 @@ def notify(report: dict[str, Any], client: httpx.Client) -> dict[str, Any]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("notes", "prepare", "run", "notify"))
+    parser.add_argument(
+        "command", choices=("notes", "prepare", "run", "notify", "preflight-failure")
+    )
     parser.add_argument("--gate", type=Path)
     parser.add_argument("--report", type=Path)
     parser.add_argument("--repo", type=Path, required=True)
     parser.add_argument("--source-repo", type=Path)
     parser.add_argument("--directory", type=Path)
+    parser.add_argument("--outcome", choices=("failure", "cancelled"))
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
+    if args.command == "preflight-failure":
+        if args.directory is None or args.outcome is None:
+            parser.error("preflight-failure requires --directory and --outcome")
+        manifest = core.read_json_object(args.directory / "production-manifest.json")
+        if digest(manifest) != os.environ.get("APPROVED_PRODUCTION_SHA256"):
+            raise public.DeliveryError("GATE", "preflight failure approval digest differs")
+        result = preflight_failure(
+            manifest, outcome=args.outcome, run_id=int(os.environ["GITHUB_RUN_ID"])
+        )
+        core.write_json(args.out, result)
+        public.summary(result)
+        return 0
     if args.command == "notify":
         if args.report is None:
             parser.error("notify requires --report")

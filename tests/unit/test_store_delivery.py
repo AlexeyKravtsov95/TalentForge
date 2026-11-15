@@ -1424,7 +1424,8 @@ def test_reconciliation_workflow_routes_read_only_inspection_without_telegram(
         {"__builtins__": {}},
     )
     assert selected == ("inspect" if inspect else "reconcile")
-    lines = jobs["reconcile"].split("        run: |\n", 1)[1].splitlines()
+    mutation_step = jobs["reconcile"].split("      - name: Inspect or reconcile", 1)[1]
+    lines = mutation_step.split("        run: |\n", 1)[1].splitlines()
     script = []
     for line in lines:
         if line and not line.startswith("          "):

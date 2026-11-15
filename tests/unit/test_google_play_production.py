@@ -511,3 +511,232 @@ def test_scoped_reconciliation_never_loads_version5(
         assert seen == [new]
     workflow = (legacy.ROOT / ".github/workflows/android-store-reconcile.yml").read_text()
     assert 'if [ "$DELIVERY_COMMAND" = reconcile ]; then args+=(--version-code 6); fi' in workflow
+
+
+@pytest.mark.parametrize("outcome", ["failure", "cancelled"])
+def test_preflight_failure_report_exists_without_preflight_json(
+    tmp_path: Path,
+    outcome: str,
+) -> None:
+    manifest = {
+        "schema": "talentforge-play-production/1",
+        "sourceSha": "a" * 40,
+        "workflowSha": "b" * 40,
+        "versionCode": 6,
+        "versionName": "1.1.0",
+    }
+    result = p.preflight_failure(manifest, outcome=outcome, run_id=123)
+    assert result["status"] == "GATE" and result["phase"] == "ota-preflight"
+    assert result["manifestSha256"] == p.digest(manifest)
+    assert result["runId"] == 123
+    assert "no upload" in result["detail"].lower()
+
+
+def test_delivery_preflight_has_its_own_timeout_and_failed_report_step() -> None:
+    jobs = legacy.workflow_jobs((legacy.ROOT / ".github/workflows/store-delivery.yml").read_text())
+    for name in ("play-production", "public-deliver"):
+        body = jobs[name]
+        assert "timeout-minutes: 90" in body
+        assert "timeout-minutes: 45" in body
+        assert "--min-validity-days 30" in body and "--expect published" in body
+        assert "id: ota-preflight" in body
+    assert "preflight-failure" in jobs["play-production"]
+
+
+@pytest.mark.parametrize("lost", [False, True])
+def test_early_preflight_telegram_works_without_production_journal_and_deduplicates(
+    monkeypatch: pytest.MonkeyPatch,
+    lost: bool,
+) -> None:
+    manifest = {
+        "schema": "talentforge-play-production/1",
+        "sourceSha": "a" * 40,
+        "workflowSha": "b" * 40,
+        "versionCode": 6,
+        "versionName": "1.1.0",
+    }
+    report = p.preflight_failure(manifest, outcome="failure", run_id=123)
+    journal = public.MemoryJournal()
+    releases: list[dict[str, Any]] = []
+    calls = []
+
+    class GitHub:
+        repository = "owner/repo"
+
+        def __init__(self, *_: Any) -> None:
+            pass
+
+        def pages(self, path: str) -> Any:
+            assert path == "releases"
+            return releases
+
+        def call(self, method: str, path: str, **kwargs: Any) -> Any:
+            assert (method, path) == ("POST", "releases")
+            value = kwargs["json"]
+            assert value["tag_name"] == "play-preflight-alert-123"
+            assert value["draft"] is True
+            releases.append({**value, "id": 91, "author": {"login": "github-actions[bot]"}})
+            return releases[0]
+
+    def send(*args: Any) -> Any:
+        calls.append(args[-1])
+        assert "BLOCKED (OTA preflight)" in args[-1] and "no upload attempted" in args[-1]
+        assert "https://github.com/owner/repo/actions/runs/123" in args[-1]
+        if lost:
+            raise public.DeliveryError("UNKNOWN", "response lost")
+        return {"status": "SENT"}
+
+    for key in ("GITHUB_REPOSITORY", "GH_TOKEN", "TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"):
+        monkeypatch.setenv(key, "test")
+    monkeypatch.setattr(public, "GitHub", GitHub)
+    monkeypatch.setattr(public, "AssetJournal", lambda *_: journal)
+    monkeypatch.setattr(public, "send_telegram", send)
+    for _ in range(2):
+        if lost:
+            with pytest.raises(public.DeliveryError, match="UNKNOWN"):
+                p.notify(report, httpx.Client())
+        else:
+            assert p.notify(report, httpx.Client())["status"] == "SENT"
+    assert len(calls) == len(releases) == 1
+    assert journal.get("telegram-preflight-intent") == report
+
+
+def test_preflight_failure_cli_preserves_report_when_ota_report_is_missing(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    manifest = {
+        "schema": "talentforge-play-production/1",
+        "sourceSha": "a" * 40,
+        "workflowSha": "b" * 40,
+        "versionCode": 6,
+        "versionName": "1.1.0",
+    }
+    (tmp_path / "production-manifest.json").write_text(json.dumps(manifest))
+    monkeypatch.setenv("APPROVED_PRODUCTION_SHA256", p.digest(manifest))
+    monkeypatch.setenv("GITHUB_RUN_ID", "123")
+    out = tmp_path / "production.json"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "google_play_production.py",
+            "preflight-failure",
+            "--repo",
+            str(tmp_path),
+            "--directory",
+            str(tmp_path),
+            "--outcome",
+            "failure",
+            "--out",
+            str(out),
+        ],
+    )
+    assert p.main() == 0
+    result = json.loads(out.read_text())
+    assert result["status"] == "GATE" and result["phase"] == "ota-preflight"
+    assert not (tmp_path / "production-ota-preflight.json").exists()
+
+
+def test_report_artifacts_refresh_on_retry_and_apk_failures_have_a_report(tmp_path: Path) -> None:
+    import os
+    import subprocess
+
+    jobs = legacy.workflow_jobs((legacy.ROOT / ".github/workflows/store-delivery.yml").read_text())
+    body = jobs["public-deliver"]
+    section = body.split("      - name: Preserve APK preflight refusal for Telegram", 1)[1].split(
+        "      - name:", 1
+    )[0]
+    script = section.split("        run: |\n", 1)[1]
+    script = "\n".join(line[10:] for line in script.splitlines())
+    subprocess.run(
+        ["bash", "-c", script], cwd=tmp_path, check=True, env={**os.environ, "RELEASE_ID": "666"}
+    )
+    report = json.loads((tmp_path / "delivery/public/report.json").read_text())
+    assert report["releases"] == []
+    assert report["errors"][0]["status"] == "GATE" and report["errors"][0]["releaseId"] == 666
+    assert "no APK store upload" in report["errors"][0]["detail"]
+    for job in ("play-production", "play-production-notify", "public-deliver"):
+        assert "overwrite: true # operational report" in jobs[job]
+    assert "overwrite:" not in jobs["public-approval"]
+
+
+def test_scheduled_reconcile_cannot_bypass_failed_preflight() -> None:
+    workflow = (legacy.ROOT / ".github/workflows/android-store-reconcile.yml").read_text()
+    job = legacy.workflow_jobs(workflow)["reconcile"]
+    assert job.index("--expect published") < job.index("- name: Inspect or reconcile")
+    assert "--min-validity-days 30" in job
+    assert "timeout-minutes: 90" in job and "timeout-minutes: 45" in job
+    assert "if: ${{ !inputs.inspect_only }}" in job
+    assert "preflight-failure" in job
+
+
+def test_scheduled_preflight_refusal_reports_only_version6(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    for key, value in {
+        "GITHUB_REF": p.core.MAIN_REF,
+        "GITHUB_REPOSITORY": "owner/repo",
+        "GH_TOKEN": "token",
+    }.items():
+        monkeypatch.setenv(key, value)
+    monkeypatch.setattr(
+        public.GitHub,
+        "pages",
+        lambda *_: [
+            {"id": 5, "tag_name": "android-store-5"},
+            {"id": 6, "tag_name": "android-store-6"},
+        ],
+    )
+    monkeypatch.setattr(
+        public, "store_api", lambda *_: pytest.fail("no store access during failure reporting")
+    )
+    out = tmp_path / "report.json"
+    assert (
+        public.run(
+            public.parse_args(["preflight-failure", "--version-code", "6", "--out", str(out)])
+        )
+        == 0
+    )
+    report = json.loads(out.read_text())
+    assert report["releases"] == []
+    assert report["errors"] == [
+        {
+            "releaseId": 6,
+            "status": "GATE",
+            "detail": (
+                "OTA preflight failed or timed out; no APK store upload attempted by this job. "
+                "Inspect the preflight logs."
+            ),
+        }
+    ]
+
+
+@pytest.mark.parametrize(
+    "change",
+    [{"schema": "unknown"}, {"status": "SUBMITTED"}, {"phase": "upload"}, {"unexpected": True}],
+)
+def test_invalid_early_report_cannot_send_or_claim_publication(
+    monkeypatch: pytest.MonkeyPatch,
+    change: dict[str, Any],
+) -> None:
+    manifest = {
+        "schema": "talentforge-play-production/1",
+        "sourceSha": "a" * 40,
+        "workflowSha": "b" * 40,
+        "versionCode": 6,
+        "versionName": "1.1.0",
+    }
+    report = {**p.preflight_failure(manifest, outcome="failure", run_id=123), **change}
+    for key in ("GITHUB_REPOSITORY", "GH_TOKEN", "TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"):
+        monkeypatch.setenv(key, "test")
+    monkeypatch.setenv("GITHUB_REPOSITORY", "owner/repo")
+    monkeypatch.setattr(
+        public.GitHub, "pages", lambda *_: pytest.fail("invalid report must not access journal")
+    )
+    monkeypatch.setattr(
+        public, "send_telegram", lambda *_: pytest.fail("invalid report must not send")
+    )
+    with pytest.raises(public.DeliveryError, match="CONTRACT"):
+        p.notify(report, httpx.Client())

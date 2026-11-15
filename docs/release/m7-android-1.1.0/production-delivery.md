@@ -248,3 +248,74 @@ conflicts, wrong wire types, notes validation, insufficient production permissio
 lost/failed commits, independent store errors and legacy reconciliation.
 No actual delivery, store upload, OTA catalog/signing-key change or merge is part
 of this milestone's implementation verification.
+
+## Preflight execution budget and early failure alerts
+
+The release gates are unchanged: a fresh, signed production catalog, at least
+30 days of validity, and verification of **every file in every listed release**
+remain mandatory. No active-only shortcut, persistent cache, partial PASS or
+validation bypass is used.
+
+The read-only preflight now downloads up to 8 referenced objects concurrently
+within each release, after its manifest verifies. `--workers` accepts 1..16
+(default 8). The coordinator alone updates the report and the per-release cache;
+the existing header, size, SHA-256 and semantic verifiers still decide PASS/FAIL.
+Objects shared by different releases are still fetched for each release. HTTPX
+[documents that Client can be shared between threads](https://www.python-httpx.org/api/#client).
+
+Full-preflight GET/HEAD requests explicitly opt into at most three attempts for transport errors or
+HTTP 429/500/502/503/504, with 0.5s and 1s backoff. Each attempt starts a fresh read:
+partial bytes are discarded. Redirects, denied paths, oversized/badly encoded
+responses, incorrect headers and failed hashes/semantics do not become successes
+through retries. Exhaustion still fails the full gate. The shared HTTP reader still defaults to one observation for historical replay and
+other production guards. All store mutations retain their existing non-retryable,
+journaled behavior.
+
+Logs now stream to stderr with elapsed time: completed checks, release N/M,
+object counts approximately every 25 objects, retries that required multiple
+attempts, and a heartbeat at most every 10 seconds while waiting for workers.
+The final JSON report and stdout summary retain their existing format and verdicts.
+
+Both `play-production` and `public-deliver` have a **90-minute job budget** and an
+explicit **45-minute preflight step budget**. A step timeout is a failed preflight;
+the ordinary upload step remains skipped. The remaining budget allows the failure
+report and artifact upload to run, making diagnostics available to notification jobs instead of losing the entire job
+to its former 30-minute deadline. These budgets are upper bounds, not permission
+to continue after incomplete validation.
+
+If Play preflight fails or times out before `production.json` exists, an explicit
+failure step creates that file from the already approved production manifest.
+The report states `GATE`, phase `ota-preflight`, run ID, manifest digest and that
+no upload was attempted. It needs no preflight JSON file, store credential or API
+call. The artifact is kept by the existing `always()` upload step.
+
+Telegram accepts this operational refusal even when `play-production-6` has not
+been created. Its create-only intent/receipt is kept separately in a draft GitHub
+alert journal `play-preflight-alert-<run ID>`. That journal contains no publication
+permission, AAB/APK upload receipt or success claim. Identical retries do not send
+again; a lost Telegram response remains UNKNOWN. Existing publication notifications
+and their delivery journals retain their original behavior.
+
+An APK-store preflight failure similarly creates the existing reconciliation-report
+error shape (`GATE`, the approved GitHub release ID, no APK upload attempted). The
+existing journal-alert notification path handles it. Only current operational
+Actions report artifacts may be replaced on retry, so notification jobs download
+the latest report; exact-APK approval artifacts and durable journal assets remain
+create-only. Owner cancellation and rejection of protected approval still prevent
+publication and are not converted to success by the failure-report steps.
+
+Read-only live verification on 2026-11-15: the complete preflight finished **OK in
+100.3 seconds**, verified **7/7 releases**, sequence 7 and active release
+`1.60.1.70938-r1`. The catalog signature verified with the unchanged production
+keyring; expiry remained `2026-12-29T05:50:30Z` (43 days). The existing plain-HTTP
+warning and manual anonymous-write policy review remain unchanged. No anonymous
+write, store upload, catalog edit, key change or version change was performed.
+These observations do not replace the fresh preflight required by each delivery.
+
+The same full preflight now precedes every mutating scheduled/manual Android-6
+reconciliation, with the same 45/90-minute budgets. This closes the path where a
+journal created before a failed initial preflight could otherwise be picked up by
+the scheduler. It enforces the existing mandatory gate at every writer entry point;
+read-only `inspect_only` remains available without running publication preflight.
+A scheduled failure emits the same operational error-report shape for only the
+selected version-6 journal(s); version 5 is neither loaded nor changed.

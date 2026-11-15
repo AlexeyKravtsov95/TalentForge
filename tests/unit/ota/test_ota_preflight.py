@@ -54,6 +54,12 @@ RELEASE = f"release.{BUILD_A}-r1"
 PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
 
 
+@pytest.fixture(autouse=True)
+def no_real_retry_delays(monkeypatch: pytest.MonkeyPatch) -> None:
+    # These origins are entirely in-memory; backoff is exercised without wall-clock sleeps.
+    monkeypatch.setattr(preflight.time, "sleep", lambda _: None)
+
+
 def entry(name: str) -> dict[str, str]:
     der = (
         derive_test_key(name)
@@ -570,3 +576,176 @@ def test_main_prints_and_writes_the_report(
     origin.objects.update(publication())  # published, but checked without a keyring
     assert preflight.main(["--json", str(out)]) == 1
     assert json.loads(out.read_text())["result"] == "FAIL"
+
+
+def test_transient_blob_timeout_retries_the_complete_read(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls = []
+    monkeypatch.setattr(preflight.time, "sleep", lambda _: None)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls.append(request.method)
+        if len(calls) < 3:
+            raise httpx.ReadTimeout("temporary read failure")
+        return respond(200, {"Cache-Control": BLOB_CACHE_CONTROL}, b"complete")
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        result = preflight.fetch(client, ORIGIN + "/blob", attempts=3)
+    assert result.body == b"complete" and result.attempts == 3
+    assert calls == ["GET"] * 3
+
+
+@pytest.mark.parametrize("status", [302, 403, 404])
+def test_nontransient_http_answers_are_not_retried(status: int) -> None:
+    calls = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls.append(request.method)
+        return respond(status)
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        assert preflight.fetch(client, ORIGIN, attempts=3).status == status
+    assert calls == ["GET"]
+
+
+def test_bounded_parallel_downloads_keep_full_validation_and_live_progress() -> None:
+    import threading
+
+    objects = publication()
+    origin = FakeOrigin(objects)
+    lock = threading.Lock()
+    active = peak = 0
+    pair = threading.Barrier(2)
+    paired = {
+        "/" + blob_key(sha)
+        for sha in list(dict.fromkeys(f.sha256 for f in real_release().manifest.files))[:2]
+    }
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal active, peak
+        if request.url.path.startswith("/v1/blobs/"):
+            with lock:
+                active += 1
+                peak = max(peak, active)
+            # Require actual parallel execution without measuring machine speed.
+            if request.url.path in paired:
+                pair.wait(timeout=5)
+            try:
+                return origin.handler(request)
+            finally:
+                with lock:
+                    active -= 1
+        return origin.handler(request)
+
+    messages = []
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        report = preflight.run(
+            ORIGIN,
+            client=client,
+            resolve=resolve,
+            handshake=handshake,
+            now=NOW,
+            keyring=KEYRING,
+            expect="published",
+            workers=2,
+            progress=messages.append,
+        )
+    assert not report.failed, report.to_json()
+    assert 1 < peak <= 2
+    assert any("objects" in message for message in messages)
+    assert any(RELEASE in message for message in messages)
+    assert statuses(report)["releases"] is Status.PASS
+
+
+@pytest.mark.parametrize("failure", [503, "timeout"])
+def test_read_retries_are_bounded_and_exhaustion_is_not_success(
+    monkeypatch: pytest.MonkeyPatch,
+    failure: int | str,
+) -> None:
+    monkeypatch.setattr(preflight.time, "sleep", lambda _: None)
+    calls = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls.append(request.method)
+        if failure == "timeout":
+            raise httpx.ReadTimeout("persistent")
+        return respond(503)
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        result = preflight.fetch(client, ORIGIN, attempts=3)
+    assert len(calls) == result.attempts == 3
+    assert preflight.object_problems(result, cache_control=BLOB_CACHE_CONTROL, content_type=None)
+
+
+def test_parallel_preflight_never_accepts_corrupt_content_or_headers() -> None:
+    origin = FakeOrigin(publication())
+    key = blob_key(next(iter(real_release().blobs)))
+    origin.header_edits[key] = {"Cache-Control": "wrong"}
+    report = run(origin, workers=4)
+    assert report.failed and statuses(report)["releases"] is Status.FAIL
+    assert "Cache-Control" in next(c.detail for c in report.checks if c.id == RELEASE)
+
+
+@pytest.mark.parametrize("workers", [0, 17, True])
+def test_preflight_worker_bound_is_enforced(workers: int) -> None:
+    with pytest.raises(ValueError, match="workers"):
+        run(FakeOrigin(), workers=workers)
+
+
+def test_partial_response_is_discarded_before_read_retry(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(preflight.time, "sleep", lambda _: None)
+
+    class Partial(httpx.SyncByteStream):
+        def __iter__(self):
+            yield b"partial"
+            raise httpx.ReadTimeout("stream interrupted")
+
+    calls = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls.append(request.method)
+        return (
+            httpx.Response(200, stream=Partial()) if len(calls) == 1 else respond(200, body=b"full")
+        )
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        result = preflight.fetch(client, ORIGIN, attempts=3)
+    assert result.body == b"full" and result.attempts == len(calls) == 2
+
+
+def test_waiting_workers_emit_a_heartbeat(monkeypatch: pytest.MonkeyPatch) -> None:
+    real_wait = preflight.wait
+    calls = []
+
+    def wait_once(futures, **kwargs):
+        calls.append(kwargs["timeout"])
+        return (set(), set(futures)) if len(calls) == 1 else real_wait(futures, **kwargs)
+
+    monkeypatch.setattr(preflight, "wait", wait_once)
+    messages = []
+    report = run(FakeOrigin(publication()), workers=2, progress=messages.append)
+    assert not report.failed
+    assert calls[0] == 10
+    assert any("waiting;" in message for message in messages)
+
+
+def test_private_probe_retries_also_have_visible_progress(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(preflight.time, "sleep", lambda _: None)
+    origin = FakeOrigin()
+    origin.failures[preflight.PRIVATE_PATHS[0]] = httpx.ReadTimeout("private probe timeout")
+    messages = []
+    report = run(origin, progress=messages.append)
+    assert report.failed
+    assert any("private.origin: checking" in message for message in messages)
+    assert any("attempt 3/3" in message for message in messages)
+
+
+def test_shared_reader_preserves_one_observation_for_existing_guards() -> None:
+    calls = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls.append(request.method)
+        return respond(503)
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        result = preflight.fetch(client, ORIGIN)
+    assert result.status == 503 and result.attempts == len(calls) == 1
