@@ -217,9 +217,14 @@ manifests parse unchanged and never receive the new localized metadata writes.
 
 ## Validation
 
-See the PR for exact local and GitHub CI results. Local checks cover full Python
-lint/format/type checking/offline tests, dataset synchronization and actionlint
-(with the repository's custom `xcode-27` runner label allowed). Store/API behavior
+Local validation on 2026-11-15: delivery tests **260 passed**; Ruff lint/format passed;
+mypy passed for 125 source files; dataset sync passed for 50 files of 5 builds;
+actionlint passed with the existing custom `xcode-27` runner label allowed.
+`./gradlew :shared:jvmTest :composeApp:desktopTest :composeApp:assembleDebug --console=plain`
+passed in 7m 8s: 383 shared JVM tests and 948 desktop tests (64 skipped), no failures.
+See the PR for full pytest and GitHub CI results. Mobile CI's PR paths now include
+the delivery workflow/scripts and release-note files, so changes exercise the
+existing artifact validators and temporary-key signing self-tests. Store/API behavior
 is tested using offline transports, including approval refusal, all-track code
 conflicts, wrong wire types, notes validation, insufficient production permission,
 lost/failed commits, independent store errors and legacy reconciliation.
