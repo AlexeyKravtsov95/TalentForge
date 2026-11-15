@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       release_id:
-        description: "GitHub draft release ID (empty: all approved Android journals)"
+        description: "GitHub release ID (empty: Android 6 only; inspect_only can read historical IDs)"
         required: false
         type: string
         default: ""
@@ -31,7 +31,7 @@ jobs:
     name: Reconcile each approved store release
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 90
     environment: android-stores
     permissions:
       contents: write
@@ -45,6 +45,27 @@ jobs:
       - uses: ./tooling/.github/actions/delivery-python
         with:
           tooling: tooling
+      - name: Fresh full OTA gate before any scheduled store write
+        id: ota-preflight
+        if: ${{ !inputs.inspect_only }}
+        timeout-minutes: 45
+        run: >-
+          "$PY" tooling/scripts/ota_production_preflight.py --expect published
+          --keyring tooling/docs/ota/keys/production-keyring.json --min-validity-days 30
+          --json delivery/public/ota-preflight.json
+      - name: Preserve scheduled preflight refusal for Telegram
+        if: ${{ !cancelled() && steps.ota-preflight.outcome == 'failure' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_ID: ${{ inputs.release_id }}
+        run: |
+          set -euo pipefail
+          args=(preflight-failure --repo tooling --version-code 6 --out delivery/public/report.json)
+          if [ -n "$RELEASE_ID" ]; then
+            [[ "$RELEASE_ID" =~ ^[1-9][0-9]*$ ]] || { echo 'Invalid release ID'; exit 1; }
+            args+=(--release-id "$RELEASE_ID")
+          fi
+          "$PY" tooling/scripts/android_store_delivery.py "${args[@]}"
       - name: Inspect or reconcile from durable intent and store state
         env:
           GH_TOKEN: ${{ github.token }}
@@ -56,6 +77,8 @@ jobs:
         run: |
           set -euo pipefail
           args=("$DELIVERY_COMMAND" --repo tooling --out delivery/public/report.json)
+          # M7 releases only: never mutate the frozen android-store-5 journal.
+          if [ "$DELIVERY_COMMAND" = reconcile ]; then args+=(--version-code 6); fi
           if [ -n "$RELEASE_ID" ]; then
             [[ "$RELEASE_ID" =~ ^[1-9][0-9]*$ ]] || { echo 'Invalid release ID'; exit 1; }
             args+=(--release-id "$RELEASE_ID")
@@ -65,7 +88,10 @@ jobs:
         if: always()
         with:
           name: android-store-${{ inputs.inspect_only && 'inspection' || 'report' }}
-          path: delivery/public/report.json
+          overwrite: true # operational report, never an approval artifact
+          path: |
+            delivery/public/report.json
+            delivery/public/ota-preflight.json
           if-no-files-found: error
           retention-days: 90
 
@@ -106,5 +132,6 @@ jobs:
         if: always()
         with:
           name: android-store-notifications
+          overwrite: true # operational notification report, never an approval
           path: delivery/telegram.json
           if-no-files-found: ignore

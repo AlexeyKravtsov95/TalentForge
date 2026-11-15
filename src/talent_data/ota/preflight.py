@@ -36,8 +36,10 @@ import json
 import socket
 import ssl
 import sys
+import time
 from collections.abc import Callable, Mapping
-from dataclasses import asdict, dataclass, field
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
+from dataclasses import asdict, dataclass, field, replace
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from pathlib import Path
@@ -102,9 +104,15 @@ class Report:
     origin: str
     at: str
     checks: list[Check] = field(default_factory=list)
+    on_progress: Callable[[str], None] | None = field(default=None, repr=False)
+
+    def progress(self, message: str) -> None:
+        if self.on_progress is not None:
+            self.on_progress(message)
 
     def add(self, check_id: str, status: Status, detail: str) -> None:
         self.checks.append(Check(check_id, status, detail))
+        self.progress(f"{status.value} {check_id}: {detail}")
 
     def status_of(self, check_id: str) -> Status | None:
         return next((c.status for c in self.checks if c.id == check_id), None)
@@ -249,12 +257,48 @@ class Fetched:
     headers: Mapping[str, str]  # lower-cased names
     body: bytes  # decoded (gzip undone); empty for HEAD
     error: str | None = None
+    retryable: bool = False
+    attempts: int = 1
 
     def header(self, name: str) -> str | None:
         return self.headers.get(name.lower())
 
 
 def fetch(
+    client: httpx.Client,
+    url: str,
+    *,
+    method: str = "GET",
+    accept_gzip: bool = False,
+    max_bytes: int | None = None,
+    progress: Callable[[str], None] | None = None,
+    attempts: int = 1,
+) -> Fetched:
+    """Anonymous reads; single observation by default for existing shared callers.
+
+    Full preflight explicitly opts into three attempts. Replay/production guards keep
+    their original observation and retry policy; validation failures are never retried.
+    """
+    if method not in _SAFE_METHODS:
+        raise ValueError(f"the preflight sends GET/HEAD only, not {method}")
+    if type(attempts) is not int or not 1 <= attempts <= 3:
+        raise ValueError("read attempts must be between 1 and 3")
+    for attempt in range(1, attempts + 1):
+        if progress is not None:
+            progress(f"{method} {urlsplit(url).path or '/'} attempt {attempt}/{attempts}")
+        response = _fetch_once(
+            client, url, method=method, accept_gzip=accept_gzip, max_bytes=max_bytes
+        )
+        response = replace(response, attempts=attempt)
+        if attempt == attempts or not (
+            response.retryable or response.status in {429, 500, 502, 503, 504}
+        ):
+            return response
+        time.sleep(0.5 * attempt)
+    raise AssertionError("unreachable")
+
+
+def _fetch_once(
     client: httpx.Client,
     url: str,
     *,
@@ -278,7 +322,13 @@ def fetch(
             lowered = {k.lower(): v for k, v in response.headers.items()}
             status = response.status_code
     except httpx.HTTPError as exc:
-        return Fetched(0, {}, b"", error=f"{type(exc).__name__}: {exc}")
+        return Fetched(
+            0,
+            {},
+            b"",
+            error=f"{type(exc).__name__}: {exc}",
+            retryable=isinstance(exc, httpx.TransportError),
+        )
     body = wire
     if method == "GET" and lowered.get("content-encoding") == "gzip":
         try:
@@ -322,8 +372,9 @@ def check_private(report: Report, client: httpx.Client, origin: str, label: str)
     """
     served: list[str] = []
     unconfirmed: list[str] = []
-    for path in PRIVATE_PATHS:
-        response = fetch(client, f"{origin}/{path}")
+    for number, path in enumerate(PRIVATE_PATHS, 1):
+        report.progress(f"private.{label}: checking {number}/{len(PRIVATE_PATHS)}")
+        response = fetch(client, f"{origin}/{path}", progress=report.progress, attempts=3)
         if response.status in _DENIED:
             continue
         if response.status == 200 or 300 <= response.status < 400:
@@ -350,7 +401,9 @@ def check_private(report: Report, client: httpx.Client, origin: str, label: str)
 
 def check_plain_http(report: Report, client: httpx.Client, origin: str) -> None:
     plain = "http://" + origin.removeprefix("https://")
-    response = fetch(client, f"{plain}/{CATALOG}", method="HEAD")
+    response = fetch(
+        client, f"{plain}/{CATALOG}", method="HEAD", progress=report.progress, attempts=3
+    )
     location = response.header("location") or ""
     if response.status == 0:
         report.add("http.plain", Status.PASS, f"plain HTTP not served ({response.error})")
@@ -396,7 +449,7 @@ def check_catalog(
     from talent_data.ota.verify import OtaError, verify_catalog
 
     url = f"{origin}/{CATALOG}"
-    identity = fetch(client, url)
+    identity = fetch(client, url, progress=report.progress, attempts=3)
     if identity.status in (403, 404):  # anonymous S3 answers 403 for a missing key
         status = Status.FAIL if expect == "published" else Status.PENDING
         report.add("catalog", status, f"no production catalog yet (HTTP {identity.status})")
@@ -413,7 +466,7 @@ def check_catalog(
         report.add("catalog.size", Status.FAIL, f"{len(identity.body)} bytes exceed 1 MiB")
         return None
     report.add("catalog.http", Status.PASS, f"200, contract §1 headers, {len(identity.body)} B")
-    compressed = fetch(client, url, accept_gzip=True)
+    compressed = fetch(client, url, accept_gzip=True, progress=report.progress, attempts=3)
     if compressed.body != identity.body:
         report.add("catalog.gzip", Status.FAIL, "gzip-negotiated bytes differ from identity")
     else:
@@ -473,10 +526,13 @@ def check_catalog(
     return catalog, identity.body
 
 
-def check_releases(report: Report, client: httpx.Client, origin: str, catalog: OtaCatalog) -> None:
+def check_releases(
+    report: Report, client: httpx.Client, origin: str, catalog: OtaCatalog, workers: int = 8
+) -> None:
     """Every object of every listed release, as a client fetches it - always all of them."""
-    for entry in catalog.releases:
-        _check_release(report, client, origin, entry)
+    for number, entry in enumerate(catalog.releases, 1):
+        report.progress(f"release {number}/{len(catalog.releases)}: {entry.release_id} starting")
+        _check_release(report, client, origin, entry, workers)
     ids = [f"release.{entry.release_id}" for entry in catalog.releases]
     verified = [check_id for check_id in ids if report.status_of(check_id) is Status.PASS]
     if len(verified) == len(ids):
@@ -491,7 +547,7 @@ def check_releases(report: Report, client: httpx.Client, origin: str, catalog: O
 
 
 def _check_release(
-    report: Report, client: httpx.Client, origin: str, entry: CatalogRelease
+    report: Report, client: httpx.Client, origin: str, entry: CatalogRelease, workers: int = 8
 ) -> None:
     from talent_data.ota.errors import OtaPublisherError
     from talent_data.ota.models import ReleaseFile
@@ -501,17 +557,28 @@ def _check_release(
     problems: list[str] = []
     bodies: dict[str, bytes] = {}
 
+    def remember(sha_ref: str, response: Fetched) -> None:
+        key = blob_key(sha_ref)
+        found = object_problems(
+            response,
+            cache_control=BLOB_CACHE_CONTROL,
+            content_type=content_type_of(key, response.body) if response.body else None,
+        )
+        problems.extend(f"{key}: {p}" for p in found)
+        bodies[sha_ref] = response.body
+        if response.attempts > 1:
+            report.progress(
+                f"{entry.release_id}: {key} completed after {response.attempts} attempts"
+            )
+
     def get_blob(sha_ref: str) -> bytes:
         if sha_ref not in bodies:
-            key = blob_key(sha_ref)
-            response = fetch(client, f"{origin}/{key}")
-            found = object_problems(
-                response,
-                cache_control=BLOB_CACHE_CONTROL,
-                content_type=content_type_of(key, response.body) if response.body else None,
+            remember(
+                sha_ref,
+                fetch(
+                    client, f"{origin}/{blob_key(sha_ref)}", progress=report.progress, attempts=3
+                ),
             )
-            problems.extend(f"{key}: {p}" for p in found)
-            bodies[sha_ref] = response.body
         return bodies[sha_ref]
 
     def read_file(file: ReleaseFile) -> bytes:
@@ -525,6 +592,30 @@ def _check_release(
             game=GAME,
             supported_data_level=entry.min_data_level,
         )
+        # Fetch every referenced object before the unchanged semantic/hash verifier.
+        # Deduplication is only within this release, as in the original reader.
+        missing = list(dict.fromkeys(f.sha256 for f in manifest.files if f.sha256 not in bodies))
+        report.progress(f"{entry.release_id}: 0/{len(missing)} objects, workers={workers}")
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            pending = {
+                pool.submit(fetch, client, f"{origin}/{blob_key(sha)}", attempts=3): sha
+                for sha in missing
+            }
+            completed = 0
+            reported = 0
+            while pending:
+                done, _ = wait(pending, timeout=10, return_when=FIRST_COMPLETED)
+                if not done:
+                    report.progress(
+                        f"{entry.release_id}: waiting; {completed}/{len(missing)} objects"
+                    )
+                for future in done:
+                    sha = pending.pop(future)
+                    remember(sha, future.result())
+                    completed += 1
+                if done and (completed - reported >= 25 or not pending):
+                    report.progress(f"{entry.release_id}: {completed}/{len(missing)} objects")
+                    reported = completed
         verify_release_files(manifest, read_file)
     except (OtaError, OtaPublisherError) as exc:
         problems.append(
@@ -558,7 +649,11 @@ def run(
     expect: str = "any",
     expect_cname_suffix: str | None = None,
     min_validity: timedelta | None = None,
+    workers: int = 8,
+    progress: Callable[[str], None] | None = None,
 ) -> Report:
+    if type(workers) is not int or not 1 <= workers <= 16:
+        raise ValueError("preflight workers must be between 1 and 16")
     parts = urlsplit(origin)
     if parts.scheme != "https" or not parts.hostname or parts.path not in ("", "/"):
         raise ValueError(f"the origin is an https:// host without a path, got {origin!r}")
@@ -568,7 +663,8 @@ def run(
     if expect == "published" and keyring is None:
         raise ValueError("--expect published needs --keyring: a publication is verified, not seen")
     host = parts.hostname
-    report = Report(origin=origin, at=now.strftime("%Y-%m-%dT%H:%M:%SZ"))
+    report = Report(origin=origin, at=now.strftime("%Y-%m-%dT%H:%M:%SZ"), on_progress=progress)
+    report.progress(f"preflight starting: {origin}; workers={workers}")
 
     if check_dns(report, host, resolve, expect_cname_suffix) and check_tls(
         report, host, handshake, now
@@ -594,9 +690,11 @@ def run(
                 )
         else:
             catalog, catalog_bytes = found
-            check_releases(report, client, origin, catalog)
+            check_releases(report, client, origin, catalog, workers)
             if bucket_origin is not None:
-                behind = fetch(client, f"{bucket_origin}/{CATALOG}")
+                behind = fetch(
+                    client, f"{bucket_origin}/{CATALOG}", progress=report.progress, attempts=3
+                )
                 if behind.body == catalog_bytes:
                     report.add("catalog.bucket", Status.PASS, "the bucket host serves the same")
                 else:
@@ -638,8 +736,10 @@ def main(argv: list[str] | None = None) -> int:
         type=int,
         help="fail unless the catalog stays valid at least this long (store uploads: 30)",
     )
+    parser.add_argument("--workers", type=int, default=8, help="parallel object reads (1..16)")
     args = parser.parse_args(argv)
 
+    started = time.monotonic()
     try:
         keyring = None if args.keyring is None else production_keyring(args.keyring)
         with httpx.Client(follow_redirects=False, timeout=30.0) as client:
@@ -653,6 +753,10 @@ def main(argv: list[str] | None = None) -> int:
                 bucket_origin=args.bucket_origin or None,
                 expect=args.expect,
                 expect_cname_suffix=args.expect_cname_suffix,
+                workers=args.workers,
+                progress=lambda message: print(
+                    f"[{time.monotonic() - started:.1f}s] {message}", file=sys.stderr, flush=True
+                ),
                 min_validity=None
                 if args.min_validity_days is None
                 else timedelta(days=args.min_validity_days),
@@ -664,6 +768,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"{check.status.value:<7} {check.id:<24} {check.detail}")
     print(f"result: {'FAIL' if report.failed else 'OK'} ({report.origin}, {report.at})")
     if args.json is not None:
+        args.json.parent.mkdir(parents=True, exist_ok=True)
         args.json.write_text(report.to_json(), encoding="utf-8")
     return 1 if report.failed else 0
 

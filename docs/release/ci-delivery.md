@@ -280,3 +280,10 @@ SHA-256 файлов запуска 40540792139 (из его `SHA256SUMS` и `re
 Проверка владельцем, 2026-10-28: iOS установлена из TestFlight, Android — из Google Play после проверки Google Play; обе сборки работают.
 
 Израсходованные номера: Android `versionCode` `2`, `3`, `4` (`1` — по [журналу версий](android-versioning.md#3-planned-sequence-and-ledger)); iOS `1.0.0 (1)`, `(3)`, `(4)`. Следующая доставка — Android `5`, iOS `5`; в `main` номера пока `4`, их поднимают отдельными PR (§5).
+
+## Android 1.1.0 (6): Production path
+
+For `play_target=production`, protected approval, localized RU/EN notes, new environment
+configuration and owner-run verify/deliver commands, see the
+[M7 production runbook](m7-android-1.1.0/production-delivery.md).
+The default `play_target=closed` retains the existing closed-test path.

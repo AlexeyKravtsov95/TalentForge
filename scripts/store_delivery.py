@@ -753,7 +753,9 @@ class GooglePlay:
             content=data,
             timeout=900.0,
         )
-        body = response.json()
+        return self.bundle_identity(response.json())
+
+    def bundle_identity(self, body: Any) -> tuple[int, str]:
         return int(body.get("versionCode", -1)), str(body.get("sha256", ""))
 
     def set_track(self, edit: str, track: str, release: dict[str, Any]) -> None:
@@ -899,9 +901,14 @@ def play_deliver(
     track: str,
     release_status: str,
     changes_not_sent_for_review: bool,
+    release_notes: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     """Upload the verified bundle and release it on ``track`` in one edit, then read it back."""
     check_play_track(track)
+    if release_notes is not None:
+        from android_release_notes import validate
+
+        validate(release_notes, ("play",))
     if release_status not in PLAY_RELEASE_STATUSES:
         raise DeliveryError(
             "CONFIG",
@@ -938,6 +945,11 @@ def play_deliver(
             track,
             {
                 "name": f"{name} ({code}) {source[:12]}",
+                **(
+                    {"releaseNotes": [{"language": k, "text": v} for k, v in release_notes.items()]}
+                    if release_notes is not None
+                    else {}
+                ),
                 "versionCodes": [str(code)],
                 "status": release_status,
             },
@@ -1586,7 +1598,10 @@ def parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     command("play-check", "read Google Play's state (changes nothing)", "gate", "status")
     asc = command("asc-check", "read App Store Connect's state", "gate", "status")
     asc.add_argument("--ipa", type=Path, help="right before the upload: this run's .ipa")
-    command("play-deliver", "upload the bundle to the closed track", "gate", "aab", "status")
+    play_delivery = command(
+        "play-deliver", "upload the bundle to the closed track", "gate", "aab", "status"
+    )
+    play_delivery.add_argument("--release-notes", type=Path)
     android_check = command(
         "android-check",
         "the APK and optional Play bundle are one OTA ON release",
@@ -1737,6 +1752,7 @@ def run(args: argparse.Namespace, environ: Mapping[str, str]) -> int:
                 track=track,
                 release_status=environ.get("PLAY_RELEASE_STATUS", "").strip() or "completed",
                 changes_not_sent_for_review=review == "true",
+                release_notes=read_json_object(args.release_notes) if args.release_notes else None,
             )
             write_json(args.status, _status("android", gate, **result))
             print(f"{result['status']}: {result['detail']}")
