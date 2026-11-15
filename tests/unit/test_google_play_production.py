@@ -462,3 +462,16 @@ def test_production_telegram_is_journaled_and_never_repeated(
         else:
             assert p.notify(report, httpx.Client())["status"] == "SENT"
     assert len(sent) == 1
+
+
+def test_release_delivery_changes_trigger_mobile_artifact_validation() -> None:
+    workflow = (legacy.ROOT / ".github/workflows/mobile-ci.yml").read_text()
+    for path in (
+        "scripts/store_delivery.py",
+        "scripts/android_store_delivery.py",
+        "scripts/android_release_notes.py",
+        "scripts/google_play_production.py",
+        "docs/release/m7-android-1.1.0/notes-*.txt",
+        ".github/workflows/store-delivery.yml",
+    ):
+        assert f'      - "{path}"' in workflow
