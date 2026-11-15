@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       release_id:
-        description: "GitHub draft release ID (empty: all approved Android journals)"
+        description: "GitHub release ID (empty: Android 6 only; inspect_only can read historical IDs)"
         required: false
         type: string
         default: ""
@@ -56,6 +56,8 @@ jobs:
         run: |
           set -euo pipefail
           args=("$DELIVERY_COMMAND" --repo tooling --out delivery/public/report.json)
+          # M7 releases only: never mutate the frozen android-store-5 journal.
+          if [ "$DELIVERY_COMMAND" = reconcile ]; then args+=(--version-code 6); fi
           if [ -n "$RELEASE_ID" ]; then
             [[ "$RELEASE_ID" =~ ^[1-9][0-9]*$ ]] || { echo 'Invalid release ID'; exit 1; }
             args+=(--release-id "$RELEASE_ID")

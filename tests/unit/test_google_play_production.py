@@ -475,3 +475,39 @@ def test_release_delivery_changes_trigger_mobile_artifact_validation() -> None:
         ".github/workflows/store-delivery.yml",
     ):
         assert f'      - "{path}"' in workflow
+
+
+@pytest.mark.parametrize("explicit", [False, True])
+def test_scoped_reconciliation_never_loads_version5(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    explicit: bool,
+) -> None:
+    for key, value in {
+        "GITHUB_REF": p.core.MAIN_REF,
+        "GITHUB_REPOSITORY": "owner/repo",
+        "GH_TOKEN": "token",
+    }.items():
+        monkeypatch.setenv(key, value)
+    old = {"id": 5, "tag_name": "android-store-5"}
+    new = {"id": 6, "tag_name": "android-store-6"}
+    monkeypatch.setattr(public.GitHub, "pages", lambda *_: [old, new])
+    monkeypatch.setattr(public.GitHub, "call", lambda *_: old)
+    seen = []
+
+    def reconcile(_github: Any, remotes: Any, *_: Any) -> Any:
+        seen.extend(remotes)
+        return {"releases": [], "errors": []}
+
+    monkeypatch.setattr(public, "reconcile_releases", reconcile)
+    args = ["reconcile", "--version-code", "6", "--out", str(tmp_path / "report.json")]
+    if explicit:
+        args += ["--release-id", "5"]
+        with pytest.raises(public.DeliveryError, match="GATE"):
+            public.run(public.parse_args(args))
+        assert seen == []
+    else:
+        assert public.run(public.parse_args(args)) == 0
+        assert seen == [new]
+    workflow = (legacy.ROOT / ".github/workflows/android-store-reconcile.yml").read_text()
+    assert 'if [ "$DELIVERY_COMMAND" = reconcile ]; then args+=(--version-code 6); fi' in workflow

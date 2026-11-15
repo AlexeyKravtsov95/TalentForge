@@ -1774,6 +1774,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--reports", type=Path)
     parser.add_argument("--stores", choices=(*STORES, "both"), default="both")
     parser.add_argument("--release-id", type=int)
+    parser.add_argument("--version-code", type=int)
     parser.add_argument("--out", type=Path, required=True)
     return parser.parse_args(argv)
 
@@ -1858,6 +1859,15 @@ def run(args: argparse.Namespace) -> int:
                     if re.fullmatch(r"android-store-[1-9][0-9]*", str(r.get("tag_name", "")))
                 ]
             )
+            if args.version_code is not None:
+                integer(args.version_code, minimum=1)
+                remotes = [
+                    r for r in remotes if r.get("tag_name") == f"android-store-{args.version_code}"
+                ]
+                if args.release_id is not None and not remotes:
+                    raise DeliveryError(
+                        "GATE", "release ID is outside selected reconciliation version"
+                    )
             result = reconcile_releases(github, remotes, args.repo, args.out)
             summary(result)
             pending = {"PUBLISHED", "IN_REVIEW", "PROCESSING", "SUBMITTED", "READY_TO_SUBMIT"}

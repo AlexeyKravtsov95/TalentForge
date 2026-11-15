@@ -121,7 +121,23 @@ After reviewing/merging the PR yourself, choose a full SHA on `main` whose **CI 
 Mobile CI** have both completed successfully. Use the same SHA for verification
 and delivery. Configure the new production environment values first.
 
-Run this **yourself** for all three stores (these commands were not executed during development):
+The existing `android-store-reconcile.yml` workflow was found **disabled** in GitHub.
+A read-only `inspect_only=true` dispatch on 2026-11-15 was refused with HTTP 422;
+no inspection or publication job started. It was not enabled during development.
+After merging this PR yourself, enable that workflow before delivery:
+
+```bash
+gh workflow enable android-store-reconcile.yml
+```
+
+The updated workflow passes `--version-code 6` for every mutating reconciliation,
+including manual requests. Thus enabling the scheduler after this PR is merged
+cannot load or modify `android-store-5`. An explicit historical ID remains available
+only for read-only `inspect_only=true`. The CLI's unscoped legacy behavior is retained
+for compatibility; the workflow always supplies the scope. Do not enable the old
+unscoped workflow definition before this PR is merged.
+
+Run this **yourself** for all three stores (publication commands were not executed during development):
 
 ```bash
 gh workflow run store-delivery.yml --ref main \
@@ -211,13 +227,15 @@ Read-only GitHub inspection on 2026-11-15 found draft release ID `433118574`, ta
 Its last recorded states (2026-11-04) are RuStore `SUBMITTED` with raw `DRAFT`
 (version ID `2064929703`), and AppGallery `CONFLICT` because the candidate does not
 match the approved package. This is journal evidence, not a fresh live store probe.
-No historical asset/state was edited and no store credential or version-5 upload
-was used. Version 6 uses `android-store-6` and `play-production-6`; legacy v1
+The attempt to refresh this evidence through `inspect_only=true` was refused by
+GitHub because the workflow is disabled (HTTP 422). No store job started, so a fresh
+live store state remains unverified. No historical asset/state was edited and no
+store credential or version-5 upload was used. Version 6 uses `android-store-6` and `play-production-6`; legacy v1
 manifests parse unchanged and never receive the new localized metadata writes.
 
 ## Validation
 
-Local validation on 2026-11-15: delivery tests **260 passed**; Ruff lint/format passed;
+Local validation on 2026-11-15: delivery tests **262 passed**; Ruff lint/format passed;
 mypy passed for 125 source files; dataset sync passed for 50 files of 5 builds;
 actionlint passed with the existing custom `xcode-27` runner label allowed.
 `./gradlew :shared:jvmTest :composeApp:desktopTest :composeApp:assembleDebug --console=plain`
