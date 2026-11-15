@@ -34,6 +34,8 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def load() -> ModuleType:
+    if "store_delivery" in sys.modules:
+        return sys.modules["store_delivery"]
     spec = importlib.util.spec_from_file_location(
         "store_delivery", ROOT / "scripts" / "store_delivery.py"
     )
@@ -1268,6 +1270,7 @@ def public_job_selected(
     mode: str = "deliver",
     stores: str = "both",
     cancelled: bool = False,
+    target: str = "closed",
 ) -> bool:
     """Evaluate the public job's real condition, including Actions' implicit success().
 
@@ -1284,13 +1287,20 @@ def public_job_selected(
     ):
         return False
     values = {f"needs.{key}.result": value for key, value in results.items()}
-    values.update({"needs.gate.outputs.mode": mode, "inputs.apk_stores": stores})
+    values.update(
+        {
+            "needs.gate.outputs.mode": mode,
+            "inputs.apk_stores": stores,
+            "inputs.play_target": target,
+            "needs.play-production.result": results.get("play-production", "skipped"),
+        }
+    )
     expression = re.sub(
-        r"needs\.[\w-]+\.(?:result|outputs\.mode)|inputs\.apk_stores",
+        r"needs\.[\w-]+\.(?:result|outputs\.mode)|inputs\.(?:apk_stores|play_target)",
         lambda m: repr(values[m[0]]),
         expression,
     )
-    expression = re.sub(r"!(?!=)", "not ", expression).replace("&&", " and ")
+    expression = re.sub(r"!(?!=)", "not ", expression).replace("&&", " and ").replace("||", " or ")
     return bool(
         eval(
             " ".join(expression.split()),
@@ -1348,8 +1358,16 @@ def test_the_workflow_is_owner_started_serialised_and_keeps_secrets_in_environme
         "public-deliver",
         "public-notify",
     }
-    assert set(jobs) == {*JOBS, "summary", *public_jobs}
+    assert set(jobs) == {
+        *JOBS,
+        "summary",
+        "play-production",
+        "play-production-notify",
+        *public_jobs,
+    }
     environments = {
+        "play-production": "google-play-production",
+        "play-production-notify": "notifications",
         "android-store-check": "google-play",
         "android-build": "android-signing",
         "android-deliver": "google-play",
@@ -1385,7 +1403,7 @@ def test_the_workflow_is_owner_started_serialised_and_keeps_secrets_in_environme
     assert "needs.gate.outputs.play == 'true'" in jobs["android-deliver"]
     assert "apk_stores:" in triggers and "include_play:" in triggers
     assert "needs: [gate, android-build]" in jobs["public-approval"]
-    assert "needs: [gate, public-approval]" in jobs["public-journal"]
+    assert "needs: [gate, public-approval, play-production]" in jobs["public-journal"]
     assert "--release-id" in jobs["public-deliver"]
 
 
@@ -1401,6 +1419,7 @@ def test_reconciliation_workflow_routes_read_only_inspection_without_telegram(
         command[1]
         .replace("inputs.inspect_only", str(inspect))
         .replace("&&", " and ")
+        .replace("||", " or ")
         .replace("||", " or "),
         {"__builtins__": {}},
     )
@@ -1436,5 +1455,5 @@ def test_reconciliation_workflow_routes_read_only_inspection_without_telegram(
     expression = expression.replace("github.ref", repr("refs/heads/main")).replace(
         "needs.reconcile.result", repr("success")
     )
-    expression = re.sub(r"!(?!=)", "not ", expression).replace("&&", " and ")
+    expression = re.sub(r"!(?!=)", "not ", expression).replace("&&", " and ").replace("||", " or ")
     assert eval(" ".join(expression.split()), {"__builtins__": {}}) is (not inspect)

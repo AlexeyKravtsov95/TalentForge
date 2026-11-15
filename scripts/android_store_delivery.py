@@ -21,6 +21,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Protocol
 
+import android_release_notes as release_notes
 import httpx
 import store_delivery as core
 from cryptography.hazmat.primitives import hashes, serialization
@@ -95,7 +96,12 @@ class Release:
     @classmethod
     def parse(cls, value: Any) -> Release:
         value = obj(value)
-        if set(value) != MANIFEST_FIELDS or value.get("schema") != "talentforge-android-public/1":
+        localized = value.get("schema") == "talentforge-android-public/2"
+        fields = MANIFEST_FIELDS | {"releaseNotes"} if localized else MANIFEST_FIELDS
+        if set(value) != fields or value.get("schema") not in {
+            "talentforge-android-public/1",
+            "talentforge-android-public/2",
+        }:
             raise DeliveryError("CONTRACT", "unknown/missing manifest fields or schema")
         for k in ("sourceSha", "workflowSha"):
             if not isinstance(value[k], str) or not core.FULL_SHA.fullmatch(value[k]):
@@ -125,6 +131,12 @@ class Release:
             string(value[k])
         if len(value["whatsNew"]) > 5000:
             raise DeliveryError("CONTRACT", "release notes too long")
+        if localized:
+            if value["versionCode"] != 6 or value["versionName"] != "1.1.0":
+                raise DeliveryError("CONTRACT", "localized manifest requires Android 1.1.0 (6)")
+            notes = release_notes.validate(value["releaseNotes"], tuple(selected))
+            if value["whatsNew"] != notes["ru-RU"]:
+                raise DeliveryError("MISMATCH", "RuStore notes differ from approved Russian notes")
         return cls(dict(value))
 
     @property
@@ -395,6 +407,21 @@ def huawei_observation(
     return {"status": status, "rawState": raw, "packageId": pid}
 
 
+def update_huawei_notes(
+    api: AppGallery, release: Release, package_id: str, language: str, text: str
+) -> dict[str, Any]:
+    candidate = huawei_observation(release, api.info(), api.packages())
+    if candidate.get("status") != "READY_TO_SUBMIT" or candidate.get("packageId") != package_id:
+        raise DeliveryError("CONFLICT", "Huawei candidate changed before localized notes")
+    api.call(
+        "PUT",
+        "app-language-info",
+        params={"releaseType": 1},
+        json={"lang": language, "newFeatures": text},
+    )
+    return {"accepted": True}
+
+
 def advance_appgallery(
     api: AppGallery, release: Release, apk: Path, journal: Journal, *, now: int | None = None
 ) -> dict[str, Any]:
@@ -520,6 +547,21 @@ def advance_appgallery(
     fresh = huawei_observation(release, api.info(), api.packages())
     if fresh["status"] != "READY_TO_SUBMIT":
         return fresh
+    if release.value["schema"] == "talentforge-android-public/2":
+        for language, text in release.value["releaseNotes"].items():
+            # No language creation/listing edits: newFeatures is the only changed field.
+            # Missing language or rejected metadata must stop submission.
+            write_once(
+                journal,
+                "appgallery-notes-" + language.lower(),
+                {"manifest": release.digest, "packageId": fresh["packageId"], "text": text},
+                lambda language=language, text=text: update_huawei_notes(
+                    api, release, fresh["packageId"], language, text
+                ),
+            )
+        fresh = huawei_observation(release, api.info(), api.packages())
+        if fresh["status"] != "READY_TO_SUBMIT":
+            return fresh
     intent = {"manifest": release.digest, "packageId": fresh["packageId"]}
     if (
         journal.get("appgallery-submit-intent") is not None
@@ -977,8 +1019,8 @@ class GitHub:
         for sha in (release.value["sourceSha"], release.value["workflowSha"]):
             core.resolve_revision(repo, sha, release.value["workflowSha"])
 
-    def require_protected_approval(self) -> None:
-        env = obj(self.call("GET", "environments/android-public-release"))
+    def require_protected_approval(self, environment: str = "android-public-release") -> None:
+        env = obj(self.call("GET", "environments/" + environment))
         owner = self.repository.split("/")[0].lower()
         rules = items(env.get("protection_rules"))
         reviewers = [
@@ -992,18 +1034,16 @@ class GitHub:
             and reviewers[0].get("type") == "User"
             and obj(reviewers[0].get("reviewer")).get("login", "").lower() == owner
         ):
-            raise DeliveryError(
-                "CONFIG", "android-public-release must require repository owner's review"
-            )
+            raise DeliveryError("CONFIG", f"{environment} must require repository owner's review")
         if env.get("can_admins_bypass") is not False:
-            raise DeliveryError("CONFIG", "android-public-release must disallow admin bypass")
+            raise DeliveryError("CONFIG", f"{environment} must disallow admin bypass")
         branches = self.pages(
-            "environments/android-public-release/deployment-branch-policies", "branch_policies"
+            f"environments/{environment}/deployment-branch-policies", "branch_policies"
         )
         if not branches or any(
             b.get("name") != "main" or b.get("type") != "branch" for b in branches
         ):
-            raise DeliveryError("CONFIG", "android-public-release must allow only main branch")
+            raise DeliveryError("CONFIG", f"{environment} must allow only main branch")
 
     def asset_bytes(self, asset: dict[str, Any]) -> bytes:
         if obj(asset.get("uploader")).get("login") != "github-actions[bot]":
@@ -1175,6 +1215,7 @@ def manifest_from_build(
     app_id: str,
     notes: str,
     run_id: int,
+    localized_notes: dict[str, str] | None = None,
 ) -> Release:
     selected = list(STORES) if stores == "both" else [stores]
     if any(s not in STORES for s in selected):
@@ -1193,7 +1234,10 @@ def manifest_from_build(
     cert = string(certs[0]).replace(":", "").lower()
     return Release.parse(
         {
-            "schema": "talentforge-android-public/1",
+            "schema": "talentforge-android-public/2"
+            if localized_notes
+            else "talentforge-android-public/1",
+            **({"releaseNotes": localized_notes} if localized_notes else {}),
             "sourceSha": gate["sourceSha"],
             "workflowSha": gate["workflowSha"],
             "buildRunId": run_id,
@@ -1229,6 +1273,17 @@ def audit_stores(
         api = store_api(client, store, app_id)
         if isinstance(api, RuStore):
             versions = api.versions()
+            pending = code == 6 and any(
+                v["versionStatus"]
+                in {
+                    "DRAFT",
+                    "MODERATION",
+                    "TAKEN_FOR_MODERATION",
+                    "AUTO_CHECK",
+                    "READY_FOR_PUBLICATION",
+                }
+                for v in versions
+            )
             highest = max((v["versionCode"] for v in versions), default=0)
             active = [
                 {k: v.get(k) for k in ("versionCode", "versionId", "versionStatus", "partialValue")}
@@ -1237,12 +1292,16 @@ def audit_stores(
             ]
         else:
             packages, info = api.packages(), api.info()
+            pending = code == 6 and (
+                integer(info.get("releaseState")) not in (0, 7)
+                or info.get("versionCode") != info.get("onShelfVersionCode")
+            )
             highest = max((p["versionCode"] for p in packages), default=0)
             active = [
                 {k: info.get(k) for k in ("onShelfVersionCode", "onShelfVersionId", "releaseState")}
             ]
         return {
-            "status": "AVAILABLE" if code > highest else "CONFLICT",
+            "status": "AVAILABLE" if code > highest and not pending else "CONFLICT",
             "highestConsumedCode": highest,
             "published": active,
         }
@@ -1711,6 +1770,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--apk-report", type=Path)
     parser.add_argument("--manifest", type=Path)
     parser.add_argument("--notes", type=Path)
+    parser.add_argument("--source-repo", type=Path, default=Path())
     parser.add_argument("--reports", type=Path)
     parser.add_argument("--stores", choices=(*STORES, "both"), default="both")
     parser.add_argument("--release-id", type=int)
@@ -1743,14 +1803,24 @@ def run(args: argparse.Namespace) -> int:
             )
             return int(any(v["status"] != "AVAILABLE" for v in result.values()))
         if args.command == "manifest":
+            gate = core.read_json_object(args.gate)
+            localized = None
+            if gate["android"]["versionName"] == "1.1.0":
+                localized = release_notes.load(
+                    args.source_repo,
+                    "1.1.0",
+                    gate["android"]["versionCode"],
+                    STORES if args.stores == "both" else (args.stores,),
+                )
             release = manifest_from_build(
-                core.read_json_object(args.gate),
+                gate,
                 core.read_json_object(args.apk_report),
                 args.apk,
                 args.stores,
                 os.environ.get("APPGALLERY_APP_ID", ""),
-                args.notes.read_text().strip(),
+                localized["ru-RU"] if localized else args.notes.read_text(encoding="utf-8").strip(),
                 integer(int(os.environ["GITHUB_RUN_ID"]), minimum=1),
+                localized_notes=localized,
             )
             core.write_json(args.out, release.value)
             core.set_outputs({"manifest_sha256": release.digest}, os.environ)

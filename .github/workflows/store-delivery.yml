@@ -6,8 +6,9 @@ name: Store delivery
 #            can also be approved once for RuStore/AppGallery production delivery).
 #   iOS:     signed archive -> App Store export (.ipa) -> App Store Connect -> the existing
 #            internal TestFlight group.
-# Production OTA is on in every build; nothing falls back to unsigned, debug or OTA off. A public
-# Play/iOS production remains separate. APK-store production uses one protected approval.
+# Production OTA is on in every build; nothing falls back to unsigned, debug or OTA off.
+# play_target=closed keeps the original test-channel path. Production Play is isolated in
+# google-play-production; APK stores retain their exact-APK protected approval.
 # mode=verify (the default)
 # builds, signs and checks everything and uploads nothing.
 #
@@ -35,6 +36,12 @@ on:
         type: choice
         options: [verify, deliver]
         default: verify
+      play_target:
+        description: "Google Play target (production requires a separate owner approval)"
+        required: true
+        type: choice
+        options: [closed, production]
+        default: closed
       apk_stores:
         description: "Independent Android public stores (selecting these limits this run to Android)"
         required: true
@@ -69,7 +76,7 @@ jobs:
       mode: ${{ steps.gate.outputs.mode }}
       android: ${{ steps.gate.outputs.android }}
       ios: ${{ steps.gate.outputs.ios }}
-      play: ${{ inputs.apk_stores == 'none' || inputs.include_play }}
+      play: ${{ inputs.play_target == 'production' || inputs.apk_stores == 'none' || inputs.include_play }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -85,12 +92,23 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           INPUT_REVISION: ${{ inputs.revision }}
-          INPUT_PLATFORMS: ${{ inputs.apk_stores != 'none' && 'android' || inputs.platforms }}
+          INPUT_PLATFORMS: ${{ (inputs.play_target == 'production' || inputs.apk_stores != 'none') && 'android' || inputs.platforms }}
           INPUT_MODE: ${{ inputs.mode }}
         run: >-
           "$PY" tooling/scripts/store_delivery.py gate --repo tooling
           --revision "$INPUT_REVISION" --platforms "$INPUT_PLATFORMS" --mode "$INPUT_MODE"
           --out delivery/gate.json
+      - name: Validate release-scoped notes before any store access
+        env:
+          PLAY_TARGET: ${{ inputs.play_target }}
+        run: |
+          set -euo pipefail
+          version="$(jq -r .android.versionName delivery/gate.json)"
+          android="$(jq -r '.platforms | index("android") != null' delivery/gate.json)"
+          if [ "$PLAY_TARGET" = production ] || { [ "$android" = true ] && [ "$version" = 1.1.0 ]; }; then
+            "$PY" tooling/scripts/google_play_production.py notes --repo tooling \
+              --gate delivery/gate.json --out delivery/notes.json
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: tf-gate
@@ -104,7 +122,7 @@ jobs:
   android-store-check:
     name: Android - Google Play state (read-only)
     needs: gate
-    if: needs.gate.outputs.android == 'true' && needs.gate.outputs.play == 'true'
+    if: inputs.play_target != 'production' && needs.gate.outputs.android == 'true' && needs.gate.outputs.play == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     environment: google-play
@@ -191,12 +209,13 @@ jobs:
     if: >-
       always() && needs.gate.result == 'success'
       && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-      && (needs.android-store-check.outputs.decision == 'UPLOAD' || needs.apk-store-check.result == 'success')
+      && (needs.android-store-check.outputs.decision == 'UPLOAD' || needs.apk-store-check.result == 'success' || inputs.play_target == 'production')
     runs-on: ubuntu-24.04
     timeout-minutes: 75
     environment: android-signing
     outputs:
       manifest_sha256: ${{ steps.manifest.outputs.manifest_sha256 }}
+      production_sha256: ${{ steps.production.outputs.production_sha256 }}
     permissions:
       contents: read
     env:
@@ -359,8 +378,24 @@ jobs:
           "$PY" tooling/scripts/android_store_delivery.py manifest --gate delivery/gate.json
           --apk "delivery/android/TalentForge-$VERSION_NAME-$VERSION_CODE.apk"
           --apk-report delivery/android/apk-report.json --stores "$APK_STORES"
-          --notes tooling/docs/release/android-store-notes.txt
+          --notes tooling/docs/release/android-store-notes.txt --source-repo src
           --out delivery/android/manifest.json
+
+      - name: Bind Production approval to exact APK, AAB and RU/EN notes
+        id: production
+        if: inputs.play_target == 'production'
+        run: >-
+          "$PY" tooling/scripts/google_play_production.py prepare --repo tooling --source-repo src
+          --gate delivery/gate.json --directory delivery/android
+          --out delivery/android/production-manifest.json
+
+      - name: Release-scoped Play notes
+        run: |
+          set -euo pipefail
+          if [ "$VERSION_NAME" = 1.1.0 ]; then
+            "$PY" tooling/scripts/google_play_production.py notes --repo tooling \
+              --gate delivery/gate.json --out delivery/android/release-notes.json
+          fi
 
       - name: Verify mode result
         if: env.MODE == 'verify'
@@ -369,10 +404,10 @@ jobs:
           --gate delivery/gate.json --check delivery/android/release-check.json
           --status delivery/status/android.json
 
-      # deliver: the signed files are kept (the APK is the RuStore/AppGallery file); verify: only
-      # reports and checksums, so no signed build of this versionCode leaves the runner.
+      # Production verify transfers signed bytes to its protected permission-check job.
+      # Legacy verify keeps only reports/checksums. No verify mode uploads to a store.
       - name: Keep the signed release (deliver)
-        if: env.MODE == 'deliver'
+        if: env.MODE == 'deliver' || inputs.play_target == 'production'
         uses: actions/upload-artifact@v4
         with:
           name: android-release
@@ -410,6 +445,7 @@ jobs:
     if: >-
       always() && needs.gate.result == 'success' && needs.gate.outputs.mode == 'deliver'
       && needs.android-build.result == 'success' && needs.gate.outputs.play == 'true'
+      && inputs.play_target != 'production'
       && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -448,9 +484,14 @@ jobs:
           PLAY_RELEASE_STATUS: ${{ vars.PLAY_RELEASE_STATUS }}
           PLAY_CHANGES_NOT_SENT_FOR_REVIEW: ${{ vars.PLAY_CHANGES_NOT_SENT_FOR_REVIEW }}
           AAB: ${{ steps.files.outputs.aab }}
-        run: >-
-          "$PY" tooling/scripts/store_delivery.py play-deliver --gate delivery/gate.json
-          --aab "$AAB" --status delivery/status/android.json
+        run: |
+          set -euo pipefail
+          notes=()
+          if [ -f delivery/android/release-notes.json ]; then
+            notes=(--release-notes delivery/android/release-notes.json)
+          fi
+          "$PY" tooling/scripts/store_delivery.py play-deliver --gate delivery/gate.json \
+            --aab "$AAB" --status delivery/status/android.json "${notes[@]}"
       - name: Delivery record name
         id: record
         env:
@@ -475,6 +516,106 @@ jobs:
           path: delivery/status/android.json
           if-no-files-found: ignore
           overwrite: true
+
+  play-production:
+    name: Approve Google Play production (${{ needs.android-build.outputs.production_sha256 }})
+    needs: [gate, android-build, public-approval]
+    if: >-
+      !cancelled() && inputs.play_target == 'production'
+      && needs.gate.result == 'success' && needs.android-build.result == 'success'
+      && (needs.public-approval.result == 'success' || inputs.apk_stores == 'none' || inputs.mode == 'verify')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: google-play-production
+    permissions:
+      contents: write # immutable production intent/receipt journal
+      actions: read # owner approval and exact-SHA CI evidence
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: tooling
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.gate.outputs.sha }}
+          path: src
+          persist-credentials: false
+      - uses: ./tooling/.github/actions/delivery-python
+        with:
+          tooling: tooling
+      - uses: actions/download-artifact@v4
+        with:
+          name: tf-gate
+          path: delivery
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-release
+          path: delivery/android
+      - name: Refresh Production OTA preflight after owner approval
+        run: >-
+          "$PY" tooling/scripts/ota_production_preflight.py --expect published
+          --keyring src/docs/ota/keys/production-keyring.json --min-validity-days 30
+          --json delivery/production-ota-preflight.json
+      - name: Verify or deliver approved Google Play Production release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PLAY_PRODUCTION_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_PRODUCTION_SERVICE_ACCOUNT_JSON }}
+          PLAY_PRODUCTION_SERVICE_ACCOUNT_EMAIL: ${{ vars.PLAY_PRODUCTION_SERVICE_ACCOUNT_EMAIL }}
+          APPROVED_PRODUCTION_SHA256: ${{ needs.android-build.outputs.production_sha256 }}
+        run: >-
+          "$PY" tooling/scripts/google_play_production.py run --repo tooling --source-repo src
+          --gate delivery/gate.json --directory delivery/android
+          --out delivery/production.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: google-play-production-report
+          path: |
+            delivery/production.json
+            delivery/production-ota-preflight.json
+          if-no-files-found: error
+          retention-days: 90
+
+  play-production-notify:
+    name: Telegram Google Play Production result
+    needs: play-production
+    if: >-
+      always() && inputs.play_target == 'production' && inputs.mode == 'deliver'
+      && needs.play-production.result != 'skipped' && needs.play-production.result != 'cancelled'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: notifications
+    permissions:
+      contents: write # create-only notification receipts in Production journal
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: tooling
+          persist-credentials: false
+      - uses: ./tooling/.github/actions/delivery-python
+        with:
+          tooling: tooling
+      - uses: actions/download-artifact@v4
+        with:
+          name: google-play-production-report
+          path: delivery
+      - name: Notify Production result once
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: >-
+          "$PY" tooling/scripts/google_play_production.py notify --repo tooling
+          --report delivery/production.json --out delivery/production-notification.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: google-play-production-notification
+          path: delivery/production-notification.json
+          if-no-files-found: ignore
 
   # One approval names the APK digest. Store credentials are in android-stores;
   # moderation reconciliation never enters this Environment again.
@@ -526,10 +667,11 @@ jobs:
 
   public-journal:
     name: Preserve approved APK and durable release journal
-    needs: [gate, public-approval]
+    needs: [gate, public-approval, play-production]
     if: >-
       !cancelled() && inputs.apk_stores != 'none' && needs.gate.outputs.mode == 'deliver'
       && needs.gate.result == 'success' && needs.public-approval.result == 'success'
+      && (inputs.play_target != 'production' || needs.play-production.result == 'success')
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
@@ -591,6 +733,16 @@ jobs:
       - uses: ./tooling/.github/actions/delivery-python
         with:
           tooling: tooling
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.gate.outputs.sha }}
+          path: src
+          persist-credentials: false
+      - name: Refresh OTA preflight before APK-store writes
+        run: >-
+          "$PY" tooling/scripts/ota_production_preflight.py --expect published
+          --keyring src/docs/ota/keys/production-keyring.json --min-validity-days 30
+          --json delivery/public/ota-preflight.json
       - name: Read back, upload once, submit for automatic full publication
         env:
           GH_TOKEN: ${{ github.token }}
@@ -1069,7 +1221,7 @@ jobs:
       - ios-build
       - ios-upload
       - ios-testflight
-    if: always() && (inputs.apk_stores == 'none' || inputs.include_play)
+    if: always() && inputs.play_target != 'production' && (inputs.apk_stores == 'none' || inputs.include_play)
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
