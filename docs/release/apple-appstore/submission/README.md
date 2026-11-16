@@ -36,14 +36,14 @@ records all lengths. Limits are the existing conservative validator policy: name
 |---|---|---|---|
 | Name | [name](metadata/en-US/name.txt) | [name](metadata/ru/name.txt) | 11 / 11 characters |
 | Subtitle | [subtitle](metadata/en-US/subtitle.txt) | [subtitle](metadata/ru/subtitle.txt) | 20 / 20 characters |
-| Promotional text | [promotion](metadata/en-US/promotional_text.txt) | [promotion](metadata/ru/promotional_text.txt) | 143 / 156 characters |
-| Description | [description](metadata/en-US/description.txt) | [description](metadata/ru/description.txt) | 2219 / 2398 characters |
-| Keywords | [keywords](metadata/en-US/keywords.txt) | [keywords](metadata/ru/keywords.txt) | 80 / 76 bytes |
+| Promotional text | [promotion](metadata/en-US/promotional_text.txt) | [promotion](metadata/ru/promotional_text.txt) | 146 / 157 characters |
+| Description | [description](metadata/en-US/description.txt) | [description](metadata/ru/description.txt) | 2093 / 2237 characters |
+| Keywords | [keywords](metadata/en-US/keywords.txt) | [keywords](metadata/ru/keywords.txt) | 70 / 83 bytes |
 | Support URL | [support](metadata/en-US/support_url.txt) | [support](metadata/ru/support_url.txt) | unchanged iOS support page |
 | Privacy URL | [privacy](metadata/en-US/privacy_url.txt) | [privacy](metadata/ru/privacy_url.txt) | unchanged iOS-specific pages |
 | Categories | [primary](metadata/primary_category.txt) / [secondary](metadata/secondary_category.txt) | shared | Reference / Utilities |
 | Copyright | [copyright](metadata/copyright.txt) | shared | 2026 Alexey Kravtsov |
-| Review Notes | [English notes](metadata/review_information/notes.txt) | single shared field | 3073 bytes |
+| Review Notes | [English notes](metadata/review_information/notes.txt) | single shared field | 2955 bytes |
 
 [Clarification request A](clarification-request.txt) and [resubmission response B](resubmission-response.txt)
 are separate **unsent drafts**, not ASC fields. B is held under NO-GO and describes only
@@ -69,7 +69,10 @@ these editorial rules and screenshot integrity as well as its existing mobile ch
 12 iPhone 6.3-inch, 6 iPad 13-inch and 24 Duo Outer/Inner, across EN/RU. No existing image
 was retouched. Technical PNG acceptance is not an IP or native gesture sign-off.
 [Individual audit and recapture plan](../m7-ios-review-2-screenshot-audit.md) classifies
-all 42 files and the App Icon: 18 recapture, 24 conditional retain, none rights-cleared.
+all 42 files and the App Icon: **26 recapture for uploaded (4), 16 conditional retain**,
+none rights-cleared. Eight Duo library/favorites images show UI introduced after the
+November 9 review. Public copy and Review Notes omit those newer features; the validator
+now guards that candidate-specific restriction.
 ASC has 18 iPhone/iPad filenames and no Duo uploads; remote byte identity is unverified.
 No new screenshot or icon has been generated or edited here.
 

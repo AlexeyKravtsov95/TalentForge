@@ -103,5 +103,22 @@
     "No remote image originals downloaded or individually compared at full size",
     "No metadata saved or Update Review Information action used to test resubmit enablement",
     "No uploaded-binary source/hash or feature parity proved by a build-number match"
-  ]
+  ],
+  "separateRepositoryChronology": {
+    "scope": "Repository evidence added after the UI observation; not values exported from ASC",
+    "reviewDate": "2026-11-09",
+    "searchAndClassFilterUi": {
+      "commit": "f8f0ccea92ea4c057f39fd9bd457dbb1fc7f7e47",
+      "date": "2026-11-10"
+    },
+    "favoritesUi": {
+      "commit": "230bbe0a1c162cca00c8bf42be5be532a5795aba",
+      "date": "2026-11-11"
+    },
+    "sortingAndGroupingUi": {
+      "commit": "78bcb2db5bc54d4725a3c9f88fbcc6dcfb0db1fc",
+      "date": "2026-11-14"
+    },
+    "inference": "These features first entered repository UI after the actual review. Remove their claims for uploaded build (4); 8 Duo library/favorites screenshots require recapture for that candidate. Exact uploaded binary hash/source remains unverified."
+  }
 }

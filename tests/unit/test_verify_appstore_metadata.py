@@ -1,4 +1,4 @@
-"""The App Store metadata validator (M7.IOS.REVIEW.1).
+"""The App Store metadata validator (M7.IOS.REVIEW.2).
 
 ``scripts/verify_appstore_metadata.py`` checks the submission pack's editorial rules.
 A PASS does not establish rights or authorize submission to App Store Connect.
@@ -57,6 +57,37 @@ def test_the_committed_pack_passes() -> None:
     assert set(report["fields"]) >= {
         f"{locale}/{name}.txt" for locale in v.LOCALES for name in v.LOCALE_FILES
     }
+
+
+@pytest.mark.parametrize("field", ["description", "promotional_text", "keywords"])
+@pytest.mark.parametrize(
+    ("locale", "claim"),
+    [
+        ("en-US", "Search builds"),
+        ("en-US", "Favorites"),
+        ("en-US", "Sort builds"),
+        ("en-US", "Class filters"),
+        ("en-US", "Class grouping"),
+        ("ru", "Поиск билдов"),
+        ("ru", "Избранное"),
+        ("ru", "Сортируйте билды"),
+        ("ru", "Фильтры классов"),
+        ("ru", "Группировка по классу"),
+    ],
+)
+def test_post_review_library_features_cannot_be_advertised_for_build_four(
+    pack: Path, field: str, locale: str, claim: str
+) -> None:
+    path = pack / locale / f"{field}.txt"
+    path.write_text(path.read_text().rstrip("\n") + "\n" + claim + "\n")
+    assert "reviewed-build-claims" in failed(pack)
+
+
+@pytest.mark.parametrize("claim", ["search", "favorites", "sort", "filters", "grouping"])
+def test_review_notes_cannot_advertise_post_review_library_features(pack: Path, claim: str) -> None:
+    path = pack / "review_information/notes.txt"
+    path.write_text(path.read_text().rstrip("\n") + "\n" + claim + "\n")
+    assert "reviewed-build-claims" in failed(pack)
 
 
 def test_no_whats_new_file_for_the_first_version() -> None:
@@ -189,8 +220,9 @@ def test_the_review_notes_must_explain_ota(pack: Path) -> None:
     "phrase",
     [
         "not a game client",
-        "search",
-        "sort",
+        "rename",
+        "duplicate",
+        "delete",
         "automatically saved",
         "preview",
         "offline",

@@ -19,7 +19,11 @@ repository assets**, not a claim that the remote files were downloaded or match 
 - **REC**: recapture from the chosen actual candidate after content decisions. All 18
   iPhone/iPad images are older Release OTA OFF **1.0.0 (1)** captures at `d51cbed`.
   Age/configuration mismatch alone does not prove a feature was removed or broken.
-- **KEEP?**: 24 Duo images may remain visually unchanged **only after** applicable rights,
+  **Eight additional Duo library/favorites images are REC for uploaded (4)**: their
+  search/filter/favorites/sort UI was added November 10–14, after its November 9 review
+  (commit evidence in the assessment). They are ahead of this candidate, not obsolete
+  functions in current main. Rights clearance alone cannot make them accurate for (4).
+- **KEEP?**: 16 Duo editor/details/class/share images may remain visually unchanged **only after** applicable rights,
   actual-candidate parity and native acceptance are established. They are native Debug
   OTA OFF captures with app label **1.0.0 (4)**; that label does not bind them to ASC's
   uploaded build. Recapture if source/configuration/parity cannot be established or the
@@ -30,8 +34,10 @@ repository assets**, not a claim that the remote files were downloaded or match 
   Every row contains unconfirmed material; labels show the directly visible categories,
   not a determination that every short label is copyrightable.
 - **OLD COVERAGE**: the two old iPhone `04-build-library` files show Home/Continue/Recent,
-  not the searchable/filterable/sortable library now promoted. This is stale coverage for
-  that claim. No other screenshot is asserted to depict a proven removed function.
+  not current main's searchable/filterable/sortable library. This is stale coverage for
+  that newer UI. The final build-(4) copy removes those newer-library claims;
+  Home/Continue itself is not proved obsolete in (4). No image is asserted to depict a
+  proven removed function.
 
 Relevant risks: **2.3 / 2.3.3** (actual current experience), **2.3.9 / 5.2.1** (rights),
 with **4.1(a)** in the context of Apple's explicit third-party metadata concern. See
@@ -65,29 +71,29 @@ Paths are relative to `submission/screenshots/`; each is linked to the unchanged
 | 19 | [iphone-duo/inner/en-US/01-editor.png](submission/screenshots/iphone-duo/inner/en-US/01-editor.png) | Paladin build; Holy/Свет 5/51, locked nodes; no removed function established. | G, L | KEEP? | `249e5f7f84fb` |
 | 20 | [iphone-duo/inner/en-US/02-talent-details.png](submission/screenshots/iphone-duo/inner/en-US/02-talent-details.png) | Divine Strength 5/5, strength +10%, expanded inspector; no obsolete function established. | G, T, L | KEEP? | `afd42906d332` |
 | 21 | [iphone-duo/inner/en-US/03-class-selection.png](submission/screenshots/iphone-duo/inner/en-US/03-class-selection.png) | Nine class emblems in three-column grid; Forever/data 1.60.1 label; no obsolete function established. | C, L | KEEP? | `1598b07b1495` |
-| 22 | [iphone-duo/inner/en-US/04-build-library.png](submission/screenshots/iphone-duo/inner/en-US/04-build-library.png) | Four Paladin library results, empty query, favorite stars, class/sort controls; list continues by scrolling. No obsolete function established. | C, L | KEEP? | `394a97398ee0` |
-| 23 | [iphone-duo/inner/en-US/05-search-favorites.png](submission/screenshots/iphone-duo/inner/en-US/05-search-favorites.png) | Favorites active, 1 of 4 results; search field empty (not evidence of a typed search); Import visible. No obsolete function established. | C, L | KEEP? | `169de469f18d` |
+| 22 | [iphone-duo/inner/en-US/04-build-library.png](submission/screenshots/iphone-duo/inner/en-US/04-build-library.png) | Four Paladin library results, empty query, favorite stars, class/sort controls; list continues by scrolling. Newer than reviewed (4): incompatible candidate feature claim. | C, L | REC | `394a97398ee0` |
+| 23 | [iphone-duo/inner/en-US/05-search-favorites.png](submission/screenshots/iphone-duo/inner/en-US/05-search-favorites.png) | Favorites active, 1 of 4 results; search field empty (not evidence of a typed search); Import visible. Newer than reviewed (4): incompatible candidate feature claim. | C, L | REC | `169de469f18d` |
 | 24 | [iphone-duo/inner/en-US/06-build-sharing.png](submission/screenshots/iphone-duo/inner/en-US/06-build-sharing.png) | TF1 code, Share/Copy controls over dimmed 5/51 tree; no actual send shown, no obsolete function established. | G, L | KEEP? | `eefd8493fa5e` |
 | 25 | [iphone-duo/inner/ru/01-editor.png](submission/screenshots/iphone-duo/inner/ru/01-editor.png) | User-named holy / Паладин; Holy/Свет 5/51, locked nodes; no removed function established. | G, L | KEEP? | `dcbd722dd684` |
 | 26 | [iphone-duo/inner/ru/02-talent-details.png](submission/screenshots/iphone-duo/inner/ru/02-talent-details.png) | Божественная сила 5/5, strength +10%, expanded inspector; no obsolete function established. | G, T, L | KEEP? | `8bb0589aa2f3` |
 | 27 | [iphone-duo/inner/ru/03-class-selection.png](submission/screenshots/iphone-duo/inner/ru/03-class-selection.png) | Nine class emblems in three-column grid; Forever/data 1.60.1 label; no obsolete function established. | C, L | KEEP? | `2a8035b30e12` |
-| 28 | [iphone-duo/inner/ru/04-build-library.png](submission/screenshots/iphone-duo/inner/ru/04-build-library.png) | Four Paladin library results, empty query, favorite stars, class/sort controls; list continues by scrolling. No obsolete function established. | C, L | KEEP? | `a325ecd0bcff` |
-| 29 | [iphone-duo/inner/ru/05-search-favorites.png](submission/screenshots/iphone-duo/inner/ru/05-search-favorites.png) | Favorites active, 1 of 4 results; search field empty (not evidence of a typed search); Import visible. No obsolete function established. | C, L | KEEP? | `611f35fd8e6f` |
+| 28 | [iphone-duo/inner/ru/04-build-library.png](submission/screenshots/iphone-duo/inner/ru/04-build-library.png) | Four Paladin library results, empty query, favorite stars, class/sort controls; list continues by scrolling. Newer than reviewed (4): incompatible candidate feature claim. | C, L | REC | `a325ecd0bcff` |
+| 29 | [iphone-duo/inner/ru/05-search-favorites.png](submission/screenshots/iphone-duo/inner/ru/05-search-favorites.png) | Favorites active, 1 of 4 results; search field empty (not evidence of a typed search); Import visible. Newer than reviewed (4): incompatible candidate feature claim. | C, L | REC | `611f35fd8e6f` |
 | 30 | [iphone-duo/inner/ru/06-build-sharing.png](submission/screenshots/iphone-duo/inner/ru/06-build-sharing.png) | TF1 code, Share/Copy controls over dimmed 5/51 tree; no actual send shown, no obsolete function established. | G, L | KEEP? | `3abc93834a70` |
 | 31 | [iphone-duo/outer/en-US/01-editor.png](submission/screenshots/iphone-duo/outer/en-US/01-editor.png) | Paladin build; Holy/Свет 5/51, locked nodes; no removed function established. Asymmetric right system-indicator area. | G, L | KEEP? | `a4b7754599b8` |
 | 32 | [iphone-duo/outer/en-US/02-talent-details.png](submission/screenshots/iphone-duo/outer/en-US/02-talent-details.png) | Divine Strength 5/5, strength +10%, expanded inspector; no obsolete function established. Asymmetric right system-indicator area. | G, T, L | KEEP? | `5deccf80416d` |
 | 33 | [iphone-duo/outer/en-US/03-class-selection.png](submission/screenshots/iphone-duo/outer/en-US/03-class-selection.png) | Nine class emblems in three-column grid; Forever/data 1.60.1 label; no obsolete function established. Asymmetric right system-indicator area. | C, L | KEEP? | `95d8afbee7b3` |
-| 34 | [iphone-duo/outer/en-US/04-build-library.png](submission/screenshots/iphone-duo/outer/en-US/04-build-library.png) | Four Paladin library results, empty query, favorite stars, class/sort controls; list continues by scrolling. No obsolete function established. Asymmetric right system-indicator area. | C, L | KEEP? | `0e8c92b1be8f` |
-| 35 | [iphone-duo/outer/en-US/05-search-favorites.png](submission/screenshots/iphone-duo/outer/en-US/05-search-favorites.png) | Favorites active, 1 of 4 results; search field empty (not evidence of a typed search); Import visible. No obsolete function established. Asymmetric right system-indicator area. | C, L | KEEP? | `66a611cf2440` |
+| 34 | [iphone-duo/outer/en-US/04-build-library.png](submission/screenshots/iphone-duo/outer/en-US/04-build-library.png) | Four Paladin library results, empty query, favorite stars, class/sort controls; list continues by scrolling. Newer than reviewed (4): incompatible candidate feature claim. Asymmetric right system-indicator area. | C, L | REC | `0e8c92b1be8f` |
+| 35 | [iphone-duo/outer/en-US/05-search-favorites.png](submission/screenshots/iphone-duo/outer/en-US/05-search-favorites.png) | Favorites active, 1 of 4 results; search field empty (not evidence of a typed search); Import visible. Newer than reviewed (4): incompatible candidate feature claim. Asymmetric right system-indicator area. | C, L | REC | `66a611cf2440` |
 | 36 | [iphone-duo/outer/en-US/06-build-sharing.png](submission/screenshots/iphone-duo/outer/en-US/06-build-sharing.png) | TF1 code, Share/Copy controls over dimmed 5/51 tree; no actual send shown, no obsolete function established. Asymmetric right system-indicator area. | G, L | KEEP? | `9f833a3ff934` |
 | 37 | [iphone-duo/outer/ru/01-editor.png](submission/screenshots/iphone-duo/outer/ru/01-editor.png) | User-named holy / Паладин; Holy/Свет 5/51, locked nodes; no removed function established. Asymmetric right system-indicator area. | G, L | KEEP? | `909b52faf2ec` |
 | 38 | [iphone-duo/outer/ru/02-talent-details.png](submission/screenshots/iphone-duo/outer/ru/02-talent-details.png) | Божественная сила 5/5, strength +10%, expanded inspector; no obsolete function established. Asymmetric right system-indicator area. | G, T, L | KEEP? | `aa1caa6e089c` |
 | 39 | [iphone-duo/outer/ru/03-class-selection.png](submission/screenshots/iphone-duo/outer/ru/03-class-selection.png) | Nine class emblems in two-column grid; Forever/data 1.60.1 label; no obsolete function established. Asymmetric right system-indicator area. | C, L | KEEP? | `ad60ac45e00b` |
-| 40 | [iphone-duo/outer/ru/04-build-library.png](submission/screenshots/iphone-duo/outer/ru/04-build-library.png) | Four Paladin library results, empty query, favorite stars, class/sort controls; list continues by scrolling. No obsolete function established. Asymmetric right system-indicator area. | C, L | KEEP? | `38278513115b` |
-| 41 | [iphone-duo/outer/ru/05-search-favorites.png](submission/screenshots/iphone-duo/outer/ru/05-search-favorites.png) | Favorites active, 1 of 4 results; search field empty (not evidence of a typed search); Import visible. No obsolete function established. Asymmetric right system-indicator area. | C, L | KEEP? | `fa9e1c70c8fb` |
+| 40 | [iphone-duo/outer/ru/04-build-library.png](submission/screenshots/iphone-duo/outer/ru/04-build-library.png) | Four Paladin library results, empty query, favorite stars, class/sort controls; list continues by scrolling. Newer than reviewed (4): incompatible candidate feature claim. Asymmetric right system-indicator area. | C, L | REC | `38278513115b` |
+| 41 | [iphone-duo/outer/ru/05-search-favorites.png](submission/screenshots/iphone-duo/outer/ru/05-search-favorites.png) | Favorites active, 1 of 4 results; search field empty (not evidence of a typed search); Import visible. Newer than reviewed (4): incompatible candidate feature claim. Asymmetric right system-indicator area. | C, L | REC | `fa9e1c70c8fb` |
 | 42 | [iphone-duo/outer/ru/06-build-sharing.png](submission/screenshots/iphone-duo/outer/ru/06-build-sharing.png) | TF1 code, Share/Copy controls over dimmed 5/51 tree; no actual send shown, no obsolete function established. Asymmetric right system-indicator area. | G, L | KEEP? | `268d6f6154e2` |
 
-**Totals: 42/42 visually reviewed; 18 REC; 24 KEEP?; 42 with unconfirmed content;
+**Totals: 42/42 visually reviewed; 26 REC for uploaded (4); 16 KEEP?; 42 with unconfirmed content;
 2 explicitly stale library-claim coverage images; 0 rights-cleared/unconditionally
 approved images.** Current images contain Forever labels; no full `World of Warcraft:
 Forever` title or Blizzard wordmark was observed in these captures. That does not remove
@@ -122,23 +128,28 @@ SHA-256: `da4d634cdaef29410636b5735aafc915c70a810697f500637cb5b3da5134a0e5`.
    A recent local app with the same numeric build is insufficient. If a binary change is
    required, choose that new candidate in the separate milestone before recapturing.
 3. Prepare fictional local builds (no personal data): an editable 33/51 build; a locked
-   node with one-hop prerequisite; four library entries with distinct neutral names and a
-   favorite; a genuine exported TF1 code with a successful import preview. Use available
+   node with one-hop prerequisite; four library entries with distinct neutral names; a
+   genuine exported TF1 code with a successful import preview. Use available
    local data offline; separately check any advertised online-only version download.
 4. Capture on actual supported iPhone **1206×2622** and iPad **2064×2752** simulator/device
    slots matching the manifest. Capture all six stories in **both EN and RU**: editor,
-   expanded current/next-rank requirements, class chooser, current library (search/filter/
-   sort visible), share code and import preview. This means 12 iPhone and 12 iPad images;
+   expanded current/next-rank requirements, class chooser, the candidate’s actual All
+   Builds, share code and import preview. Do not stage search/favorites/sort controls in
+   uploaded (4). This means 12 iPhone and 12 iPad images;
    the latter replaces the old three-per-locale set. If using additional library scenes,
    remain within Apple's then-current ten-per-slot maximum. Prefer a readable real app
    viewport/zoom and compact modal content; no crop/enlargement to fake readability.
 5. For Duo, first close native two-finger pinch/pan, text entry/search, remaining sort/
    favorites/delete/transition acceptance from [DUO.1](../../qa/m7-ios-duo-1/README.md).
-   On official Outer **1398×2034** and Inner **2007×2853** displays, verify EN/RU portrait
-   and landscape controls/safe areas. Retain the 24 existing PNGs only when the conditions
-   above are evidenced; otherwise recapture the same six stories, with a genuine entered
-   query if claiming search. Capture an import preview as an additional image if needed;
-   do not label the existing share screen an import preview.
+   These checks cover the newer-library candidate only where it actually contains those
+   functions; they are not promises for uploaded (4). On official Outer **1398×2034** and Inner **2007×2853** displays, verify EN/RU portrait
+   and landscape controls/safe areas. For uploaded (4), replace the eight 04/05 images
+   with genuine All Builds / import preview captures; the other 16 are conditional. For
+   a separately approved newer binary, reassess all 24 and use a genuine entered query
+   if claiming search. Do not label the existing share screen an import preview. The
+   current screenshot verifier hardcodes the Duo six-scene set including search-favorites;
+   revising scene names/manifest/verifier together belongs to that real recapture follow-up,
+   with regression coverage. Do not put another screen under a misleading required filename.
 6. Record source SHA, selected archive identity/hash, app/store versions, build, OTA mode,
    bundled/downloaded data version, device/display, Xcode/SDK/runtime, locale, appearance,
    Dynamic Type, raw/delivered hashes and timestamp. Use native capture; only fully opaque

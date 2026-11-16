@@ -2,16 +2,16 @@ TalentForge is an independent, unofficial mobile talent build planner for World 
 
 The proposed listing uses TalentForge as the name in both locales, with Talent Build Planner (EN) and Планировщик талантов (RU) as subtitles. The game's name is used in the description only to identify the data the planner supports.
 
-The product's concrete contribution is its mobile editing and local-library workflow: selecting a node never spends points; visible rank controls change allocation; Show selects one prerequisite without spending; undo/redo supports experimentation; compact portrait layouts have a bottom inspector; landscape and tablet layouts use a side inspector. A searchable, sortable library with class filters, favorites and class grouping keeps multiple builds. Import previews a text code and saves a separate build, preserving existing builds; export uses the native iOS share sheet or clipboard. These are observable features, not a claim that no other planner offers them.
+The product's concrete contribution is its mobile editing and local-library workflow: selecting a node never spends points; visible rank controls change allocation; Show selects one prerequisite without spending; undo/redo supports experimentation; compact portrait layouts have a bottom inspector; landscape and tablet layouts use a side inspector. The local library keeps multiple builds. Import previews a text code and saves a separate build, preserving existing builds; export uses the native iOS share sheet or clipboard. These are existing functions, not a claim that no other planner offers them.
 
 How to review:
 1. Create a build with New build and choose a class. Tap a talent, use +, minus and Max, inspect a locked talent's requirements and use Show.
 2. Leave the editor and reopen the automatically saved build. Rename or duplicate it from its menu.
-3. Open All builds, search by name or class, mark a favorite, filter and change the sort order (last edited, name, class) or class grouping.
+3. Open All builds to view saved builds; use the build menu to rename, duplicate or delete a build.
 4. Share the build or copy its code. From Home, use Import build, paste the code, continue to preview, then import as a separate build.
 5. Change the device language to English or Russian and relaunch. Missing Russian talent text falls back to English. No sign-in or purchase is required; no demo account is needed.
 
-Bundled data and local editing, saving, search, sort, import and export work offline. Downloading a data version absent from the device requires a connection; sending an exported code through another app depends on that app.
+Bundled data and local editing, saving, import and export work offline. Downloading a data version absent from the device requires a connection; sending an exported code through another app depends on that app.
 
 OTA (Guideline 2.5.2): the OTA ON configuration makes HTTPS requests (GET only) to https://ota.mythweld.com at launch/foreground, on Check for updates in About and for a saved build's missing data version. The app checks the catalog's ECDSA P-256 signature using embedded keys and each file's SHA-256. Downloads contain only JSON talent trees/texts and PNG icons, never executable code; features and behavior do not change. The signature authenticates developer delivery, not permission to use game content. Builds are never uploaded. Delivery infrastructure may retain technical request logs (IP, time, URL, User-Agent); App Privacy declares linked Diagnostics (Other Diagnostic Data), for functionality, not tracking.
 

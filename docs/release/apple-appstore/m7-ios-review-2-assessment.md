@@ -9,7 +9,6 @@ Date: **2026-11-17, Asia/Novosibirsk**. Base: `main` at
 `502facedf853ec48f79bd763a04c5e03f76d1e24`, merged [PR #151](https://github.com/AlexeyKravtsov95/TalentForge/pull/151).
 This is a delta to [REVIEW.1](m7-ios-review-1-assessment.md), not a replacement legal
 investigation. Its R2–R8 rights/provenance and native acceptance findings remain open.
-No project-specific TalentForge skills were installed in the available skill catalog.
 
 ## Evidence added since REVIEW.1
 
@@ -51,16 +50,16 @@ determinations. All rows remain subject to Apple's decision.
 | Name RU | Same branded ASC name; #151 `TalentForge` | Same | Keep #151 `TalentForge` | Same independent identity in both locales | Same |
 | Subtitle EN | ASC `Talent builds for WoW: Forever`; #151 `Talent Build Planner` | 4.1(a), 2.3.7: branded discovery positioning | Keep #151 neutral subtitle | Explicit talent planning, no universal-game claim | Owner editorial acceptance and ASC reconciliation |
 | Subtitle RU | ASC `Билды талантов WoW: Forever`; #151 `Планировщик талантов` | Same | Keep #151 neutral subtitle | Same function in Russian | Same |
-| Promotion EN | ASC starts `Plan talent builds for all nine classes of World of Warcraft: Forever.`; #151 starts `Edit talent builds, search and sort your library` | 4.1(a), 2.3/2.3.7: brand-led promotion and candidate-feature accuracy | Keep #151 feature-led 143-character text | Edit, library, favorites, sharing, offline scope | Verify all advertised features in the actual selected binary, not merely current main |
-| Promotion RU | ASC starts `Планируйте билды талантов для всех девяти классов World of Warcraft: Forever.`; #151 starts `Редактируйте билды талантов, ищите и сортируйте их` | Same | Keep #151 feature-led 156-character text | Equivalent functions | Same |
+| Promotion EN | ASC starts `Plan talent builds for all nine classes of World of Warcraft: Forever.`; #151 starts `Edit talent builds, search and sort your library` | 4.1(a), 2.3/2.3.7: branding and features added after this binary's review | 146-character feature text limited to included data, local saves, codes/import preview and offline available data | Removes unsupported newer-library promises while retaining concrete utility | Verify remaining functions against retained archive/existing install |
+| Promotion RU | ASC starts `Планируйте билды талантов для всех девяти классов World of Warcraft: Forever.`; #151 starts `Редактируйте билды талантов, ищите и сортируйте их` | Same | Equivalent 157-character text; remove newer-library claims | Equivalent functions and limits | Same |
 | Description EN | ASC repeats full title in opening/data section and trademark attribution; #151 retains it once in opening | 4.1(a), 2.3, 5.2.1: promotional use vs accurate data identity; borrowed content remains | Lead with functions; move the one identifying title to a separate supported-data notice; explicitly state only included datasets, no other games or all-version promise; retain non-affiliation/ownership and identify icons/texts as third-party | Specialized scope and content origin stay visible | **OPEN**: informational placement is not permission. If Apple requires all third-party references/content removed, these texts alone cannot satisfy both truthfulness and rights requirements |
 | Description RU | Same title pattern; #151 one title in opening | Same | Equivalent supported-data notice and disclosures in RU | Same restrictions and origin | Same **OPEN** conflict |
-| Keywords EN | ASC `planner,wow,calculator,tree,classic,warrior,mage,priest,druid,rogue,hunter,paladin,shaman,warlock`; #151 removes `wow`/`classic` but keeps nine classes | 2.3.7, 4.1(a): branded discovery and unnecessary game-association cluster | `calculator,tree,spec,library,favorites,search,offline,import,export,points,ranks` | Feature discovery without listing game classes; exact supported game still disclosed in description | Common class words are not declared unlawful; this is conservative editorial removal. Validate binary's library features |
-| Keywords RU | ASC `таланты,планировщик,калькулятор,дерево,маг,жрец,друид`; #151 `билды,калькулятор,дерево,избранное,поиск` | Same discovery concern; duplicate indexed words | Keep #151 keywords | Function-led, no class/brand promotion | Binary feature parity; 76 UTF-8 bytes |
+| Keywords EN | ASC `planner,wow,calculator,tree,classic,warrior,mage,priest,druid,rogue,hunter,paladin,shaman,warlock`; #151 removes `wow`/`classic` but keeps nine classes | 2.3.7, 4.1(a): branded discovery and unnecessary game-association cluster | `calculator,tree,spec,points,ranks,offline,import,export,code,undo,redo` | Feature discovery without game classes or newer-library claims; game identity still disclosed in description | Common class words are not declared unlawful; conservative editorial removal. 70 UTF-8 bytes |
+| Keywords RU | ASC `таланты,планировщик,калькулятор,дерево,маг,жрец,друид`; #151 `билды,калькулятор,дерево,избранное,поиск` | Same discovery concern; #151 keywords also imply newer features | `билды,калькулятор,дерево,импорт,экспорт,очки` | Function-led, no class/brand promotion or newer-library claims | 83 UTF-8 bytes |
 | App Icon | Golden branching paths/orbs/crystal on black; no observed game wordmark; ASC thumbnail is visually consistent | 4.1(a)/(c), 2.3.9, 5.2.1: unclear source/input/output rights, originality not proved by appearance | No image change; conditional retention only | Conveys a talent tree, without a text game brand | **OPEN** original author/tool/input/terms/output evidence; see [individual icon assessment](m7-ios-review-2-screenshot-audit.md#app-icon). Changing this binary-owned icon would require a separately planned binary change |
-| 12 iPhone PNGs | Game icons/texts, nine class emblems, Forever labels; older Home/continue image named library | 2.3/2.3.3/2.3.9, 5.2.1; 4.1(a) context | Hold; recapture coherent candidate set, especially current library | Replaces stale feature coverage with actual app use | Rights + selected-binary parity; [12 individual rows](m7-ios-review-2-screenshot-audit.md) |
+| 12 iPhone PNGs | Game icons/texts, nine class emblems, Forever labels; older Home/continue image named library | 2.3/2.3.3/2.3.9, 5.2.1; 4.1(a) context | Hold; recapture coherent candidate set and actual All Builds | Genuine selected-binary experience; do not add current-main search UI to build (4)'s listing | Rights + selected-binary parity; [12 individual rows](m7-ios-review-2-screenshot-audit.md) |
 | 6 iPad PNGs | Same assets, small tablet share/import views; OTA OFF build (1) | Same | Hold; recapture readable real UI from selected candidate, add library coverage | Better legibility without fabricated UI | Rights + candidate parity; six individual rows in audit |
-| 24 Duo PNGs | Real Outer/Inner captures with game assets and current library UI; Debug OTA OFF build (4), different source from old images | Same + 2.3 accuracy of optimization/support claims | Conditional retain if rights and exact-candidate appearance/function parity are evidenced; otherwise recapture; no Duo-support promotion | No unsupported gesture/optimization claim | Rights, native pinch/pan and remaining matrix, uploaded-build/source binding; 24 individual rows in audit |
+| 24 Duo PNGs | Real Outer/Inner captures with game assets and newer library UI; Debug OTA OFF numeric build (4), captured after the binary's review | Same + 2.3 accuracy of optimization/support claims | **8 library/favorites images require replacement for uploaded (4)**; other 16 conditional retain only after rights/candidate/native acceptance | Avoid presenting post-review library features as part of uploaded (4); no optimization claim | Rights, native acceptance and uploaded-build binding; 24 individual rows in audit |
 | Content Rights declaration | ASC says necessary third-party rights exist; REVIEW.1 has no applicable grant | 5.2.1, 2.3: declaration exceeds recorded evidence | Flag contradiction; no ASC edit here. Reconcile truthfully with documented rights outcome before any submission | Disclosure remains honest | **NO-GO**; changing wording or accepting commercial risk does not supply rights |
 
 The relevant current [Apple guidelines](https://developer.apple.com/app-store/review/guidelines/)
@@ -72,24 +71,28 @@ Sources checked November 17 local time. No new Blizzard policy interpretation or
 
 ## Final EN/RU copy and technical review
 
-The complete field files are the single copy source. Only **three public files** change
-relative to #151: two descriptions and English keywords. Non-affiliation and ownership
+The complete field files are the single copy source. **Six public files** change
+relative to #151: EN/RU descriptions, promotion and keywords, plus the shared Review Notes.
+Non-affiliation and ownership
 sentences are preserved verbatim; the source disclosure is strengthened, not hidden.
 Both locales make the same claims: nine classes/three trees, explicit allocation controls,
-local library, import preview/export, offline available data, data-only OTA with signature
+local saved builds, import preview/export, offline available data, data-only OTA with signature
 checks, and RU-to-EN fallback. Neither promises generic game support or live realm access.
 
 | Field | EN | RU | Limit / result |
 |---|---:|---:|---|
 | Name | 11 characters | 11 characters | 30 / PASS |
 | Subtitle | 20 characters | 20 characters | 30 / PASS |
-| Promotion | 143 characters | 156 characters | 170 / PASS |
-| Description | 2219 characters | 2398 characters | 4000 / PASS |
-| Keywords | 80 bytes | 76 bytes | 100-byte conservative policy / PASS |
+| Promotion | 146 characters | 157 characters | 170 / PASS |
+| Description | 2093 characters | 2237 characters | 4000 / PASS |
+| Keywords | 70 bytes | 83 bytes | 100-byte conservative policy / PASS |
 
 [Machine report](evidence/m7-ios-review-2/appstore-metadata-report.json): 18 fields,
-44 checks. Existing validator and regression tests already support this scope/disclosure
-and title placement; **no validator/test/CI logic changes are necessary**. Their checks
+45 checks. The validator now rejects EN/RU library search/filter/favorites/sort/grouping
+claims for the selected reviewed candidate, with 35 new negative cases across public
+fields and Review Notes; positive note requirements use existing rename/duplicate/delete
+functions. This change is necessary because #151's required search/sort claims conflict
+with the actual review chronology below. No CI configuration changes are needed. These checks
 are editorial guardrails, not a semantic proof, Apple name reservation or rights checker.
 EN/RU editorial review here is not represented as the owner's approval or ASC acceptance.
 
@@ -119,13 +122,23 @@ enabled, and reconcile release settings. Current release setting is **automatic*
 is an observation, not authorization to publish. Do not cancel the submission, remove
 the build or create another app record as a workaround.
 
-**Candidate parity is an independent gate.** Current main and recent Duo simulations
-do not prove build (4)'s source, library features, system-appearance fix, data/OTA mode
-or exact icon bytes. The unchanged review notes and feature-led promotion must be
-reconciled with the actually installed uploaded build. Verify from its retained archive /
-delivery provenance and an existing TestFlight install; no new build is authorized here.
-If a feature is absent, remove that claim consistently from EN/RU and review notes, or
-choose a separately approved binary milestone; never screenshot main and label it (4).
+**Candidate chronology exposes a concrete metadata mismatch.** The actual Apple review
+was November 9. Repository history first adds library search/class filtering on November 10
+([`f8f0ccea`](https://github.com/AlexeyKravtsov95/TalentForge/commit/f8f0ccea92ea4c057f39fd9bd457dbb1fc7f7e47)),
+favorites on November 11
+([`230bbe0a`](https://github.com/AlexeyKravtsov95/TalentForge/commit/230bbe0a1c162cca00c8bf42be5be532a5795aba)),
+and UI sorting/grouping on November 14
+([`78bcb2db`](https://github.com/AlexeyKravtsov95/TalentForge/commit/78bcb2db5bc54d4725a3c9f88fbcc6dcfb0db1fc)).
+These are changes to `AllBuildsScreen.kt`; the build-number bump to 4 dates to October 27
+(`b4aa431b`). Thus current-main library features cannot be advertised as part of the
+November 9 reviewed binary on the available evidence. Their claims are removed from
+both public locales and Review Notes in this PR. Duo library/favorites PNGs show those
+newer features despite reusing numeric build 4; they require recapture for uploaded (4).
+
+The uploaded archive's exact source, system-appearance fix, data/OTA mode and icon bytes
+still need retained delivery provenance / existing TestFlight install verification; no
+new build is authorized here. If retaining those newer library features is required,
+use a separately approved new binary milestone. Never screenshot main and label it (4).
 
 Separate new-build plan, only if required:
 
@@ -169,7 +182,7 @@ work that has not happened. Sending either message requires a separate owner ins
 | EN/RU copy | Technically checked, aligned; owner acceptance/name availability and actual binary parity pending |
 | Game icons/texts, class art, icon | **OPEN**, REVIEW.1 R2–R6; rights/provenance evidence or separately completed content remediation |
 | Truthful Content Rights declaration | **OPEN**, observed affirmative answer not supported by repository evidence |
-| Screenshots | 42 individually reviewed; 18 recapture, 24 conditional retain; all held for rights/candidate gates |
+| Screenshots | 42 individually reviewed; **26 recapture for uploaded (4), 16 conditional retain**; all held for rights/candidate gates |
 | Duo acceptance | **BLOCKED**, existing native multi-touch and remaining functional checks unchanged |
 | Same-build route | Conditionally supported by observed selected (4) + Apple workflow; **not executable now**, resubmit disabled |
 | Tests / CI | See [fresh validation](m7-ios-review-2-validation.md); never closes rights or store gates |

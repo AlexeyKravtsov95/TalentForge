@@ -6,12 +6,12 @@
       "bytes": 20
     },
     "en-US/description.txt": {
-      "characters": 2219,
-      "bytes": 2243
+      "characters": 2093,
+      "bytes": 2115
     },
     "en-US/keywords.txt": {
-      "characters": 80,
-      "bytes": 80
+      "characters": 70,
+      "bytes": 70
     },
     "en-US/name.txt": {
       "characters": 11,
@@ -22,8 +22,8 @@
       "bytes": 46
     },
     "en-US/promotional_text.txt": {
-      "characters": 143,
-      "bytes": 143
+      "characters": 146,
+      "bytes": 146
     },
     "en-US/subtitle.txt": {
       "characters": 20,
@@ -38,16 +38,16 @@
       "bytes": 9
     },
     "review_information/notes.txt": {
-      "characters": 3054,
-      "bytes": 3073
+      "characters": 2936,
+      "bytes": 2955
     },
     "ru/description.txt": {
-      "characters": 2398,
-      "bytes": 4355
+      "characters": 2237,
+      "bytes": 4060
     },
     "ru/keywords.txt": {
-      "characters": 40,
-      "bytes": 76
+      "characters": 44,
+      "bytes": 83
     },
     "ru/name.txt": {
       "characters": 11,
@@ -58,8 +58,8 @@
       "bytes": 43
     },
     "ru/promotional_text.txt": {
-      "characters": 156,
-      "bytes": 274
+      "characters": 157,
+      "bytes": 289
     },
     "ru/subtitle.txt": {
       "characters": 20,
@@ -123,17 +123,17 @@
     {
       "id": "limit:en-US/promotional_text",
       "passed": true,
-      "detail": "143 characters (allowed 1-170)"
+      "detail": "146 characters (allowed 1-170)"
     },
     {
       "id": "limit:en-US/description",
       "passed": true,
-      "detail": "2219 characters (allowed 1-4000)"
+      "detail": "2093 characters (allowed 1-4000)"
     },
     {
       "id": "keywords:en-US",
       "passed": true,
-      "detail": "11 keywords, 80 bytes"
+      "detail": "11 keywords, 70 bytes"
     },
     {
       "id": "name:en-US",
@@ -208,17 +208,17 @@
     {
       "id": "limit:ru/promotional_text",
       "passed": true,
-      "detail": "156 characters (allowed 1-170)"
+      "detail": "157 characters (allowed 1-170)"
     },
     {
       "id": "limit:ru/description",
       "passed": true,
-      "detail": "2398 characters (allowed 1-4000)"
+      "detail": "2237 characters (allowed 1-4000)"
     },
     {
       "id": "keywords:ru",
       "passed": true,
-      "detail": "5 keywords, 76 bytes"
+      "detail": "6 keywords, 83 bytes"
     },
     {
       "id": "name:ru",
@@ -253,7 +253,7 @@
     {
       "id": "limit:review_information/notes",
       "passed": true,
-      "detail": "3073 bytes (limit 4000)"
+      "detail": "2955 bytes (limit 4000)"
     },
     {
       "id": "review-notes",
@@ -294,6 +294,11 @@
       "id": "other-platforms",
       "passed": true,
       "detail": "no other store or platform is named"
+    },
+    {
+      "id": "reviewed-build-claims",
+      "passed": true,
+      "detail": "no claims for library features introduced after build (4)'s November 9 review"
     }
   ],
   "result": "PASS"

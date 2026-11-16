@@ -6,6 +6,7 @@ Regarding Guideline 4.1(a), we have revised the English and Russian text in our 
 - Promotional text and keywords describe planning features without WoW, Warcraft, Forever or Blizzard branding. English keywords also no longer list game classes.
 - The descriptions lead with the planner's functions. A separate supported-data notice identifies the specific World of Warcraft: Forever datasets and explicitly limits support to those datasets, without suggesting support for other games or every game version.
 - Non-affiliation and third-party ownership disclosures remain in both descriptions. The descriptions now explicitly identify game icons and talent texts as third-party content.
+- We removed library search, filtering, favorites, sorting and grouping claims from public text and Review Notes because those functions were added to the repository after this build's November 9 review.
 
 These are text changes. They do not replace the app icon, screenshots, game icons or talent texts, and they do not establish permission to use third-party content. We are not claiming a Blizzard license or that the intellectual-property questions have been resolved by these edits.
 

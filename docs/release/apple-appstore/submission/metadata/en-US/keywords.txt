@@ -1,1 +1,1 @@
-calculator,tree,spec,library,favorites,search,offline,import,export,points,ranks
+calculator,tree,spec,points,ranks,offline,import,export,code,undo,redo
