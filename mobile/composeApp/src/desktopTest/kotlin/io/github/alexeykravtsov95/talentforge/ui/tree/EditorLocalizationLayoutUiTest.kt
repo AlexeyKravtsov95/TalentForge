@@ -53,7 +53,7 @@ class EditorLocalizationLayoutUiTest {
 
     @Test
     fun theLocalizedEditorFitsEveryReviewSizeAndTextScale() {
-        val sizes = listOf(393 to 852, 320 to 568, 915 to 412)
+        val sizes = listOf(393 to 852, 320 to 568, 915 to 412, 466 to 678, 678 to 466, 669 to 951, 951 to 669)
         for (language in AppLanguage.entries) {
             val copy = EditorCopy.of(language)
             for ((width, height) in sizes) {

@@ -17,6 +17,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.runDesktopComposeUiTest
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.alexeykravtsov95.talentforge.data.BundledTalentDatasetRepository
@@ -279,4 +280,51 @@ class BuildLibrarySortingUiTest {
             assertEquals(writes, storage.writeCount)
         }
     }
+
+    @Test
+    fun duoResizeKeepsLibraryQueryAndScrollWithoutStorageWrites() {
+        for (language in AppLanguage.entries) {
+            uiLanguage.language = language
+            val copy = ShellCopy.of(language)
+            val storage = FakeBuildLibraryStorage()
+            val clock = FixedClock()
+            ShellLibraryFixtures.persist(storage, clock, (1..30).map {
+                ShellLibraryFixtures.Build("WARRIOR", name = "Build ${it.toString().padStart(2, '0')}")
+            })
+            val before = storage.payload
+            val writes = storage.writeCount
+            runDesktopComposeUiTest(width = 1000, height = 1000) {
+                val window = mutableStateOf(IntSize(466, 678))
+                setContent {
+                    TalentForgeTheme {
+                        CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                            Box(Modifier.size(window.value.width.dp, window.value.height.dp)) {
+                                App(storage = storage, clock = clock, ids = SequentialIds())
+                            }
+                        }
+                    }
+                }
+                waitUntil(timeoutMillis = 10_000) { onAllNodesWithText(copy.allBuildsLink(30)).fetchSemanticsNodes().isNotEmpty() }
+                onNodeWithText(copy.allBuildsLink(30)).performScrollTo().performClick()
+                val search = if (language == AppLanguage.RUSSIAN) "Поиск билдов" else "Search builds"
+                waitUntil(timeoutMillis = 10_000) { onAllNodesWithText("Build 15").fetchSemanticsNodes().isNotEmpty() }
+                onNodeWithContentDescription(search).performTextReplacement("Build")
+                onNodeWithText("Build 15").performScrollTo().assertIsDisplayed()
+                val top = onNodeWithText("Build 15").fetchSemanticsNode().boundsInRoot.top
+                for (size in listOf(IntSize(669, 951), IntSize(951, 669), IntSize(678, 466), IntSize(466, 678))) {
+                    runOnIdle { window.value = size }
+                    waitForIdle()
+                    onNodeWithText("Build 15").assertExists()
+                }
+                onNodeWithText("Build 15").assertIsDisplayed()
+                assertEquals(top, onNodeWithText("Build 15").fetchSemanticsNode().boundsInRoot.top, 1f)
+                // Scroll back to inspect the query only after measuring the preserved position.
+                onNodeWithContentDescription(search).performScrollTo()
+                onNodeWithText("Build", useUnmergedTree = true).assertExists()
+                assertEquals(before, storage.payload)
+                assertEquals(writes, storage.writeCount)
+            }
+        }
+    }
+
 }

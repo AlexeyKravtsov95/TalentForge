@@ -5,6 +5,7 @@ Layout (``docs/release/apple-appstore/submission/screenshots``)::
 
     manifest.json
     <locale>/<display>/<NN>-<screen>.png     locales: en-US, ru; displays: iphone-6.3, ipad-13
+    iphone-duo/<outer|inner>/<locale>/<NN>-<screen>.png (optional complete Duo pack)
 
 ``NN`` is the upload order in App Store Connect. ``manifest.json`` records, for every file, its
 size and SHA-256 and how it was captured (device, runtime, build), so a screenshot that is
@@ -56,6 +57,15 @@ DISPLAYS: dict[str, tuple[tuple[int, int], ...]] = {
     "iphone-6.3": ((1206, 2622), (1179, 2556)),
     "ipad-13": ((2064, 2752), (2048, 2732)),
 }
+DUO_DISPLAYS = {"outer": ((1398, 2034),), "inner": ((2007, 2853),)}
+DUO_SCREENS = [
+    "editor",
+    "talent-details",
+    "class-selection",
+    "build-library",
+    "search-favorites",
+    "build-sharing",
+]
 MAX_PER_DISPLAY = 10
 FILE_NAME = re.compile(r"(?P<order>\d{2})-(?P<screen>[a-z0-9]+(?:-[a-z0-9]+)*)\.png")
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
@@ -147,8 +157,12 @@ def inspect_png(data: bytes) -> PngInfo:
     return PngInfo(width, height, tuple(problems))
 
 
+def displays_sizes(display: str) -> tuple[tuple[int, int], ...]:
+    return {**DISPLAYS, **DUO_DISPLAYS}[display]
+
+
 def accepted_sizes(display: str) -> set[tuple[int, int]]:
-    portrait = set(DISPLAYS[display])
+    portrait = set(displays_sizes(display))
     return portrait | {(height, width) for width, height in portrait}
 
 
@@ -165,11 +179,19 @@ def load_manifest(screenshots: Path) -> dict[str, dict[str, Any]]:
         isinstance(entry, dict) and isinstance(entry.get("path"), str) for entry in entries
     ):
         raise ToolError(f"{path}: 'screenshots' must be a list of objects with a 'path'")
+    if len({entry["path"] for entry in entries}) != len(entries):
+        raise ToolError(f"{path}: duplicate screenshot paths")
     return {entry["path"]: entry for entry in entries}
 
 
 def _is_laid_out(name: str) -> bool:
     parts = name.split("/")
+    if len(parts) == 4 and parts[0] == "iphone-duo":
+        return (
+            parts[1] in DUO_DISPLAYS
+            and parts[2] in LOCALES
+            and FILE_NAME.fullmatch(parts[3]) is not None
+        )
     return (
         len(parts) == 3
         and parts[0] in LOCALES
@@ -178,7 +200,7 @@ def _is_laid_out(name: str) -> bool:
     )
 
 
-def evaluate(screenshots: Path) -> tuple[Evaluation, dict[str, Any]]:
+def evaluate(screenshots: Path, *, require_duo: bool = False) -> tuple[Evaluation, dict[str, Any]]:
     """Run every check on the screenshots directory; raises ToolError when it is unreadable."""
     if not screenshots.is_dir():
         raise ToolError(f"{screenshots} is not a directory")
@@ -193,16 +215,26 @@ def evaluate(screenshots: Path) -> tuple[Evaluation, dict[str, Any]]:
     evaluation.add(
         "layout",
         not stray,
-        f"files outside <locale>/<display>/<NN>-<screen>.png: {stray}"
+        f"files outside the legacy or iphone-duo/<display>/<locale> PNG layout: {stray}"
         if stray
-        else "every file is <locale>/<display>/<NN>-<screen>.png",
+        else "every file follows the legacy or Duo PNG layout",
     )
 
     report_files: list[dict[str, Any]] = []
     screens: dict[tuple[str, str], list[str]] = {}
+    duo = (
+        require_duo
+        or (screenshots / "iphone-duo").exists()
+        or any(name.startswith("iphone-duo/") for name in manifest)
+    )
+    displays = {**DISPLAYS, **(DUO_DISPLAYS if duo else {})}
     for locale in LOCALES:
-        for display in DISPLAYS:
-            prefix = f"{locale}/{display}/"
+        for display in displays:
+            prefix = (
+                f"iphone-duo/{display}/{locale}/"
+                if display in DUO_DISPLAYS
+                else f"{locale}/{display}/"
+            )
             names = [name for name in files if name.startswith(prefix) and name not in stray]
             matches = [FILE_NAME.fullmatch(name.removeprefix(prefix)) for name in names]
             orders = [int(match["order"]) for match in matches if match]
@@ -213,9 +245,15 @@ def evaluate(screenshots: Path) -> tuple[Evaluation, dict[str, Any]]:
                 f"{len(names)} screenshots numbered {orders} "
                 f"(expected 1-{MAX_PER_DISPLAY}, numbered from 01 without gaps)",
             )
+            if display in DUO_DISPLAYS:
+                evaluation.add(
+                    f"duo-screens:{locale}/{display}",
+                    screens[(locale, display)] == DUO_SCREENS,
+                    f"expected {DUO_SCREENS}; got {screens[(locale, display)]}",
+                )
             for name in names:
                 report_files.append(_check_file(evaluation, screenshots, name, display, manifest))
-    for display in DISPLAYS:
+    for display in displays:
         reference = screens[(LOCALES[0], display)]
         for locale in LOCALES[1:]:
             evaluation.add(
@@ -241,6 +279,10 @@ def evaluate(screenshots: Path) -> tuple[Evaluation, dict[str, Any]]:
     return evaluation, report
 
 
+def _matches_text(value: Any, pattern: str) -> bool:
+    return isinstance(value, str) and re.fullmatch(pattern, value) is not None
+
+
 def _check_file(
     evaluation: Evaluation,
     screenshots: Path,
@@ -254,7 +296,7 @@ def _check_file(
     if (png.width, png.height) not in accepted_sizes(display):
         problems.append(
             f"{png.width} x {png.height} is not a {display} size "
-            f"(portrait {list(DISPLAYS[display])}, or landscape)"
+            f"(portrait {list(displays_sizes(display))}, or landscape)"
         )
     evaluation.add(
         f"png:{name}",
@@ -269,6 +311,38 @@ def _check_file(
         "sha256": hashlib.sha256(data).hexdigest(),
     }
     entry = manifest.get(name, {})
+    if display in DUO_DISPLAYS:
+        fields = (
+            "appVersion",
+            "buildNumber",
+            "xcode",
+            "sdk",
+            "runtime",
+            "configuration",
+            "captureMethod",
+        )
+        provenance = all(isinstance(entry.get(key), str) and entry[key].strip() for key in fields)
+        provenance = bool(
+            provenance
+            and _matches_text(entry.get("sourceCommit"), r"[0-9a-f]{40}")
+            and _matches_text(entry.get("sourceSha256"), r"[0-9a-f]{64}")
+            and _matches_text(
+                entry.get("udid"), r"[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}"
+            )
+            and entry.get("device") == "iPhone Duo"
+            and entry.get("display") == display
+            and entry.get("deviceLanguage") == name.split("/")[2]
+        )
+        evaluation.add(
+            f"provenance:{name}",
+            provenance,
+            (
+                "Duo device, locale, source SHA, app version/build, Xcode, SDK, "
+                "runtime and capture method recorded"
+            )
+            if provenance
+            else "missing or invalid Duo capture provenance",
+        )
     recorded = all(entry.get(key) == value for key, value in facts.items())
     evaluation.add(
         f"manifest:{name}",
@@ -294,10 +368,15 @@ def main(argv: list[str] | None = None) -> int:
         default=str(DEFAULT_SCREENSHOTS),
         help="the submission screenshots directory",
     )
+    parser.add_argument(
+        "--require-duo",
+        action="store_true",
+        help="require both Duo displays and all six screens in both locales",
+    )
     parser.add_argument("--report", help="write the JSON report to this file")
     args = parser.parse_args(argv)
     try:
-        evaluation, report = evaluate(Path(args.screenshots))
+        evaluation, report = evaluate(Path(args.screenshots), require_duo=args.require_duo)
     except ToolError as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return EXIT_ERROR

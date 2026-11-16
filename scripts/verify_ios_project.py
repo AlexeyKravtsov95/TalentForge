@@ -341,6 +341,13 @@ def evaluate(
 
 
 def _info_checks(evaluation: Evaluation, info: dict[str, Any]) -> None:
+    style = info.get("UIUserInterfaceStyle")
+    evaluation.add(
+        "dark-system-ui",
+        style == "Dark",
+        f"UIUserInterfaceStyle={style!r} "
+        "(fixed dark Compose palette requires light system indicators)",
+    )
     encryption = info.get("ITSAppUsesNonExemptEncryption")
     evaluation.add(
         "export-compliance",

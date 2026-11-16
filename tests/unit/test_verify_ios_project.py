@@ -218,3 +218,11 @@ def test_cli_writes_a_report_and_exits_by_result(project: Path, tmp_path: Path) 
     assert json.loads(report.read_text(encoding="utf-8"))["schema"] == v.REPORT_SCHEMA
     assert v.main([*arguments, "--expected-build", "7"]) == v.EXIT_FAIL
     assert v.main(["--project", str(tmp_path / "missing.xcodeproj")]) == v.EXIT_ERROR
+
+
+@pytest.mark.parametrize("style", [None, "Light", "Automatic"])
+def test_native_system_ui_must_match_the_fixed_dark_palette(
+    project: Path, style: str | None
+) -> None:
+    edit_info(project, {"UIUserInterfaceStyle": style})
+    assert "dark-system-ui" in failed(project)

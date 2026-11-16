@@ -95,6 +95,26 @@ def write_manifest(root: Path) -> None:
                 "sha256": hashlib.sha256(data).hexdigest(),
             }
         )
+    for entry in entries:
+        if entry["path"].startswith("iphone-duo/") and len(entry["path"].split("/")) == 4:
+            _, display, locale, _ = entry["path"].split("/")
+            entry.update(
+                {
+                    "sourceCommit": "a" * 40,
+                    "sourceSha256": "b" * 64,
+                    "udid": "DF33DB4D-7AD6-460C-8154-C0FA21FA06FE",
+                    "device": "iPhone Duo",
+                    "display": display,
+                    "deviceLanguage": locale,
+                    "appVersion": "1.0.0",
+                    "buildNumber": "4",
+                    "xcode": "27.1",
+                    "sdk": "iphonesimulator27.1",
+                    "runtime": "iOS 27.1",
+                    "configuration": "test fixture",
+                    "captureMethod": "synthetic validator test only",
+                }
+            )
     manifest = {"schema": v.MANIFEST_SCHEMA, "capture": {}, "screenshots": entries}
     (root / v.MANIFEST).write_text(json.dumps(manifest), encoding="utf-8")
 
@@ -113,7 +133,9 @@ def test_the_committed_pack_passes() -> None:
     evaluation, report = v.evaluate(v.DEFAULT_SCREENSHOTS)
     assert {c.id: c.detail for c in evaluation.checks if not c.passed} == {}
     sizes = {(s["width"], s["height"]) for s in report["screenshots"]}
-    assert sizes == {IPHONE, IPAD}
+    assert sizes == {IPHONE, IPAD} | (
+        set(DUO_SIZES.values()) if (v.DEFAULT_SCREENSHOTS / "iphone-duo").exists() else set()
+    )
 
 
 def test_a_complete_pack_passes(tmp_path: Path) -> None:
@@ -286,3 +308,135 @@ def test_cli_writes_a_report_and_exits_by_result(tmp_path: Path) -> None:
     replace(root, "ru/ipad-13/01-editor.png", png(*IPHONE))
     assert v.main(["--screenshots", str(root)]) == v.EXIT_FAIL
     assert v.main(["--screenshots", str(tmp_path / "missing")]) == v.EXIT_ERROR
+
+
+DUO_SIZES = {"outer": (1398, 2034), "inner": (2007, 2853)}
+
+
+def add_duo(root: Path) -> None:
+    for display, size in DUO_SIZES.items():
+        for locale in v.LOCALES:
+            for order, screen in enumerate(v.DUO_SCREENS, 1):
+                path = root / f"iphone-duo/{display}/{locale}/{order:02d}-{screen}.png"
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(png(*size))
+    write_manifest(root)
+
+
+def test_duo_is_optional_but_can_be_required(tmp_path: Path) -> None:
+    root = make_pack(tmp_path)
+    assert v.evaluate(root)[0].passed
+    assert not v.evaluate(root, require_duo=True)[0].passed
+
+
+def test_complete_duo_and_legacy_pack_passes(tmp_path: Path) -> None:
+    root = make_pack(tmp_path)
+    add_duo(root)
+    evaluation, report = v.evaluate(root, require_duo=True)
+    assert evaluation.passed, failed(root)
+    assert len(report["screenshots"]) == 32
+
+
+@pytest.mark.parametrize("display", ["outer", "inner"])
+def test_duo_landscape_passes(tmp_path: Path, display: str) -> None:
+    root = make_pack(tmp_path)
+    add_duo(root)
+    width, height = DUO_SIZES[display]
+    replace(root, f"iphone-duo/{display}/ru/01-editor.png", png(height, width))
+    assert failed(root) == {}
+
+
+@pytest.mark.parametrize(
+    "defect",
+    [
+        "wrong-display",
+        "alpha",
+        "missing-locale",
+        "missing-screen",
+        "hash",
+        "wrong-order",
+        "wrong-path",
+    ],
+)
+def test_duo_pack_rejects_invalid_evidence(tmp_path: Path, defect: str) -> None:
+    root = make_pack(tmp_path)
+    add_duo(root)
+    name = "iphone-duo/outer/ru/01-editor.png"
+    if defect == "wrong-display":
+        replace(root, name, png(*DUO_SIZES["inner"]))
+    elif defect == "alpha":
+        replace(root, name, png(*DUO_SIZES["outer"], colour=6))
+    elif defect == "missing-locale":
+        for path in (root / "iphone-duo/inner/ru").glob("*.png"):
+            path.unlink()
+        write_manifest(root)
+    elif defect == "missing-screen":
+        (root / "iphone-duo/inner/en-US/06-build-sharing.png").unlink()
+        write_manifest(root)
+    elif defect == "hash":
+        (root / name).write_bytes(png(2034, 1398))
+    elif defect == "wrong-order":
+        (root / name).rename(root / "iphone-duo/outer/ru/01-class-selection.png")
+        write_manifest(root)
+    else:
+        (root / name).rename(root / "iphone-duo/outer/01-editor.png")
+        write_manifest(root)
+    assert not v.evaluate(root)[0].passed
+
+
+@pytest.mark.parametrize(
+    "field",
+    [
+        "sourceCommit",
+        "sourceSha256",
+        "udid",
+        "device",
+        "display",
+        "deviceLanguage",
+        "appVersion",
+        "buildNumber",
+        "xcode",
+        "sdk",
+        "runtime",
+        "configuration",
+        "captureMethod",
+    ],
+)
+def test_duo_requires_capture_provenance(tmp_path: Path, field: str) -> None:
+    root = make_pack(tmp_path)
+    add_duo(root)
+    path = root / v.MANIFEST
+    manifest = json.loads(path.read_text())
+    entry = next(e for e in manifest["screenshots"] if e["path"].startswith("iphone-duo/"))
+    del entry[field]
+    path.write_text(json.dumps(manifest))
+    assert f"provenance:{entry['path']}" in failed(root)
+
+
+def test_duplicate_manifest_paths_fail_closed(tmp_path: Path) -> None:
+    root = make_pack(tmp_path)
+    path = root / v.MANIFEST
+    manifest = json.loads(path.read_text())
+    manifest["screenshots"].append(manifest["screenshots"][0])
+    path.write_text(json.dumps(manifest))
+    with pytest.raises(v.ToolError, match="duplicate screenshot paths"):
+        v.evaluate(root)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("sourceCommit", 1111111111111111111111111111111111111111),
+        ("appVersion", 1),
+        ("udid", "-" * 36),
+    ],
+)
+def test_duo_does_not_coerce_capture_wire_types(tmp_path: Path, field: str, value: object) -> None:
+    root = make_pack(tmp_path)
+    add_duo(root)
+    path = root / v.MANIFEST
+    manifest = json.loads(path.read_text())
+    entry = next(e for e in manifest["screenshots"] if e["path"].startswith("iphone-duo/"))
+    entry[field] = value
+    path.write_text(json.dumps(manifest))
+    assert f"provenance:{entry['path']}" in failed(root)
