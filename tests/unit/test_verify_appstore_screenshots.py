@@ -95,6 +95,26 @@ def write_manifest(root: Path) -> None:
                 "sha256": hashlib.sha256(data).hexdigest(),
             }
         )
+    for entry in entries:
+        if entry["path"].startswith("iphone-duo/") and len(entry["path"].split("/")) == 4:
+            _, display, locale, _ = entry["path"].split("/")
+            entry.update(
+                {
+                    "sourceCommit": "a" * 40,
+                    "sourceSha256": "b" * 64,
+                    "udid": "DF33DB4D-7AD6-460C-8154-C0FA21FA06FE",
+                    "device": "iPhone Duo",
+                    "display": display,
+                    "deviceLanguage": locale,
+                    "appVersion": "1.0.0",
+                    "buildNumber": "4",
+                    "xcode": "27.1",
+                    "sdk": "iphonesimulator27.1",
+                    "runtime": "iOS 27.1",
+                    "configuration": "test fixture",
+                    "captureMethod": "synthetic validator test only",
+                }
+            )
     manifest = {"schema": v.MANIFEST_SCHEMA, "capture": {}, "screenshots": entries}
     (root / v.MANIFEST).write_text(json.dumps(manifest), encoding="utf-8")
 
@@ -362,3 +382,61 @@ def test_duo_pack_rejects_invalid_evidence(tmp_path: Path, defect: str) -> None:
         (root / name).rename(root / "iphone-duo/outer/01-editor.png")
         write_manifest(root)
     assert not v.evaluate(root)[0].passed
+
+
+@pytest.mark.parametrize(
+    "field",
+    [
+        "sourceCommit",
+        "sourceSha256",
+        "udid",
+        "device",
+        "display",
+        "deviceLanguage",
+        "appVersion",
+        "buildNumber",
+        "xcode",
+        "sdk",
+        "runtime",
+        "configuration",
+        "captureMethod",
+    ],
+)
+def test_duo_requires_capture_provenance(tmp_path: Path, field: str) -> None:
+    root = make_pack(tmp_path)
+    add_duo(root)
+    path = root / v.MANIFEST
+    manifest = json.loads(path.read_text())
+    entry = next(e for e in manifest["screenshots"] if e["path"].startswith("iphone-duo/"))
+    del entry[field]
+    path.write_text(json.dumps(manifest))
+    assert f"provenance:{entry['path']}" in failed(root)
+
+
+def test_duplicate_manifest_paths_fail_closed(tmp_path: Path) -> None:
+    root = make_pack(tmp_path)
+    path = root / v.MANIFEST
+    manifest = json.loads(path.read_text())
+    manifest["screenshots"].append(manifest["screenshots"][0])
+    path.write_text(json.dumps(manifest))
+    with pytest.raises(v.ToolError, match="duplicate screenshot paths"):
+        v.evaluate(root)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("sourceCommit", 1111111111111111111111111111111111111111),
+        ("appVersion", 1),
+        ("udid", "-" * 36),
+    ],
+)
+def test_duo_does_not_coerce_capture_wire_types(tmp_path: Path, field: str, value: object) -> None:
+    root = make_pack(tmp_path)
+    add_duo(root)
+    path = root / v.MANIFEST
+    manifest = json.loads(path.read_text())
+    entry = next(e for e in manifest["screenshots"] if e["path"].startswith("iphone-duo/"))
+    entry[field] = value
+    path.write_text(json.dumps(manifest))
+    assert f"provenance:{entry['path']}" in failed(root)

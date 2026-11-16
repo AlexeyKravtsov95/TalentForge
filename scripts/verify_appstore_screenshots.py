@@ -179,6 +179,8 @@ def load_manifest(screenshots: Path) -> dict[str, dict[str, Any]]:
         isinstance(entry, dict) and isinstance(entry.get("path"), str) for entry in entries
     ):
         raise ToolError(f"{path}: 'screenshots' must be a list of objects with a 'path'")
+    if len({entry["path"] for entry in entries}) != len(entries):
+        raise ToolError(f"{path}: duplicate screenshot paths")
     return {entry["path"]: entry for entry in entries}
 
 
@@ -213,9 +215,9 @@ def evaluate(screenshots: Path, *, require_duo: bool = False) -> tuple[Evaluatio
     evaluation.add(
         "layout",
         not stray,
-        f"files outside <locale>/<display>/<NN>-<screen>.png: {stray}"
+        f"files outside the legacy or iphone-duo/<display>/<locale> PNG layout: {stray}"
         if stray
-        else "every file is <locale>/<display>/<NN>-<screen>.png",
+        else "every file follows the legacy or Duo PNG layout",
     )
 
     report_files: list[dict[str, Any]] = []
@@ -277,6 +279,10 @@ def evaluate(screenshots: Path, *, require_duo: bool = False) -> tuple[Evaluatio
     return evaluation, report
 
 
+def _matches_text(value: Any, pattern: str) -> bool:
+    return isinstance(value, str) and re.fullmatch(pattern, value) is not None
+
+
 def _check_file(
     evaluation: Evaluation,
     screenshots: Path,
@@ -305,6 +311,38 @@ def _check_file(
         "sha256": hashlib.sha256(data).hexdigest(),
     }
     entry = manifest.get(name, {})
+    if display in DUO_DISPLAYS:
+        fields = (
+            "appVersion",
+            "buildNumber",
+            "xcode",
+            "sdk",
+            "runtime",
+            "configuration",
+            "captureMethod",
+        )
+        provenance = all(isinstance(entry.get(key), str) and entry[key].strip() for key in fields)
+        provenance = bool(
+            provenance
+            and _matches_text(entry.get("sourceCommit"), r"[0-9a-f]{40}")
+            and _matches_text(entry.get("sourceSha256"), r"[0-9a-f]{64}")
+            and _matches_text(
+                entry.get("udid"), r"[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}"
+            )
+            and entry.get("device") == "iPhone Duo"
+            and entry.get("display") == display
+            and entry.get("deviceLanguage") == name.split("/")[2]
+        )
+        evaluation.add(
+            f"provenance:{name}",
+            provenance,
+            (
+                "Duo device, locale, source SHA, app version/build, Xcode, SDK, "
+                "runtime and capture method recorded"
+            )
+            if provenance
+            else "missing or invalid Duo capture provenance",
+        )
     recorded = all(entry.get(key) == value for key, value in facts.items())
     evaluation.add(
         f"manifest:{name}",

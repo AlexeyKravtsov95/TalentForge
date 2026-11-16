@@ -1,0 +1,932 @@
+{
+  "schema": "talentforge.appstore-screenshots-report.v1",
+  "screenshots": [
+    {
+      "path": "en-US/iphone-6.3/01-editor.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 566578,
+      "sha256": "4568543aef66e3151cacf906c863f1d04a6412fcf47b7bbbce1fade787669b80"
+    },
+    {
+      "path": "en-US/iphone-6.3/02-talent-details.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 539346,
+      "sha256": "956a71535101ede3520dff741088454b8a6e9fbd395921d8fcbab9a5b34c5b52"
+    },
+    {
+      "path": "en-US/iphone-6.3/03-class-picker.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 454100,
+      "sha256": "2e83ca7d27f3a8c5bae436e8a838ce73de1ca4c3cd59fe6d569de5d9b0985133"
+    },
+    {
+      "path": "en-US/iphone-6.3/04-build-library.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 213777,
+      "sha256": "346300eb537b99a7263cedb00c470730b3872de4dd29ef966673c572d157ee27"
+    },
+    {
+      "path": "en-US/iphone-6.3/05-share-code.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 430956,
+      "sha256": "aa7d056333f9791efcc2f22fd41d9a981299467ebd50c2ec507a88dee8fad681"
+    },
+    {
+      "path": "en-US/iphone-6.3/06-import-preview.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 203928,
+      "sha256": "71ea4be64b8fe5410c754e857c3de190162899847954b32ca17b32baae1ebbaf"
+    },
+    {
+      "path": "en-US/ipad-13/01-editor.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 637701,
+      "sha256": "f8fbd629889fff073ef2738982e58ced1727fcc65c6a6b1c7cee6c60efc30261"
+    },
+    {
+      "path": "en-US/ipad-13/02-share-code.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 520242,
+      "sha256": "e9531a31206f025dec24d3f3804926054dda729725157169ae4008c98f5ebf52"
+    },
+    {
+      "path": "en-US/ipad-13/03-import-preview.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 143131,
+      "sha256": "7b7e781018edffa0cfdfb4945eb10df5b0940f600f3d4dbc25c18747fd101a4e"
+    },
+    {
+      "path": "iphone-duo/outer/en-US/01-editor.png",
+      "width": 1398,
+      "height": 2034,
+      "bytes": 512143,
+      "sha256": "a4b7754599b8a7ab3a991905bfe6a15f3ee2578cccf8f7e3e746ce50e3c5b8b8"
+    },
+    {
+      "path": "iphone-duo/outer/en-US/02-talent-details.png",
+      "width": 1398,
+      "height": 2034,
+      "bytes": 443855,
+      "sha256": "5deccf80416d27abf24f89ebaf3dd9093bc7fe71e9314c85af7ab6326c4468dd"
+    },
+    {
+      "path": "iphone-duo/outer/en-US/03-class-selection.png",
+      "width": 1398,
+      "height": 2034,
+      "bytes": 527179,
+      "sha256": "95d8afbee7b3f0f77e11043e077fd4f78985d3440f48d6fd344b154c29d816d0"
+    },
+    {
+      "path": "iphone-duo/outer/en-US/04-build-library.png",
+      "width": 1398,
+      "height": 2034,
+      "bytes": 249877,
+      "sha256": "0e8c92b1be8f865f14dd58e0c4d3267f9784c2a10505439551904c3f5918f729"
+    },
+    {
+      "path": "iphone-duo/outer/en-US/05-search-favorites.png",
+      "width": 1398,
+      "height": 2034,
+      "bytes": 173335,
+      "sha256": "66a611cf2440ec32cd97a1c5ab18c030412ff0fc881d625bab1884033fbc6e30"
+    },
+    {
+      "path": "iphone-duo/outer/en-US/06-build-sharing.png",
+      "width": 1398,
+      "height": 2034,
+      "bytes": 352680,
+      "sha256": "9f833a3ff934db8d0958106443101d03fec23acaa566be5fe2dae2cd8d996a75"
+    },
+    {
+      "path": "iphone-duo/inner/en-US/01-editor.png",
+      "width": 2007,
+      "height": 2853,
+      "bytes": 516504,
+      "sha256": "249e5f7f84fbccbd24845fcb4c2f68fdbac264af000af8453d2611477fb815e9"
+    },
+    {
+      "path": "iphone-duo/inner/en-US/02-talent-details.png",
+      "width": 2007,
+      "height": 2853,
+      "bytes": 558676,
+      "sha256": "afd42906d33255a84a80ca060c9a7be25b41088b43fb3ba08331828ddf005b1d"
+    },
+    {
+      "path": "iphone-duo/inner/en-US/03-class-selection.png",
+      "width": 2007,
+      "height": 2853,
+      "bytes": 526008,
+      "sha256": "1598b07b14951c0e89ba3b5b26ffd87e6fe10d351fcd49f4a6e2e84a394e9100"
+    },
+    {
+      "path": "iphone-duo/inner/en-US/04-build-library.png",
+      "width": 2007,
+      "height": 2853,
+      "bytes": 290433,
+      "sha256": "394a97398ee01877a67d40fdd5a64c1bf616007d88f0e082cd574da8c3e7fc86"
+    },
+    {
+      "path": "iphone-duo/inner/en-US/05-search-favorites.png",
+      "width": 2007,
+      "height": 2853,
+      "bytes": 162558,
+      "sha256": "169de469f18df51c1786db22a67b3a7f485a436553d61882860de5b168584494"
+    },
+    {
+      "path": "iphone-duo/inner/en-US/06-build-sharing.png",
+      "width": 2007,
+      "height": 2853,
+      "bytes": 496540,
+      "sha256": "eefd8493fa5ebc6319080207f8a009e6a1ed1dd6434cac61ae00d276ee13b338"
+    },
+    {
+      "path": "ru/iphone-6.3/01-editor.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 569835,
+      "sha256": "de99192c7624611a60b4a598b14075a41837f62efc5bc44d909d02c3165d1905"
+    },
+    {
+      "path": "ru/iphone-6.3/02-talent-details.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 467163,
+      "sha256": "a6f971242b9534fdf7d84a1e58202420131f0d08db96b89686945b3bad7d84d5"
+    },
+    {
+      "path": "ru/iphone-6.3/03-class-picker.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 456904,
+      "sha256": "e362938d4c5468b2944ff7e9e92600a9bf066008d3ed908dab7e3aa821604c66"
+    },
+    {
+      "path": "ru/iphone-6.3/04-build-library.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 218712,
+      "sha256": "3920d270ce90b7a02d50342c5e9892b1659b6782c58f10259998de53ce9b11a7"
+    },
+    {
+      "path": "ru/iphone-6.3/05-share-code.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 385428,
+      "sha256": "08af74324edf6aaaaf4958e64414760c7efeb39aeed7b3dc56b9e30e1d51cb6a"
+    },
+    {
+      "path": "ru/iphone-6.3/06-import-preview.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 211726,
+      "sha256": "1d3be3c1ceca12069bc44722b2f05cad38e0c6bee7ca75c4c1ad36044b6b299e"
+    },
+    {
+      "path": "ru/ipad-13/01-editor.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 646572,
+      "sha256": "305da8ab905de7c64b6c65d80868148b9c54cf2365e1138379c27fa56b3c88aa"
+    },
+    {
+      "path": "ru/ipad-13/02-share-code.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 515830,
+      "sha256": "1b166525aab4affbfa6bcd5fac482c4b10daaf879da2a12aad88ad2de1a4185e"
+    },
+    {
+      "path": "ru/ipad-13/03-import-preview.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 146500,
+      "sha256": "15ca6da832a049b8d7e42f2bae894e502812b31623eb608f3b0e0a49077c207f"
+    },
+    {
+      "path": "iphone-duo/outer/ru/01-editor.png",
+      "width": 1398,
+      "height": 2034,
+      "bytes": 508363,
+      "sha256": "909b52faf2ec4e4b5b19e4d412d9db6283ef5d2b3237ff8188130b83a14a27fa"
+    },
+    {
+      "path": "iphone-duo/outer/ru/02-talent-details.png",
+      "width": 1398,
+      "height": 2034,
+      "bytes": 439150,
+      "sha256": "aa1caa6e089c57e64a65e3422ae74a40417c4f832852833cc3e8c5fec7391e3a"
+    },
+    {
+      "path": "iphone-duo/outer/ru/03-class-selection.png",
+      "width": 1398,
+      "height": 2034,
+      "bytes": 546944,
+      "sha256": "ad60ac45e00b5a27006af4816fe42d814f2107b9d3d9c7599f20939fc354ef7a"
+    },
+    {
+      "path": "iphone-duo/outer/ru/04-build-library.png",
+      "width": 1398,
+      "height": 2034,
+      "bytes": 250115,
+      "sha256": "38278513115bd5e491eb29ffa891576e8245c866fa1ffadf3a39f48f42bb6070"
+    },
+    {
+      "path": "iphone-duo/outer/ru/05-search-favorites.png",
+      "width": 1398,
+      "height": 2034,
+      "bytes": 180117,
+      "sha256": "fa9e1c70c8fb6af1b684aa5b83448fdd0eb134b6dcf6cc5b98cc9ca42ddaf5fd"
+    },
+    {
+      "path": "iphone-duo/outer/ru/06-build-sharing.png",
+      "width": 1398,
+      "height": 2034,
+      "bytes": 348873,
+      "sha256": "268d6f6154e2a2470c454a9e6aad6803c488c4daba02941ec48117f679184f08"
+    },
+    {
+      "path": "iphone-duo/inner/ru/01-editor.png",
+      "width": 2007,
+      "height": 2853,
+      "bytes": 510648,
+      "sha256": "dcbd722dd6846ac262fdd33adf1178ebb53480ec1ecdd6dd9f2c5b32a5ffb5bb"
+    },
+    {
+      "path": "iphone-duo/inner/ru/02-talent-details.png",
+      "width": 2007,
+      "height": 2853,
+      "bytes": 554716,
+      "sha256": "8bb0589aa2f3b2809e6c06500cea291f9295dcdac74b5acc2c1dc6de2519caec"
+    },
+    {
+      "path": "iphone-duo/inner/ru/03-class-selection.png",
+      "width": 2007,
+      "height": 2853,
+      "bytes": 526287,
+      "sha256": "2a8035b30e12d135ef4af9c8353bf306d1a360a599ddcb59d8f33722c63afb6b"
+    },
+    {
+      "path": "iphone-duo/inner/ru/04-build-library.png",
+      "width": 2007,
+      "height": 2853,
+      "bytes": 300527,
+      "sha256": "a325ecd0bcffd21fa71b6bd708c3d63fc79fa38f49bd805791ad17c3a6fe6031"
+    },
+    {
+      "path": "iphone-duo/inner/ru/05-search-favorites.png",
+      "width": 2007,
+      "height": 2853,
+      "bytes": 172573,
+      "sha256": "611f35fd8e6fc28f929e4fc16f54744424b2443f0542632750c30a76f78bc3f7"
+    },
+    {
+      "path": "iphone-duo/inner/ru/06-build-sharing.png",
+      "width": 2007,
+      "height": 2853,
+      "bytes": 492378,
+      "sha256": "3abc93834a7020e29e4de4883c82e438265cf237ac8ca65c11cb2e922f7d0435"
+    }
+  ],
+  "checks": [
+    {
+      "id": "layout",
+      "passed": true,
+      "detail": "every file follows the legacy or Duo PNG layout"
+    },
+    {
+      "id": "count:en-US/iphone-6.3",
+      "passed": true,
+      "detail": "6 screenshots numbered [1, 2, 3, 4, 5, 6] (expected 1-10, numbered from 01 without gaps)"
+    },
+    {
+      "id": "png:en-US/iphone-6.3/01-editor.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:en-US/iphone-6.3/01-editor.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:en-US/iphone-6.3/02-talent-details.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:en-US/iphone-6.3/02-talent-details.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:en-US/iphone-6.3/03-class-picker.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:en-US/iphone-6.3/03-class-picker.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:en-US/iphone-6.3/04-build-library.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:en-US/iphone-6.3/04-build-library.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:en-US/iphone-6.3/05-share-code.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:en-US/iphone-6.3/05-share-code.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:en-US/iphone-6.3/06-import-preview.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:en-US/iphone-6.3/06-import-preview.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "count:en-US/ipad-13",
+      "passed": true,
+      "detail": "3 screenshots numbered [1, 2, 3] (expected 1-10, numbered from 01 without gaps)"
+    },
+    {
+      "id": "png:en-US/ipad-13/01-editor.png",
+      "passed": true,
+      "detail": "2064 x 2752, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:en-US/ipad-13/01-editor.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:en-US/ipad-13/02-share-code.png",
+      "passed": true,
+      "detail": "2064 x 2752, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:en-US/ipad-13/02-share-code.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:en-US/ipad-13/03-import-preview.png",
+      "passed": true,
+      "detail": "2064 x 2752, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:en-US/ipad-13/03-import-preview.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "count:en-US/outer",
+      "passed": true,
+      "detail": "6 screenshots numbered [1, 2, 3, 4, 5, 6] (expected 1-10, numbered from 01 without gaps)"
+    },
+    {
+      "id": "duo-screens:en-US/outer",
+      "passed": true,
+      "detail": "expected ['editor', 'talent-details', 'class-selection', 'build-library', 'search-favorites', 'build-sharing']; got ['editor', 'talent-details', 'class-selection', 'build-library', 'search-favorites', 'build-sharing']"
+    },
+    {
+      "id": "png:iphone-duo/outer/en-US/01-editor.png",
+      "passed": true,
+      "detail": "1398 x 2034, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "provenance:iphone-duo/outer/en-US/01-editor.png",
+      "passed": true,
+      "detail": "Duo device, locale, source SHA, app version/build, Xcode, SDK, runtime and capture method recorded"
+    },
+    {
+      "id": "manifest:iphone-duo/outer/en-US/01-editor.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:iphone-duo/outer/en-US/02-talent-details.png",
+      "passed": true,
+      "detail": "1398 x 2034, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "provenance:iphone-duo/outer/en-US/02-talent-details.png",
+      "passed": true,
+      "detail": "Duo device, locale, source SHA, app version/build, Xcode, SDK, runtime and capture method recorded"
+    },
+    {
+      "id": "manifest:iphone-duo/outer/en-US/02-talent-details.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:iphone-duo/outer/en-US/03-class-selection.png",
+      "passed": true,
+      "detail": "1398 x 2034, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "provenance:iphone-duo/outer/en-US/03-class-selection.png",
+      "passed": true,
+      "detail": "Duo device, locale, source SHA, app version/build, Xcode, SDK, runtime and capture method recorded"
+    },
+    {
+      "id": "manifest:iphone-duo/outer/en-US/03-class-selection.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:iphone-duo/outer/en-US/04-build-library.png",
+      "passed": true,
+      "detail": "1398 x 2034, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "provenance:iphone-duo/outer/en-US/04-build-library.png",
+      "passed": true,
+      "detail": "Duo device, locale, source SHA, app version/build, Xcode, SDK, runtime and capture method recorded"
+    },
+    {
+      "id": "manifest:iphone-duo/outer/en-US/04-build-library.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:iphone-duo/outer/en-US/05-search-favorites.png",
+      "passed": true,
+      "detail": "1398 x 2034, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "provenance:iphone-duo/outer/en-US/05-search-favorites.png",
+      "passed": true,
+      "detail": "Duo device, locale, source SHA, app version/build, Xcode, SDK, runtime and capture method recorded"
+    },
+    {
+      "id": "manifest:iphone-duo/outer/en-US/05-search-favorites.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:iphone-duo/outer/en-US/06-build-sharing.png",
+      "passed": true,
+      "detail": "1398 x 2034, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "provenance:iphone-duo/outer/en-US/06-build-sharing.png",
+      "passed": true,
+      "detail": "Duo device, locale, source SHA, app version/build, Xcode, SDK, runtime and capture method recorded"
+    },
+    {
+      "id": "manifest:iphone-duo/outer/en-US/06-build-sharing.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "count:en-US/inner",
+      "passed": true,
+      "detail": "6 screenshots numbered [1, 2, 3, 4, 5, 6] (expected 1-10, numbered from 01 without gaps)"
+    },
+    {
+      "id": "duo-screens:en-US/inner",
+      "passed": true,
+      "detail": "expected ['editor', 'talent-details', 'class-selection', 'build-library', 'search-favorites', 'build-sharing']; got ['editor', 'talent-details', 'class-selection', 'build-library', 'search-favorites', 'build-sharing']"
+    },
+    {
+      "id": "png:iphone-duo/inner/en-US/01-editor.png",
+      "passed": true,
+      "detail": "2007 x 2853, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "provenance:iphone-duo/inner/en-US/01-editor.png",
+      "passed": true,
+      "detail": "Duo device, locale, source SHA, app version/build, Xcode, SDK, runtime and capture method recorded"
+    },
+    {
+      "id": "manifest:iphone-duo/inner/en-US/01-editor.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:iphone-duo/inner/en-US/02-talent-details.png",
+      "passed": true,
+      "detail": "2007 x 2853, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "provenance:iphone-duo/inner/en-US/02-talent-details.png",
+      "passed": true,
+      "detail": "Duo device, locale, source SHA, app version/build, Xcode, SDK, runtime and capture method recorded"
+    },
+    {
+      "id": "manifest:iphone-duo/inner/en-US/02-talent-details.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:iphone-duo/inner/en-US/03-class-selection.png",
+      "passed": true,
+      "detail": "2007 x 2853, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "provenance:iphone-duo/inner/en-US/03-class-selection.png",
+      "passed": true,
+      "detail": "Duo device, locale, source SHA, app version/build, Xcode, SDK, runtime and capture method recorded"
+    },
+    {
+      "id": "manifest:iphone-duo/inner/en-US/03-class-selection.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:iphone-duo/inner/en-US/04-build-library.png",
+      "passed": true,
+      "detail": "2007 x 2853, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "provenance:iphone-duo/inner/en-US/04-build-library.png",
+      "passed": true,
+      "detail": "Duo device, locale, source SHA, app version/build, Xcode, SDK, runtime and capture method recorded"
+    },
+    {
+      "id": "manifest:iphone-duo/inner/en-US/04-build-library.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:iphone-duo/inner/en-US/05-search-favorites.png",
+      "passed": true,
+      "detail": "2007 x 2853, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "provenance:iphone-duo/inner/en-US/05-search-favorites.png",
+      "passed": true,
+      "detail": "Duo device, locale, source SHA, app version/build, Xcode, SDK, runtime and capture method recorded"
+    },
+    {
+      "id": "manifest:iphone-duo/inner/en-US/05-search-favorites.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:iphone-duo/inner/en-US/06-build-sharing.png",
+      "passed": true,
+      "detail": "2007 x 2853, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "provenance:iphone-duo/inner/en-US/06-build-sharing.png",
+      "passed": true,
+      "detail": "Duo device, locale, source SHA, app version/build, Xcode, SDK, runtime and capture method recorded"
+    },
+    {
+      "id": "manifest:iphone-duo/inner/en-US/06-build-sharing.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "count:ru/iphone-6.3",
+      "passed": true,
+      "detail": "6 screenshots numbered [1, 2, 3, 4, 5, 6] (expected 1-10, numbered from 01 without gaps)"
+    },
+    {
+      "id": "png:ru/iphone-6.3/01-editor.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:ru/iphone-6.3/01-editor.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:ru/iphone-6.3/02-talent-details.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:ru/iphone-6.3/02-talent-details.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:ru/iphone-6.3/03-class-picker.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:ru/iphone-6.3/03-class-picker.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:ru/iphone-6.3/04-build-library.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:ru/iphone-6.3/04-build-library.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:ru/iphone-6.3/05-share-code.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:ru/iphone-6.3/05-share-code.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:ru/iphone-6.3/06-import-preview.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:ru/iphone-6.3/06-import-preview.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "count:ru/ipad-13",
+      "passed": true,
+      "detail": "3 screenshots numbered [1, 2, 3] (expected 1-10, numbered from 01 without gaps)"
+    },
+    {
+      "id": "png:ru/ipad-13/01-editor.png",
+      "passed": true,
+      "detail": "2064 x 2752, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:ru/ipad-13/01-editor.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:ru/ipad-13/02-share-code.png",
+      "passed": true,
+      "detail": "2064 x 2752, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:ru/ipad-13/02-share-code.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:ru/ipad-13/03-import-preview.png",
+      "passed": true,
+      "detail": "2064 x 2752, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:ru/ipad-13/03-import-preview.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "count:ru/outer",
+      "passed": true,
+      "detail": "6 screenshots numbered [1, 2, 3, 4, 5, 6] (expected 1-10, numbered from 01 without gaps)"
+    },
+    {
+      "id": "duo-screens:ru/outer",
+      "passed": true,
+      "detail": "expected ['editor', 'talent-details', 'class-selection', 'build-library', 'search-favorites', 'build-sharing']; got ['editor', 'talent-details', 'class-selection', 'build-library', 'search-favorites', 'build-sharing']"
+    },
+    {
+      "id": "png:iphone-duo/outer/ru/01-editor.png",
+      "passed": true,
+      "detail": "1398 x 2034, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "provenance:iphone-duo/outer/ru/01-editor.png",
+      "passed": true,
+      "detail": "Duo device, locale, source SHA, app version/build, Xcode, SDK, runtime and capture method recorded"
+    },
+    {
+      "id": "manifest:iphone-duo/outer/ru/01-editor.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:iphone-duo/outer/ru/02-talent-details.png",
+      "passed": true,
+      "detail": "1398 x 2034, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "provenance:iphone-duo/outer/ru/02-talent-details.png",
+      "passed": true,
+      "detail": "Duo device, locale, source SHA, app version/build, Xcode, SDK, runtime and capture method recorded"
+    },
+    {
+      "id": "manifest:iphone-duo/outer/ru/02-talent-details.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:iphone-duo/outer/ru/03-class-selection.png",
+      "passed": true,
+      "detail": "1398 x 2034, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "provenance:iphone-duo/outer/ru/03-class-selection.png",
+      "passed": true,
+      "detail": "Duo device, locale, source SHA, app version/build, Xcode, SDK, runtime and capture method recorded"
+    },
+    {
+      "id": "manifest:iphone-duo/outer/ru/03-class-selection.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:iphone-duo/outer/ru/04-build-library.png",
+      "passed": true,
+      "detail": "1398 x 2034, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "provenance:iphone-duo/outer/ru/04-build-library.png",
+      "passed": true,
+      "detail": "Duo device, locale, source SHA, app version/build, Xcode, SDK, runtime and capture method recorded"
+    },
+    {
+      "id": "manifest:iphone-duo/outer/ru/04-build-library.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:iphone-duo/outer/ru/05-search-favorites.png",
+      "passed": true,
+      "detail": "1398 x 2034, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "provenance:iphone-duo/outer/ru/05-search-favorites.png",
+      "passed": true,
+      "detail": "Duo device, locale, source SHA, app version/build, Xcode, SDK, runtime and capture method recorded"
+    },
+    {
+      "id": "manifest:iphone-duo/outer/ru/05-search-favorites.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:iphone-duo/outer/ru/06-build-sharing.png",
+      "passed": true,
+      "detail": "1398 x 2034, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "provenance:iphone-duo/outer/ru/06-build-sharing.png",
+      "passed": true,
+      "detail": "Duo device, locale, source SHA, app version/build, Xcode, SDK, runtime and capture method recorded"
+    },
+    {
+      "id": "manifest:iphone-duo/outer/ru/06-build-sharing.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "count:ru/inner",
+      "passed": true,
+      "detail": "6 screenshots numbered [1, 2, 3, 4, 5, 6] (expected 1-10, numbered from 01 without gaps)"
+    },
+    {
+      "id": "duo-screens:ru/inner",
+      "passed": true,
+      "detail": "expected ['editor', 'talent-details', 'class-selection', 'build-library', 'search-favorites', 'build-sharing']; got ['editor', 'talent-details', 'class-selection', 'build-library', 'search-favorites', 'build-sharing']"
+    },
+    {
+      "id": "png:iphone-duo/inner/ru/01-editor.png",
+      "passed": true,
+      "detail": "2007 x 2853, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "provenance:iphone-duo/inner/ru/01-editor.png",
+      "passed": true,
+      "detail": "Duo device, locale, source SHA, app version/build, Xcode, SDK, runtime and capture method recorded"
+    },
+    {
+      "id": "manifest:iphone-duo/inner/ru/01-editor.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:iphone-duo/inner/ru/02-talent-details.png",
+      "passed": true,
+      "detail": "2007 x 2853, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "provenance:iphone-duo/inner/ru/02-talent-details.png",
+      "passed": true,
+      "detail": "Duo device, locale, source SHA, app version/build, Xcode, SDK, runtime and capture method recorded"
+    },
+    {
+      "id": "manifest:iphone-duo/inner/ru/02-talent-details.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:iphone-duo/inner/ru/03-class-selection.png",
+      "passed": true,
+      "detail": "2007 x 2853, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "provenance:iphone-duo/inner/ru/03-class-selection.png",
+      "passed": true,
+      "detail": "Duo device, locale, source SHA, app version/build, Xcode, SDK, runtime and capture method recorded"
+    },
+    {
+      "id": "manifest:iphone-duo/inner/ru/03-class-selection.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:iphone-duo/inner/ru/04-build-library.png",
+      "passed": true,
+      "detail": "2007 x 2853, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "provenance:iphone-duo/inner/ru/04-build-library.png",
+      "passed": true,
+      "detail": "Duo device, locale, source SHA, app version/build, Xcode, SDK, runtime and capture method recorded"
+    },
+    {
+      "id": "manifest:iphone-duo/inner/ru/04-build-library.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:iphone-duo/inner/ru/05-search-favorites.png",
+      "passed": true,
+      "detail": "2007 x 2853, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "provenance:iphone-duo/inner/ru/05-search-favorites.png",
+      "passed": true,
+      "detail": "Duo device, locale, source SHA, app version/build, Xcode, SDK, runtime and capture method recorded"
+    },
+    {
+      "id": "manifest:iphone-duo/inner/ru/05-search-favorites.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "png:iphone-duo/inner/ru/06-build-sharing.png",
+      "passed": true,
+      "detail": "2007 x 2853, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "provenance:iphone-duo/inner/ru/06-build-sharing.png",
+      "passed": true,
+      "detail": "Duo device, locale, source SHA, app version/build, Xcode, SDK, runtime and capture method recorded"
+    },
+    {
+      "id": "manifest:iphone-duo/inner/ru/06-build-sharing.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "locales-match:iphone-6.3",
+      "passed": true,
+      "detail": "ru: ['editor', 'talent-details', 'class-picker', 'build-library', 'share-code', 'import-preview']; en-US: ['editor', 'talent-details', 'class-picker', 'build-library', 'share-code', 'import-preview']"
+    },
+    {
+      "id": "locales-match:ipad-13",
+      "passed": true,
+      "detail": "ru: ['editor', 'share-code', 'import-preview']; en-US: ['editor', 'share-code', 'import-preview']"
+    },
+    {
+      "id": "locales-match:outer",
+      "passed": true,
+      "detail": "ru: ['editor', 'talent-details', 'class-selection', 'build-library', 'search-favorites', 'build-sharing']; en-US: ['editor', 'talent-details', 'class-selection', 'build-library', 'search-favorites', 'build-sharing']"
+    },
+    {
+      "id": "locales-match:inner",
+      "passed": true,
+      "detail": "ru: ['editor', 'talent-details', 'class-selection', 'build-library', 'search-favorites', 'build-sharing']; en-US: ['editor', 'talent-details', 'class-selection', 'build-library', 'search-favorites', 'build-sharing']"
+    },
+    {
+      "id": "manifest-complete",
+      "passed": true,
+      "detail": "every manifest entry exists"
+    }
+  ],
+  "result": "PASS"
+}
