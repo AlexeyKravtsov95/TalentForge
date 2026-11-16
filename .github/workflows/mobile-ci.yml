@@ -28,6 +28,9 @@ on:
       - "scripts/release_signing_selftest.sh"
       - "scripts/verify_play_bundle.py"
       - "scripts/play_signing_selftest.sh"
+      - "docs/release/apple-appstore/submission/**"
+      - "scripts/verify_appstore_metadata.py"
+      - "tests/unit/test_verify_appstore_metadata.py"
       - "scripts/verify_ios_archive.py"
       - "scripts/ios_simulator_smoke.sh"
       - "scripts/ios_ota_e2e.py"
@@ -63,6 +66,11 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+
+      - name: App Store submission editorial and screenshot checks (not release approval)
+        run: |
+          python3 scripts/verify_appstore_metadata.py
+          python3 scripts/verify_appstore_screenshots.py
 
       - name: Dataset drift check (bundled == canonical)
         run: python3 scripts/sync_mobile_datasets.py --check

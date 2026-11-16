@@ -1,8 +1,8 @@
-"""The App Store metadata validator (M5.IOS.3).
+"""The App Store metadata validator (M7.IOS.REVIEW.1).
 
-``scripts/verify_appstore_metadata.py`` decides whether the submission pack's text files can be
-copied into App Store Connect. The committed pack must pass; every rule is then broken once on a
-copy of it and must fail closed.
+``scripts/verify_appstore_metadata.py`` checks the submission pack's editorial rules.
+A PASS does not establish rights or authorize submission to App Store Connect.
+The committed pack must pass; each editorial rule is broken on a copy and must fail closed.
 """
 
 from __future__ import annotations
@@ -90,7 +90,7 @@ def test_keywords_are_limited_in_bytes_not_characters(pack: Path) -> None:
         ("planner, tree", "blanks around a comma"),
         ("planner,,tree", "empty keyword"),
         ("planner,tree,Planner", "repeated"),
-        ("planner,tree,wow", "repeats the name or subtitle"),
+        ("calculator,tree,build", "repeats the name or subtitle"),
         ("planner,talentforge", "repeats the name or subtitle"),
         ("planner,ui,tree", "two characters or fewer"),
     ],
@@ -123,19 +123,44 @@ def test_a_missing_field_fails(pack: Path) -> None:
     assert "urls:ru" in problems
 
 
-@pytest.mark.parametrize("name", ["ТалантФорж", "TalentForge", "TalentForge: WoW Forever!"])
+@pytest.mark.parametrize(
+    "name", ["ТалантФорж", "TalentForge: WoW Forever", "TalentForge: WoW Forever!"]
+)
 def test_the_name_is_the_app_name_in_every_locale(pack: Path, name: str) -> None:
     write(pack, "ru/name.txt", name + "\n")
     assert "name:ru" in failed(pack)
 
 
-def test_the_game_must_be_named(pack: Path) -> None:
-    write(pack, "en-US/subtitle.txt", "Talent builds for any game\n")
-    description = (pack / "ru/description.txt").read_text(encoding="utf-8")
-    write(pack, "ru/description.txt", description.replace("World of Warcraft: Forever", "игры"))
-    problems = failed(pack)
-    assert "positioning:en-US/subtitle" in problems
-    assert "World of Warcraft: Forever" in problems["positioning:ru/description"]
+@pytest.mark.parametrize("locale", v.LOCALES)
+def test_rejected_subtitles_cannot_return(pack: Path, locale: str) -> None:
+    write(pack, f"{locale}/subtitle.txt", "Talent builds for WoW: Forever\n")
+    assert f"positioning:{locale}/subtitle" in failed(pack)
+
+
+@pytest.mark.parametrize("locale", v.LOCALES)
+def test_game_title_is_optional_in_description(pack: Path, locale: str) -> None:
+    path = pack / locale / "description.txt"
+    path.write_text(path.read_text().replace("World of Warcraft: Forever", "Forever 1.60 data"))
+    assert failed(pack) == {}
+
+
+@pytest.mark.parametrize(
+    ("locale", "phrase"), [("en-US", "nine classes"), ("ru", "три дерева талантов")]
+)
+def test_description_preserves_specialized_scope(pack: Path, locale: str, phrase: str) -> None:
+    path = pack / locale / "description.txt"
+    path.write_text(path.read_text().replace(phrase, "any game"))
+    assert f"positioning:{locale}/description" in failed(pack)
+
+
+@pytest.mark.parametrize("locale", v.LOCALES)
+@pytest.mark.parametrize("field", ["keywords", "promotional_text"])
+@pytest.mark.parametrize("brand", ["WoW", "World of Warcraft", "Blizzard", "Forever"])
+def test_game_branding_cannot_return_to_discovery_fields(
+    pack: Path, locale: str, field: str, brand: str
+) -> None:
+    write(pack, f"{locale}/{field}.txt", brand + "\n")
+    assert f"branding:{locale}" in failed(pack)
 
 
 def test_the_unofficial_status_and_disclaimer_must_stay(pack: Path) -> None:
@@ -143,7 +168,7 @@ def test_the_unofficial_status_and_disclaimer_must_stay(pack: Path) -> None:
     write(pack, "en-US/description.txt", description.replace("unofficial", "official"))
     assert "unofficial" in failed(pack)["positioning:en-US/description"]
     description = (pack / "ru/description.txt").read_text(encoding="utf-8")
-    unaffiliated = description.replace("Он не связан", "Он связан")
+    unaffiliated = description.replace("не связан", "связан")
     write(pack, "ru/description.txt", unaffiliated)
     assert "Blizzard" in failed(pack)["positioning:ru/description"]
 
@@ -158,6 +183,25 @@ def test_the_review_notes_must_explain_ota(pack: Path) -> None:
     notes = (pack / "review_information/notes.txt").read_text(encoding="utf-8")
     write(pack, "review_information/notes.txt", notes.replace("https://ota.mythweld.com", "us"))
     assert "https://ota.mythweld.com" in failed(pack)["review-notes"]
+
+
+@pytest.mark.parametrize(
+    "phrase",
+    [
+        "not a game client",
+        "search",
+        "sort",
+        "automatically saved",
+        "preview",
+        "offline",
+        "English or Russian",
+        "rights remain unresolved",
+    ],
+)
+def test_review_notes_preserve_product_and_rights_explanation(pack: Path, phrase: str) -> None:
+    path = pack / "review_information/notes.txt"
+    path.write_text(path.read_text().replace(phrase, "removed"))
+    assert phrase in failed(pack)["review-notes"]
 
 
 def test_the_review_notes_are_limited_in_bytes(pack: Path) -> None:

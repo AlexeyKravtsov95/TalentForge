@@ -1,5 +1,10 @@
 # M5.IOS.3 — TestFlight и отправка в App Store: runbook владельца 🔑
 
+> **M7.IOS.REVIEW.1: NO-GO.** This historical first-submission runbook is on hold.
+> Do not execute upload/resubmission steps until the [current gates](../m7-ios-review-1-assessment.md)
+> are resolved and separately authorized. Current iOS remains 1.0.0 (4); this PR does not bump it.
+> Proposed name in both locales is TalentForge; name availability is not verified here.
+
 | | |
 |---|---|
 | Для кого | только владелец. У агента нет Apple Developer-команды, сертификатов, физического iPhone и доступа к App Store Connect: ни один шаг ниже агент **не выполнял** |
@@ -21,18 +26,18 @@
    | Поле | Значение |
    |---|---|
    | Platforms | iOS |
-   | Name | `TalentForge: WoW Forever` ([name.txt](metadata/en-US/name.txt)) — App Store Connect принял это имя (2026-10-25). Подпись под иконкой на устройстве остаётся `TalentForge` (`CFBundleDisplayName`) |
+   | Name | `TalentForge` ([name.txt](metadata/en-US/name.txt)) — новое предложение M7.IOS.REVIEW.1; доступность в App Store Connect не проверена. Подпись под иконкой на устройстве остаётся `TalentForge` (`CFBundleDisplayName`) |
    | Primary Language | English (U.S.) |
    | Bundle ID | `io.github.alexeykravtsov95.talentforge` (появится в списке после шага 2.1) |
    | SKU | любой внутренний идентификатор, например `talentforge-ios` |
    | User Access | Full Access |
 
 3. Добавьте локализацию **Russian** (App Information → язык рядом с English (U.S.) → Russian) и введите в ней Name
-   `TalentForge: WoW Forever` ([ru/name.txt](metadata/ru/name.txt)). Доступность имени в RU-локализации заранее
+   `TalentForge` ([ru/name.txt](metadata/ru/name.txt)). Доступность имени в RU-локализации заранее
    **не проверялась**: если App Store Connect его не примет, остановитесь — другое имя выбирает владелец, и
    `name.txt` вместе с `APP_NAME` в `scripts/verify_appstore_metadata.py` нужно поменять отдельным PR.
 
-Проверка: запись приложения есть, обе локализации (English (U.S.), Russian) видны, в обеих Name — `TalentForge: WoW Forever`.
+Проверка: запись приложения есть, обе локализации (English (U.S.), Russian) видны, в обеих Name — `TalentForge`.
 
 ## 2. Certificates, Identifiers & Profiles и Team
 

@@ -1,0 +1,9 @@
+Thank you for the feedback under Guideline 4.1(a).
+
+We have prepared revised English and Russian listing files using TalentForge as the app name, with Talent Build Planner and Планировщик талантов as subtitles. We removed game branding from promotional text and keywords and revised both descriptions to explain the independent planner, its local build library, search and sorting, import/export, offline use and language support.
+
+We rewrote the review notes with concrete steps demonstrating selection without spending, visible rank controls, prerequisite navigation, undo/redo, adaptive inspectors and preview-before-import. We also updated our metadata validator and regression tests so they no longer restore the rejected name or require the game title in subtitles or descriptions.
+
+Our asset audit identified unresolved rights and provenance questions for game icons, talent texts and class artwork. We are holding resubmission while those questions are resolved. We do not claim Blizzard authorization. Existing screenshots have not been retouched or replaced, and native iPhone Duo gesture acceptance remains pending.
+
+These changes are prepared in our repository for owner review; App Store Connect has not been updated and no new build has been uploaded or submitted as part of this remediation. We are not requesting approval on the basis of renaming alone.

@@ -1,12 +1,18 @@
-TalentForge is an unofficial talent build planner for World of Warcraft: Forever. It is an independent companion tool: it is not affiliated with or endorsed by Blizzard Entertainment and does not claim a Blizzard license. It does not need the game, a Blizzard account or any other account. There is no sign-in, no in-app purchase, no advertising, no analytics and no tracking, so no demo account is needed.
+TalentForge is an independent, unofficial mobile talent build planner for World of Warcraft: Forever, not a game client. It does not connect to game realms, run the game or control a character. It is not affiliated with or endorsed by Blizzard Entertainment. No Blizzard license or rightsholder authorization is claimed.
+
+The proposed listing uses TalentForge as the name in both locales, with Talent Build Planner (EN) and Планировщик талантов (RU) as subtitles. The game's name is used in the description only to identify the data the planner supports.
+
+The product's concrete contribution is its mobile editing and local-library workflow: selecting a node never spends points; visible rank controls change allocation; Show selects one prerequisite without spending; undo/redo supports experimentation; compact portrait layouts have a bottom inspector; landscape and tablet layouts use a side inspector. A searchable, sortable library with class filters, favorites and class grouping keeps multiple builds. Import previews a text code and saves a separate build, preserving existing builds; export uses the native iOS share sheet or clipboard. These are observable features, not a claim that no other planner offers them.
 
 How to review:
-1. Tap "New build" and choose a class (for example Mage).
-2. Tap a talent to select it; tapping never spends points. Use "+", "−" and "Max" in the talent panel to spend or refund points. Drag to move the tree, pinch to zoom. A locked talent shows what it requires; "Show" jumps to that talent without spending.
-3. Use the ⋯ menu to rename or share the build. "Share" opens the iOS share sheet with a text code; "Copy code" copies it.
-4. On the home screen, tap "Import build", then "Paste" and "Continue": the build from the code is previewed, and "Import" saves it as a new build.
-5. The ⓘ button opens About: app version, talent data version, privacy summary, "Check for updates" and open-source licenses.
+1. Create a build with New build and choose a class. Tap a talent, use +, minus and Max, inspect a locked talent's requirements and use Show.
+2. Leave the editor and reopen the automatically saved build. Rename or duplicate it from its menu.
+3. Open All builds, search by name or class, mark a favorite, filter and change the sort order (last edited, name, class) or class grouping.
+4. Share the build or copy its code. From Home, use Import build, paste the code, continue to preview, then import as a separate build.
+5. Change the device language to English or Russian and relaunch. Missing Russian talent text falls back to English. No sign-in or purchase is required; no demo account is needed.
 
-Talent data updates (Guideline 2.5.2): after launch, when returning to the app, from About → "Check for updates", and when a saved build needs a game-data version that is not on the device, the app downloads a signed public catalog and talent data files over HTTPS (GET only) from https://ota.mythweld.com. It verifies the catalog's ECDSA P-256 signature against keys built into the app and the SHA-256 of every file before using them. The files are data and images only — talent trees and texts (JSON) and talent icons (PNG) — never executable code; the app's behaviour and features do not change. Requests carry no account, device or advertising identifier and no build contents. Because the delivery infrastructure may keep technical request logs (IP address, time, URL, User-Agent), the App Privacy answers list Diagnostics (Other Diagnostic Data) as linked to the user, used only for app functionality and never for tracking. Without a network connection the app keeps working with its bundled and previously downloaded data, so every feature can be reviewed offline.
+Bundled data and local editing, saving, search, sort, import and export work offline. Downloading a data version absent from the device requires a connection; sending an exported code through another app depends on that app.
 
-The interface follows the device language (English or Russian).
+OTA (Guideline 2.5.2): the OTA ON configuration makes HTTPS requests (GET only) to https://ota.mythweld.com at launch/foreground, on Check for updates in About and for a saved build's missing data version. The app checks the catalog's ECDSA P-256 signature using embedded keys and each file's SHA-256. Downloads contain only JSON talent trees/texts and PNG icons, never executable code; features and behavior do not change. The signature authenticates developer delivery, not permission to use game content. Builds are never uploaded. Delivery infrastructure may retain technical request logs (IP, time, URL, User-Agent); App Privacy declares linked Diagnostics (Other Diagnostic Data), for functionality, not tracking.
+
+Third-party game-content rights remain unresolved in the project's release assessment. This metadata revision does not establish permission or resolve Guideline 5.2.1.

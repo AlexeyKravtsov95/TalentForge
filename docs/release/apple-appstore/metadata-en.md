@@ -1,5 +1,9 @@
 # M5.IOS.1 — App Store Connect: черновик метаданных (английский, en-US)
 
+> **M7.IOS.REVIEW.1: NO-GO.** Historical milestone record, not current submission approval.
+> Current copy and open rights gates: [remediation assessment](m7-ios-review-1-assessment.md)
+> and [submission pack](submission/README.md). Earlier owner risk acceptance is not permission.
+
 | | |
 |---|---|
 | Статус | **ЗАМЕНЁН в M5.IOS.3.** Окончательные тексты для App Store Connect (сборка OTA ON) — по файлу на поле в [`submission/metadata/en-US/`](submission/metadata/en-US/) и [`review_information/notes.txt`](submission/metadata/review_information/notes.txt), изменения — [submission §2.1](submission/README.md#21-что-изменилось-относительно-черновиков). Этот файл — история черновика M5.IOS.1/M5.IOS.2; в App Store Connect его не копировать |
