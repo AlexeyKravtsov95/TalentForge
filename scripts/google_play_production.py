@@ -19,6 +19,7 @@ import httpx
 import store_delivery as core
 
 ENVIRONMENT = "google-play-production"
+RELEASE_STATUSES = frozenset({"draft", "completed", "inProgress", "halted"})
 
 
 def release_notes(repo: Path, gate: dict[str, Any], revision: str | None = None) -> dict[str, str]:
@@ -131,7 +132,11 @@ class ProductionPlay(core.GooglePlay):
                 binary = row if resource == "bundles" else public.obj(row.get("binary"))
                 parsed[code] = public.string(binary.get("sha256"))
             binaries.append(parsed)
-        body = public.obj(self._call("GET", f"edits/{edit}/tracks", retry=True).json())
+        response = self._call("GET", f"edits/{edit}/tracks", retry=True)
+        try:
+            body = public.obj(response.json())
+        except ValueError:
+            raise public.DeliveryError("CONTRACT", "invalid Google Play tracks JSON") from None
         if set(body) - {"kind", "tracks"}:
             raise public.DeliveryError("CONTRACT", "unknown/incomplete Play tracks response")
         tracks = {}
@@ -139,23 +144,28 @@ class ProductionPlay(core.GooglePlay):
             track = public.string(row.get("track"))
             if set(row) - {"track", "releases"} or track in tracks:
                 raise public.DeliveryError("CONTRACT", "unknown/duplicate Play track")
-            releases = public.items(row.get("releases", []))
-            for release in releases:
-                if set(release) - {
-                    "name",
-                    "versionCodes",
-                    "releaseNotes",
-                    "status",
-                    "userFraction",
-                    "countryTargeting",
-                    "inAppUpdatePriority",
-                    "controls",
-                }:
-                    raise public.DeliveryError("CONTRACT", "unknown Play release fields")
-            tracks[track] = releases
+            try:
+                tracks[track] = public.items(row.get("releases", []))
+            except public.DeliveryError:
+                raise track_refusal("CONTRACT", track, None, "malformed release array") from None
         state = core.PlayState(binaries[0], binaries[1], tracks)
         validate_state(state)
         return state
+
+
+def track_refusal(kind: str, track: str, status: Any, reason: str) -> public.DeliveryError:
+    """Only public track/status identifiers and fixed reasons may enter reports/logs."""
+    known_tracks = {"production", "alpha", "beta", "internal"}
+    safe_track = (
+        track
+        if track in known_tracks or track in {"wear:" + name for name in known_tracks}
+        else "<custom>"
+    )
+    if isinstance(status, str) and status in RELEASE_STATUSES | {"statusUnspecified"}:
+        safe_status = status
+    else:
+        safe_status = "<missing>" if status is None else "<invalid>"
+    return public.DeliveryError(kind, f"track={safe_track} status={safe_status}: {reason}")
 
 
 def validate_state(state: core.PlayState) -> set[int]:
@@ -167,15 +177,39 @@ def validate_state(state: core.PlayState) -> set[int]:
     for track, releases in state.tracks.items():
         public.string(track)
         for release in public.items(releases):
-            if release.get("status") not in {"draft", "completed", "inProgress", "halted"}:
-                raise public.DeliveryError("CONTRACT", "unknown Google Play release status")
-            values = release.get("versionCodes")
-            if not isinstance(values, list) or not values:
-                raise public.DeliveryError("CONTRACT", "missing Google Play release codes")
+            status = release.get("status")
+            if set(release) - {
+                "name",
+                "versionCodes",
+                "releaseNotes",
+                "status",
+                "userFraction",
+                "countryTargeting",
+                "inAppUpdatePriority",
+                "controls",
+            }:
+                raise track_refusal("CONTRACT", track, status, "unknown Play release fields")
+            if not isinstance(status, str) or status not in RELEASE_STATUSES:
+                raise track_refusal("CONTRACT", track, status, "unknown/unspecified release status")
+            # Play may omit the repeated field for a draft with no binaries yet.
+            # Explicit null/wrong types still fail; only draft permits an empty list.
+            values = release.get("versionCodes", [])
+            if not isinstance(values, list) or (not values and status != "draft"):
+                raise track_refusal("CONTRACT", track, status, "missing/invalid release codes")
+            release_codes: set[int] = set()
             for code in values:
-                if not isinstance(code, str) or not re.fullmatch(r"[1-9][0-9]*", code):
-                    raise public.DeliveryError("CONTRACT", "invalid Google Play track versionCode")
-                codes.add(int(code))
+                # Release.versionCodes is string(int64), unlike binary.versionCode (integer).
+                if (
+                    not isinstance(code, str)
+                    or not re.fullmatch(r"[1-9][0-9]{0,18}", code)
+                    or int(code) > 9223372036854775807
+                ):
+                    raise track_refusal("CONTRACT", track, status, "invalid track versionCode")
+                parsed = int(code)
+                if parsed in release_codes:
+                    raise track_refusal("CONTRACT", track, status, "duplicate track versionCode")
+                release_codes.add(parsed)
+            codes.update(release_codes)
     if "production" not in state.tracks:
         raise public.DeliveryError("CONFIG", "Google Play production track is unavailable")
     return codes
@@ -188,7 +222,15 @@ def observe(
     code = manifest["versionCode"]
     if any(c > code for c in codes):
         raise public.DeliveryError("CONFLICT", "Google Play contains a higher versionCode")
-    matches = [r for r in state.tracks["production"] if str(code) in r["versionCodes"]]
+    for release in state.tracks["production"]:
+        if release["status"] != "completed":
+            raise track_refusal(
+                "CONFLICT",
+                "production",
+                release["status"],
+                "foreign production draft or rollout; nothing replaced",
+            )
+    matches = [r for r in state.tracks["production"] if str(code) in r.get("versionCodes", [])]
     if matches:
         expected = [{"language": k, "text": v} for k, v in manifest["releaseNotes"].items()]
         release = matches[0]
@@ -200,25 +242,28 @@ def observe(
             or sorted(release.get("releaseNotes", []), key=lambda x: x["language"])
             != sorted(expected, key=lambda x: x["language"])
         ):
-            raise public.DeliveryError(
-                "CONFLICT", "production release is not this approved delivery"
-            )
-        status = release["status"]
-        if status != "completed":
-            raise public.DeliveryError(
-                "CONFLICT", "production draft/rollout requires owner inspection"
+            raise track_refusal(
+                "CONFLICT",
+                "production",
+                release["status"],
+                "production release is not this approved delivery",
             )
         return {
             "status": "SUBMITTED",
             "detail": "Committed to production; review/publication is controlled by Google",
         }
     if code in codes:
+        for track, releases in state.tracks.items():
+            for release in releases:
+                if str(code) in release.get("versionCodes", []):
+                    raise track_refusal(
+                        "CONFLICT",
+                        track,
+                        release["status"],
+                        "versionCode consumed in another track",
+                    )
         raise public.DeliveryError(
             "CONFLICT", "versionCode consumed in another track or unassigned binary"
-        )
-    if any(r["status"] != "completed" for r in state.tracks["production"]):
-        raise public.DeliveryError(
-            "CONFLICT", "foreign production draft or rollout; nothing replaced"
         )
     if journal.get("play-upload-intent") or journal.get("play-commit-intent"):
         raise public.DeliveryError(

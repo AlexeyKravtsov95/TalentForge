@@ -108,9 +108,240 @@ def test_wrong_version_code_fails_before_api(delivery: tuple[Any, ...], code: An
 
 def test_verify_does_not_upload_or_commit(delivery: tuple[Any, ...]) -> None:
     fake, api, aab, manifest, journal = delivery
+    fake.tracks["production"] = [{"status": "completed", "versionCodes": ["4"]}]
+    fake.tracks["alpha"].append({"status": "draft"})
+    before = json.loads(json.dumps(fake.tracks))
+    requests = []
+    original = fake.handler
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.host == "androidpublisher.googleapis.com":
+            requests.append((request.method, request.url.path.removeprefix(legacy.GOOGLE_API)))
+            if request.method == "PUT":
+                assert json.loads(request.content) == {
+                    "track": "production",
+                    "releases": before["production"],
+                }
+        return original(request)
+
+    api.client = httpx.Client(transport=httpx.MockTransport(handler))
     assert p.deliver(api, manifest, aab, journal, verify=True)["status"] == "VERIFIED"
-    assert not any("session" in c or ":commit" in c for c in fake.calls)
+    assert requests == [
+        ("POST", "edits"),
+        ("GET", "edits/e1/bundles"),
+        ("GET", "edits/e1/apks"),
+        ("GET", "edits/e1/tracks"),
+        ("PUT", "edits/e1/tracks/production"),
+        ("POST", "edits/e1:validate"),
+        ("DELETE", "edits/e1"),
+    ]
+    assert fake.tracks == before
     assert journal.records == {} and fake.edits == {}
+
+
+@pytest.mark.parametrize("version_codes", [{}, {"versionCodes": []}])
+@pytest.mark.parametrize("track", ["alpha", "internal", "wear:production"])
+@pytest.mark.parametrize("verify", [False, True])
+def test_empty_drafts_outside_production_do_not_block_available_code(
+    delivery: tuple[Any, ...], version_codes: dict[str, Any], track: str, verify: bool
+) -> None:
+    fake, api, aab, manifest, journal = delivery
+    draft = {"status": "draft", **version_codes}
+    fake.tracks[track] = [draft]
+    assert p.deliver(api, manifest, aab, journal, verify=verify)["status"] == (
+        "VERIFIED" if verify else "SUBMITTED"
+    )
+    assert fake.tracks[track] == [draft]
+    assert sum(c.startswith("PUT session") for c in fake.calls) == (0 if verify else 1)
+    if verify:
+        assert not any(":commit" in c for c in fake.calls)
+        assert journal.records == {} and fake.edits == {}
+
+
+@pytest.mark.parametrize("version_codes", [{}, {"versionCodes": []}, {"versionCodes": ["4"]}])
+@pytest.mark.parametrize("verify", [False, True])
+def test_production_draft_is_a_conflict_even_without_binaries(
+    delivery: tuple[Any, ...], version_codes: dict[str, Any], verify: bool
+) -> None:
+    fake, api, aab, manifest, journal = delivery
+    draft = {"status": "draft", **version_codes}
+    fake.tracks["production"] = [draft]
+    with pytest.raises(public.DeliveryError, match="CONFLICT") as error:
+        p.deliver(api, manifest, aab, journal, verify=verify)
+    assert "track=production" in error.value.message
+    assert "status=draft" in error.value.message
+    assert "draft or rollout" in error.value.message
+    assert fake.tracks["production"] == [draft]
+    assert not any(c.startswith("PUT ") or ":commit" in c for c in fake.calls)
+    assert journal.records == {} and fake.edits == {}
+
+
+@pytest.mark.parametrize("status", ["completed", "inProgress", "halted"])
+@pytest.mark.parametrize("version_codes", [{}, {"versionCodes": []}])
+def test_non_draft_releases_require_nonempty_codes(
+    delivery: tuple[Any, ...], status: str, version_codes: dict[str, Any]
+) -> None:
+    fake, api, aab, manifest, journal = delivery
+    fake.tracks["alpha"] = [{"status": status, **version_codes}]
+    with pytest.raises(public.DeliveryError, match="CONTRACT") as error:
+        p.deliver(api, manifest, aab, journal, verify=True)
+    assert "track=alpha" in error.value.message and f"status={status}" in error.value.message
+    assert "release codes" in error.value.message
+    assert not any(c.startswith("PUT ") or ":commit" in c for c in fake.calls)
+    assert fake.edits == {}
+
+
+@pytest.mark.parametrize("status", ["draft", "completed", "inProgress", "halted"])
+def test_valid_track_codes_are_collected_and_can_appear_in_multiple_tracks(status: str) -> None:
+    state = p.core.PlayState(
+        {1: "a" * 64},
+        {},
+        {
+            "production": [{"status": "completed", "versionCodes": ["2"]}],
+            "alpha": [{"status": status, "versionCodes": ["2", "3"]}],
+        },
+    )
+    assert p.validate_state(state) == {1, 2, 3}
+
+
+@pytest.mark.parametrize("status", [None, [], {}, "unknown", "statusUnspecified"])
+def test_invalid_or_unspecified_release_status_is_a_typed_refusal(status: Any) -> None:
+    state = p.core.PlayState({}, {}, {"production": [{"status": status, "versionCodes": ["4"]}]})
+    with pytest.raises(public.DeliveryError, match="CONTRACT"):
+        p.validate_state(state)
+
+
+@pytest.mark.parametrize("status", ["draft", "completed", "inProgress", "halted"])
+@pytest.mark.parametrize(
+    "codes",
+    [
+        None,
+        "6",
+        {},
+        [6],
+        [True],
+        [6.0],
+        [None],
+        [""],
+        ["0"],
+        ["06"],
+        ["+6"],
+        ["-6"],
+        [" 6"],
+        ["6.0"],
+        ["\uff16"],
+        ["6", "6"],
+        ["9223372036854775808"],
+        ["1" * 5000],
+    ],
+)
+def test_track_code_types_format_range_and_duplicates_remain_strict(
+    status: str, codes: Any
+) -> None:
+    state = p.core.PlayState({}, {}, {"production": [{"status": status, "versionCodes": codes}]})
+    with pytest.raises(public.DeliveryError, match="CONTRACT") as error:
+        p.validate_state(state)
+    assert "track=production" in error.value.message and f"status={status}" in error.value.message
+
+
+@pytest.mark.parametrize("status", ["draft", "completed", "inProgress", "halted"])
+@pytest.mark.parametrize("track", ["alpha", "production"])
+def test_code_six_in_a_release_is_never_uploaded_again(
+    delivery: tuple[Any, ...], status: str, track: str
+) -> None:
+    fake, api, aab, manifest, journal = delivery
+    fake.tracks[track] = [{"status": status, "versionCodes": ["6"]}]
+    with pytest.raises(public.DeliveryError, match="CONFLICT"):
+        p.deliver(api, manifest, aab, journal, verify=False)
+    assert not any(c.startswith("PUT ") or ":commit" in c for c in fake.calls)
+    assert journal.records == {} and fake.edits == {}
+
+
+@pytest.mark.parametrize("resource", ["bundles", "apks"])
+def test_unassigned_binary_code_six_is_never_uploaded_again(
+    delivery: tuple[Any, ...], resource: str
+) -> None:
+    fake, api, aab, manifest, journal = delivery
+    original = fake.handler
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.method == "GET" and request.url.path.endswith("/" + resource):
+            row = {"versionCode": 6, "sha256": manifest["aabSha256"]}
+            if resource == "apks":
+                row = {"versionCode": 6, "binary": {"sha256": manifest["aabSha256"]}}
+            return httpx.Response(200, json={resource: [row]})
+        return original(request)
+
+    api.client = httpx.Client(transport=httpx.MockTransport(handler))
+    with pytest.raises(public.DeliveryError, match="CONFLICT"):
+        p.deliver(api, manifest, aab, journal, verify=False)
+    assert not any(c.startswith("PUT ") or ":commit" in c for c in fake.calls)
+    assert journal.records == {} and fake.edits == {}
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        None,
+        [],
+        {"tracks": None},
+        {"tracks": {}},
+        {"tracks": [None]},
+        {"tracks": [{"track": "production", "releases": None}]},
+        {"tracks": [{"track": "production", "releases": [None]}]},
+        {"tracks": [{"track": "production", "releases": [{}]}]},
+        {"tracks": [{"track": "production"}, {"track": "production"}]},
+        {"tracks": [{"track": "production", "unknown": True}]},
+        {"tracks": [{"track": "production", "releases": [{"status": "draft", "unknown": True}]}]},
+        {"tracks": [], "unknown": True},
+    ],
+)
+def test_malformed_track_responses_fail_closed_before_writes(
+    delivery: tuple[Any, ...], body: Any
+) -> None:
+    fake, api, aab, manifest, journal = delivery
+    original = fake.handler
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.method == "GET" and request.url.path.endswith("/tracks"):
+            return httpx.Response(200, content=json.dumps(body))
+        return original(request)
+
+    api.client = httpx.Client(transport=httpx.MockTransport(handler))
+    with pytest.raises(public.DeliveryError, match="CONTRACT"):
+        p.deliver(api, manifest, aab, journal, verify=True)
+    assert not any(c.startswith("PUT ") or ":commit" in c for c in fake.calls)
+    assert journal.records == {} and fake.edits == {}
+
+
+def test_invalid_track_json_is_a_safe_contract_error(delivery: tuple[Any, ...]) -> None:
+    fake, api, aab, manifest, journal = delivery
+    original = fake.handler
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.method == "GET" and request.url.path.endswith("/tracks"):
+            return httpx.Response(200, content=b"private-response-not-json")
+        return original(request)
+
+    api.client = httpx.Client(transport=httpx.MockTransport(handler))
+    with pytest.raises(public.DeliveryError, match="CONTRACT") as error:
+        p.deliver(api, manifest, aab, journal, verify=True)
+    assert "private-response" not in error.value.message
+    assert fake.edits == {}
+
+
+def test_refusal_diagnostics_do_not_expose_release_metadata() -> None:
+    release = {
+        "status": "private-status",
+        "name": "private-name",
+        "versionCodes": ["private-code"],
+        "releaseNotes": [{"language": "en-US", "text": "private-notes"}],
+    }
+    state = p.core.PlayState({}, {}, {"private-track": [release], "production": []})
+    with pytest.raises(public.DeliveryError, match="CONTRACT") as error:
+        p.validate_state(state)
+    assert "track=<custom>" in error.value.message and "status=<invalid>" in error.value.message
+    assert "private-" not in error.value.message
 
 
 def test_insufficient_production_permission_stops_before_upload(delivery: tuple[Any, ...]) -> None:
@@ -395,6 +626,23 @@ def test_higher_code_and_changed_artifact_are_refused(delivery: tuple[Any, ...])
     with pytest.raises(public.DeliveryError, match="MISMATCH"):
         p.deliver(api, manifest, aab, journal, verify=False)
     assert fake.calls == []
+
+
+@pytest.mark.parametrize("status", ["draft", "inProgress", "halted"])
+def test_foreign_pending_release_blocks_even_after_our_completed_release(
+    delivery: tuple[Any, ...], status: str
+) -> None:
+    fake, api, aab, manifest, journal = delivery
+    assert p.deliver(api, manifest, aab, journal, verify=False)["status"] == "SUBMITTED"
+    pending = {"status": status, "versionCodes": ["4"]}
+    fake.tracks["production"].append(pending)
+    before = json.loads(json.dumps(fake.tracks))
+    fake.calls.clear()
+    with pytest.raises(public.DeliveryError, match="CONFLICT") as error:
+        p.deliver(api, manifest, aab, journal, verify=True)
+    assert "track=production" in error.value.message and f"status={status}" in error.value.message
+    assert not any(c.startswith("PUT ") or ":commit" in c for c in fake.calls)
+    assert fake.tracks == before and fake.edits == {}
 
 
 @pytest.mark.parametrize("bad", ["6", 6.9, True, None])
