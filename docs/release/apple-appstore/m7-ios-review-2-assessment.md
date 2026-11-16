@@ -122,6 +122,26 @@ enabled, and reconcile release settings. Current release setting is **automatic*
 is an observation, not authorization to publish. Do not cancel the submission, remove
 the build or create another app record as a workaround.
 
+### Publication-mode checklist before any resubmission
+
+The historical TestFlight runbook assumes **manual release**, while the current ASC
+record has **automatic release** selected. Resolve this discrepancy explicitly; neither
+the runbook nor the current setting substitutes for the owner's decision.
+
+1. Record the owner's choice for this submission: **manual release after approval** or
+   **automatic release after approval**, with the date and intended publication timing.
+   An automatic choice must explicitly acknowledge that successful review can make the
+   app public without another release confirmation. Missing choice keeps **NO-GO**.
+2. In a separately authorized ASC session, set the selected mode if needed. This PR does
+   not authorize or perform that change. Do not infer consent to automatic publication
+   from approval of metadata, screenshots, this PR or resubmission alone.
+3. Immediately before resubmission, read back the App Store Version Release control for
+   the actual version/build and record its value (including any scheduled date/time and
+   timezone). Compare it with the owner's recorded choice. A mismatch keeps **NO-GO**.
+4. Include that verified choice in the final submission handoff. For manual release,
+   publication remains a separate owner action after approval; for automatic release,
+   the owner must have authorized that publication outcome before resubmission.
+
 **Candidate chronology exposes a concrete metadata mismatch.** The actual Apple review
 was November 9. Repository history first adds library search/class filtering on November 10
 ([`f8f0ccea`](https://github.com/AlexeyKravtsov95/TalentForge/commit/f8f0ccea92ea4c057f39fd9bd457dbb1fc7f7e47)),
@@ -185,6 +205,7 @@ work that has not happened. Sending either message requires a separate owner ins
 | Screenshots | 42 individually reviewed; **26 recapture for uploaded (4), 16 conditional retain**; all held for rights/candidate gates |
 | Duo acceptance | **BLOCKED**, existing native multi-touch and remaining functional checks unchanged |
 | Same-build route | Conditionally supported by observed selected (4) + Apple workflow; **not executable now**, resubmit disabled |
+| Publication mode | **OPEN**: owner must explicitly choose manual/automatic release and verify the ASC control immediately before resubmission; historical manual runbook conflicts with observed automatic mode |
 | Tests / CI | See [fresh validation](m7-ios-review-2-validation.md); never closes rights or store gates |
 
 **NO-GO for resubmission, even with green CI.** This PR is reviewable remediation and
