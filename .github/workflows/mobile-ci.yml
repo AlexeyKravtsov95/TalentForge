@@ -70,7 +70,7 @@ jobs:
       - name: App Store submission editorial and screenshot checks (not release approval)
         run: |
           python3 scripts/verify_appstore_metadata.py
-          python3 scripts/verify_appstore_screenshots.py
+          python3 scripts/verify_appstore_screenshots.py --require-duo
 
       - name: Dataset drift check (bundled == canonical)
         run: python3 scripts/sync_mobile_datasets.py --check
