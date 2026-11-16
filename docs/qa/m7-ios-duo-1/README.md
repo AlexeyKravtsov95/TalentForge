@@ -146,7 +146,9 @@ reviews the pack.** No claim of App Store Connect server acceptance is made.
 - Simulator `xcodebuild -project iosApp.xcodeproj -scheme iosApp -configuration Debug
   -destination 'generic/platform=iOS Simulator' -derivedDataPath build
   CODE_SIGNING_ALLOWED=NO ARCHS=arm64 build`: PASS, also rebuilt after plist fix.
-- Full Python suite and GitHub Mobile CI: final results recorded below once complete.
+- Full worktree Python suite and GitHub Mobile CI: exact final run results and links
+  are maintained in [PR #150](https://github.com/AlexeyKravtsov95/TalentForge/pull/150)
+  and its Checks tab; the source and capture evidence above are immutable.
 
 Execution notes: an initial validation run exhausted disk space and was stopped. Only
 this task's generated intermediates and completed pytest scratch directory were removed.
