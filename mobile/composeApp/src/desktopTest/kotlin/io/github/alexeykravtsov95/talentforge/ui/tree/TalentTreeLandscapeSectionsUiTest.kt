@@ -203,6 +203,32 @@ class TalentTreeLandscapeSectionsUiTest {
         }
     }
 
+    /** In-place fold/rotation: a live edit and its undo history must survive every layout. */
+    @Test
+    fun duoOuterInnerOuterKeepsSelectionAllocationAndSpecialization() {
+        onEditor(width = 466, height = 678) { session ->
+            tab("Fury")
+            val talent = firstBuyableTalentOf(1)
+            select(talent)
+            onNodeWithContentDescription("Add rank to $talent").performClick()
+            settle()
+            val afterSpend = session.reported.last()
+            val reports = session.reported.size
+            for ((width, height) in listOf(669 to 951, 951 to 669, 678 to 466, 466 to 678)) {
+                rotate(session, width, height)
+                assertEquals(1, session.cameras.selectedSection)
+                assertTrue(isShown("Add rank to $talent"), "selected talent stays open at $width x $height")
+                val undo = undoBounds()
+                assertTrue(undo.left >= 0 && undo.top >= 0 && undo.right <= width && undo.bottom <= height)
+                assertEquals(reports, session.reported.size, "resize must not emit an allocation change")
+                assertEquals(afterSpend, session.reported.last())
+            }
+            onNodeWithContentDescription("Undo talent change").performClick()
+            settle()
+            assertEquals(readyState.buildState, session.reported.last(), "undo history survives folding")
+        }
+    }
+
     // ------------------------------------------------------------------ layout
 
     @Test

@@ -185,6 +185,16 @@ class ShareLayoutUiTest {
         }
     }
 
+    /** Supplemental Compose resize coverage; native Duo evidence is recorded separately. */
+    @Test
+    fun duoDisplaySizes() {
+        for (language in AppLanguage.entries) {
+            for ((width, height) in listOf(466 to 678, 678 to 466, 669 to 951, 951 to 669)) {
+                for (scale in listOf(1f, 2f)) checkFlow(language, width, height, scale)
+            }
+        }
+    }
+
     @Test
     fun tablets() {
         for (language in AppLanguage.entries) {
