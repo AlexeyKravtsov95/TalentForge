@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the App Store Connect metadata of the TalentForge submission pack (M5.IOS.3).
+"""Validate the App Store Connect metadata of the TalentForge submission pack (M7.IOS.REVIEW.1).
 
 The pack keeps one plain-text file per App Store Connect field, so the owner can copy each
 one into App Store Connect unchanged (``docs/release/apple-appstore/submission/metadata``)::
@@ -18,10 +18,10 @@ Every check must pass; a file that is missing, empty or unreadable is a failure:
   Store Connect has no such field for an app's first version;
 - keywords are comma-separated without blanks around the commas, unique, each longer than two
   characters, and repeat no word of the name or subtitle (App Store search indexes those);
-- the name is ``TalentForge: WoW Forever`` in every locale (the App Store name accepted by App Store
-  Connect; the home-screen ``CFBundleDisplayName`` stays ``TalentForge``);
-- the positioning is kept: subtitle and description name World of Warcraft: Forever, the
-  description says the app is unofficial and carries the Blizzard disclaimer;
+- the independent name is ``TalentForge`` in every locale, with the agreed localized
+  planner subtitle; promotional text and keywords carry no Blizzard/game branding;
+- descriptions preserve the concrete class/tree planner scope, independence and OTA facts;
+  a game-title mention is optional and never evidence of permission;
 - the texts match the OTA ON build: the description says that only signed game data is
   downloaded and that the app works offline, and no text claims the build makes no requests;
   the review notes explain the unofficial status and the OTA mechanism (Guideline 2.5.2);
@@ -50,7 +50,10 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_METADATA = ROOT / "docs/release/apple-appstore/submission/metadata"
 REPORT_SCHEMA = "talentforge.appstore-metadata-report.v1"
-APP_NAME = "TalentForge: WoW Forever"
+APP_NAME = "TalentForge"
+SUBTITLES = {"en-US": "Talent Build Planner", "ru": "Планировщик талантов"}
+# Editorial guard for this remediation, not a complete trademark or rights checker.
+GAME_BRANDING = re.compile(r"\b(?:wow|warcraft|blizzard|forever)\b", re.IGNORECASE)
 LOCALES = ("en-US", "ru")
 SUPPORT_URL = "https://legal.mythweld.com/"
 PRIVACY_URLS = {
@@ -98,12 +101,11 @@ APP_STORE_CATEGORIES = frozenset(
         "Weather",
     }
 )
-GAME = "World of Warcraft: Forever"
-GAME_SHORT = "WoW: Forever"
-# Per locale: phrases the description must contain (positioning, disclaimer, OTA ON facts).
+# Required product facts; no requirement to repeat a third-party product name.
 DESCRIPTION_REQUIRED = {
     "en-US": (
-        GAME,
+        "nine classes",
+        "three talent trees",
         "unofficial",
         "not affiliated with",
         "Blizzard Entertainment",
@@ -113,7 +115,8 @@ DESCRIPTION_REQUIRED = {
         "Without a connection",
     ),
     "ru": (
-        GAME,
+        "девяти классов",
+        "три дерева талантов",
         "неофициальн",
         "не связан с Blizzard Entertainment",  # noqa: RUF001 (Russian text)
         "HTTPS",
@@ -131,7 +134,15 @@ OTA_OFF_CLAIMS = (
     "не выполняет сетевых запросов",
 )
 REVIEW_NOTES_REQUIRED = (
-    GAME,
+    "TalentForge",
+    "not a game client",
+    "search",
+    "sort",
+    "automatically saved",
+    "preview",
+    "offline",
+    "English or Russian",
+    "rights remain unresolved",
     "unofficial",
     "not affiliated with",
     "Blizzard",
@@ -264,8 +275,20 @@ def evaluate(metadata: Path) -> tuple[Evaluation, dict[str, Any]]:
         subtitle = texts["subtitle"] or ""
         evaluation.add(
             f"positioning:{locale}/subtitle",
-            GAME_SHORT in subtitle or GAME in subtitle,
-            f"the subtitle must name the game ({GAME_SHORT!r}): {subtitle!r}",
+            subtitle == SUBTITLES[locale],
+            f"subtitle={subtitle!r} (expected {SUBTITLES[locale]!r})",
+        )
+        branded = [
+            name
+            for name in ("promotional_text", "keywords")
+            if GAME_BRANDING.search(texts[name] or "")
+        ]
+        evaluation.add(
+            f"branding:{locale}",
+            not branded,
+            f"game/publisher branding in {branded}"
+            if branded
+            else "planner-focused discovery fields",
         )
         description = texts["description"] or ""
         missing = [
@@ -278,7 +301,7 @@ def evaluate(metadata: Path) -> tuple[Evaluation, dict[str, Any]]:
             bool(description) and not missing,
             f"missing {missing}"
             if missing
-            else "names the game, the unofficial status, the disclaimer and the OTA facts",
+            else "preserves class/tree scope, unofficial status, disclaimer and OTA facts",
         )
         evaluation.add(
             f"urls:{locale}",
@@ -303,7 +326,7 @@ def evaluate(metadata: Path) -> tuple[Evaluation, dict[str, Any]]:
         not missing_notes,
         f"missing {missing_notes}"
         if missing_notes
-        else "the unofficial status and the OTA mechanism (2.5.2) are explained",
+        else "independent planner workflow, open rights status and OTA (2.5.2) are explained",
     )
     copyright_text = field_text("copyright.txt")
     evaluation.add(
@@ -363,6 +386,7 @@ def format_summary(evaluation: Evaluation, report: dict[str, Any]) -> str:
         for name, size in report["fields"].items()
     ]
     lines += [f"  [{'PASS' if c.passed else 'FAIL'}] {c.id}: {c.detail}" for c in evaluation.checks]
+    lines.append("Scope: editorial checks only; PASS is not rights clearance or release approval.")
     lines.append(f"RESULT: {'PASS' if evaluation.passed else 'FAIL'}")
     return "\n".join(lines)
 

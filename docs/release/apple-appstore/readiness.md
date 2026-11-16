@@ -1,5 +1,9 @@
 # M5.IOS.1 — TalentForge: готовность к App Store (iOS 27)
 
+> **M7.IOS.REVIEW.1: NO-GO.** Historical milestone record, not current submission approval.
+> Current copy and open rights gates: [remediation assessment](m7-ios-review-1-assessment.md)
+> and [submission pack](submission/README.md). Earlier owner risk acceptance is not permission.
+
 | | |
 |---|---|
 | Дата | 2026-10-23 |

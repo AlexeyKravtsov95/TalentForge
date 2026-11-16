@@ -1,1 +1,1 @@
-planner,calculator,tree,spec,classic,warrior,mage,priest,druid,rogue,hunter,paladin,shaman,warlock
+calculator,tree,spec,warrior,mage,priest,druid,rogue,hunter,paladin,shaman,warlock
