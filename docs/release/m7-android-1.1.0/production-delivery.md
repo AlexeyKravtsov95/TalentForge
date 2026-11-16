@@ -319,3 +319,48 @@ the scheduler. It enforces the existing mandatory gate at every writer entry poi
 read-only `inspect_only` remains available without running publication preflight.
 A scheduled failure emits the same operational error-report shape for only the
 selected version-6 journal(s); version 5 is neither loaded nor changed.
+
+
+## M7.RELEASE.HOTFIX.1 — Google Play track state parsing
+
+Store delivery [verify run 43835463884](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/43835463884)
+passed its build and Production OTA preflight but stopped with
+`CONTRACT: missing Google Play release codes`. The original reader required a
+nonempty `versionCodes` array for every release, including `draft`. Offline
+regressions reproduce this refusal with both an omitted field and an empty array.
+The old report did not identify the track/status, so it cannot establish which
+track contained the empty draft; no raw private response is recorded here.
+
+The [Google Play tracks contract](https://developers.google.com/android-publisher/api-ref/rest/v3/edits.tracks#Release)
+defines `Release.versionCodes` as an array of strings in `int64` format. Its release
+statuses are `draft`, `inProgress`, `halted`, `completed`, and the unspecified sentinel
+`statusUnspecified`. An empty repeated field may be omitted in canonical JSON,
+as documented in [ProtoJSON presence rules](https://protobuf.dev/programming-guides/json/#presence-and-default-values).
+The production reader accepts omitted/empty codes only for `draft`; all other
+usable statuses require a nonempty array. Unspecified, missing and unknown statuses
+remain `CONTRACT` refusals. Explicit nulls and wrong wire types remain rejected.
+
+Each code must be a canonical positive decimal string in signed int64 range,
+unique within its release. Binary-list integer wire types and duplicate checks
+remain strict. The same code may legitimately occur in different tracks after
+promotion; that does not make it available for another upload. Bundles, APKs and
+all track releases still contribute to the occupied-code check for code 6.
+
+Every pending Production release (`draft`, `inProgress`, `halted`) blocks with
+`CONFLICT`, including a draft without binaries and a pending release alongside an
+already reconciled completed delivery. No release is removed or replaced to make
+verification pass. Empty drafts in other tracks do not block an otherwise
+available code. Completed-delivery recognition still requires the existing journal,
+bundle digest, release identity and notes.
+
+Track-related refusals include a safe track identifier, release status and a fixed
+reason. Custom track names and invalid status values are redacted; release names,
+notes, raw payloads, credentials and tokens are never included in these diagnostics.
+Invalid JSON and malformed track/release structures fail with typed contract errors.
+
+Offline HTTP-transport tests check the complete `verify` request sequence: open
+an edit, read bundles/APKs/tracks, send the existing no-op Production permission
+probe, validate, and delete the edit. There is no AAB upload, commit or journal
+write, and the committed tracks remain unchanged. All delivery tests use fakes;
+this hotfix does not run a store workflow or change artifacts, versionCode, OTA,
+keys, notes, or publication approvals.
