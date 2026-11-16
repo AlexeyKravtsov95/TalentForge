@@ -393,7 +393,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$VERSION_NAME" = 1.1.0 ]; then
-            "$PY" tooling/scripts/google_play_production.py notes --repo tooling \
+            "$PY" tooling/scripts/google_play_production.py notes --repo src \
               --gate delivery/gate.json --out delivery/android/release-notes.json
           fi
 
