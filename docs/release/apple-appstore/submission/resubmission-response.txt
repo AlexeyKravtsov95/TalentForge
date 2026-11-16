@@ -1,0 +1,14 @@
+Hello App Review Team,
+
+Regarding Guideline 4.1(a), we have revised the English and Russian text in our submission package:
+
+- The proposed app name is TalentForge, with localized talent-planner subtitles.
+- Promotional text and keywords describe planning features without WoW, Warcraft, Forever or Blizzard branding. English keywords also no longer list game classes.
+- The descriptions lead with the planner's functions. A separate supported-data notice identifies the specific World of Warcraft: Forever datasets and explicitly limits support to those datasets, without suggesting support for other games or every game version.
+- Non-affiliation and third-party ownership disclosures remain in both descriptions. The descriptions now explicitly identify game icons and talent texts as third-party content.
+
+These are text changes. They do not replace the app icon, screenshots, game icons or talent texts, and they do not establish permission to use third-party content. We are not claiming a Blizzard license or that the intellectual-property questions have been resolved by these edits.
+
+The selected build in the existing App Store Connect submission is 1.0.0 (4). No new binary was produced for this metadata revision. The planner's existing workflows include explicit point controls, local saved builds and preview-before-import; these are existing functions, not features added by this revision.
+
+Thank you for reviewing the revised text and the scope of the changes.

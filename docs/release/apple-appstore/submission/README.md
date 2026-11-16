@@ -1,15 +1,19 @@
-# M7.IOS.REVIEW.1 — App Store metadata remediation pack
+# M7.IOS.REVIEW.2 — final App Store metadata remediation pack
 
 **Release gate: NO-GO.** These files are prepared for owner review after the reported
 4.1(a) rejection. A validator PASS is an editorial/technical result, not rights clearance
-or permission to upload/respond/resubmit. [Assessment and open decisions](../m7-ios-review-1-assessment.md).
+or permission to upload/respond/resubmit. [Final assessment and open decisions](../m7-ios-review-2-assessment.md).
+Read-only ASC inspection found the old rejected branded listing still present, build
+**1.0.0 (4)** selected, and resubmission disabled. This repository pack has not been
+applied in ASC. The existing affirmative Content Rights declaration has no supporting
+grant in the reviewed repository evidence and must be reconciled before submission.
 
 | Item | Current proposal / boundary |
 |---|---|
 | Name, both locales | **TalentForge** |
 | Subtitle EN / RU | **Talent Build Planner** / **Планировщик талантов** |
 | Positioning | Independent unofficial planner for the specified game's included data; no Blizzard authorization claimed |
-| Game-title mention | Once per description for identification; legal basis remains open, not mandated by validator |
+| Game-title mention | Once per description in a separate supported-data/content notice; not in the promotional opening; rights basis remains open |
 | iOS / Android | iOS stays **1.0.0 (4)**; Android **1.1.0 (6)** untouched |
 | Candidate configuration | Descriptions/notes explain **OTA ON**; actual selected archive must be verified separately. Screenshots are older OTA OFF captures. |
 | Rights | Game icons/text, class art and app-icon provenance remain unresolved; [separate plan](../m7-ios-review-1-content-plan.md) |
@@ -24,7 +28,7 @@ alternative accurate independent name. No availability claim is made by this pac
 ## Field files
 
 Each field is UTF-8 with one final newline, without comments or copy/paste headings.
-The current [machine report](../evidence/m7-ios-review-1/appstore-metadata-report.json)
+The current [machine report](../evidence/m7-ios-review-2/appstore-metadata-report.json)
 records all lengths. Limits are the existing conservative validator policy: name/subtitle
 30 characters; promotion 170; description 4000; keywords 100 bytes; review notes 4000 bytes.
 
@@ -33,17 +37,20 @@ records all lengths. Limits are the existing conservative validator policy: name
 | Name | [name](metadata/en-US/name.txt) | [name](metadata/ru/name.txt) | 11 / 11 characters |
 | Subtitle | [subtitle](metadata/en-US/subtitle.txt) | [subtitle](metadata/ru/subtitle.txt) | 20 / 20 characters |
 | Promotional text | [promotion](metadata/en-US/promotional_text.txt) | [promotion](metadata/ru/promotional_text.txt) | 143 / 156 characters |
-| Description | [description](metadata/en-US/description.txt) | [description](metadata/ru/description.txt) | 1936 / 2116 characters |
-| Keywords | [keywords](metadata/en-US/keywords.txt) | [keywords](metadata/ru/keywords.txt) | 82 / 76 bytes |
+| Description | [description](metadata/en-US/description.txt) | [description](metadata/ru/description.txt) | 2219 / 2398 characters |
+| Keywords | [keywords](metadata/en-US/keywords.txt) | [keywords](metadata/ru/keywords.txt) | 80 / 76 bytes |
 | Support URL | [support](metadata/en-US/support_url.txt) | [support](metadata/ru/support_url.txt) | unchanged iOS support page |
 | Privacy URL | [privacy](metadata/en-US/privacy_url.txt) | [privacy](metadata/ru/privacy_url.txt) | unchanged iOS-specific pages |
 | Categories | [primary](metadata/primary_category.txt) / [secondary](metadata/secondary_category.txt) | shared | Reference / Utilities |
 | Copyright | [copyright](metadata/copyright.txt) | shared | 2026 Alexey Kravtsov |
 | Review Notes | [English notes](metadata/review_information/notes.txt) | single shared field | 3073 bytes |
 
-[Resolution Center response](resolution-center-response.txt) is a separate **unsent draft**,
-not an ASC field. It reports prepared repository changes, outstanding rights and no ASC
-update. [Old metadata-en](../metadata-en.md), [metadata-ru](../metadata-ru.md), M5 readiness
+[Clarification request A](clarification-request.txt) and [resubmission response B](resubmission-response.txt)
+are separate **unsent drafts**, not ASC fields. B is held under NO-GO and describes only
+the text changes made in this package. Reconcile it with actual remediation and store
+application before any separately authorized use. The earlier
+[Resolution Center response](resolution-center-response.txt) is historical.
+[Old metadata-en](../metadata-en.md), [metadata-ru](../metadata-ru.md), M5 readiness
 and first-submission evidence are historical. These field files take precedence for copy;
 the current assessment takes precedence for the release decision.
 
@@ -54,15 +61,17 @@ python3 scripts/verify_appstore_metadata.py
 python3 scripts/verify_appstore_screenshots.py --require-duo
 ```
 
-[Validation record](../m7-ios-review-1-validation.md) distinguishes this PR's checks from
+[Validation record](../m7-ios-review-2-validation.md) distinguishes this PR's checks from
 historical evidence. Mobile CI now runs on submission-pack/validator changes and checks
 these editorial rules and screenshot integrity as well as its existing mobile checks.
 
 [screenshots/manifest.json](screenshots/manifest.json) records the **42 unchanged PNGs**:
 12 iPhone 6.3-inch, 6 iPad 13-inch and 24 Duo Outer/Inner, across EN/RU. No existing image
 was retouched. Technical PNG acceptance is not an IP or native gesture sign-off.
-[Assessment §4](../m7-ios-review-1-assessment.md#4-screenshot-findings-and-recapture-decision)
-contains the real-app recapture plan after content decisions.
+[Individual audit and recapture plan](../m7-ios-review-2-screenshot-audit.md) classifies
+all 42 files and the App Icon: 18 recapture, 24 conditional retain, none rights-cleared.
+ASC has 18 iPhone/iPad filenames and no Duo uploads; remote byte identity is unverified.
+No new screenshot or icon has been generated or edited here.
 
 ## Owner gates
 
