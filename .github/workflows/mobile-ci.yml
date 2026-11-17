@@ -331,7 +331,7 @@ jobs:
     name: iOS smoke — ${{ matrix.device }}
     needs: mobile-macos
     runs-on: xcode-27
-    timeout-minutes: 30
+    timeout-minutes: 35
     strategy:
       fail-fast: false
       matrix:
@@ -363,7 +363,7 @@ jobs:
       - name: Unpack the app built by this workflow run
         run: tar -xzf simulator-package/simulator-app.tgz -C simulator-package
       - name: Simulator launch smoke
-        timeout-minutes: 23
+        timeout-minutes: 27
         env:
           SMOKE_DEVICE: ${{ matrix.device }}
         run: scripts/ios_simulator_smoke.sh simulator-package/iosApp.app ios-smoke "$SMOKE_DEVICE"

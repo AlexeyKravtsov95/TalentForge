@@ -18,7 +18,7 @@ def test_smoke_jobs_are_isolated_and_always_upload_evidence() -> None:
     assert "if: always()" in smoke
     assert "path: ios-smoke/" in smoke
     assert "if-no-files-found: error" in smoke
-    assert "timeout-minutes: 23" in smoke and "timeout-minutes: 30" in smoke
+    assert "timeout-minutes: 27" in smoke and "timeout-minutes: 35" in smoke
     assert "actions/download-artifact@v4" in smoke
     assert "name: ios-simulator-app" in build and "name: ios-simulator-app" in smoke
     assert "run-id:" not in smoke  # download is restricted to this run

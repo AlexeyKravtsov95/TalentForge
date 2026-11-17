@@ -36,7 +36,7 @@ device. Defaults in seconds:
 | --- | ---: |
 | Discovery / process query (up to 3 queries) | 30 each |
 | Boot readiness | 600 |
-| Install | 180 |
+| Install | 300 |
 | Launch | 120 |
 | Settle | 30 (normally sleeps 15) |
 | Screenshot | 90 |
@@ -52,8 +52,8 @@ must be newly produced and nonempty. There is no automatic device-smoke retry th
 Each device retains `timings.jsonl`, stage stdout/stderr, device/runtime/UDID facts, screenshot,
 app logs, installed apps, device/runtime lists, host process/disk snapshots, CoreSimulator logs and
 new app crash reports. Diagnostic commands also have deadlines, so an unavailable simulator cannot
-block evidence collection indefinitely. Per-device upload uses `always()`. Smoke has a 23-minute
-step limit within a 30-minute job, leaving setup/upload headroom; build/archive has a separate
+block evidence collection indefinitely. Per-device upload uses `always()`. Smoke has a 27-minute
+step limit within a 35-minute job, leaving setup/upload headroom; build/archive has a separate
 60-minute job limit. Successful build results and sibling smoke artifacts survive a failing iPad job.
 
 ## Store delivery gate
@@ -78,3 +78,21 @@ Offline tests cover real subprocess success/error/timeout/cancellation, descenda
 partial diagnostics, all smoke stages, stale screenshot/output rejection and release-gate trust
 failures. The PR's CI and Mobile CI runs are the authoritative validation of the final change,
 including the three real simulators, unchanged Android tests and iOS archive/OTA checks.
+
+
+## First instrumented run
+
+[Run 44140579246](https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/44140579246)
+at `695a61433ce06ddbe207011a364bae0aac604298` retained the build/archive results and the
+successful sibling smoke jobs when Pro Max failed. iPad passed in approximately 5:37:
+boot 84.8s, install 114.6s, launch 56.3s. iPhone Pro passed with install 169.2s. Pro Max
+completed boot in 91.5s, then hit the initial 180s install deadline. Its bounded diagnostic
+calls also timed out (including host `ps`); partial outputs and timings were uploaded in
+`ios-smoke-iphone-pro-max`. Host disk output showed 33GiB free. These observations identify
+the new failure stage and poor host responsiveness, not the original cancellation cause
+or a proven underlying OS/app defect. All three selected iOS 27.2, as before the hotfix.
+
+The final install deadline is 300s to leave useful headroom above the observed successful
+169s install, with a 27-minute smoke step inside a 35-minute job. Every required device
+still must install, launch, remain running and produce a new screenshot; a deadline breach
+remains a failure. There is no retry of app launch/crash checks and no runtime change.

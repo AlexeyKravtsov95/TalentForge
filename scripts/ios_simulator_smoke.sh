@@ -25,7 +25,7 @@
 #       build/ios-smoke "iPhone 18 Pro" "iPhone 18 Pro Max" "iPad Pro 13-inch (M5)"
 #
 # Every simctl operation has a deadline, a heartbeat every 10s, partial stdout/stderr logs,
-# and a timings.jsonl record. Defaults: discovery/process 30s, boot 600s, install 180s,
+# and a timings.jsonl record. Defaults: discovery/process 30s, boot 600s, install 300s,
 # launch 120s, screenshot 90s; diagnostic calls 10-20s; cleanup 20s per call. The CI matrix
 # runs one device per fresh runner, preserving all three required device checks.
 # Environment: TALENTFORGE_SMOKE_WAIT_SECONDS (default 15) before the first check;
@@ -180,7 +180,7 @@ smoke_device() {
   rc=0
   simctl_stage bootstatus "${TALENTFORGE_SMOKE_BOOT_TIMEOUT:-600}" bootstatus "$udid" -b || rc=$?
   if [ "$rc" -eq 0 ]; then
-    simctl_stage install "${TALENTFORGE_SMOKE_INSTALL_TIMEOUT:-180}" install "$udid" "$app" || rc=$?
+    simctl_stage install "${TALENTFORGE_SMOKE_INSTALL_TIMEOUT:-300}" install "$udid" "$app" || rc=$?
   fi
   if [ "$rc" -eq 0 ]; then
     simctl_stage launch "${TALENTFORGE_SMOKE_LAUNCH_TIMEOUT:-120}" launch "$udid" "$bundle_id" || rc=$?
