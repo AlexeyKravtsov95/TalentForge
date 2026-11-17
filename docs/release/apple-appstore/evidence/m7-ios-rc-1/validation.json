@@ -4,6 +4,11 @@
   "runtimeSourceCommit": "ee4e9d028ffce5c1df1eec7a643827f69111709c",
   "checks": [
     {
+      "command": ".venv/bin/python -m pytest tests/unit/test_store_delivery.py tests/unit/test_verify_appstore_metadata.py tests/unit/test_verify_appstore_screenshots.py tests/unit/test_verify_ios_project.py tests/unit/test_verify_ios_archive.py -q",
+      "exitCode": 0,
+      "result": "396 passed in 72.09s; includes corrected committed iOS build expectation"
+    },
+    {
       "command": ".venv/bin/python -m pytest tests/unit/test_verify_appstore_metadata.py tests/unit/test_verify_appstore_screenshots.py tests/unit/test_verify_ios_project.py tests/unit/test_verify_ios_archive.py -q",
       "exitCode": 0,
       "result": "304 passed in 70.23s"
@@ -59,7 +64,24 @@
       "command": "git diff ee4e9d028ffce5c1df1eec7a643827f69111709c -- mobile/iosApp mobile/composeApp mobile/shared",
       "exitCode": 0,
       "result": "Empty: current application runtime matches artifact source commit"
+    },
+    {
+      "command": ".venv/bin/python -m pytest tests/unit/ota/test_automation_e2e.py::test_code_only_trigger_recovers_older_approved_request -q --basetemp .cache/m7-ios-rc-1/pytest-provenance --durations=3",
+      "exitCode": 0,
+      "result": "1 passed in 15.36s"
+    },
+    {
+      "command": "graphify update .",
+      "exitCode": 0,
+      "result": "After the store-delivery assertion fix: no code-graph topology changes; outputs left untouched; existing parser coverage warnings"
     }
   ],
-  "hostedCI": "Required on final pushed HEAD; exact run links/status recorded in PR Checks and final PR description. Local results above do not substitute for hosted CI."
+  "hostedCI": "Required on final pushed HEAD; exact run links/status recorded in PR Checks and final PR description. Local results above do not substitute for hosted CI.",
+  "firstHostedRun": {
+    "head": "63d140b5e7ad6e6faf0c6651bd996e5175d86e64",
+    "run": "https://github.com/AlexeyKravtsov95/TalentForge/actions/runs/44033765734",
+    "result": "FAIL: 3388 passed, 1 failed, 11 deselected in 1378.54s",
+    "failure": "test_the_committed_project_versions_parse still expected iOS build 4; corrected to 5, Android 1.1.0 (6) assertion preserved",
+    "finalHeadStatus": "See final PR Checks/description after corrective commit; earlier run is not claimed green"
+  }
 }

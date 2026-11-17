@@ -203,6 +203,12 @@ or application record was changed.
 
 ## Local baseline results and execution limits
 
+- Final focused run including store delivery: **396 passed in 72.09s**. The first
+  hosted full run had **3388 passed / 1 failed / 11 deselected**: its committed-version
+  integration test still expected build 4. That expectation now requires build 5
+  while continuing to require Android 1.1.0 (6); synthetic historical fixtures stay
+  unchanged. Runtime source and signed artifacts are unaffected. Final-head hosted
+  rerun remains required; its result is recorded in the PR.
 - `python3 scripts/sync_mobile_datasets.py --check`: PASS, 50 files / 5 builds.
 - `./gradlew :shared:jvmTest :composeApp:desktopTest :composeApp:assembleDebug
   :shared:iosSimulatorArm64Test :composeApp:iosSimulatorArm64Test --console=plain`:
@@ -217,6 +223,7 @@ or application record was changed.
   `test_code_only_trigger_recovers_older_approved_request` (PACKAGE_PROVENANCE_FAILED),
   848.84s before stopping. Scratch usage reached 16 GB; only this task's test scratch
   was removed. Full-suite success is not claimed locally; clean hosted CI is required.
+  The same provenance case passed separately: **1 passed in 15.36s**.
 - Local `ruff check .`: FAIL, two pre-existing errors in untracked
   `.tf-transfer/rc1/rc1_android_device_check.py`; that user file was not edited.
   Tracked-file lint, final focused tests, format and mypy results are recorded in
