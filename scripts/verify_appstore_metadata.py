@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the App Store Connect metadata of the TalentForge submission pack (M7.IOS.REVIEW.1).
+"""Validate the App Store Connect metadata of the TalentForge submission pack (M7.IOS.REVIEW.2).
 
 The pack keeps one plain-text file per App Store Connect field, so the owner can copy each
 one into App Store Connect unchanged (``docs/release/apple-appstore/submission/metadata``)::
@@ -22,6 +22,8 @@ Every check must pass; a file that is missing, empty or unreadable is a failure:
   planner subtitle; promotional text and keywords carry no Blizzard/game branding;
 - descriptions preserve the concrete class/tree planner scope, independence and OTA facts;
   a game-title mention is optional and never evidence of permission;
+- no public copy or review notes advertise library features introduced after the selected
+  build (4)'s November 9 review (search/filter/favorites/sort/grouping);
 - the texts match the OTA ON build: the description says that only signed game data is
   downloaded and that the app works offline, and no text claims the build makes no requests;
   the review notes explain the unofficial status and the OTA mechanism (Guideline 2.5.2);
@@ -54,6 +56,14 @@ APP_NAME = "TalentForge"
 SUBTITLES = {"en-US": "Talent Build Planner", "ru": "Планировщик талантов"}
 # Editorial guard for this remediation, not a complete trademark or rights checker.
 GAME_BRANDING = re.compile(r"\b(?:wow|warcraft|blizzard|forever)\b", re.IGNORECASE)
+# Candidate-specific editorial guard: build (4) was reviewed November 9. These UI
+# features first entered the repository November 10-14; recent simulations reuse (4).
+# Reassess this rule only when the actual submission candidate changes, with evidence.
+POST_REVIEW_LIBRARY = re.compile(
+    r"\b(?:search\w*|sort\w*|favou?rit\w*|filter\w*|group\w*|"
+    r"поиск\w*|ищ\w*|сортир\w*|избранн\w*|фильтр\w*|группир\w*)\b",
+    re.IGNORECASE,
+)
 LOCALES = ("en-US", "ru")
 SUPPORT_URL = "https://legal.mythweld.com/"
 PRIVACY_URLS = {
@@ -136,8 +146,9 @@ OTA_OFF_CLAIMS = (
 REVIEW_NOTES_REQUIRED = (
     "TalentForge",
     "not a game client",
-    "search",
-    "sort",
+    "rename",
+    "duplicate",
+    "delete",
     "automatically saved",
     "preview",
     "offline",
@@ -365,6 +376,17 @@ def evaluate(metadata: Path) -> tuple[Evaluation, dict[str, Any]]:
         f"another store or platform is named in {platforms}"
         if platforms
         else "no other store or platform is named",
+    )
+
+    future_library = sorted(
+        name for name, text in fields.items() if POST_REVIEW_LIBRARY.search(text)
+    )
+    evaluation.add(
+        "reviewed-build-claims",
+        not future_library,
+        f"post-review library features advertised in {future_library}"
+        if future_library
+        else "no claims for library features introduced after build (4)'s November 9 review",
     )
 
     report: dict[str, Any] = {

@@ -1,4 +1,4 @@
-TalentForge is an independent, unofficial mobile talent build planner for World of Warcraft: Forever. It is a planning tool, not a game client: it does not connect to game realms or control a character.
+TalentForge is an independent, unofficial mobile build planner for the specific talent datasets included in the app. It is a planning tool, not a game client: it does not connect to game realms or control a character.
 
 Edit talent builds
 • Plan for nine classes, each with three talent trees, using the data versions included in the app.
@@ -8,7 +8,6 @@ Edit talent builds
 
 Keep your own library
 • Builds are saved automatically on your device. Continue editing, rename, duplicate or delete them.
-• Search by build name or class, filter by class or favorites, and sort by last edited, name or class. Group builds by class.
 
 Import and export
 • Export a build as a text code with the iOS share sheet or copy it.
@@ -23,5 +22,8 @@ English and Russian
 • Interface and available talent texts follow the device language. Missing Russian talent text falls back to English.
 
 No account, ads, analytics or tracking. Your builds stay on your device and are never uploaded.
+
+Supported data and third-party content
+This planner works only with the included World of Warcraft: Forever talent datasets. It does not support other games or promise compatibility with every version of the game. Game icons and talent texts are third-party content.
 
 TalentForge is not affiliated with, endorsed by or sponsored by Blizzard Entertainment. The game's trademarks and content belong to their respective rights holders.

@@ -1,0 +1,124 @@
+{
+  "observedAtLocal": "2026-11-17 approximately 01:25–01:31 Asia/Novosibirsk",
+  "observedAtUtc": "2026-11-16 approximately 18:25–18:31 UTC",
+  "method": "Read-only native Chrome accessibility trees and App Information screenshot through cua_repl; selective human-readable transcription, not API export",
+  "appId": "6826780044",
+  "submissionId": "0a3acce7-75fb-4f82-9f93-54edf5310eb6",
+  "pages": [
+    "https://appstoreconnect.apple.com/apps/6826780044/distribution/reviewsubmissions/details/0a3acce7-75fb-4f82-9f93-54edf5310eb6",
+    "https://appstoreconnect.apple.com/apps/6826780044/distribution/ios/version/inflight",
+    "https://appstoreconnect.apple.com/apps/6826780044/distribution/info"
+  ],
+  "submissionStatusObserved": "Нерешенные проблемы",
+  "versionStatusObserved": "Отклонено",
+  "rejectionCodeObserved": "4.1.0 Design: Copycats",
+  "storeVersionObserved": "1.0",
+  "selectedBinaryObserved": {
+    "version": "1.0.0",
+    "build": "4"
+  },
+  "resubmitControlObserved": "Повторно отправить на проверку приложения — disabled",
+  "versionActionObserved": "Обновить данные для проверки — not activated",
+  "contentRightsObserved": "Да, у этого приложения есть необходимые права на сторонний контент.",
+  "releaseModeObserved": "Выпустить эту версию автоматически",
+  "review": {
+    "originalMessageUiDate": "10.11.2026 в 04:15",
+    "reviewDateInMessage": "November 09, 2026",
+    "device": "iPad Air 11-inch (M3)",
+    "versionInMessage": "1.0 (4)",
+    "guideline": "4.1(a) - Design - Copycats",
+    "originalMessageParaphrase": "Metadata has potentially misleading third-party references and resembles WoW without demonstrated authorization. Attach rights evidence to App Review Information and reply if authorized; otherwise revise metadata to remove third-party content before resubmitting.",
+    "followupUiDate": "Вчера в 15:55",
+    "followupParaphrase": "Make the necessary adjustments, then resubmit in App Store Connect.",
+    "notEstablished": [
+      "Individual offending fields or images",
+      "Scope inside the binary",
+      "An affirmative metadata-only classification covering every outstanding issue",
+      "Any permission or acceptance"
+    ]
+  },
+  "locales": {
+    "en-US": {
+      "name": "TalentForge: WoW Forever",
+      "subtitle": "Talent builds for WoW: Forever",
+      "promotional_text": "Plan talent builds for all nine classes of World of Warcraft: Forever. Save them on your device, share them as codes and keep planning offline. No account, no ads.",
+      "descriptionOpening": "TalentForge is an unofficial talent build planner for World of Warcraft: Forever. Pick a class, spend points on its talent trees and keep every build on your iPhone or iPad.",
+      "descriptionFullFieldRead": true,
+      "descriptionFindings": [
+        "Full title in opening and offline data section",
+        "Blizzard non-affiliation and World of Warcraft trademark attribution at end",
+        "Old Plan / Keep / Share sections; no search/favorites/sort feature list",
+        "Says English and Russian texts without fallback qualification"
+      ],
+      "keywords": "planner,wow,calculator,tree,classic,warrior,mage,priest,druid,rogue,hunter,paladin,shaman,warlock",
+      "screenshotsObserved": {
+        "iPhoneDynamicIslandMedium": 6,
+        "iPad13": 3,
+        "iPhoneDuo": 0
+      }
+    },
+    "ru": {
+      "name": "TalentForge: WoW Forever",
+      "subtitle": "Билды талантов WoW: Forever",
+      "promotional_text": "Планируйте билды талантов для всех девяти классов World of Warcraft: Forever. Храните их на устройстве, делитесь кодами, работайте без сети. Без учётной записи и рекламы.",
+      "descriptionOpening": "TalentForge - неофициальный планировщик билдов талантов для World of Warcraft: Forever. Выберите класс, распределите очки по деревьям талантов и храните все билды на iPhone или iPad.",
+      "descriptionFullFieldRead": true,
+      "descriptionFindings": [
+        "Full title in opening and offline data section",
+        "Blizzard non-affiliation and World of Warcraft trademark attribution at end",
+        "Old Планируйте / Храните / Делитесь sections; no search/favorites/sort feature list",
+        "Says Russian and English texts without fallback qualification"
+      ],
+      "keywords": "таланты,планировщик,калькулятор,дерево,маг,жрец,друид",
+      "screenshotsObserved": {
+        "iPhoneDynamicIslandMedium": 6,
+        "iPad13": 3,
+        "iPhoneDuo": 0
+      }
+    }
+  },
+  "images": {
+    "iPhoneFilenamesObserved": [
+      "01-editor.png",
+      "02-talent-details.png",
+      "03-class-picker.png",
+      "04-build-library.png",
+      "05-share-code.png",
+      "06-import-preview.png"
+    ],
+    "iPadFilenamesObserved": [
+      "01-editor.png",
+      "02-share-code.png",
+      "03-import-preview.png"
+    ],
+    "iconThumbnailObservation": "Gold branching paths, orbs and crystal on dark background; visually consistent with repository icon, not a remote-byte identity check",
+    "remoteBytesDownloaded": false,
+    "remoteHashIdentityEstablished": false,
+    "repositoryImagesVisuallyReviewed": 42,
+    "repositoryIconVisuallyReviewed": true
+  },
+  "mutationsPerformed": false,
+  "limitations": [
+    "No raw AX dumps or review contact information committed",
+    "No remote image originals downloaded or individually compared at full size",
+    "No metadata saved or Update Review Information action used to test resubmit enablement",
+    "No uploaded-binary source/hash or feature parity proved by a build-number match"
+  ],
+  "separateRepositoryChronology": {
+    "scope": "Repository evidence added after the UI observation; not values exported from ASC",
+    "reviewDate": "2026-11-09",
+    "searchAndClassFilterUi": {
+      "commit": "f8f0ccea92ea4c057f39fd9bd457dbb1fc7f7e47",
+      "date": "2026-11-10"
+    },
+    "favoritesUi": {
+      "commit": "230bbe0a1c162cca00c8bf42be5be532a5795aba",
+      "date": "2026-11-11"
+    },
+    "sortingAndGroupingUi": {
+      "commit": "78bcb2db5bc54d4725a3c9f88fbcc6dcfb0db1fc",
+      "date": "2026-11-14"
+    },
+    "inference": "These features first entered repository UI after the actual review. Remove their claims for uploaded build (4); 8 Duo library/favorites screenshots require recapture for that candidate. Exact uploaded binary hash/source remains unverified."
+  }
+}

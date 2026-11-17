@@ -1,1 +1,1 @@
-calculator,tree,spec,warrior,mage,priest,druid,rogue,hunter,paladin,shaman,warlock
+calculator,tree,spec,points,ranks,offline,import,export,code,undo,redo

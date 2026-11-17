@@ -1,0 +1,305 @@
+{
+  "schema": "talentforge.appstore-metadata-report.v1",
+  "fields": {
+    "copyright.txt": {
+      "characters": 20,
+      "bytes": 20
+    },
+    "en-US/description.txt": {
+      "characters": 2093,
+      "bytes": 2115
+    },
+    "en-US/keywords.txt": {
+      "characters": 70,
+      "bytes": 70
+    },
+    "en-US/name.txt": {
+      "characters": 11,
+      "bytes": 11
+    },
+    "en-US/privacy_url.txt": {
+      "characters": 46,
+      "bytes": 46
+    },
+    "en-US/promotional_text.txt": {
+      "characters": 146,
+      "bytes": 146
+    },
+    "en-US/subtitle.txt": {
+      "characters": 20,
+      "bytes": 20
+    },
+    "en-US/support_url.txt": {
+      "characters": 27,
+      "bytes": 27
+    },
+    "primary_category.txt": {
+      "characters": 9,
+      "bytes": 9
+    },
+    "review_information/notes.txt": {
+      "characters": 2936,
+      "bytes": 2955
+    },
+    "ru/description.txt": {
+      "characters": 2237,
+      "bytes": 4060
+    },
+    "ru/keywords.txt": {
+      "characters": 44,
+      "bytes": 83
+    },
+    "ru/name.txt": {
+      "characters": 11,
+      "bytes": 11
+    },
+    "ru/privacy_url.txt": {
+      "characters": 43,
+      "bytes": 43
+    },
+    "ru/promotional_text.txt": {
+      "characters": 157,
+      "bytes": 289
+    },
+    "ru/subtitle.txt": {
+      "characters": 20,
+      "bytes": 39
+    },
+    "ru/support_url.txt": {
+      "characters": 27,
+      "bytes": 27
+    },
+    "secondary_category.txt": {
+      "characters": 9,
+      "bytes": 9
+    }
+  },
+  "checks": [
+    {
+      "id": "format:en-US/name.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:en-US/subtitle.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:en-US/promotional_text.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:en-US/description.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:en-US/keywords.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:en-US/support_url.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:en-US/privacy_url.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "limit:en-US/name",
+      "passed": true,
+      "detail": "11 characters (allowed 2-30)"
+    },
+    {
+      "id": "limit:en-US/subtitle",
+      "passed": true,
+      "detail": "20 characters (allowed 1-30)"
+    },
+    {
+      "id": "limit:en-US/promotional_text",
+      "passed": true,
+      "detail": "146 characters (allowed 1-170)"
+    },
+    {
+      "id": "limit:en-US/description",
+      "passed": true,
+      "detail": "2093 characters (allowed 1-4000)"
+    },
+    {
+      "id": "keywords:en-US",
+      "passed": true,
+      "detail": "11 keywords, 70 bytes"
+    },
+    {
+      "id": "name:en-US",
+      "passed": true,
+      "detail": "name='TalentForge' (expected 'TalentForge')"
+    },
+    {
+      "id": "positioning:en-US/subtitle",
+      "passed": true,
+      "detail": "subtitle='Talent Build Planner' (expected 'Talent Build Planner')"
+    },
+    {
+      "id": "branding:en-US",
+      "passed": true,
+      "detail": "planner-focused discovery fields"
+    },
+    {
+      "id": "positioning:en-US/description",
+      "passed": true,
+      "detail": "preserves class/tree scope, unofficial status, disclaimer and OTA facts"
+    },
+    {
+      "id": "urls:en-US",
+      "passed": true,
+      "detail": "support='https://legal.mythweld.com/', privacy='https://legal.mythweld.com/privacy-ios-en.html' (expected 'https://legal.mythweld.com/', 'https://legal.mythweld.com/privacy-ios-en.html')"
+    },
+    {
+      "id": "format:ru/name.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:ru/subtitle.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:ru/promotional_text.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:ru/description.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:ru/keywords.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:ru/support_url.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:ru/privacy_url.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "limit:ru/name",
+      "passed": true,
+      "detail": "11 characters (allowed 2-30)"
+    },
+    {
+      "id": "limit:ru/subtitle",
+      "passed": true,
+      "detail": "20 characters (allowed 1-30)"
+    },
+    {
+      "id": "limit:ru/promotional_text",
+      "passed": true,
+      "detail": "157 characters (allowed 1-170)"
+    },
+    {
+      "id": "limit:ru/description",
+      "passed": true,
+      "detail": "2237 characters (allowed 1-4000)"
+    },
+    {
+      "id": "keywords:ru",
+      "passed": true,
+      "detail": "6 keywords, 83 bytes"
+    },
+    {
+      "id": "name:ru",
+      "passed": true,
+      "detail": "name='TalentForge' (expected 'TalentForge')"
+    },
+    {
+      "id": "positioning:ru/subtitle",
+      "passed": true,
+      "detail": "subtitle='Планировщик талантов' (expected 'Планировщик талантов')"
+    },
+    {
+      "id": "branding:ru",
+      "passed": true,
+      "detail": "planner-focused discovery fields"
+    },
+    {
+      "id": "positioning:ru/description",
+      "passed": true,
+      "detail": "preserves class/tree scope, unofficial status, disclaimer and OTA facts"
+    },
+    {
+      "id": "urls:ru",
+      "passed": true,
+      "detail": "support='https://legal.mythweld.com/', privacy='https://legal.mythweld.com/privacy-ios.html' (expected 'https://legal.mythweld.com/', 'https://legal.mythweld.com/privacy-ios.html')"
+    },
+    {
+      "id": "format:review_information/notes.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "limit:review_information/notes",
+      "passed": true,
+      "detail": "2955 bytes (limit 4000)"
+    },
+    {
+      "id": "review-notes",
+      "passed": true,
+      "detail": "independent planner workflow, open rights status and OTA (2.5.2) are explained"
+    },
+    {
+      "id": "format:copyright.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "copyright",
+      "passed": true,
+      "detail": "copyright='2026 Alexey Kravtsov' (expected '<year> <owner>')"
+    },
+    {
+      "id": "format:primary_category.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "format:secondary_category.txt",
+      "passed": true,
+      "detail": "well formed"
+    },
+    {
+      "id": "categories",
+      "passed": true,
+      "detail": "primary='Reference', secondary='Utilities' (two different App Store categories, not Games: TalentForge is a tool, not a game)"
+    },
+    {
+      "id": "ota-on-claims",
+      "passed": true,
+      "detail": "no text claims that the app makes no network requests"
+    },
+    {
+      "id": "other-platforms",
+      "passed": true,
+      "detail": "no other store or platform is named"
+    },
+    {
+      "id": "reviewed-build-claims",
+      "passed": true,
+      "detail": "no claims for library features introduced after build (4)'s November 9 review"
+    }
+  ],
+  "result": "PASS"
+}

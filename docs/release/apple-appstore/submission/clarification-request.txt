@@ -1,0 +1,13 @@
+Hello App Review Team,
+
+Thank you for reviewing TalentForge, submission 0a3acce7-75fb-4f82-9f93-54edf5310eb6, build 1.0.0 (4).
+
+We understand that the Guideline 4.1(a) concern is about potentially misleading third-party content resembling WoW in the metadata, and that authorization has not been demonstrated. We also understand your follow-up asks us to make the necessary adjustments before resubmitting.
+
+To address the full scope correctly, could you identify the affected fields or images, for example the app name, subtitle, promotional text, description, keywords, icon or particular screenshots? Does the concern also extend to the game icons, talent texts or identifying labels displayed inside the app?
+
+The app is a specialized planner for specific game talent datasets. Removing promotional brand references does not change the origin of those datasets or images. We do not want to imply broader game support or conceal third-party content, and we are not claiming a Blizzard license.
+
+Could you also confirm whether this submission can retain build 1.0.0 (4) if all required corrections are confined to metadata, or whether you require changes to the binary?
+
+Thank you for helping us understand the remaining requirements.
