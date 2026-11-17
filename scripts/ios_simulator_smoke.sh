@@ -117,11 +117,14 @@ save_diagnostics() {
   simctl_stage listapps 20 listapps "$udid" || true
   simctl_stage devices 20 list devices -j || true
   simctl_stage runtimes 20 list runtimes -j || true
+  simctl_stage runtime-images 20 runtime list -j || true
+  bounded_command core-simulator-file 10 cat \
+    "$HOME/Library/Logs/CoreSimulator/CoreSimulator.log" || true
   # Host evidence remains useful when CoreSimulator itself cannot respond.
   bounded_command host-processes 10 ps -axo pid,ppid,state,etime,command || true
   bounded_command host-disk 10 df -h || true
   bounded_command simulator-log 20 /usr/bin/log show --style compact --last 5m \
-    --predicate 'process == "CoreSimulatorService" OR process == "Simulator"' || true
+    --predicate 'process == "CoreSimulatorService" OR process == "simdiskimaged" OR process == "cryptexd" OR process BEGINSWITH "SimLaunchHost"' || true
   local report
   for report in "$HOME"/Library/Logs/DiagnosticReports/"$executable"*.ips \
     "$HOME"/Library/Logs/DiagnosticReports/"$executable"*.crash; do
@@ -165,6 +168,9 @@ smoke_device() {
   mkdir -p "$current_evidence"
   marker="$current_evidence/started"
   touch "$marker"
+  # Record runtime registrations before boot, including duplicate/unusable disk images.
+  # This is read-only diagnostics: no runtime is imported, removed or remounted.
+  simctl_stage runtime-inventory 30 runtime list -j || true
   echo "DEVICE [$device]: discovering simulator" >&2
   if ! found=$(find_device "$device") || [ -z "$found" ]; then
     echo "FAIL [$device]: no available simulator of this name, or discovery failed" >&2

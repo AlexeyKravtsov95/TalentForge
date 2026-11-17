@@ -352,8 +352,9 @@ def _android_ci_passed(api: GitHubApi, run: Mapping[str, Any], sha: str) -> bool
 def check_ci(api: GitHubApi, sha: str, *, platforms: str = "both") -> dict[str, str]:
     """Trusted main results for this SHA; Android needs both Android jobs, iOS all Mobile CI.
 
-    Android evidence belongs to one completed run's current attempt. A failed-jobs-only
-    rerun that omits either required job is insufficient: rerun all checks for fresh proof.
+    Android evidence must be attested by one completed run's current-attempt jobs API.
+    GitHub may retain successful same-SHA jobs in that attempt. Missing required jobs
+    remain insufficient; rerun all checks if a partial rerun omits their evidence.
     """
     if platforms not in PLATFORM_CHOICES or not FULL_SHA.fullmatch(sha):
         raise DeliveryError("GATE", "CI requires an allowed platform and full source SHA")

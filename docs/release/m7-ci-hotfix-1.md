@@ -69,8 +69,11 @@ The Google Play production command applies the same Android scope at its final C
 iOS-only and combined delivery continue to require the **entire** Mobile CI workflow to succeed.
 No store publication is part of hotfix validation. PR CI is review evidence only: the delivery gate
 continues to reject PR/feature-branch checks, even when their SHA is exact. After merging, rerun CI
-on the resulting `main` SHA before delivery. After an attempt change, use **re-run all jobs**;
-failed-only reruns omit fresh Android evidence and intentionally do not satisfy this policy.
+on the resulting `main` SHA before delivery. GitHub can retain successful same-SHA jobs
+as current-attempt records after a failed-only rerun; those API-attested records are valid
+evidence. A partial rerun that omits either required job or its current-attempt binding fails
+closed. Use **re-run all jobs** if the required records are absent; old-attempt records alone
+never satisfy the gate.
 
 ## Validation
 
@@ -96,3 +99,29 @@ The final install deadline is 300s to leave useful headroom above the observed s
 169s install, with a 27-minute smoke step inside a 35-minute job. Every required device
 still must install, launch, remain running and produce a new screenshot; a deadline breach
 remains a failure. There is no retry of app launch/crash checks and no runtime change.
+
+
+## Session-loss investigation
+
+At `e9f6634433f3b807ee24e6e736b8b1d3cea02bd3`, CI, build/archive, Android, OTA E2E and iPad
+passed. Both phones installed and launched successfully, then lost their simulator sessions:
+Pro Max process queries reported SimError 405 / bad or unknown session; Pro's screenshot
+reported POSIX 60 / timeout waiting for screen surfaces, followed by an unbooted device.
+No app crash report was present, but simulator log queries failed, so this is not proof that
+app crashes are impossible. The underlying cause remains unproven.
+
+Upstream [15334](https://github.com/actions/runner-images/issues/15334) and
+[15337](https://github.com/actions/runner-images/issues/15337) describe runtime unmount/session
+loss on image 20261112.0361.1. Our failed phone runners already used 20261104.0337.1, and their
+initial unified-log capture contained only a header. The upstream rollback therefore cannot
+be claimed as the fix for these failures. A single fresh-runner rerun of the failed phone
+jobs was used to investigate transient infrastructure while preserving all checks and artifacts.
+Both passed on fresh runners with the same SHA (Pro install 145.2s, Pro Max install 92.5s),
+and run 44149049152 completed successfully on attempt 2 with all seven jobs. The original
+failed diagnostics and the retry screenshots remain available. This establishes intermittent
+session loss; it does not identify its underlying trigger or prove a specific upstream bug.
+
+Smoke now records read-only `simctl runtime list -j` inventory before boot and on failure,
+plus the host `CoreSimulator.log` and bounded unified logs for `simdiskimaged`, `cryptexd`
+and `SimLaunchHost`. These can distinguish future runtime-registration/session-loss failures
+without changing runtime versions, registration, mounts or app behavior.

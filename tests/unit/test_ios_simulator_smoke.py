@@ -198,7 +198,7 @@ def smoke(
     call = f'''source "{SCRIPT}"
     eval "$(declare -f bounded_command | sed '1s/bounded_command/real_bounded_command/')"
     bounded_command() {{
-      if [ "$1" = simulator-log ]; then
+      if [ "$1" = simulator-log ] || [ "$1" = core-simulator-file ]; then
         real_bounded_command "$1" "$2" echo fake-host-log
       else
         real_bounded_command "$@"
@@ -252,6 +252,9 @@ def test_each_stage_fails_closed_and_retains_diagnostics(
     assert (evidence / "app-log.stderr.log").exists()
     assert (evidence / "devices.stdout.log").exists()
     assert (evidence / "host-processes.stdout.log").exists()
+    assert (evidence / "runtime-inventory.stdout.log").exists()
+    assert (evidence / "runtime-images.stdout.log").exists()
+    assert (evidence / "core-simulator-file.stdout.log").read_text() == "fake-host-log\n"
     if stage != "discovery":
         assert (evidence / "shutdown.stderr.log").exists()
     if stage in ("discovery", "bootstatus", "install"):

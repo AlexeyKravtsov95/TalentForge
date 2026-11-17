@@ -316,6 +316,22 @@ def test_android_gate_uses_required_jobs_despite_ios_result(conclusion: str) -> 
     assert github.job_requests == [(1, 1, 1)]
 
 
+def test_android_gate_accepts_api_attested_retained_same_sha_successes() -> None:
+    # Observed on a failed-jobs-only GitHub rerun: current-attempt records retain the
+    # original execution timestamps. Trust the API binding, never arbitrary old jobs.
+    github = FakeGitHub().green(SOURCE)
+    github.runs["mobile-ci.yml"][0].update(run_attempt=2, conclusion="failure")
+    github.jobs[1, 2] = android_ci_jobs(
+        run_attempt=2,
+        started_at="2026-11-17T18:33:04Z",
+        completed_at="2026-11-17T18:36:40Z",
+    )
+    assert set(d.check_ci(github.api(), SOURCE, platforms="android")) == set(
+        d.REQUIRED_CI_WORKFLOWS
+    )
+    assert github.job_requests == [(1, 2, 1)]
+
+
 @pytest.mark.parametrize("platforms", ["ios", "both"])
 def test_ios_gate_still_requires_success_of_all_mobile_checks(platforms: str) -> None:
     github = FakeGitHub().green(SOURCE)
