@@ -1,0 +1,24 @@
+{
+  "date": "2026-11-17",
+  "timezone": "Asia/Novosibirsk",
+  "device": "iPhone 16 Pro",
+  "os": "iOS 27.0.1",
+  "version": "1.0.0",
+  "build": "5",
+  "configuration": "Release",
+  "otaMode": "production",
+  "artifact": "Development-signed verified archive installed locally over same bundle ID; not TestFlight",
+  "executableSha256": "a137492b59dff34a29dc4900226cb33df72870e96bc97708e6cfddecdbc8df04",
+  "method": "Owner response in this Codex chat after confirmed successful devicectl install",
+  "requestedChecks": [
+    "two-finger pinch",
+    "free tree pan",
+    "native swipe back",
+    "open and edit with Wi-Fi and cellular off",
+    "relaunch app offline",
+    "existing builds and new edits retained"
+  ],
+  "ownerResponse": "все ок",
+  "result": "OWNER_REPORTED_PASS",
+  "limitations": "No independent agent recording. Does not establish physical iPad or Duo acceptance, rights, TestFlight installation or App Store approval."
+}

@@ -23,12 +23,20 @@ Every check must pass (``Screenshot specifications``, App Store Connect Help, re
   transparencies");
 - the manifest lists exactly these files, with their dimensions, byte size and SHA-256.
 
+For a new release, use ``--expected-build``, ``--expected-version`` and
+``--require-production-ota`` to reject historical, Debug or OTA OFF provenance.
+The last flag requires source/binary/capture hashes and native device/toolchain facts
+on every image, including iPhone and iPad. It validates recorded facts; it cannot
+authenticate a capture or prove runtime behavior from pixels.
+
 Content (real UI, the right language, no notifications or debug elements) cannot be decided
 from pixels by a script: it is reviewed by eye and recorded in the pack's README.
 
 Usage::
 
     python3 scripts/verify_appstore_screenshots.py [--screenshots DIR] [--report report.json]
+    python3 scripts/verify_appstore_screenshots.py --screenshots DIR --require-duo \\
+        --expected-version 1.0.0 --expected-build 5 --require-production-ota
 
 Exit status: 0 = all checks pass, 1 = a check failed, 2 = the check could not run.
 """
@@ -200,7 +208,14 @@ def _is_laid_out(name: str) -> bool:
     )
 
 
-def evaluate(screenshots: Path, *, require_duo: bool = False) -> tuple[Evaluation, dict[str, Any]]:
+def evaluate(
+    screenshots: Path,
+    *,
+    require_duo: bool = False,
+    expected_build: str | None = None,
+    expected_version: str | None = None,
+    require_production_ota: bool = False,
+) -> tuple[Evaluation, dict[str, Any]]:
     """Run every check on the screenshots directory; raises ToolError when it is unreadable."""
     if not screenshots.is_dir():
         raise ToolError(f"{screenshots} is not a directory")
@@ -253,6 +268,45 @@ def evaluate(screenshots: Path, *, require_duo: bool = False) -> tuple[Evaluatio
                 )
             for name in names:
                 report_files.append(_check_file(evaluation, screenshots, name, display, manifest))
+                entry = manifest.get(name, {})
+                for key, expected in (
+                    ("buildNumber", expected_build),
+                    ("appVersion", expected_version),
+                ):
+                    if expected is not None:
+                        evaluation.add(
+                            f"candidate:{key}:{name}",
+                            entry.get(key) == expected,
+                            f"expected {expected!r}; recorded {entry.get(key)!r}",
+                        )
+                if require_production_ota:
+                    provenance = (
+                        entry.get("configuration") == "Release"
+                        and entry.get("otaMode") == "production"
+                        and entry.get("otaOrigin") == "https://ota.mythweld.com"
+                        and _matches_text(entry.get("sourceCommit"), r"[0-9a-f]{40}")
+                        and _matches_text(entry.get("binarySha256"), r"[0-9a-f]{64}")
+                        and _matches_text(entry.get("sourceSha256"), r"[0-9a-f]{64}")
+                        and all(
+                            isinstance(entry.get(key), str) and entry[key].strip()
+                            for key in (
+                                "device",
+                                "udid",
+                                "runtime",
+                                "sdk",
+                                "xcode",
+                                "captureMethod",
+                            )
+                        )
+                        and entry.get("deviceLanguage") == locale
+                    )
+                    evaluation.add(
+                        f"production-capture:{name}",
+                        bool(provenance),
+                        "Release production OTA capture and source/binary hashes recorded"
+                        if provenance
+                        else "missing Release production OTA capture provenance",
+                    )
     for display in displays:
         reference = screens[(LOCALES[0], display)]
         for locale in LOCALES[1:]:
@@ -374,9 +428,22 @@ def main(argv: list[str] | None = None) -> int:
         help="require both Duo displays and all six screens in both locales",
     )
     parser.add_argument("--report", help="write the JSON report to this file")
+    parser.add_argument("--expected-build", help="require this build string on every capture")
+    parser.add_argument("--expected-version", help="require this app version on every capture")
+    parser.add_argument(
+        "--require-production-ota",
+        action="store_true",
+        help="require Release production OTA provenance and binary/source hashes on every capture",
+    )
     args = parser.parse_args(argv)
     try:
-        evaluation, report = evaluate(Path(args.screenshots), require_duo=args.require_duo)
+        evaluation, report = evaluate(
+            Path(args.screenshots),
+            require_duo=args.require_duo,
+            expected_build=args.expected_build,
+            expected_version=args.expected_version,
+            require_production_ota=args.require_production_ota,
+        )
     except ToolError as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return EXIT_ERROR

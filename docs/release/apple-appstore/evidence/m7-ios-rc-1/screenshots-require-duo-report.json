@@ -1,0 +1,994 @@
+{
+  "schema": "talentforge.appstore-screenshots-report.v1",
+  "screenshots": [
+    {
+      "path": "en-US/iphone-6.3/01-editor.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 471526,
+      "sha256": "f6177c0192df5807ea9ccffaad64ac6fc6c60f65e504cc6bd55a8ff9155f2a52"
+    },
+    {
+      "path": "en-US/iphone-6.3/02-talent-details.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 408157,
+      "sha256": "cf0dba55cf5b07314d7ffe502984ce07d023c1b9aa756272e3f908743436a754"
+    },
+    {
+      "path": "en-US/iphone-6.3/03-class-selection.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 467948,
+      "sha256": "6cf1f97e9a464b05d77a752375f198d0e4d6bfda673228cd2b17439aae233fe2"
+    },
+    {
+      "path": "en-US/iphone-6.3/04-build-library.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 211273,
+      "sha256": "222d34040a949ae0c2102584e295d47a94117944589ef536b37645da4f6fb6df"
+    },
+    {
+      "path": "en-US/iphone-6.3/05-search-favorites.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 113970,
+      "sha256": "567b2630cccc530ddf11b1dfac98bdc6d268519f552130900f747f47b890b807"
+    },
+    {
+      "path": "en-US/iphone-6.3/06-build-sharing.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 187312,
+      "sha256": "780865cdcbe41995160fa13427d0172cb746a1e5473f17d15dedabeec8723eb5"
+    },
+    {
+      "path": "en-US/iphone-6.3/07-build-import.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 192716,
+      "sha256": "9cc7b69b0f8050e2785a6e7a91f98430a688503d81dae6cb07da617b74d9e40d"
+    },
+    {
+      "path": "en-US/ipad-13/01-editor.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 397034,
+      "sha256": "550591e2a72aa36a105da96300210878a4ef0e80c35ed43fb5f3e105f2f985b7"
+    },
+    {
+      "path": "en-US/ipad-13/02-talent-details.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 446540,
+      "sha256": "709d2876afca8e96eaa2309be65bad796bea2552d518a7dac78148d5d740d499"
+    },
+    {
+      "path": "en-US/ipad-13/03-class-selection.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 279019,
+      "sha256": "dd48b18ff4e4a452089e1bb3cff7bf6d21cbe98f4a5fb6855c82b8e7bdf7429b"
+    },
+    {
+      "path": "en-US/ipad-13/04-build-library.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 146619,
+      "sha256": "a84ca5a726cce2ef737e6231a4c7c20c0c91c11ddc241c4d3b514685a5572f57"
+    },
+    {
+      "path": "en-US/ipad-13/05-search-favorites.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 90939,
+      "sha256": "c53809aadaa0617336ccdc056337efca23f8f1365ad78f24a5156ef0911e486c"
+    },
+    {
+      "path": "en-US/ipad-13/06-build-sharing.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 150521,
+      "sha256": "47ebffac319a5088d3119077103a5a42dc8b8d9a9f6ce10209c9d8b8f1f90bfd"
+    },
+    {
+      "path": "en-US/ipad-13/07-build-import.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 142349,
+      "sha256": "401d10d97ab9ab57bf14b203ad49ef3478584acc466155554791b02b2be49824"
+    },
+    {
+      "path": "ru/iphone-6.3/01-editor.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 471202,
+      "sha256": "afdaf988103c63f4986995119337dce5eea7d897a72794bd800970b153e144ae"
+    },
+    {
+      "path": "ru/iphone-6.3/02-talent-details.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 410022,
+      "sha256": "f833ee45f23b381da49b8a09e4ae9b76d334235ec9328b8859043ba80e28245c"
+    },
+    {
+      "path": "ru/iphone-6.3/03-class-selection.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 468270,
+      "sha256": "423b17a2a9267d54b4b18608ffc21e21eab5de8b82bf2ea3eb5932d30a57efc6"
+    },
+    {
+      "path": "ru/iphone-6.3/04-build-library.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 235270,
+      "sha256": "490044d616ef79e51e2b3a36a1bb10832c3b4454837072dbe24b114856b07e6b"
+    },
+    {
+      "path": "ru/iphone-6.3/05-search-favorites.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 119458,
+      "sha256": "78b9274a97952567f2cbc90edecc17c09b26137c8d6ab3d1dd9f95e0b57245eb"
+    },
+    {
+      "path": "ru/iphone-6.3/06-build-sharing.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 192456,
+      "sha256": "23a258f164a75c28a9edc40e6e14ae416ecb3d6cbebe3d1e0bf50d3d74668d9f"
+    },
+    {
+      "path": "ru/iphone-6.3/07-build-import.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 200970,
+      "sha256": "44686d498ca6463e0b857dd45b49814fe214fde0fa3c1cfaa11431807fef676d"
+    },
+    {
+      "path": "ru/ipad-13/01-editor.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 392131,
+      "sha256": "9bb84420823574685e2d421ae261f25607aa515773186a66c7e5a95f0686c865"
+    },
+    {
+      "path": "ru/ipad-13/02-talent-details.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 457200,
+      "sha256": "cf5f2b865159d88884275f93ffa33d8604c555214f8f52243f47eb53af4542d5"
+    },
+    {
+      "path": "ru/ipad-13/03-class-selection.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 280437,
+      "sha256": "7a95acd2b54501b06b159329e6d62b7a1da2002b331351926b9505bb621925fa"
+    },
+    {
+      "path": "ru/ipad-13/04-build-library.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 169749,
+      "sha256": "f57f2706fb2b6fb7769176a4314fa03fbf41360b5f6a8f93e50657d54c616532"
+    },
+    {
+      "path": "ru/ipad-13/05-search-favorites.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 95031,
+      "sha256": "811056ce7107be2187d6059cd144c000c67167d679a0cb6d68b888326c8d5e49"
+    },
+    {
+      "path": "ru/ipad-13/06-build-sharing.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 159008,
+      "sha256": "22f2306fe33ebf745016bf790932843fbd9408cdf5165171674728230f5f6e42"
+    },
+    {
+      "path": "ru/ipad-13/07-build-import.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 147698,
+      "sha256": "525556a0d06c35bdc5655e7a9e9b236f70552ba1189e0328b9b92866a683e6de"
+    }
+  ],
+  "checks": [
+    {
+      "id": "layout",
+      "passed": true,
+      "detail": "every file follows the legacy or Duo PNG layout"
+    },
+    {
+      "id": "count:en-US/iphone-6.3",
+      "passed": true,
+      "detail": "7 screenshots numbered [1, 2, 3, 4, 5, 6, 7] (expected 1-10, numbered from 01 without gaps)"
+    },
+    {
+      "id": "png:en-US/iphone-6.3/01-editor.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:en-US/iphone-6.3/01-editor.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:en-US/iphone-6.3/01-editor.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:en-US/iphone-6.3/01-editor.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:en-US/iphone-6.3/01-editor.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "png:en-US/iphone-6.3/02-talent-details.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:en-US/iphone-6.3/02-talent-details.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:en-US/iphone-6.3/02-talent-details.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:en-US/iphone-6.3/02-talent-details.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:en-US/iphone-6.3/02-talent-details.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "png:en-US/iphone-6.3/03-class-selection.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:en-US/iphone-6.3/03-class-selection.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:en-US/iphone-6.3/03-class-selection.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:en-US/iphone-6.3/03-class-selection.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:en-US/iphone-6.3/03-class-selection.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "png:en-US/iphone-6.3/04-build-library.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:en-US/iphone-6.3/04-build-library.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:en-US/iphone-6.3/04-build-library.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:en-US/iphone-6.3/04-build-library.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:en-US/iphone-6.3/04-build-library.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "png:en-US/iphone-6.3/05-search-favorites.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:en-US/iphone-6.3/05-search-favorites.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:en-US/iphone-6.3/05-search-favorites.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:en-US/iphone-6.3/05-search-favorites.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:en-US/iphone-6.3/05-search-favorites.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "png:en-US/iphone-6.3/06-build-sharing.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:en-US/iphone-6.3/06-build-sharing.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:en-US/iphone-6.3/06-build-sharing.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:en-US/iphone-6.3/06-build-sharing.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:en-US/iphone-6.3/06-build-sharing.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "png:en-US/iphone-6.3/07-build-import.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:en-US/iphone-6.3/07-build-import.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:en-US/iphone-6.3/07-build-import.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:en-US/iphone-6.3/07-build-import.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:en-US/iphone-6.3/07-build-import.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "count:en-US/ipad-13",
+      "passed": true,
+      "detail": "7 screenshots numbered [1, 2, 3, 4, 5, 6, 7] (expected 1-10, numbered from 01 without gaps)"
+    },
+    {
+      "id": "png:en-US/ipad-13/01-editor.png",
+      "passed": true,
+      "detail": "2064 x 2752, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:en-US/ipad-13/01-editor.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:en-US/ipad-13/01-editor.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:en-US/ipad-13/01-editor.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:en-US/ipad-13/01-editor.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "png:en-US/ipad-13/02-talent-details.png",
+      "passed": true,
+      "detail": "2064 x 2752, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:en-US/ipad-13/02-talent-details.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:en-US/ipad-13/02-talent-details.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:en-US/ipad-13/02-talent-details.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:en-US/ipad-13/02-talent-details.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "png:en-US/ipad-13/03-class-selection.png",
+      "passed": true,
+      "detail": "2064 x 2752, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:en-US/ipad-13/03-class-selection.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:en-US/ipad-13/03-class-selection.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:en-US/ipad-13/03-class-selection.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:en-US/ipad-13/03-class-selection.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "png:en-US/ipad-13/04-build-library.png",
+      "passed": true,
+      "detail": "2064 x 2752, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:en-US/ipad-13/04-build-library.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:en-US/ipad-13/04-build-library.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:en-US/ipad-13/04-build-library.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:en-US/ipad-13/04-build-library.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "png:en-US/ipad-13/05-search-favorites.png",
+      "passed": true,
+      "detail": "2064 x 2752, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:en-US/ipad-13/05-search-favorites.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:en-US/ipad-13/05-search-favorites.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:en-US/ipad-13/05-search-favorites.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:en-US/ipad-13/05-search-favorites.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "png:en-US/ipad-13/06-build-sharing.png",
+      "passed": true,
+      "detail": "2064 x 2752, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:en-US/ipad-13/06-build-sharing.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:en-US/ipad-13/06-build-sharing.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:en-US/ipad-13/06-build-sharing.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:en-US/ipad-13/06-build-sharing.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "png:en-US/ipad-13/07-build-import.png",
+      "passed": true,
+      "detail": "2064 x 2752, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:en-US/ipad-13/07-build-import.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:en-US/ipad-13/07-build-import.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:en-US/ipad-13/07-build-import.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:en-US/ipad-13/07-build-import.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "count:en-US/outer",
+      "passed": false,
+      "detail": "0 screenshots numbered [] (expected 1-10, numbered from 01 without gaps)"
+    },
+    {
+      "id": "duo-screens:en-US/outer",
+      "passed": false,
+      "detail": "expected ['editor', 'talent-details', 'class-selection', 'build-library', 'search-favorites', 'build-sharing']; got []"
+    },
+    {
+      "id": "count:en-US/inner",
+      "passed": false,
+      "detail": "0 screenshots numbered [] (expected 1-10, numbered from 01 without gaps)"
+    },
+    {
+      "id": "duo-screens:en-US/inner",
+      "passed": false,
+      "detail": "expected ['editor', 'talent-details', 'class-selection', 'build-library', 'search-favorites', 'build-sharing']; got []"
+    },
+    {
+      "id": "count:ru/iphone-6.3",
+      "passed": true,
+      "detail": "7 screenshots numbered [1, 2, 3, 4, 5, 6, 7] (expected 1-10, numbered from 01 without gaps)"
+    },
+    {
+      "id": "png:ru/iphone-6.3/01-editor.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:ru/iphone-6.3/01-editor.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:ru/iphone-6.3/01-editor.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:ru/iphone-6.3/01-editor.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:ru/iphone-6.3/01-editor.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "png:ru/iphone-6.3/02-talent-details.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:ru/iphone-6.3/02-talent-details.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:ru/iphone-6.3/02-talent-details.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:ru/iphone-6.3/02-talent-details.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:ru/iphone-6.3/02-talent-details.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "png:ru/iphone-6.3/03-class-selection.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:ru/iphone-6.3/03-class-selection.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:ru/iphone-6.3/03-class-selection.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:ru/iphone-6.3/03-class-selection.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:ru/iphone-6.3/03-class-selection.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "png:ru/iphone-6.3/04-build-library.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:ru/iphone-6.3/04-build-library.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:ru/iphone-6.3/04-build-library.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:ru/iphone-6.3/04-build-library.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:ru/iphone-6.3/04-build-library.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "png:ru/iphone-6.3/05-search-favorites.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:ru/iphone-6.3/05-search-favorites.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:ru/iphone-6.3/05-search-favorites.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:ru/iphone-6.3/05-search-favorites.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:ru/iphone-6.3/05-search-favorites.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "png:ru/iphone-6.3/06-build-sharing.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:ru/iphone-6.3/06-build-sharing.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:ru/iphone-6.3/06-build-sharing.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:ru/iphone-6.3/06-build-sharing.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:ru/iphone-6.3/06-build-sharing.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "png:ru/iphone-6.3/07-build-import.png",
+      "passed": true,
+      "detail": "1206 x 2622, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:ru/iphone-6.3/07-build-import.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:ru/iphone-6.3/07-build-import.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:ru/iphone-6.3/07-build-import.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:ru/iphone-6.3/07-build-import.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "count:ru/ipad-13",
+      "passed": true,
+      "detail": "7 screenshots numbered [1, 2, 3, 4, 5, 6, 7] (expected 1-10, numbered from 01 without gaps)"
+    },
+    {
+      "id": "png:ru/ipad-13/01-editor.png",
+      "passed": true,
+      "detail": "2064 x 2752, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:ru/ipad-13/01-editor.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:ru/ipad-13/01-editor.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:ru/ipad-13/01-editor.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:ru/ipad-13/01-editor.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "png:ru/ipad-13/02-talent-details.png",
+      "passed": true,
+      "detail": "2064 x 2752, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:ru/ipad-13/02-talent-details.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:ru/ipad-13/02-talent-details.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:ru/ipad-13/02-talent-details.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:ru/ipad-13/02-talent-details.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "png:ru/ipad-13/03-class-selection.png",
+      "passed": true,
+      "detail": "2064 x 2752, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:ru/ipad-13/03-class-selection.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:ru/ipad-13/03-class-selection.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:ru/ipad-13/03-class-selection.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:ru/ipad-13/03-class-selection.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "png:ru/ipad-13/04-build-library.png",
+      "passed": true,
+      "detail": "2064 x 2752, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:ru/ipad-13/04-build-library.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:ru/ipad-13/04-build-library.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:ru/ipad-13/04-build-library.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:ru/ipad-13/04-build-library.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "png:ru/ipad-13/05-search-favorites.png",
+      "passed": true,
+      "detail": "2064 x 2752, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:ru/ipad-13/05-search-favorites.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:ru/ipad-13/05-search-favorites.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:ru/ipad-13/05-search-favorites.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:ru/ipad-13/05-search-favorites.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "png:ru/ipad-13/06-build-sharing.png",
+      "passed": true,
+      "detail": "2064 x 2752, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:ru/ipad-13/06-build-sharing.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:ru/ipad-13/06-build-sharing.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:ru/ipad-13/06-build-sharing.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:ru/ipad-13/06-build-sharing.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "png:ru/ipad-13/07-build-import.png",
+      "passed": true,
+      "detail": "2064 x 2752, 8-bit RGB, no alpha"
+    },
+    {
+      "id": "manifest:ru/ipad-13/07-build-import.png",
+      "passed": true,
+      "detail": "recorded in the manifest with these dimensions, size and SHA-256"
+    },
+    {
+      "id": "candidate:buildNumber:ru/ipad-13/07-build-import.png",
+      "passed": true,
+      "detail": "expected '5'; recorded '5'"
+    },
+    {
+      "id": "candidate:appVersion:ru/ipad-13/07-build-import.png",
+      "passed": true,
+      "detail": "expected '1.0.0'; recorded '1.0.0'"
+    },
+    {
+      "id": "production-capture:ru/ipad-13/07-build-import.png",
+      "passed": true,
+      "detail": "Release production OTA capture and source/binary hashes recorded"
+    },
+    {
+      "id": "count:ru/outer",
+      "passed": false,
+      "detail": "0 screenshots numbered [] (expected 1-10, numbered from 01 without gaps)"
+    },
+    {
+      "id": "duo-screens:ru/outer",
+      "passed": false,
+      "detail": "expected ['editor', 'talent-details', 'class-selection', 'build-library', 'search-favorites', 'build-sharing']; got []"
+    },
+    {
+      "id": "count:ru/inner",
+      "passed": false,
+      "detail": "0 screenshots numbered [] (expected 1-10, numbered from 01 without gaps)"
+    },
+    {
+      "id": "duo-screens:ru/inner",
+      "passed": false,
+      "detail": "expected ['editor', 'talent-details', 'class-selection', 'build-library', 'search-favorites', 'build-sharing']; got []"
+    },
+    {
+      "id": "locales-match:iphone-6.3",
+      "passed": true,
+      "detail": "ru: ['editor', 'talent-details', 'class-selection', 'build-library', 'search-favorites', 'build-sharing', 'build-import']; en-US: ['editor', 'talent-details', 'class-selection', 'build-library', 'search-favorites', 'build-sharing', 'build-import']"
+    },
+    {
+      "id": "locales-match:ipad-13",
+      "passed": true,
+      "detail": "ru: ['editor', 'talent-details', 'class-selection', 'build-library', 'search-favorites', 'build-sharing', 'build-import']; en-US: ['editor', 'talent-details', 'class-selection', 'build-library', 'search-favorites', 'build-sharing', 'build-import']"
+    },
+    {
+      "id": "locales-match:outer",
+      "passed": true,
+      "detail": "ru: []; en-US: []"
+    },
+    {
+      "id": "locales-match:inner",
+      "passed": true,
+      "detail": "ru: []; en-US: []"
+    },
+    {
+      "id": "manifest-complete",
+      "passed": true,
+      "detail": "every manifest entry exists"
+    }
+  ],
+  "result": "FAIL"
+}

@@ -1,0 +1,226 @@
+{
+  "schema": "talentforge.ios-archive-report.v1",
+  "package": {
+    "kind": "ipa",
+    "fileName": "iosApp.ipa",
+    "sizeBytes": 29154754,
+    "sha256": "80661c1fd6236e763f9c9d5cb871a4c1de5df24429d0e506c20f862575155f15"
+  },
+  "application": "iosApp.app",
+  "signed": true,
+  "signing": {
+    "adhoc": false,
+    "profileName": "iOS Team Store Provisioning Profile: io.github.alexeykravtsov95.talentforge",
+    "profileExpires": "2027-10-27 08:51:40+00:00",
+    "profileHasDevices": false,
+    "configuration": "App Store (Apple Distribution, no device list)"
+  },
+  "info": {
+    "CFBundleIdentifier": "io.github.alexeykravtsov95.talentforge",
+    "CFBundleShortVersionString": "1.0.0",
+    "CFBundleVersion": "5",
+    "MinimumOSVersion": "17.2",
+    "UIDeviceFamily": [
+      1,
+      2
+    ],
+    "CFBundleLocalizations": [
+      "en",
+      "ru"
+    ],
+    "DTSDKName": "iphoneos27.1",
+    "DTXcode": "2710",
+    "DTXcodeBuild": "27A9275",
+    "DTPlatformVersion": "27.1",
+    "BuildMachineOSBuild": "26A434"
+  },
+  "executable": {
+    "name": "iosApp",
+    "size": 34690384,
+    "sha256": "d5b95b1d27cadef7fc8963ca8f1e14a7110bc8f9a3f00bd8e3702f09382a1fc7",
+    "architectures": [
+      "arm64"
+    ]
+  },
+  "ota": {
+    "mode": "on",
+    "productionOrigin": true,
+    "embeddedKeys": [
+      "tf-prod-2026a",
+      "tf-prod-2026b"
+    ],
+    "embeddedKeySpkiSha256": [
+      "1fac1b0d15f2a09fc3769099623fe1038e846f0033ec6e233f5111ff71239278",
+      "6997b3d47d74ceeb6daec62b1d94f3f3e3bc476534eefe8cd140f67578532b26"
+    ],
+    "httpsOrigins": [
+      "https://goo.gle",
+      "https://legal.mythweld.com",
+      "https://ota.mythweld.com",
+      "https://www.apple.com",
+      "https://youtrack.jetbrains.com"
+    ]
+  },
+  "requiredReasonApisUsed": {
+    "NSPrivacyAccessedAPICategoryFileTimestamp": [
+      "_fstat",
+      "_stat"
+    ],
+    "NSPrivacyAccessedAPICategoryDiskSpace": [
+      "_NSURLVolumeAvailableCapacityForImportantUsageKey"
+    ],
+    "NSPrivacyAccessedAPICategoryUserDefaults": [
+      "_OBJC_CLASS_$_NSUserDefaults"
+    ]
+  },
+  "collectedDataTypes": [
+    {
+      "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeOtherDiagnosticData",
+      "NSPrivacyCollectedDataTypeLinked": true,
+      "NSPrivacyCollectedDataTypeTracking": false,
+      "NSPrivacyCollectedDataTypePurposes": [
+        "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+      ]
+    }
+  ],
+  "bundleSize": 66194679,
+  "checks": [
+    {
+      "id": "ipa-payload",
+      "passed": true,
+      "detail": "Payload/iosApp.app; top-level entries ['Payload']"
+    },
+    {
+      "id": "bundle-id",
+      "passed": true,
+      "detail": "CFBundleIdentifier='io.github.alexeykravtsov95.talentforge'"
+    },
+    {
+      "id": "version",
+      "passed": true,
+      "detail": "CFBundleShortVersionString='1.0.0' (expected 1.0.0), CFBundleVersion='5' (expected 5)"
+    },
+    {
+      "id": "minimum-os",
+      "passed": true,
+      "detail": "MinimumOSVersion='17.2' (expected 17.2)"
+    },
+    {
+      "id": "device-family",
+      "passed": true,
+      "detail": "UIDeviceFamily=[1, 2] (expected [1, 2]: iPhone and iPad)"
+    },
+    {
+      "id": "localizations",
+      "passed": true,
+      "detail": "CFBundleLocalizations=['en', 'ru'] (required ['en', 'ru'])"
+    },
+    {
+      "id": "device-capabilities",
+      "passed": true,
+      "detail": "UIRequiredDeviceCapabilities=['arm64']"
+    },
+    {
+      "id": "toolchain",
+      "passed": true,
+      "detail": "DTSDKName='iphoneos27.1' (expected iphoneos27.1), DTXcodeBuild='27A9275' (expected 27A9275), DTXcode='2710'"
+    },
+    {
+      "id": "export-compliance",
+      "passed": true,
+      "detail": "ITSAppUsesNonExemptEncryption=False (expected false)"
+    },
+    {
+      "id": "single-scene",
+      "passed": true,
+      "detail": "UIApplicationSupportsMultipleScenes=False (expected false, TF-RC1-IOS-SCENES)"
+    },
+    {
+      "id": "ats-default",
+      "passed": true,
+      "detail": "no NSAppTransportSecurity: Apple's defaults (HTTPS only, TLS 1.2+, no exceptions)"
+    },
+    {
+      "id": "app-icon",
+      "passed": true,
+      "detail": "CFBundleIconName='AppIcon', Assets.car present"
+    },
+    {
+      "id": "executable",
+      "passed": true,
+      "detail": "kind=macho, architectures=['arm64'], file types=[2] (expected a thin arm64 executable)"
+    },
+    {
+      "id": "embedded-code",
+      "passed": true,
+      "detail": "no embedded frameworks or libraries"
+    },
+    {
+      "id": "privacy-tracking",
+      "passed": true,
+      "detail": "NSPrivacyTracking=False, NSPrivacyTrackingDomains=[]"
+    },
+    {
+      "id": "privacy-required-reasons",
+      "passed": true,
+      "detail": "declared UserDefaults=CA92.1, FileTimestamp=C617.1, DiskSpace=E174.1; used FileTimestamp (_fstat, _stat), DiskSpace (_NSURLVolumeAvailableCapacityForImportantUsageKey), UserDefaults (_OBJC_CLASS_$_NSUserDefaults)"
+    },
+    {
+      "id": "privacy-collected-data",
+      "passed": true,
+      "detail": "NSPrivacyCollectedDataTypes=[{'NSPrivacyCollectedDataType': 'NSPrivacyCollectedDataTypeOtherDiagnosticData', 'NSPrivacyCollectedDataTypeLinked': True, 'NSPrivacyCollectedDataTypeTracking': False, 'NSPrivacyCollectedDataTypePurposes': ['NSPrivacyCollectedDataTypePurposeAppFunctionality']}] (expected the App Privacy declaration: [{'NSPrivacyCollectedDataType': 'NSPrivacyCollectedDataTypeOtherDiagnosticData', 'NSPrivacyCollectedDataTypeLinked': True, 'NSPrivacyCollectedDataTypeTracking': False, 'NSPrivacyCollectedDataTypePurposes': ['NSPrivacyCollectedDataTypePurposeAppFunctionality']}])"
+    },
+    {
+      "id": "compose-resources",
+      "passed": true,
+      "detail": "50 dataset JSON files, values-ru present under compose-resources/composeResources"
+    },
+    {
+      "id": "ota-keyring",
+      "passed": true,
+      "detail": "the production keyring given is the committed one: ['tf-prod-2026a', 'tf-prod-2026b']"
+    },
+    {
+      "id": "ota-no-staging-origin",
+      "passed": true,
+      "detail": "no staging, loopback or emulator origin in the executable"
+    },
+    {
+      "id": "ota-on",
+      "passed": true,
+      "detail": "origin https://ota.mythweld.com and exactly the pinned keys ['tf-prod-2026a', 'tf-prod-2026b'] (SPKI SHA-256 verified)"
+    },
+    {
+      "id": "no-secrets",
+      "passed": true,
+      "detail": "no key files or private keys in the bundle"
+    },
+    {
+      "id": "signature-valid",
+      "passed": true,
+      "detail": "codesign --verify --strict --verbose=2: exit 0"
+    },
+    {
+      "id": "signature-identity",
+      "passed": true,
+      "detail": "Apple Distribution, frozen bundle ID and expected team verified"
+    },
+    {
+      "id": "provisioning-profile",
+      "passed": true,
+      "detail": "Valid matching App Store profile"
+    },
+    {
+      "id": "profile-certificate",
+      "passed": true,
+      "detail": "the signing certificate is one of the profile's DeveloperCertificates"
+    },
+    {
+      "id": "testflight-signing",
+      "passed": true,
+      "detail": "App Store (Apple Distribution, no device list)"
+    }
+  ],
+  "result": "PASS",
+  "redactions": "Signing personal identity/team and local absolute paths omitted; full report retained locally."
+}

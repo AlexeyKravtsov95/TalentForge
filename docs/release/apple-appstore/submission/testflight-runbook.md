@@ -1,5 +1,9 @@
 # M5.IOS.3 — TestFlight и отправка в App Store: runbook владельца 🔑
 
+> **M7.IOS.RC.1:** for build **1.0.0 (5)** use the
+> [existing-app checklist](rc1-checklist.md) and [RC evidence](../m7-ios-rc-1.md).
+> Do not use the historical New App instructions below for this existing app.
+
 > **M7.IOS.REVIEW.1: NO-GO.** This historical first-submission runbook is on hold.
 > Do not execute upload/resubmission steps until the [current gates](../m7-ios-review-1-assessment.md)
 > are resolved and separately authorized. Current iOS remains 1.0.0 (4); this PR does not bump it.

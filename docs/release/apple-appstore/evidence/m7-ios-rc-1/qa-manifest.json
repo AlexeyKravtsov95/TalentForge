@@ -1,0 +1,65 @@
+{
+  "screenshots": [
+    {
+      "path": "qa/duo-inner-en-editor.png",
+      "width": 2853,
+      "height": 2007,
+      "bytes": 795215,
+      "sha256": "8fb5dc46d8d55f128d3db2e0c5b7c7d6c31095f167ca34c656af3a4dcf630021",
+      "role": "QA only; not an accepted App Store screenshot",
+      "sourceCommit": "ee4e9d028ffce5c1df1eec7a643827f69111709c",
+      "binarySha256": "3fc9aa51e79f18a86c8154c48dab7ad864caaeee52b31cca1d55c7d34ff17449",
+      "version": "1.0.0",
+      "build": "5",
+      "configuration": "Release",
+      "otaMode": "production",
+      "captureMethod": "xcrun simctl io screenshot; original PNG unchanged"
+    },
+    {
+      "path": "qa/duo-outer-en-editor.png",
+      "width": 1398,
+      "height": 2034,
+      "bytes": 685489,
+      "sha256": "a309403e47077237934c77a29362f71b1f439627c5db2943578179d1ba500fb4",
+      "role": "QA only; not an accepted App Store screenshot",
+      "sourceCommit": "ee4e9d028ffce5c1df1eec7a643827f69111709c",
+      "binarySha256": "3fc9aa51e79f18a86c8154c48dab7ad864caaeee52b31cca1d55c7d34ff17449",
+      "version": "1.0.0",
+      "build": "5",
+      "configuration": "Release",
+      "otaMode": "production",
+      "captureMethod": "xcrun simctl io screenshot; original PNG unchanged"
+    },
+    {
+      "path": "qa/ipad-ru-large-text-home.png",
+      "width": 2064,
+      "height": 2752,
+      "bytes": 327733,
+      "sha256": "da00c2a98093905dcde3ff00592d4a25665a8e198bf2cae2fe37b5aa9e37d80f",
+      "role": "QA only; not an accepted App Store screenshot",
+      "sourceCommit": "ee4e9d028ffce5c1df1eec7a643827f69111709c",
+      "binarySha256": "3fc9aa51e79f18a86c8154c48dab7ad864caaeee52b31cca1d55c7d34ff17449",
+      "version": "1.0.0",
+      "build": "5",
+      "configuration": "Release",
+      "otaMode": "production",
+      "captureMethod": "xcrun simctl io screenshot; original PNG unchanged"
+    },
+    {
+      "path": "qa/iphone-ru-large-text-home.png",
+      "width": 1206,
+      "height": 2622,
+      "bytes": 357462,
+      "sha256": "45cfe5a62bf23a4f89535bdb9ce0a9dcbaeb7d2c830ef37eb763cf3b150cf274",
+      "role": "QA only; not an accepted App Store screenshot",
+      "sourceCommit": "ee4e9d028ffce5c1df1eec7a643827f69111709c",
+      "binarySha256": "3fc9aa51e79f18a86c8154c48dab7ad864caaeee52b31cca1d55c7d34ff17449",
+      "version": "1.0.0",
+      "build": "5",
+      "configuration": "Release",
+      "otaMode": "production",
+      "captureMethod": "xcrun simctl io screenshot; original PNG unchanged"
+    }
+  ],
+  "limitations": "Large text images cover Home only. Duo images cover observed EN resize subset only; native gesture acceptance and submission pack remain blocked."
+}

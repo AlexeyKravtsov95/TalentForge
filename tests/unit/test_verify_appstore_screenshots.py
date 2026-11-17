@@ -440,3 +440,101 @@ def test_duo_does_not_coerce_capture_wire_types(tmp_path: Path, field: str, valu
     entry[field] = value
     path.write_text(json.dumps(manifest))
     assert f"provenance:{entry['path']}" in failed(root)
+
+
+def production_capture_pack(tmp_path: Path) -> Path:
+    root = make_pack(tmp_path)
+    path = root / "manifest.json"
+    manifest = json.loads(path.read_text())
+    for entry in manifest["screenshots"]:
+        entry.update(
+            appVersion="1.0.0",
+            buildNumber="5",
+            configuration="Release",
+            otaMode="production",
+            otaOrigin="https://ota.mythweld.com",
+            sourceCommit="a" * 40,
+            binarySha256="b" * 64,
+            sourceSha256="c" * 64,
+            device="iPhone test fixture",
+            udid="fixture-udid",
+            runtime="iOS fixture",
+            sdk="iphonesimulator27.1",
+            xcode="27.1",
+            captureMethod="test fixture",
+            deviceLanguage=entry["path"].split("/")[0],
+        )
+    path.write_text(json.dumps(manifest))
+    return root
+
+
+def test_release_capture_candidate_passes(tmp_path: Path) -> None:
+    root = production_capture_pack(tmp_path)
+    evaluation, _ = v.evaluate(
+        root,
+        expected_build="5",
+        expected_version="1.0.0",
+        require_production_ota=True,
+    )
+    assert evaluation.passed
+
+
+@pytest.mark.parametrize(
+    ("key", "bad"),
+    [
+        ("buildNumber", "4"),
+        ("buildNumber", 5),
+        ("appVersion", "1.1.0"),
+        ("configuration", "Debug"),
+        ("otaMode", "off"),
+        ("otaOrigin", "https://staging.example.org"),
+        ("sourceCommit", ""),
+        ("binarySha256", None),
+        ("sourceSha256", 123),
+        ("deviceLanguage", "de"),
+        ("runtime", None),
+        ("captureMethod", False),
+    ],
+)
+def test_release_capture_rejects_stale_or_unproved_provenance(
+    tmp_path: Path,
+    key: str,
+    bad: object,
+) -> None:
+    root = production_capture_pack(tmp_path)
+    path = root / "manifest.json"
+    manifest = json.loads(path.read_text())
+    manifest["screenshots"][0][key] = bad
+    path.write_text(json.dumps(manifest))
+    evaluation, _ = v.evaluate(
+        root,
+        expected_build="5",
+        expected_version="1.0.0",
+        require_production_ota=True,
+    )
+    assert not evaluation.passed
+
+
+def test_old_pack_cannot_pass_as_production_release(tmp_path: Path) -> None:
+    root = make_pack(tmp_path)
+    evaluation, _ = v.evaluate(
+        root,
+        expected_build="5",
+        expected_version="1.0.0",
+        require_production_ota=True,
+    )
+    assert not evaluation.passed
+
+
+def test_cli_checks_candidate_provenance(tmp_path: Path) -> None:
+    root = production_capture_pack(tmp_path)
+    args = [
+        "--screenshots",
+        str(root),
+        "--expected-version",
+        "1.0.0",
+        "--require-production-ota",
+        "--expected-build",
+    ]
+    assert v.main([*args, "5"]) == v.EXIT_PASS
+    assert v.main([*args, "4"]) == v.EXIT_FAIL

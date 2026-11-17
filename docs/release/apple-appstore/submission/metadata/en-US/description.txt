@@ -8,6 +8,7 @@ Edit talent builds
 
 Keep your own library
 • Builds are saved automatically on your device. Continue editing, rename, duplicate or delete them.
+• Search builds by name or class, filter by class and favorites, and sort or group your library.
 
 Import and export
 • Export a build as a text code with the iOS share sheet or copy it.
