@@ -1,17 +1,17 @@
 # Graph Report - TalentForge-m7-ci-hotfix-1  (2026-11-18)
 
 ## Corpus Check
-- 805 files · ~966,172 words
+- 805 files · ~966,191 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 24 file(s) not represented in the graph (top: .xml 9, (none) 4, .properties 2)
 
 ## Summary
-- 16559 nodes · 53321 edges · 502 communities (359 shown, 143 thin omitted)
+- 16559 nodes · 53322 edges · 502 communities (359 shown, 143 thin omitted)
 - Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 5385 edges (avg confidence: 0.9)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `e9f66344`
+- Built from commit: `76e0073a`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 

@@ -61,7 +61,7 @@ step limit within a 35-minute job, leaving setup/upload headroom; build/archive 
 Full `CI` must succeed for the exact source SHA on `main` in the requested repository, from
 `push` or `workflow_dispatch`. Android-only delivery additionally requires both exact Android job
 names from Mobile CI to be completed/successful, bound to that SHA and the trusted run ID/current
-attempt. A completed Mobile CI run may have failed/cancelled iOS jobs. Repository identity,
+attempt. A completed Mobile CI run may have failed, cancelled or timed-out iOS jobs. Repository identity,
 workflow path, branch and event remain checked; missing, skipped, duplicate, wrong-attempt,
 foreign-SHA/repository or malformed job evidence fails closed. Job pagination cannot truncate silently.
 The Google Play production command applies the same Android scope at its final CI recheck.

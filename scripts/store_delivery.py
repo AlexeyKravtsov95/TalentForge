@@ -379,7 +379,11 @@ def check_ci(api: GitHubApi, sha: str, *, platforms: str = "both") -> dict[str, 
                 and run.get("event") in ("push", "workflow_dispatch")
                 and run.get("status") == "completed"
                 and run.get("conclusion")
-                in (("success", "failure", "cancelled") if android_mobile else ("success",))
+                in (
+                    ("success", "failure", "cancelled", "timed_out")
+                    if android_mobile
+                    else ("success",)
+                )
                 and all(
                     isinstance(run.get(field), dict)
                     and type(run[field].get("id")) is int

@@ -306,7 +306,7 @@ def android_ci_jobs(sha: str = SOURCE, **overrides: Any) -> list[dict[str, Any]]
     ]
 
 
-@pytest.mark.parametrize("conclusion", ["success", "failure", "cancelled"])
+@pytest.mark.parametrize("conclusion", ["success", "failure", "cancelled", "timed_out"])
 def test_android_gate_uses_required_jobs_despite_ios_result(conclusion: str) -> None:
     github = FakeGitHub().green(SOURCE)
     github.runs["mobile-ci.yml"][0]["conclusion"] = conclusion
@@ -333,9 +333,12 @@ def test_android_gate_accepts_api_attested_retained_same_sha_successes() -> None
 
 
 @pytest.mark.parametrize("platforms", ["ios", "both"])
-def test_ios_gate_still_requires_success_of_all_mobile_checks(platforms: str) -> None:
+@pytest.mark.parametrize("conclusion", ["cancelled", "timed_out"])
+def test_ios_gate_still_requires_success_of_all_mobile_checks(
+    platforms: str, conclusion: str
+) -> None:
     github = FakeGitHub().green(SOURCE)
-    github.runs["mobile-ci.yml"][0]["conclusion"] = "cancelled"
+    github.runs["mobile-ci.yml"][0]["conclusion"] = conclusion
     github.jobs[1, 1] = android_ci_jobs()
     refused("GATE", lambda: d.check_ci(github.api(), SOURCE, platforms=platforms))
     assert github.job_requests == []
@@ -346,6 +349,7 @@ def test_ios_gate_still_requires_success_of_all_mobile_checks(platforms: str) ->
     [
         {"conclusion": "failure"},
         {"conclusion": "cancelled"},
+        {"conclusion": "timed_out"},
         {"conclusion": "skipped"},
         {"status": "in_progress"},
         {"head_sha": OTHER},
@@ -388,6 +392,7 @@ def test_android_gate_never_uses_jobs_from_a_previous_attempt() -> None:
         {"head_branch": "feature"},
         {"event": "pull_request"},
         {"status": "in_progress"},
+        {"conclusion": "unknown-result"},
         {"repository": {"id": 99, "full_name": "o/r"}},
         {"repository": {"id": 1, "full_name": "foreign/repo"}},
         {"repository": "not an object"},
@@ -409,9 +414,10 @@ def test_android_gate_refuses_untrusted_runs(bad: dict[str, Any]) -> None:
     assert github.job_requests == []
 
 
-def test_android_gate_still_requires_full_python_ci_success() -> None:
+@pytest.mark.parametrize("conclusion", ["failure", "timed_out"])
+def test_android_gate_still_requires_full_python_ci_success(conclusion: str) -> None:
     github = FakeGitHub().green(SOURCE)
-    github.runs["ci.yml"][0]["conclusion"] = "failure"
+    github.runs["ci.yml"][0]["conclusion"] = conclusion
     github.jobs[1, 1] = android_ci_jobs()
     refused("GATE", lambda: d.check_ci(github.api(), SOURCE, platforms="android"))
 
