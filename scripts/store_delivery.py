@@ -62,6 +62,11 @@ APPLICATION_ID = "io.github.alexeykravtsov95.talentforge"
 WORKFLOW_FILE = ".github/workflows/store-delivery.yml"
 #: CI that must have passed for the exact commit that is delivered
 REQUIRED_CI_WORKFLOWS = (".github/workflows/ci.yml", ".github/workflows/mobile-ci.yml")
+#: Exact job names owned by Mobile CI; renames require an explicit gate update.
+ANDROID_CI_JOBS = (
+    "Mobile (Linux) — contracts, drift, Android",
+    "Android — library v1 migration on SharedPreferences",
+)
 ANDROID_GRADLE_FILE = "mobile/composeApp/build.gradle.kts"
 IOS_PROJECT_FILE = "mobile/iosApp/iosApp.xcodeproj/project.pbxproj"
 MAIN_REF = "refs/heads/main"
@@ -263,7 +268,7 @@ class GitHubApi:
         response = send(
             self.client,
             "GET",
-            f"{GITHUB_API}repos/{self.repository}/{path}",
+            f"{GITHUB_API}repos/{self.repository}/{path}".rstrip("/"),
             retry=True,
             service="GitHub",
             headers=self.headers,
@@ -285,6 +290,22 @@ class GitHubApi:
             if len(runs) < 100:
                 return
 
+    def attempt_jobs(self, run_id: int, attempt: int) -> list[dict[str, Any]]:
+        """Never combine jobs from different attempts or silently truncate evidence."""
+        jobs: list[dict[str, Any]] = []
+        for page in range(1, MAX_PAGES + 1):
+            body = self.get(
+                f"actions/runs/{run_id}/attempts/{attempt}/jobs",
+                {"per_page": 100, "page": page},
+            )
+            batch = body.get("jobs")
+            if not isinstance(batch, list) or any(not isinstance(job, dict) for job in batch):
+                raise DeliveryError("GATE", "GitHub: malformed job evidence")
+            jobs.extend(batch)
+            if len(batch) < 100:
+                return jobs
+        raise DeliveryError("GATE", "GitHub: job evidence exceeds the pagination limit")
+
     def run_artifacts(self, run_id: int) -> list[dict[str, Any]]:
         artifacts: list[dict[str, Any]] = []
         for page in range(1, MAX_PAGES + 1):
@@ -305,33 +326,87 @@ def _workflow_path(run: Mapping[str, Any]) -> str:
     return str(run.get("path", "")).removesuffix(f"@{MAIN_REF}")
 
 
-def check_ci(api: GitHubApi, sha: str) -> dict[str, str]:
-    """The successful run of every required CI workflow for exactly ``sha`` on ``main``."""
+def _android_ci_passed(api: GitHubApi, run: Mapping[str, Any], sha: str) -> bool:
+    run_id, attempt = run.get("id"), run.get("run_attempt")
+    if type(run_id) is not int or run_id < 1 or type(attempt) is not int or attempt < 1:
+        return False
+    jobs = api.attempt_jobs(run_id, attempt)
+    for name in ANDROID_CI_JOBS:
+        found = [job for job in jobs if job.get("name") == name]
+        if len(found) != 1:
+            return False
+        job = found[0]
+        if not (
+            job.get("status") == "completed"
+            and job.get("conclusion") == "success"
+            and type(job.get("run_id")) is int
+            and job.get("run_id") == run_id
+            and type(job.get("run_attempt")) is int
+            and job.get("run_attempt") == attempt
+            and job.get("head_sha") == sha
+        ):
+            return False
+    return True
+
+
+def check_ci(api: GitHubApi, sha: str, *, platforms: str = "both") -> dict[str, str]:
+    """Trusted main results for this SHA; Android needs both Android jobs, iOS all Mobile CI.
+
+    Android evidence belongs to one completed run's current attempt. A failed-jobs-only
+    rerun that omits either required job is insufficient: rerun all checks for fresh proof.
+    """
+    if platforms not in PLATFORM_CHOICES or not FULL_SHA.fullmatch(sha):
+        raise DeliveryError("GATE", "CI requires an allowed platform and full source SHA")
+    repository = api.get("")
+    repository_id = repository.get("id")
+    if (
+        type(repository_id) is not int
+        or repository_id < 1
+        or repository.get("full_name") != api.repository
+    ):
+        raise DeliveryError("GATE", "GitHub: repository identity is not trusted")
     passed: dict[str, str] = {}
     for workflow in REQUIRED_CI_WORKFLOWS:
         runs = list(api.workflow_runs(workflow, head_sha=sha))
-        good = [
-            run
-            for run in runs
-            if run.get("head_sha") == sha
-            and _workflow_path(run) == workflow
-            and run.get("head_branch") == "main"
-            and run.get("event") in ("push", "workflow_dispatch")
-            and run.get("status") == "completed"
-            and run.get("conclusion") == "success"
-            and _same_repository(run)
-        ]
+        android_mobile = platforms == "android" and workflow == REQUIRED_CI_WORKFLOWS[1]
+        good = []
+        for run in runs:
+            if not (
+                run.get("head_sha") == sha
+                and _workflow_path(run) == workflow
+                and run.get("head_branch") == "main"
+                and run.get("event") in ("push", "workflow_dispatch")
+                and run.get("status") == "completed"
+                and run.get("conclusion")
+                in (("success", "failure", "cancelled") if android_mobile else ("success",))
+                and all(
+                    isinstance(run.get(field), dict)
+                    and type(run[field].get("id")) is int
+                    and run[field].get("id") == repository_id
+                    and run[field].get("full_name") == api.repository
+                    for field in ("repository", "head_repository")
+                )
+            ):
+                continue
+            if android_mobile and not _android_ci_passed(api, run, sha):
+                continue
+            good.append(run)
         if not good:
             seen = ", ".join(
                 f"#{r.get('run_number')} {r.get('event')}/{r.get('head_branch')} "
                 f"{r.get('status')}/{r.get('conclusion')}"
                 for r in runs
             )
+            requirement = (
+                "successful Android jobs in one current attempt"
+                if android_mobile
+                else "successful run"
+            )
             raise DeliveryError(
                 "GATE",
-                f"{workflow} has no successful run for {sha} on main "
-                f"({'runs: ' + seen if seen else 'no runs'}). Re-run it for this commit and "
-                "start the delivery again once it is green.",
+                f"{workflow} has no {requirement} for {sha} on main "
+                f"({'runs: ' + seen if seen else 'no runs'}). Re-run all checks for this commit "
+                "and start the delivery again once the required checks are green.",
             )
         passed[workflow] = str(good[0].get("html_url", good[0].get("id")))
     return passed
@@ -502,7 +577,7 @@ def run_gate(
     if not FULL_SHA.fullmatch(workflow_sha):
         raise DeliveryError("GATE", "GITHUB_SHA is not a full commit SHA")
     sha, kind = resolve_revision(repo, revision, workflow_sha)
-    ci = check_ci(api, sha)
+    ci = check_ci(api, sha, platforms=platforms)
     versions = read_versions(repo, sha)
     return {
         "schema": "talentforge-delivery-gate/1",

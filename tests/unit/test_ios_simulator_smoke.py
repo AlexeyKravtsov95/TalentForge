@@ -11,6 +11,7 @@ app's line near the start. They need only bash and Python, no Xcode.
 
 from __future__ import annotations
 
+import json
 import os
 import shutil
 import subprocess
@@ -159,3 +160,141 @@ def test_sourcing_the_script_runs_nothing(fake_env: dict[str, str]) -> None:
     result = bash(f'source "{SCRIPT}"; echo sourced', fake_env, "running")
     assert result.stdout.splitlines() == ["sourced"]
     assert calls(fake_env) == 0
+
+
+SMOKE_XCRUN = r"""#!/usr/bin/env python3
+import json, os, sys, time
+from pathlib import Path
+args = sys.argv[2:]
+stage = args[0]
+if args[:2] == ['list', 'devices']:
+    stage = 'discovery'
+elif args[0] == 'io':
+    stage = 'screenshot'
+elif args[0] == 'spawn':
+    stage = 'processes' if args[2:4] == ['launchctl', 'list'] else 'app-log'
+print('output from ' + stage, file=sys.stderr, flush=True)
+if stage == os.environ.get('FAIL_STAGE'):
+    print('partial ' + stage, flush=True)
+    if os.environ['FAIL_MODE'] == 'timeout':
+        time.sleep(60)
+    sys.exit(149)
+if stage == 'discovery':
+    print(json.dumps({'devices': {'com.apple.CoreSimulator.SimRuntime.iOS-27-2': [
+        {'name': 'iPad Pro 13-inch (M5)', 'udid': 'IPAD'}]}}))
+elif stage == 'processes':
+    print('4242\t0\tUIKitApplication:io.github.alexeykravtsov95.talentforge[3c5b]')
+elif stage == 'screenshot' and not os.environ.get('NO_SCREENSHOT'):
+    Path(args[-1]).write_bytes(b'fake screenshot')
+"""
+
+
+def smoke(
+    fake_env: dict[str, str], tmp_path: Path, **settings: str
+) -> subprocess.CompletedProcess[str]:
+    xcrun = Path(fake_env["PATH"].split(os.pathsep)[0]) / "xcrun"
+    xcrun.write_text(SMOKE_XCRUN)
+    # Avoid reading the test host's unified log; exercise the same bounded diagnostic path.
+    call = f'''source "{SCRIPT}"
+    eval "$(declare -f bounded_command | sed '1s/bounded_command/real_bounded_command/')"
+    bounded_command() {{
+      if [ "$1" = simulator-log ]; then
+        real_bounded_command "$1" "$2" echo fake-host-log
+      else
+        real_bounded_command "$@"
+      fi
+    }}
+    rc=0
+    smoke_device fake.app "{tmp_path}/evidence" 'iPad Pro 13-inch (M5)' {BUNDLE} iosApp || rc=$?
+    echo "rc=$rc"
+    '''
+    env = {
+        **fake_env,
+        "TALENTFORGE_SMOKE_WAIT_SECONDS": "0",
+        "TALENTFORGE_SMOKE_BOOT_TIMEOUT": "5",
+        "TALENTFORGE_SMOKE_INSTALL_TIMEOUT": "5",
+        "TALENTFORGE_SMOKE_LAUNCH_TIMEOUT": "5",
+        "TALENTFORGE_SMOKE_SCREENSHOT_TIMEOUT": "5",
+        "TALENTFORGE_SMOKE_QUERY_TIMEOUT": "5",
+        **settings,
+    }
+    return bash(call, env, "running")
+
+
+@pytest.mark.parametrize(
+    "stage", ["discovery", "bootstatus", "install", "launch", "screenshot", "processes"]
+)
+@pytest.mark.parametrize("mode", ["timeout", "error"])
+def test_each_stage_fails_closed_and_retains_diagnostics(
+    fake_env: dict[str, str], tmp_path: Path, stage: str, mode: str
+) -> None:
+    timeout_setting = {
+        "discovery": "QUERY",
+        "processes": "QUERY",
+        "bootstatus": "BOOT",
+        "install": "INSTALL",
+        "launch": "LAUNCH",
+        "screenshot": "SCREENSHOT",
+    }[stage]
+    result = smoke(
+        fake_env,
+        tmp_path,
+        FAIL_STAGE=stage,
+        FAIL_MODE=mode,
+        **{f"TALENTFORGE_SMOKE_{timeout_setting}_TIMEOUT": "1"},
+    )
+    assert "rc=1" in result.stdout, result.stderr
+    evidence = tmp_path / "evidence/iPad-Pro-13-inch-M5-diagnostics"
+    reports = [json.loads(line) for line in (evidence / "timings.jsonl").read_text().splitlines()]
+    failed = [r for r in reports if r["stage"].startswith(stage)]
+    assert failed and all(r["status"] == mode for r in failed)
+    assert all(r["exitCode"] == (124 if mode == "timeout" else 149) for r in failed)
+    assert (evidence / "app-log.stderr.log").exists()
+    assert (evidence / "devices.stdout.log").exists()
+    assert (evidence / "host-processes.stdout.log").exists()
+    if stage != "discovery":
+        assert (evidence / "shutdown.stderr.log").exists()
+    if stage in ("discovery", "bootstatus", "install"):
+        assert not any(r["stage"] == "launch" for r in reports)
+
+
+def test_smoke_requires_real_screenshot_evidence(fake_env: dict[str, str], tmp_path: Path) -> None:
+    result = smoke(fake_env, tmp_path, NO_SCREENSHOT="1")
+    assert "rc=1" in result.stdout
+    assert "PASS" not in result.stdout
+
+
+def test_success_keeps_stage_timings_and_screenshot(
+    fake_env: dict[str, str], tmp_path: Path
+) -> None:
+    result = smoke(fake_env, tmp_path)
+    assert "rc=0" in result.stdout and "PASS [iPad" in result.stdout, result.stderr
+    assert (tmp_path / "evidence/iPad-Pro-13-inch-M5.png").stat().st_size > 0
+    reports = [
+        json.loads(line)
+        for line in (tmp_path / "evidence/iPad-Pro-13-inch-M5-diagnostics/timings.jsonl")
+        .read_text()
+        .splitlines()
+    ]
+    assert {r["stage"] for r in reports} >= {
+        "discovery",
+        "bootstatus",
+        "install",
+        "launch",
+        "settle",
+        "processes-1",
+        "screenshot",
+        "terminate",
+        "shutdown",
+    }
+    assert all(r["status"] == "success" for r in reports)
+
+
+def test_old_screenshot_cannot_turn_an_empty_capture_into_a_pass(
+    fake_env: dict[str, str], tmp_path: Path
+) -> None:
+    old = tmp_path / "evidence/iPad-Pro-13-inch-M5.png"
+    old.parent.mkdir()
+    old.write_bytes(b"old evidence")
+    result = smoke(fake_env, tmp_path, NO_SCREENSHOT="1")
+    assert "rc=1" in result.stdout and not old.exists()

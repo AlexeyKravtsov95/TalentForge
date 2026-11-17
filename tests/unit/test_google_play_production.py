@@ -988,3 +988,51 @@ def test_invalid_early_report_cannot_send_or_claim_publication(
     )
     with pytest.raises(public.DeliveryError, match="CONTRACT"):
         p.notify(report, httpx.Client())
+
+
+def test_production_rechecks_android_scope_before_any_store_access(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    gate = legacy.gate(platforms=["android"])
+    manifest = {"test": "manifest"}
+    gate_path = tmp_path / "gate.json"
+    gate_path.write_text(json.dumps(gate))
+    out = tmp_path / "out.json"
+    monkeypatch.setattr(p, "prepare", lambda *_: manifest)
+    monkeypatch.setattr(p, "require_approval", lambda *_: None)
+    monkeypatch.setattr(p.core, "resolve_revision", lambda *_: None)
+    for key, value in {
+        "GITHUB_REF": p.core.MAIN_REF,
+        "GITHUB_REPOSITORY": "o/r",
+        "GH_TOKEN": "token",
+        "PLAY_PRODUCTION_SERVICE_ACCOUNT_JSON": "unused until gate passes",
+        "PLAY_PRODUCTION_SERVICE_ACCOUNT_EMAIL": "unused until gate passes",
+        "APPROVED_PRODUCTION_SHA256": p.digest(manifest),
+        "GITHUB_RUN_ID": "123",
+    }.items():
+        monkeypatch.setenv(key, value)
+    checked = []
+
+    def check(_api: Any, sha: str, *, platforms: str = "both") -> None:
+        checked.append((sha, platforms))
+        raise p.core.DeliveryError("GATE", "required Android check failed")
+
+    monkeypatch.setattr(p.core, "check_ci", check)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "google_play_production.py",
+            "run",
+            "--gate",
+            str(gate_path),
+            "--repo",
+            str(tmp_path),
+            "--out",
+            str(out),
+        ],
+    )
+    assert p.main() == 1
+    assert checked == [(gate["sourceSha"], "android")]
+    assert json.loads(out.read_text())["status"] == "GATE"
