@@ -71,6 +71,11 @@ jobs:
         run: |
           python3 scripts/verify_appstore_metadata.py
           python3 scripts/verify_appstore_screenshots.py --require-duo
+          # The historical build-4 pack above is not evidence for the RC below.
+          # Duo acceptance/recapture remains a separate blocked RC release gate.
+          python3 scripts/verify_appstore_screenshots.py \
+            --screenshots docs/release/apple-appstore/submission/screenshots-rc1 \
+            --expected-version 1.0.0 --expected-build 5 --require-production-ota
 
       - name: Dataset drift check (bundled == canonical)
         run: python3 scripts/sync_mobile_datasets.py --check

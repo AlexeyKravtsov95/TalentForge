@@ -1,4 +1,4 @@
-"""The App Store metadata validator (M7.IOS.REVIEW.2).
+"""The App Store metadata validator (M7.IOS.RC.1).
 
 ``scripts/verify_appstore_metadata.py`` checks the submission pack's editorial rules.
 A PASS does not establish rights or authorize submission to App Store Connect.
@@ -75,19 +75,22 @@ def test_the_committed_pack_passes() -> None:
         ("ru", "Группировка по классу"),
     ],
 )
-def test_post_review_library_features_cannot_be_advertised_for_build_four(
+def test_library_claims_are_no_longer_rejected_by_build_four_history(
     pack: Path, field: str, locale: str, claim: str
 ) -> None:
     path = pack / locale / f"{field}.txt"
     path.write_text(path.read_text().rstrip("\n") + "\n" + claim + "\n")
-    assert "reviewed-build-claims" in failed(pack)
+    evaluation, _ = v.evaluate(pack)
+    assert "reviewed-build-claims" not in {c.id for c in evaluation.checks}
+    # Length/keyword rules still apply; feature acceptance is a separate release gate.
+    assert not any(c.id.startswith("branding:") and not c.passed for c in evaluation.checks)
 
 
 @pytest.mark.parametrize("claim", ["search", "favorites", "sort", "filters", "grouping"])
-def test_review_notes_cannot_advertise_post_review_library_features(pack: Path, claim: str) -> None:
+def test_review_notes_allow_candidate_library_features(pack: Path, claim: str) -> None:
     path = pack / "review_information/notes.txt"
     path.write_text(path.read_text().rstrip("\n") + "\n" + claim + "\n")
-    assert "reviewed-build-claims" in failed(pack)
+    assert failed(pack) == {}
 
 
 def test_no_whats_new_file_for_the_first_version() -> None:

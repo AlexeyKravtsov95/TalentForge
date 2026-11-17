@@ -1,0 +1,65 @@
+{
+  "date": "2026-11-17",
+  "timezone": "Asia/Novosibirsk",
+  "runtimeSourceCommit": "ee4e9d028ffce5c1df1eec7a643827f69111709c",
+  "checks": [
+    {
+      "command": ".venv/bin/python -m pytest tests/unit/test_verify_appstore_metadata.py tests/unit/test_verify_appstore_screenshots.py tests/unit/test_verify_ios_project.py tests/unit/test_verify_ios_archive.py -q",
+      "exitCode": 0,
+      "result": "304 passed in 70.23s"
+    },
+    {
+      "command": ".venv/bin/ruff check .",
+      "exitCode": 1,
+      "result": "Two pre-existing errors in untracked .tf-transfer/rc1/rc1_android_device_check.py: E501 line 144, E741 line 224; left untouched"
+    },
+    {
+      "command": "git ls-files -z *.py -> .venv/bin/ruff check <tracked Python files>",
+      "exitCode": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": ".venv/bin/ruff format --check .",
+      "exitCode": 0,
+      "result": "682 files already formatted"
+    },
+    {
+      "command": ".venv/bin/mypy",
+      "exitCode": 0,
+      "result": "Success: no issues found in 125 source files"
+    },
+    {
+      "command": "python3 scripts/sync_mobile_datasets.py --check",
+      "exitCode": 0,
+      "result": "50 files / 5 builds match canonical data"
+    },
+    {
+      "command": "./gradlew :shared:jvmTest :composeApp:desktopTest :composeApp:assembleDebug :shared:iosSimulatorArm64Test :composeApp:iosSimulatorArm64Test --console=plain",
+      "cwd": "mobile",
+      "exitCode": 0,
+      "result": "BUILD SUCCESSFUL in 7m 22s; shared JVM 383, desktop 951 (64 skipped), shared iOS 199, Compose iOS 8; zero failures/errors"
+    },
+    {
+      "command": "TALENTFORGE_OTA_IOS_PRODUCTION_ENABLED=true ./gradlew :composeApp:verifyOtaSettingsRules :composeApp:linkReleaseFrameworkIosSimulatorArm64 --console=plain",
+      "cwd": "mobile",
+      "exitCode": 0,
+      "result": "BUILD SUCCESSFUL in 4m 13s"
+    },
+    {
+      "command": "graphify update .",
+      "exitCode": 0,
+      "result": "16493 nodes, 53119 edges, 524 communities; AST-only; ceremony excluded; existing parser warnings"
+    },
+    {
+      "command": ".venv/bin/python -m pytest -q",
+      "exitCode": 2,
+      "result": "Interrupted for disk capacity after 848.84s: 358 passed, 11 deselected, 1 failed (test_code_only_trigger_recovers_older_approved_request / PACKAGE_PROVENANCE_FAILED); full local suite not claimed green"
+    },
+    {
+      "command": "git diff ee4e9d028ffce5c1df1eec7a643827f69111709c -- mobile/iosApp mobile/composeApp mobile/shared",
+      "exitCode": 0,
+      "result": "Empty: current application runtime matches artifact source commit"
+    }
+  ],
+  "hostedCI": "Required on final pushed HEAD; exact run links/status recorded in PR Checks and final PR description. Local results above do not substitute for hosted CI."
+}

@@ -1,0 +1,30 @@
+{
+  "sourceCommit": "ee4e9d028ffce5c1df1eec7a643827f69111709c",
+  "version": "1.0.0",
+  "build": "5",
+  "configuration": "Release",
+  "otaMode": "production",
+  "artifacts": [
+    {
+      "artifact": "TalentForge-1.0.0-5-ota-on.xcarchive.zip",
+      "bytes": 39926557,
+      "sha256": "25631e06395c89c1b55645e365b77f2417524837f74e63024c8d64cbefd28ac7"
+    },
+    {
+      "artifact": "export/iosApp.ipa",
+      "bytes": 29154754,
+      "sha256": "80661c1fd6236e763f9c9d5cb871a4c1de5df24429d0e506c20f862575155f15"
+    },
+    {
+      "artifact": "simulator-derived/Build/Products/Release-iphonesimulator/iosApp.app/iosApp",
+      "bytes": 47728312,
+      "sha256": "3fc9aa51e79f18a86c8154c48dab7ad864caaeee52b31cca1d55c7d34ff17449"
+    }
+  ],
+  "localTrackedOverride": {
+    "file": "mobile/gradle.properties",
+    "patch": "Added comment and org.gradle.tooling.parallel=true (pre-existing owner change; Gradle sync only; excluded from PR)",
+    "patchSha256": "41a4cec359bed07ec349d96f315df0e7fc467aa61124c055892d327af4072b32"
+  },
+  "sourceTreeVerification": "Runtime source paths unchanged after sourceCommit; later PR edits are release validators, tests, copy, graph and evidence. No generated dataset edits."
+}
