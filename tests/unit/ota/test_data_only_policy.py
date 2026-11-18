@@ -222,6 +222,15 @@ def test_automatic_authorization_creates_only_an_immutable_tag(policy_release):
     )
     assert tag == f"refs/tags/ota-data-only/{request.release_id}"
     assert [p for _, p, _ in api.writes] == ["/git/tags", "/git/refs"]
+    # Other reviewed main work may finish while staging runs. G1/source CI still bind
+    # the immutable data source; exact main-head equality is not publication authority.
+    subprocess.run(
+        ["git", "-C", str(repo), "commit", "--allow-empty", "-qm", "later main"], check=True
+    )
+    later = subprocess.check_output(["git", "-C", str(repo), "rev-parse", "HEAD"]).decode().strip()
+    subprocess.run(
+        ["git", "-C", str(repo), "update-ref", "refs/remotes/origin/main", later], check=True
+    )
     data_only.commit_authorization(
         api,
         repo,

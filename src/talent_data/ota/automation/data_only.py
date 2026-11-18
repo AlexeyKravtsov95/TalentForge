@@ -284,7 +284,8 @@ def commit_authorization(
     from talent_data.ota.models import Channel
 
     main = git(repo, "rev-parse", "origin/main").decode().strip()
-    same(main, request.source_commit, "DATA_ONLY_MAIN", "latest successful data source")
+    # G1 below proves source ancestry. A later reviewed main commit must not starve
+    # an exact staged data package while its source/current policy remain identical.
     installation = obj(api.call("GET", "/installation/repositories", params={"per_page": 100}))
     require(
         installation.get("total_count") == 1

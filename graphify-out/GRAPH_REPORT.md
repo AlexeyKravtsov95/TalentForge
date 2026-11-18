@@ -1,17 +1,17 @@
 # Graph Report - TalentForge-ota-fast  (2026-11-18)
 
 ## Corpus Check
-- 820 files · ~982,818 words
+- 820 files · ~982,890 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 24 file(s) not represented in the graph (top: .xml 9, (none) 4, .properties 2)
 
 ## Summary
-- 16694 nodes · 53782 edges · 523 communities (371 shown, 152 thin omitted)
+- 16694 nodes · 53781 edges · 523 communities (371 shown, 152 thin omitted)
 - Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 5461 edges (avg confidence: 0.9)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `ecad66ca`
+- Built from commit: `a6b54926`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -2040,7 +2040,7 @@ Nodes (70): run(), changes(), report(), bind(), build(), release(), ci_gates(), 
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `ClassToken` connect `ClassToken` to `.productionPublicationsInstallActivateAndRollBack`, `BuildOpeningTest`, `LocalBuildRepository`, `TalentTabletSectionHeadersTest`, `TalentTooltipRank`, `M5Rel2bScreenshotTest`, `TooltipsLoadError`, `TalentForgeTheme`, `.of`, `BundledRepositoryTest`, `HomeScreen.kt`, `TalentTooltipsContractTest`, `EdgeSwipeBackAppUiTest`, `LocalBuildRepositoryTest`, `talentForgeColors`, `DatasetVersionCompatibilityTest`, `EditorLocalizationUiTest`, `TalentSpecializationNamesUiTest`, `TalentVisualsContractTest`, `HomeRedesignUiTest`, `TalentVisualsRepositoryTest`, `BuildImportBundledDatasetsTest`, `remember`, `prepareBuildImport`, `LocalBuildRepository`, `StagedUpdate`, `BuildShareUiTest`, `TalentTreeIconUiTest`, `TalentTooltipsRepositoryTest`, `TalentTreeSectionsTest`, `BuildActionsUiTest`, `ContractKind`, `VisualsLoadError`, `ConformanceSuite.kt`, `GameId`, `OtaScenarioTest`, `BuildFavoriteCoordinationTest`, `.decode`, `BuildRenameCoordinationTest`, `BuildImportFlowTest`, `AllBuildsRowLayoutUiTest`, `M51AppFlowUiTest`, `buildTalentTreeUiModel`, `TalentIconAssets.kt`, `.readyStateOf`, `TalentLocalizationDocument.kt`, `TooltipTokenCategory`, `BuildShareCodeTest`, `.entry`, `BackNavigationReentrancyUiTest`, `.decodeTalentDataDocument`, `IosOtaStagingE2ETest`, `ShellLocalizationUiTest`, `buildTalentTreePresentation`, `TalentLocalizationRepositoryTest`, `BuildManagementUiTest`, `OtaStagingE2ETest`, `TalentInspectorDescriptionTest`, `TalentTreeScreen`, `LocalizationLoadError`?**
-  _High betweenness centrality (0.078) - this node is a cross-community bridge._
+  _High betweenness centrality (0.079) - this node is a cross-community bridge._
 - **Are the 11 inferred relationships involving `ClassToken` (e.g. with `.parsesAndRoundTripsBuildFile()` and `.parsesMinimalTalentDataDocument()`) actually correct?**
   _`ClassToken` has 11 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Home`, `NewBuild`, `ImportBuild` to the rest of the system?**
