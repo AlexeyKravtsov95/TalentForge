@@ -45,12 +45,13 @@ jobs:
       - uses: ./tooling/.github/actions/delivery-python
         with:
           tooling: tooling
-      - name: Fresh full OTA gate before any scheduled store write
+      # Historical availability is monitored separately by ota-archive-health.yml.
+      - name: Fresh active-release OTA gate before any scheduled store write
         id: ota-preflight
         if: ${{ !inputs.inspect_only }}
         timeout-minutes: 45
         run: >-
-          "$PY" tooling/scripts/ota_production_preflight.py --expect published
+          "$PY" tooling/scripts/ota_production_preflight.py --expect published --release-scope active
           --keyring tooling/docs/ota/keys/production-keyring.json --min-validity-days 30
           --json delivery/public/ota-preflight.json
       - name: Preserve scheduled preflight refusal for Telegram
