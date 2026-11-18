@@ -41,7 +41,7 @@ import subprocess
 import sys
 import time
 import traceback
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from types import ModuleType
@@ -52,6 +52,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 import httpx  # noqa: E402
 
+from talent_data.cli.main import EXIT_SOURCE_UNAVAILABLE  # noqa: E402
 from talent_data.games import get_game  # noqa: E402
 from talent_data.ota.preflight import fetch  # noqa: E402
 from talent_data.prepare import replay  # noqa: E402
@@ -59,6 +60,7 @@ from talent_data.prepare.detect import Action, DetectionDocument  # noqa: E402
 from talent_data.prepare.orchestrate import (  # noqa: E402
     PrepareReport,
     Readiness,
+    Runner,
     Services,
     StepOutcome,
     evaluate_release,
@@ -202,6 +204,43 @@ def phase_detect(r: Replay) -> DetectionDocument | None:
 # --------------------------------------------------------------------------- 2-3. prepare
 
 
+def run_replay_command(
+    argv: Sequence[str],
+    cwd: Path,
+    log: Path,
+    *,
+    run: Runner = run_command,
+    sleep: Callable[[float], None] = time.sleep,
+) -> int:
+    """Resume the legacy full icon download after a source outage, at most eight times.
+
+    Wago may rate-limit the 359-file historical download with HTTP 429. The old CLI's
+    short internal backoff cannot span a quota window. Keep the same argv, checkout
+    and build-pinned SHA-verified raw cache; wait a minute before resuming. Every
+    failed attempt remains in the logs. Usage/integrity/check failures are never
+    retried, and an exhausted source failure remains nonzero, never PASS.
+    """
+    if tuple(argv[1:5]) != ("-m", "talent_data", "visuals", "fetch"):
+        return run(argv, cwd, log)
+    log.parent.mkdir(parents=True, exist_ok=True)
+    with log.open("wb") as combined:
+        for attempt in range(1, 9):
+            attempt_log = log.with_name(f"{log.stem}.attempt-{attempt}.log")
+            code = run(argv, cwd, attempt_log)
+            combined.write(f"# attempt {attempt}/8: exit {code}\n".encode())
+            combined.write(attempt_log.read_bytes())
+            combined.flush()
+            if code != EXIT_SOURCE_UNAVAILABLE or attempt == 8:
+                return code
+            print(
+                f"[replay] visuals source unavailable (exit {code}); "
+                f"resume {attempt + 1}/8 in 65s, same build/cache; {attempt_log.name}",
+                file=sys.stderr,
+            )
+            sleep(65)
+    raise AssertionError("unreachable")
+
+
 def phase_prepare(r: Replay, detection: DetectionDocument) -> PrepareReport:
     from talent_data.ota.preflight import production_keyring
 
@@ -215,7 +254,7 @@ def phase_prepare(r: Replay, detection: DetectionDocument) -> PrepareReport:
     started = time.monotonic()
     with replay.historical_production_client(production) as client:
         services = Services(
-            run=run_command,
+            run=run_replay_command,
             read_production=lambda: read_production(
                 client,
                 origin=replay.HISTORICAL_PRODUCTION_ORIGIN,
