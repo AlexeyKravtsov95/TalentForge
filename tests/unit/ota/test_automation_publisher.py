@@ -44,7 +44,8 @@ def env(prepared_inputs, world, tmp_path):  # noqa: F811
     shutil.copytree(package.root, owner.package)
     package = load_package(owner.package)
     remote = tmp_path / "main"
-    git(ROOT, "clone", "--quiet", "--shared", str(ROOT), str(remote))
+    # Live data-only tags are requests too; the rehearsal owns its complete ref set.
+    git(ROOT, "clone", "--quiet", "--shared", "--no-tags", str(ROOT), str(remote))
     # The stand starts at its package's immutable source, without real release
     # requests from the developer/PR checkout leaking into offline discovery.
     git(remote, "checkout", "-B", "main", request.source_commit)
