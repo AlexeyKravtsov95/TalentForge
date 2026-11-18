@@ -87,7 +87,8 @@ The default scope remains `all` for existing callers. `--release-scope all` veri
 historical release in the independent daily **OTA archive health** workflow and retains a JSON
 report for 30 days. A failure there does not gate the APK/IPA workflow.
 
-TLS EOF/transport failures retry at most three times. Exhausted transport errors are reported
+HTTP reads with TLS EOF/transport failures retry at most three times; a failing initial TLS
+handshake still fails the mandatory TLS gate. Exhausted transport errors are reported
 as transport errors before parsing/hashing an empty response; they are not reported as corrupt
 blob evidence. A successful body with a wrong hash still fails immediately.
 
