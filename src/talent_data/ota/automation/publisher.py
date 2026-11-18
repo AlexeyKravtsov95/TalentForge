@@ -283,7 +283,6 @@ def assess_request(
         args.verified_data_only = policy_proof
     if evidence.owner_merge is not None:
         args.verified_owner_merge = evidence.owner_merge
-    under_test = under_test_from_bytes(package.manifest_bytes, repo)
     if (
         _enforce_gates_and_approval(
             args, under_test, store, live.catalog, now, channel=Channel.PRODUCTION
