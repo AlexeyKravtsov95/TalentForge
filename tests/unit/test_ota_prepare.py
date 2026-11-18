@@ -230,7 +230,7 @@ def test_the_bundled_product_build_needs_no_ota_release() -> None:
     for production in (ABSENT, UNREACHABLE):
         d = detect(builds, production)
         assert d.action is Action.NO_ACTION, d.reason
-        assert "productBundle" in d.reason
+        assert "PRODUCT_BUNDLE" in d.reason
 
 
 def test_an_inconclusive_build_index_is_unknown_never_no_action() -> None:
@@ -1209,3 +1209,21 @@ def test_the_workflow_uploads_every_outcome_and_prepares_only_on_prepare() -> No
     assert "if: always() && steps.prepare.outcome == 'skipped'" in text  # the detection only
     assert "steps.prepare.outputs.artifact_name || format('ota-prepare-{0}-FAILED'" in text
     assert "cancel-in-progress: false" in text and "group: ota-prepare" in text
+
+
+@pytest.mark.parametrize("base", ["1.60.1.70959", "1.60.1.70999"])
+def test_forced_same_or_older_build_uses_its_exact_source_without_cross_build_reuse(
+    base: str,
+) -> None:
+    steps = pipeline_steps("forever", "1.60.1.70959", base)
+    icons = [s for s in steps if s.id in {"visuals-fetch", "visuals-normalize"}]
+    assert len(icons) == 2
+    assert all("--reuse-from" not in s.argv for s in icons)
+
+
+def test_a_newer_bundle_does_not_hide_an_ota_update_to_that_same_build() -> None:
+    result = detect(INDEX[:2], published("1.60.1.70374-r1"))
+    assert result.action is Action.PREPARE
+    assert result.candidate_build == str(PRODUCT)
+    assert result.base_build == "1.60.1.70374"
+    assert result.base_kind is BaseKind.PRODUCTION_RELEASE

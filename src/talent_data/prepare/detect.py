@@ -232,7 +232,8 @@ def decide(
     if candidate <= base and not force:
         return result(
             Action.NO_ACTION,
-            f"{candidate} is not newer than the base {base} ({kind.value}); nothing to prepare",
+            f"{candidate} is not newer than the base {base} "
+            f"({kind.name if kind is BaseKind.PRODUCT_BUNDLE else kind.value}); nothing to prepare",
         )
 
     # 5. the inputs that make a preparation reproducible

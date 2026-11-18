@@ -39,6 +39,9 @@ def _parse_page(raw: bytes, base: str, target: str, page: int) -> dict[str, Any]
     if document.get("component") != "Builds/Diff":
         raise ValueError("unexpected page component")
     props = document["props"]
+    errors = props.get("errors", {})
+    if not isinstance(errors, dict) or errors:
+        raise ValueError("upstream diff reports errors; equality is not established")
     if props.get("branch") is not None or set(props["filters"]) - {"from", "to", "page"}:
         raise ValueError("filtered diffs cannot prove equality")
     if props["fromVersion"] != base or props["toVersion"] != target:

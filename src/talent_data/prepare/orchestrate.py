@@ -70,6 +70,7 @@ from talent_data.prepare.detect import (
     artifact_name,
 )
 from talent_data.prepare.production import ProductionState, ProductionStatus
+from talent_data.versions import ClientVersion
 
 REPORT_SCHEMA_VERSION = 1
 CANDIDATE_BRANCH = "ota-prepare/{build}"
@@ -188,6 +189,7 @@ def pipeline_steps(
       ``normalize`` wrote.
     """
     g, b = ("--game", game), ("--build", build)
+    reuse = ("--reuse-from", base) if ClientVersion.parse(base) < ClientVersion.parse(build) else ()
     steps = [
         Step("fetch", StepKind.SOURCE, _talent_data("fetch", *g, *b)),
         Step("tooltips-fetch", StepKind.SOURCE, _talent_data("tooltips", "fetch", *g, *b)),
@@ -220,7 +222,7 @@ def pipeline_steps(
         Step(
             "visuals-fetch",
             StepKind.SOURCE,
-            _talent_data("visuals", "fetch", *g, *b, "--reuse-from", base),
+            _talent_data("visuals", "fetch", *g, *b, *reuse),
         ),
         Step(
             "diff",
@@ -230,7 +232,7 @@ def pipeline_steps(
         Step(
             "visuals-normalize",
             StepKind.PIPELINE,
-            _talent_data("visuals", "normalize", *g, *b, "--offline", "--reuse-from", base),
+            _talent_data("visuals", "normalize", *g, *b, "--offline", *reuse),
         ),
         Step("visuals-check", StepKind.PIPELINE, _talent_data("visuals", "check", *g, *b)),
         Step(

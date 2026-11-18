@@ -44,6 +44,7 @@ def page(number: int = 1, *, changed: tuple[int, ...] = (1, 2), **edits: object)
 @pytest.mark.parametrize(
     "edits",
     [
+        {"errors": {"to": "root unavailable"}},
         {"toVersion": str(BASE)},
         {"fromVersion": str(TARGET)},
         {"filters": {"search": "blp"}},
