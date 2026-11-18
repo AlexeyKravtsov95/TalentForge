@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 8,
+    "token": "MAGE",
+    "name": "Mage"
+  },
+  "fromBuild": "1.60.1.70938",
+  "toBuild": "1.60.1.70959",
+  "fromContentHash": "sha256:af367d9d704e3f1268a280b1bb381e02bd7896ac2b37ed76b4c7fb7a340b5f93",
+  "toContentHash": "sha256:4132731750d1e45229e5b962358e8ce3b707aebd1917ddf07e9f0c55e1d9848e",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 0,
+    "changesByKind": {}
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": []
+}
