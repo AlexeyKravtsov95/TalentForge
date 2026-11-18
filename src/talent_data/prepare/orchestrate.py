@@ -217,7 +217,11 @@ def pipeline_steps(
                 "--expect-complete",
             ),
         ),
-        Step("visuals-fetch", StepKind.SOURCE, _talent_data("visuals", "fetch", *g, *b)),
+        Step(
+            "visuals-fetch",
+            StepKind.SOURCE,
+            _talent_data("visuals", "fetch", *g, *b, "--reuse-from", base),
+        ),
         Step(
             "diff",
             StepKind.PIPELINE,
@@ -226,7 +230,7 @@ def pipeline_steps(
         Step(
             "visuals-normalize",
             StepKind.PIPELINE,
-            _talent_data("visuals", "normalize", *g, *b, "--offline"),
+            _talent_data("visuals", "normalize", *g, *b, "--offline", "--reuse-from", base),
         ),
         Step("visuals-check", StepKind.PIPELINE, _talent_data("visuals", "check", *g, *b)),
         Step(
@@ -271,11 +275,15 @@ def check_steps() -> list[Step]:
     ]
 
 
-def run_command(argv: Sequence[str], cwd: Path, log: Path) -> int:
+def run_command(
+    argv: Sequence[str], cwd: Path, log: Path, *, cache_root: Path | None = None
+) -> int:
     """Run one command in the clone with the clone's own code (``src`` first on the path)
     and the clone as the data root; its combined output goes to ``log``."""
     env = dict(os.environ)
     env.pop("TALENT_DATA_ROOT", None)
+    if cache_root is not None:
+        env["TALENT_DATA_CACHE_ROOT"] = str(cache_root.resolve())
     env["PYTHONPATH"] = os.pathsep.join(
         [str(cwd / "src"), *([env["PYTHONPATH"]] if env.get("PYTHONPATH") else [])]
     )

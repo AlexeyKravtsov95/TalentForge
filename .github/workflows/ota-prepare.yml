@@ -133,6 +133,14 @@ jobs:
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"
           echo "ota_prepare.py detect exited with $code"
 
+      - name: Restore verified source checkpoints
+        uses: actions/cache/restore@v4
+        with:
+          path: .cache/wago
+          key: ota-source-v1-${{ runner.os }}-${{ steps.detect.outputs.candidate }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            ota-source-v1-${{ runner.os }}-${{ steps.detect.outputs.candidate }}-
+
       # Exits 0 PREPARED / 3 BLOCKED / 4 UNKNOWN / 1 failure; recorded, restored at the end.
       - name: Prepare
         id: prepare
@@ -146,6 +154,13 @@ jobs:
           set -e
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"
           echo "ota_prepare.py prepare exited with $code"
+
+      - name: Save completed source checkpoints even after network failure
+        if: always() && steps.prepare.outcome != 'skipped'
+        uses: actions/cache/save@v4
+        with:
+          path: .cache/wago
+          key: ota-source-v1-${{ runner.os }}-${{ steps.detect.outputs.candidate }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       # Name: ota-prepare-<game>-<build>-r<n>-from-<base>-main-<sha12>-<STATUS>; the next
       # detection compares it with the inputs it would prepare.

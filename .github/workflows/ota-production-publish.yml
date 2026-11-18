@@ -1,7 +1,8 @@
 name: OTA production publication
 
 # Disabled unless the repository variable is literal true. Release approval stays in
-# the merged exact request/approval; the production environment has no second review.
+# a merged exact request/approval or a verified immutable data-only policy request;
+# the production environment has no second review.
 # All journal preflights and catalog writers share a job-level lock, in dependency
 # order. No workflow-level lock (which would deadlock nested same-key jobs).
 # GitHub may replace pending runs: committed requests + durable journal + periodic

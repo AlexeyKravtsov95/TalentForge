@@ -49,6 +49,9 @@ def register(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
         "fetch", help="download SpellMisc and every resolved icon file (network)"
     )
     common(fetch)
+    fetch.add_argument(
+        "--reuse-from", help="verified baseline build; full upstream CASC diff required"
+    )
     fetch.set_defaults(handler=_cmd_fetch)
 
     report = visuals_sub.add_parser("report", help="icon coverage report for all classes")
@@ -62,6 +65,7 @@ def register(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     )
     common(norm)
     norm.add_argument("--offline", action="store_true", help="use only the local cache, no network")
+    norm.add_argument("--reuse-from", help="reuse the baseline PNGs proven unchanged by CASC diff")
     norm.set_defaults(handler=_cmd_normalize)
 
     check = visuals_sub.add_parser(
@@ -129,7 +133,14 @@ def _cmd_fetch(args: argparse.Namespace) -> int:
         resolution = resolve_build(source, game, version)
         _print_report(resolution.report)
         _require_complete(resolution)
-        fetched = fetch_icons(_casc(game, http), version, resolution.file_data_ids)
+        ids = resolution.file_data_ids
+        if args.reuse_from:
+            from talent_data.visuals.reuse import plan_reuse
+
+            plan = plan_reuse(game.key, _version(game, args.reuse_from), version, ids, http)
+            ids = sorted(set(ids) - plan.icons.keys())
+            print(f"reusing {len(plan.icons)} verified PNGs; fetching {len(ids)} target files")
+        fetched = fetch_icons(_casc(game, http), version, ids)
     total = sum(path.stat().st_size for path in fetched.values())
     print(f"fetched {len(fetched)} icon files for {version} ({total} bytes)")
     return EXIT_OK
@@ -160,7 +171,20 @@ def _cmd_normalize(args: argparse.Namespace) -> int:
         resolution = resolve_build(source, game, version)
         _print_report(resolution.report)
         _require_complete(resolution)
-        published = publish(resolution, _casc(game, http), source_name=source.name)
+        plan = None
+        if args.reuse_from:
+            from talent_data.visuals.reuse import plan_reuse
+
+            plan = plan_reuse(
+                game.key, _version(game, args.reuse_from), version, resolution.file_data_ids, http
+            )
+        published = publish(
+            resolution,
+            _casc(game, http),
+            source_name=source.name,
+            reused_icons=plan.icons if plan else None,
+            icon_provenance=plan.provenance if plan else None,
+        )
     finally:
         if http is not None:
             http.close()

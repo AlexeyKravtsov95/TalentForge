@@ -204,10 +204,10 @@ def test_the_bundled_product_is_the_base_when_nothing_is_published() -> None:
     )
 
 
-def test_an_older_active_release_does_not_hide_the_newer_bundle() -> None:
+def test_an_older_active_release_is_the_ota_base_independently_of_the_bundle() -> None:
     d = detect(production=published("1.60.1.70374-r1"))
     assert d.action is Action.PREPARE
-    assert (d.base_build, d.base_kind) == (str(PRODUCT), BaseKind.PRODUCT_BUNDLE)
+    assert (d.base_build, d.base_kind) == ("1.60.1.70374", BaseKind.PRODUCTION_RELEASE)
 
 
 def test_a_build_the_verified_production_catalog_lists_is_not_prepared_again() -> None:
@@ -230,7 +230,7 @@ def test_the_bundled_product_build_needs_no_ota_release() -> None:
     for production in (ABSENT, UNREACHABLE):
         d = detect(builds, production)
         assert d.action is Action.NO_ACTION, d.reason
-        assert "PRODUCT_BUNDLE" in d.reason
+        assert "productBundle" in d.reason
 
 
 def test_an_inconclusive_build_index_is_unknown_never_no_action() -> None:
@@ -289,10 +289,9 @@ def test_a_prepared_preparation_of_the_same_inputs_is_not_repeated() -> None:
     assert detect(prior_artifacts=kept, force=True).action is Action.PREPARE
 
 
-@pytest.mark.parametrize("status", ["BLOCKED", "UNKNOWN", "FAILED"])
+@pytest.mark.parametrize("status", ["UNKNOWN", "FAILED"])
 def test_a_kept_failure_is_prepared_again_on_the_next_run(status: str) -> None:
-    """Right after a patch the source can be incomplete; a kept BLOCKED (or UNKNOWN, or a
-    crashed run) must not hide the build for the artifact's whole retention."""
+    """Network uncertainty and crashes retry; neither is a definitive resource failure."""
     key = detect().preparation_key
     assert key is not None
     d = detect(prior_artifacts=[artifact_name(key, status)])
@@ -956,11 +955,11 @@ def test_a_rerun_that_changes_committed_visuals_blocks(
     assert "DIFFERS: icon" in (out / "logs/visuals-reproduction.log").read_text()
 
 
-def test_a_blocked_run_is_prepared_once_the_source_recovers(repo: Path, tmp_path: Path) -> None:
-    """Regression (PR #71 review): run 1 is BLOCKED because a DB2 table is not exported
-    yet (a definitive answer of the source, exit 1); the next scheduled run, with run 1's
-    artifact kept, prepares again and - the source has caught up - ends PREPARED; the run
-    after that is skipped."""
+def test_a_blocked_run_requires_changed_inputs_or_explicit_retry(
+    repo: Path, tmp_path: Path
+) -> None:
+    """A definitive missing-resource answer is terminal for unchanged preparation inputs.
+    Explicit force retries once after the missing source has been supplied."""
     head = git(repo, "rev-parse", "HEAD")
     kept: list[str] = []
 
@@ -970,15 +969,15 @@ def test_a_blocked_run_is_prepared_once_the_source_recovers(repo: Path, tmp_path
     assert blocked.status is Readiness.BLOCKED
     kept.append(blocked.artifact_name)
 
-    second = detect(main=head, prior_artifacts=kept)
-    assert second.action is Action.PREPARE, second.reason
-    assert second.prior_artifact == blocked.artifact_name
+    stopped = detect(main=head, prior_artifacts=kept)
+    assert stopped.action is Action.NO_ACTION
+    assert stopped.prior_artifact == blocked.artifact_name
+    second = detect(main=head, prior_artifacts=kept, force=True)
+    assert second.action is Action.PREPARE
     prepared, out = run_prepare(repo, tmp_path / "2", services(FakeRunner())[0], second)
     assert prepared.status is Readiness.PREPARED
     assert prepared.artifact_name == blocked.artifact_name.replace("-BLOCKED", "-PREPARED")
-    assert json.loads((out / "detection.json").read_text())["priorArtifact"] == (
-        blocked.artifact_name
-    )
+    assert json.loads((out / "detection.json").read_text())["forced"] is True
     kept.append(prepared.artifact_name)
 
     third = detect(main=head, prior_artifacts=kept)

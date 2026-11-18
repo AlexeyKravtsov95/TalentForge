@@ -1,5 +1,9 @@
 # Remote dataset delivery (OTA)
 
+M8.OTA.FAST.1: see [fast data-only patches](fast-patches.md) and the
+[70959 review report](M8.OTA.FAST.1-report.md) for the incremental preparation, standing
+publication policy and separate archive monitoring. The historical status below predates them.
+
 Goal: after one app update, new Forever talent trees, icons, descriptions and translations reach
 users without a new APK/AAB or iOS binary.
 

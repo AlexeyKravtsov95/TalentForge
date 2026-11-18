@@ -749,3 +749,58 @@ def test_shared_reader_preserves_one_observation_for_existing_guards() -> None:
     with httpx.Client(transport=httpx.MockTransport(handler)) as client:
         result = preflight.fetch(client, ORIGIN)
     assert result.status == 503 and result.attempts == len(calls) == 1
+
+
+def two_release_publication() -> tuple[dict[str, bytes], str]:
+    from tests.unit.ota.publisher_testkit import BUILD_B
+
+    objects = publication()
+    old = real_release()
+    active = build_release(ROOT, COMMIT, GAME, BUILD_B, 1, CREATED_AT, VALIDATION_NOTE)
+    first = next_catalog(
+        None,
+        game=GAME,
+        channel=Channel.PRODUCTION,
+        active_release_id=old.manifest.release_id,
+        append=catalog_entry(old.manifest_bytes, old.manifest, NOW),
+        issued_at=NOW,
+    )
+    update = next_catalog(
+        first.catalog,
+        game=GAME,
+        channel=Channel.PRODUCTION,
+        active_release_id=active.manifest.release_id,
+        append=catalog_entry(active.manifest_bytes, active.manifest, NOW),
+        issued_at=NOW,
+    )
+    objects.update({blob_key(sha): data for sha, data in active.blobs.items()})
+    objects[blob_key(sha256_ref(active.manifest_bytes))] = active.manifest_bytes
+    objects[CATALOG] = build_envelope(
+        update.payload, {PROD_A: sign_pae_der(derive_test_key(PROD_A), update.payload)}
+    )
+    return objects, blob_key(sha256_ref(old.manifest_bytes))
+
+
+def test_store_active_scope_is_independent_of_a_historical_tls_eof() -> None:
+    objects, historical = two_release_publication()
+    origin = FakeOrigin(objects)
+    origin.failures[historical] = httpx.ReadError("TLS EOF")
+    active = run(
+        origin, release_scope="active", expect="published", min_validity=timedelta(days=30)
+    )
+    assert not active.failed
+    assert RELEASE not in statuses(active)
+    assert statuses(active)["catalog.signature"] is Status.PASS
+    archive = run(origin, release_scope="all", expect="published")
+    assert archive.failed
+    failure = next(c for c in archive.checks if c.id == RELEASE)
+    assert "TLS EOF" in failure.detail
+    assert "HASH_MISMATCH" not in failure.detail
+
+
+def test_active_scope_still_rejects_bad_blob_hashes() -> None:
+    origin = FakeOrigin(publication())
+    file = real_release().manifest.files[0]
+    origin.objects[blob_key(file.sha256)] = b"corrupt"
+    report = run(origin, release_scope="active", expect="published")
+    assert report.failed and statuses(report)[RELEASE] is Status.FAIL

@@ -117,7 +117,16 @@ def read_live(
 
 def refresh_main(repo: Path) -> None:
     result = subprocess.run(
-        ["git", "-C", str(repo), "fetch", "--quiet", "origin", "main"],
+        [
+            "git",
+            "-C",
+            str(repo),
+            "fetch",
+            "--quiet",
+            "origin",
+            "main",
+            "refs/tags/ota-data-only/*:refs/tags/ota-data-only/*",
+        ],
         capture_output=True,
         check=False,
     )
@@ -132,12 +141,29 @@ def approval_directory(
     *,
     main_ref: str | None = None,
     owner_merge: VerifiedOwnerMerge | None = None,
+    data_only: object | None = None,
 ) -> Path:
     if main_ref is None:
         refresh_main(repo)
         main_ref = "origin/main"
     record = approval_record_at(repo, main_ref, request.release_id)
+    if record is None:
+        from talent_data.ota.automation.data_only import standing_record
+
+        record = standing_record(repo, main_ref, request)
+    from talent_data.ota.automation.data_only import VerifiedDataOnly
     from talent_data.ota.automation.merge_approval import parse_merge_record
+
+    if record is not None and b"- Data-only policy:" in record:
+        if (
+            not isinstance(data_only, VerifiedDataOnly)
+            or data_only.request != request
+            or data_only.main_ref != main_ref
+            or data_only.record != record
+        ):
+            raise OtaPublisherError("current data-only authorization is unverified or withdrawn")
+        (directory / f"{request.release_id}.md").write_bytes(record)
+        return directory
 
     conditional = parse_merge_record(record.decode("utf-8", "strict")) if record else None
     if conditional is not None:
@@ -212,9 +238,6 @@ def assess_request(
     refresh_main(repo)
     main = git(repo, "rev-parse", "origin/main").strip()
     evidence = provenance()
-    approvals = approval_directory(
-        request, repo, directory, main_ref=main.decode("ascii"), owner_merge=evidence.owner_merge
-    )
     if git(repo, "rev-parse", "origin/main").strip() != main:
         raise OtaPublisherError("current main changed during assessment")
     verify_package_origin(
@@ -234,7 +257,30 @@ def assess_request(
         package.attachment(STAGING_BASE_MANIFEST_NAME),
         package.attachment(STAGING_FILES["report"]),
     )
+    under_test = under_test_from_bytes(package.manifest_bytes, repo)
+    record = approval_record_at(repo, main.decode("ascii"), request.release_id)
+    if record is None:
+        from talent_data.ota.automation.data_only import standing_record
+
+        record = standing_record(repo, main.decode("ascii"), request)
+    policy_proof = None
+    if record is not None and b"- Data-only policy:" in record:
+        from talent_data.ota.automation.data_only import verify_data_only
+
+        policy_proof = verify_data_only(
+            repo, main.decode("ascii"), request, under_test, live.catalog, store
+        )
+    approvals = approval_directory(
+        request,
+        repo,
+        directory,
+        main_ref=main.decode("ascii"),
+        owner_merge=evidence.owner_merge,
+        data_only=policy_proof,
+    )
     args = argparse.Namespace(repo=repo, releases_docs=approvals, main_ref=main.decode("ascii"))
+    if policy_proof is not None:
+        args.verified_data_only = policy_proof
     if evidence.owner_merge is not None:
         args.verified_owner_merge = evidence.owner_merge
     under_test = under_test_from_bytes(package.manifest_bytes, repo)

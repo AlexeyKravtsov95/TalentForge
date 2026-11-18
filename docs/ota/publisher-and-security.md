@@ -244,3 +244,16 @@ payload. First baseline and same-active renewal are quiet. Candidate/renewal fai
 separate; unrelated healthy observation cannot clear their markers. Missing writer status after
 possible PUT means unknown/AMBIGUOUS; journal/live diagnosis is authoritative. Telegram failure
 cannot change a publication receipt. See [operator setup/recovery](publisher-runbook.md#github-production-automation-owner-setup).
+
+
+## 9. Standing data-only authorization (M8.OTA.FAST.1)
+
+The reviewed `data-only-v1` policy adds a narrow authorization alternative to per-release
+G7 approval. For verified, allocation-compatible data already reviewed onto `main`, an
+immutable exact request tag plus successful source CI, package/staging provenance and
+G1–G8 authorize the existing protected publisher without another owner confirmation.
+This is explicit standing G7 acceptance, not proof of live-realm deployment. G5 growth
+and all STOP gates remain blocking; the evidence status of EDGE-ACTIVE/EDGE-SUF is unchanged.
+The legacy manual parser cannot accept a standing-policy receipt without independent
+proof. Current policy revocation is rechecked before activation. See
+[fast-patches.md](fast-patches.md) for exact limits, checkpoints and rollback.

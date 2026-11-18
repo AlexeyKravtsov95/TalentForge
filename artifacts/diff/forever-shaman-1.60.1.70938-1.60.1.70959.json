@@ -1,0 +1,178 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 7,
+    "token": "SHAMAN",
+    "name": "Shaman"
+  },
+  "fromBuild": "1.60.1.70938",
+  "toBuild": "1.60.1.70959",
+  "fromContentHash": "sha256:cd6a8ce305086bba6b4de90573fbaaf8ade523112ab201cef0b186f4095204e2",
+  "toContentHash": "sha256:9b6b406edf52f5a74734bed1a9edfc9b5d64146955fb0eb05b15e77b173990be",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 3,
+    "changesByKind": {
+      "descriptionChanged": 1,
+      "effectBasePointsChanged": 2,
+      "effectRankValueChanged": 12,
+      "effectStatusChanged": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 104741,
+      "treeId": 1082,
+      "name": "Maelstrom Weapon",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 129401,
+          "effectIndex": null,
+          "rank": null,
+          "old": "When you deal damage with a melee attack, you have a chance to reduce the cast time and Mana cost of your next Lightning Bolt spell by $m1%. Stacks up to $s3 times. Lasts $408505d.",
+          "new": "When you deal damage with a melee attack, you have a ${($mws*$s2/60)*100}% chance (based on weapon speed) to reduce the cast time and Mana cost of your next Lightning Bolt spell by $m1%. Stacks up to $s3 times. Lasts $408505d."
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129401,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": -4,
+          "new": -20
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129401,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": -8,
+          "new": -20
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129401,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": -12,
+          "new": -20
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129401,
+          "effectIndex": 0,
+          "rank": 4,
+          "old": -16,
+          "new": -20
+        },
+        {
+          "kind": "effectStatusChanged",
+          "entryId": 129401,
+          "effectIndex": 1,
+          "rank": null,
+          "old": "none",
+          "new": "resolved"
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129401,
+          "effectIndex": 1,
+          "rank": 1,
+          "old": null,
+          "new": 6
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129401,
+          "effectIndex": 1,
+          "rank": 2,
+          "old": null,
+          "new": 7
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129401,
+          "effectIndex": 1,
+          "rank": 3,
+          "old": null,
+          "new": 8
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129401,
+          "effectIndex": 1,
+          "rank": 4,
+          "old": null,
+          "new": 9
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129401,
+          "effectIndex": 1,
+          "rank": 5,
+          "old": null,
+          "new": 10
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 129401,
+          "effectIndex": 1,
+          "rank": null,
+          "old": 50,
+          "new": 2
+        }
+      ]
+    },
+    {
+      "nodeId": 104743,
+      "treeId": 1082,
+      "name": "Stormstrike",
+      "changes": [
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 129403,
+          "effectIndex": 2,
+          "rank": null,
+          "old": 150,
+          "new": 100
+        }
+      ]
+    },
+    {
+      "nodeId": 104755,
+      "treeId": 1082,
+      "name": "Mental Dexterity",
+      "changes": [
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129415,
+          "effectIndex": 0,
+          "rank": 1,
+          "old": 50,
+          "new": 33
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129415,
+          "effectIndex": 0,
+          "rank": 2,
+          "old": 100,
+          "new": 66
+        },
+        {
+          "kind": "effectRankValueChanged",
+          "entryId": 129415,
+          "effectIndex": 0,
+          "rank": 3,
+          "old": 150,
+          "new": 100
+        }
+      ]
+    }
+  ]
+}

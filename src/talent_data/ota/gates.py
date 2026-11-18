@@ -445,6 +445,8 @@ class ApprovalRecord:
     #: API-verified merge audit, never read from the manual record format.
     merge_authorization_evidence: str | None = None
 
+    policy_authorization_evidence: str | None = None
+
     def accepts(self, gate: Gate) -> bool:
         return gate in self.accepted_gates
 
@@ -460,6 +462,10 @@ def load_approval_record(release_id: str, docs_dir: Path) -> ApprovalRecord | No
     if not path.is_file():
         return None
     text = path.read_text(encoding="utf-8")
+    if "- Data-only policy:" in text:
+        raise OtaPublisherError(
+            f"{path}: data-only authorization requires independent policy proof"
+        )
     if "- Authorization mode:" in text or "```owner-merge-v1" in text:
         raise OtaPublisherError(f"{path}: owner merge authorization requires independent API proof")
     fields: dict[str, str] = {}
@@ -515,6 +521,12 @@ def gate_g7_live_build_evidence(
     note) is. Staging carries no such requirement."""
     if channel is Channel.STAGING:
         return GateResult(Gate.G7, GateStatus.PASS, "staging needs no live-build evidence")
+    if (
+        approval is not None
+        and approval.accepts(Gate.G7)
+        and approval.policy_authorization_evidence
+    ):
+        return GateResult(Gate.G7, GateStatus.PASS, approval.policy_authorization_evidence)
     if approval is not None and approval.accepts(Gate.G7) and approval.merge_authorization_evidence:
         return GateResult(Gate.G7, GateStatus.PASS, approval.merge_authorization_evidence)
     if approval is not None and approval.live_build_evidence:

@@ -707,12 +707,27 @@ def _enforce_gates_and_approval(
     no editable local file can smuggle a release past the gates). Returns
     ``EXIT_FAILURE`` when the release must not be published, ``None`` when it may.
     """
-    from talent_data.ota.gates import load_approval_record, validate_release
+    from talent_data.ota.gates import ApprovalRecord, load_approval_record, validate_release
     from talent_data.ota.verify import sha256_ref
 
     release_id = under_test.manifest.release_id
     verified_merge = getattr(args, "verified_owner_merge", None)
-    if verified_merge is None:
+    verified_policy = getattr(args, "verified_data_only", None)
+    approval: ApprovalRecord | None
+    if verified_policy is not None:
+        from talent_data.ota.automation.data_only import VerifiedDataOnly
+
+        if not isinstance(verified_policy, VerifiedDataOnly):
+            raise OtaPublisherError("invalid data-only policy proof")
+        if (
+            verified_policy.request.release_id != release_id
+            or verified_policy.main_ref != args.main_ref
+            or verified_policy.request.source_commit
+            != under_test.manifest.provenance.repository_commit
+        ):
+            raise OtaPublisherError("data-only proof belongs to another release/source/main")
+        approval = verified_policy.gate_approval()
+    elif verified_merge is None:
         approval = load_approval_record(release_id, args.releases_docs.expanduser())
     else:
         from talent_data.ota.automation.merge_approval import VerifiedOwnerMerge, as_gate_approval
@@ -748,7 +763,7 @@ def _enforce_gates_and_approval(
     stopped, flagged = _print_gates(results)
     if stopped:
         return EXIT_FAILURE
-    if verified_merge is not None:
+    if verified_merge is not None or verified_policy is not None:
         assert approval is not None
         return None if all(approval.accepts(result.gate) for result in flagged) else EXIT_FAILURE
     return _require_approval(flagged, release_id, args.releases_docs)

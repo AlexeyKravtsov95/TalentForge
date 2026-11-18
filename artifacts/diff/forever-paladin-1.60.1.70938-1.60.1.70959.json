@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 2,
+    "token": "PALADIN",
+    "name": "Paladin"
+  },
+  "fromBuild": "1.60.1.70938",
+  "toBuild": "1.60.1.70959",
+  "fromContentHash": "sha256:70a8ccb5426b84c0c3d8a30f438977f39b12e0ba190b3ca8430fdd8f22b5b6c7",
+  "toContentHash": "sha256:5cc95523cbd73625db3e7d8175536d4f3da1ede83f626552e1c726911f497ae3",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 0,
+    "changesByKind": {}
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": []
+}

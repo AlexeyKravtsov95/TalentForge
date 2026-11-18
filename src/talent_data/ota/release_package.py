@@ -633,6 +633,8 @@ def approval_record_problems(
     ``<OWNER: …>`` line of the template, and state its accepted gates - none, or only the
     FLAG-able G5/G7 (a G7 with its live-build evidence). Which of them it accepts is the
     owner's decision."""
+    if "- Data-only policy:" in text:
+        return ["data-only authorization needs independent standing-policy proof"]
     if "- Authorization mode:" in text or "```owner-merge-v1" in text:
         return ["owner merge authorization needs independent API proof, not manual approval"]
     fields: dict[str, str] = {}

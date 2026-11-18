@@ -281,7 +281,7 @@ jobs:
 
       - name: Production OTA catalog (read-only preflight, at least 30 days of validity)
         run: >-
-          "$PY" tooling/scripts/ota_production_preflight.py --expect published
+          "$PY" tooling/scripts/ota_production_preflight.py --expect published --release-scope active
           --keyring src/docs/ota/keys/production-keyring.json --min-validity-days 30
           --json delivery/android/ota-preflight.json
 
@@ -557,7 +557,7 @@ jobs:
         id: ota-preflight
         timeout-minutes: 45
         run: >-
-          "$PY" tooling/scripts/ota_production_preflight.py --expect published
+          "$PY" tooling/scripts/ota_production_preflight.py --expect published --release-scope active
           --keyring src/docs/ota/keys/production-keyring.json --min-validity-days 30
           --json delivery/production-ota-preflight.json
       - name: Preserve early preflight refusal for Telegram
@@ -753,7 +753,7 @@ jobs:
         id: ota-preflight
         timeout-minutes: 45
         run: >-
-          "$PY" tooling/scripts/ota_production_preflight.py --expect published
+          "$PY" tooling/scripts/ota_production_preflight.py --expect published --release-scope active
           --keyring src/docs/ota/keys/production-keyring.json --min-validity-days 30
           --json delivery/public/ota-preflight.json
       - name: Preserve APK preflight refusal for Telegram
@@ -943,7 +943,7 @@ jobs:
 
       - name: Production OTA catalog (read-only preflight, at least 30 days of validity)
         run: >-
-          "$PY" tooling/scripts/ota_production_preflight.py --expect published
+          "$PY" tooling/scripts/ota_production_preflight.py --expect published --release-scope active
           --keyring src/docs/ota/keys/production-keyring.json --min-validity-days 30
           --json delivery/ios/ota-preflight.json
 

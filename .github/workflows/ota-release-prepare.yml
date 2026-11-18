@@ -2,7 +2,8 @@ name: OTA release preparation
 
 # Task 3 only: read production, reserve exact packages with immutable Git tags,
 # dispatch the two existing read-only verifiers,
-# then propose a draft. No signer, S3 credentials, blob uploads or catalog writes.
+# then freeze a standing-policy request tag (legacy CLI can still propose a draft).
+# No signer, S3 credentials, blob uploads, main edits or catalog writes.
 on:
   workflow_run:
     workflows: ["CI"]
@@ -121,7 +122,7 @@ jobs:
           repositories: TalentForge
           permission-contents: write
           permission-pull-requests: write
-      - name: Propose verified draft release PR
+      - name: Authorize verified data-only release under committed policy
         env:
           GH_TOKEN: ${{ github.token }}
           OTA_APP_TOKEN: ${{ steps.app-token.outputs.token }}
@@ -129,7 +130,7 @@ jobs:
           CI_ATTEMPT: ${{ needs.prepare.outputs.ci_attempt }}
         run: |
           python scripts/ota_release_automation.py propose-request \
-            --request "$RUNNER_TEMP/request/release-request.json" \
+            --auto-data-only --request "$RUNNER_TEMP/request/release-request.json" \
             --ci-run-id "$CI_RUN_ID" --ci-attempt "$CI_ATTEMPT"
 
   premerge:
@@ -230,7 +231,7 @@ jobs:
           CI_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
         run: |
           python scripts/ota_premerge.py "$PHASE" --ci-run-id "$CI_RUN_ID" \
-            --ci-attempt "$CI_ATTEMPT" --request "$RUNNER_TEMP/request/release-request.json" \
+            --ci-attempt "$CI_ATTEMPT" --auto-data-only --request "$RUNNER_TEMP/request/release-request.json" \
             --out "$RUNNER_TEMP/review"
 
   premerge-main-change:

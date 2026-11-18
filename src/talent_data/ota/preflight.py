@@ -527,13 +527,27 @@ def check_catalog(
 
 
 def check_releases(
-    report: Report, client: httpx.Client, origin: str, catalog: OtaCatalog, workers: int = 8
+    report: Report,
+    client: httpx.Client,
+    origin: str,
+    catalog: OtaCatalog,
+    workers: int = 8,
+    *,
+    scope: str = "all",
 ) -> None:
-    """Every object of every listed release, as a client fetches it - always all of them."""
-    for number, entry in enumerate(catalog.releases, 1):
-        report.progress(f"release {number}/{len(catalog.releases)}: {entry.release_id} starting")
+    """Verify the active release for delivery, or the complete archive for monitoring."""
+    if scope not in {"active", "all"}:
+        raise ValueError("release scope must be active or all")
+    entries = tuple(
+        entry
+        for entry in catalog.releases
+        if scope == "all" or entry.release_id == catalog.active_release_id
+    )
+    report.add("releases.scope", Status.PASS, f"{scope}: {len(entries)} release(s) selected")
+    for number, entry in enumerate(entries, 1):
+        report.progress(f"release {number}/{len(entries)}: {entry.release_id} starting")
         _check_release(report, client, origin, entry, workers)
-    ids = [f"release.{entry.release_id}" for entry in catalog.releases]
+    ids = [f"release.{entry.release_id}" for entry in entries]
     verified = [check_id for check_id in ids if report.status_of(check_id) is Status.PASS]
     if len(verified) == len(ids):
         report.add("releases", Status.PASS, f"{len(ids)}/{len(ids)} listed release(s) verified")
@@ -579,6 +593,8 @@ def _check_release(
                     client, f"{origin}/{blob_key(sha_ref)}", progress=report.progress, attempts=3
                 ),
             )
+        if problems:
+            raise OtaPublisherError("; ".join(problems[:5]))
         return bodies[sha_ref]
 
     def read_file(file: ReleaseFile) -> bytes:
@@ -616,6 +632,9 @@ def _check_release(
                 if done and (completed - reported >= 25 or not pending):
                     report.progress(f"{entry.release_id}: {completed}/{len(missing)} objects")
                     reported = completed
+        if problems:
+            report.add(check_id, Status.FAIL, "; ".join(problems[:5]))
+            return
         verify_release_files(manifest, read_file)
     except (OtaError, OtaPublisherError) as exc:
         problems.append(
@@ -650,8 +669,11 @@ def run(
     expect_cname_suffix: str | None = None,
     min_validity: timedelta | None = None,
     workers: int = 8,
+    release_scope: str = "all",
     progress: Callable[[str], None] | None = None,
 ) -> Report:
+    if release_scope not in {"active", "all"}:
+        raise ValueError("release scope must be active or all")
     if type(workers) is not int or not 1 <= workers <= 16:
         raise ValueError("preflight workers must be between 1 and 16")
     parts = urlsplit(origin)
@@ -690,7 +712,7 @@ def run(
                 )
         else:
             catalog, catalog_bytes = found
-            check_releases(report, client, origin, catalog, workers)
+            check_releases(report, client, origin, catalog, workers, scope=release_scope)
             if bucket_origin is not None:
                 behind = fetch(
                     client, f"{bucket_origin}/{CATALOG}", progress=report.progress, attempts=3
@@ -737,6 +759,12 @@ def main(argv: list[str] | None = None) -> int:
         help="fail unless the catalog stays valid at least this long (store uploads: 30)",
     )
     parser.add_argument("--workers", type=int, default=8, help="parallel object reads (1..16)")
+    parser.add_argument(
+        "--release-scope",
+        choices=("active", "all"),
+        default="all",
+        help="active for store delivery; all for independent archive monitoring",
+    )
     args = parser.parse_args(argv)
 
     started = time.monotonic()
@@ -754,6 +782,7 @@ def main(argv: list[str] | None = None) -> int:
                 expect=args.expect,
                 expect_cname_suffix=args.expect_cname_suffix,
                 workers=args.workers,
+                release_scope=args.release_scope,
                 progress=lambda message: print(
                     f"[{time.monotonic() - started:.1f}s] {message}", file=sys.stderr, flush=True
                 ),
