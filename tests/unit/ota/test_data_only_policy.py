@@ -13,17 +13,21 @@ from talent_data.ota.automation.prepare import PreparationBlocked
 from talent_data.ota.errors import OtaPublisherError
 from talent_data.ota.gates import load_approval_record
 from talent_data.pipeline import read_document
+from tests.ota_patch_fixtures import BASE, CLASSES, TARGET, write_snapshot
 from tests.unit.ota.publisher_testkit import ROOT
 
-BASE = "1.60.1.70938"
-TARGET = "1.60.1.70959"
-CLASSES = ("warrior", "paladin", "hunter", "rogue", "priest", "shaman", "mage", "warlock", "druid")
+
+@pytest.fixture
+def snapshots(tmp_path):
+    write_snapshot(tmp_path, BASE)
+    write_snapshot(tmp_path, TARGET, text="Updated fixture")
+    return tmp_path
 
 
-@pytest.mark.parametrize("token", CLASSES)
-def test_70938_saved_allocations_replay_on_70959_with_the_same_decisions(token: str) -> None:
-    old = read_document(ROOT / f"data/normalized/forever/{BASE}/{token}.json")
-    new = read_document(ROOT / f"data/normalized/forever/{TARGET}/{token}.json")
+@pytest.mark.parametrize("token", CLASSES.values())
+def test_data_patch_preserves_saved_allocation_decisions(token: str, snapshots: Path) -> None:
+    old = read_document(snapshots / f"data/normalized/forever/{BASE}/{token}.json")
+    new = read_document(snapshots / f"data/normalized/forever/{TARGET}/{token}.json")
     assert data_only.allocation_shape(old) == data_only.allocation_shape(new)
     a, b = TalentAllocationEngine(old), TalentAllocationEngine(new)
     state = a.empty_state()
@@ -41,8 +45,8 @@ def test_70938_saved_allocations_replay_on_70959_with_the_same_decisions(token: 
     assert b.validate(state).valid
 
 
-def test_structure_comparison_keeps_requirements_ranks_ids_and_flags() -> None:
-    old = read_document(ROOT / f"data/normalized/forever/{BASE}/shaman.json")
+def test_structure_comparison_keeps_requirements_ranks_ids_and_flags(snapshots: Path) -> None:
+    old = read_document(snapshots / f"data/normalized/forever/{BASE}/shaman.json")
     wire = old.model_dump(mode="json", by_alias=True)
     original = data_only.allocation_shape(old)
     for field, value in (("maxRank", 6), ("flags", 4), ("id", 999), ("spellId", 999)):
@@ -97,9 +101,7 @@ def policy_release(tmp_path):
     policy.parent.mkdir(parents=True)
     shutil.copyfile(ROOT / data_only.POLICY_PATH, policy)
     for build in (BASE, TARGET):
-        for kind in ("normalized", "visuals", "tooltips", "localization"):
-            relative = f"data/{kind}/forever/{build}"
-            shutil.copytree(ROOT / relative, tmp_path / relative)
+        write_snapshot(tmp_path, build, text="Base fixture" if build == BASE else "Updated fixture")
         git("add", ".")
         git("commit", "-qm", build)
     source = git("rev-parse", "HEAD")
@@ -154,17 +156,59 @@ def test_verified_data_only_request_accepts_no_per_release_owner_input(policy_re
     assert not data_only.record_matches(repo, source, altered, proof.record)
 
 
-def test_automatic_policy_rejects_code_changes_and_wrong_baseline_hash(policy_release, monkeypatch):
-    repo, source, request, under_test, catalog, store = policy_release
-    git = data_only.git
-    monkeypatch.setattr(
-        data_only,
-        "git",
-        lambda path, *args: b"src/changed.py\n" if args[0] == "diff" else git(path, *args),
+def rebuild_candidate(release):
+    """Rebind every pin after an actual temporary data/mixed commit, never fake git diff."""
+    import subprocess
+    from datetime import UTC, datetime
+
+    from talent_data.ota.gates import under_test_from_bytes
+    from talent_data.ota.release import build_release
+    from talent_data.ota.verify import sha256_ref
+
+    repo, _, request, _, catalog, store = release
+    subprocess.run(["git", "-C", str(repo), "add", "data"], check=True)
+    subprocess.run(["git", "-C", str(repo), "commit", "--amend", "--no-edit", "-q"], check=True)
+    source = subprocess.check_output(["git", "-C", str(repo), "rev-parse", "HEAD"]).decode().strip()
+    artifact = build_release(
+        repo, source, "forever", TARGET, 1, datetime(2026, 11, 18, tzinfo=UTC), "test"
     )
+    request = request.model_copy(
+        update={
+            "source_commit": source,
+            "manifest_sha256": sha256_ref(artifact.manifest_bytes),
+            "staging_run": request.staging_run.model_copy(update={"head_sha": source}),
+            "package_run": request.package_run.model_copy(update={"head_sha": source}),
+        }
+    )
+    return (
+        repo,
+        source,
+        request,
+        under_test_from_bytes(artifact.manifest_bytes, repo),
+        catalog,
+        store,
+    )
+
+
+@pytest.mark.parametrize(
+    "path", ["src/changed.py", "docs/ota/data-only-policy.json", "graphify-out/graph.json"]
+)
+def test_automatic_policy_rejects_actual_mixed_code_and_data_commits(policy_release, path):
+    import subprocess
+
+    repo = policy_release[0]
+    target = repo / path
+    target.parent.mkdir(parents=True, exist_ok=True)
+    # Keep the policy valid while still proving it is outside the exact candidate allowlist.
+    target.write_bytes(target.read_bytes() + b"\n" if target.exists() else b"changed\n")
+    subprocess.run(["git", "-C", str(repo), "add", path], check=True)
+    repo, source, request, under_test, catalog, store = rebuild_candidate(policy_release)
     with pytest.raises(PreparationBlocked, match="DATA_ONLY_SOURCE"):
         data_only.verify_data_only(repo, source, request, under_test, catalog, store)
-    monkeypatch.setattr(data_only, "git", git)
+
+
+def test_automatic_policy_rejects_wrong_baseline_hash(policy_release):
+    repo, source, request, under_test, catalog, store = policy_release
     from talent_data.ota.models import FileRole, OtaReleaseManifest
     from talent_data.ota.store import blob_key
     from talent_data.ota.verify import parse_strict
@@ -327,3 +371,66 @@ def test_tagged_request_is_discovered_and_uses_exact_source_ci(policy_release):
     out = repo / "tagged-approvals"
     out.mkdir()
     assert approval_directory(request, repo, out, main_ref=source, data_only=proof) == out
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("maxRank", 2),
+        ("id", 999),
+        ("flags", 4),
+        ("prerequisites", [{"nodeId": 2, "kind": "required"}]),
+    ],
+)
+def test_automatic_policy_blocks_structural_changes(policy_release, field, value):
+    repo = policy_release[0]
+    path = repo / f"data/normalized/forever/{TARGET}/warrior.json"
+    raw = json.loads(path.read_bytes())
+    raw["trees"][0]["nodes"][0][field] = value
+    path.write_text(json.dumps(raw))
+    repo, source, request, under_test, catalog, store = rebuild_candidate(policy_release)
+    with pytest.raises(PreparationBlocked, match="DATA_ONLY_STRUCTURE"):
+        data_only.verify_data_only(repo, source, request, under_test, catalog, store)
+
+
+@pytest.mark.parametrize("damage,gate", [("missing", "G3"), ("hash", "G3"), ("warnings", "G5")])
+def test_policy_never_approves_missing_images_hash_damage_or_warning_growth(
+    policy_release, damage, gate
+):
+    from datetime import UTC, datetime
+
+    from talent_data.ota.gates import validate_release
+    from talent_data.ota.models import Channel
+
+    repo = policy_release[0]
+    if damage == "warnings":
+        path = repo / f"data/normalized/forever/{TARGET}/manifest.json"
+        raw = json.loads(path.read_bytes())
+        raw["classes"][0]["validation"] = {
+            "errors": 0,
+            "warnings": 2,
+            "warningsByCode": {"SECTION_NOT_GATE_COUNTED": 2},
+        }
+        path.write_text(json.dumps(raw))
+    else:
+        path = repo / f"data/visuals/forever/{TARGET}/icons/132090.png"
+        if damage == "missing":
+            path.unlink()
+        else:
+            raw = path.read_bytes()
+            path.write_bytes(raw[:-1] + bytes([raw[-1] ^ 1]))
+    repo, source, request, under_test, catalog, store = rebuild_candidate(policy_release)
+    proof = data_only.verify_data_only(repo, source, request, under_test, catalog, store)
+    results = validate_release(
+        under_test,
+        repo_root=repo,
+        store=store,
+        live=catalog,
+        channel=Channel.PRODUCTION,
+        now=datetime(2026, 11, 18, tzinfo=UTC),
+        approval=proof.gate_approval(),
+        main_ref=source,
+    )
+    result = next(r for r in results if r.gate.value == gate)
+    assert result.status.value != "PASS"
+    assert not proof.gate_approval().accepts(result.gate)

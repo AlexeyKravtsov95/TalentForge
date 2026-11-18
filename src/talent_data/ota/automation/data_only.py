@@ -231,7 +231,6 @@ def verify_data_only(
             candidate_path_allowed(
                 p, game=request.game, build=request.build, base=base.client_build
             )
-            or p.startswith("graphify-out/")
             for p in changed
         ),
         "DATA_ONLY_SOURCE",

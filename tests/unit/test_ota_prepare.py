@@ -699,6 +699,7 @@ def services(
             mirror=mirror,
             evaluate=evaluate,
             clock=lambda: next(ticks),
+            visuals_reuse_supported=lambda workspace, logs: True,
         ),
         evaluated,
     )
@@ -1227,3 +1228,39 @@ def test_a_newer_bundle_does_not_hide_an_ota_update_to_that_same_build() -> None
     assert result.candidate_build == str(PRODUCT)
     assert result.base_build == "1.60.1.70374"
     assert result.base_kind is BaseKind.PRODUCTION_RELEASE
+
+
+@pytest.mark.parametrize("fetch,normalize", [(False, False), (True, False), (True, True)])
+def test_visuals_capabilities_are_read_from_the_selected_checkout(
+    tmp_path: Path, fetch: bool, normalize: bool
+) -> None:
+    package = tmp_path / "src/talent_data"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_text("")
+    (package / "__main__.py").write_text(
+        "import argparse, sys\n"
+        "parser = argparse.ArgumentParser()\n"
+        f"supported = {{'fetch': {fetch!r}, 'normalize': {normalize!r}}}\n"
+        "if supported[sys.argv[2]]: parser.add_argument('--reuse-from')\n"
+        "parser.parse_args(sys.argv[3:])\n"
+    )
+    supported = orchestrate.supports_visuals_reuse(tmp_path, tmp_path / "logs")
+    assert supported is (fetch and normalize)
+    icons = [
+        s
+        for s in pipeline_steps("forever", BUILD, BASE, incremental_visuals=supported)
+        if s.id in {"visuals-fetch", "visuals-normalize"}
+    ]
+    assert len(icons) == 2
+    for step in icons:
+        assert ("--reuse-from" in step.argv) is supported
+    assert len(list((tmp_path / "logs").glob("*-capabilities.log"))) == 2
+
+
+def test_broken_checkout_cli_is_not_downgraded_to_full_download(tmp_path: Path) -> None:
+    package = tmp_path / "src/talent_data"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_text("")
+    (package / "__main__.py").write_text("raise SystemExit(2)\n")
+    with pytest.raises(orchestrate.PrepareError, match="cannot inspect checkout visuals fetch CLI"):
+        orchestrate.supports_visuals_reuse(tmp_path, tmp_path / "logs")
