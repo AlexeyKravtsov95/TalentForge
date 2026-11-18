@@ -770,7 +770,10 @@ def test_the_detection_names_the_prepared_artifact_only_for_its_no_action() -> N
     done = detect(prior_artifacts=[prepared_name])
     assert done.action is Action.NO_ACTION
     assert detection_outputs(done)["prepared_artifact"] == prepared_name
-    retried = detect(prior_artifacts=[f"ota-prepare-{key}-BLOCKED"])
+    blocked = detect(prior_artifacts=[f"ota-prepare-{key}-BLOCKED"])
+    assert blocked.action is Action.NO_ACTION and blocked.prior_artifact
+    assert detection_outputs(blocked)["prepared_artifact"] == ""
+    retried = detect(prior_artifacts=[f"ota-prepare-{key}-UNKNOWN"])
     assert retried.action is Action.PREPARE and retried.prior_artifact
     assert detection_outputs(retried)["prepared_artifact"] == ""
     assert detection_outputs(detect(INDEX[:2]))["prepared_artifact"] == ""

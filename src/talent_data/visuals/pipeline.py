@@ -24,6 +24,7 @@ from talent_data import paths
 from talent_data.games import GameConfig
 from talent_data.models.talents import TalentDataDocument
 from talent_data.models.visuals import (
+    IconsProvenance,
     TalentIconRegistry,
     TalentVisualsDocument,
     expected_content_hash,
@@ -162,7 +163,12 @@ class PublishedVisuals:
 
 
 def publish(
-    resolution: BuildResolution, casc: CascFileSource, *, source_name: str
+    resolution: BuildResolution,
+    casc: CascFileSource,
+    *,
+    source_name: str,
+    reused_icons: Mapping[int, ConvertedIcon] | None = None,
+    icon_provenance: IconsProvenance | None = None,
 ) -> PublishedVisuals:
     """Write ``data/visuals/<game>/<build>/``: nine sidecars, ``icons.json`` and
     ``icons/<FileDataID>.png`` - or nothing at all."""
@@ -171,8 +177,11 @@ def publish(
         build_visuals_document(doc, resolution.by_class[doc.class_.token], source_name=source_name)
         for doc in resolution.documents
     ]
+    reused_icons = reused_icons or {}
     converted: list[ConvertedIcon] = [
-        convert_blp2(file_data_id, casc.fetch_file(version, file_data_id).read_bytes())
+        reused_icons[file_data_id]
+        if file_data_id in reused_icons
+        else convert_blp2(file_data_id, casc.fetch_file(version, file_data_id).read_bytes())
         for file_data_id in resolution.file_data_ids
     ]
     registry = build_icon_registry(
@@ -181,6 +190,9 @@ def publish(
         icons=converted,
         source_name=casc.name,
     )
+
+    if icon_provenance is not None:
+        registry = registry.model_copy(update={"provenance": icon_provenance})
 
     directory = paths.visuals_dir(resolution.game.key, version)
     files: dict[str, bytes] = {

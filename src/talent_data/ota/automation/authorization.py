@@ -41,7 +41,33 @@ def committed_requests(repo: Path) -> tuple[ReleaseRequest, ...]:
             "request name does not match release",
         )
         requests.append(request)
+    from talent_data.ota.automation.data_only import tagged_requests
+
+    for request in tagged_requests(repo):
+        same_release = [r for r in requests if r.release_id == request.release_id]
+        require(
+            not same_release or same_release == [request],
+            "REQUEST_CONFLICT",
+            "committed and tagged requests differ",
+        )
+        if not same_release:
+            requests.append(request)
     return tuple(requests)
+
+
+def request_bytes(repo: Path, request: ReleaseRequest) -> bytes:
+    path = f"{REQUEST_DIR}/{request.release_id}.json"
+    raw = git(repo, "show", f"origin/main:{path}", missing_ok=True)
+    if raw:
+        return raw
+    from talent_data.ota.automation.data_only import tagged_request
+
+    require(
+        tagged_request(repo, request.release_id) == request,
+        "REQUEST_CHANGED",
+        "automatic request missing or changed",
+    )
+    return (request.model_dump_json(by_alias=True, indent=2) + "\n").encode()
 
 
 def request_change_commit(repo: Path, request: ReleaseRequest) -> str:
@@ -53,7 +79,10 @@ def request_change_commit(repo: Path, request: ReleaseRequest) -> str:
     """
     path = f"{REQUEST_DIR}/{request.release_id}.json"
     approval_path = f"{APPROVALS_DIR}/{request.release_id}.md"
-    current = git(repo, "show", f"origin/main:{path}")
+    current = git(repo, "show", f"origin/main:{path}", missing_ok=True)
+    if not current:
+        request_bytes(repo, request)  # Re-prove the exact tag and current policy.
+        return request.source_commit
     require(parse_request(current) == request, "REQUEST_CHANGED", "current main request differs")
     commit = (
         git(

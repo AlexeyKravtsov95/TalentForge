@@ -7,11 +7,9 @@ actions, written as the ``ota-prepare-detection`` v1 document the preparation re
   freshness rule) is newer than what an up-to-date install shows, and the signed production
   catalog does not list it;
 * ``NO_ACTION`` - nothing to prepare: no newer build, the build is the app's bundled
-  ``PRODUCT_BUNDLE``, the *verified* production catalog already lists it, or the same inputs
-  were already ``PREPARED`` (a kept artifact). A ``BLOCKED`` or ``UNKNOWN`` preparation of
-  the same inputs is prepared again on the next run: right after a patch the source can
-  still be incomplete (a DB2 table not exported yet), and a kept failure must not hide the
-  build for the artifact's whole retention;
+  the *verified* production catalog already lists it, or the same inputs already have
+  a terminal ``PREPARED``/``BLOCKED`` result. Transport ``UNKNOWN`` and crashed ``FAILED``
+  preparations retry; a definitive blocker needs changed inputs or explicit force;
 * ``UNKNOWN``   - the answer cannot be established: the build index failed or is
   ambiguous (``FreshnessStatus.UNKNOWN``), a requested build is not listed or not
   publishable, or the base build has no committed dataset.
@@ -21,8 +19,8 @@ production OTA release, and a build is "already published" only when a productio
 that verified against the committed production keyring lists it - an unverifiable catalog
 publishes nothing, so the build is prepared (preparing publishes nothing either).
 
-The base of the diff is what an up-to-date install shows: the newer of ``PRODUCT_BUNDLE``
-and the active production release, or an explicitly requested committed build.
+The diff base is active verified Production OTA, independently of ``PRODUCT_BUNDLE``;
+without production it is the bundle, or an explicitly requested committed build.
 """
 
 from __future__ import annotations
@@ -122,11 +120,8 @@ def artifact_name(preparation_key: str, status: str) -> str:
     return f"{ARTIFACT_PREFIX}{preparation_key}-{status}"
 
 
-#: the only outcome a kept artifact makes final for the same inputs; BLOCKED and UNKNOWN
-#: are prepared again (the source may still be catching up with a new patch)
-SKIP_STATUSES = ("PREPARED",)
-#: outcomes kept as artifacts that do not stop the next run, recorded for the report
-RETRY_STATUSES = ("BLOCKED", "UNKNOWN", "FAILED")
+#: Transient outcomes do not stop the next run; definitive BLOCKED requires a retry decision.
+RETRY_STATUSES = ("UNKNOWN", "FAILED")
 
 
 def production_fact(state: ProductionState) -> ProductionFact:
@@ -217,13 +212,6 @@ def decide(
             f"(active {active.release_id if active else None})",
         )
 
-    # 3. bundled in the app: an install already has it without OTA
-    if candidate == product_build and not force:
-        return result(
-            Action.NO_ACTION,
-            f"{candidate} is the app's bundled PRODUCT_BUNDLE; it needs no OTA release",
-        )
-
     # 4. the base: what an up-to-date install shows (or the operator's choice)
     base_release_id: str | None = None
     if requested_base is not None:
@@ -231,7 +219,7 @@ def decide(
     else:
         base, kind = product_build, BaseKind.PRODUCT_BUNDLE
         active = production.active
-        if active is not None and ClientVersion.parse(active.client_build) >= product_build:
+        if active is not None:
             base, kind = ClientVersion.parse(active.client_build), BaseKind.PRODUCTION_RELEASE
             base_release_id = active.release_id
     facts.update(base_build=str(base), base_kind=kind, base_release_id=base_release_id)
@@ -244,7 +232,8 @@ def decide(
     if candidate <= base and not force:
         return result(
             Action.NO_ACTION,
-            f"{candidate} is not newer than the base {base} ({kind.value}); nothing to prepare",
+            f"{candidate} is not newer than the base {base} "
+            f"({kind.name if kind is BaseKind.PRODUCT_BUNDLE else kind.value}); nothing to prepare",
         )
 
     # 5. the inputs that make a preparation reproducible
@@ -259,10 +248,11 @@ def decide(
         names = {artifact_name(key, status) for status in statuses}
         return sorted(name for name in prior_artifacts or () if name in names)
 
-    if not force and (prepared := kept(SKIP_STATUSES)):
+    prepared = kept(("PREPARED",)) or kept(("BLOCKED",))
+    if not force and prepared:
         return result(
             Action.NO_ACTION,
-            f"already prepared for these inputs: artifact {prepared[0]} "
+            f"terminal result for these inputs: artifact {prepared[0]} "
             "(re-run with force to prepare again)",
             prior_artifact=prepared[0],
         )

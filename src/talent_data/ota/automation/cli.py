@@ -34,6 +34,7 @@ from talent_data.ota.automation.authorization import (
     authorize_request_ci,
     committed_requests,
     current_main_ci,
+    request_bytes,
     request_ci_pin,
     verify_invocation,
 )
@@ -43,7 +44,7 @@ from talent_data.ota.automation.ci_signer import (
     SecretReader,
     temporary_aws_profile,
 )
-from talent_data.ota.automation.prepare import GitHub, PreparationBlocked, git, obj, require, same
+from talent_data.ota.automation.prepare import GitHub, PreparationBlocked, obj, require, same
 from talent_data.ota.automation.provenance import (
     TRUSTED_REPO,
     RequestRejected,
@@ -543,8 +544,7 @@ class _Run:
         self.stage, self.reason = "AUTHORIZATION", "REQUEST_AUTHORIZATION_FAILED"
         self.invocation(require_ci=True)
         self.stage, self.reason = "AUTHORIZATION", "REQUEST_AUTHORIZATION_FAILED"
-        path = f"docs/ota/release-requests/{request.release_id}.json"
-        raw = git(self.d.repo, "show", f"origin/main:{path}")
+        raw = request_bytes(self.d.repo, request)
         same(raw, self.current_bytes[request_digest(request)], "REQUEST_CHANGED", "request bytes")
         pin = self.ci_pin
         if self.env.get("GITHUB_EVENT_NAME") == "workflow_run":
@@ -693,8 +693,7 @@ class _Run:
                 continue  # recovery only diagnoses; exact PREPARED resumes on next run
             if self.args.release_id is not None and request.release_id != self.args.release_id:
                 continue
-            path = f"docs/ota/release-requests/{request.release_id}.json"
-            raw = git(self.d.repo, "show", f"origin/main:{path}")
+            raw = request_bytes(self.d.repo, request)
             if digest in self.current_bytes:
                 same(raw, self.current_bytes[digest], "REQUEST_CHANGED", "request bytes")
             self.current_bytes[digest] = raw

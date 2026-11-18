@@ -346,6 +346,15 @@ def validate_metadata_changes(api: GitHub, repo: Path, decision: CiDecision) -> 
                 "changed approval missing",
             )
             continue  # A request can be pending approval; CI cannot grant G7.
+        if b"- Data-only policy:" in approval:
+            from talent_data.ota.automation.data_only import record_matches
+
+            require(
+                record_matches(repo, "HEAD", request, approval),
+                "DATA_ONLY_POLICY",
+                "standing-policy receipt differs or was revoked",
+            )
+            continue  # Full eligibility and G1-G8 are rechecked by the protected writer.
         problems = approval_record_problems(
             approval.decode("utf-8", "strict"),
             release_id=release,

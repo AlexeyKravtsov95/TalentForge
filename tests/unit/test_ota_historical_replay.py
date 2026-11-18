@@ -366,3 +366,92 @@ def test_the_workflow_holds_no_secret_and_cannot_publish() -> None:
     # the stand's private keys never leave the runner
     assert "!${{ runner.temp }}/replay/stand/keys/*.pem" in text
     assert "!${{ runner.temp }}/replay/stand/tls/server.key" in text
+
+
+@pytest.mark.parametrize("code", [0, 2, 3, 5])
+def test_visuals_source_resume_is_bounded_and_never_swallows_a_failure(tmp_path, code):
+    calls, waits = [], []
+    argv = (sys.executable, "-m", "talent_data", "visuals", "fetch", "--build", replay.PATCH_BUILD)
+
+    def run(command, cwd, log):
+        calls.append((command, cwd))
+        log.write_text(f"exit {code}\n")
+        return code
+
+    log = tmp_path / "logs/visuals-fetch.log"
+    assert script.run_replay_command(argv, tmp_path, log, run=run, sleep=waits.append) == code
+    assert len(calls) == (8 if code == 5 else 1)
+    assert calls == [(argv, tmp_path)] * len(calls)
+    assert waits == ([65] * 7 if code == 5 else [])
+    assert log.read_text().splitlines().count(f"exit {code}") == len(calls)
+    assert len(list(log.parent.glob("*.attempt-*.log"))) == len(calls)
+
+
+def test_visuals_source_resume_keeps_verified_raw_files_and_fetches_only_missing(tmp_path):
+    from talent_data.sources.casc import CascFileError
+    from talent_data.sources.http import HttpClient, HttpConfig
+    from talent_data.sources.wago.casc import WagoCascFileSource
+    from tests.unit.visuals.conftest import BLP_WITH_ALPHA, BLP_WITHOUT_ALPHA, blp_bytes
+
+    first, second = BLP_WITH_ALPHA, BLP_WITHOUT_ALPHA
+    requested, waits = [], []
+    blocked = True
+
+    def handler(request):
+        fid = int(request.url.path.rsplit("/", 1)[1])
+        requested.append(fid)
+        return httpx.Response(
+            429 if fid == second and blocked else 200,
+            content=b"rate limited" if fid == second and blocked else blp_bytes(fid),
+        )
+
+    with HttpClient(HttpConfig(max_attempts=1), transport=httpx.MockTransport(handler)) as http:
+        source = WagoCascFileSource(http, tmp_path / "cache")
+
+        def run(argv, cwd, log):
+            try:
+                for fid in (first, second):
+                    source.fetch_file(ClientVersion.parse(replay.PATCH_BUILD), fid)
+            except CascFileError as exc:
+                log.write_text(str(exc))
+                return 5
+            log.write_text("both exact-build files SHA-verified\n")
+            return 0
+
+        def reset(seconds):
+            nonlocal blocked
+            waits.append(seconds)
+            blocked = False
+
+        argv = (
+            sys.executable,
+            "-m",
+            "talent_data",
+            "visuals",
+            "fetch",
+            "--build",
+            replay.PATCH_BUILD,
+        )
+        log = tmp_path / "logs/visuals-fetch.log"
+        assert script.run_replay_command(argv, tmp_path, log, run=run, sleep=reset) == 0
+    assert requested == [first, second, second]
+    assert waits == [65]
+    assert "HTTP 429" in log.read_text() and "SHA-verified" in log.read_text()
+
+
+def test_replay_never_retries_pipeline_validation_or_other_steps(tmp_path):
+    calls = []
+
+    def run(argv, cwd, log):
+        calls.append(argv)
+        return 5
+
+    def no_wait(seconds):
+        raise AssertionError("only visuals source fetch may resume")
+
+    argv = (sys.executable, "-m", "talent_data", "visuals", "check")
+    assert (
+        script.run_replay_command(argv, tmp_path, tmp_path / "check.log", run=run, sleep=no_wait)
+        == 5
+    )
+    assert calls == [argv]

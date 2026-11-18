@@ -727,7 +727,7 @@ def write_tag(api: GitHub, name: str, source: str, message: bytes, date: str) ->
     """Create an immutable preparation marker, never update/delete refs or main."""
     message = message.rstrip(b"\n") + b"\n"
     require(
-        name.startswith(("ota-preparation/", "ota-package/")),
+        name.startswith(("ota-preparation/", "ota-package/", "ota-data-only/")),
         "RESERVATION_NAMESPACE",
         "unexpected tag namespace",
     )
@@ -1176,6 +1176,7 @@ def main(argv: list[str] | None = None) -> int:
     go.add_argument("--out", type=Path, required=True)
     propose = sub.add_parser("propose-request")
     propose.add_argument("--request", type=Path, required=True)
+    propose.add_argument("--auto-data-only", action="store_true")
     propose.add_argument("--ci-run-id", type=int, required=True)
     propose.add_argument("--ci-attempt", type=int, required=True)
     stage = sub.add_parser("fetch-staging")
@@ -1262,6 +1263,22 @@ def main(argv: list[str] | None = None) -> int:
                         (root / STAGING_BASE_MANIFEST_NAME).read_bytes(),
                         (root / STAGING_FILES["report"]).read_bytes(),
                     )
+                    if args.auto_data_only:
+                        from talent_data.ota.automation.cli import PublicStore
+                        from talent_data.ota.automation.data_only import commit_authorization
+                        from talent_data.ota.release_package import load_package
+
+                        live = read_live(client, keyring, now)
+                        sha = commit_authorization(
+                            GitHub(client, os.environ.get("OTA_APP_TOKEN", "")),
+                            TRUSTED_REPO,
+                            request,
+                            load_package(root),
+                            live,
+                            PublicStore(client, PRODUCTION_PROFILE.public_origin),
+                        )
+                        print(f"DATA_ONLY_AUTHORIZED: {request.release_id} immutable request {sha}")
+                        return 0
                 check_base(read_live(client, keyring, now), request)
                 url = ensure_release_pr(
                     client, proposal=proposal, app_token=os.environ.get("OTA_APP_TOKEN", "")
@@ -1275,7 +1292,9 @@ def main(argv: list[str] | None = None) -> int:
             else type(exc).__name__
         )
         message = f"BLOCKED: {code}; no production data was published"
-        if isinstance(exc, PreparationBlocked) and code == "APP_CONFIG_MISSING":
+        if isinstance(exc, PreparationBlocked) and (
+            code == "APP_CONFIG_MISSING" or code.startswith("DATA_ONLY_")
+        ):
             message += "; " + exc.detail
         print(message)
         if summary := os.environ.get("GITHUB_STEP_SUMMARY"):

@@ -204,10 +204,10 @@ def test_the_bundled_product_is_the_base_when_nothing_is_published() -> None:
     )
 
 
-def test_an_older_active_release_does_not_hide_the_newer_bundle() -> None:
+def test_an_older_active_release_is_the_ota_base_independently_of_the_bundle() -> None:
     d = detect(production=published("1.60.1.70374-r1"))
     assert d.action is Action.PREPARE
-    assert (d.base_build, d.base_kind) == (str(PRODUCT), BaseKind.PRODUCT_BUNDLE)
+    assert (d.base_build, d.base_kind) == ("1.60.1.70374", BaseKind.PRODUCTION_RELEASE)
 
 
 def test_a_build_the_verified_production_catalog_lists_is_not_prepared_again() -> None:
@@ -289,10 +289,9 @@ def test_a_prepared_preparation_of_the_same_inputs_is_not_repeated() -> None:
     assert detect(prior_artifacts=kept, force=True).action is Action.PREPARE
 
 
-@pytest.mark.parametrize("status", ["BLOCKED", "UNKNOWN", "FAILED"])
+@pytest.mark.parametrize("status", ["UNKNOWN", "FAILED"])
 def test_a_kept_failure_is_prepared_again_on_the_next_run(status: str) -> None:
-    """Right after a patch the source can be incomplete; a kept BLOCKED (or UNKNOWN, or a
-    crashed run) must not hide the build for the artifact's whole retention."""
+    """Network uncertainty and crashes retry; neither is a definitive resource failure."""
     key = detect().preparation_key
     assert key is not None
     d = detect(prior_artifacts=[artifact_name(key, status)])
@@ -700,6 +699,7 @@ def services(
             mirror=mirror,
             evaluate=evaluate,
             clock=lambda: next(ticks),
+            visuals_reuse_supported=lambda workspace, logs: True,
         ),
         evaluated,
     )
@@ -956,11 +956,11 @@ def test_a_rerun_that_changes_committed_visuals_blocks(
     assert "DIFFERS: icon" in (out / "logs/visuals-reproduction.log").read_text()
 
 
-def test_a_blocked_run_is_prepared_once_the_source_recovers(repo: Path, tmp_path: Path) -> None:
-    """Regression (PR #71 review): run 1 is BLOCKED because a DB2 table is not exported
-    yet (a definitive answer of the source, exit 1); the next scheduled run, with run 1's
-    artifact kept, prepares again and - the source has caught up - ends PREPARED; the run
-    after that is skipped."""
+def test_a_blocked_run_requires_changed_inputs_or_explicit_retry(
+    repo: Path, tmp_path: Path
+) -> None:
+    """A definitive missing-resource answer is terminal for unchanged preparation inputs.
+    Explicit force retries once after the missing source has been supplied."""
     head = git(repo, "rev-parse", "HEAD")
     kept: list[str] = []
 
@@ -970,15 +970,15 @@ def test_a_blocked_run_is_prepared_once_the_source_recovers(repo: Path, tmp_path
     assert blocked.status is Readiness.BLOCKED
     kept.append(blocked.artifact_name)
 
-    second = detect(main=head, prior_artifacts=kept)
-    assert second.action is Action.PREPARE, second.reason
-    assert second.prior_artifact == blocked.artifact_name
+    stopped = detect(main=head, prior_artifacts=kept)
+    assert stopped.action is Action.NO_ACTION
+    assert stopped.prior_artifact == blocked.artifact_name
+    second = detect(main=head, prior_artifacts=kept, force=True)
+    assert second.action is Action.PREPARE
     prepared, out = run_prepare(repo, tmp_path / "2", services(FakeRunner())[0], second)
     assert prepared.status is Readiness.PREPARED
     assert prepared.artifact_name == blocked.artifact_name.replace("-BLOCKED", "-PREPARED")
-    assert json.loads((out / "detection.json").read_text())["priorArtifact"] == (
-        blocked.artifact_name
-    )
+    assert json.loads((out / "detection.json").read_text())["forced"] is True
     kept.append(prepared.artifact_name)
 
     third = detect(main=head, prior_artifacts=kept)
@@ -1210,3 +1210,57 @@ def test_the_workflow_uploads_every_outcome_and_prepares_only_on_prepare() -> No
     assert "if: always() && steps.prepare.outcome == 'skipped'" in text  # the detection only
     assert "steps.prepare.outputs.artifact_name || format('ota-prepare-{0}-FAILED'" in text
     assert "cancel-in-progress: false" in text and "group: ota-prepare" in text
+
+
+@pytest.mark.parametrize("base", ["1.60.1.70959", "1.60.1.70999"])
+def test_forced_same_or_older_build_uses_its_exact_source_without_cross_build_reuse(
+    base: str,
+) -> None:
+    steps = pipeline_steps("forever", "1.60.1.70959", base)
+    icons = [s for s in steps if s.id in {"visuals-fetch", "visuals-normalize"}]
+    assert len(icons) == 2
+    assert all("--reuse-from" not in s.argv for s in icons)
+
+
+def test_a_newer_bundle_does_not_hide_an_ota_update_to_that_same_build() -> None:
+    result = detect(INDEX[:2], published("1.60.1.70374-r1"))
+    assert result.action is Action.PREPARE
+    assert result.candidate_build == str(PRODUCT)
+    assert result.base_build == "1.60.1.70374"
+    assert result.base_kind is BaseKind.PRODUCTION_RELEASE
+
+
+@pytest.mark.parametrize("fetch,normalize", [(False, False), (True, False), (True, True)])
+def test_visuals_capabilities_are_read_from_the_selected_checkout(
+    tmp_path: Path, fetch: bool, normalize: bool
+) -> None:
+    package = tmp_path / "src/talent_data"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_text("")
+    (package / "__main__.py").write_text(
+        "import argparse, sys\n"
+        "parser = argparse.ArgumentParser()\n"
+        f"supported = {{'fetch': {fetch!r}, 'normalize': {normalize!r}}}\n"
+        "if supported[sys.argv[2]]: parser.add_argument('--reuse-from')\n"
+        "parser.parse_args(sys.argv[3:])\n"
+    )
+    supported = orchestrate.supports_visuals_reuse(tmp_path, tmp_path / "logs")
+    assert supported is (fetch and normalize)
+    icons = [
+        s
+        for s in pipeline_steps("forever", BUILD, BASE, incremental_visuals=supported)
+        if s.id in {"visuals-fetch", "visuals-normalize"}
+    ]
+    assert len(icons) == 2
+    for step in icons:
+        assert ("--reuse-from" in step.argv) is supported
+    assert len(list((tmp_path / "logs").glob("*-capabilities.log"))) == 2
+
+
+def test_broken_checkout_cli_is_not_downgraded_to_full_download(tmp_path: Path) -> None:
+    package = tmp_path / "src/talent_data"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_text("")
+    (package / "__main__.py").write_text("raise SystemExit(2)\n")
+    with pytest.raises(orchestrate.PrepareError, match="cannot inspect checkout visuals fetch CLI"):
+        orchestrate.supports_visuals_reuse(tmp_path, tmp_path / "logs")

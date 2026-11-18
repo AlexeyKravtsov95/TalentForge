@@ -43,6 +43,7 @@ from __future__ import annotations
 import io
 import json
 import os
+import re
 import shlex
 import shutil
 import subprocess
@@ -70,6 +71,7 @@ from talent_data.prepare.detect import (
     artifact_name,
 )
 from talent_data.prepare.production import ProductionState, ProductionStatus
+from talent_data.versions import ClientVersion
 
 REPORT_SCHEMA_VERSION = 1
 CANDIDATE_BRANCH = "ota-prepare/{build}"
@@ -159,6 +161,7 @@ class Services:
     mirror: Callable[[ProductionState, BlobStore], int]
     evaluate: Callable[..., ReleaseEvaluation]
     clock: Callable[[], datetime]
+    visuals_reuse_supported: Callable[[Path, Path], bool] | None = None
 
 
 # --------------------------------------------------------------------------- steps
@@ -169,7 +172,12 @@ def _talent_data(*args: str) -> tuple[str, ...]:
 
 
 def pipeline_steps(
-    game: str, build: str, base: str, locales: Sequence[str] = SUPPORTED_LOCALES
+    game: str,
+    build: str,
+    base: str,
+    locales: Sequence[str] = SUPPORTED_LOCALES,
+    *,
+    incremental_visuals: bool = True,
 ) -> list[Step]:
     """The existing pipeline commands for ``build`` (docs/data-pipeline.md §9), in order.
 
@@ -188,6 +196,11 @@ def pipeline_steps(
       ``normalize`` wrote.
     """
     g, b = ("--game", game), ("--build", build)
+    reuse = (
+        ("--reuse-from", base)
+        if incremental_visuals and ClientVersion.parse(base) < ClientVersion.parse(build)
+        else ()
+    )
     steps = [
         Step("fetch", StepKind.SOURCE, _talent_data("fetch", *g, *b)),
         Step("tooltips-fetch", StepKind.SOURCE, _talent_data("tooltips", "fetch", *g, *b)),
@@ -217,7 +230,11 @@ def pipeline_steps(
                 "--expect-complete",
             ),
         ),
-        Step("visuals-fetch", StepKind.SOURCE, _talent_data("visuals", "fetch", *g, *b)),
+        Step(
+            "visuals-fetch",
+            StepKind.SOURCE,
+            _talent_data("visuals", "fetch", *g, *b, *reuse),
+        ),
         Step(
             "diff",
             StepKind.PIPELINE,
@@ -226,7 +243,7 @@ def pipeline_steps(
         Step(
             "visuals-normalize",
             StepKind.PIPELINE,
-            _talent_data("visuals", "normalize", *g, *b, "--offline"),
+            _talent_data("visuals", "normalize", *g, *b, "--offline", *reuse),
         ),
         Step("visuals-check", StepKind.PIPELINE, _talent_data("visuals", "check", *g, *b)),
         Step(
@@ -271,11 +288,15 @@ def check_steps() -> list[Step]:
     ]
 
 
-def run_command(argv: Sequence[str], cwd: Path, log: Path) -> int:
+def run_command(
+    argv: Sequence[str], cwd: Path, log: Path, *, cache_root: Path | None = None
+) -> int:
     """Run one command in the clone with the clone's own code (``src`` first on the path)
     and the clone as the data root; its combined output goes to ``log``."""
     env = dict(os.environ)
     env.pop("TALENT_DATA_ROOT", None)
+    if cache_root is not None:
+        env["TALENT_DATA_CACHE_ROOT"] = str(cache_root.resolve())
     env["PYTHONPATH"] = os.pathsep.join(
         [str(cwd / "src"), *([env["PYTHONPATH"]] if env.get("PYTHONPATH") else [])]
     )
@@ -287,6 +308,23 @@ def run_command(argv: Sequence[str], cwd: Path, log: Path) -> int:
             list(argv), cwd=cwd, env=env, stdout=out, stderr=subprocess.STDOUT, check=False
         )
     return completed.returncode
+
+
+def supports_visuals_reuse(workspace: Path, logs: Path) -> bool:
+    """Negotiate with the selected checkout, never the orchestrator's installed CLI.
+
+    Old checkouts run the complete source download and all existing integrity checks.
+    A broken CLI is a tooling failure, not evidence that a feature is absent.
+    Keep both help responses as preparation evidence; no failed pipeline is retried
+    with weaker arguments.
+    """
+    supported = []
+    for command in ("fetch", "normalize"):
+        log = logs / f"visuals-{command}-capabilities.log"
+        if run_command(_talent_data("visuals", command, "--help"), workspace, log) != EXIT_OK:
+            raise PrepareError(f"cannot inspect checkout visuals {command} CLI; see {log.name}")
+        supported.append(bool(re.search(r"^\s+--reuse-from(?:[ =]|$)", log.read_text(), re.M)))
+    return all(supported)
 
 
 def run_steps(
@@ -810,8 +848,16 @@ def prepare(
         )
         return _finish(report, out, workspace, services)
 
+    try:
+        incremental = (services.visuals_reuse_supported or supports_visuals_reuse)(
+            workspace, out / "logs"
+        )
+    except PrepareError as exc:
+        findings.append(Finding(FindingKind.BLOCKER, "tooling", str(exc)))
+        return _finish(report, out, workspace, services)
+
     report.steps += run_steps(
-        pipeline_steps(game, build, base, locales),
+        pipeline_steps(game, build, base, locales, incremental_visuals=incremental),
         services.run,
         cwd=workspace,
         logs=out / "logs",

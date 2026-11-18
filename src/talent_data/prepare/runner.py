@@ -24,6 +24,7 @@ import tempfile
 import traceback
 from collections.abc import Sequence
 from datetime import UTC, datetime
+from functools import partial
 from pathlib import Path
 
 import httpx
@@ -108,7 +109,10 @@ def detection_outputs(detection: DetectionDocument) -> dict[str, str]:
         "candidate": detection.candidate_build or "",
         "key": detection.preparation_key or "",
         "prepared_artifact": (
-            (detection.prior_artifact or "") if detection.action is Action.NO_ACTION else ""
+            (detection.prior_artifact or "")
+            if detection.action is Action.NO_ACTION
+            and (detection.prior_artifact or "").endswith("-PREPARED")
+            else ""
         ),
     }
 
@@ -197,7 +201,7 @@ def _cmd_prepare(args: argparse.Namespace) -> int:
     keyring = production_keyring(repo / args.keyring)
     with httpx.Client(follow_redirects=False, timeout=30.0) as client:
         services = Services(
-            run=run_command,
+            run=partial(run_command, cache_root=repo / ".cache"),
             read_production=lambda: read_production(
                 client,
                 origin=args.production_origin,

@@ -1,101 +1,101 @@
-# Graph Report - TalentForge-m7-ci-hotfix-1  (2026-11-18)
+# Graph Report - TalentForge-ota-fast  (2026-11-18)
 
 ## Corpus Check
-- 805 files · ~966,191 words
+- 816 files · ~974,657 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 24 file(s) not represented in the graph (top: .xml 9, (none) 4, .properties 2)
 
 ## Summary
-- 16559 nodes · 53322 edges · 502 communities (359 shown, 143 thin omitted)
-- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 5385 edges (avg confidence: 0.9)
+- 16711 nodes · 53879 edges · 513 communities (380 shown, 133 thin omitted)
+- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 5487 edges (avg confidence: 0.9)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `76e0073a`
+- Built from commit: `c67d06fd`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- TalentDataDocument
-- ClientVersion
-- LocalBuildRepository
-- resolver.py
-- replay.py
+- helpers.py
+- loadEditorSession
+- ClassToken
+- UtcInstant
+- subprocess
 - main
-- TooltipsLoadError
+- test_render.py
 - TalentForgeTheme
-- prepare.py
-- talents.py
-- collections_abc
-- tables.py
-- test_automation_prepare.py
+- automation/cli.py
+- test_product_build.py
+- TalentDataDocument
+- TalentInspector.kt
+- dataclasses
 - EdgeSwipeBackAppUiTest
 - LocalBuildRepositoryTest
-- ImportBuildScreen.kt
+- talentForgeColors
 - EditorLocalizationUiTest
-- Counter
-- ContentHash
+- test_premerge_proposal.py
+- test_telegram_notify.py
 - test_freshness.py
-- OtaPublisherError
-- TalentNodeVisual.kt
+- test_ota_s3_production.py
+- automation/cli.py
 - test_verify_ios_archive.py
 - AboutScreenUiTest
 - DatasetCache
-- Env
-- run_bounded
+- test_automation_prepare.py
+- test_ota_prepare.py
 - IosOtaPorts.kt
 - test_automation_probe.py
-- OtaUi.kt
-- TalentRenderer
-- json
+- test_casc_source.py
+- notify/state.py
+- localization/generate.py
 - .start
-- TalentTreeCanvas
+- telegram.py
 - TalentTreeLandscapeSectionsUiTest
 - conformance.py
-- _parser
-- IosOtaAdapterTest.kt
-- grammar.py
+- Env
+- sha256Ref
+- pipeline_steps
 - Ускорение OTA-доставки в существующем GitHub Actions
-- hashlib
+- TalentSectionPaging.kt
 - OtaFailure
-- TalentTreeScreen.kt
+- TalentTreeCanvas
 - BuildShareUiTest
 - AllocationEngineTest
 - GooglePlay
-- publication
-- pytest
-- _Context
-- respond
+- OtaFetcherTransportTest
+- http.py
+- BuildLibraryWriteException
+- test_ota_production_release.py
 - test_engine.py
 - TalentTooltipsRepositoryTest
-- run
-- E2EStand
+- ios_ota_e2e.py
+- OtaRemoteStagingCheck
 - android_store_delivery.py
-- TalentAllocationEngine
+- ContentHash
 - notify/cli.py
 - BuildActionsUiTest
 - verify_ios_archive.py
 - verify_release_apk.py
-- argparse
+- S3StoreError
 - S3Client
 - ota_production_release.py
-- TalentTreeViewport
-- test_ota_preflight.py
+- TalentTreeViewportState
+- FakeOrigin
 - test_ota_propose.py
-- assertequals
+- OtaUpdateCoordinator
 - SeamlessFavoritesUiTest
-- RequestState
+- test_reproduction.py
 - test_store_delivery.py
 - composeApp/build.gradle.kts
 - test_freshness_watch.py
 - OtaScenarioTest
-- AssemblePublishableApk
+- TalentTreeScreen
 - localization/source.py
 - .decode
-- telegram.py
-- EdgeSwipeBackDispatcherTest
+- test_ota_preflight.py
+- talentTabletSectionHeaders
 - BuildImportFlowTest
-- test_automation_ci_validation.py
+- JvmOtaPorts.kt
 - visuals/pipeline.py
 - mobile_bundles.py
 - TalentTreeMotionUiTest
@@ -105,31 +105,32 @@
 - BuildState
 - Path
 - DatasetDownloadManager
-- values.py
+- ClassArtwork.kt
 - env
-- ConformanceSuite.kt
-- talentForgeColors
+- TalentLocalizationDocument.kt
+- git
+- fetch
 - verify_ios_project.py
 - BuildImportController
 - BuildShareCodeTest
 - .entry
-- EditorCopy
+- SendStatus
 - EditorCopy
 - watch/runner.py
 - IosOtaStagingE2ETest
-- automation/cli.py
+- pathlib
 - test_verify_appstore_screenshots.py
-- FakeBuildLibraryStorage
+- ShellLocalizationUiTest
 - TalentEditorText.kt
 - OTA v1 ordered verification contract
-- buildTalentTreeUiModel
-- OtaRemoteStagingCheck.kt
+- AboutScreen
+- test_build_70374.py
 - scenarios.py
-- localization/generate.py
-- verify.py
-- NodeAllocation
-- LocalizationTestBundle.kt
-- OtaUpdateCoordinator
+- localization/pipeline.py
+- pathlib
+- Test
+- TalentLocalizationRepositoryTest
+- UtcInstant
 - test_mobile_bundles.py
 - Path
 - BuildManagementUiTest
@@ -139,130 +140,130 @@
 - TalentInspectorReadingUiTest
 - LocalizationLoadError
 - with
-- BuildCodeSharing.android.kt
+- ClientVersion
 - TalentLocalizationUiTest
-- WarriorInteractiveAllocationTest
-- load_dedup
-- AppDestination
-- TalentTooltipRank
-- test_bounded_parallel_downloads_keep_full_validation_and_live_progress
+- .check
+- LibraryText.kt
+- ShareCodePrimitives.kt
+- app_scenarios
+- TalentEditorTextTest
 - productState
 - AllocationIssueCode
 - BundledRepositoryTest
 - test_ota_staging_stand.py
-- StagedUpdate
+- test_ota_s3_store.py
 - ShareCopy.kt
-- PlatformSignatureVerifier
 - verify_appstore_screenshots.py
+- TalentEntry.kt
 - DatasetActivationManager
 - TalentInspectorAdaptiveUiTest
 - grid.py
 - TalentInspectorAdaptiveRulesTest
-- DatasetVersionCompatibilityTest
+- TalentAllocationEngine
 - test_generate_oss_notices.py
 - Unverified Russian plural and decimal rendering
-- OtaFetcherTransportTest
-- loadEditorSession
+- TalentTooltipRank
+- with
 - HomeRedesignUiTest
 - .fail
 - TalentVisualsRepositoryTest
 - BuildImportBundledDatasetsTest
 - test_verify_release_apk.py
-- English
-- TalentEntry.kt
+- DatasetVersionCompatibilityTest
+- OtaFetchRetryTest
 - watch
-- TalentTreeViewportState
-- Test
-- test_telegram_notify.py
+- rules.py
+- TalentNodeType
+- TalentTreeViewport
 - store_delivery.py
-- NewBuildScreen.kt
-- res
+- .decodeAllocationBuildFile
+- remember
 - TalentTreeSectionTabsUiTest
 - prepareBuildImport
 - test_verify_play_bundle.py
-- TalentBuildEditingState
+- TalentTreeBuildScreen.kt
 - env
 - TalentTreeUiState
-- OtaPlatformAdapterTest.kt
-- BuildCodeSharing.ios.kt
+- OtaPerformanceBenchmark
+- InspectorText
 - decide
 - test_verify_appstore_metadata.py
-- test_build_share_code_spec.py
+- OpenSourceNoticesTest
 - with
-- test_verify_ios_project.py
+- base.py
 - TalentTreeIconUiTest
 - generate_oss_notices.py
 - RecordingBuildCodeSharing
-- BackChevronButton
-- ios_privacy_pages.py
-- parse_xml_node
-- InspectorText
-- OtaPublisherError
+- argparse
+- TooltipsLoadError
+- verify_play_bundle.py
+- buildTalentTreePresentation
+- Channel
 - TalentTreeSectionsTest
-- .decodeAllocationBuildFile
-- IosOtaDevice
+- allocation/conftest.py
+- CatalogVerifier
 - OtaIoException
 - tracking.py
-- ota_vkcloud_staging.py
-- M5Ui2ScreenshotTest
-- struct
+- ContractKind
+- VisualsLoadError
+- ConformanceSuite.kt
 - Portrait compact bottom inspector
 - TalentTreeCanvasInteractionTest
 - TalentTreeGestureRulesTest
-- .decodeConformanceSuite
+- TalentClassTextTest
 - TalentTreeSectionCameras
 - test_android_section_check.py
-- AutosaveExitGuaranteeUiTest
+- TalentTreeSectionTabs
 - allocation/engine.py
 - Final OTA Android policy owner rollout
 - steps
-- ._evaluate
-- verify_appstore_metadata.py
-- OtaContract.kt
-- buildTalentTreeSections
+- test_build_share_code_spec.py
+- Any
+- test_bounded_parallel_downloads_keep_full_validation_and_live_progress
+- TalentInspectorUiTest
 - TalentTreeM5Ux2b1ScreenshotTest
-- ShareCodePrimitives.kt
-- AllBuildsRowLayoutUiTest
+- BuildCodeSharing.android.kt
+- AssemblePublishableApk
 - Response
 - M51AppFlowUiTest
 - RelativeBuildTime.kt
-- TalentNodePresentationTest.kt
-- EdgeSwipeInput.ios.kt
-- AssetNotFoundException
+- buildTalentTreeUiModel
+- OpenSourceNotices.kt
+- TalentIconAssets.kt
 - contents
-- MultiClassDraftLoopUiTest
+- BuildCodeSharing.ios.kt
 - .readyStateOf
 - android_section_check.py
-- printcert_output
-- SectionTabsAutosaveUiTest
+- OtaRuntime.ios.kt
+- TooltipTokenCategory
 - android_artifacts.py
-- test_ota_release_package.py
-- TalentEditorTextTest
+- test_ota_production_release.py
+- gitstate.py
 - ClassToken
 - mobile/composeApp: application and UI host
 - steps
 - inputs
 - BackNavigationReentrancyUiTest
 - .decodeTalentDataDocument
-- test_models.py
-- TemplateSyntaxError
+- BuildActionsLayoutUiTest
+- ProductDatasetContractTest
 - env
-- BuildManagementScreenshotTest
-- test_telegram_setup.py
-- BuildFavoritesUiTest
-- SystemBackOrderAppUiTest
+- ShareLayoutUiTest
+- SendResult
+- CheckFailure
+- respond
 - public-approval
-- app_scenarios
+- AndroidBuildSortingScreenshotTest
 - with
 - inputs
-- Publisher
-- TalentNodeState
+- BuildCodeSharing.desktop.kt
+- BuildImportFailure
 - android-store-check
-- hashlib
+- Path
 - test_ios_privacy_pages.py
-- TalentTabletSectionHeadersTest
-- Forever 1.60.1.70707 talent tooltip coverage (M5.V2)
-- NoticesError
+- run_bounded
+- Any
+- LocalizationContentHash.kt
 - TalentTreeM5Ux2ScreenshotTest
 - test_ios_simulator_smoke.py
 - ActionButtonLabelTest
@@ -270,63 +271,63 @@
 - base
 - inspect_only
 - Observer
-- product_build
+- TalentBuildEditingState
 - .productionPublicationsInstallActivateAndRollBack
 - M5Share2ScreenshotTest
-- talentSectionDisplayLabel
 - tooltip_template_inventory.py
-- SendResult
-- M5Rel2bScreenshotTest
+- TalentTreeLandscapeLayoutTest
+- PlatformOtaFileStore
+- FakeBlobServer
 - android-build
 - TalentTooltipsContractTest
-- BuildRowActionsSheet
-- gitstate.py
+- .of
+- WarriorInteractiveAllocationTest
 - test_ios_ota_e2e.py
-- LicensesScreen.kt
-- AndroidBuildSortingScreenshotTest
-- test_invariants.py
+- LocalBuildRepository
+- AndroidBuildLibraryStorage
+- .of
 - TalentVisualsContractTest
-- ReadOnlyStore
+- Readiness
 - Gated OTA publication and exact-byte approval
 - TalentSpecializationNamesUiTest
-- SourceError
-- .readyStateOf
+- pytest
+- TalentTreeM5V1ScreenshotTest
 - .run
 - with
-- Row
-- build_notices
+- LocalizationTestBundle.kt
+- MainActivity.kt
 - ContentView
 - steps
-- workflow_jobs
-- TalentTreeScreenshotTest
-- Expect
-- .of
-- JsonDuplicateNamesTest.kt
+- OtaContract.kt
+- CandidateAPI
+- diff/engine.py
+- contents
+- TalentInspectorDescriptionTest
 - ci_attempt
-- git
+- BuildFavoritesUiTest
 - MemoryJournal
 - OTA: один MR, его слияние владельцем разрешает production
-- declared_licenses
-- RequiredFieldSemanticsTest.kt
+- decide_freshness
+- Test
 - 70707 OTA delivery investigation — 2026-11-02
 - with
-- .decode
-- ota_staging_verify.py
-- ShareLayoutUiTest
+- StagedUpdate
+- TalentTree
+- test_real_structures.py
 - TalentTreeGestureRecordingTest
 - test_android_store_delivery.py
 - TalentTreeM5V2ScreenshotTest
 - renewal-writer
-- decide_freshness
+- buildTalentTreeSections
 - notify
 - propose
 - ota-release-package.yml
-- M5Rel3b2ScreenshotTest
+- licenses
 - TalentRankChipFontScaleUiTest
-- propose.py
-- OtaCandidateStagingTest
+- typing
+- cli_vk
 - play_signing_selftest.sh
-- test_real_structures.py
+- AppLanguage.android.kt
 - Planned publication outcome and notification verification
 - with
 - inputs
@@ -335,8 +336,8 @@
 - propose
 - handler
 - missing
-- _handler
-- combine
+- ContractKind
+- test_cli_publishes_production_over_s3_end_to_end
 - dataset-freshness.yml
 - ios-ota-e2e
 - steps
@@ -348,8 +349,8 @@
 - BuildFavoriteCoordinationTest
 - TalentSpecializationNamesScreenshotTest
 - BuildRenameCoordinationTest
+- TalentTreeM51ScreenshotTest
 - TalentTreeM5UxScreenshotTest
-- test_ota_strict_json_vectors.py
 - ios_simulator_smoke.sh
 - release_signing_selftest.sh
 - steps
@@ -363,52 +364,52 @@
 - release_id
 - reconcile
 - mobile-ci.yml
-- CrashingStore
+- _client
 - apk-store-check
 - prepare
 - google_play_production.py
-- TalentTreeScreenUiTest
+- SpendButton
 - Parallelism 8 plus origin gzip
 - env
 - notify
 - env
 - revision
 - steps
-- BuildImportFailure
-- TalentTreeM43ScreenshotTest
+- JsonDuplicateNamesTest
+- Path
 - TooltipsDriftTest
 - AllocationRoutingEnforcementTest
 - VisualsDriftTest
-- TalentTreeM42ScreenshotTest
+- diff/render.py
 - env
 - jobs
 - certs/README.md
 - mobile-linux
-- outputs
-- notify/state.py
-- sync_mobile_ota_fixtures.py
+- build_notices
+- TalentTreeM42ScreenshotTest
+- EditorBackStep
 - DatasetDriftTest
 - LocalizationDriftTest
 - ios_delivery_signing.sh
 - with
 - freshness
-- FirstUseHelpUiTest
+- M5Rel3b2ScreenshotTest
 - source_revision
 - base
 - candidate
-- OtaDevice
+- _HistoryReads
 - premerge-review
-- TalentTreeLandscapeLayoutTest
-- JvmOtaPorts.kt
+- ErrorHandler
+- workflow_jobs
 - SystemBackHandler.android.kt
-- MetaCharsetParser
+- _evidence
 - automation_key
 - base
-- Device
+- .sign
 - staging_attempt
-- test_ota_prepare.py
+- .directoryAssetSource
 - OtaCatalogFixtureVectors
-- HomeScreen.kt
+- outputs
 - ota_integration_check.sh
 - actions
 - automation_key
@@ -421,8 +422,8 @@
 - Design authority precedence
 - TalentTreeCanvasMetrics.kt
 - ContractFixtures.kt
-- EditorBackStep
-- .tap_label
+- Автоматическое предложение OTA-релиза (PR B / Task 3)
+- Hierarchy
 - Frozen Talent Tree interaction contract
 - talent-data
 - test_google_play_production.py
@@ -430,75 +431,84 @@
 - with
 - jobs
 - public-journal
-- classArtworkResourceFor
+- Fast data-only patches — M8.OTA.FAST.1
 - jobs
-- klib_native_content
+- IosBuildCodeSharing
 - preflight
-- .writeSynced
-- TalentTreeBuildScreen.kt
+- NoticesState
+- play-production
 - jobs
 - File Map
 - writer
 - steps
-- pipeline_steps
-- BackSwipeStack.kt
-- prepare
-- Автоматическое предложение OTA-релиза (PR B / Task 3)
-- test_catalog_change_during_blob_verification_rejects_snapshot
-- Forever 1.60.1.70753 talent tooltip coverage (M5.V2)
+- IosAboutFactsTest.kt
+- SystemBackHandler.desktop.kt
+- android-deliver
+- _handler
+- klib_native_content
+- struct
 - RuStore / AppGallery delivery
 - android-store-reconcile.yml
 - Build Library Search & Filters implementation plan
 - notify
-- TalentTreeViewportState.kt
-- Forever 1.60.1.70755 talent tooltip coverage (M5.V2)
+- test_automatic_authorization_creates_only_an_immutable_tag
 - env
-- contains_text
+- mode
 - steps
 - notify
 - Android store delivery implementation plan
-- ToolResult
+- ruRU talent text coverage: forever 1.60.1.70707
 - test_ota_staging_verify.py
-- .directoryAssetSource
-- Forever 1.60.1.70862 talent tooltip coverage (M5.V2)
+- Forever 1.60.1.70707 talent tooltip coverage (M5.V2)
+- Forever 1.60.1.70753 talent tooltip coverage (M5.V2)
 - full-validation
 - metadata-validation
 - premerge
 - load_validator
-- Forever 1.60.1.70888 talent tooltip coverage (M5.V2)
+- ruRU talent text coverage: forever 1.60.1.70755
+- Forever 1.60.1.70755 talent tooltip coverage (M5.V2)
+- ruRU talent text coverage: forever 1.60.1.70790
+- ManagementNotice
 - Forever 1.60.1.70790 talent tooltip coverage (M5.V2)
-- Forever 1.60.1.70938 talent tooltip coverage (M5.V2)
 - candidate_ci_attempt
 - candidate_ci_run_id
+- ReadOnlyStore
 - candidate_pr
 - candidate_ci_run_id
 - candidate_pr
-- test_reproduction.py
-- on
+- SwipePhase
+- ShareFeedback
+- ota-prepare.yml
+- Forever 1.60.1.70862 talent tooltip coverage (M5.V2)
+- ruRU talent text coverage: forever 1.60.1.70888
+- RenameProblem
 - delivery-result
 - test_additional_ca_is_used_only_for_exact_rustore_host
+- ReducedMotion.ios.kt
 - renewal-preflight
 - release_revision
-- allocation/engine.py
-- load_validator
+- Forever 1.60.1.70888 talent tooltip coverage (M5.V2)
+- Forever 1.60.1.70938 talent tooltip coverage (M5.V2)
+- DatasetAssetSource
 - candidate_base_release_id
-- TalentTabletSectionHeaders.kt
+- _load_apk_checks
 - staging_run
+- test_data_only_policy.py
 - M6.LIB.2 — favorites and safe local-library migration
 - .allNineClassesOnEveryCommittedDatasetKeepRequirementsAndDirections
-- sha256_ref
+- json
 
 ## God Nodes (most connected - your core abstractions)
 1. `ClassToken` - 265 edges
-2. `TalentDataDocument` - 251 edges
+2. `TalentDataDocument` - 255 edges
 3. `TalentForgeTheme()` - 172 edges
-4. `OtaPublisherError` - 166 edges
-5. `LocalBuildRepository` - 165 edges
-6. `ClientVersion` - 165 edges
+4. `ClientVersion` - 172 edges
+5. `OtaPublisherError` - 169 edges
+6. `LocalBuildRepository` - 165 edges
 7. `GameId` - 157 edges
-8. `AppLanguageRule` - 149 edges
-9. `sha256_ref()` - 145 edges
-10. `Channel` - 133 edges
+8. `sha256_ref()` - 154 edges
+9. `AppLanguageRule` - 149 edges
+10. `Channel` - 139 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `Token categories` --references--> `color()`  [INFERRED]
@@ -526,303 +536,311 @@
 - **Fail-closed release trust across publisher and client** — docs_ota_adr_0001_remote_dataset_delivery_signed_hash_chain, docs_ota_ota_contract_v1_ordered_verification, docs_ota_publisher_and_security_publisher_gates, docs_ota_client_implementation_notes_strict_client_reader [INFERRED 0.95]
 - **Successful release notifications require full public-byte verification before shared deduplication** — docs_superpowers_specs_2026_10_31_ota_github_publication_design_publication_outcome_verification, docs_ota_telegram_notifications_verified_publication_notifications, docs_ota_telegram_notifications_durable_delivery_deduplication [INFERRED 0.95]
 
-## Communities (502 total, 143 thin omitted)
+## Communities (513 total, 133 thin omitted)
 
-### Community 0 - "TalentDataDocument"
-Cohesion: 0.02
-Nodes (162): diff_documents(), DiffError, _dump(), _effect_changes(), _entries_changes(), _entry_changes(), _group_by_spell(), _index_nodes() (+154 more)
-
-### Community 1 - "ClientVersion"
+### Community 0 - "helpers.py"
 Cohesion: 0.03
-Nodes (94): _cmd_replay(), _cmd_validate(), register(), _build_parser(), _cmd_builds_freshness(), _cmd_builds_latest(), _cmd_builds_list(), _cmd_diff() (+86 more)
+Nodes (79): submit(), Counter, diff_documents(), DatasetClassDiff, DatasetDiffReport, DiffReport, DiffSummary, _Model (+71 more)
 
-### Community 2 - "LocalBuildRepository"
+### Community 1 - "loadEditorSession"
+Cohesion: 0.11
+Nodes (7): EditorFailure, InvalidBuild, loadEditorSession(), Record, TreeUnavailable, BuildOpeningTest, MultiClassDraftLoopUiTest
+
+### Community 2 - "ClassToken"
 Cohesion: 0.02
-Nodes (75): platformBuildClock(), AndroidOta, AppEnvironment, BuildActionsPresenter, Failed, isMissingRecord(), Missing, PendingSaveFailed (+67 more)
+Nodes (77): ComposeResourceDatasetAssetSource, TalentDescriptionsLoader, TalentIconsLoader, TalentLocalizationLoader, filterBuildLibrary(), DatasetClassResolver, EditorSession, LibraryData (+69 more)
 
-### Community 3 - "resolver.py"
-Cohesion: 0.06
-Nodes (43): SpellMisc, TalentVisualEntry, VisualsProvenance, read_visuals_document(), build_visuals_document(), display_spell_id(), IconResolution, index_spell_misc() (+35 more)
+### Community 3 - "UtcInstant"
+Cohesion: 0.05
+Nodes (8): E2E, E2ESettings, E2EStand, IosOtaDevice, RecordingFetcher, ClientBuildVersion, ReleaseId, UtcInstant
 
-### Community 4 - "replay.py"
-Cohesion: 0.10
-Nodes (20): CatalogRead, Check, checkout_state(), _git(), guard_production(), _load_stand(), main(), _now() (+12 more)
+### Community 4 - "subprocess"
+Cohesion: 0.03
+Nodes (84): Task 3: Preparation-only source context in staging/package, CatalogRead, Check, checkout_state(), _git(), guard_production(), _load_stand(), main() (+76 more)
 
 ### Community 5 - "main"
-Cohesion: 0.07
-Nodes (39): main(), source_unavailable(), test_cli_check_passes_on_the_committed_files(), test_cli_refuses_an_unsupported_locale(), project(), test_diff_all_classes_writes_aggregate(), test_diff_offline_prints_report_and_writes_json(), test_manifest_command_verifies_dataset() (+31 more)
+Cohesion: 0.04
+Nodes (67): main(), source_unavailable(), check_canonical(), read_coverage_report(), resolve_build(), test_cli_check_passes_on_the_committed_files(), test_cli_refuses_an_unsupported_locale(), test_tooltip_coverage_and_the_explicitly_unresolved_rank() (+59 more)
 
-### Community 6 - "TooltipsLoadError"
-Cohesion: 0.07
-Nodes (36): ContractKind, ALLOCATION_BUILD, ALLOCATION_CONFORMANCE, DATASET_MANIFEST, TALENT_DATA, TALENT_ICONS, TALENT_LOCALIZATION, TALENT_TOOLTIPS (+28 more)
+### Community 6 - "test_render.py"
+Cohesion: 0.05
+Nodes (22): rank_text(), SpellLookup, canonical_docs(), spells(), Talent, talent(), get(), tooltip_source() (+14 more)
 
 ### Community 7 - "TalentForgeTheme"
-Cohesion: 0.09
-Nodes (12): AppLanguage, ENGLISH, RUSSIAN, TalentForgeTheme(), DesktopBackDispatcher, RecordingUriHandler, runAboutUiTest(), BuildLibraryFiltersUiTest (+4 more)
+Cohesion: 0.07
+Nodes (15): AppLanguage, ENGLISH, RUSSIAN, TalentForgeTheme(), DesktopBackDispatcher, RecordingUriHandler, runAboutUiTest(), BuildLibraryFiltersUiTest (+7 more)
 
-### Community 8 - "prepare.py"
-Cohesion: 0.02
-Nodes (179): Task 6: Разделение trigger CI и request CI, Task 1: Strict candidate and conditional authorization contracts, main(), notice(), authorize_request(), authorize_request_ci(), committed_requests(), current_main_ci() (+171 more)
+### Community 8 - "automation/cli.py"
+Cohesion: 0.03
+Nodes (137): Task 1: Strict candidate and conditional authorization contracts, main(), notice(), authorize_request_ci(), current_main_ci(), request_bytes(), VerifiedCi, verify_invocation() (+129 more)
 
-### Community 9 - "talents.py"
+### Community 9 - "test_product_build.py"
 Cohesion: 0.05
-Nodes (75): fmt(), inventory(), main(), TraitDataSet, ChrClass, TraitCond, TraitNode, ClassRef (+67 more)
+Nodes (28): at_repo_root(), committed(), _gate_groups(), _mage_with_arcane_wrath_at(), _nodes(), previous(), _rows(), _section_of() (+20 more)
 
-### Community 10 - "collections_abc"
+### Community 10 - "TalentDataDocument"
 Cohesion: 0.02
-Nodes (83): _candidate(), evaluate_freshness(), report(), FreshnessReport, GameConfig, get_game(), find_latest_build(), decide() (+75 more)
+Nodes (130): TraitDefinition, ClassText, EntryText, resolve_class_text(), _definition(), _describe(), _entries(), _gate_text() (+122 more)
 
-### Community 11 - "tables.py"
-Cohesion: 0.04
-Nodes (30): Curve, CurvePoint, Db2Record, _float(), _int(), SkillLineXTraitTree, SkillRaceClassInfo, Spell (+22 more)
+### Community 11 - "TalentInspector.kt"
+Cohesion: 0.08
+Nodes (36): TalentResetNotice, TalentResetSnackbar(), ChevronButton(), CloseButton(), color(), CompactActionCluster(), CompactRank(), HandleBar() (+28 more)
 
-### Community 12 - "test_automation_prepare.py"
-Cohesion: 0.10
-Nodes (30): FakeGitHub, run_prepare(), stage_zip_with_wrong_base(), staging_zip_info(), test_ambiguous_prior_package_runs_are_not_silently_chosen(), crash(), test_archive_supplies_github_user_agent_and_redirects_without_credentials(), test_candidate_selection_never_reissues_70532_and_detects_new_committed_data() (+22 more)
+### Community 12 - "dataclasses"
+Cohesion: 0.02
+Nodes (138): fmt(), inventory(), main(), extract_class(), main(), TraitDataSet, unique(), ChrClass (+130 more)
+
+### Community 13 - "EdgeSwipeBackAppUiTest"
+Cohesion: 0.06
+Nodes (10): PlatformEdgeSwipeInput(), EdgeSwipeBackDispatcher, Handler, Handler, PlatformEdgeSwipeInput(), EdgeSwipeBackAppUiTest, EdgeSwipeBackDispatcherTest, Recording (+2 more)
 
 ### Community 14 - "LocalBuildRepositoryTest"
-Cohesion: 0.06
-Nodes (18): LocalBuildLibraryCodec, LocalBuildLibraryFileV1, LocalBuildLibraryFileV2, LocalBuildLibraryFormatException, LocalBuildRecordFileV1, LocalBuildRecordFileV2, Malformed, UnsupportedVersion (+10 more)
+Cohesion: 0.05
+Nodes (19): BuildFileVersion, LocalBuildLibraryCodec, LocalBuildLibraryFileV1, LocalBuildLibraryFileV2, LocalBuildLibraryFormatException, LocalBuildRecordFileV1, LocalBuildRecordFileV2, Malformed (+11 more)
 
-### Community 15 - "ImportBuildScreen.kt"
-Cohesion: 0.03
-Nodes (11): BuildLibraryFilters(), BuildManagementMetrics, ClassAccent, TalentForgeRadius, TalentForgeSpacing, TalentForgeColors, TalentForgeTypography, TalentBuildOverlayMetrics (+3 more)
+### Community 15 - "talentForgeColors"
+Cohesion: 0.01
+Nodes (118): AboutToggle(), Actions, AllBuildsScreen(), BuildRow(), BuildRowContent(), Hidden, ImportBuildButton(), isCompactRow() (+110 more)
 
-### Community 17 - "Counter"
-Cohesion: 0.12
-Nodes (11): submit(), Counter, _numbers(), ValidationIssue, _find_cycle(), visit(), _validate_grid(), _validate_sections() (+3 more)
+### Community 17 - "test_premerge_proposal.py"
+Cohesion: 0.05
+Nodes (45): actual_candidate(), commit_tree(), stamp(), World, secret(), Writer, candidate_fixture(), context() (+37 more)
 
-### Community 18 - "ContentHash"
-Cohesion: 0.04
-Nodes (28): BuildFileVersion, TalentDataContract, UnsupportedContractVersionException, ClassTokenSerializer, ContentHash, ContentHashSerializer, GameIdSerializer, appendCanonical() (+20 more)
+### Community 18 - "test_telegram_notify.py"
+Cohesion: 0.13
+Nodes (25): load_dedup(), save_dedup(), _candidate_run(), cli_env(), expected_outcome(), FakeTelegram, freshness_args(), _pending() (+17 more)
 
 ### Community 19 - "test_freshness.py"
 Cohesion: 0.09
 Nodes (39): FreshnessStatus, check(), http(), kotlin(), latest_publishable(), load_script(), payload(), payload_70374() (+31 more)
 
-### Community 20 - "OtaPublisherError"
-Cohesion: 0.03
-Nodes (107): Task 3: Parallel immutable uploads и однократная запись catalog, Рабочая среда и карта файлов, key(), spki_b64(), writer(), add_bytes(), incomplete(), record_failure() (+99 more)
+### Community 20 - "test_ota_s3_production.py"
+Cohesion: 0.17
+Nodes (24): ReleaseArtifact, edited(), _faults(), first_update(), keyring_entry(), prod_store(), production_keyring(), publish() (+16 more)
 
-### Community 21 - "TalentNodeVisual.kt"
-Cohesion: 0.12
-Nodes (8): drawDashedRoundedRectStroke(), drawPurchaseGlow(), drawShowPulse(), PadlockGlyph(), RankChip(), RankChipContent(), ringStrokeInset(), TalentNodeVisual()
+### Community 21 - "automation/cli.py"
+Cohesion: 0.02
+Nodes (188): Task 5: Scoped outcome, точный failure stage и безопасная диагностика, authorize_request(), committed_requests(), request_change_commit(), request_ci_pin(), Signer, Dependencies, _emit() (+180 more)
 
 ### Community 22 - "test_verify_ios_archive.py"
 Cohesion: 0.09
 Nodes (72): app_info(), app_store_profile(), codesign_display(), distribution_tools(), failed(), keyring(), load_validator(), macho() (+64 more)
 
 ### Community 23 - "AboutScreenUiTest"
-Cohesion: 0.12
-Nodes (19): AboutScreenUiTest, assertAbsent(), assertUsableTarget(), awaitText(), clickLabelled(), clickText(), texts(), aGroupListsItsLicencesAndOpensEachLicenceText() (+11 more)
+Cohesion: 0.19
+Nodes (6): AboutScreenUiTest, assertAbsent(), assertUsableTarget(), awaitText(), clickText(), texts()
 
 ### Community 24 - "DatasetCache"
 Cohesion: 0.05
-Nodes (19): Absent, DatasetCache, StateRead, Unreadable, Valid, CatalogWire, InstallAttempt, InstallAttemptCodec (+11 more)
+Nodes (18): Absent, DatasetCache, StateRead, Unreadable, Valid, CatalogWire, InstallAttempt, InstallAttemptCodec (+10 more)
 
-### Community 25 - "Env"
-Cohesion: 0.12
-Nodes (33): env(), Env, read_file(), _git(), neg_env(), _pending(), _rewrite_pending(), test_a_failed_blob_upload_leaves_the_live_catalog_untouched() (+25 more)
+### Community 25 - "test_automation_prepare.py"
+Cohesion: 0.08
+Nodes (37): current_ci(), candidate_repository(), commit(), FakeGitHub, run_prepare(), stage_zip_with_wrong_base(), staging_zip_info(), test_ambiguous_prior_package_runs_are_not_silently_chosen() (+29 more)
 
-### Community 26 - "run_bounded"
-Cohesion: 0.13
-Nodes (8): Task 1: Bounded immutable execution с полным drain, run_bounded(), test_bounded_order_and_overlap(), worker(), test_failure_stops_submission_and_drains_started_worker(), test_input_failure_also_drains_workers(), test_invalid_limit_does_not_consume_input(), test_serial_equivalence()
+### Community 26 - "test_ota_prepare.py"
+Cohesion: 0.11
+Nodes (31): Action, BaseKind, detection_outputs(), test_the_existing_detection_sees_nothing_then_selects_70450(), detect(), info(), published(), release() (+23 more)
 
 ### Community 27 - "IosOtaPorts.kt"
 Cohesion: 0.03
 Nodes (3): BoundedDataDelegate, isRetryableUrlError(), PlatformBlobFetcher
 
 ### Community 28 - "test_automation_probe.py"
-Cohesion: 0.02
-Nodes (146): Task 10: Workflow routing для event, watchdog и daily renewal, Task 12: Общая проверка и reviewable delivery change, Task 7: Closed delivery telemetry и неизменный approval t0, Task 8: Read-only probe и ограниченный recovery backoff, unsigned_entries(), _emit(), read_status(), StatusDocument (+138 more)
+Cohesion: 0.03
+Nodes (100): Task 10: Workflow routing для event, watchdog и daily renewal, Task 12: Общая проверка и reviewable delivery change, Task 7: Closed delivery telemetry и неизменный approval t0, Task 8: Read-only probe и ограниченный recovery backoff, Task 9: Metadata-only CI с доказанным full baseline, Рабочая среда и карта файлов, main(), baseline() (+92 more)
 
-### Community 29 - "OtaUi.kt"
-Cohesion: 0.09
-Nodes (8): DatasetLeaseHolder, diagnostic(), EditorDatasetAccess, EditorDatasetResolution, Ready, Slot, text(), Unavailable
+### Community 29 - "test_casc_source.py"
+Cohesion: 0.15
+Nodes (21): CascFileError, CascFileErrorKind, _json_error(), _reject_error_payload(), WagoCascFileSource, test_unknown_file_and_unknown_build_are_typed(), ok(), Server (+13 more)
 
-### Community 30 - "TalentRenderer"
-Cohesion: 0.23
-Nodes (5): SpellEffectValues, Ref, Failure, TalentRenderer, context()
+### Community 30 - "notify/state.py"
+Cohesion: 0.08
+Nodes (39): CandidatePrepared, ProductionUpdated, StageFailed, ProductionObservation, acknowledge_candidates(), _add(), _candidate(), candidate_reason() (+31 more)
 
-### Community 31 - "json"
-Cohesion: 0.02
-Nodes (101): read_localization_document(), DataLevelBaseline, load_baseline(), UnsupportedMechanic, _is_table_not_found(), read_coverage_report(), dataset_file(), load_documents() (+93 more)
+### Community 31 - "localization/generate.py"
+Cohesion: 0.04
+Nodes (61): SpellEffectValues, _nested_spells(), value_signature(), TooltipGap, Binary, category_of(), _closing(), Color (+53 more)
 
-### Community 33 - "TalentTreeCanvas"
+### Community 33 - "telegram.py"
 Cohesion: 0.10
-Nodes (16): animateCamera(), CanvasWindowFrame, TalentTreeCanvas(), TalentTreeNode(), TalentTreeNodeLayer(), TalentShowGuide, TalentTreeLandscapeHeaderMetrics, TalentTreeLandscapeTabs (+8 more)
+Nodes (12): main(), _description(), _description_body(), _interpret_send(), _ok(), redact(), _Response, _retry_after() (+4 more)
 
 ### Community 35 - "conformance.py"
 Cohesion: 0.08
 Nodes (29): _add_prerequisite(), _add_unresolved_condition(), apply_mutations(), ConformanceSuite, DatasetRef, engine_for(), Expectation, expected_issue() (+21 more)
 
-### Community 36 - "_parser"
-Cohesion: 0.67
-Nodes (3): _parser(), common(), outputs()
+### Community 36 - "Env"
+Cohesion: 0.09
+Nodes (35): Publisher, fixture_manifest_sha256(), env(), Env, read_file(), _git(), neg_env(), _pending() (+27 more)
 
-### Community 37 - "IosOtaAdapterTest.kt"
-Cohesion: 0.04
-Nodes (34): RemoteDatasetCatalog, OtaTestRepo, IosOtaAdapterTest, PlatformSignatureVerifier, CatalogVerifier, SeenCatalog, VerifiedCatalog, OtaDocuments (+26 more)
-
-### Community 38 - "grammar.py"
+### Community 37 - "sha256Ref"
 Cohesion: 0.12
-Nodes (15): _nested_spells(), _closing(), Conditional, Expression, Nested, parse(), _parse_dollar(), flush() (+7 more)
+Nodes (8): SeenCatalog, VerifiedCatalog, OtaDocuments, OtaRejection, reject(), ReleaseVerifier, SnapshotChecker, sha256Ref()
+
+### Community 38 - "pipeline_steps"
+Cohesion: 0.15
+Nodes (10): check_steps(), pipeline_steps(), supports_visuals_reuse(), _talent_data(), test_broken_checkout_cli_is_not_downgraded_to_full_download(), test_every_step_runs_after_the_steps_it_reads(), test_forced_same_or_older_build_uses_its_exact_source_without_cross_build_reuse(), test_the_issue_78_order_fails_on_a_new_build_and_the_fixed_order_does_not() (+2 more)
 
 ### Community 39 - "Ускорение OTA-доставки в существующем GitHub Actions"
 Cohesion: 0.10
 Nodes (19): Global Constraints, OTA Delivery Latency Implementation Plan, Review Focus, Самопроверка плана, I/O и границы кеширования, Retry и неизвестный исход, Запуск и лёгкий recovery, Короткий CI для request/approval-only изменений (+11 more)
 
-### Community 40 - "hashlib"
-Cohesion: 0.04
-Nodes (68): test_key(), _cmd_check(), _cmd_fetch(), _cmd_normalize(), _cmd_report(), _localize(), _print(), register() (+60 more)
+### Community 40 - "TalentSectionPaging.kt"
+Cohesion: 0.07
+Nodes (12): TalentMotionMetrics, talentSectionComposedPages(), talentSectionHeldPosition(), talentSectionNextWarmPage(), TalentSectionPager, talentSectionPageTag(), talentSectionPageX(), talentSectionPositionVelocity() (+4 more)
 
 ### Community 41 - "OtaFailure"
 Cohesion: 0.07
-Nodes (59): BlobHashMismatch, BlobSizeMismatch, BuildIdentityConflict, Cancelled, CatalogExpired, CatalogInconsistent, CatalogTooLarge, ChannelMismatch (+51 more)
+Nodes (60): BlobHashMismatch, BlobSizeMismatch, BuildIdentityConflict, Cancelled, CatalogExpired, CatalogInconsistent, CatalogTooLarge, ChannelMismatch (+52 more)
 
-### Community 42 - "TalentTreeScreen.kt"
-Cohesion: 0.03
-Nodes (25): TalentInspectorMeasurement, TalentMotionMetrics, talentSectionComposedPages(), talentSectionNextWarmPage(), TalentSectionPager, talentSectionPageX(), talentSectionPositionVelocity(), talentSectionReleaseTarget() (+17 more)
+### Community 42 - "TalentTreeCanvas"
+Cohesion: 0.16
+Nodes (7): TalentNodeIcons, animateCamera(), CanvasWindowFrame, TalentTreeCanvas(), TalentTreeNode(), TalentTreeNodeLayer(), TalentShowGuide
 
 ### Community 45 - "GooglePlay"
 Cohesion: 0.15
 Nodes (10): api_error(), check_play_track(), decide_play(), delivered(), Decision, GooglePlay, play_check(), play_deliver() (+2 more)
 
-### Community 46 - "publication"
-Cohesion: 0.11
-Nodes (20): current_ci(), candidate_repository(), commit(), test_backlog_selects_newest_client_version_without_sequential_releases(), test_invalid_newest_candidate_blocks_without_falling_back(), test_latest_committed_request_does_not_prepare_skipped_history(), test_new_patch_cannot_change_selection_from_pinned_source(), test_invalid_or_duplicate_catalog_is_rejected() (+12 more)
-
-### Community 47 - "pytest"
-Cohesion: 0.06
-Nodes (50): CascFileError, CascFileErrorKind, DownloadError, attempt(), attempt(), HttpConfig, is_valid_cache_entry(), _meta_path() (+42 more)
-
-### Community 48 - "_Context"
-Cohesion: 0.17
-Nodes (4): _Context, _normalize(), _Output, _PluralState
-
-### Community 49 - "respond"
+### Community 46 - "OtaFetcherTransportTest"
 Cohesion: 0.13
-Nodes (15): handler(), no_real_retry_delays(), respond(), test_nontransient_http_answers_are_not_retried(), handler(), test_partial_response_is_discarded_before_read_retry(), handler(), test_read_retries_are_bounded_and_exhaustion_is_not_success() (+7 more)
+Nodes (7): BrokenTls, Certificate, Counting, OtaFetcherTransportTest, ResettingOrigin, SilentOrigin, TlsOrigin
+
+### Community 47 - "http.py"
+Cohesion: 0.05
+Nodes (43): DownloadError, attempt(), attempt(), HttpConfig, is_valid_cache_entry(), _meta_path(), _raise_for_status(), _Retryable (+35 more)
+
+### Community 48 - "BuildLibraryWriteException"
+Cohesion: 0.07
+Nodes (5): DesktopBuildLibraryStorage, main(), HoldableStorage, BuildLibraryReadException, BuildLibraryWriteException
+
+### Community 49 - "test_ota_production_release.py"
+Cohesion: 0.18
+Nodes (20): counted_puts(), owner(), Owner, test_a_catalog_written_by_another_publisher_while_attaching_is_ambiguous(), test_a_damaged_package_is_refused_before_anything_is_written(), test_a_foreign_signature_is_refused(), test_a_live_catalog_that_cannot_be_read_back_is_ambiguous(), flaky() (+12 more)
 
 ### Community 50 - "test_engine.py"
 Cohesion: 0.16
 Nodes (20): node(), plan(), spend_all(), test_actions_on_an_invalid_state_are_refused(), test_all_failing_rules_are_reported_together(), test_basic_purchase_costs_one_point(), test_budget_exhaustion(), test_edge_needs_fully_ranked_source() (+12 more)
 
-### Community 52 - "run"
-Cohesion: 0.07
-Nodes (21): app(), app_env(), _ca(), closed_port(), fixture_test_key(), HarnessError, inside_git_checkout(), _leaf() (+13 more)
+### Community 52 - "ios_ota_e2e.py"
+Cohesion: 0.08
+Nodes (19): app(), app_env(), _ca(), fixture_test_key(), HarnessError, inet_sockets(), inside_git_checkout(), _leaf() (+11 more)
 
-### Community 53 - "E2EStand"
-Cohesion: 0.16
-Nodes (4): E2E, E2ESettings, E2EStand, HostFiles
+### Community 53 - "OtaRemoteStagingCheck"
+Cohesion: 0.12
+Nodes (5): Counting, CountingTls, Device, OtaRemoteStagingCheck, BlobFetcher
 
 ### Community 54 - "android_store_delivery.py"
 Cohesion: 0.08
 Nodes (62): advance_appgallery(), attach(), upload(), advance_rustore(), create(), advance_with_proof(), AppGallery, AssetJournal (+54 more)
 
-### Community 55 - "TalentAllocationEngine"
-Cohesion: 0.09
-Nodes (10): run_step(), _entry_of(), _invalid_entry(), TalentAllocationEngine, _unknown_node(), AllocationDecision, AllocationIssue, BuildState (+2 more)
+### Community 55 - "ContentHash"
+Cohesion: 0.20
+Nodes (13): ContentHash, ManifestClassEntry, ManifestValidation, TalentIconAsset, TalentIconImageFormat, PNG, TalentIconRegistry, TalentIconSourceFormat (+5 more)
 
 ### Community 56 - "notify/cli.py"
 Cohesion: 0.08
-Nodes (26): notify_status(), cmd_candidate(), cmd_freshness(), cmd_production(), cmd_production_status(), _deliver(), main(), _now() (+18 more)
+Nodes (27): notify_status(), cmd_candidate(), cmd_freshness(), cmd_production(), cmd_production_status(), cmd_smoke(), _deliver(), main() (+19 more)
 
 ### Community 58 - "verify_ios_archive.py"
-Cohesion: 0.09
-Nodes (28): _as_utc(), Check, _codesign_fields(), evaluate(), _evaluate_app(), evaluate_ipa(), Evaluation, extract_ipa() (+20 more)
+Cohesion: 0.06
+Nodes (48): _as_utc(), Check, _codesign_fields(), contains_text(), evaluate(), _evaluate_app(), evaluate_ipa(), Evaluation (+40 more)
 
 ### Community 59 - "verify_release_apk.py"
 Cohesion: 0.07
 Nodes (34): add_certificate_role_checks(), Badging, build_report(), Check, debug_certificate_sha256(), elf_load_alignments(), elf_segments(), evaluate() (+26 more)
 
-### Community 60 - "argparse"
-Cohesion: 0.02
-Nodes (86): accept(), _catalog_cases(), case(), catalog_payload(), signed(), catalog_context(), drifted(), dumps() (+78 more)
+### Community 60 - "S3StoreError"
+Cohesion: 0.12
+Nodes (13): add_bytes(), incomplete(), record_failure(), _classify(), refuse(), S3BlobStore, moved(), S3StoreError (+5 more)
 
 ### Community 62 - "ota_production_release.py"
-Cohesion: 0.10
-Nodes (25): Ambiguous, approvals_dir(), assess(), cmd_check(), cmd_prepare(), cmd_publish(), cmd_verify(), journal() (+17 more)
-
-### Community 63 - "TalentTreeViewport"
-Cohesion: 0.16
-Nodes (3): nodeAtScreen(), TalentTreeViewport, TalentTreeShowFocusTest
-
-### Community 64 - "test_ota_preflight.py"
 Cohesion: 0.11
-Nodes (42): Status, handler(), _a_json_blob(), FakeOrigin, fault_blob_cache_control(), fault_blob_content_encoding(), fault_bucket_policy_readable(), fault_catalog_cache_control() (+34 more)
+Nodes (24): Ambiguous, approvals_dir(), assess(), cmd_check(), cmd_prepare(), cmd_publish(), cmd_verify(), journal() (+16 more)
+
+### Community 63 - "TalentTreeViewportState"
+Cohesion: 0.09
+Nodes (16): sectionSwipeModel(), TalentTreeLayoutClass, LANDSCAPE, PORTRAIT, TABLET, sidePanelWouldCover(), TalentTreeBounds, rememberTalentTreeViewportState() (+8 more)
+
+### Community 64 - "FakeOrigin"
+Cohesion: 0.08
+Nodes (35): ProductionStatus, handler(), test_catalog_change_during_blob_verification_rejects_snapshot(), handler(), test_excessive_json_nesting_is_a_failure_for_full_and_lightweight_watch(), test_invalid_or_duplicate_catalog_is_rejected(), test_public_fetch_does_not_inherit_default_client_params_or_headers(), _a_json_blob() (+27 more)
 
 ### Community 65 - "test_ota_propose.py"
 Cohesion: 0.11
-Nodes (45): save(), save(), Outcome, main(), workflow_step_script(), advance_main(), bash(), branch_tip() (+37 more)
+Nodes (44): save(), save(), Outcome, main(), advance_main(), bash(), branch_tip(), checkout() (+36 more)
 
-### Community 66 - "assertequals"
-Cohesion: 0.05
-Nodes (10): DraftCreation, loadNewBuildChoices(), TalentRequirementsPlatformTest, AppIconResourceTest, NodeAllocation, DatasetManifest, CanonicalBase64, TalentDataDocument (+2 more)
+### Community 66 - "OtaUpdateCoordinator"
+Cohesion: 0.15
+Nodes (7): Activated, CheckOutcome, Current, Failed, NeedsNewerApp, OtaStatus, OtaUpdateCoordinator
 
 ### Community 67 - "SeamlessFavoritesUiTest"
 Cohesion: 0.15
 Nodes (3): ObservedStorage, SeamlessFavoritesUiTest, DatasetAssetSource
 
-### Community 68 - "RequestState"
-Cohesion: 0.02
-Nodes (102): Task 4: Bounded public prefetch с прежней строгой проверкой, CiPemSigner, temporary_aws_profile(), _temporary_secret(), serialize_manifest(), build_envelope(), inline_sign_envelope(), load_private_key() (+94 more)
+### Community 68 - "test_reproduction.py"
+Cohesion: 0.19
+Nodes (19): compare_visuals(), VisualsComparison, committed_files(), decoded(), encode(), registry_of(), test_a_changed_client_file_blocks_even_with_the_same_pixels(), test_a_changed_sidecar_blocks() (+11 more)
 
 ### Community 69 - "test_store_delivery.py"
-Cohesion: 0.07
-Nodes (73): android_ci_jobs(), asc_build(), asc_client(), ci_run(), decide(), decide_ios(), distribute(), FakeAsc (+65 more)
+Cohesion: 0.06
+Nodes (77): handler(), android_ci_jobs(), asc_build(), asc_client(), ci_run(), decide(), decide_ios(), distribute() (+69 more)
 
 ### Community 70 - "composeApp/build.gradle.kts"
-Cohesion: 0.10
-Nodes (15): iosProductionRuleFailures(), keyringFingerprintProblems(), OtaChannelInput, otaChannelInputOf(), otaKotlinString(), otaSetting(), otaSettingsProblems(), otaSettingsRuleFailures() (+7 more)
+Cohesion: 0.15
+Nodes (13): iosProductionRuleFailures(), keyringFingerprintProblems(), OtaChannelInput, otaChannelInputOf(), otaKotlinString(), otaSetting(), otaSettingsProblems(), otaSettingsRuleFailures() (+5 more)
 
 ### Community 71 - "test_freshness_watch.py"
-Cohesion: 0.09
-Nodes (36): _check_consistency(), CheckFailure, parse_document(), read_result(), build(), document(), FakeGitHub, never_connect() (+28 more)
+Cohesion: 0.11
+Nodes (22): FakeGitHub, produced(), serving_fixture(), test_a_failure_while_writing_is_undelivered_too(), test_a_github_error_is_reported_as_undelivered(), test_a_network_error_towards_github_is_undelivered(), test_an_even_newer_build_edits_the_same_issue_once(), test_current_closes_the_open_issue_with_a_comment() (+14 more)
 
 ### Community 72 - "OtaScenarioTest"
-Cohesion: 0.08
-Nodes (6): OtaScenarioTest, SpaceStore, catalog(), FakeBlobServer, signedCatalog(), TestRelease
+Cohesion: 0.14
+Nodes (3): OtaScenarioTest, SpaceStore, signedCatalog()
 
-### Community 73 - "AssemblePublishableApk"
-Cohesion: 0.19
-Nodes (3): AssemblePublishableApk, BundlePublishablePlay, CheckReleaseInternetPermission
+### Community 73 - "TalentTreeScreen"
+Cohesion: 0.09
+Nodes (8): describe(), Ready, StatusPane(), TalentTreeScreen(), localizedProductState(), TalentRequirementsUiTest, TalentTabletSectionHeadersScreenshotTest, TalentTreeM43ScreenshotTest
 
 ### Community 74 - "localization/source.py"
 Cohesion: 0.05
-Nodes (46): rows(), parse_table(), load_inputs(), _unique(), _by_id(), LocalizationSourceError, LocalizationSourceErrorKind, TableReader (+38 more)
+Nodes (44): rows(), parse_table(), load_inputs(), LocaleTexts, _unique(), _by_id(), LocalizationSourceError, LocalizationSourceErrorKind (+36 more)
 
 ### Community 75 - ".decode"
-Cohesion: 0.15
-Nodes (18): CodeTooLong, Decoded, DuplicateEntry, DuplicateNode, Encoded, InvalidIdentity, NumberOutOfRange, ShareCodeField (+10 more)
+Cohesion: 0.14
+Nodes (19): CodeTooLong, Decoded, DuplicateEntry, DuplicateNode, Encoded, InvalidIdentity, NumberOutOfRange, ShareCodeField (+11 more)
 
-### Community 76 - "telegram.py"
-Cohesion: 0.08
-Nodes (17): candidate_chats(), ChatCandidate, _iso(), main(), pick(), cmd_smoke(), _description(), _description_body() (+9 more)
+### Community 76 - "test_ota_preflight.py"
+Cohesion: 0.17
+Nodes (26): Status, run(), statuses(), test_404_confirms_a_private_path_as_well_as_403(), test_a_catalog_close_to_expiry_warns_to_re_sign(), test_a_catalog_that_cannot_be_fetched_fails(), test_a_correct_publication_passes_every_check(), test_a_lagging_edge_cache_only_warns() (+18 more)
+
+### Community 77 - "talentTabletSectionHeaders"
+Cohesion: 0.12
+Nodes (13): largestCluster(), SectionHeader(), Span, TalentTabletHeaderAnchor, talentTabletHeaderHeightDp(), talentTabletHeaderReserveDp(), TalentTabletHeaderSlot, talentTabletHeaderSlots() (+5 more)
 
 ### Community 78 - "BuildImportFlowTest"
-Cohesion: 0.20
-Nodes (5): Editing, ImportPhase, BuildImportFlowTest, TalentDatasetRepository, TalentDatasetRepository
+Cohesion: 0.16
+Nodes (4): importMessageOf(), BuildImportFlowTest, TalentDatasetRepository, TalentDatasetRepository
 
-### Community 79 - "test_automation_ci_validation.py"
-Cohesion: 0.19
-Nodes (17): Task 9: Metadata-only CI с доказанным full baseline, baseline(), pages(), classify(), commit(), test_invalid_metadata_is_ci_failure_without_green_full_fallback(), test_metadata_last_commit_cannot_hide_code_since_full_baseline(), test_metadata_requires_real_full_validation_ancestor() (+9 more)
+### Community 79 - "JvmOtaPorts.kt"
+Cohesion: 0.07
+Nodes (4): pinnedTrustSocketFactory(), PlatformBlobFetcher, PlatformSignatureVerifier, OtaPaths
 
 ### Community 80 - "visuals/pipeline.py"
-Cohesion: 0.03
-Nodes (96): _casc(), _cmd_check(), _cmd_fetch(), _cmd_normalize(), _cmd_report(), _db2(), _print_report(), register() (+88 more)
+Cohesion: 0.02
+Nodes (132): SpellMisc, content_hash(), expected_content_hash(), hashed_payload(), IconAsset, IconsProvenance, _Model, sha256_of() (+124 more)
 
 ### Community 81 - "mobile_bundles.py"
-Cohesion: 0.10
-Nodes (19): bundled_builds_drift(), BundleKind, check(), check_kotlin_bundled_builds(), directory_drift(), drift(), _file_count(), kotlin_bundled_builds() (+11 more)
+Cohesion: 0.11
+Nodes (18): bundled_builds_drift(), BundleKind, check(), check_kotlin_bundled_builds(), directory_drift(), drift(), _file_count(), kotlin_bundled_builds() (+10 more)
 
-### Community 82 - "TalentTreeMotionUiTest"
-Cohesion: 0.19
-Nodes (3): talentSectionPageTag(), Session, TalentTreeMotionUiTest
+### Community 83 - "BuildImportUiTest"
+Cohesion: 0.11
+Nodes (18): About, AllBuilds, AppDestination, decodeDestinations(), Editor, EditorOrigin, CreatedNew, FromAllBuilds (+10 more)
 
 ### Community 85 - "TalentTreeUiModel"
 Cohesion: 0.16
-Nodes (19): boundsOf(), buildTreeUiModel(), DanglingEdgeReference, DuplicateNodeId, EmptyTree, Failed, InvalidLayout, MultipleTrees (+11 more)
+Nodes (19): UiModel, boundsOf(), buildTreeUiModel(), DanglingEdgeReference, DuplicateNodeId, EmptyTree, Failed, InvalidLayout (+11 more)
 
 ### Community 86 - "BuildState"
 Cohesion: 0.10
@@ -834,23 +852,27 @@ Nodes (14): elf(), fake_apk(), fake_build_tools(), run_cli(), test_cli_fails_on_
 
 ### Community 88 - "DatasetDownloadManager"
 Cohesion: 0.06
-Nodes (33): Abort, Acquired, Counters, DatasetDownloadManager, InstallReport, Origin, BUNDLE, INSTALLED (+25 more)
+Nodes (34): Abort, Acquired, Counters, DatasetDownloadManager, InstallReport, Origin, BUNDLE, INSTALLED (+26 more)
 
-### Community 89 - "values.py"
-Cohesion: 0.08
-Nodes (16): GlobalString, _decimal_string(), DurationFormatError, DurationFormats, exact(), format_bare(), format_fixed(), round_fixed() (+8 more)
+### Community 89 - "ClassArtwork.kt"
+Cohesion: 0.09
+Nodes (3): classArtworkResourceFor(), AppIconResourceTest, ClassArtworkTest
 
 ### Community 90 - "env"
 Cohesion: 0.05
 Nodes (41): AAB, ANDROID_RELEASE_CERT_SHA256, ANDROID_RELEASE_KEY_ALIAS, ANDROID_RELEASE_KEYSTORE_BASE64, ANDROID_RELEASE_KEYSTORE_PASSWORD, ANDROID_UPLOAD_CERT_SHA256, ANDROID_UPLOAD_KEY_ALIAS, ANDROID_UPLOAD_KEYSTORE_BASE64 (+33 more)
 
-### Community 91 - "ConformanceSuite.kt"
-Cohesion: 0.07
-Nodes (24): AllocationConformance, StepOutcome, ConformanceDatasetRef, ConformanceMutation, ConformanceMutationOp, ADD_PREREQUISITE, ADD_UNRESOLVED_CONDITION, SET_ENTRY_TYPE (+16 more)
+### Community 91 - "TalentLocalizationDocument.kt"
+Cohesion: 0.06
+Nodes (38): LocalizationProvenance, LocalizationSourceTable, LocalizationTableLocale, EN_US, RU_RU, LocalizedDescription, LocalizedDescriptionSource, SPELL_DESCRIPTION (+30 more)
 
-### Community 92 - "talentForgeColors"
-Cohesion: 0.09
-Nodes (38): talentForgeColors(), NeutralSheetAction(), TalentBuildActionsSheet(), TalentResetNotice, TalentResetSnackbar(), ChevronButton(), CloseButton(), color() (+30 more)
+### Community 92 - "git"
+Cohesion: 0.10
+Nodes (19): poison_candidate(), context(), test_changed_mr_during_validation_creates_no_verified_ref(), test_empty_association_never_trusts_branch_alone(), test_empty_ci_association_uses_unique_branch_and_exact_commit(), test_even_consistently_hashed_artifact_cannot_expand_candidate_scope(), test_real_candidate_artifact_binds_git_source_without_checkout(), test_synthetic_pr_merge_requires_equal_tree_and_exact_parents() (+11 more)
+
+### Community 93 - "fetch"
+Cohesion: 0.12
+Nodes (23): Check, check_catalog(), check_dns(), check_plain_http(), check_private(), _check_release(), get_blob(), read_file() (+15 more)
 
 ### Community 94 - "verify_ios_project.py"
 Cohesion: 0.15
@@ -858,115 +880,119 @@ Nodes (13): Check, _configurations(), _dict(), evaluate(), Evaluation, format_su
 
 ### Community 95 - "BuildImportController"
 Cohesion: 0.12
-Nodes (11): BuildImportController, Checking, ClipboardEmpty, ClipboardUnavailable, EmptyInput, Imported, ImportProblem, InputTooLong (+3 more)
+Nodes (14): BuildImportController, Checking, ClipboardEmpty, ClipboardUnavailable, Confirming, Editing, EmptyInput, Imported (+6 more)
 
 ### Community 97 - ".entry"
-Cohesion: 0.18
-Nodes (11): BuildLibrarySearchEntry, filterBuildLibrary(), BuildLibraryGroup, BuildLibrarySortMode, CLASS, LAST_EDITED, NAME, groupBuildLibrary() (+3 more)
+Cohesion: 0.28
+Nodes (9): BuildLibrarySearchEntry, BuildLibraryGroup, BuildLibrarySortMode, CLASS, LAST_EDITED, NAME, groupBuildLibrary(), sortBuildLibrary() (+1 more)
+
+### Community 98 - "SendStatus"
+Cohesion: 0.10
+Nodes (28): SendStatus, client(), fail(), ok(), production_runner(), Scripted, test_429_beyond_the_budget_gives_up_instead_of_parking(), test_429_is_waited_within_the_budget_and_retried() (+20 more)
+
+### Community 99 - "EditorCopy"
+Cohesion: 0.04
+Nodes (11): TalentNodeState, AVAILABLE, MAXED, NO_POINTS, PARTIAL, PREREQUISITE_LOCKED, TIER_LOCKED, UNAVAILABLE (+3 more)
 
 ### Community 100 - "watch/runner.py"
 Cohesion: 0.10
 Nodes (13): GitHubIssues, GitHubIssuesError, Issue, _issue(), _message(), _apply(), _default_run_url(), _latest() (+5 more)
 
 ### Community 101 - "IosOtaStagingE2ETest"
-Cohesion: 0.23
-Nodes (4): IosOtaStagingE2ETest, KillingStore, PhaseNote, RecordingAssetSource
+Cohesion: 0.15
+Nodes (6): HostFiles, IosOtaStagingE2ETest, KillingStore, PhaseNote, RecordingAssetSource, SpaceLimitedStore
 
-### Community 102 - "automation/cli.py"
-Cohesion: 0.02
-Nodes (119): Task 5: Scoped outcome, точный failure stage и безопасная диагностика, SecretError, Signer, Dependencies, _empty(), _git_authentication(), main(), OperationStatus (+111 more)
+### Community 102 - "pathlib"
+Cohesion: 0.01
+Nodes (160): Task 6: Разделение trigger CI и request CI, format_date(), has_early_utf8_meta(), main(), MetaCharsetParser, render(), ToolError, verify_live() (+152 more)
 
 ### Community 103 - "test_verify_appstore_screenshots.py"
 Cohesion: 0.21
 Nodes (36): add_duo(), failed(), make_pack(), png(), production_capture_pack(), replace(), test_a_complete_pack_passes(), test_a_damaged_png_fails() (+28 more)
 
-### Community 104 - "FakeBuildLibraryStorage"
-Cohesion: 0.05
-Nodes (12): App(), NewBuildScreen(), FakeBuildLibraryStorage, FixedClock, BuildActionsLayoutUiTest, Copy, BuildLibrarySortingUiTest, M5Rel2aScreenshotTest (+4 more)
+### Community 104 - "ShellLocalizationUiTest"
+Cohesion: 0.15
+Nodes (3): Build, ShellCopy, ShellLocalizationUiTest
 
 ### Community 105 - "TalentEditorText.kt"
 Cohesion: 0.05
 Nodes (5): MissingValuesNote, CHARACTER_DEPENDENT, NOT_IN_CLIENT_DATA, TalentNodeAccessibilityCopy, text()
 
-### Community 107 - "buildTalentTreeUiModel"
-Cohesion: 0.18
-Nodes (3): buildTalentTreeUiModel(), nodeMonogram(), TalentTreeUiModelTest
+### Community 107 - "AboutScreen"
+Cohesion: 0.06
+Nodes (23): AboutBody(), AboutMeta(), AboutNavigationRow(), AboutScaffold(), AboutSection(), drawForwardChevron(), ForwardChevron(), AppVersion (+15 more)
 
-### Community 108 - "OtaRemoteStagingCheck.kt"
-Cohesion: 0.04
-Nodes (32): Disabled, DisabledReason, BAD_BASE_URL, BAD_KEYRING, KEY_NOT_FOR_CHANNEL, NO_KEYS, NOT_ENABLED, PRODUCTION_NEEDS_BACKUP_KEY (+24 more)
+### Community 108 - "test_build_70374.py"
+Cohesion: 0.07
+Nodes (16): at_repo_root(), committed(), previous(), _spend_all_points(), test_a_previous_product_build_validates_alike_on_both_builds(), test_class_shape_and_point_budget(), test_committed_document_is_reproduced_from_the_build_rows(), test_engine_supports_every_node_except_the_known_unresolved_venom() (+8 more)
 
 ### Community 109 - "scenarios.py"
 Cohesion: 0.12
-Nodes (16): Step, NodeAllocation, NodeRef, Author, build_suite(), class_scenarios(), _exhausted(), Fill (+8 more)
+Nodes (17): _ref(), NodeRef, Author, build_suite(), class_scenarios(), dataset_file(), _exhausted(), Fill (+9 more)
 
-### Community 110 - "localization/generate.py"
+### Community 110 - "localization/pipeline.py"
+Cohesion: 0.04
+Nodes (75): _cmd_check(), _cmd_fetch(), _cmd_normalize(), _cmd_report(), _localize(), _print(), register(), _version() (+67 more)
+
+### Community 111 - "pathlib"
 Cohesion: 0.02
-Nodes (132): ClassText, EntryText, resolve_class_text(), _definition(), _describe(), _entries(), _gate_text(), LocaleTexts (+124 more)
+Nodes (132): Task 11: TTL и benchmark без production writes, Task 4: Bounded public prefetch с прежней строгой проверкой, fixture(), main(), measure(), Measurement, accept(), _catalog_cases() (+124 more)
 
-### Community 111 - "verify.py"
-Cohesion: 0.02
-Nodes (103): Task 11: TTL и benchmark без production writes, fixture(), main(), measure(), Measurement, phase_stage(), build_keyring(), check_signature() (+95 more)
+### Community 112 - "Test"
+Cohesion: 0.19
+Nodes (5): effectiveNodeTargetDp(), minimumNodeTargetDp(), nodeAtScreen(), TalentTreeHitTestTest, TalentTreeViewportTest
 
-### Community 112 - "NodeAllocation"
-Cohesion: 0.10
-Nodes (17): TalentName, buildTalentInspectorContent(), prerequisiteLineOf(), ShowAction, talentNodeFacts(), TalentPrerequisiteProgress, TalentTreeNodeFacts, tierLineOf() (+9 more)
+### Community 113 - "TalentLocalizationRepositoryTest"
+Cohesion: 0.09
+Nodes (5): LocalizationCase, rankJson(), RepoDataAssets, TalentLocalizationRepositoryTest, DatasetAssetSource
 
-### Community 113 - "LocalizationTestBundle.kt"
-Cohesion: 0.05
-Nodes (19): resolveClassTalentText(), TalentClassText, TalentEntryText, LocalizationOutcome, TalentLocalization, entries(), LocalizationCase, obj() (+11 more)
-
-### Community 114 - "OtaUpdateCoordinator"
-Cohesion: 0.07
-Nodes (17): InstallProgress, Activated, CheckOutcome, Current, Failed, NeedsNewerApp, OtaStatus, OtaUpdateCoordinator (+9 more)
+### Community 114 - "UtcInstant"
+Cohesion: 0.08
+Nodes (7): LocalOrigin, OtaPlatformAdapterTest, IosOtaAdapterTest, OtaConformanceReplayTest, Verdict, JvmSignatureVerifier, OtaFixtures
 
 ### Community 115 - "test_mobile_bundles.py"
 Cohesion: 0.07
 Nodes (14): drifted(), load_script(), mirror(), no_network(), snapshot(), test_a_drifted_runtime_bundled_build_list_fails_every_check(), test_committed_bundle_matches_canonical_without_network(), test_failed_preflight_for_a_missing_canonical_file_changes_nothing() (+6 more)
 
 ### Community 116 - "Path"
-Cohesion: 0.15
-Nodes (25): android_files(), bundle_file(), check_android(), deliver(), FakePlay, git(), ios_reports(), repo() (+17 more)
+Cohesion: 0.17
+Nodes (22): android_files(), bundle_file(), check_android(), deliver(), FakePlay, git(), repo(), rsa_key() (+14 more)
 
 ### Community 119 - "talent-localization.v1 ruRU presentation overlay"
 Cohesion: 0.07
 Nodes (30): Python data platform and KMP ownership boundaries, Read-only exact-dataset import preparation, Share UI snapshot ownership, talentforge-share.v1 canonical share codes, BuildSource → Db2Source → TraitDataSet → normalized dataset, Semantic build diff and diagnostic noise classification, Node-centric talent-data.v1 and dataset manifest, Daily dataset freshness watcher (+22 more)
 
 ### Community 121 - "TalentInspectorReadingUiTest"
-Cohesion: 0.19
+Cohesion: 0.18
 Nodes (5): compactScenarios(), InspectorScenario, unlockedScenario(), Session, TalentInspectorReadingUiTest
 
 ### Community 122 - "LocalizationLoadError"
-Cohesion: 0.04
-Nodes (69): LocalizationProvenance, LocalizationSourceTable, LocalizationTableLocale, EN_US, RU_RU, LocalizedDescription, LocalizedDescriptionSource, SPELL_DESCRIPTION (+61 more)
+Cohesion: 0.10
+Nodes (31): AssetMissing, AssetUnreadable, BuildMismatch, BundledTalentLocalizationRepository, ClassMismatch, ContentHashMismatch, DatasetRevisionMismatch, DecimalValue (+23 more)
 
 ### Community 123 - "with"
 Cohesion: 0.06
 Nodes (34): concurrency, cancel-in-progress, group, REPLAY_EXIT, jobs, replay, name, on (+26 more)
 
-### Community 124 - "BuildCodeSharing.android.kt"
-Cohesion: 0.14
-Nodes (4): platformPrefersReducedMotion(), AndroidBuildCodeSharing, findActivity(), rememberPlatformBuildCodeSharing()
+### Community 124 - "ClientVersion"
+Cohesion: 0.03
+Nodes (113): extract_localization(), extract_tooltips(), _write_table(), _cmd_replay(), _cmd_validate(), register(), _sources(), _build_parser() (+105 more)
 
 ### Community 125 - "TalentLocalizationUiTest"
-Cohesion: 0.16
+Cohesion: 0.18
 Nodes (3): OverridingAssetSource, TalentLocalizationUiTest, WarriorText
 
-### Community 127 - "load_dedup"
+### Community 126 - ".check"
 Cohesion: 0.13
-Nodes (26): CandidateDedup, load_dedup(), save_dedup(), _candidate_run(), cli_env(), expected_outcome(), FakeTelegram, freshness_args() (+18 more)
+Nodes (8): Arm, CONTROL, RETRY, Check, CountingTls, OtaRetryRemoteMeasurement, Recording, Try
 
-### Community 128 - "AppDestination"
-Cohesion: 0.12
-Nodes (17): About, AllBuilds, AppDestination, decodeDestinations(), Editor, EditorOrigin, CreatedNew, FromAllBuilds (+9 more)
+### Community 128 - "ShareCodePrimitives.kt"
+Cohesion: 0.13
+Nodes (10): ShareCodeBase32, ShareCodeCrc32, ShareCodeReader, ShareCodeReadException, ShareCodeReadFailure, MALFORMED_NUMBER, TRUNCATED, ShareCodeWriter (+2 more)
 
-### Community 129 - "TalentTooltipRank"
-Cohesion: 0.03
-Nodes (71): TalentNodeDescriptionsLoad, toDisplayRank(), bodyOf(), buildTalentInspectorDescription(), changedValueIndices(), DescriptionBody, DescriptionSpan, Missing (+63 more)
-
-### Community 130 - "test_bounded_parallel_downloads_keep_full_validation_and_live_progress"
-Cohesion: 0.16
-Nodes (12): TlsInfo, TlsRefused, entry(), handshake(), resolve(), test_bounded_parallel_downloads_keep_full_validation_and_live_progress(), test_main_prints_and_writes_the_report(), test_the_staging_origin_and_non_https_origins_are_refused() (+4 more)
+### Community 129 - "app_scenarios"
+Cohesion: 0.30
+Nodes (4): active(), app_scenarios(), AppRun, run_command()
 
 ### Community 131 - "productState"
 Cohesion: 0.21
@@ -977,28 +1003,32 @@ Cohesion: 0.07
 Nodes (26): AllocationIssue, AllocationIssueCode, DEPENDENT_NODE_WOULD_BREAK, DUPLICATE_ALLOCATION, ENTRY_NOT_SELECTED, INVALID_BUILD_STATE, INVALID_ENTRY, MAX_RANK_REACHED (+18 more)
 
 ### Community 133 - "BundledRepositoryTest"
-Cohesion: 0.17
+Cohesion: 0.14
 Nodes (4): BundledRepositoryTest, DatasetAssetSource, DatasetAssetSource, DatasetAssetSource
 
 ### Community 134 - "test_ota_staging_stand.py"
-Cohesion: 0.11
-Nodes (23): tls_handshake(), _trust_context(), _catalog(), _get(), _keyring(), _NoRedirect, origin(), out() (+15 more)
+Cohesion: 0.09
+Nodes (22): closed_port(), tls_handshake(), _trust_context(), _catalog(), _get(), _NoRedirect, origin(), out() (+14 more)
 
-### Community 135 - "StagedUpdate"
-Cohesion: 0.15
-Nodes (7): OtaHistoricalReplayTest, Corruption, BLOB, MANIFEST, SIGNATURE, StagedUpdate, RecordingAssetSource
+### Community 135 - "test_ota_s3_store.py"
+Cohesion: 0.17
+Nodes (21): S3Failure, blob(), store_over(), test_404_403_and_network_failures_are_distinct(), test_a_403_on_upload_never_lets_a_blob_be_written_blind(), test_a_blob_created_concurrently_is_not_overwritten(), test_a_blob_must_hash_to_its_key(), test_a_catalog_write_needs_an_observation_and_is_conditional() (+13 more)
 
 ### Community 136 - "ShareCopy.kt"
-Cohesion: 0.07
-Nodes (14): ClassUnavailable, ClientBuildUnavailable, ClipboardEmpty, ClipboardUnavailable, Damaged, DatasetProblem, decodeMessageOf(), EmptyInput (+6 more)
+Cohesion: 0.05
+Nodes (24): ClassUnavailable, ClientBuildUnavailable, ClipboardEmpty, ClipboardUnavailable, Damaged, DatasetProblem, decodeMessageOf(), EmptyInput (+16 more)
 
-### Community 138 - "verify_appstore_screenshots.py"
+### Community 137 - "verify_appstore_screenshots.py"
 Cohesion: 0.17
 Nodes (14): accepted_sizes(), Check, _check_file(), displays_sizes(), evaluate(), Evaluation, format_summary(), inspect_png() (+6 more)
 
+### Community 138 - "TalentEntry.kt"
+Cohesion: 0.10
+Nodes (14): Decimal, Integral, NumberValue, NumberValueSerializer, PerRankStatus, INCOMPLETE, NONE, RESOLVED (+6 more)
+
 ### Community 139 - "DatasetActivationManager"
-Cohesion: 0.05
-Nodes (22): BundleInventory, DatasetActivationManager, IntactRelease, RecoveryReport, Available, DatasetResolution, DatasetUnavailableReason, DownloadFailed (+14 more)
+Cohesion: 0.06
+Nodes (21): BundleInventory, DatasetActivationManager, IntactRelease, RecoveryReport, Available, DatasetResolution, DatasetUnavailableReason, DownloadFailed (+13 more)
 
 ### Community 140 - "TalentInspectorAdaptiveUiTest"
 Cohesion: 0.22
@@ -1009,8 +1039,12 @@ Cohesion: 0.19
 Nodes (10): Axis, dominant_step(), fit_grid(), Grid, _mode(), test_nudged_column_does_not_collapse_grid(), test_nudged_first_row_does_not_shift_all_rows(), test_regular_grid() (+2 more)
 
 ### Community 142 - "TalentInspectorAdaptiveRulesTest"
-Cohesion: 0.13
-Nodes (11): TalentForgeMotion, Presentation, TalentInspectorRevealTracker, expandedSheetLimits(), rankChipFontScale(), TalentInspectorCompactLayout, SINGLE_ROW, TWO_LINE (+3 more)
+Cohesion: 0.12
+Nodes (12): Presentation, TalentInspectorMeasurement, TalentInspectorRevealTracker, expandedSheetLimits(), rankChipFontScale(), TalentInspectorCompactLayout, SINGLE_ROW, TWO_LINE (+4 more)
+
+### Community 143 - "TalentAllocationEngine"
+Cohesion: 0.10
+Nodes (7): run_step(), _entry_of(), TalentAllocationEngine, AllocationDecision, BuildState, golden_build(), test_build_state_is_canonical_and_immutable()
 
 ### Community 144 - "test_generate_oss_notices.py"
 Cohesion: 0.07
@@ -1020,69 +1054,53 @@ Nodes (35): ar(), committed(), component(), edit(), fat(), klib(), load_generato
 Cohesion: 0.08
 Nodes (28): 1.60.1.70009 Russian fallback reasons, 1.60.1.70009 authentic ruRU coverage, 1.60.1.70009 English rank-description coverage, 1.60.1.70009 explicit tooltip gaps, 1.60.1.70245 Russian fallback reasons, 1.60.1.70245 authentic ruRU coverage, 1.60.1.70245 English rank-description coverage, 1.60.1.70245 explicit tooltip gaps (+20 more)
 
-### Community 146 - "OtaFetcherTransportTest"
-Cohesion: 0.15
-Nodes (7): BrokenTls, Certificate, Counting, OtaFetcherTransportTest, ResettingOrigin, SilentOrigin, TlsOrigin
+### Community 146 - "TalentTooltipRank"
+Cohesion: 0.12
+Nodes (25): bodyOf(), buildTalentInspectorDescription(), changedValueIndices(), DescriptionBody, DescriptionSpan, Missing, nextRankComparison(), NextRankText (+17 more)
 
-### Community 147 - "loadEditorSession"
-Cohesion: 0.09
-Nodes (21): Dataset, DatasetClassResolver, EditorFailure, EditorLoad, EditorSession, Engine, Failed, Failure (+13 more)
+### Community 147 - "with"
+Cohesion: 0.07
+Nodes (27): if, runs-on, steps, timeout-minutes, concurrency, cancel-in-progress, group, jobs (+19 more)
 
 ### Community 149 - ".fail"
-Cohesion: 0.12
-Nodes (17): Failure, Frame, JsonDuplicateNames, JsonScan, JsonViolation, BYTE_ORDER_MARK, CONTROL_CHARACTER, DUPLICATE_MEMBER_NAME (+9 more)
-
-### Community 150 - "TalentVisualsRepositoryTest"
 Cohesion: 0.06
-Nodes (28): AssetMissing, AssetUnreadable, BuildMismatch, BundledTalentVisualsRepository, ClassMismatch, DatasetRevisionMismatch, DuplicateEntry, DuplicateIcon (+20 more)
-
-### Community 151 - "BuildImportBundledDatasetsTest"
-Cohesion: 0.21
-Nodes (3): BuildImportBundledDatasetsTest, DatasetAssetSource, Recording
+Nodes (28): CrashingStore, OtaCrashRecoveryTest, SimulatedCrash, Expect, COLON, COMMA_OR_END, DONE, NAME (+20 more)
 
 ### Community 152 - "test_verify_release_apk.py"
-Cohesion: 0.11
-Nodes (33): apksigner_output(), evaluate(), failed(), keytool_form(), library(), test_16kb_aligned_64_bit_libraries_pass(), test_4kb_or_unreadable_or_misplaced_64_bit_libraries_fail(), test_a_2048_bit_key_fails_the_strategy() (+25 more)
-
-### Community 154 - "TalentEntry.kt"
-Cohesion: 0.10
-Nodes (13): Decimal, Integral, NumberValue, NumberValueSerializer, PerRankStatus, INCOMPLETE, NONE, RESOLVED (+5 more)
+Cohesion: 0.09
+Nodes (37): elf_with_segments(), apksigner_output(), evaluate(), failed(), keytool_form(), library(), load_validator(), test_16kb_aligned_64_bit_libraries_pass() (+29 more)
 
 ### Community 155 - "watch"
 Cohesion: 0.07
 Nodes (30): concurrency, cancel-in-progress, group, GITHUB_TOKEN, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, jobs, watch (+22 more)
 
-### Community 156 - "TalentTreeViewportState"
+### Community 156 - "rules.py"
+Cohesion: 0.17
+Nodes (11): availability_issues(), can_purchase_next_rank(), edge_active(), edge_issues(), _gate_issue(), gate_issues(), points_spent(), reachable_ranks() (+3 more)
+
+### Community 157 - "TalentNodeType"
 Cohesion: 0.12
-Nodes (8): TalentTreeFitPolicy, SECTION, WHOLE_TREE, TalentTreeFocusMode, CENTRE, REVEAL, TalentTreeFocusRequest, TalentTreeViewportState
-
-### Community 157 - "Test"
-Cohesion: 0.21
-Nodes (4): effectiveNodeTargetDp(), minimumNodeTargetDp(), TalentTreeHitTestTest, TalentTreeViewportTest
-
-### Community 158 - "test_telegram_notify.py"
-Cohesion: 0.10
-Nodes (31): SendStatus, client(), fail(), ok(), production_runner(), run(), Scripted, test_429_beyond_the_budget_gives_up_instead_of_parking() (+23 more)
+Nodes (18): syntheticNode(), containsRequiredPrerequisiteCycle(), duplicateCodes(), structuralErrorCodes(), Prerequisite, PrerequisiteKind, REQUIRED, SUFFICIENT (+10 more)
 
 ### Community 159 - "store_delivery.py"
 Cohesion: 0.05
 Nodes (51): _android_ci_passed(), android_version(), AppStoreConnect, _asc(), asc_check(), AscBuild, b64url(), check_android_release() (+43 more)
 
-### Community 160 - "NewBuildScreen.kt"
-Cohesion: 0.05
-Nodes (16): NewBuildChoices, NewBuildClassChoice, ClassArtworkMark(), ClassArtworkSlot, Continue, Picker, PickerCompact, platformPrefersReducedMotion() (+8 more)
-
-### Community 161 - "res"
-Cohesion: 0.04
-Nodes (15): devicePrimaryLanguageTag(), platformPrimaryLanguageTag(), appLanguageOf(), platformPrimaryLanguageTag(), primaryLanguageTagOf(), resourceAppLanguage(), buildDisplayTitle(), ClassCopy (+7 more)
+### Community 161 - "remember"
+Cohesion: 0.08
+Nodes (10): appLanguageOf(), platformPrimaryLanguageTag(), resourceAppLanguage(), Names, talentSectionDisplayLabel(), TalentSpecializationNames, talentSectionTabs(), platformPrimaryLanguageTag() (+2 more)
 
 ### Community 163 - "prepareBuildImport"
 Cohesion: 0.30
 Nodes (5): BuildImportPreparation, prepareBuildImport(), Ready, BuildImportTest, RecordingDatasets
 
 ### Community 164 - "test_verify_play_bundle.py"
-Cohesion: 0.20
-Nodes (22): evaluate(), failed(), libraries(), load_validator(), manifest_with(), signature(), test_32_bit_without_64_bit_fails(), test_4kb_aligned_64_bit_library_fails() (+14 more)
+Cohesion: 0.13
+Nodes (34): evaluate(), failed(), fake_bundle(), fake_tools(), keytool_form(), libraries(), load_validator(), manifest_with() (+26 more)
+
+### Community 165 - "TalentTreeBuildScreen.kt"
+Cohesion: 0.02
+Nodes (50): BuildActionsOverlays(), BuildActionsPresenter, isMissingRecord(), rememberBuildActionsPresenter(), RenameTarget, SharedBuildCode, ShareFailureNotice, text() (+42 more)
 
 ### Community 166 - "env"
 Cohesion: 0.06
@@ -1092,89 +1110,105 @@ Nodes (31): ARTIFACT, ARTIFACT_NAME, DETECT_ACTION, DETECT_EXIT, DETECT_KEY, DOW
 Cohesion: 0.25
 Nodes (7): talentTabletSectionHeaderTag(), Loading, TalentTreeUiState, withSectionPoints(), Case, TalentTabletSectionHeadersUiTest, Window
 
-### Community 168 - "OtaPlatformAdapterTest.kt"
-Cohesion: 0.03
-Nodes (18): rememberPlatformBuildCodeSharing(), Case, COLD, RESUME, WARM, OtaPerformanceBenchmark, Profile, Run (+10 more)
+### Community 168 - "OtaPerformanceBenchmark"
+Cohesion: 0.14
+Nodes (8): Case, COLD, RESUME, WARM, OtaPerformanceBenchmark, Profile, Run, ThrottledOrigin
+
+### Community 169 - "InspectorText"
+Cohesion: 0.14
+Nodes (23): ActionNotAvailable, Available, Blocked, InProgress, InspectorText, Maxed, MaxRankReached, NeededBy (+15 more)
 
 ### Community 170 - "decide"
-Cohesion: 0.26
-Nodes (19): Action, decide(), read_state(), created_body(), report_of(), test_decide_a_new_product_build_with_a_newer_one_still_out_is_an_update(), test_decide_an_even_newer_build_updates_the_tracked_build_and_keeps_history(), test_decide_current_closes_any_open_tracking_issue() (+11 more)
+Cohesion: 0.17
+Nodes (28): Action, decide(), read_state(), build(), created_body(), document(), never_connect(), report_of() (+20 more)
 
 ### Community 171 - "test_verify_appstore_metadata.py"
 Cohesion: 0.19
 Nodes (25): failed(), load_validator(), pack(), test_a_missing_field_fails(), test_an_ota_off_claim_fails(), test_categories(), test_character_limits(), test_cli_writes_a_report_and_exits_by_result() (+17 more)
 
-### Community 172 - "test_build_share_code_spec.py"
-Cohesion: 0.19
-Nodes (15): _ascii(), _base32(), Build, decode(), _doc_codes(), encode(), _Reader, test_checksum_covers_the_prefix() (+7 more)
+### Community 172 - "OpenSourceNoticesTest"
+Cohesion: 0.15
+Nodes (8): LegalLinks, privacyPolicyLinkOf(), privacyPolicyUrlOf(), PublishedPrivacyPolicy, Android, Ios, NotPublished, OpenSourceNoticesTest
 
 ### Community 173 - "with"
-Cohesion: 0.12
-Nodes (32): steps, steps, steps, steps, name, runs-on, steps, timeout-minutes (+24 more)
+Cohesion: 0.15
+Nodes (28): steps, steps, steps, steps, steps, steps, steps, steps (+20 more)
 
-### Community 174 - "test_verify_ios_project.py"
-Cohesion: 0.19
-Nodes (18): edit_info(), edit_pbxproj(), failed(), load_validator(), project(), test_another_bundle_id_fails(), test_cli_writes_a_report_and_exits_by_result(), test_committed_signing_settings_fail() (+10 more)
+### Community 174 - "base.py"
+Cohesion: 0.04
+Nodes (40): _candidate(), evaluate_freshness(), report(), FreshnessReport, detect_at(), historical_production_client(), HistoricalProduction, RecordedBuildSource (+32 more)
 
 ### Community 176 - "generate_oss_notices.py"
 Cohesion: 0.14
-Nodes (9): check(), differences(), LicenseText, LinkedComponent, main(), native_content(), NativeInventory, Platform (+1 more)
+Nodes (12): check(), differences(), LicenseText, LinkedComponent, main(), native_content(), NativeInventory, parse_resolution() (+4 more)
 
 ### Community 177 - "RecordingBuildCodeSharing"
-Cohesion: 0.08
-Nodes (18): Cancelled, ClipboardRead, ClipboardWrite, Completed, Copied, CopiedToClipboard, Empty, Failed (+10 more)
+Cohesion: 0.10
+Nodes (17): Cancelled, ClipboardRead, ClipboardWrite, Completed, Copied, CopiedToClipboard, Empty, Failed (+9 more)
 
-### Community 178 - "BackChevronButton"
-Cohesion: 0.26
-Nodes (9): BackChevronButton(), drawBackChevron(), drawHistoryArrow(), HistoryIconButton(), OverflowButton(), TalentTreeHeaderBar(), TalentTreeHeaderLayout, POINTS_IN_META (+1 more)
+### Community 178 - "argparse"
+Cohesion: 0.05
+Nodes (32): dataset_sections(), main(), main(), positive_seconds(), run(), stop_group(), main(), product_build() (+24 more)
 
-### Community 179 - "ios_privacy_pages.py"
-Cohesion: 0.15
-Nodes (7): format_date(), has_early_utf8_meta(), http_fetch(), main(), render(), ToolError, verify_live()
-
-### Community 180 - "parse_xml_node"
-Cohesion: 0.09
-Nodes (26): _attribute_value(), build_report(), BundleManifest, BundleSignature, evaluate(), _flag(), _int_or_none(), _load_apk_checks() (+18 more)
-
-### Community 181 - "InspectorText"
+### Community 179 - "TooltipsLoadError"
 Cohesion: 0.14
-Nodes (23): ActionNotAvailable, Available, Blocked, InProgress, InspectorText, Maxed, MaxRankReached, NeededBy (+15 more)
+Nodes (20): AssetMissing, AssetUnreadable, BuildMismatch, ClassMismatch, DatasetRevisionMismatch, DuplicateEntry, EntryIdentityMismatch, Failed (+12 more)
 
-### Community 182 - "OtaPublisherError"
+### Community 180 - "verify_play_bundle.py"
+Cohesion: 0.10
+Nodes (26): _attribute_value(), build_report(), BundleManifest, BundleSignature, evaluate(), _flag(), _int_or_none(), main() (+18 more)
+
+### Community 181 - "buildTalentTreePresentation"
+Cohesion: 0.11
+Nodes (17): TalentName, buildTalentInspectorContent(), prerequisiteLineOf(), ShowAction, talentNodeFacts(), TalentPrerequisiteProgress, TalentTreeNodeFacts, tierLineOf() (+9 more)
+
+### Community 182 - "Channel"
 Cohesion: 0.02
-Nodes (218): Task 2: Dedup private reference checks внутри каждого барьера, phase_prepare(), ci_gates(), _all_upload_blobs(), _blob_key(), _cmd_attach_signature(), _cmd_build_release(), _cmd_gc() (+210 more)
+Nodes (219): Task 2: Dedup private reference checks внутри каждого барьера, Task 3: Parallel immutable uploads и однократная запись catalog, bind(), build(), release(), ci_gates(), conditions(), _git() (+211 more)
+
+### Community 184 - "allocation/conftest.py"
+Cohesion: 0.21
+Nodes (8): load_documents(), build_70245_docs(), build_70338_docs(), docs(), old_docs(), previous_product_docs(), product_docs(), warrior()
+
+### Community 185 - "CatalogVerifier"
+Cohesion: 0.06
+Nodes (29): Disabled, DisabledReason, BAD_BASE_URL, BAD_KEYRING, KEY_NOT_FOR_CHANNEL, NO_KEYS, NOT_ENABLED, PRODUCTION_NEEDS_BACKUP_KEY (+21 more)
 
 ### Community 186 - "OtaIoException"
-Cohesion: 0.16
-Nodes (4): PlatformOtaFileStore, toByteArray(), PlatformOtaFileStore, OtaIoException
+Cohesion: 0.26
+Nodes (3): PlatformOtaFileStore, toByteArray(), OtaIoException
 
 ### Community 187 - "tracking.py"
 Cohesion: 0.17
 Nodes (22): BuildFact, FreshnessDocument, _Strict, _append(), _body(), _build_number(), CheckSnapshot, _close_comment() (+14 more)
 
-### Community 188 - "ota_vkcloud_staging.py"
-Cohesion: 0.19
-Nodes (17): fault_bad_signature(), fault_expired(), fault_restore(), payload_of(), _fetch(), HelperError, inside_git_checkout(), keygen() (+9 more)
+### Community 189 - "VisualsLoadError"
+Cohesion: 0.15
+Nodes (20): AssetMissing, AssetUnreadable, BuildMismatch, ClassMismatch, DatasetRevisionMismatch, DuplicateEntry, DuplicateIcon, EntryIdentityMismatch (+12 more)
 
-### Community 190 - "struct"
-Cohesion: 0.18
-Nodes (8): PngImage, read_png(), chunk(), chunk(), filtered_row(), png_with_rows(), test_every_row_filter_is_undone(), test_the_reader_rejects_what_the_converter_never_writes()
+### Community 190 - "ConformanceSuite.kt"
+Cohesion: 0.07
+Nodes (24): AllocationConformance, StepOutcome, ConformanceDatasetRef, ConformanceMutation, ConformanceMutationOp, ADD_PREREQUISITE, ADD_UNRESOLVED_CONDITION, SET_ENTRY_TYPE (+16 more)
 
 ### Community 193 - "TalentTreeGestureRulesTest"
-Cohesion: 0.08
-Nodes (19): talentSectionHeldPosition(), sectionSwipeModel(), talentTreeGestures(), neighbourSection(), sectionSwipeDirectionOf(), TalentInspectorSwipe, DOWN, NONE (+11 more)
+Cohesion: 0.10
+Nodes (14): centroidOf(), spanOf(), talentTreeGestures(), neighbourSection(), sectionSwipeDirectionOf(), talentSectionFitSwipeDirection(), talentSectionFitSwipeLocks(), TalentSectionOverscroll (+6 more)
 
-### Community 195 - "TalentTreeSectionCameras"
-Cohesion: 0.17
-Nodes (3): rememberTalentTreeSectionCameras(), TalentTreeSectionCameras, TalentTreeSectionCamerasTest
+### Community 194 - "TalentClassTextTest"
+Cohesion: 0.19
+Nodes (4): resolveClassTalentText(), TalentClassText, TalentEntryText, TalentClassTextTest
 
 ### Community 196 - "test_android_section_check.py"
 Cohesion: 0.15
 Nodes (11): load_section_check(), resource_values(), test_english_selectors(), test_exactly_two_language_sets(), test_hierarchy_filters_control_labels_of_its_own_language(), test_primary_locale_selects_the_matching_set(), test_russian_selectors(), test_selectors_mirror_the_apps_resources() (+3 more)
 
+### Community 197 - "TalentTreeSectionTabs"
+Cohesion: 0.16
+Nodes (8): adaptiveTabWidths(), drawFitGlyph(), SectionTab(), TalentSectionReturnChip(), TalentSectionTab, TalentTreeFitButton(), TalentTreeSectionTabs(), AdaptiveSpecializationTabsUiTest
+
 ### Community 198 - "allocation/engine.py"
-Cohesion: 0.14
-Nodes (14): availability_issues(), can_purchase_next_rank(), edge_active(), edge_issues(), _gate_issue(), gate_issues(), points_spent(), reachable_ranks() (+6 more)
+Cohesion: 0.06
+Nodes (18): AllocationEngineError, _invalid_entry(), _select_tree(), _unknown_node(), AllocationIssue, AllocationIssueCode, AllocationResult, BuildFile (+10 more)
 
 ### Community 199 - "Final OTA Android policy owner rollout"
 Cohesion: 0.11
@@ -1184,61 +1218,73 @@ Nodes (18): iOS OTA network and request-log disclosure (EN), iOS private builds,
 Cohesion: 0.09
 Nodes (22): TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, jobs, smoke, name, on, workflow_dispatch, permissions (+14 more)
 
-### Community 201 - "._evaluate"
+### Community 201 - "test_build_share_code_spec.py"
 Cohesion: 0.19
-Nodes (4): category_of(), DescriptionVariable, _expression_ref(), NamedVariable
+Nodes (15): _ascii(), _base32(), Build, decode(), _doc_codes(), encode(), _Reader, test_checksum_covers_the_prefix() (+7 more)
 
-### Community 202 - "verify_appstore_metadata.py"
-Cohesion: 0.16
-Nodes (10): Check, evaluate(), field_text(), Evaluation, format_summary(), _keyword_problems(), main(), read_field() (+2 more)
-
-### Community 203 - "OtaContract.kt"
-Cohesion: 0.15
-Nodes (16): CatalogRelease, EnvelopeSignature, FileRole, DATASET_MANIFEST, ICON_IMAGE, ICON_REGISTRY, LOCALIZATION, TALENT_DATA (+8 more)
-
-### Community 204 - "buildTalentTreeSections"
-Cohesion: 0.10
-Nodes (15): buildTalentTreeSections(), DuplicateSectionIndex, MembershipMismatch, ModelMismatch, NodeWithoutSection, NoSections, sectionBoundsOf(), Sectioned (+7 more)
-
-### Community 206 - "ShareCodePrimitives.kt"
+### Community 202 - "Any"
 Cohesion: 0.13
-Nodes (10): ShareCodeBase32, ShareCodeCrc32, ShareCodeReader, ShareCodeReadException, ShareCodeReadFailure, MALFORMED_NUMBER, TRUNCATED, ShareCodeWriter (+2 more)
+Nodes (9): choose_runtime(), _ios_runtimes(), pick_device(), QuietServer, run_phase(), runtime_diagnostics(), RuntimeChoice, Simulator (+1 more)
+
+### Community 203 - "test_bounded_parallel_downloads_keep_full_validation_and_live_progress"
+Cohesion: 0.16
+Nodes (12): TlsInfo, TlsRefused, entry(), handshake(), resolve(), test_bounded_parallel_downloads_keep_full_validation_and_live_progress(), test_main_prints_and_writes_the_report(), test_the_staging_origin_and_non_https_origins_are_refused() (+4 more)
+
+### Community 206 - "BuildCodeSharing.android.kt"
+Cohesion: 0.14
+Nodes (4): platformPrefersReducedMotion(), AndroidBuildCodeSharing, findActivity(), rememberPlatformBuildCodeSharing()
+
+### Community 207 - "AssemblePublishableApk"
+Cohesion: 0.19
+Nodes (3): AssemblePublishableApk, BundlePublishablePlay, CheckReleaseInternetPermission
 
 ### Community 210 - "RelativeBuildTime.kt"
-Cohesion: 0.10
+Cohesion: 0.21
 Nodes (10): BuildRecency, buildRecencyOf(), Days, Hours, JustNow, LastWeek, Minutes, Weeks (+2 more)
 
-### Community 211 - "TalentNodePresentationTest.kt"
-Cohesion: 0.11
-Nodes (26): syntheticNode(), containsRequiredPrerequisiteCycle(), duplicateCodes(), structuralErrorCodes(), ClassInfo, PointBudget, Provenance, TalentLayout (+18 more)
+### Community 211 - "buildTalentTreeUiModel"
+Cohesion: 0.18
+Nodes (3): buildTalentTreeUiModel(), nodeMonogram(), TalentTreeUiModelTest
 
-### Community 213 - "AssetNotFoundException"
-Cohesion: 0.05
-Nodes (18): BundledTalentIconSource, decodeBundledIcon(), Failed, Loaded, TalentIconFailure, ASSET_MISSING, ASSET_UNREADABLE, UNDECODABLE (+10 more)
+### Community 212 - "OpenSourceNotices.kt"
+Cohesion: 0.25
+Nodes (15): licenseNames(), asArray(), asObject(), Linked, loadOpenSourceNotices(), NoticeComponent, NoticeGroup, NoticeLicense (+7 more)
+
+### Community 213 - "TalentIconAssets.kt"
+Cohesion: 0.11
+Nodes (11): BundledTalentIconSource, decodeBundledIcon(), Failed, Loaded, TalentIconFailure, ASSET_MISSING, ASSET_UNREADABLE, UNDECODABLE (+3 more)
 
 ### Community 214 - "contents"
 Cohesion: 0.54
 Nodes (8): actions, contents, pull-requests, permissions, permissions, permissions, permissions, permissions
 
 ### Community 217 - "android_section_check.py"
-Cohesion: 0.16
-Nodes (11): adb_path(), build_apk(), dataset_sections(), DeviceError, GestureError, language_of(), main(), pick_serial() (+3 more)
+Cohesion: 0.15
+Nodes (10): adb_path(), build_apk(), Device, DeviceError, language_of(), main(), pick_serial(), Step (+2 more)
 
-### Community 218 - "printcert_output"
-Cohesion: 0.23
-Nodes (12): fake_bundle(), fake_tools(), keytool_form(), printcert_output(), run_cli(), test_cli_fails_a_bundle_signed_with_the_app_signing_key(), test_cli_needs_both_fingerprints(), test_cli_pass_writes_a_report_without_secrets() (+4 more)
+### Community 218 - "OtaRuntime.ios.kt"
+Cohesion: 0.13
+Nodes (6): bundleAppVersion(), IosBuildLibraryStorage, platformBuildClock(), MainViewController(), PlatformSignatureVerifier, IosOta
+
+### Community 219 - "TooltipTokenCategory"
+Cohesion: 0.09
+Nodes (22): TooltipTokenCategory, ARITHMETIC, COLOR, CONDITIONAL, CROSS_SPELL_DURATION, CROSS_SPELL_EFFECT_VALUE, CROSS_SPELL_PERIOD, CROSS_SPELL_PROC (+14 more)
 
 ### Community 220 - "android_artifacts.py"
-Cohesion: 0.12
-Nodes (12): elf_with_segments(), proto_attribute(), proto_bundle_config(), proto_element(), proto_field(), proto_manifest(), _varint(), test_bundle_config_alignments() (+4 more)
+Cohesion: 0.16
+Nodes (9): proto_attribute(), proto_bundle_config(), proto_element(), proto_field(), proto_manifest(), _varint(), test_bundle_config_alignments(), test_debuggable_and_test_only_flags() (+1 more)
 
-### Community 221 - "test_ota_release_package.py"
-Cohesion: 0.06
-Nodes (54): api_run(), build_package(), filled_record(), load_script(), write_staging_artifact(), _change(), counted_puts(), owner() (+46 more)
+### Community 221 - "test_ota_production_release.py"
+Cohesion: 0.09
+Nodes (33): api_run(), build_package(), load_script(), staging_evidence(), write_staging_artifact(), _bind(), _build(), built() (+25 more)
+
+### Community 222 - "gitstate.py"
+Cohesion: 0.19
+Nodes (10): _commit(), download(), _git(), GitStateError, _ok(), _reapply_on_fetched_tip(), upload(), git() (+2 more)
 
 ### Community 223 - "ClassToken"
-Cohesion: 0.03
-Nodes (57): ComposeResourceDatasetAssetSource, TalentDescriptionsLoader, TalentIconsLoader, TalentLocalizationLoader, createClassDraft(), SessionDatasets, classAccentFor(), AllocationEngine (+49 more)
+Cohesion: 0.02
+Nodes (69): AndroidOta, TalentNodeDescriptionsLoad, TalentNodeIconsLoad, toDisplayRank(), createClassDraft(), Created, Dataset, DraftCreation (+61 more)
 
 ### Community 224 - "mobile/composeApp: application and UI host"
 Cohesion: 0.23
@@ -1249,32 +1295,36 @@ Cohesion: 0.10
 Nodes (19): description, CONFIGURED, TOOLING, inputs, tooling, name, runs, steps (+11 more)
 
 ### Community 226 - "inputs"
-Cohesion: 0.05
-Nodes (37): default, description, options, required, type, default, description, required (+29 more)
+Cohesion: 0.06
+Nodes (31): default, description, options, required, type, default, description, required (+23 more)
 
-### Community 229 - "test_models.py"
+### Community 228 - ".decodeTalentDataDocument"
 Cohesion: 0.15
-Nodes (5): test_build_file_round_trip(), test_build_state_json_round_trip_uses_camel_case(), test_build_state_rejects_unknown_fields_but_keeps_corrupt_values(), test_issue_json_is_structural_and_message_free(), test_reason_codes_are_a_stable_contract()
+Nodes (3): ContractParsingSmokeTest, AllocationConformanceReplayTest, ConformanceContractTest
 
-### Community 230 - "TemplateSyntaxError"
-Cohesion: 0.33
-Nodes (9): Binary, parse_expression(), expr(), factor(), peek(), take(), term(), TemplateSyntaxError (+1 more)
+### Community 230 - "ProductDatasetContractTest"
+Cohesion: 0.17
+Nodes (4): BundledTalentVisualsRepository, ProductDatasetContractTest, DatasetAssetSource, DatasetAssetSource
 
 ### Community 231 - "env"
 Cohesion: 0.10
 Nodes (23): AUTOMATIC, CI_ATTEMPT, CI_RUN_ID, EVENT, EXECUTE, EXIT_CODE, GITHUB_TOKEN, MODE (+15 more)
 
-### Community 233 - "test_telegram_setup.py"
-Cohesion: 0.27
-Nodes (11): FakeClient, run_setup(), setup(), test_a_bad_selection_is_rejected_without_sending(), test_a_pick_is_explicit_and_validated(), test_listing_sends_nothing_and_chooses_nothing(), test_nothing_is_sent_without_an_explicit_yes(), test_private_chats_are_candidates_latest_message_wins() (+3 more)
+### Community 233 - "SendResult"
+Cohesion: 0.15
+Nodes (19): SendResult, test_blocked_candidate_does_not_turn_verified_due_renewal_into_failure(), send(), test_notification_reverifies_success_and_failure_delivery_retries(), notify(), send(), send(), send() (+11 more)
+
+### Community 234 - "CheckFailure"
+Cohesion: 0.23
+Nodes (7): _check_consistency(), CheckFailure, parse_document(), read_result(), test_a_missing_report_is_a_failure(), test_an_unexpected_exit_code_is_a_failure_even_with_valid_json(), test_status_and_exit_code_must_agree()
+
+### Community 235 - "respond"
+Cohesion: 0.12
+Nodes (16): handler(), no_real_retry_delays(), respond(), test_nontransient_http_answers_are_not_retried(), handler(), test_partial_response_is_discarded_before_read_retry(), handler(), test_private_probe_retries_also_have_visible_progress() (+8 more)
 
 ### Community 236 - "public-approval"
 Cohesion: 0.29
 Nodes (7): public-approval, environment, if, name, needs, runs-on, timeout-minutes
-
-### Community 237 - "app_scenarios"
-Cohesion: 0.12
-Nodes (12): active(), app_scenarios(), AppRun, choose_runtime(), inet_sockets(), _ios_runtimes(), QuietServer, run_command() (+4 more)
 
 ### Community 238 - "with"
 Cohesion: 0.20
@@ -1284,29 +1334,33 @@ Nodes (23): steps, steps, steps, steps, steps, continue-on-error, id, if (+15 mo
 Cohesion: 0.11
 Nodes (19): description, type, description, type, default, description, type, ci_attempt (+11 more)
 
-### Community 241 - "TalentNodeState"
-Cohesion: 0.18
-Nodes (8): TalentNodeState, AVAILABLE, MAXED, NO_POINTS, PARTIAL, PREREQUISITE_LOCKED, TIER_LOCKED, UNAVAILABLE
+### Community 241 - "BuildImportFailure"
+Cohesion: 0.24
+Nodes (9): BuildImportFailure, ClassUnavailable, ClientBuildUnavailable, datasetFailure(), DatasetRejected, EngineUnavailable, InvalidAllocation, Rejected (+1 more)
 
 ### Community 242 - "android-store-check"
 Cohesion: 0.22
 Nodes (9): environment, if, name, needs, outputs, runs-on, timeout-minutes, android-store-check (+1 more)
 
-### Community 243 - "hashlib"
-Cohesion: 0.11
-Nodes (13): activate(), generate_tls(), main(), make_server(), prepare(), Publisher, _Server, _sha256_ref() (+5 more)
+### Community 243 - "Path"
+Cohesion: 0.09
+Nodes (18): activate(), generate_staging_key(), generate_tls(), _git(), inside_git_checkout(), main(), make_server(), _pkcs8_pem() (+10 more)
 
 ### Community 244 - "test_ios_privacy_pages.py"
 Cohesion: 0.15
 Nodes (12): load_tool(), serving(), test_a_page_published_with_another_date_does_not_pass(), test_an_unreachable_site_fails(), test_cli(), test_matching_bytes_still_require_a_real_early_utf8_declaration(), test_matching_bytes_with_a_meta_declaration_must_still_be_valid_utf8(), test_render_requires_exactly_the_one_placeholder() (+4 more)
 
-### Community 246 - "Forever 1.60.1.70707 talent tooltip coverage (M5.V2)"
-Cohesion: 0.33
-Nodes (5): Every gap, Forever 1.60.1.70707 talent tooltip coverage (M5.V2), Rank descriptions, Templates of the talents with gaps, Token categories
+### Community 245 - "run_bounded"
+Cohesion: 0.14
+Nodes (8): Task 1: Bounded immutable execution с полным drain, run_bounded(), test_bounded_order_and_overlap(), worker(), test_failure_stops_submission_and_drains_started_worker(), test_input_failure_also_drains_workers(), test_invalid_limit_does_not_consume_input(), test_serial_equivalence()
 
-### Community 247 - "NoticesError"
-Cohesion: 0.24
-Nodes (6): archive_members(), arm64_slice(), NoticesError, parse_resolution(), Resolution, resolve()
+### Community 246 - "Any"
+Cohesion: 0.15
+Nodes (6): cli_s3(), fake_connect(), _error(), keyring(), no_environment_credentials(), s3()
+
+### Community 247 - "LocalizationContentHash.kt"
+Cohesion: 0.15
+Nodes (8): appendCanonical(), appendString(), canonicalJson(), localizationContentHash(), Sha256, sha256Hex(), toLowerHex(), LocalizationContentHashTest
 
 ### Community 249 - "test_ios_simulator_smoke.py"
 Cohesion: 0.20
@@ -1328,57 +1382,49 @@ Nodes (17): default, description, required, type, default, description, required
 Cohesion: 0.20
 Nodes (10): inspect_only, default, description, required, type, on, schedule, workflow_dispatch (+2 more)
 
-### Community 255 - "product_build"
-Cohesion: 0.24
-Nodes (5): main(), product_build(), main(), test_the_script_adds_the_product_bundle(), runner()
-
-### Community 258 - "talentSectionDisplayLabel"
-Cohesion: 0.13
-Nodes (6): Names, talentSectionDisplayLabel(), TalentSpecializationNames, talentSectionTabs(), AdaptiveSpecializationTabsUiTest, TalentSpecializationNamesTest
-
-### Community 259 - "tooltip_template_inventory.py"
+### Community 258 - "tooltip_template_inventory.py"
 Cohesion: 0.22
 Nodes (12): build_inventory(), _classify_ref(), _closing(), _form(), _identity(), load_entries(), main(), render_json() (+4 more)
 
-### Community 260 - "SendResult"
-Cohesion: 0.22
-Nodes (9): SendResult, test_blocked_candidate_does_not_turn_verified_due_renewal_into_failure(), send(), send(), test_notification_reverifies_success_and_failure_delivery_retries(), notify(), send(), send() (+1 more)
+### Community 259 - "TalentTreeLandscapeLayoutTest"
+Cohesion: 0.18
+Nodes (7): TalentTreeLandscapeHeaderMetrics, TalentTreeLandscapeTabs, TalentTreeLandscapeTabsPlacement, BELOW_HEADER, IN_HEADER, talentTreeWorkspaceLayoutClass(), TalentTreeLandscapeLayoutTest
 
 ### Community 262 - "android-build"
 Cohesion: 0.12
 Nodes (17): env, environment, if, name, needs, outputs, permissions, runs-on (+9 more)
 
-### Community 264 - "BuildRowActionsSheet"
-Cohesion: 0.44
-Nodes (7): BuildRowActionsSheet(), DeleteBuildDialog(), DialogButtonRow(), DialogScrim(), DialogTextButton(), RenameBuildDialog(), SheetAction()
-
-### Community 265 - "gitstate.py"
-Cohesion: 0.18
-Nodes (11): _commit(), download(), _git(), GitStateError, _ok(), _reapply_on_fetched_tip(), upload(), git_auth() (+3 more)
+### Community 264 - ".of"
+Cohesion: 0.17
+Nodes (3): BuildStateTest, BuildStateImmutabilityJvmTest, RealForeverAllocationTest
 
 ### Community 266 - "test_ios_ota_e2e.py"
 Cohesion: 0.27
 Nodes (11): device(), listing(), load_harness(), runtime(), test_a_requested_device_no_runtime_supports_is_never_replaced(), test_an_unavailable_runtime_is_never_chosen(), test_both_runtimes_support_the_device_and_the_newest_wins(), test_no_ios_runtime_at_all_is_diagnosed() (+3 more)
 
-### Community 267 - "LicensesScreen.kt"
-Cohesion: 0.04
-Nodes (40): AboutBody(), AboutMeta(), AboutNavigationRow(), AboutScaffold(), AboutSection(), AboutToggle(), drawForwardChevron(), ForwardChevron() (+32 more)
+### Community 267 - "LocalBuildRepository"
+Cohesion: 0.02
+Nodes (47): platformBuildClock(), App(), AppEnvironment, platformBuildClock(), OtaRuntime, platformBuildClock(), AllBuildsRowLayoutUiTest, FakeBuildLibraryStorage (+39 more)
 
-### Community 268 - "AndroidBuildSortingScreenshotTest"
-Cohesion: 0.08
-Nodes (8): AndroidBuildMigrationTest, SharedPreferences, Editor, AndroidBuildSortingScreenshotTest, ScreenshotLocale, installedAppVersion(), AndroidBuildLibraryStorage, MainActivity
+### Community 268 - "AndroidBuildLibraryStorage"
+Cohesion: 0.19
+Nodes (4): AndroidBuildMigrationTest, SharedPreferences, Editor, AndroidBuildLibraryStorage
 
-### Community 269 - "test_invariants.py"
-Cohesion: 0.25
-Nodes (6): brute_force_reachable(), purchasable(), search(), _docs(), test_random_walk_invariants(), test_validate_agrees_with_brute_force_reachability()
+### Community 269 - ".of"
+Cohesion: 0.21
+Nodes (7): brute_force_reachable(), purchasable(), search(), _docs(), test_random_walk_invariants(), test_validate_agrees_with_brute_force_reachability(), test_build_state_json_round_trip_uses_camel_case()
+
+### Community 271 - "Readiness"
+Cohesion: 0.18
+Nodes (28): Readiness, commit_on_main(), FakeRunner, gates(), kinds(), main_with_visuals(), run_prepare(), services() (+20 more)
 
 ### Community 272 - "Gated OTA publication and exact-byte approval"
 Cohesion: 0.15
 Nodes (9): Channel-isolated immutable S3 publication safety, Gated OTA publication and exact-byte approval, OTA rollback, catalog renewal and key-loss recovery, Release approval pins exact manifest bytes, Isolated real-TLS staging stand, Remote VK Cloud public staging origin, Recorded 70450 to 70532 candidate verification, One-SHA base/candidate OTA staging verification (+1 more)
 
-### Community 274 - "SourceError"
+### Community 274 - "pytest"
 Cohesion: 0.05
-Nodes (53): extract_class(), extract_localization(), extract_tooltips(), main(), _write_table(), unique(), fetch_tables(), TableAvailability (+45 more)
+Nodes (61): fetch_tables(), probe_table_status(), SourceError, TableAvailability, TableStatus, read_snapshot(), record_absent(), snapshot_path() (+53 more)
 
 ### Community 276 - ".run"
 Cohesion: 0.24
@@ -1388,13 +1434,9 @@ Nodes (8): Check, back(), close_reopen(), create(), panel_and_tabs(), relaunch()
 Cohesion: 0.13
 Nodes (15): with, client-id, fetch-depth, if-no-files-found, name, owner, path, permission-contents (+7 more)
 
-### Community 278 - "Row"
-Cohesion: 0.15
-Nodes (19): BuildLibraryOrderingControl(), Row, actionSize(), MaxButton(), MaxedBadge(), rankActionSemantics(), RefundButton(), SpendButton() (+11 more)
-
-### Community 279 - "build_notices"
-Cohesion: 0.22
-Nodes (5): build_notices(), _download(), embedded_notice_licenses(), verify_native(), verify_text()
+### Community 278 - "LocalizationTestBundle.kt"
+Cohesion: 0.27
+Nodes (8): entries(), obj(), rehashed(), Warrior, with(), withEntries(), withEntry(), without()
 
 ### Community 280 - "ContentView"
 Cohesion: 0.19
@@ -1404,49 +1446,57 @@ Nodes (5): ComposeApp, ContentView, iOSApp, .body, SwiftUI
 Cohesion: 0.14
 Nodes (13): runs-on, steps, jobs, integration, name, on, workflow_dispatch, name (+5 more)
 
-### Community 282 - "workflow_jobs"
-Cohesion: 0.22
-Nodes (8): test_combined_delivery_holds_apk_stores_when_production_approval_fails(), test_delivery_preflight_has_its_own_timeout_and_failed_report_step(), test_scheduled_reconcile_cannot_bypass_failed_preflight(), public_job_selected(), test_apk_only_public_delivery_survives_optional_skips_but_requires_its_gate(), test_reconciliation_workflow_routes_read_only_inspection_without_telegram(), test_the_workflow_is_owner_started_serialised_and_keeps_secrets_in_environments(), workflow_jobs()
+### Community 282 - "OtaContract.kt"
+Cohesion: 0.19
+Nodes (15): CatalogRelease, EnvelopeSignature, FileRole, DATASET_MANIFEST, ICON_IMAGE, ICON_REGISTRY, LOCALIZATION, TALENT_DATA (+7 more)
 
-### Community 284 - "Expect"
+### Community 284 - "diff/engine.py"
+Cohesion: 0.21
+Nodes (14): DiffError, _dump(), _effect_changes(), _entries_changes(), _entry_changes(), _group_by_spell(), _index_nodes(), _node_changes() (+6 more)
+
+### Community 285 - "contents"
 Cohesion: 0.25
-Nodes (8): Expect, COLON, COMMA_OR_END, DONE, NAME, NAME_OR_END, VALUE, VALUE_OR_END
+Nodes (11): permissions, name, permissions, runs-on, timeout-minutes, gate, actions, contents (+3 more)
 
 ### Community 287 - "ci_attempt"
 Cohesion: 0.14
 Nodes (14): description, required, type, description, required, type, ci_attempt, ci_run_id (+6 more)
 
-### Community 288 - "git"
-Cohesion: 0.07
-Nodes (21): API, CandidateAPI, poison_candidate(), context(), test_changed_mr_during_validation_creates_no_verified_ref(), test_empty_association_never_trusts_branch_alone(), test_empty_ci_association_uses_unique_branch_and_exact_commit(), test_even_consistently_hashed_artifact_cannot_expand_candidate_scope() (+13 more)
-
 ### Community 290 - "OTA: один MR, его слияние владельцем разрешает production"
 Cohesion: 0.15
 Nodes (12): CI после merge, OTA: один MR, его слияние владельцем разрешает production, Границы работ и проверки, Доверие к candidate до merge, Жизненный цикл одного MR, Изменения, отзыв и гонки, Измерение времени и цель, Как merge заменяет ручной G7 (+4 more)
 
-### Community 291 - "declared_licenses"
-Cohesion: 0.25
-Nodes (5): Component, component_of(), declared_licenses(), _pom_text(), verify_license()
+### Community 291 - "decide_freshness"
+Cohesion: 0.24
+Nodes (12): BuildDetected, decide_freshness(), _freshness(), FreshnessDedup, initial_freshness(), fact(), freshness(), freshness_doc() (+4 more)
 
-### Community 292 - "RequiredFieldSemanticsTest.kt"
-Cohesion: 0.32
-Nodes (4): conformanceWithout(), documentWithout(), RequiredFieldSemanticsTest, withoutPath()
+### Community 292 - "Test"
+Cohesion: 0.26
+Nodes (5): conformanceWithout(), documentWithout(), removePath(), RequiredFieldSemanticsTest, withoutPath()
 
 ### Community 293 - "70707 OTA delivery investigation — 2026-11-02"
 Cohesion: 0.33
 Nodes (5): 70707 OTA delivery investigation — 2026-11-02, Build discovery, Delivery fault, Operational audit of PR #105, Validation
 
 ### Community 294 - "with"
-Cohesion: 0.11
-Nodes (19): with, cache, client-id, fetch-depth, github-token, if-no-files-found, name, overwrite (+11 more)
+Cohesion: 0.10
+Nodes (21): with, cache, client-id, fetch-depth, github-token, if-no-files-found, key, name (+13 more)
 
-### Community 295 - ".decode"
-Cohesion: 0.19
-Nodes (12): InvalidCode, ChecksumMismatch, Empty, InvalidCharacter, InvalidEncoding, MalformedNumber, NotAShareCode, ShareCodeDecodeError (+4 more)
+### Community 295 - "StagedUpdate"
+Cohesion: 0.05
+Nodes (17): RoutingDatasetAssetSource, OtaCandidateStagingTest, OtaHistoricalReplayTest, RecordedSession, Corruption, BLOB, MANIFEST, SIGNATURE (+9 more)
 
-### Community 296 - "ota_staging_verify.py"
-Cohesion: 0.09
-Nodes (22): checkout_state(), client_not_established(), _git(), _load_stand(), main(), not_executed(), _now(), _phase() (+14 more)
+### Community 296 - "TalentTree"
+Cohesion: 0.27
+Nodes (7): ClassInfo, PointBudget, Provenance, TalentLayout, TalentSection, TalentTree, VisualOnlyEdge
+
+### Community 297 - "test_real_structures.py"
+Cohesion: 0.18
+Nodes (7): fill_section(), test_druid_required_edge(), test_hunter_cycle_cannot_support_itself(), test_hunter_cycle_is_not_a_deadlock(), test_hunter_cycle_is_the_real_data(), test_misplaced_duplicate_nodes_follow_the_same_rules(), test_rogue_venom_fails_closed_on_unresolved_condition()
+
+### Community 298 - "TalentTreeGestureRecordingTest"
+Cohesion: 0.15
+Nodes (3): rememberTalentTreeSectionCameras(), TalentTreeSectionCameras, TalentTreeGestureRecordingTest
 
 ### Community 299 - "test_android_store_delivery.py"
 Cohesion: 0.04
@@ -1456,37 +1506,41 @@ Nodes (65): DeferredRussianStore, HuaweiStore, legacy_recovery_fixture(), manife
 Cohesion: 0.33
 Nodes (6): renewal-writer, environment, if, needs, runs-on, timeout-minutes
 
-### Community 302 - "decide_freshness"
-Cohesion: 0.20
-Nodes (15): initial_freshness(), initial_production(), fact(), freshness(), freshness_doc(), observation(), prod(), test_a_broken_manifest_defers_the_release_notification_until_healthy() (+7 more)
+### Community 302 - "buildTalentTreeSections"
+Cohesion: 0.13
+Nodes (16): buildTalentTreeSections(), DuplicateSectionIndex, MembershipMismatch, ModelMismatch, NodeWithoutSection, NoSections, sectionBoundsOf(), Sectioned (+8 more)
 
 ### Community 303 - "notify"
 Cohesion: 0.18
 Nodes (12): notify, continue-on-error, environment, if, needs, permissions, runs-on, timeout-minutes (+4 more)
 
 ### Community 304 - "propose"
-Cohesion: 0.22
-Nodes (9): propose, outcome, pr_url, environment, if, needs, outputs, runs-on (+1 more)
+Cohesion: 0.15
+Nodes (13): propose, candidate_artifact, candidate_run_id, outcome, pr_url, uploaded_artifact, outputs, environment (+5 more)
 
 ### Community 305 - "ota-release-package.yml"
 Cohesion: 0.15
 Nodes (12): concurrency, cancel-in-progress, group, name, on, pull_request, workflow_dispatch, permissions (+4 more)
 
-### Community 306 - "M5Rel3b2ScreenshotTest"
-Cohesion: 0.09
-Nodes (4): M5Rel3b2ScreenshotTest, localizedProductState(), TalentRequirementsUiTest, TalentTabletSectionHeadersScreenshotTest
+### Community 306 - "licenses"
+Cohesion: 0.32
+Nodes (13): clickLabelled(), aGroupListsItsLicencesAndOpensEachLicenceText(), aSharedLicenceTextIsShownOnceAndNamesEveryComponentItAppliesTo(), assertNoModuleCoordinates(), englishListShowsOneRowPerGroupWithoutModuleCoordinates(), licenses(), onScreen(), open() (+5 more)
 
-### Community 308 - "propose.py"
-Cohesion: 0.06
-Nodes (40): artifact_name(), kept(), ProductionFact, _Strict, FindingKind, StepKind, StepOutcome, _author_email() (+32 more)
+### Community 308 - "typing"
+Cohesion: 0.03
+Nodes (84): _check_active_manifest(), observe_production(), release_revision(), artifact_name(), decide(), kept(), result(), DetectionDocument (+76 more)
+
+### Community 309 - "cli_vk"
+Cohesion: 0.14
+Nodes (9): cli_vk(), fake_connect(), clock(), no_environment_credentials(), release(), _staging_helper(), test_the_staging_fault_helper_refuses_the_production_bucket(), test_the_staging_helper_needs_the_staging_profile_to_write() (+1 more)
 
 ### Community 310 - "play_signing_selftest.sh"
 Cohesion: 0.30
 Nodes (10): cleanup(), die(), gradle(), make_key(), nothing_in(), result(), selftest(), play_signing_selftest.sh script (+2 more)
 
-### Community 311 - "test_real_structures.py"
-Cohesion: 0.18
-Nodes (7): fill_section(), test_druid_required_edge(), test_hunter_cycle_cannot_support_itself(), test_hunter_cycle_is_not_a_deadlock(), test_hunter_cycle_is_the_real_data(), test_misplaced_duplicate_nodes_follow_the_same_rules(), test_rogue_venom_fails_closed_on_unresolved_condition()
+### Community 311 - "AppLanguage.android.kt"
+Cohesion: 0.24
+Nodes (4): devicePrimaryLanguageTag(), platformPrimaryLanguageTag(), primaryLanguageTagOf(), platformPrimaryLanguageTag()
 
 ### Community 312 - "Planned publication outcome and notification verification"
 Cohesion: 0.31
@@ -1505,8 +1559,8 @@ Cohesion: 0.17
 Nodes (12): with, cache, distribution, fetch-depth, if-no-files-found, java-version, name, path (+4 more)
 
 ### Community 316 - "test_ota_historical_replay.py"
-Cohesion: 0.19
-Nodes (7): _production(), test_a_cdn_failure_around_the_replay_is_blocked_with_its_report(), test_a_read_production_catalog_keeps_its_body(), test_an_unreadable_production_catalog_is_recorded_not_raised(), test_g2_passes_only_when_both_reads_agree(), test_the_entrypoint_refuses_an_output_inside_git_or_not_empty(), test_the_offline_phases_end_to_end()
+Cohesion: 0.09
+Nodes (17): _production(), handler(), _script(), test_a_cdn_failure_around_the_replay_is_blocked_with_its_report(), test_a_device_check_never_counts_as_executed(), test_a_read_production_catalog_keeps_its_body(), test_an_unreadable_production_catalog_is_recorded_not_raised(), test_every_scenario_names_existing_kotlin_tests() (+9 more)
 
 ### Community 317 - "propose"
 Cohesion: 0.33
@@ -1517,16 +1571,16 @@ Cohesion: 0.31
 Nodes (7): handler(), apply(), do_GET(), drop(), send(), serve(), Route
 
 ### Community 319 - "missing"
-Cohesion: 0.05
-Nodes (36): Description status, Descriptions shown in English, Names shown in English, Per class, ruRU talent text coverage: forever 1.60.1.70707, Description status, Descriptions shown in English, Names shown in English (+28 more)
+Cohesion: 0.11
+Nodes (16): Description status, Descriptions shown in English, Names shown in English, Per class, ruRU talent text coverage: forever 1.60.1.70753, Description status, Descriptions shown in English, Names shown in English (+8 more)
 
-### Community 320 - "_handler"
-Cohesion: 0.43
-Nodes (5): _handler(), do_GET(), do_HEAD(), do_POST(), _status()
+### Community 320 - "ContractKind"
+Cohesion: 0.12
+Nodes (14): ClassTokenSerializer, ContentHashSerializer, ContractKind, ALLOCATION_BUILD, ALLOCATION_CONFORMANCE, DATASET_MANIFEST, TALENT_DATA, TALENT_ICONS (+6 more)
 
-### Community 321 - "combine"
-Cohesion: 0.18
-Nodes (8): combine(), Scenario, scenario_verdicts(), Check, client_scenario_verdicts(), junit_xml(), overall(), test_junit_results_and_verdicts()
+### Community 321 - "test_cli_publishes_production_over_s3_end_to_end"
+Cohesion: 0.29
+Nodes (7): ProdCli, test_cli_production_refusals(), test_cli_production_writes_refuse_a_missing_or_wrong_profile_before_s3(), test_cli_publishes_production_over_s3_end_to_end(), test_cli_staging_writes_need_the_staging_profile(), _without_profile(), write_production_keyring()
 
 ### Community 322 - "dataset-freshness.yml"
 Cohesion: 0.20
@@ -1555,10 +1609,6 @@ Nodes (8): concurrency, cancel-in-progress, group, name, permissions, actions, c
 ### Community 329 - "GitHub production publication: validation, 2026-11-01"
 Cohesion: 0.15
 Nodes (12): Behavioral RED → GREEN, Behavioral RED → GREEN, Consolidated final-review correction, Definitive follow-up checks, Final review boundary, GitHub production publication: validation, 2026-11-01, Post-PUT journal outage, PR #105 follow-up: journal loss after PUT and request-independent renewal (+4 more)
-
-### Community 334 - "test_ota_strict_json_vectors.py"
-Cohesion: 0.31
-Nodes (7): generate(), _mutate(), _random_value(), render(), test_committed_vectors_are_current(), test_vectors_cover_both_verdicts_and_every_edge_case(), _verdict()
 
 ### Community 335 - "ios_simulator_smoke.sh"
 Cohesion: 0.41
@@ -1608,9 +1658,9 @@ Nodes (10): reconcile, permissions, actions, contents, environment, if, name, pe
 Cohesion: 0.15
 Nodes (12): concurrency, cancel-in-progress, group, name, on, pull_request, push, workflow_dispatch (+4 more)
 
-### Community 348 - "CrashingStore"
-Cohesion: 0.19
-Nodes (3): CrashingStore, OtaCrashRecoveryTest, SimulatedCrash
+### Community 348 - "_client"
+Cohesion: 0.26
+Nodes (8): _client(), _gradle(), test_a_client_without_results_is_blocked(), test_a_complete_client_run_passes(), test_a_failed_or_skipped_client_test_is_never_a_pass(), test_a_gradle_that_cannot_start_is_blocked(), test_an_installed_copy_other_than_the_build_fails(), test_the_historical_scenario_is_not_a_check_of_the_candidate()
 
 ### Community 349 - "apk-store-check"
 Cohesion: 0.20
@@ -1624,13 +1674,17 @@ Nodes (8): prepare, ci_attempt, ci_run_id, has_request, if, outputs, runs-on, ti
 Cohesion: 0.15
 Nodes (18): load(), validate(), canonical(), commit(), deliver(), digest(), journal_for(), main() (+10 more)
 
+### Community 352 - "SpendButton"
+Cohesion: 0.51
+Nodes (9): actionSize(), MaxButton(), MaxedBadge(), rankActionSemantics(), RefundButton(), SpendButton(), TalentInspectorCompactActions(), TalentInspectorRankActions() (+1 more)
+
 ### Community 354 - "env"
 Cohesion: 0.29
 Nodes (7): CHECK_EXIT_CODE, GH_TOKEN, GITHUB_TOKEN, ISSUE_URL, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, env
 
 ### Community 355 - "notify"
-Cohesion: 0.13
-Nodes (17): concurrency, cancel-in-progress, group, jobs, notify, name, continue-on-error, environment (+9 more)
+Cohesion: 0.20
+Nodes (12): notify, continue-on-error, environment, if, needs, permissions, runs-on, timeout-minutes (+4 more)
 
 ### Community 356 - "env"
 Cohesion: 0.18
@@ -1644,9 +1698,13 @@ Nodes (5): revision, default, description, required, type
 Cohesion: 0.18
 Nodes (11): jobs, verify, id, if, name, run, shell, uses (+3 more)
 
-### Community 359 - "BuildImportFailure"
-Cohesion: 0.24
-Nodes (9): BuildImportFailure, ClassUnavailable, ClientBuildUnavailable, datasetFailure(), DatasetRejected, EngineUnavailable, InvalidAllocation, Rejected (+1 more)
+### Community 360 - "Path"
+Cohesion: 0.27
+Nodes (8): _git(), repo(), _report(), staged(), test_a_whole_run_with_a_passing_client_exits_0(), test_the_offline_phases_end_to_end(), test_unusable_inputs_are_blocked_with_a_report(), _verdicts()
+
+### Community 364 - "diff/render.py"
+Cohesion: 0.33
+Nodes (9): _change_lines(), _clip(), _effect(), _fmt(), _placeholder(), _pos(), _prereqs(), _ref_lines() (+1 more)
 
 ### Community 365 - "env"
 Cohesion: 0.23
@@ -1660,17 +1718,13 @@ Nodes (8): jobs, mobile-android-library, mobile-macos, name, runs-on, name, runs
 Cohesion: 0.33
 Nodes (6): run, mobile-linux, defaults, name, runs-on, shell
 
-### Community 369 - "outputs"
-Cohesion: 0.33
-Nodes (6): outputs, android, ios, mode, play, sha
+### Community 369 - "build_notices"
+Cohesion: 0.14
+Nodes (11): build_notices(), Component, component_of(), declared_licenses(), _download(), embedded_notice_licenses(), NoticesError, _pom_text() (+3 more)
 
-### Community 370 - "notify/state.py"
-Cohesion: 0.09
-Nodes (32): BuildDetected, CandidatePrepared, ProductionUpdated, StageFailed, acknowledge_candidates(), _add(), _candidate(), candidate_reason() (+24 more)
-
-### Community 371 - "sync_mobile_ota_fixtures.py"
-Cohesion: 0.36
-Nodes (8): check(), _kotlin_long(), _kotlin_string(), main(), mirror_drift(), relative_files(), render_vectors(), sync()
+### Community 371 - "EditorBackStep"
+Cohesion: 0.19
+Nodes (9): EditorBackStep, CLEAR_SELECTION, CLOSE_BUILD_ACTIONS, COLLAPSE_INSPECTOR, NAVIGATE, TalentInspectorSwipe, DOWN, NONE (+1 more)
 
 ### Community 374 - "ios_delivery_signing.sh"
 Cohesion: 0.60
@@ -1696,17 +1750,17 @@ Nodes (5): default, description, required, type, base
 Cohesion: 0.40
 Nodes (5): default, description, required, type, candidate
 
-### Community 381 - "OtaDevice"
-Cohesion: 0.04
-Nodes (23): AppVersion, BackupStatement, AndroidBackupDisabled, IosDeviceBackup, LegalLinks, privacyPolicyUrlOf(), PublishedPrivacyPolicy, Android (+15 more)
-
 ### Community 382 - "premerge-review"
 Cohesion: 0.17
 Nodes (11): concurrency, cancel-in-progress, group, jobs, premerge-review, name, environment, if (+3 more)
 
-### Community 384 - "JvmOtaPorts.kt"
-Cohesion: 0.04
-Nodes (14): fetchRetrying(), ReleaseAssetSource, OtaFetchRetryTest, ScriptedFetcher, pinnedTrustSocketFactory(), PlatformBlobFetcher, BlobFetcher, Body (+6 more)
+### Community 384 - "workflow_jobs"
+Cohesion: 0.22
+Nodes (8): test_combined_delivery_holds_apk_stores_when_production_approval_fails(), test_delivery_preflight_has_its_own_timeout_and_failed_report_step(), test_scheduled_reconcile_cannot_bypass_failed_preflight(), public_job_selected(), test_apk_only_public_delivery_survives_optional_skips_but_requires_its_gate(), test_reconciliation_workflow_routes_read_only_inspection_without_telegram(), test_the_workflow_is_owner_started_serialised_and_keeps_secrets_in_environments(), workflow_jobs()
+
+### Community 386 - "_evidence"
+Cohesion: 0.28
+Nodes (6): _evidence(), test_a_client_suite_gradle_did_not_run_is_blocked(), changed(), test_an_unusable_revision_or_build_is_named(), historical(), test_the_revision_is_fixed_to_one_full_commit()
 
 ### Community 387 - "automation_key"
 Cohesion: 0.40
@@ -1720,17 +1774,13 @@ Nodes (5): default, description, required, type, base
 Cohesion: 0.40
 Nodes (5): staging_attempt, default, description, required, type
 
-### Community 391 - "test_ota_prepare.py"
-Cohesion: 0.09
-Nodes (56): Action, BaseKind, Readiness, commit_on_main(), detect(), FakeRunner, gates(), info() (+48 more)
-
 ### Community 392 - "OtaCatalogFixtureVectors"
 Cohesion: 0.50
 Nodes (3): Case, Key, OtaCatalogFixtureVectors
 
-### Community 394 - "HomeScreen.kt"
-Cohesion: 0.05
-Nodes (30): BuildRow(), BuildRowContent(), Duplicated, DuplicateFailed, FavoriteFailed, isCompactRow(), ManagementNotice, None (+22 more)
+### Community 394 - "outputs"
+Cohesion: 0.33
+Nodes (6): outputs, android, ios, mode, play, sha
 
 ### Community 395 - "ota_integration_check.sh"
 Cohesion: 0.67
@@ -1752,13 +1802,17 @@ Nodes (10): default, description, required, type, candidate_ci_attempt, on, pull
 Cohesion: 0.18
 Nodes (16): action, artifact, artifact_id, automatic, daily, delivery, execute, operation (+8 more)
 
-### Community 410 - "EditorBackStep"
+### Community 410 - "Автоматическое предложение OTA-релиза (PR B / Task 3)"
 Cohesion: 0.40
-Nodes (5): EditorBackStep, CLEAR_SELECTION, CLOSE_BUILD_ACTIONS, COLLAPSE_INSPECTOR, NAVIGATE
+Nodes (4): Автоматическое предложение OTA-релиза (PR B / Task 3), Обычный путь, Повторы и отказ, Разовая настройка GitHub App владельцем
+
+### Community 411 - "Hierarchy"
+Cohesion: 0.18
+Nodes (3): GestureError, Hierarchy, UiNode
 
 ### Community 429 - "test_google_play_production.py"
 Cohesion: 0.05
-Nodes (43): delivery(), Play, test_apk_audit_blocks_pending_version5_without_touching_its_journal(), test_appgallery_localized_notes_precede_submit_and_lost_receipt_stops(), test_closed_testing_accepts_localized_notes_without_production_access(), test_code_six_in_a_release_is_never_uploaded_again(), test_early_preflight_telegram_works_without_production_journal_and_deduplicates(), test_empty_drafts_outside_production_do_not_block_available_code() (+35 more)
+Nodes (42): delivery(), Play, test_apk_audit_blocks_pending_version5_without_touching_its_journal(), test_appgallery_localized_notes_precede_submit_and_lost_receipt_stops(), test_closed_testing_accepts_localized_notes_without_production_access(), test_code_six_in_a_release_is_never_uploaded_again(), test_early_preflight_telegram_works_without_production_journal_and_deduplicates(), test_empty_drafts_outside_production_do_not_block_available_code() (+34 more)
 
 ### Community 440 - "env"
 Cohesion: 0.22
@@ -1776,6 +1830,10 @@ Nodes (18): env, OTA_PRODUCTION_AUTOMATION_ENABLED, OTA_PRODUCTION_KEY_ID, PYTHO
 Cohesion: 0.22
 Nodes (9): public-journal, release_id, if, name, needs, outputs, runs-on, steps (+1 more)
 
+### Community 444 - "Fast data-only patches — M8.OTA.FAST.1"
+Cohesion: 0.18
+Nodes (9): 70959 after infrastructure merge, Fast data-only patches — M8.OTA.FAST.1, Incremental preparation and network recovery, Short path, Store delivery and archive monitoring, Historical checkout compatibility, Independent policy fixtures and fail-closed boundaries, M8.OTA.FAST.1 — infrastructure review fixes (PR #155) (+1 more)
+
 ### Community 445 - "jobs"
 Cohesion: 0.20
 Nodes (10): if, needs, runs-on, outputs, runs-on, jobs, checks, classify (+2 more)
@@ -1784,17 +1842,21 @@ Nodes (10): if, needs, runs-on, outputs, runs-on, jobs, checks, classify (+2 mor
 Cohesion: 0.24
 Nodes (13): cancel-in-progress, group, queue, preflight, concurrency, concurrency, if, needs (+5 more)
 
-### Community 449 - "TalentTreeBuildScreen.kt"
-Cohesion: 0.04
-Nodes (38): Actions, AllBuildsScreen(), Hidden, ImportBuildButton(), ManagementOverlay, BuildActionsOverlays(), rememberBuildActionsPresenter(), text() (+30 more)
+### Community 448 - "NoticesState"
+Cohesion: 0.40
+Nodes (5): Failed, Loading, NoticesState, NotIncluded, Ready
+
+### Community 449 - "play-production"
+Cohesion: 0.29
+Nodes (7): play-production, environment, if, name, needs, runs-on, timeout-minutes
 
 ### Community 450 - "jobs"
-Cohesion: 0.06
-Nodes (36): environment, if, name, needs, permissions, runs-on, timeout-minutes, permissions (+28 more)
+Cohesion: 0.13
+Nodes (14): concurrency, cancel-in-progress, group, jobs, play-production-notify, name, permissions, environment (+6 more)
 
 ### Community 451 - "File Map"
-Cohesion: 0.09
-Nodes (17): File Map, Global Constraints, One-merge OTA Approval Implementation Plan, Review Focus, Self-review / coverage, Task 10: Full one-MR integration, final review and reviewable PR, Task 2: Prove a generated candidate and exact full PR CI, Task 3: Preparation-only source context in staging/package (+9 more)
+Cohesion: 0.14
+Nodes (13): File Map, Global Constraints, One-merge OTA Approval Implementation Plan, Review Focus, Self-review / coverage, Task 10: Full one-MR integration, final review and reviewable PR, Task 2: Prove a generated candidate and exact full PR CI, Task 4: Bind candidate proof inside exact package and provenance (+5 more)
 
 ### Community 452 - "writer"
 Cohesion: 0.33
@@ -1804,29 +1866,25 @@ Nodes (6): writer, environment, if, needs, runs-on, timeout-minutes
 Cohesion: 0.24
 Nodes (13): steps, steps, steps, merge-validation, if, needs, runs-on, steps (+5 more)
 
-### Community 454 - "pipeline_steps"
-Cohesion: 0.40
-Nodes (4): pipeline_steps(), _talent_data(), test_every_step_runs_after_the_steps_it_reads(), test_the_steps_are_the_existing_pipeline_commands()
+### Community 455 - "SystemBackHandler.desktop.kt"
+Cohesion: 0.24
+Nodes (4): EdgeSwipeBackHandler(), PlatformEdgeSwipeInput(), Handler, SystemBackHandler()
 
-### Community 455 - "BackSwipeStack.kt"
-Cohesion: 0.07
-Nodes (14): PlatformEdgeSwipeInput(), BackSwipeStack(), SwipePhase, Dragging, Idle, Settling, EdgeSwipeBackDispatcher, EdgeSwipeBackHandler() (+6 more)
+### Community 456 - "android-deliver"
+Cohesion: 0.25
+Nodes (8): environment, if, name, needs, permissions, runs-on, timeout-minutes, android-deliver
 
-### Community 456 - "prepare"
-Cohesion: 0.29
-Nodes (7): prepare, candidate_artifact, candidate_run_id, uploaded_artifact, outputs, runs-on, timeout-minutes
+### Community 457 - "_handler"
+Cohesion: 0.43
+Nodes (5): _handler(), do_GET(), do_HEAD(), do_POST(), _status()
 
-### Community 457 - "Автоматическое предложение OTA-релиза (PR B / Task 3)"
-Cohesion: 0.40
-Nodes (4): Автоматическое предложение OTA-релиза (PR B / Task 3), Обычный путь, Повторы и отказ, Разовая настройка GitHub App владельцем
+### Community 458 - "klib_native_content"
+Cohesion: 0.22
+Nodes (4): archive_members(), arm64_slice(), families(), klib_native_content()
 
-### Community 458 - "test_catalog_change_during_blob_verification_rejects_snapshot"
-Cohesion: 0.20
-Nodes (7): test_catalog_change_during_blob_verification_rejects_snapshot(), handler(), test_fetch_retry_is_bounded_and_does_not_repeat_permanent_failures(), handler(), test_fetch_stops_reading_oversized_body_and_strips_client_credentials(), handler(), test_public_fetch_does_not_inherit_default_client_params_or_headers()
-
-### Community 459 - "Forever 1.60.1.70753 talent tooltip coverage (M5.V2)"
-Cohesion: 0.33
-Nodes (5): Every gap, Forever 1.60.1.70753 talent tooltip coverage (M5.V2), Rank descriptions, Templates of the talents with gaps, Token categories
+### Community 459 - "struct"
+Cohesion: 0.18
+Nodes (8): PngImage, read_png(), chunk(), chunk(), filtered_row(), png_with_rows(), test_every_row_filter_is_undone(), test_the_reader_rejects_what_the_converter_never_writes()
 
 ### Community 460 - "RuStore / AppGallery delivery"
 Cohesion: 0.29
@@ -1844,13 +1902,13 @@ Nodes (5): Build Library Search & Filters implementation plan, Constraints, Revi
 Cohesion: 0.29
 Nodes (7): notify, environment, if, name, needs, runs-on, timeout-minutes
 
-### Community 465 - "Forever 1.60.1.70755 talent tooltip coverage (M5.V2)"
-Cohesion: 0.33
-Nodes (5): Every gap, Forever 1.60.1.70755 talent tooltip coverage (M5.V2), Rank descriptions, Templates of the talents with gaps, Token categories
-
 ### Community 466 - "env"
 Cohesion: 0.29
 Nodes (7): CLASSIFY_RESULT, FULL_RESULT, GITHUB_TOKEN, MERGE_RESULT, METADATA_RESULT, MODE, env
+
+### Community 467 - "mode"
+Cohesion: 0.33
+Nodes (6): mode, default, description, options, required, type
 
 ### Community 468 - "steps"
 Cohesion: 0.36
@@ -1864,13 +1922,21 @@ Nodes (8): notify, continue-on-error, environment, if, needs, permissions, runs-
 Cohesion: 0.40
 Nodes (4): Android store delivery implementation plan, Global constraints, Review focus, Tasks
 
+### Community 471 - "ruRU talent text coverage: forever 1.60.1.70707"
+Cohesion: 0.33
+Nodes (5): Description status, Descriptions shown in English, Names shown in English, Per class, ruRU talent text coverage: forever 1.60.1.70707
+
 ### Community 472 - "test_ota_staging_verify.py"
 Cohesion: 0.08
-Nodes (33): _client(), _evidence(), _git(), _gradle(), repo(), _report(), _script(), staged() (+25 more)
+Nodes (13): _script(), test_a_pull_request_reruns_the_same_stand_on_the_warm_cache(), test_a_scenario_without_its_test_result_never_passes(), test_a_store_must_hold_every_file_with_its_bytes(), ref(), test_an_opt_in_desktop_test_run_is_never_cached(), test_every_scenario_names_an_existing_kotlin_test(), test_only_every_automatic_pass_is_a_pass() (+5 more)
 
-### Community 474 - "Forever 1.60.1.70862 talent tooltip coverage (M5.V2)"
+### Community 473 - "Forever 1.60.1.70707 talent tooltip coverage (M5.V2)"
 Cohesion: 0.33
-Nodes (5): Every gap, Forever 1.60.1.70862 talent tooltip coverage (M5.V2), Rank descriptions, Templates of the talents with gaps, Token categories
+Nodes (5): Every gap, Forever 1.60.1.70707 talent tooltip coverage (M5.V2), Rank descriptions, Templates of the talents with gaps, Token categories
+
+### Community 474 - "Forever 1.60.1.70753 talent tooltip coverage (M5.V2)"
+Cohesion: 0.33
+Nodes (5): Every gap, Forever 1.60.1.70753 talent tooltip coverage (M5.V2), Rank descriptions, Templates of the talents with gaps, Token categories
 
 ### Community 475 - "full-validation"
 Cohesion: 0.50
@@ -1884,17 +1950,25 @@ Nodes (4): metadata-validation, if, needs, runs-on
 Cohesion: 0.33
 Nodes (6): premerge, phase, if, outputs, runs-on, timeout-minutes
 
-### Community 480 - "Forever 1.60.1.70888 talent tooltip coverage (M5.V2)"
+### Community 479 - "ruRU talent text coverage: forever 1.60.1.70755"
 Cohesion: 0.33
-Nodes (5): Every gap, Forever 1.60.1.70888 talent tooltip coverage (M5.V2), Rank descriptions, Templates of the talents with gaps, Token categories
+Nodes (5): Description status, Descriptions shown in English, Names shown in English, Per class, ruRU talent text coverage: forever 1.60.1.70755
 
-### Community 481 - "Forever 1.60.1.70790 talent tooltip coverage (M5.V2)"
+### Community 480 - "Forever 1.60.1.70755 talent tooltip coverage (M5.V2)"
+Cohesion: 0.33
+Nodes (5): Every gap, Forever 1.60.1.70755 talent tooltip coverage (M5.V2), Rank descriptions, Templates of the talents with gaps, Token categories
+
+### Community 481 - "ruRU talent text coverage: forever 1.60.1.70790"
+Cohesion: 0.33
+Nodes (5): Description status, Descriptions shown in English, Names shown in English, Per class, ruRU talent text coverage: forever 1.60.1.70790
+
+### Community 482 - "ManagementNotice"
+Cohesion: 0.40
+Nodes (5): Duplicated, DuplicateFailed, FavoriteFailed, ManagementNotice, None
+
+### Community 483 - "Forever 1.60.1.70790 talent tooltip coverage (M5.V2)"
 Cohesion: 0.33
 Nodes (5): Every gap, Forever 1.60.1.70790 talent tooltip coverage (M5.V2), Rank descriptions, Templates of the talents with gaps, Token categories
-
-### Community 483 - "Forever 1.60.1.70938 talent tooltip coverage (M5.V2)"
-Cohesion: 0.33
-Nodes (5): Every gap, Forever 1.60.1.70938 talent tooltip coverage (M5.V2), Rank descriptions, Templates of the talents with gaps, Token categories
 
 ### Community 484 - "candidate_ci_attempt"
 Cohesion: 0.40
@@ -1916,13 +1990,29 @@ Nodes (5): default, description, required, type, candidate_ci_run_id
 Cohesion: 0.40
 Nodes (5): default, description, required, type, candidate_pr
 
-### Community 491 - "test_reproduction.py"
-Cohesion: 0.18
-Nodes (19): compare_visuals(), VisualsComparison, committed_files(), decoded(), encode(), registry_of(), test_a_changed_client_file_blocks_even_with_the_same_pixels(), test_a_changed_sidecar_blocks() (+11 more)
-
-### Community 492 - "on"
+### Community 490 - "SwipePhase"
 Cohesion: 0.50
-Nodes (4): on, workflow_run, types, workflows
+Nodes (4): SwipePhase, Dragging, Idle, Settling
+
+### Community 491 - "ShareFeedback"
+Cohesion: 0.40
+Nodes (5): Copied, CopiedNoSheet, Failed, None, ShareFeedback
+
+### Community 492 - "ota-prepare.yml"
+Cohesion: 0.15
+Nodes (12): concurrency, cancel-in-progress, group, jobs, prepare, name, on, workflow_run (+4 more)
+
+### Community 493 - "Forever 1.60.1.70862 talent tooltip coverage (M5.V2)"
+Cohesion: 0.33
+Nodes (5): Every gap, Forever 1.60.1.70862 talent tooltip coverage (M5.V2), Rank descriptions, Templates of the talents with gaps, Token categories
+
+### Community 494 - "ruRU talent text coverage: forever 1.60.1.70888"
+Cohesion: 0.33
+Nodes (5): Description status, Descriptions shown in English, Names shown in English, Per class, ruRU talent text coverage: forever 1.60.1.70888
+
+### Community 495 - "RenameProblem"
+Cohesion: 0.50
+Nodes (4): Failed, Missing, PendingSaveFailed, RenameProblem
 
 ### Community 496 - "delivery-result"
 Cohesion: 0.33
@@ -1936,21 +2026,25 @@ Nodes (5): renewal-preflight, if, needs, runs-on, timeout-minutes
 Cohesion: 0.40
 Nodes (5): release_revision, default, description, required, type
 
-### Community 501 - "allocation/engine.py"
-Cohesion: 0.09
-Nodes (9): AllocationEngineError, _select_tree(), AllocationIssueCode, AllocationResult, BuildFile, BuildValidation, _Model, reason_codes() (+1 more)
+### Community 501 - "Forever 1.60.1.70888 talent tooltip coverage (M5.V2)"
+Cohesion: 0.33
+Nodes (5): Every gap, Forever 1.60.1.70888 talent tooltip coverage (M5.V2), Rank descriptions, Templates of the talents with gaps, Token categories
+
+### Community 502 - "Forever 1.60.1.70938 talent tooltip coverage (M5.V2)"
+Cohesion: 0.33
+Nodes (5): Every gap, Forever 1.60.1.70938 talent tooltip coverage (M5.V2), Rank descriptions, Templates of the talents with gaps, Token categories
 
 ### Community 505 - "candidate_base_release_id"
 Cohesion: 0.50
 Nodes (4): default, description, type, candidate_base_release_id
 
-### Community 506 - "TalentTabletSectionHeaders.kt"
-Cohesion: 0.14
-Nodes (11): largestCluster(), SectionHeader(), Span, TalentTabletHeaderAnchor, talentTabletHeaderHeightDp(), talentTabletHeaderReserveDp(), TalentTabletHeaderSlot, talentTabletHeaderSlots() (+3 more)
-
 ### Community 507 - "staging_run"
 Cohesion: 0.50
 Nodes (4): staging_run, description, required, type
+
+### Community 508 - "test_data_only_policy.py"
+Cohesion: 0.18
+Nodes (10): rebuild_candidate(), snapshots(), test_automatic_policy_blocks_structural_changes(), test_automatic_policy_rejects_actual_mixed_code_and_data_commits(), test_automatic_policy_rejects_wrong_baseline_hash(), test_data_patch_preserves_saved_allocation_decisions(), test_policy_never_approves_missing_images_hash_damage_or_warning_growth(), test_policy_unknown_fields_wrong_types_and_revocation_fail_closed() (+2 more)
 
 ### Community 510 - "M6.LIB.2 — favorites and safe local-library migration"
 Cohesion: 0.33
@@ -1960,29 +2054,29 @@ Nodes (5): Evidence, Failure and concurrency behavior, M6.LIB.2 — favorites an
 Cohesion: 0.22
 Nodes (6): Data coverage, Evidence and findings, M6.UX.3 - Talent requirements clarity, Screenshot evidence, Validation, TalentRequirementsAuditTest
 
-### Community 515 - "sha256_ref"
-Cohesion: 0.04
-Nodes (60): base_matches(), blob_path(), created_at_of(), _file_entry(), load_package(), missing_staging(), _Model, package_files() (+52 more)
+### Community 515 - "json"
+Cohesion: 0.03
+Nodes (75): changes(), main(), report(), allocation_shape(), DataLevelBaseline, load_baseline(), new_unsupported_mechanics(), unsupported_mechanics() (+67 more)
 
 ## Knowledge Gaps
 - **330 isolated node(s):** `Home`, `NewBuild`, `ImportBuild`, `Help`, `Licenses` (+325 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 4445 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **143 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 4503 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **133 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `ClassToken` connect `ClassToken` to `.productionPublicationsInstallActivateAndRollBack`, `TalentTooltipRank`, `LocalBuildRepository`, `talentSectionDisplayLabel`, `M5Rel2bScreenshotTest`, `TooltipsLoadError`, `TalentForgeTheme`, `StagedUpdate`, `BundledRepositoryTest`, `HomeScreen.kt`, `TalentTooltipsContractTest`, `EdgeSwipeBackAppUiTest`, `LocalBuildRepositoryTest`, `ImportBuildScreen.kt`, `DatasetVersionCompatibilityTest`, `EditorLocalizationUiTest`, `ContentHash`, `loadEditorSession`, `HomeRedesignUiTest`, `TalentSpecializationNamesUiTest`, `TalentVisualsRepositoryTest`, `TalentVisualsContractTest`, `BuildImportBundledDatasetsTest`, `NewBuildScreen.kt`, `res`, `prepareBuildImport`, `TalentTreeScreen.kt`, `BuildShareUiTest`, `TalentTreeIconUiTest`, `TalentTooltipsRepositoryTest`, `TalentTreeSectionsTest`, `.decodeAllocationBuildFile`, `BuildActionsUiTest`, `classArtworkResourceFor`, `assertequals`, `AutosaveExitGuaranteeUiTest`, `OtaScenarioTest`, `BuildFavoriteCoordinationTest`, `.decode`, `BuildRenameCoordinationTest`, `BuildImportFlowTest`, `AllBuildsRowLayoutUiTest`, `M51AppFlowUiTest`, `TalentNodePresentationTest.kt`, `AssetNotFoundException`, `.readyStateOf`, `SectionTabsAutosaveUiTest`, `ConformanceSuite.kt`, `BuildShareCodeTest`, `.entry`, `BackNavigationReentrancyUiTest`, `.decodeTalentDataDocument`, `IosOtaStagingE2ETest`, `LocalizationLoadError`, `BuildImportFailure`, `BuildManagementScreenshotTest`, `FakeBuildLibraryStorage`, `SystemBackOrderAppUiTest`, `buildTalentTreeUiModel`, `NodeAllocation`, `LocalizationTestBundle.kt`, `BuildManagementUiTest`, `OtaStagingE2ETest`, `TalentTabletSectionHeadersTest`, `TalentTabletSectionHeaders.kt`, `TalentLocalizationUiTest`?**
-  _High betweenness centrality (0.058) - this node is a cross-community bridge._
+- **Why does `ClassToken` connect `ClassToken` to `.productionPublicationsInstallActivateAndRollBack`, `loadEditorSession`, `BundledRepositoryTest`, `TalentForgeTheme`, `.of`, `TalentTooltipsContractTest`, `LocalBuildRepository`, `EdgeSwipeBackAppUiTest`, `LocalBuildRepositoryTest`, `talentForgeColors`, `EditorLocalizationUiTest`, `TalentSpecializationNamesUiTest`, `TalentVisualsContractTest`, `HomeRedesignUiTest`, `TalentVisualsRepositoryTest`, `BuildImportBundledDatasetsTest`, `DatasetVersionCompatibilityTest`, `TalentInspectorDescriptionTest`, `.decodeAllocationBuildFile`, `remember`, `prepareBuildImport`, `TalentTreeBuildScreen.kt`, `StagedUpdate`, `TalentTree`, `BuildShareUiTest`, `TalentTreeIconUiTest`, `TooltipsLoadError`, `TalentTooltipsRepositoryTest`, `buildTalentTreePresentation`, `TalentTreeSectionsTest`, `ContentHash`, `BuildActionsUiTest`, `VisualsLoadError`, `ConformanceSuite.kt`, `ContractKind`, `OtaScenarioTest`, `TalentTreeScreen`, `BuildFavoriteCoordinationTest`, `.decode`, `BuildRenameCoordinationTest`, `talentTabletSectionHeaders`, `BuildImportFlowTest`, `TalentTreeM51ScreenshotTest`, `M51AppFlowUiTest`, `buildTalentTreeUiModel`, `TalentIconAssets.kt`, `.readyStateOf`, `ClassArtwork.kt`, `TalentLocalizationDocument.kt`, `ClassToken`, `BuildShareCodeTest`, `.entry`, `BackNavigationReentrancyUiTest`, `.decodeTalentDataDocument`, `IosOtaStagingE2ETest`, `ShellLocalizationUiTest`, `BuildImportFailure`, `BuildManagementUiTest`, `OtaStagingE2ETest`, `LocalizationLoadError`, `TalentLocalizationUiTest`, `LibraryText.kt`?**
+  _High betweenness centrality (0.080) - this node is a cross-community bridge._
 - **Are the 11 inferred relationships involving `ClassToken` (e.g. with `.parsesAndRoundTripsBuildFile()` and `.parsesMinimalTalentDataDocument()`) actually correct?**
   _`ClassToken` has 11 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Home`, `NewBuild`, `ImportBuild` to the rest of the system?**
   _330 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `TalentDataDocument` be split into smaller, more focused modules?**
-  _Cohesion score 0.016208828754954215 - nodes in this community are weakly interconnected._
+- **Should `helpers.py` be split into smaller, more focused modules?**
+  _Cohesion score 0.03144224196855776 - nodes in this community are weakly interconnected._
 - **Why does `iosProductionRuleFailures()` connect `composeApp/build.gradle.kts` to `outputs`?**
   _High betweenness centrality (0.039) - this node is a cross-community bridge._
-- **Are the 225 inferred relationships involving `TalentDataDocument` (e.g. with `apply_mutations()` and `engine_for()`) actually correct?**
-  _`TalentDataDocument` has 225 INFERRED edges - model-reasoned connections that need verification._
-- **Should `ClientVersion` be split into smaller, more focused modules?**
-  _Cohesion score 0.03209089097069962 - nodes in this community are weakly interconnected._
+- **Are the 228 inferred relationships involving `TalentDataDocument` (e.g. with `apply_mutations()` and `engine_for()`) actually correct?**
+  _`TalentDataDocument` has 228 INFERRED edges - model-reasoned connections that need verification._
+- **Should `loadEditorSession` be split into smaller, more focused modules?**
+  _Cohesion score 0.10975609756097561 - nodes in this community are weakly interconnected._

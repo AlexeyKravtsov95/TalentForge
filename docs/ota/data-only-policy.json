@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "kind": "ota-data-only-policy",
+  "policy": "data-only-v1",
+  "enabled": true,
+  "game": "forever",
+  "branch": "1.60",
+  "maxDataLevel": 1,
+  "rules": "same-allocation-shape-no-warning-growth-verified-resources",
+  "g7Acceptance": "standing-policy-not-live-realm-evidence"
+}

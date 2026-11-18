@@ -654,6 +654,10 @@ def probe_delivery(
         history = _HistoryReads(api)
         for request in sorted(pending, key=lambda r: r.release_id, reverse=True):
             approval = approval_record_at(repo, "origin/main", request.release_id)
+            if approval is None:
+                from talent_data.ota.automation.data_only import standing_record
+
+                approval = standing_record(repo, "origin/main", request)
             from talent_data.ota.automation.merge_approval import parse_merge_record
 
             conditional = (
@@ -669,6 +673,12 @@ def probe_delivery(
                         (request.model_dump_json(by_alias=True, indent=2) + "\n").encode()
                     )
                 ):
+                    waits.append(("APPROVAL_PENDING", None))
+                    continue
+            elif approval is not None and b"- Data-only policy:" in approval:
+                from talent_data.ota.automation.data_only import record_matches
+
+                if not record_matches(repo, "origin/main", request, approval):
                     waits.append(("APPROVAL_PENDING", None))
                     continue
             elif approval is None or approval_record_problems(

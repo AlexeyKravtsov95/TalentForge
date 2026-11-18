@@ -14,7 +14,8 @@ def project_root() -> Path:
 
 def raw_cache_dir(source: str, game: str) -> Path:
     """Raw DB2 downloads (git-ignored): .cache/<source>/<game>/<build>/<Table>.csv"""
-    return project_root() / ".cache" / source / game
+    cache = Path(os.environ.get("TALENT_DATA_CACHE_ROOT", project_root() / ".cache"))
+    return cache / source / game
 
 
 def normalized_path(game: str, version: ClientVersion, class_token: str) -> Path:
