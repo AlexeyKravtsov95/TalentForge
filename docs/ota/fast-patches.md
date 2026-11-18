@@ -112,6 +112,7 @@ starts the standing-policy automation. No additional release-approval PR is need
    move the prepared data branch onto that merged infrastructure, and review the diff:
 
    ```bash
+   export PYTHONPATH=src
    git fetch origin main
    git switch codex/ota-70959-data
    git rebase --onto origin/main codex/m8-ota-fast-1
@@ -133,11 +134,12 @@ starts the standing-policy automation. No additional release-approval PR is need
    data_source=$(git rev-parse HEAD)
    python -m talent_data ota build-release --game forever --build 1.60.1.70959 \
      --revision 1 --commit "$data_source" --created-at 2026-11-18T00:00:00Z \
-     --out .cache/ota-review/70959-r1.release.json
+     --out .cache/ota-review
    python scripts/ota_patch_diff.py --from-build 1.60.1.70938 --to-build 1.60.1.70959 \
      --out .cache/ota-review/70959-presentation.json
    ```
 
+   The manifest is `.cache/ota-review/1.60.1.70959-r1/release.json`.
    Run Python CI and the dataset/sidecar checks, push the data branch, then open the separate
    data-only PR against `main`. No `src/`, workflow, policy, graph or `docs/ota/candidates/`
    changes belong in it. Rebuild the preview after every source-changing rebase. Review the
