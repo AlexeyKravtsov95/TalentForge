@@ -33,6 +33,9 @@ on:
       - "tests/unit/test_verify_appstore_metadata.py"
       - "scripts/verify_ios_archive.py"
       - "scripts/ios_simulator_smoke.sh"
+      - "scripts/ios_smoke_command.py"
+      - "tests/unit/test_ios_simulator_smoke.py"
+      - "tests/unit/test_ios_smoke_command.py"
       - "scripts/ios_ota_e2e.py"
       - "scripts/ota_staging_stand.py"
       - "src/talent_data/ota/**"
@@ -173,6 +176,7 @@ jobs:
           if-no-files-found: ignore
 
   mobile-macos:
+    timeout-minutes: 60
     name: Mobile (macOS) — iOS, Xcode 27.1
     # M5.IOS.1: the iOS release toolchain is Xcode 27.1 / iOS 27.1 SDK. GitHub ships Xcode 27 only
     # on the xcode-27 image (public preview, macOS 27); macos-latest carries Xcode 26.x and is
@@ -248,6 +252,17 @@ jobs:
             -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO ARCHS=arm64 build
 
+      # Tar preserves the executable bit and framework symlinks across artifact storage.
+      - name: Package simulator app for independent smoke jobs
+        run: tar -C mobile/iosApp/build/Build/Products/Release-iphonesimulator -czf simulator-app.tgz iosApp.app
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator-app
+          path: simulator-app.tgz
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Unsigned Release archive (generic/platform=iOS)
         working-directory: mobile/iosApp
         run: |
@@ -301,11 +316,6 @@ jobs:
             echo "::error::the OTA OFF archive passed as OTA ON"; exit 1
           fi
 
-      - name: Simulator launch smoke (iPhone 18 Pro, iPhone 18 Pro Max, iPad Pro 13-inch)
-        run: >-
-          scripts/ios_simulator_smoke.sh mobile/iosApp/build/Build/Products/Release-iphonesimulator/iosApp.app
-          mobile/iosApp/build/ios-smoke "iPhone 18 Pro" "iPhone 18 Pro Max" "iPad Pro 13-inch (M5)"
-
       - name: Upload iOS evidence (archive report, simulator screenshots)
         if: always()
         uses: actions/upload-artifact@v4
@@ -314,8 +324,56 @@ jobs:
           path: |
             mobile/iosApp/build/ios-archive-report.json
             mobile/iosApp/build/ios-archive-ota-on-report.json
-            mobile/iosApp/build/ios-smoke/
           if-no-files-found: ignore
+          retention-days: 30
+
+  ios-simulator-smoke:
+    name: iOS smoke — ${{ matrix.device }}
+    needs: mobile-macos
+    runs-on: xcode-27
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - device: iPhone 18 Pro
+            artifact: iphone-pro
+          - device: iPhone 18 Pro Max
+            artifact: iphone-pro-max
+          - device: iPad Pro 13-inch (M5)
+            artifact: ipad-pro
+    env:
+      XCODE_APP: /Applications/Xcode_27.1.app
+      XCODE_BUILD: 27A9275
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select and verify the same Xcode as the app build
+        timeout-minutes: 2
+        run: |
+          set -euo pipefail
+          test -d "$XCODE_APP"
+          sudo xcode-select --switch "$XCODE_APP/Contents/Developer"
+          test "$(xcodebuild -version | awk '/^Build version/ {print $3}')" = "$XCODE_BUILD"
+          xcodebuild -version
+          sw_vers
+      - uses: actions/download-artifact@v4
+        with:
+          name: ios-simulator-app
+          path: simulator-package
+      - name: Unpack the app built by this workflow run
+        run: tar -xzf simulator-package/simulator-app.tgz -C simulator-package
+      - name: Simulator launch smoke
+        timeout-minutes: 27
+        env:
+          SMOKE_DEVICE: ${{ matrix.device }}
+        run: scripts/ios_simulator_smoke.sh simulator-package/iosApp.app ios-smoke "$SMOKE_DEVICE"
+      - name: Upload screenshots, stage timings and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-smoke-${{ matrix.artifact }}
+          path: ios-smoke/
+          if-no-files-found: error
           retention-days: 30
 
   ios-ota-e2e:

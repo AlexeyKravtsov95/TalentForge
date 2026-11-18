@@ -162,8 +162,9 @@ def ci_run(sha: str, workflow: str, **overrides: Any) -> dict[str, Any]:
         "event": "push",
         "status": "completed",
         "conclusion": "success",
-        "repository": {"id": 1},
-        "head_repository": {"id": 1},
+        "repository": {"id": 1, "full_name": "o/r"},
+        "head_repository": {"id": 1, "full_name": "o/r"},
+        "run_attempt": 1,
     }
     value.update(overrides)
     return value
@@ -175,6 +176,8 @@ class FakeGitHub:
     def __init__(self) -> None:
         self.runs: dict[str, list[dict[str, Any]]] = {}
         self.artifacts: dict[int, list[dict[str, Any]]] = {}
+        self.jobs: dict[tuple[int, int], list[dict[str, Any]]] = {}
+        self.job_requests: list[tuple[int, int, int]] = []
 
     def green(self, sha: str) -> FakeGitHub:
         for workflow in d.REQUIRED_CI_WORKFLOWS:
@@ -185,6 +188,15 @@ class FakeGitHub:
         assert request.method == "GET"  # the gate and the record lookup only read
         assert request.headers["Authorization"] == "Bearer gh-token"
         parts = request.url.path.split("/")
+        if request.url.path.rstrip("/") == "/repos/o/r":
+            assert request.url.path == "/repos/o/r"
+            return httpx.Response(200, json={"id": 1, "full_name": "o/r"})
+        if "runs" in parts and parts[-1] == "jobs":
+            run_id, attempt = int(parts[-4]), int(parts[-2])
+            page = int(request.url.params["page"])
+            self.job_requests.append((run_id, attempt, page))
+            batch = self.jobs.get((run_id, attempt), [])
+            return httpx.Response(200, json={"jobs": batch[(page - 1) * 100 : page * 100]})
         if "workflows" in parts:
             runs = self.runs.get(parts[parts.index("workflows") + 1], [])
             sha = request.url.params.get("head_sha")
@@ -277,6 +289,185 @@ def test_ci_counts_only_a_successful_main_run_of_the_exact_commit(
 def test_ci_of_another_commit_does_not_count(repo: dict[str, Any]) -> None:
     github = FakeGitHub().green(repo["base"])  # green for base; the delivery asks for head
     assert "no runs" in refused("GATE", lambda: run_gate(repo, github))
+
+
+def android_ci_jobs(sha: str = SOURCE, **overrides: Any) -> list[dict[str, Any]]:
+    return [
+        {
+            "name": name,
+            "status": "completed",
+            "conclusion": "success",
+            "run_id": 1,
+            "run_attempt": 1,
+            "head_sha": sha,
+            **overrides,
+        }
+        for name in d.ANDROID_CI_JOBS
+    ]
+
+
+@pytest.mark.parametrize("conclusion", ["success", "failure", "cancelled", "timed_out"])
+def test_android_gate_uses_required_jobs_despite_ios_result(conclusion: str) -> None:
+    github = FakeGitHub().green(SOURCE)
+    github.runs["mobile-ci.yml"][0]["conclusion"] = conclusion
+    github.jobs[1, 1] = android_ci_jobs()
+    result = d.check_ci(github.api(), SOURCE, platforms="android")
+    assert set(result) == set(d.REQUIRED_CI_WORKFLOWS)
+    assert github.job_requests == [(1, 1, 1)]
+
+
+def test_android_gate_accepts_api_attested_retained_same_sha_successes() -> None:
+    # Observed on a failed-jobs-only GitHub rerun: current-attempt records retain the
+    # original execution timestamps. Trust the API binding, never arbitrary old jobs.
+    github = FakeGitHub().green(SOURCE)
+    github.runs["mobile-ci.yml"][0].update(run_attempt=2, conclusion="failure")
+    github.jobs[1, 2] = android_ci_jobs(
+        run_attempt=2,
+        started_at="2026-11-17T18:33:04Z",
+        completed_at="2026-11-17T18:36:40Z",
+    )
+    assert set(d.check_ci(github.api(), SOURCE, platforms="android")) == set(
+        d.REQUIRED_CI_WORKFLOWS
+    )
+    assert github.job_requests == [(1, 2, 1)]
+
+
+@pytest.mark.parametrize("platforms", ["ios", "both"])
+@pytest.mark.parametrize("conclusion", ["cancelled", "timed_out"])
+def test_ios_gate_still_requires_success_of_all_mobile_checks(
+    platforms: str, conclusion: str
+) -> None:
+    github = FakeGitHub().green(SOURCE)
+    github.runs["mobile-ci.yml"][0]["conclusion"] = conclusion
+    github.jobs[1, 1] = android_ci_jobs()
+    refused("GATE", lambda: d.check_ci(github.api(), SOURCE, platforms=platforms))
+    assert github.job_requests == []
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        {"conclusion": "failure"},
+        {"conclusion": "cancelled"},
+        {"conclusion": "timed_out"},
+        {"conclusion": "skipped"},
+        {"status": "in_progress"},
+        {"head_sha": OTHER},
+        {"run_id": 2},
+        {"run_id": True},
+        {"run_attempt": 2},
+        {"run_attempt": "1"},
+        {"name": "Android job with a similar name"},
+    ],
+)
+def test_android_gate_refuses_non_success_or_foreign_job_evidence(bad: dict[str, Any]) -> None:
+    github = FakeGitHub().green(SOURCE)
+    jobs = android_ci_jobs()
+    jobs[0].update(bad)
+    github.jobs[1, 1] = jobs
+    refused("GATE", lambda: d.check_ci(github.api(), SOURCE, platforms="android"))
+
+
+@pytest.mark.parametrize("duplicate", [False, True])
+def test_android_gate_requires_exactly_one_of_each_job(duplicate: bool) -> None:
+    github = FakeGitHub().green(SOURCE)
+    jobs = android_ci_jobs()
+    github.jobs[1, 1] = jobs + jobs[:1] if duplicate else jobs[:1]
+    refused("GATE", lambda: d.check_ci(github.api(), SOURCE, platforms="android"))
+
+
+def test_android_gate_never_uses_jobs_from_a_previous_attempt() -> None:
+    github = FakeGitHub().green(SOURCE)
+    github.runs["mobile-ci.yml"][0]["run_attempt"] = 2
+    github.jobs[1, 1] = android_ci_jobs()
+    refused("GATE", lambda: d.check_ci(github.api(), SOURCE, platforms="android"))
+    assert github.job_requests == [(1, 2, 1)]
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        {"head_sha": OTHER},
+        {"path": ".github/workflows/foreign.yml"},
+        {"head_branch": "feature"},
+        {"event": "pull_request"},
+        {"status": "in_progress"},
+        {"conclusion": "unknown-result"},
+        {"repository": {"id": 99, "full_name": "o/r"}},
+        {"repository": {"id": 1, "full_name": "foreign/repo"}},
+        {"repository": "not an object"},
+        {"head_repository": "not an object"},
+        {"head_repository": {"id": 99, "full_name": "foreign/repo"}},
+        {"id": True},
+        {"id": "1"},
+        {"id": 0},
+        {"run_attempt": None},
+        {"run_attempt": True},
+        {"run_attempt": 0},
+    ],
+)
+def test_android_gate_refuses_untrusted_runs(bad: dict[str, Any]) -> None:
+    github = FakeGitHub().green(SOURCE)
+    github.runs["mobile-ci.yml"][0].update(bad)
+    github.jobs[1, 1] = android_ci_jobs()
+    refused("GATE", lambda: d.check_ci(github.api(), SOURCE, platforms="android"))
+    assert github.job_requests == []
+
+
+@pytest.mark.parametrize("conclusion", ["failure", "timed_out"])
+def test_android_gate_still_requires_full_python_ci_success(conclusion: str) -> None:
+    github = FakeGitHub().green(SOURCE)
+    github.runs["ci.yml"][0]["conclusion"] = conclusion
+    github.jobs[1, 1] = android_ci_jobs()
+    refused("GATE", lambda: d.check_ci(github.api(), SOURCE, platforms="android"))
+
+
+def test_android_job_evidence_is_paginated_and_duplicates_on_later_pages_fail() -> None:
+    github = FakeGitHub().green(SOURCE)
+    jobs = android_ci_jobs()
+    unrelated = [{"name": f"other-{i}"} for i in range(99)]
+    github.jobs[1, 1] = jobs[:1] + unrelated + jobs[1:]
+    d.check_ci(github.api(), SOURCE, platforms="android")
+    assert github.job_requests == [(1, 1, 1), (1, 1, 2)]
+    github.jobs[1, 1].append(jobs[0])
+    refused("GATE", lambda: d.check_ci(github.api(), SOURCE, platforms="android"))
+
+
+def test_android_job_evidence_fails_closed_at_pagination_limit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    github = FakeGitHub().green(SOURCE)
+    github.jobs[1, 1] = android_ci_jobs() + [{"name": "other"}] * 98
+    monkeypatch.setattr(d, "MAX_PAGES", 1)
+    assert "pagination" in refused(
+        "GATE", lambda: d.check_ci(github.api(), SOURCE, platforms="android")
+    )
+
+
+@pytest.mark.parametrize("body", [{}, {"jobs": "wrong type"}, {"jobs": [1]}])
+def test_android_job_evidence_requires_a_list_of_objects(body: dict[str, Any]) -> None:
+    api = d.GitHubApi(
+        "o/r",
+        "token",
+        httpx.Client(transport=httpx.MockTransport(lambda _: httpx.Response(200, json=body))),
+    )
+    refused("GATE", lambda: api.attempt_jobs(1, 1))
+
+
+def test_run_gate_passes_android_scope_to_ci(repo: dict[str, Any]) -> None:
+    github = FakeGitHub().green(repo["head"])
+    github.runs["mobile-ci.yml"][0]["conclusion"] = "cancelled"
+    github.jobs[1, 1] = android_ci_jobs(repo["head"])
+    result = d.run_gate(
+        repo=repo["root"],
+        revision="",
+        platforms="android",
+        mode="verify",
+        environ={"GITHUB_REF": "refs/heads/main", "GITHUB_SHA": repo["head"]},
+        api=github.api(),
+    )
+    assert result["platforms"] == ["android"]
+    assert result["sourceSha"] == repo["head"]
 
 
 def test_versions_must_be_unambiguous() -> None:

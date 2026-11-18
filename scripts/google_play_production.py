@@ -618,6 +618,7 @@ def main() -> int:
                     core.check_ci(
                         core.GitHubApi(github.repository, config["GH_TOKEN"], client),
                         gate["sourceSha"],
+                        platforms="android",
                     )
                     account = core.parse_service_account(
                         config["PLAY_PRODUCTION_SERVICE_ACCOUNT_JSON"]
