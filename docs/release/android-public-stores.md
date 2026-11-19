@@ -90,6 +90,11 @@ new legal agreement or interactive security step, complete it in that store.
    Huawei package parsing is asynchronous: at least two minutes elapse before
    submission; a later poll submits it when ready. Stores perform publication
    themselves after review; GitHub confirms the resulting state.
+   Before every mutating reconciliation, production OTA preflight uses
+   `--release-scope active`: HTTPS/TLS, catalog signature, at least 30 days of
+   catalog validity, manifest SHA-256 and every active-release file remain mandatory.
+   Historical objects are checked independently by `ota-archive-health.yml` with
+   `--release-scope all`; archive failures do not gate RuStore/AppGallery.
 8. Telegram reports each store's status changes, rejection, conflict or unknown
    result, including version, source SHA, APK hash and run URL. Unchanged polling
    does not send repeated messages. A Telegram transport ambiguity is kept as

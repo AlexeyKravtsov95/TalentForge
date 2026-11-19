@@ -284,6 +284,12 @@ def fault_tampered_blob(origin: FakeOrigin) -> str:
     return RELEASE
 
 
+def fault_tampered_manifest(origin: FakeOrigin) -> str:
+    key = blob_key(sha256_ref(real_release().manifest_bytes))
+    origin.objects[key] = origin.objects[key].replace(b"{", b"{ ", 1)
+    return RELEASE
+
+
 def fault_blob_cache_control(origin: FakeOrigin) -> str:
     origin.header_edits[_a_json_blob(origin)] = {"Cache-Control": "no-cache"}
     return RELEASE
@@ -351,6 +357,7 @@ def fault_bucket_policy_readable(origin: FakeOrigin) -> str:
 
 FAULTS = [
     fault_tampered_blob,
+    fault_tampered_manifest,
     fault_blob_cache_control,
     fault_blob_content_encoding,
     fault_png_as_octet_stream,
@@ -368,10 +375,11 @@ FAULTS = [
 
 
 @pytest.mark.parametrize("fault", FAULTS, ids=lambda f: f.__name__.removeprefix("fault_"))
-def test_each_fault_fails_its_check(fault: Callable[[FakeOrigin], str]) -> None:
+@pytest.mark.parametrize("release_scope", ["all", "active"])
+def test_each_fault_fails_its_check(fault: Callable[[FakeOrigin], str], release_scope: str) -> None:
     origin = FakeOrigin(publication())
     check_id = fault(origin)
-    report = run(origin)
+    report = run(origin, release_scope=release_scope)
     assert report.failed
     assert statuses(report)[check_id] is Status.FAIL, report.to_json()
 
@@ -382,12 +390,19 @@ def test_a_catalog_close_to_expiry_warns_to_re_sign() -> None:
     assert statuses(report)["catalog.validity"] is Status.WARN
 
 
-def test_a_store_upload_window_fails_below_the_required_days() -> None:
+@pytest.mark.parametrize("release_scope", ["all", "active"])
+def test_a_store_upload_window_fails_below_the_required_days(release_scope: str) -> None:
     # issue #90: the delivery workflow uploads only with >= 30 days of catalog validity left
-    ok = run(FakeOrigin(publication(validity=timedelta(days=45))), min_validity=timedelta(days=30))
+    ok = run(
+        FakeOrigin(publication(validity=timedelta(days=30))),
+        min_validity=timedelta(days=30),
+        release_scope=release_scope,
+    )
     assert not ok.failed and statuses(ok)["catalog.upload-window"] is Status.PASS
     short = run(
-        FakeOrigin(publication(validity=timedelta(days=20))), min_validity=timedelta(days=30)
+        FakeOrigin(publication(validity=timedelta(days=29))),
+        min_validity=timedelta(days=30),
+        release_scope=release_scope,
     )
     assert short.failed and statuses(short)["catalog.upload-window"] is Status.FAIL
     assert statuses(short)["catalog.validity"] is Status.PASS  # only the upload window fails
@@ -489,11 +504,12 @@ def test_an_unexpected_cname_target_fails() -> None:
     assert found["dns.cname"] is Status.FAIL
 
 
-def test_tls_verdicts() -> None:
+@pytest.mark.parametrize("release_scope", ["all", "active"])
+def test_tls_verdicts(release_scope: str) -> None:
     def untrusted(host: str, legacy: bool) -> TlsInfo:
         raise TlsRefused("certificate not trusted: hostname mismatch")
 
-    found = statuses(run(FakeOrigin(), handshake=untrusted))
+    found = statuses(run(FakeOrigin(), handshake=untrusted, release_scope=release_scope))
     assert found["tls"] is Status.FAIL and "catalog" not in found
 
     def expiring(host: str, legacy: bool) -> TlsInfo:

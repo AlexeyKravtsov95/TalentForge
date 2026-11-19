@@ -233,7 +233,9 @@ def rehearsal(env, tmp_path, monkeypatch):
     client.close()
 
 
-def test_rehearsal_main_contains_only_its_test_request(rehearsal):
+def test_rehearsal_main_contains_only_its_test_request_and_no_inherited_tags(rehearsal):
+    for repo in (rehearsal.remote, rehearsal.repo):
+        assert git(repo, "tag", "--list") == b""
     paths = (
         git(
             rehearsal.repo,

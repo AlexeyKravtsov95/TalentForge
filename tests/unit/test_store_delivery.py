@@ -16,6 +16,7 @@ import hashlib
 import importlib.util
 import json
 import re
+import shlex
 import subprocess
 import sys
 import zipfile
@@ -1596,6 +1597,46 @@ def test_the_workflow_is_owner_started_serialised_and_keeps_secrets_in_environme
     assert "needs: [gate, android-build]" in jobs["public-approval"]
     assert "needs: [gate, public-approval, play-production]" in jobs["public-journal"]
     assert "--release-id" in jobs["public-deliver"]
+
+
+def test_reconciliation_requires_active_ota_preflight_independent_of_archive_health() -> None:
+    text = (ROOT / ".github/workflows/android-store-reconcile.yml").read_text()
+    jobs = workflow_jobs(text)
+    steps = jobs["reconcile"].split("      - ")
+    gate_index, gate = next(
+        (index, step) for index, step in enumerate(steps) if "id: ota-preflight" in step
+    )
+    write_index = next(index for index, step in enumerate(steps) if "DELIVERY_COMMAND:" in step)
+    assert gate_index < write_index
+    assert "if: ${{ !inputs.inspect_only }}" in gate
+    assert "continue-on-error" not in gate
+    command = gate.split("        run: >-\n", 1)[1]
+    assert shlex.split(command) == [
+        "$PY",
+        "tooling/scripts/ota_production_preflight.py",
+        "--expect",
+        "published",
+        "--release-scope",
+        "active",
+        "--keyring",
+        "tooling/docs/ota/keys/production-keyring.json",
+        "--min-validity-days",
+        "30",
+        "--json",
+        "delivery/public/ota-preflight.json",
+    ]
+    # The write step uses GitHub's default success() condition: a failed gate stops it.
+    write_step = steps[write_index]
+    assert "if:" not in write_step
+    assert "args+=(--version-code 6)" in write_step
+    assert "android-public-release" not in text
+    assert "needs:" not in jobs["reconcile"]
+    archive = (ROOT / ".github/workflows/ota-archive-health.yml").read_text()
+    assert "--release-scope all" in archive
+    assert "group: ota-archive-health" in archive
+    assert "group: store-delivery" in text
+    assert "needs:" not in archive
+    assert "secrets." not in archive
 
 
 @pytest.mark.parametrize(("inspect", "release_id"), [(True, "9"), (False, "9"), (False, "")])
