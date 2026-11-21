@@ -179,6 +179,18 @@ A run without preparation uploads `ota-prepare-detection-<run id>` (7 days).
   causes a repeat.
 * One run at a time: `concurrency: ota-prepare` queues runs (never cancels one), so a retry
   never overlaps a running preparation.
+* If `main` already carries the candidate's icon registry (historical replay or a forced
+  rerun), use exact-build source retrieval without cross-build icon reuse. Incremental
+  reuse changes retrieval provenance, which the reproducibility guard correctly rejects.
+  Full retrieval lets the guard verify source hashes and pixels and restore canonical
+  PNG bytes before bundle checks, fixture verification and client replay. New builds keep
+  incremental reuse; no provenance, source-hash, pixel or publication check is relaxed.
+* The restored `.cache/wago` source checkpoints are injected into data-fetch/normalization
+  commands via `TALENT_DATA_CACHE_ROOT=<checkout>/.cache`, **not** into the `pytest`
+  regression command. Inherited cache overrides are also removed. Tests which set
+  `TALENT_DATA_ROOT` need their
+  own isolated raw-cache directory; sharing the downloaded source cache caused false test
+  failures on the 1.60.1.71037 candidate (20 failed tests, although all source and data gates passed).
 * Every run starts from an empty clone and writes only its own artifact: re-running is safe.
   The `propose` job is repeatable as well: no second PR, no commit when the branch already
   holds the same files, and a kept `PREPARED` artifact is proposed again until its PR exists
@@ -369,8 +381,10 @@ step list, the scope guard, and `prepare` end to end over a temporary git reposi
 fake runner - `PREPARED` / `BLOCKED` / `UNKNOWN`, skipped steps, kept files, an untouched source
 checkout, forced re-runs of a committed build (main's dataset and visuals kept; the real
 70450 visuals with the live run's Linux-encoded icon kept as main's bytes; a changed client
-file or pixel blocked), repeated runs, a `BLOCKED` run prepared again
-once the source recovers (then `PREPARED`, then skipped) - plus the CLI's exit code 5, the
+file or pixel blocked), repeated runs, `BLOCKED` and network `UNKNOWN` runs prepared again
+without changed inputs or `force` once the source recovers (then `PREPARED`, then skipped),
+and a real pytest subprocess resolving raw data from its own `TALENT_DATA_ROOT` fixture
+despite shared and inherited cache overrides - plus the CLI's exit code 5, the
 workflow's `Final status` script run in `bash` for every outcome (a step that died, a missing
 decision, a contradictory status are red), and the workflow's no-secret / no-publish
 properties.
@@ -386,3 +400,23 @@ crashed preparations, an inconsistent report and tampered bundles (a stray file,
 executable, a symlink, a deletion, a foreign author) refused; a reviewer's commit never
 overwritten (`CONFLICT`); the CLI's outputs and diagnostics without the token; the workflow's
 candidate selection and final proposal status for every outcome, and the job permissions.
+
+### M7.OTA.HOTFIX.1: production confirmation after merge
+
+Green PR CI and historical replay validate the hotfix, but do not confirm live delivery of
+`1.60.1.71037`. After the owner merges this hotfix:
+
+1. Observe the next scheduled `Dataset freshness` completion triggering `OTA data preparation`
+   on the updated `main`, without manual dispatch or `force`.
+2. Confirm detection chooses `PREPARE` for `1.60.1.71037` against the verified production
+   base `1.60.1.70959-r1` (or records a newer verified base if production has moved).
+   A retained `BLOCKED` artifact must not suppress the attempt.
+3. Require preparation exit 0 and status `PREPARED`, passing regression tests, data checks
+   and the existing G1–G8 policy. Inspect the artifact and confirm one candidate MR on
+   `ota-candidate/forever-1.60.1.71037`; repeats must reuse that MR.
+4. Require trusted staging/package preparation, frozen authorization metadata and full CI
+   on the final candidate head before the same MR becomes ready for the owner's merge.
+5. Only after the owner's authorized merge, observe protected publication and independent
+   public signature, manifest and every-file verification. Confirm the signed production
+   catalog and an OTA-enabled client deliver the intended release. Until these observations
+   are recorded, production confirmation remains pending.

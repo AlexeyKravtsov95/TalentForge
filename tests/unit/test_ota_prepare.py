@@ -289,9 +289,9 @@ def test_a_prepared_preparation_of_the_same_inputs_is_not_repeated() -> None:
     assert detect(prior_artifacts=kept, force=True).action is Action.PREPARE
 
 
-@pytest.mark.parametrize("status", ["UNKNOWN", "FAILED"])
+@pytest.mark.parametrize("status", ["BLOCKED", "UNKNOWN", "FAILED"])
 def test_a_kept_failure_is_prepared_again_on_the_next_run(status: str) -> None:
-    """Network uncertainty and crashes retry; neither is a definitive resource failure."""
+    """Even a failed validation must not suppress the next scheduled attempt."""
     key = detect().preparation_key
     assert key is not None
     d = detect(prior_artifacts=[artifact_name(key, status)])
@@ -569,6 +569,64 @@ def test_run_command_runs_in_the_clone_with_its_own_code(tmp_path: Path, monkeyp
     assert lines[1:] == ["None", str(tmp_path / "src")]
 
 
+@pytest.mark.parametrize("shared_cache", [True, False])
+def test_run_command_uses_shared_cache_for_data_but_not_pytest(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, shared_cache: bool
+) -> None:
+    """The production source cache must never override pytest's isolated fixture cache."""
+    monkeypatch.setenv("TALENT_DATA_ROOT", "/fixture-root")
+    monkeypatch.setenv("TALENT_DATA_CACHE_ROOT", "/ambient-cache")
+    seen: list[dict[str, str]] = []
+
+    def fake_run(argv: list[str], **kwargs: Any) -> subprocess.CompletedProcess[str]:
+        seen.append(kwargs["env"])
+        return subprocess.CompletedProcess(argv, 0)
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    cache = tmp_path / ".cache" if shared_cache else None
+    for argv in (
+        (sys.executable, "-m", "talent_data", "fetch"),
+        (sys.executable, "-m", "talent_data", "normalize", "--offline"),
+        (sys.executable, "-m", "pytest", "-q"),
+    ):
+        assert run_command(argv, tmp_path, tmp_path / f"{argv[2]}.log", cache_root=cache) == 0
+
+    for env in seen[:2]:
+        if cache is None:
+            assert "TALENT_DATA_CACHE_ROOT" not in env
+        else:
+            assert env["TALENT_DATA_CACHE_ROOT"] == str(cache.resolve())
+    assert "TALENT_DATA_CACHE_ROOT" not in seen[2]
+    assert all("TALENT_DATA_ROOT" not in env for env in seen)
+
+
+def test_regression_pytest_reads_its_fixture_cache_in_a_real_subprocess(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("TALENT_DATA_ROOT", "/ambient-root")
+    monkeypatch.setenv("TALENT_DATA_CACHE_ROOT", "/ambient-cache")
+    cache = tmp_path / ".cache"
+    shared = cache / "wago/forever/1.60.1.70009/fixture.csv"
+    shared.parent.mkdir(parents=True)
+    shared.write_text("shared checkpoint\n")
+    test = tmp_path / "test_fixture_cache.py"
+    test.write_text(
+        "from talent_data.paths import raw_cache_dir\n"
+        "def test_fixture_cache(tmp_path, monkeypatch):\n"
+        "    monkeypatch.setenv('TALENT_DATA_ROOT', str(tmp_path))\n"
+        "    fixture = tmp_path / '.cache/wago/forever/1.60.1.70009/fixture.csv'\n"
+        "    fixture.parent.mkdir(parents=True)\n"
+        "    fixture.write_text('isolated fixture\\n')\n"
+        "    resolved = raw_cache_dir('wago', 'forever') / '1.60.1.70009/fixture.csv'\n"
+        "    assert resolved == fixture\n"
+        "    assert resolved.read_text() == 'isolated fixture\\n'\n"
+    )
+    log = tmp_path / "pytest.log"
+    code = run_command((*check_steps()[-1].argv, str(test)), tmp_path, log, cache_root=cache)
+    assert code == 0, log.read_text()
+    assert shared.read_text() == "shared checkpoint\n"
+
+
 # --------------------------------------------------------------------------- prepare
 
 BUILD, BASE = "1.60.1.70500", "1.60.1.70450"
@@ -606,7 +664,14 @@ def repo(tmp_path: Path) -> Path:
     return root
 
 
-STEP_IDS = {s.argv: s.id for s in [*pipeline_steps("forever", BUILD, BASE), *check_steps()]}
+STEP_IDS = {
+    s.argv: s.id
+    for s in [
+        *pipeline_steps("forever", BUILD, BASE),
+        *pipeline_steps("forever", BUILD, BASE, incremental_visuals=False),
+        *check_steps(),
+    ]
+}
 
 
 class FakeRunner:
@@ -729,7 +794,7 @@ def test_a_clean_preparation_is_prepared_but_never_publishable(repo: Path, tmp_p
 
     assert report.status is Readiness.PREPARED
     assert orchestrate.EXIT_CODES[report.status] == 0
-    assert runner.calls == list(STEP_IDS.values())
+    assert runner.calls == [s.id for s in [*pipeline_steps("forever", BUILD, BASE), *check_steps()]]
     assert kinds(report) == {"REQUIRED": {"G1", "G7", "staging", "production"}}
     # the publisher ran on the local candidate commit with the verified production state
     (call,) = evaluated
@@ -896,6 +961,35 @@ def main_with_visuals(repo: Path) -> tuple[str, dict[str, bytes]]:
     return commit_on_main(repo, files), visuals
 
 
+def test_committed_visuals_are_reproduced_without_cross_build_retrieval(
+    repo: Path, tmp_path: Path
+) -> None:
+    """Historical replay must reproduce the original retrieval, preserving canonical bytes."""
+    head, committed = main_with_visuals(repo)
+    linux = with_icon(committed, ICON, LINUX_PNG.read_bytes(), converter=LINUX_CONVERTER)
+    reused = json.loads(linux["icons.json"])
+    reused["provenance"]["retrieval"] = (
+        f"unchanged CASC files reused from {BASE}; evidence reuse.json sha256:{'0' * 64}; "
+        "other files retrieved by FileDataID pinned to clientBuild"
+    )
+    incremental = {**linux, "icons.json": json.dumps(reused).encode()}
+
+    class RetrievalRunner(FakeRunner):
+        def __call__(self, argv: Sequence[str], cwd: Path, log: Path) -> int:
+            self.visuals = incremental if "--reuse-from" in argv else linux
+            return super().__call__(argv, cwd, log)
+
+    runner = RetrievalRunner(manifest=REAL_MANIFEST)
+    report, out = run_prepare(repo, tmp_path, services(runner)[0], detect(main=head))
+    assert report.status is Readiness.PREPARED, report.findings
+    for step in report.steps:
+        if step.step.id in {"visuals-fetch", "visuals-normalize"}:
+            assert "--reuse-from" not in step.step.argv
+    for name, data in committed.items():
+        assert (out / VISUALS / name).read_bytes() == data, name
+    assert "main's committed bytes are kept" in (out / "logs/visuals-reproduction.log").read_text()
+
+
 def test_a_rerun_on_another_platform_keeps_main_visuals_when_only_png_bytes_differ(
     repo: Path, tmp_path: Path
 ) -> None:
@@ -956,29 +1050,30 @@ def test_a_rerun_that_changes_committed_visuals_blocks(
     assert "DIFFERS: icon" in (out / "logs/visuals-reproduction.log").read_text()
 
 
-def test_a_blocked_run_requires_changed_inputs_or_explicit_retry(
-    repo: Path, tmp_path: Path
+@pytest.mark.parametrize("fetch_exit,status", [(1, Readiness.BLOCKED), (5, Readiness.UNKNOWN)])
+def test_a_failed_run_retries_unchanged_inputs_without_force(
+    repo: Path, tmp_path: Path, fetch_exit: int, status: Readiness
 ) -> None:
-    """A definitive missing-resource answer is terminal for unchanged preparation inputs.
-    Explicit force retries once after the missing source has been supplied."""
+    """Missing resources and network failures retry; a successful retry is then reused."""
     head = git(repo, "rev-parse", "HEAD")
     kept: list[str] = []
 
     first = detect(main=head, prior_artifacts=kept)
     assert first.action is Action.PREPARE
-    blocked, _ = run_prepare(repo, tmp_path / "1", services(FakeRunner({"fetch": 1}))[0], first)
-    assert blocked.status is Readiness.BLOCKED
-    kept.append(blocked.artifact_name)
+    failed, _ = run_prepare(
+        repo, tmp_path / "1", services(FakeRunner({"fetch": fetch_exit}))[0], first
+    )
+    assert failed.status is status
+    kept.append(failed.artifact_name)
 
-    stopped = detect(main=head, prior_artifacts=kept)
-    assert stopped.action is Action.NO_ACTION
-    assert stopped.prior_artifact == blocked.artifact_name
-    second = detect(main=head, prior_artifacts=kept, force=True)
+    second = detect(main=head, prior_artifacts=kept)
     assert second.action is Action.PREPARE
+    assert second.prior_artifact == failed.artifact_name
+    assert second.preparation_key == first.preparation_key
     prepared, out = run_prepare(repo, tmp_path / "2", services(FakeRunner())[0], second)
     assert prepared.status is Readiness.PREPARED
-    assert prepared.artifact_name == blocked.artifact_name.replace("-BLOCKED", "-PREPARED")
-    assert json.loads((out / "detection.json").read_text())["forced"] is True
+    assert prepared.artifact_name == artifact_name(first.preparation_key or "", "PREPARED")
+    assert json.loads((out / "detection.json").read_text())["forced"] is False
     kept.append(prepared.artifact_name)
 
     third = detect(main=head, prior_artifacts=kept)
