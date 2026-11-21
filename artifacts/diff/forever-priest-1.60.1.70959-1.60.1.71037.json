@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 5,
+    "token": "PRIEST",
+    "name": "Priest"
+  },
+  "fromBuild": "1.60.1.70959",
+  "toBuild": "1.60.1.71037",
+  "fromContentHash": "sha256:180cc2ecd2f9fa2346c002db381adbc5a0e2d8ff0a04065827b36ac528a12fb1",
+  "toContentHash": "sha256:64a4988224ba98997ac806a84d0b6532233a8352b3f38f4888ea4bbb7d0bbbfc",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 1,
+    "changesByKind": {
+      "descriptionChanged": 1,
+      "effectAdded": 1,
+      "effectBasePointsChanged": 1
+    }
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "nodeId": 105820,
+      "treeId": 1114,
+      "name": "Vampiric Embrace",
+      "changes": [
+        {
+          "kind": "descriptionChanged",
+          "entryId": 130549,
+          "effectIndex": null,
+          "rank": null,
+          "old": "Afflicts your target with Shadow energy that causes all party members to be healed for $s1% of any Shadow spell damage you deal for $d.",
+          "new": "Afflicts your target with Shadow energy that causes all party members to be healed for $s1% of any Shadow spell damage you deal for $d. You receive $s2% increased healing on yourself from this effect."
+        },
+        {
+          "kind": "effectBasePointsChanged",
+          "entryId": 130549,
+          "effectIndex": 0,
+          "rank": null,
+          "old": 20,
+          "new": 10
+        },
+        {
+          "kind": "effectAdded",
+          "entryId": 130549,
+          "effectIndex": 1,
+          "rank": null,
+          "old": null,
+          "new": {
+            "index": 1,
+            "perRank": null,
+            "perRankStatus": "none",
+            "basePoints": 100,
+            "unresolvedReason": null
+          }
+        }
+      ]
+    }
+  ]
+}
