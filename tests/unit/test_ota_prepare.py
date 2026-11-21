@@ -225,6 +225,18 @@ def test_an_unverifiable_catalog_never_makes_a_build_published() -> None:
     assert "not treated as published" in d.reason
 
 
+@pytest.mark.parametrize("production", [UNREACHABLE, ABSENT, published("1.60.1.70450-r1")])
+def test_merged_unpublished_build_never_restarts_source_preparation(production) -> None:
+    d = detect(production=production, committed={*COMMITTED, str(NEW)}, main="b" * 40)
+    assert d.action is Action.NO_ACTION
+    assert "MERGED" in d.reason and "publication" in d.reason
+    assert d.preparation_key is None and d.prior_artifact is None
+    assert (
+        detect(production=production, committed={*COMMITTED, str(NEW)}, force=True).action
+        is Action.PREPARE
+    )
+
+
 def test_the_bundled_product_build_needs_no_ota_release() -> None:
     builds = INDEX[:2]  # 70450 is the newest publishable build
     for production in (ABSENT, UNREACHABLE):

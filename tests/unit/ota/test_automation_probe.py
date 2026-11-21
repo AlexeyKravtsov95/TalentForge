@@ -518,6 +518,37 @@ def test_probe_does_not_wait_for_its_own_read_only_job(pending, monkeypatch):
     assert probe(pending).action == "PUBLISH"
 
 
+@pytest.mark.parametrize("age,expected", [(60, "WAIT"), (3 * 3600, "BLOCKED")])
+def test_wakeup_history_detects_stalled_active_delivery(pending, monkeypatch, age, expected):
+    api = pending[2]
+    run = api.run_record(199, WORKFLOW, api.head, "repository_dispatch")
+    run.update(status="in_progress", conclusion=None)
+    api.productions.append(run)
+    pages = api.pages
+    monkeypatch.setattr(
+        api,
+        "pages",
+        lambda path, member, **kwargs: (
+            [
+                {
+                    "name": "preflight",
+                    "run_id": 199,
+                    "run_attempt": 1,
+                    "head_sha": api.head,
+                    "status": "in_progress",
+                    "conclusion": None,
+                    "started_at": (NOW - timedelta(seconds=age)).isoformat(),
+                }
+            ]
+            if "/199/" in path
+            else pages(path, member, **kwargs)
+        ),
+    )
+    result = probe(pending)
+    assert result.action == expected
+    assert result.reason == ("DELIVERY_STALLED" if expected == "BLOCKED" else "RUN_PENDING")
+
+
 def test_successful_rerun_does_not_hide_previous_failed_attempt(pending, monkeypatch):
     api = pending[2]
     add_failure(pending, 101)

@@ -231,7 +231,7 @@ jobs:
           CI_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
         run: |
           python scripts/ota_premerge.py "$PHASE" --ci-run-id "$CI_RUN_ID" \
-            --ci-attempt "$CI_ATTEMPT" --auto-data-only --request "$RUNNER_TEMP/request/release-request.json" \
+            --ci-attempt "$CI_ATTEMPT" --request "$RUNNER_TEMP/request/release-request.json" \
             --out "$RUNNER_TEMP/review"
 
   premerge-main-change:

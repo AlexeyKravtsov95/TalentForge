@@ -98,6 +98,7 @@ Reason = Literal[
     "DISABLED",
     "INVOCATION_REFUSED",
     "BASE_NOT_CURRENT",
+    "DELIVERY_STALLED",
 ]
 
 
@@ -432,7 +433,7 @@ def _run_identity(run: dict[str, object], head: str, run_id: int, attempt: int) 
     }.items():
         same(run.get(key), expected, "HISTORY_UNAVAILABLE", key)
     require(
-        run.get("event") in {"workflow_run", "schedule"},
+        run.get("event") in {"workflow_run", "schedule", "repository_dispatch"},
         "HISTORY_UNAVAILABLE",
         "unexpected automatic event",
     )
@@ -522,6 +523,8 @@ def _backoff(
                 "duplicate heavy jobs",
             )
             if run.get("status") != "completed":
+                if now - min(_utc(j["started_at"]) for j in heavy) > timedelta(hours=2):
+                    return "DELIVERY_STALLED", None
                 return "RUN_PENDING", None
             artifacts = api.pages(f"/actions/runs/{run_id}/artifacts", "artifacts")
             for failed in sorted(heavy, key=lambda job: job.get("name") != "writer"):
@@ -828,7 +831,13 @@ def main(
     raw = result.model_dump_json(by_alias=True)
     args.status_file.write_text(raw + "\n")
     print(raw)
+    if summary := env.get("GITHUB_STEP_SUMMARY"):
+        state = "PUBLISHING" if result.action in {"PUBLISH", "VERIFY", "RECOVER"} else result.action
+        with Path(summary).open("a") as out:
+            out.write(f"## OTA delivery: {state}\n\nReason: `{result.reason}`\n\n")
+            if state == "WAIT":
+                out.write("Waiting for an external condition; publication is not confirmed.\n")
     if output := env.get("GITHUB_OUTPUT"):
         with Path(output).open("a") as out:
             out.write(f"action={result.action}\n")
-    return 0  # Typed refusal/wait is routing data; it never implies an interrupted writer.
+    return 0  # Routing only; delivery-status reports the actual delivery state separately.

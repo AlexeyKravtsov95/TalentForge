@@ -212,6 +212,15 @@ def decide(
             f"(active {active.release_id if active else None})",
         )
 
+    # Source preparation and publication are independent lifecycles. A different
+    # main SHA or an unavailable source must not rebuild data already reviewed.
+    if str(candidate) in committed_builds and candidate > product_build and not force:
+        return result(
+            Action.NO_ACTION,
+            f"MERGED: {candidate} already has committed data on main; "
+            "release authorization/publication is reconciled by the production publisher",
+        )
+
     # 4. the base: what an up-to-date install shows (or the operator's choice)
     base_release_id: str | None = None
     if requested_base is not None:

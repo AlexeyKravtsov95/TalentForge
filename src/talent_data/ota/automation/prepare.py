@@ -362,6 +362,12 @@ def select_candidate(repo: Path, source: str, catalog: OtaCatalog) -> str | None
     # publishing older skipped builds while it awaits approval/recovery.
     if git(repo, "show", f"{source}:{REQUEST_DIR}/{build}-r1.json", missing_ok=True):
         return None
+    from talent_data.ota.automation.data_only import tagged_request
+
+    frozen = tagged_request(repo, f"{build}-r1", ref=source)
+    if frozen is not None:
+        git(repo, "merge-base", "--is-ancestor", frozen.source_commit, source)
+        return None  # Frozen authorization owns the package across later main changes.
     return build
 
 

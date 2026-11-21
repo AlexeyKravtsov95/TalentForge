@@ -8,6 +8,8 @@ name: OTA production publication
 # GitHub may replace pending runs: committed requests + durable journal + periodic
 # reconciliation recover lost events. Do not assume FIFO or provider S3 CAS.
 on:
+  repository_dispatch:
+    types: [ota-delivery-authorized]
   workflow_run:
     workflows: ["CI"]
     types: [completed]
@@ -48,7 +50,7 @@ jobs:
     if: >-
       github.repository == 'AlexeyKravtsov95/TalentForge' &&
       github.ref == 'refs/heads/main' &&
-      (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'schedule' || github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch' ||
        (github.event_name == 'workflow_run' &&
         github.event.workflow_run.conclusion == 'success' &&
         github.event.workflow_run.event == 'push' &&
@@ -92,7 +94,7 @@ jobs:
           daily=false
           case "$EVENT" in
             workflow_dispatch) action=MANUAL; delivery=true ;;
-            workflow_run) action="$PROBE_ACTION" ;;
+            workflow_run|repository_dispatch) action="$PROBE_ACTION" ;;
             schedule)
               case "$SCHEDULE" in
                 '41 3 * * *') daily=true ;;
@@ -166,7 +168,7 @@ jobs:
           EXECUTE: ${{ inputs.execute }}
         run: |
           case "$EVENT" in
-            workflow_run|schedule) operation=publish; execute=true ;;
+            workflow_run|schedule|repository_dispatch) operation=publish; execute=true ;;
             workflow_dispatch)
               case "$MODE" in
                 publish|reconcile|resign|verify|signer-smoke|init-journal) operation="$MODE" ;;
@@ -404,9 +406,72 @@ jobs:
     runs-on: ubuntu-24.04
     permissions: {}
     steps:
-      # Keep a partial preflight failure visible in run history while ready targets proceed.
+      # Keep a partial preflight failure visible independently of a skipped/queued writer.
       - name: Preserve partial batch failure
         run: exit 1
+
+  delivery-status:
+    needs: [probe, preflight, writer]
+    if: always() && github.event_name != 'workflow_dispatch' && needs.probe.result != 'skipped'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Install diagnostics
+        run: pip install -e ".[ota]"
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        if: github.event_name != 'workflow_dispatch'
+        with:
+          artifact-ids: ${{ needs.probe.outputs.artifact_id }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/delivery-result/probe
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        if: needs.writer.outputs.artifact == 'true'
+        with:
+          artifact-ids: ${{ needs.writer.outputs.artifact_id }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/delivery-result/writer
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        if: needs.writer.outputs.artifact != 'true' && needs.preflight.outputs.artifact == 'true'
+        with:
+          artifact-ids: ${{ needs.preflight.outputs.artifact_id }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/delivery-result/preflight
+      - name: Report actual delivery state
+        if: always()
+        env:
+          FAILED: ${{ needs.probe.result == 'failure' || needs.preflight.result == 'failure' || needs.writer.result == 'failure' || needs.writer.result == 'cancelled' || needs.preflight.outputs.partial_failure == 'true' }}
+        run: |
+          python - <<'PYTHON'
+          import os
+          from pathlib import Path
+          from talent_data.ota.automation.cli import read_status
+          from talent_data.ota.automation.probe import read_probe
+          from talent_data.ota.automation.delivery_status import delivery_state
+          root = Path(os.environ["RUNNER_TEMP"]) / "delivery-result"
+          probe_path = root / "probe/probe.json"
+          probe = read_probe(probe_path.read_bytes()) if probe_path.is_file() else None
+          statuses = [root / "writer/candidate-status.json", root / "preflight/preflight.json"]
+          status = next((read_status(p.read_bytes()) for p in statuses if p.is_file()), None)
+          state = delivery_state(probe, status, failed=os.environ["FAILED"] == "true")
+          reason = status.reason if status else probe.reason if probe else "EVIDENCE_MISSING"
+          with Path(os.environ["GITHUB_STEP_SUMMARY"]).open("a") as out:
+              out.write(f"## OTA delivery: {state}\n\nReason: `{reason}`\n")
+          print(f"OTA delivery: {state} ({reason})")
+          if state == "WAIT":
+              print("::warning::OTA delivery is waiting; publication is not confirmed")
+          if state == "BLOCKED":
+              raise SystemExit(1)
+          PYTHON
 
   renewal-preflight:
     needs: [probe, preflight, writer]
@@ -589,7 +654,7 @@ jobs:
     if: >-
       always() && github.repository == 'AlexeyKravtsov95/TalentForge' &&
       github.ref == 'refs/heads/main' &&
-      (needs.probe.outputs.action == 'BLOCKED' || needs.preflight.outputs.artifact == 'true' || needs.writer.result == 'failure' ||
+      (needs.probe.outputs.action == 'BLOCKED' || needs.probe.outputs.action == 'WAIT' || needs.preflight.outputs.artifact == 'true' || needs.writer.result == 'failure' ||
        needs.writer.result == 'cancelled' || needs.renewal-preflight.outputs.artifact == 'true')
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -640,13 +705,13 @@ jobs:
           merge-multiple: true
           path: ${{ runner.temp }}/renewal-writer
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        if: needs.probe.outputs.action == 'BLOCKED'
+        if: needs.probe.outputs.action == 'BLOCKED' || needs.probe.outputs.action == 'WAIT'
         with:
           artifact-ids: ${{ needs.probe.outputs.artifact_id }}
           merge-multiple: true
           path: ${{ runner.temp }}/delivery-probe
       - name: Notify probe refusal
-        if: needs.probe.outputs.action == 'BLOCKED'
+        if: needs.probe.outputs.action == 'BLOCKED' || needs.probe.outputs.action == 'WAIT'
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -660,10 +725,11 @@ jobs:
           from talent_data.ota.automation.cli import StatusDocument
           root = Path(os.environ["RUNNER_TEMP"])
           probe = read_probe((root / "delivery-probe/probe.json").read_bytes())
-          if probe.action != "BLOCKED":
+          if probe.action not in {"BLOCKED", "WAIT"}:
               raise SystemExit(1)
           document = StatusDocument(schema_version=1, kind="ota-production-status", command="preflight",
-              operation="publish", outcome="BLOCKED", stage="PLANNING", reason="REQUEST_AUTHORIZATION_FAILED",
+              operation="publish", outcome=probe.action, stage="PLANNING",
+              reason=probe.reason if probe.action == "WAIT" or probe.reason == "DELIVERY_STALLED" else "REQUEST_AUTHORIZATION_FAILED",
               writer_needed=False, operations=())
           (root / "probe-refusal.json").write_text(document.model_dump_json(by_alias=True))
           PYTHON

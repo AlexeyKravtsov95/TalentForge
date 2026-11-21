@@ -326,4 +326,9 @@ def commit_authorization(
         (record.model_dump_json(by_alias=True, indent=2) + "\n").encode(),
         request.created_at,
     )
+    # A durable request precedes the hint. Retrying after a lost HTTP response
+    # repeats only the hint; scheduled reconciliation also discovers the tag.
+    # repository_dispatch is an explicit GITHUB_TOKEN recursion exception and
+    # avoids the workflow_run chain-depth limit. No payload grants authority.
+    api.repo("POST", "/dispatches", data={"event_type": "ota-delivery-authorized"})
     return "refs/tags/" + tag

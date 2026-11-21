@@ -13,6 +13,37 @@ from tests.unit.ota.test_automation_requests import request_wire
 ROOT = Path(__file__).resolve().parents[3]
 
 
+def test_every_premerge_workflow_invocation_matches_the_real_cli():
+    import os
+    import re
+    import shlex
+    import sys
+
+    text = (ROOT / ".github/workflows/ota-release-prepare.yml").read_text()
+    commands = re.findall(r"python scripts/ota_premerge.py (.*?)(?=\n[^ ]|\n\n|\Z)", text, re.S)
+    assert commands
+    for command in commands:
+        # Read exactly the shell command including continuations, not the following YAML.
+        lines = command.splitlines()
+        invocation = []
+        for line in lines:
+            invocation.append(line.rstrip().removesuffix("\\"))
+            if not line.rstrip().endswith("\\"):
+                break
+        arguments = shlex.split(" ".join(invocation))
+        arguments = ["bind" if value == "$PHASE" else value for value in arguments]
+        arguments = [
+            "1" if value in {"$CI_RUN_ID", "$CI_ATTEMPT"} else value for value in arguments
+        ]
+        run = subprocess.run(
+            [sys.executable, str(ROOT / "scripts/ota_premerge.py"), *arguments],
+            env={**os.environ, "GITHUB_REPOSITORY": "invalid/repo"},
+            capture_output=True,
+            text=True,
+        )
+        assert run.returncode == 3 and "PREMERGE_TRIGGER" in run.stderr, run.stderr
+
+
 def workflow_jobs(name="ota-production-publish.yml"):
     """Read job boundaries by YAML indentation; actionlint validates the full grammar."""
     import re
@@ -31,6 +62,7 @@ def test_production_job_topology_serializes_preflights_and_independent_renewal()
     assert set(jobs) == {
         "probe",
         "delivery-result",
+        "delivery-status",
         "preflight",
         "writer",
         "renewal-preflight",
@@ -114,6 +146,7 @@ def test_production_secrets_artifacts_and_trusted_checkout_boundaries():
     [
         ("workflow_run", "", "", "publish", "true"),
         ("schedule", "", "", "publish", "true"),
+        ("repository_dispatch", "", "", "publish", "true"),
         ("workflow_dispatch", "reconcile", "false", "reconcile", "false"),
         ("workflow_dispatch", "signer-smoke", "true", "signer-smoke", "true"),
         ("workflow_dispatch", "init-journal", "true", "init-journal", "true"),

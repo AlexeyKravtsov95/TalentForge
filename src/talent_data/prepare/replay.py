@@ -126,7 +126,14 @@ def detect_at(
         builds=builds,
         production=production,
         product_build=product,
-        committed_builds=committed_builds(repo, main, game.key),
+        # Reconstruct the repository before the patch as well as the old bundle
+        # and catalog. The modern checkout also holds the later merged patch;
+        # detection must not mistake those comparison fixtures for historical facts.
+        committed_builds={
+            build
+            for build in committed_builds(repo, main, game.key)
+            if ClientVersion.parse(build) <= ClientVersion.parse(BASE_BUILD)
+        },
         main_commit=main,
         now=now,
     )
