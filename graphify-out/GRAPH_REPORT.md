@@ -1,17 +1,17 @@
 # Graph Report - TalentForge-ota-hotfix2  (2026-11-22)
 
 ## Corpus Check
-- 828 files · ~992,246 words
+- 828 files · ~992,426 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 24 file(s) not represented in the graph (top: .xml 9, (none) 4, .properties 2)
 
 ## Summary
-- 16778 nodes · 54030 edges · 513 communities (374 shown, 139 thin omitted)
-- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 5519 edges (avg confidence: 0.9)
+- 16778 nodes · 54033 edges · 516 communities (377 shown, 139 thin omitted)
+- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 5520 edges (avg confidence: 0.9)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `7dff031e`
+- Built from commit: `478365f5`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -260,7 +260,7 @@
 - android-store-check
 - Any
 - types
-- test_automation_public_verify.py
+- run_bounded
 - measure
 - EditorLocalizationLayoutUiTest
 - product_build
@@ -480,11 +480,14 @@
 - Forever 1.60.1.70862 talent tooltip coverage (M5.V2)
 - _load_apk_checks
 - sign_der
+- delivery_routing.py
 - test_additional_ca_is_used_only_for_exact_rustore_host
 - remember
+- base64
 - release_revision
 - Forever 1.60.1.70888 talent tooltip coverage (M5.V2)
 - Forever 1.60.1.70938 talent tooltip coverage (M5.V2)
+- test_data_only_policy.py
 - on
 - candidate_base_release_id
 - staging_run
@@ -535,7 +538,7 @@
 - **Fail-closed release trust across publisher and client** — docs_ota_adr_0001_remote_dataset_delivery_signed_hash_chain, docs_ota_ota_contract_v1_ordered_verification, docs_ota_publisher_and_security_publisher_gates, docs_ota_client_implementation_notes_strict_client_reader [INFERRED 0.95]
 - **Successful release notifications require full public-byte verification before shared deduplication** — docs_superpowers_specs_2026_10_31_ota_github_publication_design_publication_outcome_verification, docs_ota_telegram_notifications_verified_publication_notifications, docs_ota_telegram_notifications_durable_delivery_deduplication [INFERRED 0.95]
 
-## Communities (513 total, 139 thin omitted)
+## Communities (516 total, 139 thin omitted)
 
 ### Community 0 - "TalentDataDocument"
 Cohesion: 0.01
@@ -563,7 +566,7 @@ Nodes (56): main(), ManifestClassEntry, ManifestValidation, _Model, build_manife
 
 ### Community 6 - "test_automation_e2e.py"
 Cohesion: 0.02
-Nodes (109): Task 12: Общая проверка и reviewable delivery change, Task 5: Scoped outcome, точный failure stage и безопасная диагностика, Task 6: Разделение trigger CI и request CI, Рабочая среда и карта файлов, CiPemSigner, SecretError, temporary_aws_profile(), _temporary_secret() (+101 more)
+Nodes (128): Task 12: Общая проверка и reviewable delivery change, Task 5: Scoped outcome, точный failure stage и безопасная диагностика, Task 6: Разделение trigger CI и request CI, Рабочая среда и карта файлов, CiPemSigner, SecretError, temporary_aws_profile(), _temporary_secret() (+120 more)
 
 ### Community 7 - "TalentForgeTheme"
 Cohesion: 0.08
@@ -603,7 +606,7 @@ Nodes (60): Actions, AllBuildsScreen(), BuildRow(), BuildRowContent(), Duplicate
 
 ### Community 17 - "git"
 Cohesion: 0.03
-Nodes (88): actual_candidate(), API, commit_tree(), stamp(), Store, World, Writer, candidate_fixture() (+80 more)
+Nodes (73): actual_candidate(), API, commit_tree(), stamp(), Store, World, Writer, candidate_fixture() (+65 more)
 
 ### Community 18 - "OtaConfig"
 Cohesion: 0.05
@@ -615,11 +618,11 @@ Nodes (39): FreshnessStatus, check(), http(), kotlin(), latest_publishable(), lo
 
 ### Community 20 - "OtaPublisherError"
 Cohesion: 0.02
-Nodes (206): Task 2: Dedup private reference checks внутри каждого барьера, Task 3: Parallel immutable uploads и однократная запись catalog, fixture(), read_live(), phase_publish(), _all_upload_blobs(), _blob_key(), _cmd_attach_signature() (+198 more)
+Nodes (201): Task 2: Dedup private reference checks внутри каждого барьера, Task 3: Parallel immutable uploads и однократная запись catalog, fixture(), read_live(), phase_publish(), _all_upload_blobs(), _blob_key(), _cmd_attach_signature() (+193 more)
 
 ### Community 21 - "sha256_ref"
-Cohesion: 0.02
-Nodes (122): Task 10: Workflow routing для event, watchdog и daily renewal, Task 7: Closed delivery telemetry и неизменный approval t0, Task 8: Read-only probe и ограниченный recovery backoff, _emit(), read_status(), StatusDocument, _combine(), _empty() (+114 more)
+Cohesion: 0.03
+Nodes (74): Task 7: Closed delivery telemetry и неизменный approval t0, Task 8: Read-only probe и ограниченный recovery backoff, PublicVerification, ApprovalEpoch, DeliveryIdentity, DeliveryRecorder, DeliveryTimings, IoCounters (+66 more)
 
 ### Community 22 - "test_verify_ios_archive.py"
 Cohesion: 0.09
@@ -646,8 +649,8 @@ Cohesion: 0.18
 Nodes (5): main(), Publisher, fixture_manifest_sha256(), write_test_keyring(), entry()
 
 ### Community 29 - "release.py"
-Cohesion: 0.05
-Nodes (34): release(), ReleaseProvenance, build_manifest(), build_release(), commit_snapshot(), release_files(), role_for_path(), serialize_manifest() (+26 more)
+Cohesion: 0.04
+Nodes (45): Task 4: Bounded public prefetch с прежней строгой проверкой, release(), PublicStore, _BlobCache, _fetch(), budget(), _fetch_once(), _fetch_once_unobserved() (+37 more)
 
 ### Community 30 - "TalentTreeCanvas.kt"
 Cohesion: 0.05
@@ -978,8 +981,8 @@ Cohesion: 0.05
 Nodes (41): ClassTokenSerializer, ContentHash, ContentHashSerializer, ContractKind, ALLOCATION_BUILD, ALLOCATION_CONFORMANCE, DATASET_MANIFEST, TALENT_DATA (+33 more)
 
 ### Community 128 - "argparse"
-Cohesion: 0.03
-Nodes (62): main(), main(), positive_seconds(), run(), stop_group(), changes(), main(), report() (+54 more)
+Cohesion: 0.05
+Nodes (35): main(), main(), positive_seconds(), run(), stop_group(), changes(), main(), report() (+27 more)
 
 ### Community 129 - "orchestrate.py"
 Cohesion: 0.06
@@ -1162,8 +1165,8 @@ Cohesion: 0.12
 Nodes (13): buildTalentInspectorContent(), prerequisiteLineOf(), talentNodeFacts(), TalentPrerequisiteProgress, TalentTreeNodeFacts, tierLineOf(), buildTalentTreePresentation(), nodePresentation() (+5 more)
 
 ### Community 182 - "ReleaseUnderTest"
-Cohesion: 0.05
-Nodes (54): bind(), build(), ci_gates(), conditions(), _git(), main(), render_conditions(), staging_inputs() (+46 more)
+Cohesion: 0.04
+Nodes (57): bind(), build(), ci_gates(), conditions(), _git(), main(), render_conditions(), staging_inputs() (+49 more)
 
 ### Community 184 - "ota_staging_stand.py"
 Cohesion: 0.10
@@ -1333,9 +1336,9 @@ Nodes (6): choose_runtime(), _ios_runtimes(), QuietServer, runtime_diagnostics()
 Cohesion: 0.15
 Nodes (12): load_tool(), serving(), test_a_page_published_with_another_date_does_not_pass(), test_an_unreachable_site_fails(), test_cli(), test_matching_bytes_still_require_a_real_early_utf8_declaration(), test_matching_bytes_with_a_meta_declaration_must_still_be_valid_utf8(), test_render_requires_exactly_the_one_placeholder() (+4 more)
 
-### Community 245 - "test_automation_public_verify.py"
-Cohesion: 0.05
-Nodes (31): Task 1: Bounded immutable execution с полным drain, Task 4: Bounded public prefetch с прежней строгой проверкой, PublicStore, _BlobCache, _fetch(), budget(), _fetch_once(), _fetch_once_unobserved() (+23 more)
+### Community 245 - "run_bounded"
+Cohesion: 0.14
+Nodes (8): Task 1: Bounded immutable execution с полным drain, run_bounded(), test_bounded_order_and_overlap(), worker(), test_failure_stops_submission_and_drains_started_worker(), test_input_failure_also_drains_workers(), test_invalid_limit_does_not_consume_input(), test_serial_equivalence()
 
 ### Community 246 - "measure"
 Cohesion: 0.19
@@ -1522,8 +1525,8 @@ Cohesion: 0.05
 Nodes (45): artifact_name(), kept(), FindingKind, StepKind, StepOutcome, _author_email(), Candidate, file_changes() (+37 more)
 
 ### Community 309 - "test_automation_provenance.py"
-Cohesion: 0.05
-Nodes (49): allocation_shape(), approval_text(), AutomaticRequest, commit_authorization(), Policy, policy_bytes(), record_matches(), standing_record() (+41 more)
+Cohesion: 0.07
+Nodes (29): allocation_shape(), approval_text(), AutomaticRequest, commit_authorization(), Policy, policy_bytes(), record_matches(), verify_data_only() (+21 more)
 
 ### Community 310 - "play_signing_selftest.sh"
 Cohesion: 0.30
@@ -1997,9 +2000,17 @@ Nodes (12): concurrency, cancel-in-progress, group, jobs, prepare, name, on, wor
 Cohesion: 0.33
 Nodes (5): Every gap, Forever 1.60.1.70862 talent tooltip coverage (M5.V2), Rank descriptions, Templates of the talents with gaps, Token categories
 
+### Community 496 - "delivery_routing.py"
+Cohesion: 0.04
+Nodes (63): Task 10: Workflow routing для event, watchdog и daily renewal, _emit(), read_status(), StatusDocument, _combine(), _empty(), main(), prior_failures() (+55 more)
+
 ### Community 498 - "remember"
 Cohesion: 0.12
 Nodes (5): devicePrimaryLanguageTag(), platformPrimaryLanguageTag(), platformPrimaryLanguageTag(), platformPrimaryLanguageTag(), platformPrefersReducedMotion()
+
+### Community 499 - "base64"
+Cohesion: 0.07
+Nodes (29): fault_bad_signature(), fault_expired(), fault_restore(), payload_of(), _fetch(), HelperError, inside_git_checkout(), keygen() (+21 more)
 
 ### Community 500 - "release_revision"
 Cohesion: 0.40
@@ -2012,6 +2023,10 @@ Nodes (5): Every gap, Forever 1.60.1.70888 talent tooltip coverage (M5.V2), Rank
 ### Community 502 - "Forever 1.60.1.70938 talent tooltip coverage (M5.V2)"
 Cohesion: 0.33
 Nodes (5): Every gap, Forever 1.60.1.70938 talent tooltip coverage (M5.V2), Rank descriptions, Templates of the talents with gaps, Token categories
+
+### Community 503 - "test_data_only_policy.py"
+Cohesion: 0.12
+Nodes (13): policy_release(), rebuild_candidate(), snapshots(), test_automatic_authorization_creates_only_an_immutable_tag(), repo(), test_automatic_policy_blocks_structural_changes(), test_automatic_policy_rejects_actual_mixed_code_and_data_commits(), test_data_patch_preserves_saved_allocation_decisions() (+5 more)
 
 ### Community 504 - "on"
 Cohesion: 0.25

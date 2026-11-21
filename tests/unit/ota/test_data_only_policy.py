@@ -390,6 +390,13 @@ def test_tagged_request_is_discovered_and_uses_exact_source_ci(policy_release):
     assert json.loads(request_bytes(repo, request))["manifestSha256"] == request.manifest_sha256
     receipt = data_only.standing_record(repo, "origin/main", request)
     assert receipt is not None and data_only.MARKER.encode() in receipt
+    from talent_data.ota.automation.timings import resolve_approval_epoch
+
+    # Automatic delivery's failure budget compares the probe's authorization bytes
+    # with the recorder's digest. A tag has no approval-file commit or proven clock.
+    epoch = resolve_approval_epoch(object(), repo, request)
+    assert epoch.approval_digest == sha256_ref(receipt)
+    assert epoch.approved_at is None and epoch.time_source is None
     proof = data_only.verify_data_only(repo, source, request, under_test, catalog, store)
     from talent_data.ota.automation.publisher import approval_directory
 
