@@ -380,11 +380,29 @@ def test_visuals_source_resume_is_bounded_and_never_swallows_a_failure(tmp_path,
 
     log = tmp_path / "logs/visuals-fetch.log"
     assert script.run_replay_command(argv, tmp_path, log, run=run, sleep=waits.append) == code
-    assert len(calls) == (8 if code == 5 else 1)
+    assert len(calls) == (24 if code == 5 else 1)
     assert calls == [(argv, tmp_path)] * len(calls)
-    assert waits == ([65] * 7 if code == 5 else [])
+    assert waits == ([65] * 23 if code == 5 else [])
     assert log.read_text().splitlines().count(f"exit {code}") == len(calls)
     assert len(list(log.parent.glob("*.attempt-*.log"))) == len(calls)
+
+
+def test_historical_source_can_resume_past_eight_quota_windows(tmp_path):
+    calls, waits = [], []
+    argv = (sys.executable, "-m", "talent_data", "visuals", "fetch", "--build", replay.PATCH_BUILD)
+
+    def run(command, cwd, log):
+        calls.append((command, cwd))
+        code = 5 if len(calls) <= 20 else 0
+        log.write_text(f"quota window {len(calls)}: exit {code}\n")
+        return code
+
+    log = tmp_path / "logs/visuals-fetch.log"
+    assert script.run_replay_command(argv, tmp_path, log, run=run, sleep=waits.append) == 0
+    assert calls == [(argv, tmp_path)] * 21
+    assert waits == [65] * 20
+    assert "quota window 1: exit 5" in log.read_text()
+    assert "quota window 21: exit 0" in log.read_text()
 
 
 def test_visuals_source_resume_keeps_verified_raw_files_and_fetches_only_missing(tmp_path):

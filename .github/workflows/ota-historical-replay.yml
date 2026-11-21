@@ -32,7 +32,8 @@ jobs:
     # Pinned like ota-prepare.yml: the preparation regenerates icons, whose PNG bytes depend on
     # the image's Pillow wheel (committed builds are compared by pixels, docs/talent-visuals.md §3).
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    # Up to 24 source quota windows, then candidate regression and the real Kotlin client.
+    timeout-minutes: 90
     steps:
       # Full history: the stand and the preparation build from origin/main, the gates need it.
       - uses: actions/checkout@v4

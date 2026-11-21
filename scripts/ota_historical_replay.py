@@ -212,7 +212,7 @@ def run_replay_command(
     run: Runner = run_command,
     sleep: Callable[[float], None] = time.sleep,
 ) -> int:
-    """Resume the legacy full icon download after a source outage, at most eight times.
+    """Resume the legacy full icon download after a source outage, at most 24 attempts.
 
     Wago may rate-limit the 359-file historical download with HTTP 429. The old CLI's
     short internal backoff cannot span a quota window. Keep the same argv, checkout
@@ -220,21 +220,22 @@ def run_replay_command(
     failed attempt remains in the logs. Usage/integrity/check failures are never
     retried, and an exhausted source failure remains nonzero, never PASS.
     """
+    max_attempts = 24
     if tuple(argv[1:5]) != ("-m", "talent_data", "visuals", "fetch"):
         return run(argv, cwd, log)
     log.parent.mkdir(parents=True, exist_ok=True)
     with log.open("wb") as combined:
-        for attempt in range(1, 9):
+        for attempt in range(1, max_attempts + 1):
             attempt_log = log.with_name(f"{log.stem}.attempt-{attempt}.log")
             code = run(argv, cwd, attempt_log)
-            combined.write(f"# attempt {attempt}/8: exit {code}\n".encode())
+            combined.write(f"# attempt {attempt}/{max_attempts}: exit {code}\n".encode())
             combined.write(attempt_log.read_bytes())
             combined.flush()
-            if code != EXIT_SOURCE_UNAVAILABLE or attempt == 8:
+            if code != EXIT_SOURCE_UNAVAILABLE or attempt == max_attempts:
                 return code
             print(
                 f"[replay] visuals source unavailable (exit {code}); "
-                f"resume {attempt + 1}/8 in 65s, same build/cache; {attempt_log.name}",
+                f"resume {attempt + 1}/{max_attempts} in 65s, same build/cache; {attempt_log.name}",
                 file=sys.stderr,
             )
             sleep(65)
