@@ -860,6 +860,13 @@ def prepare(
         findings.append(Finding(FindingKind.BLOCKER, "tooling", str(exc)))
         return _finish(report, out, workspace, services)
 
+    # A historical/forced rerun must reproduce the committed retrieval provenance too.
+    # Cross-build reuse changes that evidence even for identical source files/pixels,
+    # preventing keep_committed_visuals from restoring the canonical PNG bytes. Use
+    # exact-build source retrieval for these reruns; keep every reproducibility check.
+    if (workspace / f"data/visuals/{game}/{build}/icons.json").is_file():
+        incremental = False
+
     report.steps += run_steps(
         pipeline_steps(game, build, base, locales, incremental_visuals=incremental),
         services.run,
