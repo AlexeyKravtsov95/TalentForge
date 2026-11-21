@@ -8,8 +8,8 @@ actions, written as the ``ota-prepare-detection`` v1 document the preparation re
   catalog does not list it;
 * ``NO_ACTION`` - nothing to prepare: no newer build, the build is the app's bundled
   the *verified* production catalog already lists it, or the same inputs already have
-  a terminal ``PREPARED``/``BLOCKED`` result. Transport ``UNKNOWN`` and crashed ``FAILED``
-  preparations retry; a definitive blocker needs changed inputs or explicit force;
+  a terminal ``PREPARED`` result. ``BLOCKED``, ``UNKNOWN`` and ``FAILED``
+  preparations retry on the next scheduled run; a failed attempt must not hide a new build;
 * ``UNKNOWN``   - the answer cannot be established: the build index failed or is
   ambiguous (``FreshnessStatus.UNKNOWN``), a requested build is not listed or not
   publishable, or the base build has no committed dataset.
@@ -120,8 +120,8 @@ def artifact_name(preparation_key: str, status: str) -> str:
     return f"{ARTIFACT_PREFIX}{preparation_key}-{status}"
 
 
-#: Transient outcomes do not stop the next run; definitive BLOCKED requires a retry decision.
-RETRY_STATUSES = ("UNKNOWN", "FAILED")
+#: A kept failure never suppresses a new candidate: retry until a PREPARED result exists.
+RETRY_STATUSES = ("BLOCKED", "UNKNOWN", "FAILED")
 
 
 def production_fact(state: ProductionState) -> ProductionFact:
@@ -248,7 +248,7 @@ def decide(
         names = {artifact_name(key, status) for status in statuses}
         return sorted(name for name in prior_artifacts or () if name in names)
 
-    prepared = kept(("PREPARED",)) or kept(("BLOCKED",))
+    prepared = kept(("PREPARED",))
     if not force and prepared:
         return result(
             Action.NO_ACTION,
