@@ -179,6 +179,10 @@ A run without preparation uploads `ota-prepare-detection-<run id>` (7 days).
   causes a repeat.
 * One run at a time: `concurrency: ota-prepare` queues runs (never cancels one), so a retry
   never overlaps a running preparation.
+* The source checkpoint cache is injected into data-fetch/normalization commands, **not**
+  into the `pytest` regression command. Tests which set `TALENT_DATA_ROOT` need their
+  own isolated raw-cache directory; sharing the downloaded source cache caused false test
+  failures on the 1.60.1.71037 candidate (20 failed tests, although all source and data gates passed).
 * Every run starts from an empty clone and writes only its own artifact: re-running is safe.
   The `propose` job is repeatable as well: no second PR, no commit when the branch already
   holds the same files, and a kept `PREPARED` artifact is proposed again until its PR exists
