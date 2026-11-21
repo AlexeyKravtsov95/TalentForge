@@ -295,7 +295,11 @@ def run_command(
     and the clone as the data root; its combined output goes to ``log``."""
     env = dict(os.environ)
     env.pop("TALENT_DATA_ROOT", None)
-    if cache_root is not None:
+    # Data commands reuse downloaded source checkpoints, but pytest must resolve each
+    # test's raw cache from its own TALENT_DATA_ROOT fixture. Never leak the shared
+    # runner cache into the regression suite (or inherit one from the parent process).
+    env.pop("TALENT_DATA_CACHE_ROOT", None)
+    if cache_root is not None and tuple(argv[1:3]) != ("-m", "pytest"):
         env["TALENT_DATA_CACHE_ROOT"] = str(cache_root.resolve())
     env["PYTHONPATH"] = os.pathsep.join(
         [str(cwd / "src"), *([env["PYTHONPATH"]] if env.get("PYTHONPATH") else [])]
