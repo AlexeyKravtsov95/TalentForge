@@ -289,9 +289,9 @@ def test_a_prepared_preparation_of_the_same_inputs_is_not_repeated() -> None:
     assert detect(prior_artifacts=kept, force=True).action is Action.PREPARE
 
 
-@pytest.mark.parametrize("status", ["UNKNOWN", "FAILED"])
+@pytest.mark.parametrize("status", ["BLOCKED", "UNKNOWN", "FAILED"])
 def test_a_kept_failure_is_prepared_again_on_the_next_run(status: str) -> None:
-    """Network uncertainty and crashes retry; neither is a definitive resource failure."""
+    """Even a failed validation must not suppress the next scheduled attempt."""
     key = detect().preparation_key
     assert key is not None
     d = detect(prior_artifacts=[artifact_name(key, status)])
@@ -567,6 +567,32 @@ def test_run_command_runs_in_the_clone_with_its_own_code(tmp_path: Path, monkeyp
     lines = log.read_text().splitlines()
     assert lines[0].startswith("$ ")
     assert lines[1:] == ["None", str(tmp_path / "src")]
+
+
+def test_run_command_uses_shared_cache_for_data_but_not_pytest(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The production source cache must never override pytest's isolated fixture cache."""
+    monkeypatch.setenv("TALENT_DATA_ROOT", "/fixture-root")
+    monkeypatch.setenv("TALENT_DATA_CACHE_ROOT", "/ambient-cache")
+    seen: list[dict[str, str]] = []
+
+    def fake_run(argv: list[str], **kwargs: Any) -> subprocess.CompletedProcess[str]:
+        seen.append(kwargs["env"])
+        return subprocess.CompletedProcess(argv, 0)
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    cache = tmp_path / "source-cache"
+    for argv in (
+        (sys.executable, "-m", "talent_data", "fetch"),
+        (sys.executable, "-m", "pytest", "-q"),
+    ):
+        assert run_command(argv, tmp_path, tmp_path / f"{argv[2]}.log", cache_root=cache) == 0
+
+    assert seen[0]["TALENT_DATA_CACHE_ROOT"] == str(cache.resolve())
+    assert "TALENT_DATA_CACHE_ROOT" not in seen[1]
+    assert "TALENT_DATA_ROOT" not in seen[0]
+    assert "TALENT_DATA_ROOT" not in seen[1]
 
 
 # --------------------------------------------------------------------------- prepare
