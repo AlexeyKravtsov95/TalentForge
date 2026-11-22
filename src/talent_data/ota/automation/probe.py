@@ -656,6 +656,19 @@ def probe_delivery(
         catalog_checked = False
         history = _HistoryReads(api)
         for request in sorted(pending, key=lambda r: r.release_id, reverse=True):
+            # A retained base refusal takes precedence over incomplete historical approval.
+            # The public hint suppresses heavy work without changing the durable receipt.
+            retained = entries.get(request_digest(request))
+            if retained and retained.receipt.reason in {"LIVE_CHANGED", "ALREADY_LISTED"}:
+                if not catalog_checked:
+                    try:
+                        catalog = _public_catalog(api, repo, now)
+                    except (OSError, OtaError, ValueError, httpx.HTTPError):
+                        catalog = None
+                    catalog_checked = True
+                if catalog is None or _stale_reason(request, catalog) is not None:
+                    waits.append(("BASE_NOT_CURRENT", None))
+                    continue
             approval = approval_record_at(repo, "origin/main", request.release_id)
             if approval is None:
                 from talent_data.ota.automation.data_only import standing_record
@@ -692,17 +705,6 @@ def probe_delivery(
             ):
                 waits.append(("APPROVAL_PENDING", None))
                 continue
-            retained = entries.get(request_digest(request))
-            if retained and retained.receipt.reason in {"LIVE_CHANGED", "ALREADY_LISTED"}:
-                if not catalog_checked:
-                    try:
-                        catalog = _public_catalog(api, repo, now)
-                    except (OSError, OtaError, ValueError, httpx.HTTPError):
-                        catalog = None
-                    catalog_checked = True
-                if catalog is None or _stale_reason(request, catalog) is not None:
-                    waits.append(("BASE_NOT_CURRENT", None))
-                    continue
             assert approval is not None
             candidate = ProbeCandidate(
                 action="PUBLISH",
