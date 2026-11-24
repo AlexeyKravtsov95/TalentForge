@@ -1,5 +1,7 @@
 package io.github.alexeykravtsov95.talentforge.ui.builds
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -36,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.build_migration_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_action_delete
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_action_duplicate
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_action_rename
@@ -92,6 +95,7 @@ fun BuildRowActionsSheet(
     onShare: () -> Unit,
     onDelete: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    onMigration: (() -> Unit)? = null,
 ) {
     val colors = talentForgeColors()
     Box(
@@ -122,6 +126,7 @@ fun BuildRowActionsSheet(
                     // the explicit actions below act
                     detectTapGestures { }
                 }
+                .verticalScroll(rememberScrollState())
                 .padding(
                     horizontal = TalentForgeSpacing.sheetX,
                     vertical = TalentForgeSpacing.group,
@@ -153,6 +158,14 @@ fun BuildRowActionsSheet(
                 color = colors.textPrimary,
                 onClick = onShare,
             )
+            if (onMigration != null) {
+                SheetAction(
+                    text = stringResource(Res.string.build_migration_action),
+                    busy = busy,
+                    color = colors.textPrimary,
+                    onClick = onMigration,
+                )
+            }
             if (onDelete != null) {
                 // the one irreversible action: separated and in the danger colour
                 Spacer(
@@ -377,7 +390,7 @@ internal fun DialogScrim(
  * mid-word (M5.REL.2a); at the reference sizes it is the same single row.
  */
 @Composable
-private fun DialogButtonRow(content: @Composable () -> Unit) {
+internal fun DialogButtonRow(content: @Composable () -> Unit) {
     FlowRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.End,
@@ -388,7 +401,7 @@ private fun DialogButtonRow(content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun DialogTextButton(
+internal fun DialogTextButton(
     text: String,
     color: androidx.compose.ui.graphics.Color,
     enabled: Boolean,

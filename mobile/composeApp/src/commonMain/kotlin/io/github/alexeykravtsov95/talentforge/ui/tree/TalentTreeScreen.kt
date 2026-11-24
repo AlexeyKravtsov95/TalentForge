@@ -1,5 +1,7 @@
 package io.github.alexeykravtsov95.talentforge.ui.tree
 
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.build_migration_available
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.build_migration_dismiss
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -77,6 +79,7 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.edi
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_talent_data_failed
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.section_back_to
 import io.github.alexeykravtsov95.talentforge.ui.lang.appLanguage
+import io.github.alexeykravtsov95.talentforge.ui.library.InlineNotice
 import io.github.alexeykravtsov95.talentforge.ui.library.localizedClassName
 import io.github.alexeykravtsov95.talentforge.ui.library.REFERENCE_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.motion.prefersReducedMotion
@@ -270,6 +273,8 @@ fun TalentTreeScreen(
     sectionCameras: TalentTreeSectionCameras? = null,
     onShareBuild: ((BuildState) -> Unit)? = null,
     onRenameBuild: (() -> Unit)? = null,
+    newerDataBuild: String? = null,
+    onMigrateBuild: (() -> Unit)? = null,
 ) {
     val colors = talentForgeColors()
     var selectedNodeId by rememberSaveable { mutableStateOf<Int?>(null) }
@@ -318,6 +323,8 @@ fun TalentTreeScreen(
                 sectionCameras = sectionCameras,
                 onShareBuild = onShareBuild,
                 onRenameBuild = onRenameBuild,
+                newerDataBuild = newerDataBuild,
+                onMigrateBuild = onMigrateBuild,
             )
 
             is TalentTreeUiState.Failed -> Column(Modifier.fillMaxSize()) {
@@ -355,8 +362,11 @@ private fun ReadyTalentTreeScreen(
     sectionCameras: TalentTreeSectionCameras?,
     onShareBuild: ((BuildState) -> Unit)?,
     onRenameBuild: (() -> Unit)?,
+    newerDataBuild: String?,
+    onMigrateBuild: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
+    var newerNoticeDismissed by rememberSaveable(sessionKey, newerDataBuild) { mutableStateOf(false) }
     // The editing session: which immutable BuildState is current + history.
     // Keyed by the engine, saved as allocation triples only (never the
     // engine); restored across recomposition and configuration change.
@@ -1427,12 +1437,7 @@ private fun ReadyTalentTreeScreen(
 
                         TalentTreeLayoutClass.PORTRAIT -> 0.dp
                     }
-                    TalentResetSnackbar(
-                        notice = resetNotice,
-                        onUndo = {
-                            performUndo()
-                            resetNotice = null
-                        },
+                    Column(
                         modifier = Modifier
                             .align(Alignment.TopCenter)
                             .fillMaxWidth()
@@ -1446,7 +1451,23 @@ private fun ReadyTalentTreeScreen(
                                 start = TalentForgeSpacing.screenX,
                                 end = TalentForgeSpacing.screenX,
                             ),
-                    )
+                        verticalArrangement = Arrangement.spacedBy(TalentForgeSpacing.inline),
+                    ) {
+                        if (newerDataBuild != null && !newerNoticeDismissed) {
+                            InlineNotice(
+                                text = stringResource(Res.string.build_migration_available),
+                                actionText = stringResource(Res.string.build_migration_dismiss),
+                                onAction = { newerNoticeDismissed = true },
+                            )
+                        }
+                        TalentResetSnackbar(
+                            notice = resetNotice,
+                            onUndo = {
+                                performUndo()
+                                resetNotice = null
+                            },
+                        )
+                    }
                 }
             }
         }
@@ -1480,6 +1501,12 @@ private fun ReadyTalentTreeScreen(
                 {
                     buildActionsOpen = false
                     share(editing.current)
+                }
+            },
+            onMigrateBuild = onMigrateBuild?.let { migrate ->
+                {
+                    buildActionsOpen = false
+                    migrate()
                 }
             },
             onRenameBuild = onRenameBuild?.let { rename ->

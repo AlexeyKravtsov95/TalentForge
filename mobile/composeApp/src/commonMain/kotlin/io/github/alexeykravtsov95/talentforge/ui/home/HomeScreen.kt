@@ -1,5 +1,8 @@
 package io.github.alexeykravtsov95.talentforge.ui.home
 
+import io.github.alexeykravtsov95.talentforge.allocation.canMigrateTo
+import io.github.alexeykravtsov95.talentforge.ui.builds.BuildMigrationController
+import io.github.alexeykravtsov95.talentforge.ui.builds.NewerBuildDataLabel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -93,6 +96,7 @@ import io.github.alexeykravtsov95.talentforge.ui.library.PrimaryActionButton
 import io.github.alexeykravtsov95.talentforge.ui.library.SecondaryActionButton
 import io.github.alexeykravtsov95.talentforge.ui.library.SectionLabel
 import io.github.alexeykravtsov95.talentforge.ui.library.buildCardTitle
+import io.github.alexeykravtsov95.talentforge.ui.library.buildDisplayTitle
 import io.github.alexeykravtsov95.talentforge.ui.library.classMonogramOf
 import io.github.alexeykravtsov95.talentforge.ui.library.dataVersionOf
 import io.github.alexeykravtsov95.talentforge.ui.library.gameDisplayName
@@ -159,10 +163,11 @@ fun HomeScreen(
     /** Set once after an OTA activation switched new builds to this client build (OD-5). */
     dataUpdatedTo: String? = null,
     onDismissDataUpdate: () -> Unit = {},
+    migration: BuildMigrationController? = null,
 ) {
     var data by remember { mutableStateOf<LibraryData<HomeModel>>(LibraryData.Loading) }
     var reloadToken by remember { mutableStateOf(0) }
-    LaunchedEffect(reloadToken) {
+    LaunchedEffect(reloadToken, datasets) {
         data = LibraryData.Loading
         data = withContext(Dispatchers.Default) { loadHomeModel(repository, datasets) }
     }
@@ -181,6 +186,8 @@ fun HomeScreen(
         onRenamed = { reloadToken += 1 },
         onRecordMissing = { reloadToken += 1 },
         onDeleted = { reloadToken += 1 },
+        migration = migration,
+        onMigrated = { reloadToken += 1 },
     )
     // Back closes the open sheet first (never while its operation runs)
     PlatformBackHandler(enabled = actionsFor != null) { if (!actions.busy) actionsFor = null }
@@ -310,6 +317,7 @@ fun HomeScreen(
         val cards = (shown as? LibraryData.Ready<HomeModel>)?.value?.let { listOfNotNull(it.continueCard) + it.recentCards }
         val sheetCard = actionsFor?.let { id -> cards?.firstOrNull { it.record.localId == id } }
         if (sheetCard != null) {
+            val unnamedTitle = buildDisplayTitle(null, sheetCard.record.build.classToken, sheetCard.classDisplayName)
             BuildRowActionsSheet(
                 buildTitle = buildCardTitle(sheetCard),
                 busy = actions.busy,
@@ -320,6 +328,12 @@ fun HomeScreen(
                     actions.startRename(sheetCard.record.localId, sheetCard.record.name)
                 },
                 onDuplicate = null,
+                onMigration = if (migration != null && sheetCard.record.build.canMigrateTo(product)) {
+                    {
+                        actionsFor = null
+                        actions.startMigration(sheetCard.record.localId, unnamedTitle)
+                    }
+                } else null,
                 onShare = { actions.sharePersisted(sheetCard.record.localId) { actionsFor = null } },
                 onDelete = {
                     actionsFor = null
@@ -351,7 +365,12 @@ private fun HomeContent(
         return
     }
     SectionLabel(stringResource(Res.string.home_section_continue))
-    ContinueCard(card = continueCard, clockMillis = clockMillis, onOpen = onOpenBuild)
+    ContinueCard(
+        card = continueCard,
+        newerData = continueCard.record.build.canMigrateTo(product),
+        clockMillis = clockMillis,
+        onOpen = onOpenBuild,
+    )
 
     if (model.recentCards.isNotEmpty()) {
         Row(
@@ -369,6 +388,7 @@ private fun HomeContent(
                 for (card in model.recentCards.take(recentLimit)) {
                     RecentBuildRow(
                         card = card,
+                        newerData = card.record.build.canMigrateTo(product),
                         clockMillis = clockMillis,
                         onClick = { onOpenBuild(card.record.localId) },
                         onActions = { onRecentActions(card.record.localId) },
@@ -540,6 +560,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawBrandDiamond(
 @Composable
 private fun ContinueCard(
     card: BuildCardModel,
+    newerData: Boolean,
     clockMillis: () -> Long,
     onOpen: (String) -> Unit,
 ) {
@@ -596,6 +617,7 @@ private fun ContinueCard(
                 )
             }
         }
+        if (newerData) NewerBuildDataLabel()
         PrimaryActionButton(
             text = stringResource(Res.string.home_continue_editing),
             onClickLabel = stringResource(Res.string.home_continue_editing_action, title),
@@ -641,6 +663,7 @@ private fun PointsProgress(
 @Composable
 private fun RecentBuildRow(
     card: BuildCardModel,
+    newerData: Boolean,
     clockMillis: () -> Long,
     onClick: () -> Unit,
     onActions: () -> Unit,
@@ -679,6 +702,7 @@ private fun RecentBuildRow(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+            if (newerData) NewerBuildDataLabel()
         }
         RowActionsButton(title = title, onClick = onActions)
     }

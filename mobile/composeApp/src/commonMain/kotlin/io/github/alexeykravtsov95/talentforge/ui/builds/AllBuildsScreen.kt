@@ -1,5 +1,10 @@
 package io.github.alexeykravtsov95.talentforge.ui.builds
 
+import io.github.alexeykravtsov95.talentforge.allocation.canMigrateTo
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.build_migration_created
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.build_migration_open_copy
+import io.github.alexeykravtsov95.talentforge.data.DatasetBundleId
+import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -92,6 +97,7 @@ import io.github.alexeykravtsov95.talentforge.ui.library.LibraryData
 import io.github.alexeykravtsov95.talentforge.ui.library.PrimaryActionButton
 import io.github.alexeykravtsov95.talentforge.ui.library.SecondaryActionButton
 import io.github.alexeykravtsov95.talentforge.ui.library.buildCardTitle
+import io.github.alexeykravtsov95.talentforge.ui.library.buildDisplayTitle
 import io.github.alexeykravtsov95.talentforge.ui.library.classMonogramOf
 import io.github.alexeykravtsov95.talentforge.ui.library.gameDisplayName
 import io.github.alexeykravtsov95.talentforge.ui.library.loadBuildsModel
@@ -128,6 +134,8 @@ private sealed interface ManagementNotice {
 
     /** `id` changes per event so the auto-dismiss timer restarts on repeated duplicates. */
     data class Duplicated(val id: Int) : ManagementNotice
+
+    data class Migrated(val localId: String) : ManagementNotice
 
     data class DuplicateFailed(val localId: String) : ManagementNotice
 
@@ -170,6 +178,8 @@ fun AllBuildsScreen(
     onImportBuild: () -> Unit,
     sharing: BuildCodeSharing,
     autosave: BuildAutosaveCoordinator,
+    activeProduct: DatasetBundleId = PRODUCT_BUNDLE,
+    migration: BuildMigrationController? = null,
 ) {
     var data by remember { mutableStateOf<LibraryData<List<BuildCardModel>>>(LibraryData.Loading) }
     var favoritesOnly by rememberSaveable { mutableStateOf(false) }
@@ -181,7 +191,7 @@ fun AllBuildsScreen(
     var selectedClassValue by rememberSaveable { mutableStateOf<String?>(null) }
     val selectedClass = selectedClassValue?.let(::ClassToken)
     var reloadToken by remember { mutableStateOf(0) }
-    LaunchedEffect(reloadToken) {
+    LaunchedEffect(reloadToken, datasets) {
         data = LibraryData.Loading
         data = withContext(Dispatchers.Default) { loadBuildsModel(repository, datasets) }
     }
@@ -195,6 +205,11 @@ fun AllBuildsScreen(
         onRenamed = { reloadToken += 1 },
         onRecordMissing = { reloadToken += 1 },
         onDeleted = { reloadToken += 1 },
+        migration = migration,
+        onMigrated = {
+            notice = ManagementNotice.Migrated(it.localId)
+            reloadToken += 1
+        },
     )
     val operationInFlight = actions.busy
 
@@ -342,6 +357,13 @@ fun AllBuildsScreen(
                     tone = InlineNoticeTone.Positive,
                 )
 
+                is ManagementNotice.Migrated -> InlineNotice(
+                    text = stringResource(Res.string.build_migration_created),
+                    actionText = stringResource(Res.string.build_migration_open_copy),
+                    onAction = { onOpenBuild(current.localId) },
+                    tone = InlineNoticeTone.Positive,
+                )
+
                 is ManagementNotice.DuplicateFailed -> InlineNotice(
                     text = stringResource(Res.string.builds_duplicate_failed),
                     actionText = stringResource(Res.string.common_retry),
@@ -474,6 +496,7 @@ fun AllBuildsScreen(
                                     key(card.record.localId) {
                                         BuildRow(
                                             card = card,
+                                            newerData = card.record.build.canMigrateTo(activeProduct),
                                             clockMillis = clockMillis,
                                             onClick = { onOpenBuild(card.record.localId) },
                                             onActions = { overlay = ManagementOverlay.Actions(card.record.localId) },
@@ -489,6 +512,7 @@ fun AllBuildsScreen(
                                 key(card.record.localId) {
                                     BuildRow(
                                         card = card,
+                                        newerData = card.record.build.canMigrateTo(activeProduct),
                                         clockMillis = clockMillis,
                                         onClick = { onOpenBuild(card.record.localId) },
                                         onActions = { overlay = ManagementOverlay.Actions(card.record.localId) },
@@ -514,6 +538,7 @@ fun AllBuildsScreen(
             is ManagementOverlay.Actions -> {
                 val card = readyCards?.firstOrNull { it.record.localId == current.localId }
                 if (card != null) {
+                    val unnamedTitle = buildDisplayTitle(null, card.record.build.classToken, card.classDisplayName)
                     BuildRowActionsSheet(
                         buildTitle = buildCardTitle(card),
                         busy = operationInFlight,
@@ -524,6 +549,12 @@ fun AllBuildsScreen(
                             actions.startRename(current.localId, card.record.name)
                         },
                         onDuplicate = { duplicate(current.localId) },
+                        onMigration = if (migration != null && card.record.build.canMigrateTo(activeProduct)) {
+                            {
+                                overlay = ManagementOverlay.Hidden
+                                actions.startMigration(current.localId, unnamedTitle)
+                            }
+                        } else null,
                         onShare = { share(current.localId) },
                         onDelete = {
                             overlay = ManagementOverlay.Hidden
@@ -574,6 +605,7 @@ private fun ImportBuildButton(onClick: () -> Unit, enabled: Boolean) {
 @Composable
 private fun BuildRow(
     card: BuildCardModel,
+    newerData: Boolean,
     clockMillis: () -> Long,
     onClick: () -> Unit,
     onActions: () -> Unit,
@@ -584,6 +616,7 @@ private fun BuildRow(
         val compact = isCompactRow(hasPoints = card.spentPoints != null && card.pointBudget != null)
         BuildRowContent(
             card = card,
+            newerData = newerData,
             clockMillis = clockMillis,
             compact = compact,
             onClick = onClick,
@@ -612,6 +645,7 @@ private fun BoxWithConstraintsScope.isCompactRow(hasPoints: Boolean): Boolean {
 @Composable
 private fun BuildRowContent(
     card: BuildCardModel,
+    newerData: Boolean,
     clockMillis: () -> Long,
     compact: Boolean,
     onClick: () -> Unit,
@@ -678,6 +712,7 @@ private fun BuildRowContent(
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                 )
             }
+            if (newerData) NewerBuildDataLabel()
         }
         if (!compact && card.spentPoints != null && card.pointBudget != null) {
             BasicText(
