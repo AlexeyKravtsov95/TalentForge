@@ -251,6 +251,25 @@ def resolve_approval_epoch(
     path = f"docs/ota/release-requests/{request.release_id}.json"
     approval_path = f"{APPROVALS_DIR}/{request.release_id}.md"
     current_approval = approval_record_at(repo, "origin/main", request.release_id)
+    if current_approval is None:
+        from talent_data.ota.automation.data_only import standing_record
+
+        standing = standing_record(repo, "origin/main", request)
+        if standing is not None:
+            approval_digest = sha256_ref(standing)
+            # Match the probe's exact authorization fingerprint for bounded retry
+            # history. Tagger time is the package timestamp, not an approval clock.
+            return ApprovalEpoch(
+                epoch_id=sha256_ref(
+                    json.dumps([digest, approval_digest], separators=(",", ":")).encode()
+                ),
+                request_digest=digest,
+                approval_digest=approval_digest,
+                approval_change_sha=None,
+                epoch_start_sha=None,
+                approved_at=None,
+                time_source=None,
+            )
     from talent_data.ota.automation.merge_approval import parse_merge_record, verify_owner_merge
 
     conditional = (

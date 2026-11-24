@@ -45,8 +45,10 @@ def notify_status(
     first = previous is None
     timestamp = now.isoformat()
     current = previous if previous is not None else initial_production(timestamp)
-    if document.outcome in {"BLOCKED", "AMBIGUOUS", "PUBLISHED_NOT_VERIFIED"}:
-        fingerprint = "ota-production/" + document.operation + "/" + document.stage
+    if document.outcome in {"WAIT", "BLOCKED", "AMBIGUOUS", "PUBLISHED_NOT_VERIFIED"}:
+        fingerprint = (
+            "ota-production/" + document.operation + "/" + document.stage + "/" + document.reason
+        )
         if fingerprint in current.failures_notified:
             return "QUIET"
         decision = Decision(
@@ -65,7 +67,7 @@ def notify_status(
                 }
             ),
         )
-        if first:
+        if first and document.outcome != "WAIT" and document.reason != "DELIVERY_STALLED":
             decision = baseline(decision)
         return _deliver(decision, state, send, summary, first_run=first)
     observation = observe_production(

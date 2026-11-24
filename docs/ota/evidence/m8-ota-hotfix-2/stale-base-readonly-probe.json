@@ -1,0 +1,36 @@
+{
+  "checkedAt": "2026-11-22T05:17:32.292527+00:00",
+  "mainSha": "7dff031e3028fb2703796bc7c448da8f835a5873",
+  "probeSourceSha256": "sha256:ba71f59c6aeff6b6050ca1c489ea77700f37fa3dd3e21896b55e801bd91677b0",
+  "result": {
+    "schemaVersion": 1,
+    "kind": "ota-delivery-probe",
+    "action": "WAIT",
+    "releaseIds": [],
+    "requestDigests": [],
+    "candidates": [],
+    "reason": "BASE_NOT_CURRENT",
+    "nextEligibleAt": null,
+    "inputFingerprint": "sha256:d46c1912f2ae2a95ea58e8b6070e16091a290f918933e637f57e0ce6f2ec41e6",
+    "mainSha": "7dff031e3028fb2703796bc7c448da8f835a5873"
+  },
+  "catalog": {
+    "activeReleaseId": "1.60.1.71037-r1",
+    "sequence": 9
+  },
+  "receipts": [
+    {
+      "releaseId": "1.60.1.70755-r1",
+      "state": "BLOCKED",
+      "reason": "LIVE_CHANGED"
+    },
+    {
+      "releaseId": "1.60.1.71037-r1",
+      "state": "VERIFIED",
+      "reason": "PUBLIC_VERIFIED"
+    }
+  ],
+  "journalBeforeSha256": "sha256:2a170290eba463a62883e893dce1821480098e04a20c1b55b260f8dba3f0257d",
+  "journalAfterSha256": "sha256:2a170290eba463a62883e893dce1821480098e04a20c1b55b260f8dba3f0257d",
+  "journalUnchanged": true
+}

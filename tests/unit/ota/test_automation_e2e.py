@@ -251,6 +251,38 @@ def test_rehearsal_main_contains_only_its_test_request_and_no_inherited_tags(reh
     assert paths == [f"docs/ota/release-requests/{rehearsal.receipt.request.release_id}.json"]
 
 
+@pytest.mark.parametrize("event", ["repository_dispatch", "schedule"])
+def test_repository_wakeup_or_lost_event_delivers_without_republishing(rehearsal, event):
+    r = rehearsal
+    r.payload.clear()
+    r.payload.update(
+        {
+            "action": "ota-delivery-authorized",
+            "repository": {"full_name": r.receipt.request.repository},
+            "sender": {"login": "operator"},
+        }
+    )
+    code, status = r.command(GITHUB_EVENT_NAME=event)
+    assert code == 0 and status.reason == "PUBLIC_VERIFIED"
+    from talent_data.ota.automation.delivery_status import delivery_state
+
+    assert delivery_state(None, status) == "PUBLIC_VERIFIED"
+    before = (r.owner.store / CATALOG).read_bytes()
+    writes = len(r.writers)
+    code, status = r.command(GITHUB_EVENT_NAME=event)
+    assert code == 0 and status.reason == "NO_WORK"
+    assert all(op.state is RequestState.VERIFIED for op in status.operations)
+    assert (r.owner.store / CATALOG).read_bytes() == before and len(r.writers) == writes
+
+
+def test_repository_wakeup_cannot_supply_authorization(rehearsal):
+    r = rehearsal
+    r.payload.update(action="untrusted", sender={"login": "operator"})
+    code, status = r.command(GITHUB_EVENT_NAME="repository_dispatch")
+    assert code == 1 and status.reason == "INVOCATION_REFUSED"
+    assert not r.reads and not r.writers
+
+
 @pytest.fixture
 def verified_scope(rehearsal):
     from talent_data.ota.automation.state import PublicationReceipt

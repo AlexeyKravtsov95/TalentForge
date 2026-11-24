@@ -1,0 +1,48 @@
+{
+  "runId": 44948566040,
+  "attempt": 1,
+  "event": "workflow_dispatch",
+  "note": "Existing owner run preceding the hotfix; no production actions were initiated during this task.",
+  "statuses": [
+    {
+      "schemaVersion": 1,
+      "kind": "ota-production-status",
+      "command": "preflight",
+      "operation": "publish",
+      "outcome": "READY",
+      "stage": "PLANNING",
+      "reason": "READY",
+      "writerNeeded": true,
+      "operations": [
+        {
+          "digest": "sha256:2bbdb80a9d345f09aa40ac8504f77d1f2b970264ffcd5ef62493c61f468f2453",
+          "kind": "release",
+          "state": "PENDING",
+          "reason": "NEW",
+          "releaseId": "1.60.1.71037-r1",
+          "payloadSha256": null
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "kind": "ota-production-status",
+      "command": "publish",
+      "operation": "publish",
+      "outcome": "VERIFIED",
+      "stage": "PUBLIC_VERIFY",
+      "reason": "PUBLIC_VERIFIED",
+      "writerNeeded": false,
+      "operations": [
+        {
+          "digest": "sha256:2bbdb80a9d345f09aa40ac8504f77d1f2b970264ffcd5ef62493c61f468f2453",
+          "kind": "release",
+          "state": "VERIFIED",
+          "reason": "PUBLIC_VERIFIED",
+          "releaseId": "1.60.1.71037-r1",
+          "payloadSha256": "sha256:0e13d0777a6b43ba903534e2ddf59820ff02221c33c107d1a626bd36bb4d73d8"
+        }
+      ]
+    }
+  ]
+}

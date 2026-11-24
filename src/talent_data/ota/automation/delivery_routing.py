@@ -56,6 +56,7 @@ def _combine(documents: list[StatusDocument], mode: Mode) -> StatusDocument:
             "DISABLED": 5,
             "DRY_RUN": 6,
             "NO_ACTION": 7,
+            "WAIT": 6,
         }
         result = min(documents, key=lambda d: priority[d.outcome])
     operations = {op.digest: op for d in documents for op in d.operations}

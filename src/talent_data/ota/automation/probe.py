@@ -98,6 +98,7 @@ Reason = Literal[
     "DISABLED",
     "INVOCATION_REFUSED",
     "BASE_NOT_CURRENT",
+    "DELIVERY_STALLED",
 ]
 
 
@@ -432,7 +433,7 @@ def _run_identity(run: dict[str, object], head: str, run_id: int, attempt: int) 
     }.items():
         same(run.get(key), expected, "HISTORY_UNAVAILABLE", key)
     require(
-        run.get("event") in {"workflow_run", "schedule"},
+        run.get("event") in {"workflow_run", "schedule", "repository_dispatch"},
         "HISTORY_UNAVAILABLE",
         "unexpected automatic event",
     )
@@ -522,6 +523,8 @@ def _backoff(
                 "duplicate heavy jobs",
             )
             if run.get("status") != "completed":
+                if now - min(_utc(j["started_at"]) for j in heavy) > timedelta(hours=2):
+                    return "DELIVERY_STALLED", None
                 return "RUN_PENDING", None
             artifacts = api.pages(f"/actions/runs/{run_id}/artifacts", "artifacts")
             for failed in sorted(heavy, key=lambda job: job.get("name") != "writer"):
@@ -653,6 +656,19 @@ def probe_delivery(
         catalog_checked = False
         history = _HistoryReads(api)
         for request in sorted(pending, key=lambda r: r.release_id, reverse=True):
+            # A retained base refusal takes precedence over incomplete historical approval.
+            # The public hint suppresses heavy work without changing the durable receipt.
+            retained = entries.get(request_digest(request))
+            if retained and retained.receipt.reason in {"LIVE_CHANGED", "ALREADY_LISTED"}:
+                if not catalog_checked:
+                    try:
+                        catalog = _public_catalog(api, repo, now)
+                    except (OSError, OtaError, ValueError, httpx.HTTPError):
+                        catalog = None
+                    catalog_checked = True
+                if catalog is None or _stale_reason(request, catalog) is not None:
+                    waits.append(("BASE_NOT_CURRENT", None))
+                    continue
             approval = approval_record_at(repo, "origin/main", request.release_id)
             if approval is None:
                 from talent_data.ota.automation.data_only import standing_record
@@ -689,17 +705,6 @@ def probe_delivery(
             ):
                 waits.append(("APPROVAL_PENDING", None))
                 continue
-            retained = entries.get(request_digest(request))
-            if retained and retained.receipt.reason in {"LIVE_CHANGED", "ALREADY_LISTED"}:
-                if not catalog_checked:
-                    try:
-                        catalog = _public_catalog(api, repo, now)
-                    except (OSError, OtaError, ValueError, httpx.HTTPError):
-                        catalog = None
-                    catalog_checked = True
-                if catalog is None or _stale_reason(request, catalog) is not None:
-                    waits.append(("BASE_NOT_CURRENT", None))
-                    continue
             assert approval is not None
             candidate = ProbeCandidate(
                 action="PUBLISH",
@@ -828,7 +833,13 @@ def main(
     raw = result.model_dump_json(by_alias=True)
     args.status_file.write_text(raw + "\n")
     print(raw)
+    if summary := env.get("GITHUB_STEP_SUMMARY"):
+        state = "PUBLISHING" if result.action in {"PUBLISH", "VERIFY", "RECOVER"} else result.action
+        with Path(summary).open("a") as out:
+            out.write(f"## OTA delivery: {state}\n\nReason: `{result.reason}`\n\n")
+            if state == "WAIT":
+                out.write("Waiting for an external condition; publication is not confirmed.\n")
     if output := env.get("GITHUB_OUTPUT"):
         with Path(output).open("a") as out:
             out.write(f"action={result.action}\n")
-    return 0  # Typed refusal/wait is routing data; it never implies an interrupted writer.
+    return 0  # Routing only; delivery-status reports the actual delivery state separately.

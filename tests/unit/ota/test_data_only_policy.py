@@ -233,6 +233,7 @@ def test_automatic_authorization_creates_only_an_immutable_tag(policy_release):
         def __init__(self):
             self.writes = []
             self.tag = None
+            self.lose_dispatch_response = True
 
         def call(self, *args, **kwargs):
             return {"total_count": 1, "repositories": [{"full_name": request.repository}]}
@@ -243,6 +244,12 @@ def test_automatic_authorization_creates_only_an_immutable_tag(policy_release):
             if method == "GET" and path.startswith("/git/tags/"):
                 return self.tag
             self.writes.append((method, path, kwargs["data"]))
+            if method == "POST" and path == "/dispatches":
+                assert self.tag is not None  # Authorization must be durable before the wakeup.
+                assert kwargs["data"] == {"event_type": "ota-delivery-authorized"}
+                if self.lose_dispatch_response:
+                    raise PreparationBlocked("GITHUB_UNAVAILABLE", "TEST lost dispatch response")
+                return None
             if method == "POST" and path == "/git/tags":
                 data = kwargs["data"]
                 self.tag = {
@@ -256,6 +263,17 @@ def test_automatic_authorization_creates_only_an_immutable_tag(policy_release):
             return {}
 
     api = Api()
+    with pytest.raises(PreparationBlocked, match="GITHUB_UNAVAILABLE"):
+        data_only.commit_authorization(
+            api,
+            repo,
+            request,
+            SimpleNamespace(manifest_bytes=under_test.manifest_bytes),
+            catalog,
+            store,
+        )
+    frozen = api.tag.copy()
+    api.lose_dispatch_response = False
     tag = data_only.commit_authorization(
         api,
         repo,
@@ -265,7 +283,8 @@ def test_automatic_authorization_creates_only_an_immutable_tag(policy_release):
         store,
     )
     assert tag == f"refs/tags/ota-data-only/{request.release_id}"
-    assert [p for _, p, _ in api.writes] == ["/git/tags", "/git/refs"]
+    assert api.tag == frozen
+    assert [p for _, p, _ in api.writes] == ["/git/tags", "/git/refs", "/dispatches", "/dispatches"]
     # Other reviewed main work may finish while staging runs. G1/source CI still bind
     # the immutable data source; exact main-head equality is not publication authority.
     subprocess.run(
@@ -283,7 +302,13 @@ def test_automatic_authorization_creates_only_an_immutable_tag(policy_release):
         catalog,
         store,
     )
-    assert len(api.writes) == 2  # rerun reads the same frozen request; it creates nothing
+    assert [p for _, p, _ in api.writes] == [
+        "/git/tags",
+        "/git/refs",
+        "/dispatches",
+        "/dispatches",
+        "/dispatches",
+    ]  # Retry repeats the wakeup, never the immutable authorization.
 
 
 def test_publisher_rechecks_exact_policy_and_refuses_an_unproved_record(policy_release):
@@ -365,6 +390,13 @@ def test_tagged_request_is_discovered_and_uses_exact_source_ci(policy_release):
     assert json.loads(request_bytes(repo, request))["manifestSha256"] == request.manifest_sha256
     receipt = data_only.standing_record(repo, "origin/main", request)
     assert receipt is not None and data_only.MARKER.encode() in receipt
+    from talent_data.ota.automation.timings import resolve_approval_epoch
+
+    # Automatic delivery's failure budget compares the probe's authorization bytes
+    # with the recorder's digest. A tag has no approval-file commit or proven clock.
+    epoch = resolve_approval_epoch(object(), repo, request)
+    assert epoch.approval_digest == sha256_ref(receipt)
+    assert epoch.approved_at is None and epoch.time_source is None
     proof = data_only.verify_data_only(repo, source, request, under_test, catalog, store)
     from talent_data.ota.automation.publisher import approval_directory
 

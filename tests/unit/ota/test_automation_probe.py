@@ -490,6 +490,54 @@ def test_old_base_mismatch_uses_catalog_metadata_and_never_starts_heavy_work(pen
     assert not any(c[0] == "run" and c[1] == request.package_run.run_id for c in api.calls)
 
 
+@pytest.mark.parametrize("receipt_reason", ["LIVE_CHANGED", "ALREADY_LISTED"])
+@pytest.mark.parametrize("approval_present", [True, False])
+@pytest.mark.parametrize("base_current", [False, True, None])
+def test_retained_base_refusal_precedes_incomplete_approval(
+    pending, monkeypatch, receipt_reason, approval_present, base_current
+):
+    from talent_data.ota.automation import probe as module
+    from tests.unit.ota.test_automation_public_verify import catalog_of
+    from tests.unit.ota.test_ota_preflight import publication
+
+    repo, request, api, journal = pending
+    path = repo / "docs/ota/releases" / f"{request.release_id}.md"
+    if approval_present:
+        path.write_text("<OWNER: fill approval>")
+    else:
+        path.unlink()
+    git(repo, "add", "-u")
+    git(repo, "commit", "-qm", "TEST historical incomplete approval")
+    git(repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+    api.ci["head_sha"] = git(repo, "rev-parse", "HEAD").decode().strip()
+    receipt = PublicationReceipt.pending(request, run_id=1, attempt=1)
+    journal.save(receipt.evolve(state=RequestState.BLOCKED, reason=receipt_reason))
+    catalog = catalog_of(publication())
+    if base_current:
+        active = catalog.releases[0].model_copy(
+            update={
+                "release_id": request.base_release_id,
+                "manifest_sha256": request.base_manifest_sha256,
+            }
+        )
+        catalog = catalog.model_copy(
+            update={"active_release_id": request.base_release_id, "releases": [active]}
+        )
+    elif base_current is None:
+        catalog = None
+    monkeypatch.setattr(module, "_public_catalog", lambda *args: catalog)
+
+    result = probe(pending)
+
+    assert (result.action, result.reason) == (
+        "WAIT",
+        "APPROVAL_PENDING" if base_current else "BASE_NOT_CURRENT",
+    )
+    assert result.candidates == ()
+    assert not any(c[0] == "run" and c[1] == request.package_run.run_id for c in api.calls)
+    assert not any(c[0] == "archive" for c in api.calls)
+
+
 def test_probe_does_not_wait_for_its_own_read_only_job(pending, monkeypatch):
     api = pending[2]
     run = api.run_record(199, WORKFLOW, api.head, "schedule")
@@ -516,6 +564,37 @@ def test_probe_does_not_wait_for_its_own_read_only_job(pending, monkeypatch):
         ),
     )
     assert probe(pending).action == "PUBLISH"
+
+
+@pytest.mark.parametrize("age,expected", [(60, "WAIT"), (3 * 3600, "BLOCKED")])
+def test_wakeup_history_detects_stalled_active_delivery(pending, monkeypatch, age, expected):
+    api = pending[2]
+    run = api.run_record(199, WORKFLOW, api.head, "repository_dispatch")
+    run.update(status="in_progress", conclusion=None)
+    api.productions.append(run)
+    pages = api.pages
+    monkeypatch.setattr(
+        api,
+        "pages",
+        lambda path, member, **kwargs: (
+            [
+                {
+                    "name": "preflight",
+                    "run_id": 199,
+                    "run_attempt": 1,
+                    "head_sha": api.head,
+                    "status": "in_progress",
+                    "conclusion": None,
+                    "started_at": (NOW - timedelta(seconds=age)).isoformat(),
+                }
+            ]
+            if "/199/" in path
+            else pages(path, member, **kwargs)
+        ),
+    )
+    result = probe(pending)
+    assert result.action == expected
+    assert result.reason == ("DELIVERY_STALLED" if expected == "BLOCKED" else "RUN_PENDING")
 
 
 def test_successful_rerun_does_not_hide_previous_failed_attempt(pending, monkeypatch):

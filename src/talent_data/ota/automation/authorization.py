@@ -253,7 +253,11 @@ def verify_invocation(
     same(environment.get("GITHUB_REPOSITORY"), REPOSITORY, "TRIGGER_REPOSITORY", "repository")
     same(environment.get("GITHUB_REF"), "refs/heads/main", "TRIGGER_REF", "ref")
     event = environment.get("GITHUB_EVENT_NAME", "")
-    require(event in ("workflow_run", "workflow_dispatch", "schedule"), "TRIGGER_EVENT", "event")
+    require(
+        event in ("workflow_run", "workflow_dispatch", "schedule", "repository_dispatch"),
+        "TRIGGER_EVENT",
+        "event",
+    )
     head = environment.get("GITHUB_SHA", "")
     same(git(repo, "rev-parse", "HEAD").decode().strip(), head, "TRIGGER_CHECKOUT", "checkout")
     same(
@@ -295,6 +299,11 @@ def verify_invocation(
         "TRIGGER_REPOSITORY",
         "event repository",
     )
+    if event == "repository_dispatch":
+        same(payload.get("action"), "ota-delivery-authorized", "TRIGGER_EVENT", "dispatch type")
+        same(obj(payload.get("sender")).get("login"), actor, "TRIGGER_ACTOR", "event sender")
+        # Only an authenticated wakeup. Current main CI, exact source CI, request
+        # tags, policy, package provenance and all gates remain independently checked.
     if event == "workflow_dispatch":
         require("sender" in payload, "TRIGGER_ACTOR", "manual sender missing")
         same(obj(payload["sender"]).get("login"), actor, "TRIGGER_ACTOR", "event sender")

@@ -896,6 +896,45 @@ def test_latest_committed_request_does_not_prepare_skipped_history(candidate_rep
     )
 
 
+def test_frozen_data_only_request_prevents_repackaging_after_main_advances(candidate_repository):
+    from talent_data.ota.automation.data_only import POLICY_PATH, AutomaticRequest
+    from talent_data.ota.automation.requests import parse_request
+    from tests.unit.ota.test_automation_public_verify import catalog_of
+    from tests.unit.ota.test_automation_requests import request_wire
+
+    repo, commit = candidate_repository
+    policy = repo / POLICY_PATH
+    policy.parent.mkdir(parents=True)
+    policy.write_bytes((ROOT / POLICY_PATH).read_bytes())
+    source = commit(["1.60.1.70753", "1.60.1.70755"])
+    wire = request_wire()
+    wire.update(build="1.60.1.70755", releaseId="1.60.1.70755-r1", sourceCommit=source)
+    wire["stagingRun"]["headSha"] = wire["packageRun"]["headSha"] = source
+    frozen = AutomaticRequest(
+        schema_version=1,
+        kind="ota-data-only-request",
+        policy_sha256=sha256_ref(policy.read_bytes()),
+        request=parse_request(json.dumps(wire).encode()),
+    )
+    p.git(
+        repo,
+        "-c",
+        "user.name=TEST",
+        "-c",
+        "user.email=test@example.invalid",
+        "tag",
+        "-a",
+        "ota-data-only/1.60.1.70755-r1",
+        source,
+        "-m",
+        frozen.model_dump_json(by_alias=True),
+    )
+    (repo / "later-main.txt").write_text("unrelated reviewed main change")
+    newer = commit([])
+    assert source != newer
+    assert p.select_candidate(repo, newer, catalog_of(publication())) is None
+
+
 @pytest.mark.parametrize("workflow", [p.STAGING_WORKFLOW, p.PACKAGE_WORKFLOW])
 @pytest.mark.parametrize("pending_title", [None, "", "OTA staging verification", "missing-run"])
 def test_dispatch_waits_for_correlated_metadata_of_returned_id(

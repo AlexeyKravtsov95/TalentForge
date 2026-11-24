@@ -1,5 +1,12 @@
 # Автоматическое предложение OTA-релиза (PR B / Task 3)
 
+Текущий протокол и разбор hotfix:
+[M8.OTA.HOTFIX.2](M8.OTA.HOTFIX.2.md). После immutable data-only authorization
+подготовка отправляет `repository_dispatch / ota-delivery-authorized`; publisher
+самостоятельно перепроверяет полномочия и пакет. Периодический probe восстанавливает
+пропущенные события. Premerge использует conditional owner-merge protocol без флага
+`--auto-data-only`; этот флаг относится только к `propose-request` после data merge.
+
 Это подготовка **draft PR**, не публикация. Signer, S3 credentials, загрузка production blobs,
 запись каталога и автоматический merge отсутствуют. G1–G8 и решения OWNER не меняются.
 `1.60.1.70532-r1` повторно не предлагается.

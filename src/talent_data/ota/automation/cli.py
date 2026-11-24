@@ -119,6 +119,7 @@ PRIMARY_KEY = "tf-prod-2026a"
 GAME = "forever"
 Operation = Literal["publish", "reconcile", "resign", "verify", "signer-smoke", "init-journal"]
 Outcome = Literal[
+    "WAIT",
     "DISABLED",
     "BLOCKED",
     "DRY_RUN",
@@ -146,6 +147,12 @@ Stage = Literal[
     "CLEANUP",
 ]
 Reason = Literal[
+    "DELIVERY_STALLED",
+    "CI_PENDING",
+    "APPROVAL_PENDING",
+    "COOLDOWN",
+    "RUN_PENDING",
+    "BASE_NOT_CURRENT",
     "AUTOMATION_DISABLED",
     "CONFIG_MISSING",
     "INVOCATION_REFUSED",
@@ -493,7 +500,7 @@ class _Run:
         refresh_main(self.d.repo)
         payload = obj(strict_json(Path(self.env["GITHUB_EVENT_PATH"]).read_bytes()))
         verified = verify_invocation(self.d.api, self.d.repo, self.env, payload)
-        if require_ci and self.env["GITHUB_EVENT_NAME"] == "schedule":
+        if require_ci and self.env["GITHUB_EVENT_NAME"] in {"schedule", "repository_dispatch"}:
             verified = current_main_ci(self.d.api, self.d.repo, self.env["GITHUB_SHA"])
             require(verified is not None, "CI_PENDING", "current main CI is pending")
         if verified is not None:
