@@ -121,6 +121,7 @@
     <!-- editor header -->
     <string name="editor_undo_action">Undo talent change</string>
     <string name="editor_redo_action">Redo talent change</string>
+    <string name="editor_draft_name_action">Draft · tap to name</string>
     <string name="editor_build_actions_open">open build actions</string>
 
     <!-- editor loading, failures and autosave -->
@@ -377,8 +378,8 @@
     <!-- M6.UX.2: repeatable first-use help. -->
     <string name="help_title">How to use</string>
     <string name="help_step_class">1. Choose one of the 9 WoW Forever classes.</string>
-    <string name="help_step_talents">2. Spend points in talent trees and read talent descriptions.</string>
-    <string name="help_step_builds">3. Save builds, edit them and share build codes.</string>
+    <string name="help_step_talents">2. Choose a specialization. Tap a talent to select it and read its details. Use + and − to change its rank. Locked talents show their requirements.</string>
+    <string name="help_step_builds">3. Talent changes save automatically on this device. Tap the draft title to name your build. Reopen it from Home, or share it with a build code.</string>
     <string name="help_step_offline">4. Plan builds offline. Game data can update over the internet when connected.</string>
     <string name="help_step_offline_disabled">4. Plan builds offline using the included game data. Online data updates are disabled in this app version.</string>
 

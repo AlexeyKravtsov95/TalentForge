@@ -261,6 +261,7 @@ private fun ReadyBuildEditor(
                 engine = session.engine,
                 buildState = session.buildState,
                 buildTitle = buildTitle,
+                isDraft = persistedName == null,
                 classAccent = classAccentFor(record.build.classToken).color,
                 icons = session.icons,
                 descriptions = session.descriptions,

@@ -163,6 +163,7 @@ sealed interface TalentTreeUiState {
          * every talent English, so lower-level callers keep working.
          */
         val localization: TalentNodeLocalization = TalentNodeLocalization.None,
+        val isDraft: Boolean = false,
     ) : TalentTreeUiState
 
     data class Failed(val failure: TalentTreeUiFailure) : TalentTreeUiState
@@ -754,6 +755,7 @@ private fun ReadyTalentTreeScreen(
                     null
                 },
                 tabsWidth = (landscapeTabs?.tabsWidthDp ?: 0f).dp,
+                onNameDraft = onRenameBuild?.takeIf { current.isDraft },
             )
 
             BoxWithConstraints(Modifier.fillMaxSize()) {
