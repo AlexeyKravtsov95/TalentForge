@@ -3,7 +3,8 @@
   "kind": "notify-production-state",
   "notifiedRelease": "1.60.1.71037-r1",
   "failuresNotified": [
-    "ota-production/reconcile/PUBLISH"
+    "ota-production/reconcile/PUBLISH",
+    "ota-production/publish/PLANNING/BASE_NOT_CURRENT"
   ],
-  "updatedAt": "2026-11-24T11:06:03Z"
+  "updatedAt": "2026-11-24T16:08:17+00:00"
 }
