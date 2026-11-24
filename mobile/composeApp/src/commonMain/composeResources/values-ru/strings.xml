@@ -120,6 +120,7 @@
     <!-- editor header -->
     <string name="editor_undo_action">Отменить изменение талантов</string>
     <string name="editor_redo_action">Повторить изменение талантов</string>
+    <string name="editor_draft_name_action">Черновик · назвать</string>
     <string name="editor_build_actions_open">открыть действия с билдом</string>
 
     <!-- editor loading, failures and autosave -->
@@ -387,8 +388,8 @@
     <!-- M6.UX.2: repeatable first-use help. -->
     <string name="help_title">Как пользоваться</string>
     <string name="help_step_class">1. Выберите один из 9 классов WoW Forever.</string>
-    <string name="help_step_talents">2. Распределяйте очки в деревьях талантов и изучайте их описания.</string>
-    <string name="help_step_builds">3. Сохраняйте билды, редактируйте их и делитесь кодами сборок.</string>
+    <string name="help_step_talents">2. Выберите специализацию. Нажмите на талант, чтобы выбрать его и прочитать описание. Меняйте ранг кнопками + и −. У закрытых талантов указаны требования.</string>
+    <string name="help_step_builds">3. Изменения талантов сохраняются на этом устройстве автоматически. Нажмите на заголовок черновика, чтобы назвать билд. Откройте его с главного экрана или поделитесь кодом билда.</string>
     <string name="help_step_offline">4. Планируйте билды офлайн. Игровые данные могут обновляться через интернет при наличии подключения.</string>
     <string name="help_step_offline_disabled">4. Планируйте билды офлайн на встроенных игровых данных. В этой версии приложения обновления данных через интернет отключены.</string>
 

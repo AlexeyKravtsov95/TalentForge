@@ -2,6 +2,7 @@ package io.github.alexeykravtsov95.talentforge.ui.tree
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -36,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.common_go_back
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_build_actions_open
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_draft_name_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_redo_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_undo_action
 import io.github.alexeykravtsov95.talentforge.ui.theme.TalentForgeSpacing
@@ -152,6 +154,7 @@ fun TalentTreeHeaderBar(
      */
     tabs: (@Composable () -> Unit)? = null,
     tabsWidth: Dp = 0.dp,
+    onNameDraft: (() -> Unit)? = null,
 ) {
     BoxWithConstraints(modifier.fillMaxWidth()) {
         val layout = talentTreeHeaderLayout(maxWidth, LocalDensity.current.fontScale)
@@ -183,12 +186,31 @@ fun TalentTreeHeaderBar(
                     .padding(vertical = TalentForgeSpacing.hairline)
                     .testTag(TALENT_TREE_HEADER_TITLE_TAG),
             ) {
-                BasicText(
-                    text = title,
-                    style = HeaderTitleStyle.copy(color = talentForgeColors().textPrimary),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                val nameDraftLabel = stringResource(Res.string.editor_draft_name_action)
+                Column(
+                    modifier = if (onNameDraft != null) {
+                        Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = TalentTreeHeaderMetrics.EDITOR_CONTROL_DP)
+                            .clickable(role = Role.Button, onClickLabel = nameDraftLabel, onClick = onNameDraft)
+                    } else {
+                        Modifier
+                    },
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    BasicText(
+                        text = title,
+                        style = HeaderTitleStyle.copy(color = talentForgeColors().textPrimary),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    if (onNameDraft != null) {
+                        BasicText(
+                            text = nameDraftLabel,
+                            style = HeaderMetaStyle.copy(color = talentForgeColors().textSecondary),
+                        )
+                    }
+                }
                 if (pointsInMeta) {
                     // 1A v2 03 (3.1): "21/51 · Druid · Forev…" — the counter leads the
                     // meta line and never ellipsizes; the class/game text gives way.

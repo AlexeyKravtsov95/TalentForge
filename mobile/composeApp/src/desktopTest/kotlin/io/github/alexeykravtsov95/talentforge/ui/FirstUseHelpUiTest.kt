@@ -51,13 +51,13 @@ class FirstUseHelpUiTest {
             val title = if (ru) "Как пользоваться" else "How to use"
             val steps = if (ru) listOf(
                 "1. Выберите один из 9 классов WoW Forever.",
-                "2. Распределяйте очки в деревьях талантов и изучайте их описания.",
-                "3. Сохраняйте билды, редактируйте их и делитесь кодами сборок.",
+                "2. Выберите специализацию. Нажмите на талант, чтобы выбрать его и прочитать описание. Меняйте ранг кнопками + и −. У закрытых талантов указаны требования.",
+                "3. Изменения талантов сохраняются на этом устройстве автоматически. Нажмите на заголовок черновика, чтобы назвать билд. Откройте его с главного экрана или поделитесь кодом билда.",
                 "4. Планируйте билды офлайн на встроенных игровых данных. В этой версии приложения обновления данных через интернет отключены.",
             ) else listOf(
                 "1. Choose one of the 9 WoW Forever classes.",
-                "2. Spend points in talent trees and read talent descriptions.",
-                "3. Save builds, edit them and share build codes.",
+                "2. Choose a specialization. Tap a talent to select it and read its details. Use + and − to change its rank. Locked talents show their requirements.",
+                "3. Talent changes save automatically on this device. Tap the draft title to name your build. Reopen it from Home, or share it with a build code.",
                 "4. Plan builds offline using the included game data. Online data updates are disabled in this app version.",
             )
             for (otaEnabled in listOf(false, true)) {
