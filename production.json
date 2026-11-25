@@ -4,7 +4,8 @@
   "notifiedRelease": "1.60.1.71037-r1",
   "failuresNotified": [
     "ota-production/reconcile/PUBLISH",
-    "ota-production/publish/PLANNING/BASE_NOT_CURRENT"
+    "ota-production/publish/PLANNING/BASE_NOT_CURRENT",
+    "ota-production/publish/PLANNING/CI_PENDING"
   ],
-  "updatedAt": "2026-11-25T04:22:27Z"
+  "updatedAt": "2026-11-25T13:36:52+00:00"
 }
