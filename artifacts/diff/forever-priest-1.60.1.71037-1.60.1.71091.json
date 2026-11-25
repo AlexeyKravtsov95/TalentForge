@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 5,
+    "token": "PRIEST",
+    "name": "Priest"
+  },
+  "fromBuild": "1.60.1.71037",
+  "toBuild": "1.60.1.71091",
+  "fromContentHash": "sha256:64a4988224ba98997ac806a84d0b6532233a8352b3f38f4888ea4bbb7d0bbbfc",
+  "toContentHash": "sha256:bcb3cbacb3f693590107a84695cc86850a2760786b0d4c47bbeb81be932bc829",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 0,
+    "changesByKind": {}
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": []
+}
