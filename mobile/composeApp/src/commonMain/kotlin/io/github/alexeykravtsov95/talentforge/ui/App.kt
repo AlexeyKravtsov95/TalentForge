@@ -1,5 +1,6 @@
 package io.github.alexeykravtsov95.talentforge.ui
 
+import androidx.compose.runtime.key
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -32,6 +33,7 @@ import io.github.alexeykravtsov95.talentforge.ui.about.platformPrivacyPolicy
 import io.github.alexeykravtsov95.talentforge.ui.about.privacyPolicyUrlOf
 import io.github.alexeykravtsov95.talentforge.ui.assets.ComposeResourceDatasetAssetSource
 import io.github.alexeykravtsov95.talentforge.ui.builds.AllBuildsScreen
+import io.github.alexeykravtsov95.talentforge.ui.builds.BuildMigrationController
 import io.github.alexeykravtsov95.talentforge.ui.home.HelpScreen
 import io.github.alexeykravtsov95.talentforge.ui.home.HomeScreen
 import io.github.alexeykravtsov95.talentforge.ui.lang.appLanguage
@@ -234,6 +236,9 @@ fun App(
     val autosave = remember(environment) {
         BuildAutosaveCoordinator(environment.repository, appScope)
     }
+    val migration = remember(environment, autosave, ota) {
+        BuildMigrationController(environment.repository, autosave, environment.bundled, ota?.activation)
+    }
     var destinations by rememberSaveable(stateSaver = DestinationStackSaver) {
         mutableStateOf<List<AppDestination>>(listOf(AppDestination.Home))
     }
@@ -303,7 +308,7 @@ fun App(
                 when (destination) {
                     AppDestination.Home -> HomeScreen(
                         repository = environment.repository,
-                        datasets = session.datasets,
+                        datasets = latestSession.datasets,
                         clockMillis = clock::nowMillis,
                         onOpenBuild = { localId ->
                             destinations = destinations + AppDestination.Editor(localId, EditorOrigin.FromHome)
@@ -319,6 +324,7 @@ fun App(
                         product = latestSession.product,
                         dataUpdatedTo = otaStatus?.updatedTo,
                         onDismissDataUpdate = { ota?.coordinator?.acknowledgeUpdate() },
+                        migration = migration,
                     )
 
                     AppDestination.Help -> HelpScreen(onBack = ::navigateUp, otaEnabled = ota != null)
@@ -353,7 +359,7 @@ fun App(
 
                     AppDestination.AllBuilds -> AllBuildsScreen(
                         repository = environment.repository,
-                        datasets = session.datasets,
+                        datasets = latestSession.datasets,
                         clockMillis = clock::nowMillis,
                         onBack = ::navigateUp,
                         onOpenBuild = { localId ->
@@ -363,6 +369,8 @@ fun App(
                         onImportBuild = { destinations = destinations + AppDestination.ImportBuild },
                         sharing = sharing,
                         autosave = autosave,
+                        activeProduct = latestSession.product,
+                        migration = migration,
                     )
 
                     AppDestination.ImportBuild -> ImportBuildScreen(
@@ -393,7 +401,7 @@ fun App(
                         },
                     )
 
-                    is AppDestination.Editor -> {
+                    is AppDestination.Editor -> key(destination.localId) {
                         // an open editor leases the releases of the snapshot it actually reads — the one
                         // it opened with, or the one its build is downloaded into — until it closes (§4.5)
                         val access = remember(destination, level) { ota?.let { EditorDatasetAccess.open(it, session) } }
@@ -409,6 +417,13 @@ fun App(
                             localization = editorSession.localization,
                             sharing = sharing,
                             datasetAccess = access,
+                            activeProduct = latestSession.product,
+                            migration = migration,
+                            onMigrated = { localId ->
+                                if (destinations.lastOrNull() == destination) {
+                                    destinations = destinations.dropLast(1) + destination.copy(localId = localId)
+                                }
+                            },
                         )
                     }
                 }

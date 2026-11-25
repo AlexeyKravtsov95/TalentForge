@@ -1,5 +1,6 @@
 package io.github.alexeykravtsov95.talentforge.data.builds
 
+import io.github.alexeykravtsov95.talentforge.allocation.BuildMigrationResult
 import io.github.alexeykravtsov95.talentforge.data.allocation.BuildFile
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.random.Random
@@ -26,6 +27,9 @@ sealed interface BuildLibraryError {
 
     /** The operation targets a `localId` the library does not contain. */
     data class UnknownRecord(val localId: String) : BuildLibraryError
+
+    /** The exact source used to preview a migration is no longer current. */
+    data object MigrationSourceChanged : BuildLibraryError
 
     /**
      * A requested build name failed validation (blank after trimming, or
@@ -168,12 +172,16 @@ class LocalBuildRepository(
         }
 
     /** A draft record whose generated id is nonblank and absent from [existing], or `null` after the bounded retries. */
-    private fun newUniqueRecord(build: BuildFile, existing: List<LocalBuildRecord>): LocalBuildRecord? {
+    private fun newUniqueRecord(
+        build: BuildFile,
+        existing: List<LocalBuildRecord>,
+        name: String? = null,
+    ): LocalBuildRecord? {
         val localId = newUniqueId(existing.mapTo(HashSet(existing.size)) { it.localId }) ?: return null
         val now = clock.nowMillis()
         return LocalBuildRecord(
             localId = localId,
-            name = null,
+            name = name,
             createdAt = now,
             updatedAt = now,
             lastOpenedAt = null,
@@ -223,25 +231,46 @@ class LocalBuildRepository(
      */
     fun renameBuild(localId: String, newName: String): BuildLibraryOutcome<LocalBuildRecord> {
         val trimmed = newName.trim()
-        if (trimmed.isEmpty()) {
-            return BuildLibraryOutcome.Failed(
-                BuildLibraryError.InvalidBuildName(
-                    reason = BuildLibraryError.InvalidBuildName.Reason.Blank,
-                    maxLength = MAX_BUILD_NAME_LENGTH,
-                ),
-            )
-        }
-        if (trimmed.length > MAX_BUILD_NAME_LENGTH) {
-            return BuildLibraryOutcome.Failed(
-                BuildLibraryError.InvalidBuildName(
-                    reason = BuildLibraryError.InvalidBuildName.Reason.TooLong(trimmed.length),
-                    maxLength = MAX_BUILD_NAME_LENGTH,
-                ),
-            )
-        }
+        invalidName(trimmed)?.let { return BuildLibraryOutcome.Failed(it) }
         return mutate(localId) { record ->
             if (record.name == trimmed) record else record.copy(name = trimmed, storedBlankName = null)
         }
+    }
+
+    /**
+     * Checks the full previewed record and appends the final, named copy in
+     * the same read–modify–write. The caller serializes this with autosaves.
+     */
+    fun createMigratedCopy(
+        expected: LocalBuildRecord,
+        plan: BuildMigrationResult.Ready,
+        newName: String,
+    ): BuildLibraryOutcome<LocalBuildRecord> {
+        require(expected.build == plan.source)
+        val trimmed = newName.trim()
+        invalidName(trimmed)?.let { return BuildLibraryOutcome.Failed(it) }
+        val records = when (val outcome = readAll()) {
+            is ReadOutcome.Failed -> return BuildLibraryOutcome.Failed(outcome.error)
+            is ReadOutcome.Records -> outcome.records
+        }
+        if (records.firstOrNull { it.localId == expected.localId } != expected) {
+            return BuildLibraryOutcome.Failed(BuildLibraryError.MigrationSourceChanged)
+        }
+        val copy = newUniqueRecord(plan.build, records, trimmed)
+            ?: return BuildLibraryOutcome.Failed(BuildLibraryError.IdCollision(MAX_ID_ATTEMPTS))
+        return when (val written = writeAll(records + copy)) {
+            is BuildLibraryOutcome.Failed -> written
+            is BuildLibraryOutcome.Loaded -> BuildLibraryOutcome.Loaded(copy)
+        }
+    }
+
+    private fun invalidName(trimmed: String): BuildLibraryError.InvalidBuildName? {
+        val reason = when {
+            trimmed.isEmpty() -> BuildLibraryError.InvalidBuildName.Reason.Blank
+            trimmed.length > MAX_BUILD_NAME_LENGTH -> BuildLibraryError.InvalidBuildName.Reason.TooLong(trimmed.length)
+            else -> return null
+        }
+        return BuildLibraryError.InvalidBuildName(reason, MAX_BUILD_NAME_LENGTH)
     }
 
     /** Metadata only; assigning the existing value is a successful no-op without a write. */

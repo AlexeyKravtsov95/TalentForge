@@ -52,6 +52,13 @@ data class SharedBuildCode(val localId: String, val code: String)
 /** A persisted build could not be read for sharing (retryable notice). */
 data class ShareFailureNotice(val localId: String, val failure: BuildExportFailure)
 
+internal data class MigrationDialogState(
+    val localId: String,
+    val unnamedTitle: String,
+    val preview: MigrationPreview.Ready? = null,
+    val problem: MigrationProblem? = null,
+)
+
 /**
  * M5.SHARE.2 — the ONE presenter of the per-build Rename and Share actions,
  * used by Home's Recent rows, All Builds and the editor (no screen has its own
@@ -84,6 +91,8 @@ class BuildActionsPresenter internal constructor(
     private val onRenamed: (LocalBuildRecord) -> Unit,
     private val onRecordMissing: () -> Unit,
     private val onDeleted: () -> Unit,
+    private val migration: BuildMigrationController?,
+    private val onMigrated: (LocalBuildRecord) -> Unit,
 ) {
 
     var busy by mutableStateOf(false)
@@ -110,6 +119,60 @@ class BuildActionsPresenter internal constructor(
 
     var deleteFailed by mutableStateOf(false)
         private set
+
+    internal var migrationDialog by mutableStateOf<MigrationDialogState?>(null)
+        private set
+
+    internal var migrationName by mutableStateOf("")
+        private set
+
+    fun startMigration(localId: String, unnamedTitle: String) {
+        val controller = migration ?: return
+        launchExclusive {
+            val request = MigrationDialogState(localId, unnamedTitle)
+            migrationDialog = request
+            migrationName = ""
+            migrationDialog = when (val result = controller.preview(localId)) {
+                is MigrationPreview.Ready -> {
+                    migrationName = result.proposedName(unnamedTitle)
+                    request.copy(preview = result)
+                }
+                is MigrationPreview.Failed -> request.copy(problem = result.problem)
+            }
+        }
+    }
+
+    internal fun refreshMigration() {
+        val request = migrationDialog ?: return
+        startMigration(request.localId, request.unnamedTitle)
+    }
+
+    internal fun updateMigrationName(name: String) {
+        if (!busy) migrationName = name
+    }
+
+    internal fun cancelMigration() {
+        if (!busy) migrationDialog = null
+    }
+
+    internal fun confirmMigration() {
+        val controller = migration ?: return
+        val request = migrationDialog ?: return
+        val preview = request.preview ?: return
+        val name = migrationName
+        launchExclusive {
+            when (val result = controller.confirm(preview, name)) {
+                is MigrationWrite.Saved -> {
+                    migrationDialog = null
+                    onMigrated(result.copy)
+                }
+                is MigrationWrite.Failed -> migrationDialog = request.copy(
+                    preview = if (result.problem == MigrationProblem.Stale) null else preview,
+                    problem = result.problem,
+                )
+            }
+        }
+    }
 
     /** Runs [action] unless another operation is in flight; `false` when the tap was ignored. */
     fun launchExclusive(action: suspend () -> Unit): Boolean {
@@ -241,12 +304,15 @@ fun rememberBuildActionsPresenter(
     onRenamed: (LocalBuildRecord) -> Unit,
     onRecordMissing: () -> Unit = {},
     onDeleted: () -> Unit = {},
+    migration: BuildMigrationController? = null,
+    onMigrated: (LocalBuildRecord) -> Unit = {},
 ): BuildActionsPresenter {
     val scope = rememberCoroutineScope()
     val renamed by rememberUpdatedState(onRenamed)
     val missing by rememberUpdatedState(onRecordMissing)
     val deleted by rememberUpdatedState(onDeleted)
-    return remember(autosave, repository, scope) {
+    val migrated by rememberUpdatedState(onMigrated)
+    return remember(autosave, repository, scope, migration) {
         BuildActionsPresenter(
             autosave = autosave,
             repository = repository,
@@ -254,6 +320,8 @@ fun rememberBuildActionsPresenter(
             onRenamed = { renamed(it) },
             onRecordMissing = { missing() },
             onDeleted = { deleted() },
+            migration = migration,
+            onMigrated = { migrated(it) },
         )
     }
 }
@@ -294,6 +362,18 @@ fun BuildActionsOverlays(
             error = presenter.deleteFailed,
             onDelete = presenter::confirmDelete,
             onCancel = presenter::cancelDelete,
+        )
+    }
+    presenter.migrationDialog?.let { dialog ->
+        PlatformBackHandler(enabled = true) { presenter.cancelMigration() }
+        BuildMigrationDialog(
+            dialog = dialog,
+            name = presenter.migrationName,
+            busy = presenter.busy,
+            onNameChange = presenter::updateMigrationName,
+            onCancel = presenter::cancelMigration,
+            onConfirm = presenter::confirmMigration,
+            onRefresh = presenter::refreshMigration,
         )
     }
     val code = presenter.shared

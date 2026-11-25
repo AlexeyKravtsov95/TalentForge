@@ -1,5 +1,9 @@
 package io.github.alexeykravtsov95.talentforge.ui.tree
 
+import io.github.alexeykravtsov95.talentforge.allocation.canMigrateTo
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.build_migration_stale
+import io.github.alexeykravtsov95.talentforge.data.DatasetBundleId
+import io.github.alexeykravtsov95.talentforge.ui.builds.BuildMigrationController
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,7 +40,7 @@ import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.edi
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_dataset_progress
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_dataset_unavailable
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.editor_failure_dataset
-import io.github.alexeykravtsov95.talentforge.data.DatasetBundleId
+import io.github.alexeykravtsov95.talentforge.ui.library.PRODUCT_BUNDLE
 import io.github.alexeykravtsov95.talentforge.ui.library.SecondaryActionButton
 import io.github.alexeykravtsov95.talentforge.ui.ota.DatasetUnavailableReason
 import io.github.alexeykravtsov95.talentforge.ui.ota.EditorDatasetAccess
@@ -136,6 +140,9 @@ fun TalentTreeBuildScreen(
      * typed unavailable with Retry. The record is never touched and no other build is used.
      */
     datasetAccess: EditorDatasetAccess? = null,
+    activeProduct: DatasetBundleId = PRODUCT_BUNDLE,
+    migration: BuildMigrationController? = null,
+    onMigrated: (String) -> Unit = {},
 ) {
     var load by remember(localId) { mutableStateOf<EditorLoad>(EditorLoad.Loading) }
     var acquisition by remember(localId) { mutableStateOf<DatasetAcquisition?>(null) }
@@ -217,6 +224,9 @@ fun TalentTreeBuildScreen(
             autosave = autosave,
             onBack = onBack,
             sharing = sharing,
+            activeProduct = activeProduct,
+            migration = migration,
+            onMigrated = onMigrated,
         )
     }
 }
@@ -228,6 +238,9 @@ private fun ReadyBuildEditor(
     autosave: BuildAutosaveCoordinator,
     onBack: () -> Unit,
     sharing: BuildCodeSharing?,
+    activeProduct: DatasetBundleId,
+    migration: BuildMigrationController?,
+    onMigrated: (String) -> Unit,
 ) {
     val record = session.record
     var newestFile by remember(record.localId) { mutableStateOf<BuildFile?>(null) }
@@ -243,11 +256,15 @@ private fun ReadyBuildEditor(
         autosave = autosave,
         repository = repository,
         onRenamed = { renamed -> persistedName = renamed.name },
+        migration = migration,
+        onMigrated = { onMigrated(it.localId) },
     )
     // TF-RC1-DRAFT-TITLE: the same title as Home / All Builds — a user name
     // verbatim, an unnamed build the localized `<Class> build` fallback,
     // resolved here at display time — `record.name` stays null in storage
     val buildTitle = buildDisplayTitle(persistedName, record.build.classToken, session.classDisplayName)
+    val newerData = record.build.canMigrateTo(activeProduct)
+    val unnamedTitle = buildDisplayTitle(null, record.build.classToken, session.classDisplayName)
     val lastOutcome by autosave.lastOutcome.collectAsState()
     val saveFailed = lastOutcome?.let { it.localId == record.localId && it.failed } == true
 
@@ -294,6 +311,10 @@ private fun ReadyBuildEditor(
                 }
             },
             onRenameBuild = { actions.startRename(record.localId, persistedName) },
+            newerDataBuild = activeProduct.clientBuild.takeIf { newerData },
+            onMigrateBuild = if (newerData && migration != null) {
+                { actions.startMigration(record.localId, unnamedTitle) }
+            } else null,
         )
         if (saveFailed) {
             InlineNotice(
@@ -423,6 +444,7 @@ fun BuildLibraryError.describeLibraryError(): String = when (this) {
         stringResource(Res.string.library_error_unsupported_version, actual)
 
     is BuildLibraryError.UnknownRecord -> stringResource(Res.string.library_error_unknown_record)
+    BuildLibraryError.MigrationSourceChanged -> stringResource(Res.string.build_migration_stale)
     is BuildLibraryError.IdCollision -> pluralStringResource(Res.plurals.library_error_id_collision, attempts, attempts)
     is BuildLibraryError.InvalidBuildName ->
         pluralStringResource(Res.plurals.library_error_invalid_name, maxLength, maxLength)

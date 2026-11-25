@@ -1301,6 +1301,9 @@ tasks.named<Test>("desktopTest") {
     System.getProperty("talentforge.m5share2.screenshots")?.let {
         systemProperty("talentforge.m5share2.screenshots", it)
     }
+    System.getProperty("talentforge.w104.screenshots")?.let {
+        systemProperty("talentforge.w104.screenshots", it)
+    }
     System.getProperty("talentforge.m5uiabout1.screenshots")?.let {
         systemProperty("talentforge.m5uiabout1.screenshots", it)
     }

@@ -1,5 +1,7 @@
 package io.github.alexeykravtsov95.talentforge.ui.tree
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -29,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.Res
+import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.build_migration_action
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_action_rename
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_action_share
 import io.github.alexeykravtsov95.talentforge.composeapp.generated.resources.builds_sheet_close_action
@@ -98,6 +101,7 @@ fun TalentBuildActionsSheet(
     modifier: Modifier = Modifier,
     onShareBuild: (() -> Unit)? = null,
     onRenameBuild: (() -> Unit)? = null,
+    onMigrateBuild: (() -> Unit)? = null,
 ) {
     AnimatedVisibility(
         visible = visible,
@@ -136,6 +140,7 @@ fun TalentBuildActionsSheet(
                                 topEnd = TalentForgeRadius.sheet,
                             ),
                         )
+                        .verticalScroll(rememberScrollState())
                         .padding(
                             horizontal = TalentForgeSpacing.sheetX,
                             vertical = TalentForgeSpacing.group,
@@ -152,7 +157,10 @@ fun TalentBuildActionsSheet(
                     if (onShareBuild != null) {
                         NeutralSheetAction(text = stringResource(Res.string.builds_action_share), onClick = onShareBuild)
                     }
-                    if (onRenameBuild != null || onShareBuild != null) {
+                    if (onMigrateBuild != null) {
+                        NeutralSheetAction(text = stringResource(Res.string.build_migration_action), onClick = onMigrateBuild)
+                    }
+                    if (onRenameBuild != null || onShareBuild != null || onMigrateBuild != null) {
                         // Reset stays separated from the neutral actions above it
                         Spacer(
                             Modifier

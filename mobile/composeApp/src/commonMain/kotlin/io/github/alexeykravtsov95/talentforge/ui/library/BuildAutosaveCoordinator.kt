@@ -133,6 +133,22 @@ class BuildAutosaveCoordinator(
         }
     }
 
+    /**
+     * Wait for already submitted editor writes without submitting one. The
+     * migration re-reads the source and commits while holding the same lock.
+     */
+    internal suspend fun <T> afterAutosaveForMigration(action: suspend (SaveResult?) -> T): T {
+        while (true) {
+            flush()
+            writeLock.lock()
+            try {
+                if (processed.value == submittedCount) return action(outcomeState.value)
+            } finally {
+                writeLock.unlock()
+            }
+        }
+    }
+
     private suspend fun consumeForever() {
         // scope-owned loop: scope cancellation cancels the suspended receive
         while (true) {

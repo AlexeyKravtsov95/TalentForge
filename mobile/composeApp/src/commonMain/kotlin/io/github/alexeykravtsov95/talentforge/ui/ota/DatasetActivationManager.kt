@@ -89,6 +89,12 @@ class DatasetActivationManager(
     /** The snapshot new sessions are created with; activation publishes a new one. */
     val snapshot: StateFlow<DatasetSnapshot> = snapshots.asStateFlow()
 
+    /** Run a short local commit only while the previewed snapshot is still current. */
+    internal suspend fun <T : Any> withCurrentSnapshot(expected: DatasetSnapshot, commit: () -> T): T? =
+        mutex.withLock {
+            if (snapshots.value !== expected) null else commit()
+        }
+
     fun currentState(): OtaState = state
 
     /** The last accepted catalog, known without the network (§7.2); `null` before the first one. */
