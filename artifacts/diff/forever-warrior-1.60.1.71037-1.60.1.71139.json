@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "game": "forever",
+  "class": {
+    "id": 1,
+    "token": "WARRIOR",
+    "name": "Warrior"
+  },
+  "fromBuild": "1.60.1.71037",
+  "toBuild": "1.60.1.71139",
+  "fromContentHash": "sha256:592e2e19d805406c1a51f5242360d89528734ba5f7fc550a5da9fd54a6027459",
+  "toContentHash": "sha256:bb7e467e714aff762224af8c2f48662c3dc822df2b928f0f0bd5bc2c0ad205ac",
+  "summary": {
+    "added": 0,
+    "removed": 0,
+    "changed": 0,
+    "changesByKind": {}
+  },
+  "treeChanges": [],
+  "added": [],
+  "removed": [],
+  "changed": []
+}
