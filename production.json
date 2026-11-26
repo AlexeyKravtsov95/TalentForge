@@ -5,7 +5,8 @@
   "failuresNotified": [
     "ota-production/reconcile/PUBLISH",
     "ota-production/publish/PLANNING/BASE_NOT_CURRENT",
-    "ota-production/publish/PLANNING/CI_PENDING"
+    "ota-production/publish/PLANNING/CI_PENDING",
+    "ota-production/publish/PLANNING/RUN_PENDING"
   ],
-  "updatedAt": "2026-11-25T23:42:07Z"
+  "updatedAt": "2026-11-26T04:31:51+00:00"
 }
